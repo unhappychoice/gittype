@@ -6,6 +6,7 @@ pub struct Challenge {
     pub start_line: Option<usize>,
     pub end_line: Option<usize>,
     pub language: Option<String>,
+    pub comment_ranges: Vec<(usize, usize)>, // Character-based ranges for comments
 }
 
 
@@ -18,6 +19,7 @@ impl Challenge {
             start_line: None,
             end_line: None,
             language: None,
+            comment_ranges: Vec::new(),
         }
     }
 
@@ -31,6 +33,11 @@ impl Challenge {
 
     pub fn with_language(mut self, language: String) -> Self {
         self.language = Some(language);
+        self
+    }
+
+    pub fn with_comment_ranges(mut self, comment_ranges: Vec<(usize, usize)>) -> Self {
+        self.comment_ranges = comment_ranges;
         self
     }
 
