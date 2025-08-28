@@ -1,0 +1,48 @@
+#[derive(Debug, Clone)]
+pub struct Challenge {
+    pub id: String,
+    pub source_file_path: Option<String>,
+    pub code_content: String,
+    pub start_line: Option<usize>,
+    pub end_line: Option<usize>,
+    pub language: Option<String>,
+}
+
+
+impl Challenge {
+    pub fn new(id: String, code_content: String) -> Self {
+        Self {
+            id,
+            source_file_path: None,
+            code_content,
+            start_line: None,
+            end_line: None,
+            language: None,
+        }
+    }
+
+    pub fn with_source_info(mut self, file_path: String, start_line: usize, end_line: usize) -> Self {
+        self.source_file_path = Some(file_path);
+        self.start_line = Some(start_line);
+        self.end_line = Some(end_line);
+        self
+    }
+
+
+    pub fn with_language(mut self, language: String) -> Self {
+        self.language = Some(language);
+        self
+    }
+
+    pub fn get_display_title(&self) -> String {
+        if let Some(ref path) = self.source_file_path {
+            if let (Some(start), Some(end)) = (self.start_line, self.end_line) {
+                format!("{}:{}-{}", path, start, end)
+            } else {
+                path.clone()
+            }
+        } else {
+            format!("Challenge {}", self.id)
+        }
+    }
+}
