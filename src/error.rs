@@ -25,6 +25,9 @@ pub enum GitTypeError {
 
     #[error("Terminal error: {0}")]
     TerminalError(String),
+
+    #[error("Walk directory error: {0}")]
+    WalkDirError(#[from] walkdir::Error),
 }
 
 pub type Result<T> = std::result::Result<T, GitTypeError>;
