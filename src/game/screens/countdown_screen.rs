@@ -1,6 +1,7 @@
 use crate::Result;
 use crossterm::{
     cursor::MoveTo,
+    event::{self, Event, KeyCode, KeyModifiers},
     execute,
     style::{Attribute, Color, Print, ResetColor, SetAttribute, SetForegroundColor},
     terminal::{self, ClearType},
@@ -26,7 +27,7 @@ impl CountdownScreen {
         execute!(stdout, ResetColor)?;
         stdout.flush()?;
 
-        std::thread::sleep(std::time::Duration::from_millis(1000));
+        Self::clear_input_buffer_and_wait(1000)?;
 
         // Countdown from 3 to 1
         for count in (1..=3).rev() {
@@ -56,7 +57,7 @@ impl CountdownScreen {
             execute!(stdout, ResetColor)?;
             stdout.flush()?;
 
-            std::thread::sleep(std::time::Duration::from_millis(1000));
+            Self::clear_input_buffer_and_wait(1000)?;
         }
 
         // Show "GO!" message
@@ -69,7 +70,7 @@ impl CountdownScreen {
         execute!(stdout, ResetColor)?;
         stdout.flush()?;
 
-        std::thread::sleep(std::time::Duration::from_millis(500));
+        Self::clear_input_buffer_and_wait(500)?;
 
         Ok(())
     }
@@ -90,7 +91,7 @@ impl CountdownScreen {
         execute!(stdout, ResetColor)?;
         stdout.flush()?;
 
-        std::thread::sleep(std::time::Duration::from_millis(1000));
+        Self::clear_input_buffer_and_wait(1000)?;
 
         // Countdown from 3 to 1
         for count in (1..=3).rev() {
@@ -120,7 +121,7 @@ impl CountdownScreen {
             execute!(stdout, ResetColor)?;
             stdout.flush()?;
 
-            std::thread::sleep(std::time::Duration::from_millis(800));
+            Self::clear_input_buffer_and_wait(800)?;
         }
 
         // Show "START!" message
@@ -133,8 +134,23 @@ impl CountdownScreen {
         execute!(stdout, ResetColor)?;
         stdout.flush()?;
 
-        std::thread::sleep(std::time::Duration::from_millis(500));
+        Self::clear_input_buffer_and_wait(500)?;
 
+        Ok(())
+    }
+
+    fn clear_input_buffer_and_wait(duration_ms: u64) -> Result<()> {
+        let end_time = std::time::Instant::now() + std::time::Duration::from_millis(duration_ms);
+        
+        while std::time::Instant::now() < end_time {
+            if event::poll(std::time::Duration::from_millis(10))? {
+                if let Event::Key(key) = event::read()? {
+                    if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('c') {
+                        return Err(crate::error::GitTypeError::TerminalError("Interrupted by user".to_string()));
+                    }
+                }
+            }
+        }
         Ok(())
     }
 }
