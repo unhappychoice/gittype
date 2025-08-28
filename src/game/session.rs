@@ -11,7 +11,7 @@ impl GameSession {
     }
 
     pub fn start(&self) -> Result<()> {
-        let mut screen = TypingScreen::new(self.challenge_text.clone());
+        let mut screen = TypingScreen::new(self.challenge_text.clone())?;
         screen.run_full_session()
     }
 }

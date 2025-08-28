@@ -4,6 +4,7 @@ use crossterm::terminal;
 use super::{
     challenge::Challenge,
     screens::{TitleScreen, ResultScreen, CountdownScreen, TypingScreen, TitleAction},
+    stage_builder::{StageBuilder, GameMode},
 };
 
 #[derive(Debug, Clone)]
@@ -18,19 +19,20 @@ pub struct SessionMetrics {
 }
 
 pub struct StageManager {
-    challenges: Vec<Challenge>,
+    available_challenges: Vec<Challenge>,
+    current_challenges: Vec<Challenge>,
     current_stage: usize,
     session_metrics: SessionMetrics,
 }
 
 impl StageManager {
     pub fn new(challenges: Vec<Challenge>) -> Self {
-        let total_stages = challenges.len();
         Self {
-            challenges,
+            available_challenges: challenges,
+            current_challenges: Vec::new(),
             current_stage: 0,
             session_metrics: SessionMetrics {
-                total_stages,
+                total_stages: 0,
                 completed_stages: 0,
                 stage_metrics: Vec::new(),
                 total_wpm: 0.0,
@@ -60,8 +62,33 @@ impl StageManager {
 
         loop {
             match TitleScreen::show()? {
-                TitleAction::Start => {
+                TitleAction::Start(difficulty) => {
+                    // Build stages based on selected difficulty
+                    let game_mode = GameMode::Custom {
+                        max_stages: Some(3),
+                        time_limit: None,
+                        difficulty: difficulty.clone(),
+                    };
+                    
+                    // Debug output
+                    println!("Selected difficulty: {:?}", difficulty);
+                    println!("Available challenges: {}", self.available_challenges.len());
+                    
+                    let stage_builder = StageBuilder::with_mode(game_mode);
+                    self.current_challenges = stage_builder.build_stages(self.available_challenges.clone());
+                    
+                    println!("Built {} challenges with difficulty {:?}", self.current_challenges.len(), difficulty);
+                    for (i, challenge) in self.current_challenges.iter().enumerate() {
+                        println!("  Challenge {}: {} ({} lines)", i+1, challenge.id, challenge.code_content.lines().count());
+                    }
+                    
+                    if self.current_challenges.is_empty() {
+                        continue; // Go back to title screen
+                    }
+                    
+                    // Reset session metrics
                     self.current_stage = 0;
+                    self.session_metrics.total_stages = self.current_challenges.len();
                     self.session_metrics.completed_stages = 0;
                     self.session_metrics.stage_metrics.clear();
                     self.session_metrics.total_wpm = 0.0;
@@ -89,8 +116,8 @@ impl StageManager {
     }
 
     fn run_stages(&mut self) -> Result<bool> {
-        while self.current_stage < self.challenges.len() {
-            let challenge = &self.challenges[self.current_stage];
+        while self.current_stage < self.current_challenges.len() {
+            let challenge = &self.current_challenges[self.current_stage];
             
             // Show countdown before each stage
             if self.current_stage == 0 {
@@ -98,10 +125,10 @@ impl StageManager {
                 CountdownScreen::show()?;
             } else {
                 // Subsequent stages - show stage transition countdown
-                CountdownScreen::show_stage_transition(self.current_stage + 1, self.challenges.len())?;
+                CountdownScreen::show_stage_transition(self.current_stage + 1, self.current_challenges.len())?;
             }
             
-            let mut screen = TypingScreen::new_with_challenge(challenge);
+            let mut screen = TypingScreen::new_with_challenge(challenge)?;
             let metrics = screen.show()?; // Use show method like other screens
             
             // Record stage completion
@@ -125,8 +152,8 @@ impl StageManager {
         ResultScreen::show_stage_completion(
             metrics, 
             self.current_stage + 1, 
-            self.challenges.len(),
-            self.current_stage < self.challenges.len() - 1  // has_next_stage
+            self.current_challenges.len(),
+            self.current_stage < self.current_challenges.len() - 1  // has_next_stage
         )
     }
 
@@ -156,7 +183,7 @@ impl StageManager {
     }
 
     pub fn get_total_stages(&self) -> usize {
-        self.challenges.len()
+        self.current_challenges.len()
     }
 
     pub fn get_session_metrics(&self) -> &SessionMetrics {

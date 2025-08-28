@@ -3,11 +3,11 @@ use crossterm::{
     cursor::{MoveTo, Hide, Show},
     queue,
     style::{Attribute, Color, Print, ResetColor, SetAttribute, SetBackgroundColor, SetForegroundColor},
-    terminal::{self, ClearType},
+    terminal,
 };
 use std::io::{stdout, Write};
 use crate::scoring::TypingMetrics;
-use super::{comment_parser::CommentParser, text_processor::TextProcessor, challenge::Challenge};
+use super::{text_processor::TextProcessor, challenge::Challenge};
 
 pub struct GameDisplay;
 
@@ -48,8 +48,9 @@ impl GameDisplay {
         // Hide cursor to prevent flickering
         queue!(stdout, Hide)?;
         
-        // Clear screen and move to top
-        queue!(stdout, terminal::Clear(ClearType::All), MoveTo(0, 0))?;
+        // Only clear screen on first render or when needed
+        // Instead of clearing all, move to top
+        queue!(stdout, MoveTo(0, 0))?;
         
         // Display header with challenge info
         let progress = (current_position as f32 / challenge_text.len() as f32 * 100.0) as u32;
@@ -140,7 +141,7 @@ impl GameDisplay {
 
             // Skip displaying leading whitespace that user doesn't need to type
             let should_skip = TextProcessor::should_skip_character(challenge_text, i, line_starts, comment_ranges);
-            let is_comment = CommentParser::is_position_in_comment(i, comment_ranges);
+            let is_comment = Self::is_position_in_comment(i, comment_ranges);
             
             // Color the character based on typing state
             if i < current_position || should_skip {
@@ -261,5 +262,9 @@ impl GameDisplay {
             completion_time: elapsed,
             challenge_score: wpm * (accuracy / 100.0),
         }
+    }
+
+    fn is_position_in_comment(position: usize, comment_ranges: &[(usize, usize)]) -> bool {
+        comment_ranges.iter().any(|&(start, end)| position >= start && position < end)
     }
 }

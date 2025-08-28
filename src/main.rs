@@ -1,5 +1,6 @@
 use clap::{Parser, Subcommand};
-use gittype::game::{Challenge, StageManager};
+use gittype::game::StageManager;
+use gittype::extractor::{RepositoryLoader, ExtractionOptions};
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -18,6 +19,14 @@ struct Cli {
     /// Select extraction unit
     #[arg(long, default_value = "function")]
     unit: String,
+
+    /// Game mode
+    #[arg(long, default_value = "normal")]
+    mode: String,
+
+    /// Number of stages for normal mode
+    #[arg(long, default_value_t = 3)]
+    stages: usize,
 
     /// Maximum lines per challenge
     #[arg(long, default_value_t = 40)]
@@ -76,11 +85,57 @@ fn main() -> anyhow::Result<()> {
             // TODO: Implement export functionality
         }
         None => {
-            if let Some(_repo_path) = cli.repo_path {
-                // Create sample challenges for multi-stage experience
-                let challenges = create_sample_challenges();
+            if let Some(repo_path) = cli.repo_path {
+                // Extract challenges from the provided repository
+                let mut loader = match RepositoryLoader::new() {
+                    Ok(loader) => loader,
+                    Err(e) => {
+                        eprintln!("Failed to initialize code extractor: {}", e);
+                        return Ok(());
+                    }
+                };
+
+                // Build extraction options from CLI arguments
+                let mut options = ExtractionOptions::default();
                 
-                let mut stage_manager = StageManager::new(challenges);
+                if let Some(include_patterns) = cli.include {
+                    options.include_patterns = include_patterns;
+                }
+                
+                if let Some(exclude_patterns) = cli.exclude {
+                    options.exclude_patterns = exclude_patterns;
+                }
+                
+                options.max_lines = Some(cli.max_lines);
+
+                // Load challenges based on extraction unit
+                let challenges = match cli.unit.as_str() {
+                    "function" => loader.load_functions_only(&repo_path, Some(options)),
+                    "class" | "struct" => loader.load_classes_only(&repo_path, Some(options)),
+                    "all" => loader.load_challenges_from_repository(&repo_path, Some(options)),
+                    _ => {
+                        eprintln!("Unknown unit type: {}. Use 'function', 'class', or 'all'", cli.unit);
+                        return Ok(());
+                    }
+                };
+
+                let available_challenges = match challenges {
+                    Ok(challenges) => {
+                        if challenges.is_empty() {
+                            eprintln!("No code chunks found in the repository");
+                            return Ok(());
+                        }
+                        println!("Found {} code challenges", challenges.len());
+                        challenges
+                    },
+                    Err(e) => {
+                        eprintln!("Error extracting code from repository: {}", e);
+                        return Ok(());
+                    }
+                };
+                
+                // Pass all challenges to StageManager, it will build stages based on selected difficulty
+                let mut stage_manager = StageManager::new(available_challenges);
                 match stage_manager.run_session() {
                     Ok(_) => {
                         println!("Thanks for playing GitType!");
@@ -96,64 +151,4 @@ fn main() -> anyhow::Result<()> {
     }
 
     Ok(())
-}
-
-fn create_sample_challenges() -> Vec<Challenge> {
-    vec![
-        Challenge::new(
-            "stage1".to_string(),
-            r#"fn hello() {
-    println!("Hello, world!");
-}"#.to_string(),
-        )
-        .with_source_info("src/main.rs".to_string(), 1, 3)
-        .with_language("rust".to_string()),
-        
-        Challenge::new(
-            "stage2".to_string(),
-            r#"// This is a sample function
-fn test() {
-    // Print a greeting
-    println!("hello");
-    let x = 42; // Initialize variable
-    return x;
-}"#.to_string(),
-        )
-        .with_source_info("src/lib.rs".to_string(), 10, 16)
-        .with_language("rust".to_string()),
-        
-        Challenge::new(
-            "stage3".to_string(),
-            r#"fn check_number(x: i32) {
-    if x > 0 {
-        println!("positive");
-    } else if x < 0 {
-        // Handle negative case
-        println!("negative");
-    } else {
-        println!("zero");
-    }
-}"#.to_string(),
-        )
-        .with_source_info("src/utils.rs".to_string(), 20, 30)
-        .with_language("rust".to_string()),
-        
-        Challenge::new(
-            "stage4".to_string(),
-            r#"/* Multi-line comment
-   with more details */
-fn fibonacci(n: u32) -> u32 {
-    match n {
-        0 => 0,
-        1 => 1,
-        _ => {
-            // Recursive case
-            fibonacci(n - 1) + fibonacci(n - 2)
-        }
-    }
-}"#.to_string(),
-        )
-        .with_source_info("src/algorithms.rs".to_string(), 5, 17)
-        .with_language("rust".to_string()),
-    ]
 }

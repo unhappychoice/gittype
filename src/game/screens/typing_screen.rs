@@ -6,9 +6,8 @@ use crossterm::{
 use crate::scoring::TypingMetrics;
 use super::{
     super::{
-        comment_parser::CommentParser,
         text_processor::TextProcessor,
-        display::GameDisplay,
+        display_ratatui::GameDisplayRatatui,
         challenge::Challenge,
     },
     {TitleScreen, ResultScreen, CountdownScreen, TitleAction, ResultAction},
@@ -17,6 +16,7 @@ use super::{
 pub struct TypingScreen {
     challenge: Option<Challenge>,
     challenge_text: String,
+    challenge_chars: Vec<char>,
     current_position: usize,
     mistakes: usize,
     start_time: std::time::Instant,
@@ -24,6 +24,7 @@ pub struct TypingScreen {
     comment_ranges: Vec<(usize, usize)>,
     mistake_positions: Vec<usize>,
     current_mistake_position: Option<usize>,
+    display: GameDisplayRatatui,
 }
 
 pub enum ScreenState {
@@ -39,14 +40,17 @@ enum GameState {
 }
 
 impl TypingScreen {
-    pub fn new(challenge_text: String) -> Self {
+    pub fn new(challenge_text: String) -> Result<Self> {
         let processed_text = TextProcessor::process_challenge_text(&challenge_text);
+        let challenge_chars: Vec<char> = processed_text.chars().collect();
         let line_starts = TextProcessor::calculate_line_starts(&processed_text);
-        let comment_ranges = CommentParser::detect_comments(&processed_text);
+        let comment_ranges = vec![]; // No comment info available without Challenge
         let initial_position = TextProcessor::find_first_non_whitespace_or_comment(&processed_text, 0, &comment_ranges);
-        Self {
+        let display = GameDisplayRatatui::new(&processed_text)?;
+        Ok(Self {
             challenge: None,
             challenge_text: processed_text,
+            challenge_chars,
             current_position: initial_position,
             mistakes: 0,
             start_time: std::time::Instant::now(),
@@ -54,25 +58,35 @@ impl TypingScreen {
             comment_ranges,
             mistake_positions: Vec::new(),
             current_mistake_position: None,
-        }
+            display,
+        })
     }
 
-    pub fn new_with_challenge(challenge: &Challenge) -> Self {
-        let processed_text = TextProcessor::process_challenge_text(&challenge.code_content);
+    pub fn new_with_challenge(challenge: &Challenge) -> Result<Self> {
+        // Apply basic text processing (remove empty lines, etc.)
+        // Indentation normalization is already done in extractor
+        let (processed_text, mapped_comment_ranges) = TextProcessor::process_challenge_text_with_comment_mapping(
+            &challenge.code_content, 
+            &challenge.comment_ranges
+        );
+        
+        let challenge_chars: Vec<char> = processed_text.chars().collect();
         let line_starts = TextProcessor::calculate_line_starts(&processed_text);
-        let comment_ranges = CommentParser::detect_comments(&processed_text);
-        let initial_position = TextProcessor::find_first_non_whitespace_or_comment(&processed_text, 0, &comment_ranges);
-        Self {
+        let initial_position = TextProcessor::find_first_non_whitespace_or_comment(&processed_text, 0, &mapped_comment_ranges);
+        let display = GameDisplayRatatui::new(&processed_text)?;
+        Ok(Self {
             challenge: Some(challenge.clone()),
             challenge_text: processed_text,
+            challenge_chars,
             current_position: initial_position,
             mistakes: 0,
             start_time: std::time::Instant::now(),
             line_starts,
-            comment_ranges,
+            comment_ranges: mapped_comment_ranges,
             mistake_positions: Vec::new(),
             current_mistake_position: None,
-        }
+            display,
+        })
     }
 
     pub fn run_full_session(&mut self) -> Result<()> {
@@ -91,7 +105,7 @@ impl TypingScreen {
             match current_state {
                 ScreenState::Title => {
                     match TitleScreen::show()? {
-                        TitleAction::Start => {
+                        TitleAction::Start(_) => {
                             self.reset_game();
                             current_state = ScreenState::Playing;
                         },
@@ -147,7 +161,7 @@ impl TypingScreen {
         // Reset start time after countdown
         self.start_time = std::time::Instant::now();
 
-        GameDisplay::display_challenge_with_info(
+        self.display.display_challenge_with_info(
             &self.challenge_text,
             self.current_position,
             self.mistakes,
@@ -176,6 +190,7 @@ impl TypingScreen {
             }
         }
 
+        self.display.cleanup()?;
         terminal::disable_raw_mode()?;
         Ok(self.calculate_metrics())
     }
@@ -184,7 +199,7 @@ impl TypingScreen {
         // For stage manager - assumes raw mode is already enabled
         self.start_time = std::time::Instant::now();
 
-        GameDisplay::display_challenge_with_info(
+        self.display.display_challenge_with_info(
             &self.challenge_text,
             self.current_position,
             self.mistakes,
@@ -224,12 +239,14 @@ impl TypingScreen {
                 std::process::exit(0);
             },
             KeyCode::Char(ch) => {
-                if self.current_position < self.challenge_text.len() {
-                    let expected_char = self.challenge_text.chars().nth(self.current_position).unwrap();
+                if self.current_position < self.challenge_chars.len() {
+                    let expected_char = self.challenge_chars[self.current_position];
                     if ch == expected_char {
                         self.current_mistake_position = None;
                         self.current_position += 1;
-                        if self.current_position >= self.challenge_text.len() {
+                        // Skip over any non-typeable characters (comments, whitespace)
+                        self.advance_to_next_typeable_character();
+                        if self.current_position >= self.challenge_chars.len() {
                             return Ok(GameState::Complete);
                         }
                     } else {
@@ -247,6 +264,8 @@ impl TypingScreen {
                     if expected_char == '\t' {
                         self.current_mistake_position = None;
                         self.current_position += 1;
+                        // Skip over any non-typeable characters (comments, whitespace)
+                        self.advance_to_next_typeable_character();
                         if self.current_position >= self.challenge_text.len() {
                             return Ok(GameState::Complete);
                         }
@@ -281,8 +300,8 @@ impl TypingScreen {
         }
     }
 
-    fn update_display(&self) -> Result<()> {
-        GameDisplay::display_challenge_with_info(
+    fn update_display(&mut self) -> Result<()> {
+        self.display.display_challenge_with_info(
             &self.challenge_text,
             self.current_position,
             self.mistakes,
@@ -344,6 +363,23 @@ impl TypingScreen {
             consistency_score: accuracy,
             completion_time: elapsed,
             challenge_score: wpm * (accuracy / 100.0),
+        }
+    }
+
+    fn advance_to_next_typeable_character(&mut self) {
+        while self.current_position < self.challenge_chars.len() {
+            // Check if current position should be skipped (comment, whitespace, etc.)
+            if TextProcessor::should_skip_character(
+                &self.challenge_text,
+                self.current_position,
+                &self.line_starts,
+                &self.comment_ranges,
+            ) {
+                self.current_position += 1;
+            } else {
+                // Found a typeable character
+                break;
+            }
         }
     }
 }
