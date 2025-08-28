@@ -260,64 +260,89 @@ impl CodeExtractor {
             return (content.to_string(), comment_ranges.to_vec());
         }
 
-        let normalized_lines: Vec<String> = lines
-            .iter()
-            .enumerate()
-            .map(|(i, line)| {
-                if i == 0 {
-                    // Keep first line as-is
-                    line.to_string()
-                } else if line.trim().is_empty() {
-                    String::new()
-                } else {
-                    // Remove original_indentation spaces from subsequent lines
-                    let current_indent = line.len() - line.trim_start().len();
-                    if current_indent >= original_indentation {
-                        line[original_indentation..].to_string()
-                    } else {
-                        line.to_string()
-                    }
+        // Create character-by-character position mapping during normalization
+        let mut position_map = Vec::new();
+        let mut normalized_lines = Vec::new();
+        let mut _original_pos = 0;
+        let mut normalized_pos = 0;
+
+        for (line_idx, line) in lines.iter().enumerate() {
+            let line_chars: Vec<char> = line.chars().collect();
+            
+            if line_idx == 0 {
+                // Keep first line as-is
+                for _ in &line_chars {
+                    position_map.push(Some(normalized_pos));
+                    normalized_pos += 1;
+                    _original_pos += 1;
                 }
-            })
-            .collect();
+                normalized_lines.push(line.to_string());
+            } else if line.trim().is_empty() {
+                // Empty line - map all positions to None (removed)
+                for _ in &line_chars {
+                    position_map.push(None);
+                    _original_pos += 1;
+                }
+                normalized_lines.push(String::new());
+            } else {
+                // Remove original_indentation spaces from subsequent lines
+                let current_indent = line.len() - line.trim_start().len();
+                if current_indent >= original_indentation {
+                    // Remove indentation characters
+                    for i in 0..line_chars.len() {
+                        if i < original_indentation {
+                            position_map.push(None); // Removed indentation
+                        } else {
+                            position_map.push(Some(normalized_pos));
+                            normalized_pos += 1;
+                        }
+                        _original_pos += 1;
+                    }
+                    normalized_lines.push(line[original_indentation..].to_string());
+                } else {
+                    // Keep line as-is
+                    for _ in &line_chars {
+                        position_map.push(Some(normalized_pos));
+                        normalized_pos += 1;
+                        _original_pos += 1;
+                    }
+                    normalized_lines.push(line.to_string());
+                }
+            }
+            
+            // Handle newline character
+            if line_idx < lines.len() - 1 {
+                position_map.push(Some(normalized_pos));
+                normalized_pos += 1;
+                _original_pos += 1;
+            }
+        }
 
         let normalized_text = normalized_lines.join("\n");
 
-        // Re-extract comment ranges from normalized content
-        let chars: Vec<char> = normalized_text.chars().collect();
+        // Map AST comment ranges using the position mapping
         let mut final_ranges = Vec::new();
         
-        // Simple comment detection for normalized content
-        let mut i = 0;
-        while i < chars.len() {
-            if i < chars.len() - 1 && chars[i] == '/' && chars[i + 1] == '/' {
-                // Line comment (Rust/TypeScript)
-                let start = i;
-                while i < chars.len() && chars[i] != '\n' {
-                    i += 1;
-                }
-                final_ranges.push((start, i));
-            } else if i < chars.len() - 1 && chars[i] == '/' && chars[i + 1] == '*' {
-                // Block comment (Rust/TypeScript)
-                let start = i;
-                i += 2;
-                while i < chars.len() - 1 {
-                    if chars[i] == '*' && chars[i + 1] == '/' {
-                        i += 2;
-                        break;
+        for &(orig_start, orig_end) in comment_ranges {
+            if orig_start < position_map.len() && orig_end <= position_map.len() {
+                // Find mapped start position
+                let norm_start = position_map.get(orig_start).and_then(|&pos| pos);
+                
+                // Find mapped end position (exclusive, so we look for the position just before end)
+                let norm_end = if orig_end > 0 && orig_end <= position_map.len() {
+                    // Find the last mapped position before orig_end
+                    (0..orig_end).rev()
+                        .find_map(|i| position_map.get(i).and_then(|&pos| pos))
+                        .map(|pos| pos + 1) // +1 because end is exclusive
+                } else {
+                    None
+                };
+                
+                if let (Some(start), Some(end)) = (norm_start, norm_end) {
+                    if start < end && end <= normalized_text.len() {
+                        final_ranges.push((start, end));
                     }
-                    i += 1;
                 }
-                final_ranges.push((start, i));
-            } else if chars[i] == '#' {
-                // Python comment
-                let start = i;
-                while i < chars.len() && chars[i] != '\n' {
-                    i += 1;
-                }
-                final_ranges.push((start, i));
-            } else {
-                i += 1;
             }
         }
 
@@ -328,7 +353,7 @@ impl CodeExtractor {
         let mut comment_ranges = Vec::new();
         
         let comment_query = match language {
-            Language::Rust => "(line_comment) @comment (block_comment) @comment",
+            Language::Rust => "[(line_comment) (block_comment)] @comment",
             Language::TypeScript => "(comment) @comment",
             Language::Python => "(comment) @comment",
         };
@@ -344,7 +369,22 @@ impl CodeExtractor {
         for m in matches {
             for capture in m.captures {
                 let node = capture.node;
-                comment_ranges.push((node.start_byte(), node.end_byte()));
+                let start = node.start_byte();
+                let end = node.end_byte();
+                
+                // Validate that this is actually a comment node
+                let node_kind = node.kind();
+                let is_valid_comment = match language {
+                    Language::Rust => node_kind == "line_comment" || node_kind == "block_comment",
+                    Language::TypeScript => node_kind == "comment",
+                    Language::Python => node_kind == "comment",
+                };
+                
+                if !is_valid_comment {
+                    continue;
+                }
+                
+                comment_ranges.push((start, end));
             }
         }
         
