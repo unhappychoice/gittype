@@ -1,14 +1,17 @@
 use crate::Result;
+use super::screens::TypingScreen;
 
-pub struct GameSession;
+pub struct GameSession {
+    challenge_text: String,
+}
 
 impl GameSession {
-    pub fn new() -> Self {
-        Self
+    pub fn new(challenge_text: String) -> Self {
+        Self { challenge_text }
     }
 
     pub fn start(&self) -> Result<()> {
-        // TODO: Implement game session management
-        Ok(())
+        let mut screen = TypingScreen::new(self.challenge_text.clone());
+        screen.run_full_session()
     }
 }

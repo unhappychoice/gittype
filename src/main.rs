@@ -1,4 +1,5 @@
 use clap::{Parser, Subcommand};
+use gittype::game::{Challenge, StageManager};
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -75,14 +76,19 @@ fn main() -> anyhow::Result<()> {
             // TODO: Implement export functionality
         }
         None => {
-            if let Some(repo_path) = cli.repo_path {
-                println!("Starting typing game for repository: {}", repo_path.display());
-                println!("Languages: {:?}", cli.langs);
-                println!("Unit: {}", cli.unit);
-                println!("Max lines: {}", cli.max_lines);
-                println!("Include patterns: {:?}", cli.include);
-                println!("Exclude patterns: {:?}", cli.exclude);
-                // TODO: Start typing game
+            if let Some(_repo_path) = cli.repo_path {
+                // Create sample challenges for multi-stage experience
+                let challenges = create_sample_challenges();
+                
+                let mut stage_manager = StageManager::new(challenges);
+                match stage_manager.run_session() {
+                    Ok(_) => {
+                        println!("Thanks for playing GitType!");
+                    },
+                    Err(e) => {
+                        eprintln!("Error during game session: {}", e);
+                    }
+                }
             } else {
                 println!("Please specify a repository path or use --help for usage information");
             }
@@ -90,4 +96,64 @@ fn main() -> anyhow::Result<()> {
     }
 
     Ok(())
+}
+
+fn create_sample_challenges() -> Vec<Challenge> {
+    vec![
+        Challenge::new(
+            "stage1".to_string(),
+            r#"fn hello() {
+    println!("Hello, world!");
+}"#.to_string(),
+        )
+        .with_source_info("src/main.rs".to_string(), 1, 3)
+        .with_language("rust".to_string()),
+        
+        Challenge::new(
+            "stage2".to_string(),
+            r#"// This is a sample function
+fn test() {
+    // Print a greeting
+    println!("hello");
+    let x = 42; // Initialize variable
+    return x;
+}"#.to_string(),
+        )
+        .with_source_info("src/lib.rs".to_string(), 10, 16)
+        .with_language("rust".to_string()),
+        
+        Challenge::new(
+            "stage3".to_string(),
+            r#"fn check_number(x: i32) {
+    if x > 0 {
+        println!("positive");
+    } else if x < 0 {
+        // Handle negative case
+        println!("negative");
+    } else {
+        println!("zero");
+    }
+}"#.to_string(),
+        )
+        .with_source_info("src/utils.rs".to_string(), 20, 30)
+        .with_language("rust".to_string()),
+        
+        Challenge::new(
+            "stage4".to_string(),
+            r#"/* Multi-line comment
+   with more details */
+fn fibonacci(n: u32) -> u32 {
+    match n {
+        0 => 0,
+        1 => 1,
+        _ => {
+            // Recursive case
+            fibonacci(n - 1) + fibonacci(n - 2)
+        }
+    }
+}"#.to_string(),
+        )
+        .with_source_info("src/algorithms.rs".to_string(), 5, 17)
+        .with_language("rust".to_string()),
+    ]
 }
