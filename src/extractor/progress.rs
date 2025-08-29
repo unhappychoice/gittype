@@ -1,4 +1,3 @@
-use std::sync::{Arc, Mutex};
 
 pub trait ProgressReporter {
     fn set_phase(&self, phase: String);
@@ -11,66 +10,6 @@ pub trait ProgressReporter {
     }
 }
 
-pub struct LoadingProgress {
-    phase: Arc<Mutex<String>>,
-    progress: Arc<Mutex<f64>>,
-    current_file: Arc<Mutex<Option<String>>>,
-    files_processed: Arc<Mutex<usize>>,
-    total_files: Arc<Mutex<usize>>,
-}
-
-impl LoadingProgress {
-    pub fn new() -> Self {
-        Self {
-            phase: Arc::new(Mutex::new(String::new())),
-            progress: Arc::new(Mutex::new(0.0)),
-            current_file: Arc::new(Mutex::new(None)),
-            files_processed: Arc::new(Mutex::new(0)),
-            total_files: Arc::new(Mutex::new(0)),
-        }
-    }
-
-    pub fn get_phase(&self) -> String {
-        self.phase.lock().unwrap().clone()
-    }
-
-    pub fn get_progress(&self) -> f64 {
-        *self.progress.lock().unwrap()
-    }
-
-    pub fn get_current_file(&self) -> Option<String> {
-        self.current_file.lock().unwrap().clone()
-    }
-
-    pub fn get_file_counts(&self) -> (usize, usize) {
-        let processed = *self.files_processed.lock().unwrap();
-        let total = *self.total_files.lock().unwrap();
-        (processed, total)
-    }
-}
-
-impl ProgressReporter for LoadingProgress {
-    fn set_phase(&self, phase: String) {
-        *self.phase.lock().unwrap() = phase;
-    }
-
-    fn set_progress(&self, progress: f64) {
-        *self.progress.lock().unwrap() = progress;
-    }
-
-    fn set_current_file(&self, file: Option<String>) {
-        *self.current_file.lock().unwrap() = file;
-    }
-
-    fn set_file_counts(&self, processed: usize, total: usize) {
-        *self.files_processed.lock().unwrap() = processed;
-        *self.total_files.lock().unwrap() = total;
-    }
-
-    fn update_spinner(&self) {
-        // No-op for this implementation
-    }
-}
 
 pub struct NoOpProgressReporter;
 

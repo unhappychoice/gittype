@@ -11,5 +11,5 @@ pub use challenge_converter::ChallengeConverter;
 pub use chunk::{CodeChunk, ChunkType};
 pub use language::Language;
 pub use parser::{CodeExtractor, ExtractionOptions};
-pub use progress::{ConsoleProgressReporter, LoadingProgress, NoOpProgressReporter, ProgressReporter};
+pub use progress::{ConsoleProgressReporter, NoOpProgressReporter, ProgressReporter};
 pub use repository_loader::RepositoryLoader;
