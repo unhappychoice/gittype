@@ -4,7 +4,7 @@ use crossterm::terminal;
 use super::{
     challenge::Challenge,
     screens::{TitleScreen, ResultScreen, CountdownScreen, TypingScreen, TitleAction},
-    stage_builder::{StageBuilder, GameMode},
+    stage_builder::{StageBuilder, GameMode, DifficultyLevel},
 };
 
 #[derive(Debug, Clone)]
@@ -55,28 +55,30 @@ impl StageManager {
         }
 
         loop {
-            match TitleScreen::show()? {
+            // Count challenges by difficulty level
+            let challenge_counts = self.count_challenges_by_difficulty();
+            
+            match TitleScreen::show_with_challenge_counts(&challenge_counts)? {
                 TitleAction::Start(difficulty) => {
-                    // Build stages based on selected difficulty
+                    // Build stages based on selected difficulty using pre-generated challenges
                     let game_mode = GameMode::Custom {
                         max_stages: Some(3),
                         time_limit: None,
                         difficulty: difficulty.clone(),
                     };
                     
-                    // Debug output
-                    println!("Selected difficulty: {:?}", difficulty);
-                    println!("Available challenges: {}", self.available_challenges.len());
-                    
                     let stage_builder = StageBuilder::with_mode(game_mode);
                     self.current_challenges = stage_builder.build_stages(self.available_challenges.clone());
                     
+                    // Debug output
+                    println!("Selected difficulty: {:?}", difficulty);
                     println!("Built {} challenges with difficulty {:?}", self.current_challenges.len(), difficulty);
                     for (i, challenge) in self.current_challenges.iter().enumerate() {
                         println!("  Challenge {}: {} ({} lines)", i+1, challenge.id, challenge.code_content.lines().count());
                     }
                     
                     if self.current_challenges.is_empty() {
+                        println!("No challenges found for difficulty {:?}", difficulty);
                         continue; // Go back to title screen
                     }
                     
@@ -182,5 +184,22 @@ impl StageManager {
 
     pub fn get_session_metrics(&self) -> &SessionMetrics {
         &self.session_metrics
+    }
+    
+    fn count_challenges_by_difficulty(&self) -> [usize; 4] {
+        let mut counts = [0usize; 4];
+        
+        for challenge in &self.available_challenges {
+            if let Some(ref difficulty) = challenge.difficulty_level {
+                match difficulty {
+                    DifficultyLevel::Easy => counts[0] += 1,
+                    DifficultyLevel::Normal => counts[1] += 1,
+                    DifficultyLevel::Hard => counts[2] += 1,
+                    DifficultyLevel::Zen => counts[3] += 1,
+                }
+            }
+        }
+        
+        counts
     }
 }

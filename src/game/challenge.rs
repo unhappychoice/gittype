@@ -1,3 +1,5 @@
+use super::stage_builder::DifficultyLevel;
+
 #[derive(Debug, Clone)]
 pub struct Challenge {
     pub id: String,
@@ -7,6 +9,7 @@ pub struct Challenge {
     pub end_line: Option<usize>,
     pub language: Option<String>,
     pub comment_ranges: Vec<(usize, usize)>, // Character-based ranges for comments
+    pub difficulty_level: Option<DifficultyLevel>,
 }
 
 
@@ -20,6 +23,7 @@ impl Challenge {
             end_line: None,
             language: None,
             comment_ranges: Vec::new(),
+            difficulty_level: None,
         }
     }
 
@@ -39,6 +43,21 @@ impl Challenge {
     pub fn with_comment_ranges(mut self, comment_ranges: Vec<(usize, usize)>) -> Self {
         self.comment_ranges = comment_ranges;
         self
+    }
+
+    pub fn with_difficulty_level(mut self, difficulty_level: DifficultyLevel) -> Self {
+        self.difficulty_level = Some(difficulty_level);
+        self
+    }
+
+    pub fn calculate_difficulty_by_char_count(&self) -> DifficultyLevel {
+        let char_count = self.code_content.chars().count();
+        match char_count {
+            0..=100 => DifficultyLevel::Easy,
+            101..=300 => DifficultyLevel::Normal,
+            301..=500 => DifficultyLevel::Hard,
+            _ => DifficultyLevel::Zen,
+        }
     }
 
     pub fn get_display_title(&self) -> String {
