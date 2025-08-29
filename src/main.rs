@@ -68,6 +68,8 @@ enum Commands {
 fn main() -> anyhow::Result<()> {
     // Set up Ctrl+C handler
     ctrlc::set_handler(move || {
+        // Clean up terminal state if needed
+        let _ = crossterm::terminal::disable_raw_mode();
         println!("\n\nInterrupted by user");
         std::process::exit(0);
     }).expect("Error setting Ctrl-C handler");
@@ -158,6 +160,10 @@ fn main() -> anyhow::Result<()> {
                     },
                     Err(e) => {
                         eprintln!("Error during game session: {}", e);
+                        if e.to_string().contains("No such device or address") {
+                            eprintln!("\nHint: This error often occurs in WSL or SSH environments where terminal features are limited.");
+                            eprintln!("Try running GitType in a native terminal or GUI terminal emulator.");
+                        }
                     }
                 }
             } else {

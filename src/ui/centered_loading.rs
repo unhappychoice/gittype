@@ -27,6 +27,7 @@ pub struct CenteredLoadingDisplay {
     files_processed: Mutex<usize>,
     total_files: Mutex<usize>,
     last_render: Mutex<Instant>,
+    cleaned_up: Mutex<bool>,
 }
 
 impl CenteredLoadingDisplay {
@@ -48,6 +49,7 @@ impl CenteredLoadingDisplay {
             files_processed: Mutex::new(0),
             total_files: Mutex::new(0),
             last_render: Mutex::new(Instant::now()),
+            cleaned_up: Mutex::new(false),
         })
     }
 
@@ -119,6 +121,9 @@ impl CenteredLoadingDisplay {
         
         // Wait a moment to show the completion
         std::thread::sleep(std::time::Duration::from_millis(800));
+        
+        // Clean up terminal state before returning
+        self.cleanup()?;
         
         Ok(())
     }
@@ -293,9 +298,15 @@ impl CenteredLoadingDisplay {
     }
 
     pub fn cleanup(&self) -> Result<()> {
+        let mut cleaned_up = self.cleaned_up.lock().unwrap();
+        if *cleaned_up {
+            return Ok(());
+        }
+        
         disable_raw_mode()?;
         let mut stdout = stdout();
         stdout.execute(LeaveAlternateScreen)?;
+        *cleaned_up = true;
         Ok(())
     }
 }
