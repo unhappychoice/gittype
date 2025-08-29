@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 use gittype::game::StageManager;
-use gittype::extractor::{RepositoryLoader, ExtractionOptions};
+use gittype::extractor::{ExtractionOptions, RepositoryLoader, CenteredProgressReporter, ConsoleProgressReporter, ProgressReporter};
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -66,6 +66,12 @@ enum Commands {
 }
 
 fn main() -> anyhow::Result<()> {
+    // Set up Ctrl+C handler
+    ctrlc::set_handler(move || {
+        println!("\n\nInterrupted by user");
+        std::process::exit(0);
+    }).expect("Error setting Ctrl-C handler");
+    
     let cli = Cli::parse();
 
     match cli.command {
@@ -86,15 +92,6 @@ fn main() -> anyhow::Result<()> {
         }
         None => {
             if let Some(repo_path) = cli.repo_path {
-                // Extract challenges from the provided repository
-                let mut loader = match RepositoryLoader::new() {
-                    Ok(loader) => loader,
-                    Err(e) => {
-                        eprintln!("Failed to initialize code extractor: {}", e);
-                        return Ok(());
-                    }
-                };
-
                 // Build extraction options from CLI arguments
                 let mut options = ExtractionOptions::default();
                 
@@ -108,24 +105,43 @@ fn main() -> anyhow::Result<()> {
                 
                 options.max_lines = Some(cli.max_lines);
 
-                // Load challenges based on extraction unit
-                let challenges = match cli.unit.as_str() {
-                    "function" => loader.load_functions_only(&repo_path, Some(options)),
-                    "class" | "struct" => loader.load_classes_only(&repo_path, Some(options)),
-                    "all" => loader.load_challenges_from_repository(&repo_path, Some(options)),
+                // Try centered display first, fallback to console if it fails
+                let progress_reporter: Box<dyn ProgressReporter> = match CenteredProgressReporter::new() {
+                    Ok(reporter) => Box::new(reporter),
+                    Err(_) => {
+                        // Fallback to console progress reporter
+                        Box::new(ConsoleProgressReporter::new())
+                    }
+                };
+
+                let mut loader = match RepositoryLoader::new() {
+                    Ok(loader) => loader,
+                    Err(e) => {
+                        eprintln!("Failed to initialize code extractor: {}", e);
+                        return Ok(());
+                    }
+                };
+
+                progress_reporter.set_phase("Initializing".to_string());
+
+                let available_challenges = match cli.unit.as_str() {
+                    "function" => loader.load_functions_only_with_progress(&repo_path, Some(options), &*progress_reporter),
+                    "class" | "struct" => loader.load_classes_only_with_progress(&repo_path, Some(options), &*progress_reporter),
+                    "all" => loader.load_challenges_from_repository_with_progress(&repo_path, Some(options), &*progress_reporter),
                     _ => {
                         eprintln!("Unknown unit type: {}. Use 'function', 'class', or 'all'", cli.unit);
                         return Ok(());
                     }
                 };
 
-                let available_challenges = match challenges {
+                let available_challenges = match available_challenges {
                     Ok(challenges) => {
                         if challenges.is_empty() {
+                            let _ = progress_reporter.finish();
                             eprintln!("No code chunks found in the repository");
                             return Ok(());
                         }
-                        println!("Found {} code challenges", challenges.len());
+                        let _ = progress_reporter.finish();
                         challenges
                     },
                     Err(e) => {

@@ -3,7 +3,7 @@ use std::fs;
 use tree_sitter::{Parser, Query, QueryCursor, Node, Tree};
 use ignore::WalkBuilder;
 use crate::{Result, GitTypeError};
-use super::{CodeChunk, Language, ChunkType};
+use super::{CodeChunk, Language, ChunkType, ProgressReporter, NoOpProgressReporter};
 
 #[derive(Debug, Clone)]
 pub struct ExtractionOptions {
@@ -50,7 +50,18 @@ impl CodeExtractor {
     }
 
     pub fn extract_chunks(&mut self, repo_path: &Path, options: ExtractionOptions) -> Result<Vec<CodeChunk>> {
+        self.extract_chunks_with_progress(repo_path, options, &NoOpProgressReporter)
+    }
+
+    pub fn extract_chunks_with_progress<P: ProgressReporter + ?Sized>(
+        &mut self,
+        repo_path: &Path,
+        options: ExtractionOptions,
+        progress: &P,
+    ) -> Result<Vec<CodeChunk>> {
         let mut chunks = Vec::new();
+        
+        progress.set_phase("Scanning repository".to_string());
         
         // Use ignore crate to respect .gitignore files
         let walker = WalkBuilder::new(repo_path)
@@ -60,6 +71,8 @@ impl CodeExtractor {
             .git_exclude(true) // Respect .git/info/exclude
             .build();
         
+        // Collect all files to process first to get total count
+        let mut files_to_process = Vec::new();
         for entry in walker {
             let entry = entry.map_err(|e| GitTypeError::ExtractionFailed(format!("Walk error: {}", e)))?;
             let path = entry.path();
@@ -71,12 +84,28 @@ impl CodeExtractor {
             if let Some(extension) = path.extension().and_then(|e| e.to_str()) {
                 if let Some(language) = Language::from_extension(extension) {
                     if self.should_process_file(path, &options) {
-                        let file_chunks = self.extract_from_file(path, language, &options)?;
-                        chunks.extend(file_chunks);
+                        files_to_process.push((path.to_path_buf(), language));
                     }
                 }
             }
         }
+
+        let total_files = files_to_process.len();
+        progress.set_phase("Parsing AST".to_string());
+
+        for (i, (path, language)) in files_to_process.iter().enumerate() {
+            progress.set_file_counts(i + 1, total_files);
+            if i % 3 == 0 { // Update spinner every 3 files to reduce flicker
+                progress.update_spinner();
+            }
+            
+            let file_chunks = self.extract_from_file(path, *language, &options)?;
+            chunks.extend(file_chunks);
+        }
+
+        progress.set_file_counts(total_files, total_files);
+        progress.set_current_file(None);
+        progress.set_phase("Finalizing".to_string());
 
         Ok(chunks)
     }
