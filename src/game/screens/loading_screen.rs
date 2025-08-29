@@ -15,6 +15,7 @@ use std::io::stdout;
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 use crate::Result;
+use crate::extractor::ProgressReporter;
 
 pub struct LoadingScreen {
     terminal: Mutex<Terminal<CrosstermBackend<std::io::Stdout>>>,
@@ -314,5 +315,30 @@ impl LoadingScreen {
 impl Drop for LoadingScreen {
     fn drop(&mut self) {
         let _ = self.cleanup();
+    }
+}
+
+impl ProgressReporter for LoadingScreen {
+    fn set_phase(&self, phase: String) {
+        let _ = self.update_phase(&phase);
+    }
+    
+    fn set_progress(&self, progress: f64) {
+        let processed = *self.files_processed.lock().unwrap();
+        let total = *self.total_files.lock().unwrap();
+        let _ = self.update_progress(progress, processed, total);
+    }
+    
+    fn set_current_file(&self, _file: Option<String>) {
+        // LoadingScreen doesn't display individual files
+    }
+    
+    fn set_file_counts(&self, processed: usize, total: usize) {
+        let progress = if total > 0 { processed as f64 / total as f64 } else { 0.0 };
+        let _ = self.update_progress(progress, processed, total);
+    }
+    
+    fn update_spinner(&self) {
+        self.update_spinner();
     }
 }

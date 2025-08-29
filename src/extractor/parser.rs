@@ -171,6 +171,8 @@ impl CodeExtractor {
                 (function_declaration name: (identifier) @name) @function
                 (method_definition name: (property_identifier) @name) @method
                 (class_declaration name: (type_identifier) @name) @class
+                (variable_declarator name: (identifier) value: (arrow_function)) @arrow_function
+                (variable_declarator name: (identifier) value: (function_expression)) @function_expression
             ",
             Language::Python => "
                 (function_definition name: (identifier) @name) @function
@@ -227,6 +229,8 @@ impl CodeExtractor {
             "method" => ChunkType::Method,
             "class" | "impl" => ChunkType::Class,
             "struct" => ChunkType::Struct,
+            "arrow_function" => ChunkType::Function,
+            "function_expression" => ChunkType::Function,
             _ => return None,
         };
         
@@ -265,7 +269,20 @@ impl CodeExtractor {
     }
     
     fn extract_name(&self, node: Node, source_code: &str) -> Option<String> {
-        // Try to find identifier child node
+        // For variable_declarator, we need to get the name from the first child
+        if node.kind() == "variable_declarator" {
+            let mut cursor = node.walk();
+            if cursor.goto_first_child() {
+                let name_node = cursor.node();
+                if name_node.kind() == "identifier" {
+                    let start = name_node.start_byte();
+                    let end = name_node.end_byte();
+                    return Some(source_code[start..end].to_string());
+                }
+            }
+        }
+        
+        // Try to find identifier child node for other cases
         let mut cursor = node.walk();
         if cursor.goto_first_child() {
             loop {

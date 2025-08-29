@@ -18,11 +18,18 @@ pub struct TitleScreen;
 
 impl TitleScreen {
     pub fn show() -> Result<TitleAction> {
-        let mut selected_difficulty = 1; // Start with Medium (index 1)
+        // Use default challenge counts when none provided
+        let default_counts = [0, 0, 0, 0];
+        Self::show_with_challenge_counts(&default_counts)
+    }
+    
+    pub fn show_with_challenge_counts(challenge_counts: &[usize; 4]) -> Result<TitleAction> {
+        let mut selected_difficulty = 1; // Start with Normal (index 1)
         let difficulties = [
-            ("Easy", DifficultyLevel::Easy, "Prefer shorter chunks"),
-            ("Medium", DifficultyLevel::Medium, "Balanced selection"),
-            ("Hard", DifficultyLevel::Hard, "Prefer longer chunks"),
+            ("Easy", DifficultyLevel::Easy, vec!["30-150 characters", "Short code snippets"]),
+            ("Normal", DifficultyLevel::Normal, vec!["120-350 characters", "Medium functions"]),
+            ("Hard", DifficultyLevel::Hard, vec!["300-700+ characters", "Long functions or classes"]),
+            ("Zen", DifficultyLevel::Zen, vec!["Entire files", "Complete files as challenges"]),
         ];
 
         let mut stdout = stdout();
@@ -37,13 +44,13 @@ impl TitleScreen {
         
         let mut last_difficulty = selected_difficulty;
         // Draw initial difficulty selection
-        Self::draw_difficulty_selection(&mut stdout, center_row, center_col, &difficulties, selected_difficulty)?;
+        Self::draw_difficulty_selection(&mut stdout, center_row, center_col, &difficulties, selected_difficulty, challenge_counts)?;
         stdout.flush()?;
 
         loop {
             // Only redraw difficulty selection if it changed
             if selected_difficulty != last_difficulty {
-                Self::draw_difficulty_selection(&mut stdout, center_row, center_col, &difficulties, selected_difficulty)?;
+                Self::draw_difficulty_selection(&mut stdout, center_row, center_col, &difficulties, selected_difficulty, challenge_counts)?;
                 last_difficulty = selected_difficulty;
                 stdout.flush()?;
             }
@@ -108,11 +115,11 @@ impl TitleScreen {
         execute!(stdout, ResetColor)?;
 
 
-        // Display instructions in one line
+        // Display instructions (moved down to accommodate multi-line difficulty display)
         let instructions = "[←→] Change Difficulty  [ENTER] Start  [ESC] Quit";
         let instructions_col = center_col.saturating_sub(instructions.len() as u16 / 2);
         
-        execute!(stdout, MoveTo(instructions_col, center_row + 3))?;
+        execute!(stdout, MoveTo(instructions_col, center_row + 6))?;
         execute!(stdout, SetForegroundColor(Color::Blue))?;
         execute!(stdout, Print("[←→] Change Difficulty  "))?;
         execute!(stdout, SetForegroundColor(Color::Green))?;
@@ -128,21 +135,25 @@ impl TitleScreen {
         stdout: &mut std::io::Stdout, 
         center_row: u16, 
         center_col: u16,
-        difficulties: &[(&str, DifficultyLevel, &str); 3],
-        selected_difficulty: usize
+        difficulties: &[(&str, DifficultyLevel, Vec<&str>); 4],
+        selected_difficulty: usize,
+        challenge_counts: &[usize; 4]
     ) -> Result<()> {
-        let difficulty_row = center_row + 1;
-        let (name, _, description) = &difficulties[selected_difficulty];
+        let start_row = center_row + 1;
+        let (name, _, descriptions) = &difficulties[selected_difficulty];
+        let count = challenge_counts[selected_difficulty];
         
-        // Clear previous difficulty line
-        execute!(stdout, MoveTo(0, difficulty_row))?;
-        execute!(stdout, Print(" ".repeat(100)))?;
+        // Clear previous difficulty display (multiple lines)
+        for i in 0..4 {
+            execute!(stdout, MoveTo(0, start_row + i))?;
+            execute!(stdout, Print(" ".repeat(120)))?;
+        }
 
-        // Create full difficulty line: "Difficulty: ← Easy → - Prefer shorter chunks"
-        let full_text = format!("Difficulty: ← {} → - {}", name, description);
-        let full_text_col = center_col.saturating_sub(full_text.chars().count() as u16 / 2);
+        // Line 1: Difficulty selection
+        let difficulty_text = format!("Difficulty: ← {} →", name);
+        let difficulty_col = center_col.saturating_sub(difficulty_text.chars().count() as u16 / 2);
         
-        execute!(stdout, MoveTo(full_text_col, difficulty_row))?;
+        execute!(stdout, MoveTo(difficulty_col, start_row))?;
         execute!(stdout, SetForegroundColor(Color::White))?;
         execute!(stdout, Print("Difficulty: "))?;
         execute!(stdout, SetForegroundColor(Color::Yellow))?;
@@ -150,11 +161,30 @@ impl TitleScreen {
         execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::White))?;
         execute!(stdout, Print(name))?;
         execute!(stdout, ResetColor, SetForegroundColor(Color::Yellow))?;
-        execute!(stdout, Print(" → "))?;
-        execute!(stdout, SetForegroundColor(Color::Grey))?;
-        execute!(stdout, Print("- "))?;
-        execute!(stdout, Print(description))?;
+        execute!(stdout, Print(" →"))?;
         execute!(stdout, ResetColor)?;
+
+        // Line 2: Challenge count
+        let count_text = if count > 0 {
+            format!("{} challenges available", count)
+        } else {
+            "Challenge count will be displayed after loading".to_string()
+        };
+        let count_col = center_col.saturating_sub(count_text.chars().count() as u16 / 2);
+        
+        execute!(stdout, MoveTo(count_col, start_row + 1))?;
+        execute!(stdout, SetForegroundColor(Color::Cyan))?;
+        execute!(stdout, Print(count_text))?;
+        execute!(stdout, ResetColor)?;
+
+        // Line 3 & 4: Description lines
+        for (i, description) in descriptions.iter().enumerate() {
+            let desc_col = center_col.saturating_sub(description.chars().count() as u16 / 2);
+            execute!(stdout, MoveTo(desc_col, start_row + 2 + i as u16))?;
+            execute!(stdout, SetForegroundColor(Color::Grey))?;
+            execute!(stdout, Print(description))?;
+            execute!(stdout, ResetColor)?;
+        }
 
         Ok(())
     }

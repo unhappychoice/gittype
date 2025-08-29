@@ -55,7 +55,11 @@ impl GameDisplayRatatui {
         };
         
         let header_text = if let Some(challenge) = challenge {
-            format!("[{}] - Progress: {}%", challenge.get_display_title(), progress)
+            let difficulty_text = match &challenge.difficulty_level {
+                Some(difficulty) => format!("{:?}", difficulty),
+                None => "Unknown".to_string(),
+            };
+            format!("[{}] [{}] - Progress: {}%", challenge.get_display_title(), difficulty_text, progress)
         } else {
             format!("[Challenge] - Progress: {}%", progress)
         };

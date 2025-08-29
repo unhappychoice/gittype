@@ -14,11 +14,12 @@ pub enum GameMode {
     },
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum DifficultyLevel {
-    Easy,    // Prefer shorter chunks
-    Medium,  // Balanced selection
-    Hard,    // Prefer longer chunks
+    Easy,    // ~100 characters
+    Normal,  // 200-300 characters  
+    Hard,    // ~500 characters
+    Zen,     // Entire file
 }
 
 #[derive(Debug, Clone)]
@@ -113,35 +114,26 @@ impl StageBuilder {
         challenges
     }
 
-    fn build_custom_stages(&self, mut available_challenges: Vec<Challenge>, max_stages: usize, difficulty: &DifficultyLevel) -> Vec<Challenge> {
-        let target_count = max_stages.min(available_challenges.len());
+    fn build_custom_stages(&self, available_challenges: Vec<Challenge>, max_stages: usize, difficulty: &DifficultyLevel) -> Vec<Challenge> {
+        // Filter challenges by difficulty level
+        let filtered_challenges: Vec<Challenge> = available_challenges
+            .into_iter()
+            .filter(|challenge| {
+                match &challenge.difficulty_level {
+                    Some(challenge_difficulty) => challenge_difficulty == difficulty,
+                    None => false, // Skip challenges without difficulty level
+                }
+            })
+            .collect();
         
-        // Filter and sort based on difficulty level with randomness
+        let target_count = max_stages.min(filtered_challenges.len());
+        
+        // Random selection from filtered challenges
         let mut rng = self.create_rng();
-        match difficulty {
-            DifficultyLevel::Easy => {
-                // Prefer shorter chunks but add randomness within size groups
-                available_challenges.sort_by_key(|challenge| {
-                    challenge.code_content.lines().count()
-                });
-                // Add randomness by shuffling challenges within same line count groups
-                Self::shuffle_within_groups(&mut available_challenges, &mut rng);
-            }
-            DifficultyLevel::Medium => {
-                // Random mix
-                available_challenges.shuffle(&mut rng);
-            }
-            DifficultyLevel::Hard => {
-                // Prefer longer chunks but add randomness within size groups
-                available_challenges.sort_by_key(|challenge| {
-                    std::cmp::Reverse(challenge.code_content.lines().count())
-                });
-                // Add randomness by shuffling challenges within same line count groups
-                Self::shuffle_within_groups(&mut available_challenges, &mut rng);
-            }
-        }
+        let mut selected_challenges = filtered_challenges;
+        selected_challenges.shuffle(&mut rng);
         
-        available_challenges.into_iter().take(target_count).collect()
+        selected_challenges.into_iter().take(target_count).collect()
     }
 
     fn create_rng(&self) -> StdRng {
@@ -166,25 +158,5 @@ impl StageBuilder {
         }
     }
 
-    fn shuffle_within_groups(challenges: &mut Vec<Challenge>, rng: &mut StdRng) {
-        // Group challenges by line count and shuffle within each group
-        let mut i = 0;
-        while i < challenges.len() {
-            let current_line_count = challenges[i].code_content.lines().count();
-            let mut j = i;
-            
-            // Find the end of the current group (same line count)
-            while j < challenges.len() && challenges[j].code_content.lines().count() == current_line_count {
-                j += 1;
-            }
-            
-            // Shuffle the group [i..j)
-            if j - i > 1 {
-                challenges[i..j].shuffle(rng);
-            }
-            
-            i = j;
-        }
-    }
 }
 
