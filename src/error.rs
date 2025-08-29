@@ -28,9 +28,6 @@ pub enum GitTypeError {
 
     #[error("Walk directory error: {0}")]
     WalkDirError(#[from] walkdir::Error),
-
-    #[error("Operation cancelled by user")]
-    UserCancelled,
 }
 
 pub type Result<T> = std::result::Result<T, GitTypeError>;
