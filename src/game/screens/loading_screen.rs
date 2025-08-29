@@ -16,7 +16,7 @@ use std::sync::Mutex;
 use std::time::{Duration, Instant};
 use crate::Result;
 
-pub struct CenteredLoadingDisplay {
+pub struct LoadingScreen {
     terminal: Mutex<Terminal<CrosstermBackend<std::io::Stdout>>>,
     current_phase: Mutex<String>,
     current_step: Mutex<usize>,
@@ -30,7 +30,7 @@ pub struct CenteredLoadingDisplay {
     cleaned_up: Mutex<bool>,
 }
 
-impl CenteredLoadingDisplay {
+impl LoadingScreen {
     pub fn new() -> Result<Self> {
         enable_raw_mode()?;
         let mut stdout = stdout();
@@ -311,7 +311,7 @@ impl CenteredLoadingDisplay {
     }
 }
 
-impl Drop for CenteredLoadingDisplay {
+impl Drop for LoadingScreen {
     fn drop(&mut self) {
         let _ = self.cleanup();
     }

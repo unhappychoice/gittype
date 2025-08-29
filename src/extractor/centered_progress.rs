@@ -1,14 +1,14 @@
 use super::ProgressReporter;
-use crate::ui::CenteredLoadingDisplay;
+use crate::game::screens::LoadingScreen;
 use crate::Result;
 
 pub struct CenteredProgressReporter {
-    display: CenteredLoadingDisplay,
+    display: LoadingScreen,
 }
 
 impl CenteredProgressReporter {
     pub fn new() -> Result<Self> {
-        let display = CenteredLoadingDisplay::new()?;
+        let display = LoadingScreen::new()?;
         display.show_initial()?;
         Ok(Self { display })
     }
