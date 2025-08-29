@@ -9,8 +9,15 @@ fn create_test_challenges(count: usize) -> Vec<Challenge> {
             _ => unreachable!(),
         };
         
+        let difficulty = match i % 3 {
+            0 => DifficultyLevel::Easy,
+            1 => DifficultyLevel::Normal,
+            _ => DifficultyLevel::Hard,
+        };
+        
         Challenge::new(format!("test_{}", i), content)
             .with_language("rust".to_string())
+            .with_difficulty_level(difficulty)
     }).collect()
 }
 
@@ -51,7 +58,8 @@ fn test_seeded_randomness_is_reproducible() {
 
 #[test]
 fn test_custom_mode_easy_prefers_short() {
-    let challenges = create_test_challenges(6);
+    // Ensure at least 3 EASY challenges exist (0,3,6,...) => use 9
+    let challenges = create_test_challenges(9);
     let builder = StageBuilder::with_mode(GameMode::Custom {
         max_stages: Some(3),
         time_limit: None,

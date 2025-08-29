@@ -18,9 +18,6 @@ struct Cli {
     langs: Option<Vec<String>>,
 
 
-    /// Game mode
-    #[arg(long, default_value = "normal")]
-    mode: String,
 
     /// Number of stages for normal mode
     #[arg(long, default_value_t = 3)]
@@ -143,7 +140,7 @@ fn main() -> anyhow::Result<()> {
                 let mut stage_manager = StageManager::new(available_challenges);
                 match stage_manager.run_session() {
                     Ok(_) => {
-                        println!("Thanks for playing GitType!");
+                        // println!("Thanks for playing GitType!");
                     },
                     Err(e) => {
                         eprintln!("Error during game session: {}", e);

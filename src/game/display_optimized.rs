@@ -6,7 +6,6 @@ use crossterm::{
     terminal::{self, ClearType},
 };
 use std::io::{stdout, Write};
-use crate::scoring::TypingMetrics;
 use super::{text_processor::TextProcessor, challenge::Challenge};
 
 #[derive(Debug, Clone, PartialEq, Default)]
@@ -342,14 +341,24 @@ impl GameDisplayOptimized {
         line_starts: &[usize],
         terminal_height: u16,
     ) -> Result<()> {
-        let metrics = self.calculate_metrics(current_position, mistakes, start_time);
-        let current_line = self.find_line_for_position(current_position, line_starts);
+        let metrics = crate::scoring::engine::ScoringEngine::calculate_real_time_metrics(current_position, mistakes, start_time);
+        let _current_line = self.find_line_for_position(current_position, line_starts);
         let metrics_row = terminal_height.saturating_sub(2);
         
         queue!(stdout, MoveTo(0, metrics_row), terminal::Clear(ClearType::CurrentLine))?;
+        let elapsed_secs = start_time.elapsed().as_secs();
+        let total_chars = self.chars.len();
+        let progress_percent = if total_chars > 0 {
+            (current_position as f32 / total_chars as f32 * 100.0) as u8
+        } else {
+            0
+        };
+        
         queue!(stdout, ResetColor, Print(format!(
-            "WPM: {:.0}  Accuracy: {:.0}%  Mistakes: {}  Line: {}/{}  [ESC to quit]",
-            metrics.wpm, metrics.accuracy, metrics.mistakes, current_line + 1, line_starts.len()
+            "CPM: {:.0} | WPM: {:.0} | Accuracy: {:.0}% | Mistakes: {} | Progress: {}/{}({:.0}%) | Time: {}s | Title: {} | [ESC to quit]",
+            metrics.cpm, metrics.wpm, metrics.accuracy, metrics.mistakes, 
+            current_position, total_chars, progress_percent, elapsed_secs,
+            metrics.ranking_title
         )))?;
         
         Ok(())
@@ -364,30 +373,6 @@ impl GameDisplayOptimized {
         line_starts.len().saturating_sub(1)
     }
     
-    fn calculate_metrics(&self, current_position: usize, mistakes: usize, start_time: &std::time::Instant) -> TypingMetrics {
-        let elapsed = start_time.elapsed();
-        let words_typed = current_position as f64 / 5.0;
-        let wpm = (words_typed / elapsed.as_secs_f64()) * 60.0;
-        let total_chars = current_position.max(1);
-        
-        let correct_chars = if mistakes > total_chars {
-            0
-        } else {
-            total_chars - mistakes
-        };
-        
-        let accuracy = (correct_chars as f64 / total_chars as f64) * 100.0;
-        
-        TypingMetrics {
-            wpm,
-            accuracy,
-            mistakes,
-            corrections: 0,
-            consistency_score: accuracy,
-            completion_time: elapsed,
-            challenge_score: wpm * (accuracy / 100.0),
-        }
-    }
 
     fn is_position_in_comment(position: usize, comment_ranges: &[(usize, usize)]) -> bool {
         comment_ranges.iter().any(|&(start, end)| position >= start && position < end)

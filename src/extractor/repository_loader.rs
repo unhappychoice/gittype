@@ -45,6 +45,7 @@ impl RepositoryLoader {
         }
 
         progress.set_phase("Generating challenges".to_string());
+        // Expand chunks into multiple challenges across difficulties
         let challenges = self.converter.convert_chunks_to_challenges(chunks);
         
         progress.set_phase("Finalizing".to_string());
@@ -134,4 +135,3 @@ impl RepositoryLoader {
         Ok(zen_challenges)
     }
 }
-
