@@ -44,12 +44,6 @@ impl StageManager {
     }
 
     pub fn run_session(&mut self) -> Result<()> {
-        // Set up signal handler for Ctrl+C
-        ctrlc::set_handler(move || {
-            terminal::disable_raw_mode().ok();
-            std::process::exit(0);
-        }).expect("Error setting Ctrl-C handler");
-
         // Enable raw mode for entire application session
         match terminal::enable_raw_mode() {
             Ok(_) => {},
