@@ -1,5 +1,5 @@
 use crate::Result;
-use crate::scoring::TypingMetrics;
+use crate::scoring::{TypingMetrics, ScoringEngine};
 use crossterm::{
     cursor::MoveTo,
     event::{self, Event, KeyCode, KeyModifiers},
@@ -8,7 +8,6 @@ use crossterm::{
     terminal::{self, ClearType},
 };
 use std::io::{stdout, Write};
-use super::super::stage_manager::SessionMetrics;
 
 pub enum ResultAction {
     Restart,
@@ -35,13 +34,15 @@ impl ResultScreen {
         execute!(stdout, Print(title))?;
         execute!(stdout, ResetColor)?;
 
-        // Display metrics
-        let wpm_text = format!("Words Per Minute: {:.0}", metrics.wpm);
-        let accuracy_text = format!("Accuracy: {:.1}%", metrics.accuracy);
-        let mistakes_text = format!("Mistakes: {}", metrics.mistakes);
-        let score_text = format!("Score: {:.0}", metrics.challenge_score);
+        // Display metrics with symmetric padding around colon
+        let cpm_text = format!("{:>21} : {:<21}", "Characters Per Minute", format!("{:.0}", metrics.cpm));
+        let wpm_text = format!("{:>21} : {:<21}", "Words Per Minute", format!("{:.0}", metrics.wpm));
+        let accuracy_text = format!("{:>21} : {:<21}", "Accuracy", format!("{:.1}%", metrics.accuracy));
+        let mistakes_text = format!("{:>21} : {:<21}", "Mistakes", format!("{}", metrics.mistakes));
+        let score_text = format!("{:>21} : {:<21}", "Score", format!("{:.0}", metrics.challenge_score));
+        let title_text = format!("{:>21} : {:<21}", "Title", metrics.ranking_title);
 
-        let metrics_lines = vec![&wpm_text, &accuracy_text, &mistakes_text, &score_text];
+        let metrics_lines = vec![&cpm_text, &wpm_text, &accuracy_text, &mistakes_text, &score_text, &title_text];
         for (i, line) in metrics_lines.iter().enumerate() {
             let line_col = center_col.saturating_sub(line.len() as u16 / 2);
             execute!(stdout, MoveTo(line_col, center_row.saturating_sub(3) + i as u16))?;
@@ -101,16 +102,27 @@ impl ResultScreen {
         execute!(stdout, Print(&title))?;
         execute!(stdout, ResetColor)?;
 
-        // Display brief metrics
+        // Display brief metrics with symmetric padding around colon
         let metrics_lines = vec![
-            format!("WPM: {:.0}", metrics.wpm),
-            format!("Accuracy: {:.1}%", metrics.accuracy),
-            format!("Mistakes: {}", metrics.mistakes),
+            format!("{:>8} : {:<8}", "CPM", format!("{:.0}", metrics.cpm)),
+            format!("{:>8} : {:<8}", "WPM", format!("{:.0}", metrics.wpm)),
+            format!("{:>8} : {:<8}", "Accuracy", format!("{:.1}%", metrics.accuracy)),
+            format!("{:>8} : {:<8}", "Mistakes", format!("{}", metrics.mistakes)),
+            format!("{:>8} : {:<8}", "Score", format!("{:.0}", metrics.challenge_score)),
+            {
+                let truncated_title = if metrics.ranking_title.chars().count() > 8 {
+                    let truncated: String = metrics.ranking_title.chars().take(5).collect();
+                    format!("{}...", truncated)
+                } else {
+                    metrics.ranking_title.clone()
+                };
+                format!("{:>8} : {:<8}", "Title", truncated_title)
+            },
         ];
 
         for (i, line) in metrics_lines.iter().enumerate() {
             let line_col = center_col.saturating_sub(line.len() as u16 / 2);
-            execute!(stdout, MoveTo(line_col, center_row.saturating_sub(1) + i as u16))?;
+            execute!(stdout, MoveTo(line_col, center_row.saturating_sub(2) + i as u16))?;
             execute!(stdout, SetForegroundColor(Color::White))?;
             execute!(stdout, Print(line))?;
             execute!(stdout, ResetColor)?;
@@ -120,14 +132,14 @@ impl ResultScreen {
         if has_next_stage {
             let progress_text = format!("Progress: {} / {}", current_stage, total_stages);
             let progress_col = center_col.saturating_sub(progress_text.len() as u16 / 2);
-            execute!(stdout, MoveTo(progress_col, center_row + 3))?;
+            execute!(stdout, MoveTo(progress_col, center_row + 5))?;
             execute!(stdout, SetForegroundColor(Color::Cyan))?;
             execute!(stdout, Print(&progress_text))?;
             execute!(stdout, ResetColor)?;
 
             let next_text = "Next stage starting...";
             let next_col = center_col.saturating_sub(next_text.len() as u16 / 2);
-            execute!(stdout, MoveTo(next_col, center_row + 4))?;
+            execute!(stdout, MoveTo(next_col, center_row + 6))?;
             execute!(stdout, SetForegroundColor(Color::Yellow))?;
             execute!(stdout, Print(next_text))?;
             execute!(stdout, ResetColor)?;
@@ -135,12 +147,31 @@ impl ResultScreen {
 
         stdout.flush()?;
 
-        // Brief pause to show results
-        std::thread::sleep(std::time::Duration::from_millis(2000));
+        // Show results with user input to proceed
+        let continue_text = "Press any key to continue...";
+        let continue_col = center_col.saturating_sub(continue_text.len() as u16 / 2);
+        execute!(stdout, MoveTo(continue_col, center_row + 8))?;
+        execute!(stdout, SetForegroundColor(Color::Grey))?;
+        execute!(stdout, Print(continue_text))?;
+        execute!(stdout, ResetColor)?;
+        stdout.flush()?;
+        
+        // Wait for user input
+        loop {
+            if event::poll(std::time::Duration::from_millis(100))? {
+                if let Event::Key(_) = event::read()? {
+                    break;
+                }
+            }
+        }
         Ok(())
     }
 
-    pub fn show_session_summary(session_metrics: &SessionMetrics) -> Result<()> {
+    pub fn show_session_summary(
+        total_stages: usize,
+        completed_stages: usize, 
+        stage_engines: &[(String, ScoringEngine)],
+    ) -> Result<()> {
         let mut stdout = stdout();
         execute!(stdout, terminal::Clear(ClearType::All))?;
         
@@ -156,13 +187,43 @@ impl ResultScreen {
         execute!(stdout, Print(title))?;
         execute!(stdout, ResetColor)?;
 
-        // Display session summary
+        // Calculate aggregated session metrics by combining ScoringEngines with + operator
+        if stage_engines.is_empty() {
+            return Ok(());
+        }
+
+        let combined_engine = stage_engines.iter()
+            .map(|(_, engine)| engine.clone())
+            .reduce(|acc, engine| acc + engine)
+            .unwrap(); // Safe because we checked is_empty() above
+
+        let session_metrics = match combined_engine.calculate_metrics() {
+            Ok(metrics) => metrics,
+            Err(_) => {
+                // Fallback if calculation fails
+                return Ok(());
+            }
+        };
+        
+        // Truncate session title if too long for 17-char field  
+        let session_title = if session_metrics.ranking_title.chars().count() > 17 {
+            let truncated: String = session_metrics.ranking_title.chars().take(14).collect();
+            format!("{}...", truncated)
+        } else {
+            session_metrics.ranking_title
+        };
+        
+        // Display session summary with symmetric padding around colon
         let summary_lines = vec![
-            format!("Stages Completed: {}/{}", session_metrics.completed_stages, session_metrics.total_stages),
-            format!("Average WPM: {:.1}", session_metrics.total_wpm),
-            format!("Average Accuracy: {:.1}%", session_metrics.total_accuracy),
-            format!("Total Mistakes: {}", session_metrics.total_mistakes),
-            format!("Final Score: {:.0}", session_metrics.session_score),
+            format!("{:>17} : {:<17}", "Stages Completed", format!("{}/{}", completed_stages, total_stages)),
+            format!("{:>17} : {:<17}", "Session CPM", format!("{:.1}", session_metrics.cpm)),
+            format!("{:>17} : {:<17}", "Session WPM", format!("{:.1}", session_metrics.wpm)),
+            format!("{:>17} : {:<17}", "Session Accuracy", format!("{:.1}%", session_metrics.accuracy)),
+            format!("{:>17} : {:<17}", "Total Keystrokes", format!("{}", stage_engines.iter().map(|(_, e)| e.total_chars()).sum::<usize>())),
+            format!("{:>17} : {:<17}", "Total Mistakes", format!("{}", session_metrics.mistakes)),
+            format!("{:>17} : {:<17}", "Total Time", format!("{:.1}s", session_metrics.completion_time.as_secs_f64())),
+            format!("{:>17} : {:<17}", "Session Score", format!("{:.0}", session_metrics.challenge_score)),
+            format!("{:>17} : {:<17}", "Session Title", session_title),
         ];
 
         for (i, line) in summary_lines.iter().enumerate() {
@@ -174,16 +235,16 @@ impl ResultScreen {
         }
 
         // Display individual stage results
-        if !session_metrics.stage_metrics.is_empty() {
-            execute!(stdout, MoveTo(center_col.saturating_sub(10), center_row + 2))?;
+        if !stage_engines.is_empty() {
+            execute!(stdout, MoveTo(center_col.saturating_sub(10), center_row + 6))?;
             execute!(stdout, SetForegroundColor(Color::Cyan))?;
             execute!(stdout, Print("Stage Results:"))?;
             execute!(stdout, ResetColor)?;
 
-            for (i, (stage_name, metrics)) in session_metrics.stage_metrics.iter().enumerate().take(5) {
-                let result_line = format!("{}: WPM {:.0}, Acc {:.1}%", stage_name, metrics.wpm, metrics.accuracy);
+            for (i, (stage_name, engine)) in stage_engines.iter().enumerate().take(5) {
+                let result_line = format!("{}: CPM {:.0}, WPM {:.0}, Acc {:.1}%", stage_name, engine.cpm(), engine.wpm(), engine.accuracy());
                 let result_col = center_col.saturating_sub(result_line.len() as u16 / 2);
-                execute!(stdout, MoveTo(result_col, center_row + 3 + i as u16))?;
+                execute!(stdout, MoveTo(result_col, center_row + 7 + i as u16))?;
                 execute!(stdout, SetForegroundColor(Color::Grey))?;
                 execute!(stdout, Print(&result_line))?;
                 execute!(stdout, ResetColor)?;
@@ -196,7 +257,7 @@ impl ResultScreen {
             "[ESC] Quit",
         ];
 
-        let options_start = center_row + 9;
+        let options_start = center_row + 13;
         for (i, option) in options.iter().enumerate() {
             let option_col = center_col.saturating_sub(option.len() as u16 / 2);
             execute!(stdout, MoveTo(option_col, options_start + i as u16))?;

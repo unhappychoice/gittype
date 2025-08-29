@@ -51,8 +51,6 @@ impl ChallengeConverter {
             .collect()
     }
 
-
-
     pub fn convert_with_difficulty_split(&self, chunks: Vec<CodeChunk>, difficulty: &super::super::game::stage_builder::DifficultyLevel) -> Vec<Challenge> {
         let mut challenges = Vec::new();
         
@@ -113,6 +111,7 @@ impl ChallengeConverter {
         // Calculate actual code characters (excluding comments) using AST data
         let code_char_count = self.count_code_characters(content, &chunk.comment_ranges);
         
+        
         // Skip if chunk doesn't meet minimum size for this difficulty
         if code_char_count < min_chars {
             return vec![]; // Don't generate challenge for this difficulty
@@ -122,6 +121,8 @@ impl ChallengeConverter {
         if code_char_count <= max_chars {
             let mut challenge = self.convert_chunk_to_challenge(chunk.clone());
             challenge.difficulty_level = Some(difficulty.clone());
+            
+            
             return vec![challenge];
         }
 
@@ -163,14 +164,8 @@ impl ChallengeConverter {
             }
         }
         
-        // Fallback: return original chunk if no good break point found and it meets minimum requirements
-        if code_char_count >= min_chars {
-            let mut challenge = self.convert_chunk_to_challenge(chunk.clone());
-            challenge.difficulty_level = Some(difficulty.clone());
-            vec![challenge]
-        } else {
-            vec![] // Don't generate challenge if it doesn't meet minimum requirements
-        }
+        // Don't use fallback for difficulty-based splitting - if we can't fit within the target range, don't generate a challenge
+        vec![] // Don't generate challenge if it doesn't fit within the difficulty range
     }
 
     fn count_code_characters(&self, content: &str, comment_ranges: &[(usize, usize)]) -> usize {

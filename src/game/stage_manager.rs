@@ -1,5 +1,5 @@
 use crate::Result;
-use crate::scoring::TypingMetrics;
+use crate::scoring::{TypingMetrics, ScoringEngine};
 use crossterm::terminal;
 use super::{
     challenge::Challenge,
@@ -7,22 +7,11 @@ use super::{
     stage_builder::{StageBuilder, GameMode, DifficultyLevel},
 };
 
-#[derive(Debug, Clone)]
-pub struct SessionMetrics {
-    pub total_stages: usize,
-    pub completed_stages: usize,
-    pub stage_metrics: Vec<(String, TypingMetrics)>,
-    pub total_wpm: f64,
-    pub total_accuracy: f64,
-    pub total_mistakes: usize,
-    pub session_score: f64,
-}
-
 pub struct StageManager {
     available_challenges: Vec<Challenge>,
     current_challenges: Vec<Challenge>,
     current_stage: usize,
-    session_metrics: SessionMetrics,
+    stage_engines: Vec<(String, ScoringEngine)>,
 }
 
 impl StageManager {
@@ -31,15 +20,7 @@ impl StageManager {
             available_challenges: challenges,
             current_challenges: Vec::new(),
             current_stage: 0,
-            session_metrics: SessionMetrics {
-                total_stages: 0,
-                completed_stages: 0,
-                stage_metrics: Vec::new(),
-                total_wpm: 0.0,
-                total_accuracy: 0.0,
-                total_mistakes: 0,
-                session_score: 0.0,
-            },
+            stage_engines: Vec::new(),
         }
     }
 
@@ -84,13 +65,7 @@ impl StageManager {
                     
                     // Reset session metrics
                     self.current_stage = 0;
-                    self.session_metrics.total_stages = self.current_challenges.len();
-                    self.session_metrics.completed_stages = 0;
-                    self.session_metrics.stage_metrics.clear();
-                    self.session_metrics.total_wpm = 0.0;
-                    self.session_metrics.total_accuracy = 0.0;
-                    self.session_metrics.total_mistakes = 0;
-                    self.session_metrics.session_score = 0.0;
+                    self.stage_engines.clear();
                     
                     match self.run_stages() {
                         Ok(_session_complete) => {
@@ -128,9 +103,7 @@ impl StageManager {
             let metrics = screen.show()?; // Use show method like other screens
             
             // Record stage completion
-            self.session_metrics.stage_metrics.push((challenge.get_display_title(), metrics.clone()));
-            self.session_metrics.completed_stages += 1;
-            self.update_session_metrics(&metrics);
+            self.stage_engines.push((challenge.get_display_title(), screen.get_scoring_engine().clone()));
             
             // Show brief result and auto-advance
             self.show_stage_completion(&metrics)?;
@@ -153,24 +126,13 @@ impl StageManager {
         )
     }
 
-    fn update_session_metrics(&mut self, stage_metrics: &TypingMetrics) {
-        let completed = self.session_metrics.completed_stages as f64;
-        
-        // Calculate running averages
-        self.session_metrics.total_wpm = 
-            (self.session_metrics.total_wpm * (completed - 1.0) + stage_metrics.wpm) / completed;
-        
-        self.session_metrics.total_accuracy = 
-            (self.session_metrics.total_accuracy * (completed - 1.0) + stage_metrics.accuracy) / completed;
-        
-        self.session_metrics.total_mistakes += stage_metrics.mistakes;
-        
-        self.session_metrics.session_score = 
-            self.session_metrics.total_wpm * (self.session_metrics.total_accuracy / 100.0);
-    }
 
     fn show_session_summary(&self) -> Result<()> {
-        let _result = ResultScreen::show_session_summary(&self.session_metrics)?;
+        let _result = ResultScreen::show_session_summary(
+            self.current_challenges.len(),
+            self.stage_engines.len(),
+            &self.stage_engines,
+        )?;
         Ok(())
     }
 
@@ -182,9 +144,6 @@ impl StageManager {
         self.current_challenges.len()
     }
 
-    pub fn get_session_metrics(&self) -> &SessionMetrics {
-        &self.session_metrics
-    }
     
     fn count_challenges_by_difficulty(&self) -> [usize; 4] {
         let mut counts = [0usize; 4];
