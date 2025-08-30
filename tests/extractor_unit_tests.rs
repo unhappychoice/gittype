@@ -2,6 +2,7 @@ use gittype::extractor::{CodeExtractor, ExtractionOptions, Language, ChunkType, 
 use gittype::GitTypeError;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::time::Instant;
 use tempfile::TempDir;
 
 // Basic extractor tests
@@ -212,4 +213,71 @@ fn test_repository_not_found() {
     let result = loader.load_challenges_from_repository(Path::new("/nonexistent/path"), None);
     
     assert!(matches!(result, Err(GitTypeError::RepositoryNotFound(_))));
+}
+
+#[test]
+fn test_parallel_ast_parsing_performance() {
+    let temp_dir = TempDir::new().unwrap();
+    
+    // Create multiple test files with different languages
+    for i in 0..10 {
+        let rust_file = temp_dir.path().join(format!("test_{}.rs", i));
+        fs::write(&rust_file, format!(r#"
+fn function_{}() {{
+    println!("Function {{}}", {});
+}}
+
+struct Struct{} {{
+    field: i32,
+}}
+
+impl Struct{} {{
+    fn method_{}(&self) -> i32 {{
+        self.field + {}
+    }}
+}}
+"#, i, i, i, i, i, i)).unwrap();
+
+        let ts_file = temp_dir.path().join(format!("test_{}.ts", i));
+        fs::write(&ts_file, format!(r#"
+function tsFunction{}(x: number): number {{
+    return x * {};
+}}
+
+class TsClass{} {{
+    private value: number = {};
+    
+    public getValue(): number {{
+        return this.value;
+    }}
+}}
+"#, i, i, i, i)).unwrap();
+    }
+
+    let mut extractor = CodeExtractor::new().unwrap();
+    let options = ExtractionOptions::default();
+    
+    let start = Instant::now();
+    let chunks = extractor.extract_chunks(temp_dir.path(), options).unwrap();
+    let duration = start.elapsed();
+    
+    // Should extract functions, structs, impls, and classes from all files
+    assert!(chunks.len() >= 40, "Expected at least 40 chunks, got {}", chunks.len()); // 10 files * (1 fn + 1 struct + 1 impl + 1 ts function + 1 ts class) = 50 minimum
+    
+    println!("Parallel extraction of {} files took {:?}", 20, duration);
+    println!("Found {} total code chunks", chunks.len());
+    
+    // Verify we have different types of chunks
+    let function_count = chunks.iter().filter(|c| matches!(c.chunk_type, ChunkType::Function)).count();
+    let struct_count = chunks.iter().filter(|c| matches!(c.chunk_type, ChunkType::Struct)).count();
+    let class_count = chunks.iter().filter(|c| matches!(c.chunk_type, ChunkType::Class)).count();
+    
+    println!("Types found: {} functions, {} structs, {} classes", function_count, struct_count, class_count);
+    
+    assert!(function_count >= 20, "Should find at least 20 functions");
+    assert!(struct_count >= 10, "Should find at least 10 structs");
+    assert!(class_count >= 10, "Should find at least 10 classes");
+    
+    // Performance test - should complete reasonably quickly
+    assert!(duration.as_millis() < 5000, "Parallel parsing should complete within 5 seconds");
 }
