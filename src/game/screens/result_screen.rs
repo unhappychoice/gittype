@@ -1,5 +1,6 @@
 use crate::Result;
 use crate::scoring::{TypingMetrics, ScoringEngine};
+use crate::game::ascii_digits::get_digit_patterns;
 use crossterm::{
     cursor::MoveTo,
     event::{self, Event, KeyCode, KeyModifiers},
@@ -18,6 +19,23 @@ pub enum ResultAction {
 pub struct ResultScreen;
 
 impl ResultScreen {
+    pub fn create_ascii_numbers(score: &str) -> Vec<String> {
+        let digit_patterns = get_digit_patterns();
+        let max_height = 4;
+        let mut result = vec![String::new(); max_height];
+
+        for ch in score.chars() {
+            if let Some(digit) = ch.to_digit(10) {
+                let pattern = &digit_patterns[digit as usize];
+                for (i, line) in pattern.iter().enumerate() {
+                    result[i].push_str(line);
+                    result[i].push(' ');
+                }
+            }
+        }
+
+        result
+    }
     pub fn show(metrics: &TypingMetrics) -> Result<ResultAction> {
         let mut stdout = stdout();
         execute!(stdout, terminal::Clear(ClearType::All))?;
@@ -29,23 +47,50 @@ impl ResultScreen {
         // Display results title
         let title = "Challenge Complete!";
         let title_col = center_col.saturating_sub(title.len() as u16 / 2);
-        execute!(stdout, MoveTo(title_col, center_row.saturating_sub(6)))?;
+        execute!(stdout, MoveTo(title_col, center_row.saturating_sub(8)))?;
         execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Green))?;
         execute!(stdout, Print(title))?;
         execute!(stdout, ResetColor)?;
 
-        // Display metrics with symmetric padding around colon
+        // Display "SCORE" label in normal text with color
+        let score_label = "SCORE";
+        let label_col = center_col.saturating_sub(score_label.len() as u16 / 2);
+        execute!(stdout, MoveTo(label_col, center_row.saturating_sub(8)))?;
+        execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Cyan))?;
+        execute!(stdout, Print(score_label))?;
+        execute!(stdout, ResetColor)?;
+
+        // Display large ASCII art numbers with single bold color
+        let score_value = format!("{:.0}", metrics.challenge_score);
+        let ascii_numbers = Self::create_ascii_numbers(&score_value);
+        let score_start_row = center_row.saturating_sub(7);
+        
+        for (row_index, line) in ascii_numbers.iter().enumerate() {
+            let line_col = center_col.saturating_sub(line.len() as u16 / 2);
+            execute!(stdout, MoveTo(line_col, score_start_row + row_index as u16))?;
+            execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Green))?;
+            execute!(stdout, Print(line))?;
+            execute!(stdout, ResetColor)?;
+        }
+
+        // Display ranking title prominently below score
+        let ranking_display = format!("\"{}\"", metrics.ranking_title);
+        let ranking_col = center_col.saturating_sub(ranking_display.len() as u16 / 2);
+        execute!(stdout, MoveTo(ranking_col, center_row.saturating_sub(4)))?;
+        execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Cyan))?;
+        execute!(stdout, Print(&ranking_display))?;
+        execute!(stdout, ResetColor)?;
+
+        // Display other metrics with symmetric padding around colon
         let cpm_text = format!("{:>21} : {:<21}", "Characters Per Minute", format!("{:.0}", metrics.cpm));
         let wpm_text = format!("{:>21} : {:<21}", "Words Per Minute", format!("{:.0}", metrics.wpm));
         let accuracy_text = format!("{:>21} : {:<21}", "Accuracy", format!("{:.1}%", metrics.accuracy));
         let mistakes_text = format!("{:>21} : {:<21}", "Mistakes", format!("{}", metrics.mistakes));
-        let score_text = format!("{:>21} : {:<21}", "Score", format!("{:.0}", metrics.challenge_score));
-        let title_text = format!("{:>21} : {:<21}", "Title", metrics.ranking_title);
 
-        let metrics_lines = vec![&cpm_text, &wpm_text, &accuracy_text, &mistakes_text, &score_text, &title_text];
+        let metrics_lines = vec![&cpm_text, &wpm_text, &accuracy_text, &mistakes_text];
         for (i, line) in metrics_lines.iter().enumerate() {
             let line_col = center_col.saturating_sub(line.len() as u16 / 2);
-            execute!(stdout, MoveTo(line_col, center_row.saturating_sub(3) + i as u16))?;
+            execute!(stdout, MoveTo(line_col, center_row.saturating_sub(1) + i as u16))?;
             execute!(stdout, SetForegroundColor(Color::White))?;
             execute!(stdout, Print(line))?;
             execute!(stdout, ResetColor)?;
@@ -97,27 +142,44 @@ impl ResultScreen {
         // Display stage completion
         let title = format!("Stage {} Complete!", current_stage);
         let title_col = center_col.saturating_sub(title.len() as u16 / 2);
-        execute!(stdout, MoveTo(title_col, center_row.saturating_sub(4)))?;
+        execute!(stdout, MoveTo(title_col, center_row.saturating_sub(10)))?;
         execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Green))?;
         execute!(stdout, Print(&title))?;
         execute!(stdout, ResetColor)?;
 
-        // Display brief metrics with symmetric padding around colon
+        // Display "SCORE" label in normal text with color
+        let score_label = "SCORE";
+        let label_col = center_col.saturating_sub(score_label.len() as u16 / 2);
+        execute!(stdout, MoveTo(label_col, center_row.saturating_sub(8)))?;
+        execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Cyan))?;
+        execute!(stdout, Print(score_label))?;
+        execute!(stdout, ResetColor)?;
+
+        // Display large ASCII art numbers
+        let score_value = format!("{:.0}", metrics.challenge_score);
+        let ascii_numbers = Self::create_ascii_numbers(&score_value);
+        let score_start_row = center_row.saturating_sub(7);
+        
+        for (row_index, line) in ascii_numbers.iter().enumerate() {
+            let line_col = center_col.saturating_sub(line.len() as u16 / 2);
+            execute!(stdout, MoveTo(line_col, score_start_row + row_index as u16))?;
+            execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Green))?;
+            execute!(stdout, Print(line))?;
+            execute!(stdout, ResetColor)?;
+        }
+
+        // Display compact metrics below the score
         let metrics_lines = vec![
-            format!("{:>8} : {:<8}", "CPM", format!("{:.0}", metrics.cpm)),
-            format!("{:>8} : {:<8}", "WPM", format!("{:.0}", metrics.wpm)),
-            format!("{:>8} : {:<8}", "Accuracy", format!("{:.1}%", metrics.accuracy)),
-            format!("{:>8} : {:<8}", "Mistakes", format!("{}", metrics.mistakes)),
-            format!("{:>8} : {:<8}", "Score", format!("{:.0}", metrics.challenge_score)),
-            {
-                let truncated_title = if metrics.ranking_title.chars().count() > 8 {
-                    let truncated: String = metrics.ranking_title.chars().take(5).collect();
+            format!("CPM: {:.0} | WPM: {:.0} | Accuracy: {:.1}% | Mistakes: {}", 
+                metrics.cpm, metrics.wpm, metrics.accuracy, metrics.mistakes),
+            format!("Title: {}", {
+                if metrics.ranking_title.chars().count() > 30 {
+                    let truncated: String = metrics.ranking_title.chars().take(27).collect();
                     format!("{}...", truncated)
                 } else {
                     metrics.ranking_title.clone()
-                };
-                format!("{:>8} : {:<8}", "Title", truncated_title)
-            },
+                }
+            }),
         ];
 
         for (i, line) in metrics_lines.iter().enumerate() {
@@ -182,7 +244,7 @@ impl ResultScreen {
         // Display session complete title
         let title = "Session Complete!";
         let title_col = center_col.saturating_sub(title.len() as u16 / 2);
-        execute!(stdout, MoveTo(title_col, center_row.saturating_sub(8)))?;
+        execute!(stdout, MoveTo(title_col, center_row.saturating_sub(15)))?;
         execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Green))?;
         execute!(stdout, Print(title))?;
         execute!(stdout, ResetColor)?;
@@ -204,6 +266,27 @@ impl ResultScreen {
                 return Ok(());
             }
         };
+
+        // Display "SCORE" label in normal text with color
+        let score_label = "SESSION SCORE";
+        let label_col = center_col.saturating_sub(score_label.len() as u16 / 2);
+        execute!(stdout, MoveTo(label_col, center_row.saturating_sub(11)))?;
+        execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Cyan))?;
+        execute!(stdout, Print(score_label))?;
+        execute!(stdout, ResetColor)?;
+
+        // Display large ASCII art session score with single bold color
+        let score_value = format!("{:.0}", session_metrics.challenge_score);
+        let ascii_numbers = Self::create_ascii_numbers(&score_value);
+        let score_start_row = center_row.saturating_sub(10);
+        
+        for (row_index, line) in ascii_numbers.iter().enumerate() {
+            let line_col = center_col.saturating_sub(line.len() as u16 / 2);
+            execute!(stdout, MoveTo(line_col, score_start_row + row_index as u16))?;
+            execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Green))?;
+            execute!(stdout, Print(line))?;
+            execute!(stdout, ResetColor)?;
+        }
         
         // Truncate session title if too long for 17-char field  
         let session_title = if session_metrics.ranking_title.chars().count() > 17 {
@@ -213,7 +296,7 @@ impl ResultScreen {
             session_metrics.ranking_title
         };
         
-        // Display session summary with symmetric padding around colon
+        // Display session summary with symmetric padding around colon (excluding score - shown as ASCII art above)
         let summary_lines = vec![
             format!("{:>17} : {:<17}", "Stages Completed", format!("{}/{}", completed_stages, total_stages)),
             format!("{:>17} : {:<17}", "Session CPM", format!("{:.1}", session_metrics.cpm)),
@@ -222,7 +305,6 @@ impl ResultScreen {
             format!("{:>17} : {:<17}", "Total Keystrokes", format!("{}", stage_engines.iter().map(|(_, e)| e.total_chars()).sum::<usize>())),
             format!("{:>17} : {:<17}", "Total Mistakes", format!("{}", session_metrics.mistakes)),
             format!("{:>17} : {:<17}", "Total Time", format!("{:.1}s", session_metrics.completion_time.as_secs_f64())),
-            format!("{:>17} : {:<17}", "Session Score", format!("{:.0}", session_metrics.challenge_score)),
             format!("{:>17} : {:<17}", "Session Title", session_title),
         ];
 

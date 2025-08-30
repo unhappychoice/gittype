@@ -10,7 +10,7 @@ use super::{
         display_ratatui::GameDisplayRatatui,
         challenge::Challenge,
     },
-    {TitleScreen, ResultScreen, CountdownScreen, TitleAction, ResultAction},
+    CountdownScreen,
 };
 
 pub struct TypingScreen {
@@ -28,11 +28,6 @@ pub struct TypingScreen {
     scoring_engine: ScoringEngine,
 }
 
-pub enum ScreenState {
-    Title,
-    Playing,
-    Results(TypingMetrics),
-}
 
 enum GameState {
     Continue,
@@ -96,60 +91,6 @@ impl TypingScreen {
             display,
             scoring_engine,
         })
-    }
-
-    pub fn run_full_session(&mut self) -> Result<()> {
-        match terminal::enable_raw_mode() {
-            Ok(_) => {},
-            Err(e) => {
-                return Err(crate::error::GitTypeError::TerminalError(
-                    format!("Failed to enable raw mode: {}", e)
-                ));
-            }
-        }
-
-        let mut current_state = ScreenState::Title;
-        
-        loop {
-            match current_state {
-                ScreenState::Title => {
-                    match TitleScreen::show()? {
-                        TitleAction::Start(_) => {
-                            self.reset_game();
-                            current_state = ScreenState::Playing;
-                        },
-                        TitleAction::Quit => break,
-                    }
-                },
-                ScreenState::Playing => {
-                    let metrics = self.start_session()?;
-                    current_state = ScreenState::Results(metrics);
-                },
-                ScreenState::Results(ref metrics) => {
-                    match ResultScreen::show(metrics)? {
-                        ResultAction::Restart => {
-                            self.reset_game();
-                            current_state = ScreenState::Playing;
-                        },
-                        ResultAction::BackToTitle => {
-                            current_state = ScreenState::Title;
-                        },
-                        ResultAction::Quit => break,
-                    }
-                }
-            }
-        }
-
-        terminal::disable_raw_mode()?;
-        Ok(())
-    }
-
-    fn reset_game(&mut self) {
-        self.current_position = TextProcessor::find_first_non_whitespace_or_comment(&self.challenge_text, 0, &self.comment_ranges);
-        self.mistakes = 0;
-        self.start_time = std::time::Instant::now();
-        self.mistake_positions.clear();
-        self.current_mistake_position = None;
     }
 
     pub fn start_session(&mut self) -> Result<TypingMetrics> {
