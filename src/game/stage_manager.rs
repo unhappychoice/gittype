@@ -118,11 +118,19 @@ impl StageManager {
     }
 
     fn show_stage_completion(&self, metrics: &TypingMetrics) -> Result<()> {
+        // Get keystrokes from the latest scoring engine
+        let keystrokes = if let Some((_, engine)) = self.stage_engines.last() {
+            engine.total_chars()
+        } else {
+            0
+        };
+        
         ResultScreen::show_stage_completion(
             metrics, 
             self.current_stage + 1, 
             self.current_challenges.len(),
-            self.current_stage < self.current_challenges.len() - 1  // has_next_stage
+            self.current_stage < self.current_challenges.len() - 1, // has_next_stage
+            keystrokes
         )
     }
 

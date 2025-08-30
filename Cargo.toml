@@ -8,10 +8,15 @@ license = "MIT"
 repository = "https://github.com/unhappychoice/gittype"
 keywords = ["typing", "practice", "cli", "git", "code"]
 categories = ["command-line-utilities", "games"]
+default-run = "gittype"
 
 [[bin]]
 name = "gittype"
 path = "src/main.rs"
+
+[[bin]]
+name = "generate_all_ascii_titles"
+path = "generate_all_ascii_titles.rs"
 
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }

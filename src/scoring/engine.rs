@@ -1,6 +1,6 @@
 use std::time::Instant;
 use std::ops::Add;
-use super::TypingMetrics;
+use super::{TypingMetrics, RankingTitle};
 use crate::Result;
 
 #[derive(Debug, Clone)]
@@ -135,13 +135,24 @@ impl ScoringEngine {
         all_streaks
     }
 
-    pub fn get_ranking_title(&self) -> String {
+    /// Get ranking title for current engine state
+    pub fn get_ranking_title(&self) -> RankingTitle {
         let score = self.calculate_challenge_score();
         Self::get_ranking_title_for_score(score)
     }
     
+    /// Legacy method that returns title name as string for backward compatibility
+    pub fn get_ranking_title_string(&self) -> String {
+        self.get_ranking_title().name().to_string()
+    }
+    
     /// Get ranking title for a specific score (pure function for testing)
-    pub fn get_ranking_title_for_score(score: f64) -> String {
+    pub fn get_ranking_title_for_score(score: f64) -> RankingTitle {
+        RankingTitle::for_score(score)
+    }
+    
+    /// Legacy method that returns title name as string for a score for backward compatibility
+    pub fn get_ranking_title_string_for_score(score: f64) -> String {
         match score as usize {
             // Beginner Level (clean boundaries, ~even progression)
             0..=800 => "Hello World".to_string(),
@@ -215,7 +226,12 @@ impl ScoringEngine {
             17901..=18500 => "Heisenbug".to_string(),
             18501..=19100 => "Blue Screen".to_string(),
             _ => "Kernel Panic".to_string(),
-        }
+        }.into()
+    }
+    
+    /// Get legacy ranking title name for a specific score (deprecated - use get_ranking_title_for_score instead)
+    pub fn get_ranking_title_legacy_for_score(score: f64) -> String {
+        Self::get_ranking_title_for_score(score).name().to_string()
     }
 
     /// Calculate base score from current metrics
@@ -351,7 +367,7 @@ impl ScoringEngine {
         }
 
         let challenge_score = self.calculate_challenge_score();
-        let ranking_title = Self::get_ranking_title_for_score(challenge_score);
+        let ranking_title = Self::get_ranking_title_for_score(challenge_score).name().to_string();
 
         Ok(TypingMetrics {
             cpm: self.cpm(),
@@ -388,7 +404,7 @@ impl ScoringEngine {
         }
         
         let challenge_score = temp_engine.calculate_challenge_score();
-        let ranking_title = Self::get_ranking_title_for_score(challenge_score);
+        let ranking_title = Self::get_ranking_title_for_score(challenge_score).name().to_string();
         
         TypingMetrics {
             cpm: temp_engine.cpm(),
