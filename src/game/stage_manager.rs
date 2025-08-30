@@ -3,7 +3,7 @@ use crate::scoring::{TypingMetrics, ScoringEngine};
 use crossterm::terminal;
 use super::{
     challenge::Challenge,
-    screens::{TitleScreen, ResultScreen, CountdownScreen, TypingScreen, TitleAction},
+    screens::{TitleScreen, ResultScreen, CountdownScreen, TypingScreen, TitleAction, result_screen::ResultAction},
     stage_builder::{StageBuilder, GameMode, DifficultyLevel},
 };
 
@@ -12,6 +12,7 @@ pub struct StageManager {
     current_challenges: Vec<Challenge>,
     current_stage: usize,
     stage_engines: Vec<(String, ScoringEngine)>,
+    current_game_mode: Option<GameMode>,
 }
 
 impl StageManager {
@@ -21,6 +22,7 @@ impl StageManager {
             current_challenges: Vec::new(),
             current_stage: 0,
             stage_engines: Vec::new(),
+            current_game_mode: None,
         }
     }
 
@@ -48,33 +50,39 @@ impl StageManager {
                         difficulty: difficulty.clone(),
                     };
                     
-                    let stage_builder = StageBuilder::with_mode(game_mode);
-                    self.current_challenges = stage_builder.build_stages(self.available_challenges.clone());
+                    self.current_game_mode = Some(game_mode.clone());
                     
-                    // Debug output
-                    println!("Selected difficulty: {:?}", difficulty);
-                    println!("Built {} challenges with difficulty {:?}", self.current_challenges.len(), difficulty);
-                    for (i, challenge) in self.current_challenges.iter().enumerate() {
-                        println!("  Challenge {}: {} ({} lines)", i+1, challenge.id, challenge.code_content.lines().count());
-                    }
-                    
-                    if self.current_challenges.is_empty() {
-                        println!("No challenges found for difficulty {:?}", difficulty);
-                        continue; // Go back to title screen
-                    }
-                    
-                    // Reset session metrics
-                    self.current_stage = 0;
-                    self.stage_engines.clear();
-                    
-                    match self.run_stages() {
-                        Ok(_session_complete) => {
-                            // After session completes, continue to title screen
-                            // User can choose to play again or quit
-                        },
-                        Err(e) => {
-                            terminal::disable_raw_mode()?;
-                            return Err(e);
+                    loop {
+                        let stage_builder = StageBuilder::with_mode(game_mode.clone());
+                        self.current_challenges = stage_builder.build_stages(self.available_challenges.clone());
+                        
+                        // Debug output
+                        println!("Selected difficulty: {:?}", difficulty);
+                        println!("Built {} challenges with difficulty {:?}", self.current_challenges.len(), difficulty);
+                        for (i, challenge) in self.current_challenges.iter().enumerate() {
+                            println!("  Challenge {}: {} ({} lines)", i+1, challenge.id, challenge.code_content.lines().count());
+                        }
+                        
+                        if self.current_challenges.is_empty() {
+                            println!("No challenges found for difficulty {:?}", difficulty);
+                            break; // Go back to title screen
+                        }
+                        
+                        // Reset session metrics
+                        self.current_stage = 0;
+                        self.stage_engines.clear();
+                        
+                        match self.run_stages() {
+                            Ok(session_complete) => {
+                                if !session_complete {
+                                    break; // User chose to quit or back to title
+                                }
+                                // If session_complete is true, retry with same settings
+                            },
+                            Err(e) => {
+                                terminal::disable_raw_mode()?;
+                                return Err(e);
+                            }
                         }
                     }
                 },
@@ -113,8 +121,14 @@ impl StageManager {
         }
         
         // All stages completed - show final results (raw mode still enabled)
-        self.show_session_summary()?;
-        Ok(true) // Return true to indicate session completed
+        match self.show_session_summary()? {
+            ResultAction::Retry => Ok(true), // Return true to indicate retry requested
+            ResultAction::Quit => {
+                terminal::disable_raw_mode()?;
+                std::process::exit(0);
+            },
+            _ => Ok(false), // Return false for back to title
+        }
     }
 
     fn show_stage_completion(&self, metrics: &TypingMetrics) -> Result<()> {
@@ -135,13 +149,12 @@ impl StageManager {
     }
 
 
-    fn show_session_summary(&self) -> Result<()> {
-        let _result = ResultScreen::show_session_summary(
+    fn show_session_summary(&self) -> Result<ResultAction> {
+        ResultScreen::show_session_summary_with_input(
             self.current_challenges.len(),
             self.stage_engines.len(),
             &self.stage_engines,
-        )?;
-        Ok(())
+        )
     }
 
     pub fn get_current_stage(&self) -> usize {
