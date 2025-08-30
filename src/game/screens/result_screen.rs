@@ -72,33 +72,74 @@ impl ResultScreen {
         let center_col = terminal_width / 2;
 
         // Display stage title at the center
-        let stage_title = format!("🎯 STAGE {} COMPLETE 🎯", current_stage);
+        let stage_title = if metrics.was_failed {
+            format!("❌ STAGE {} FAILED ❌", current_stage)
+        } else if metrics.was_skipped {
+            format!("⏭️ STAGE {} SKIPPED ⏭️", current_stage)
+        } else {
+            format!("🎯 STAGE {} COMPLETE 🎯", current_stage)
+        };
         let title_col = center_col.saturating_sub(stage_title.len() as u16 / 2);
         execute!(stdout, MoveTo(title_col, center_row.saturating_sub(6)))?;
-        execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Yellow))?;
+        execute!(stdout, SetAttribute(Attribute::Bold))?;
+        if metrics.was_failed {
+            execute!(stdout, SetForegroundColor(Color::Red))?;
+        } else if metrics.was_skipped {
+            execute!(stdout, SetForegroundColor(Color::Magenta))?;
+        } else {
+            execute!(stdout, SetForegroundColor(Color::Yellow))?;
+        }
         execute!(stdout, Print(&stage_title))?;
         execute!(stdout, ResetColor)?;
 
         // Position score label below title
         let score_label_row = center_row.saturating_sub(3);
 
-        // Display "SCORE" label
-        let score_label = "SCORE";
-        let score_label_col = center_col.saturating_sub(score_label.len() as u16 / 2);
-        execute!(stdout, MoveTo(score_label_col, score_label_row))?;
-        execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Cyan))?;
-        execute!(stdout, Print(score_label))?;
-        execute!(stdout, ResetColor)?;
+        // Display different label and score for skipped/failed challenges
+        if metrics.was_failed {
+            let fail_message = "Challenge failed - no score";
+            let fail_col = center_col.saturating_sub(fail_message.len() as u16 / 2);
+            execute!(stdout, MoveTo(fail_col, score_label_row))?;
+            execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Red))?;
+            execute!(stdout, Print(fail_message))?;
+            execute!(stdout, ResetColor)?;
+        } else if metrics.was_skipped {
+            let skip_message = "Challenge skipped - no score";
+            let skip_col = center_col.saturating_sub(skip_message.len() as u16 / 2);
+            execute!(stdout, MoveTo(skip_col, score_label_row))?;
+            execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::DarkGrey))?;
+            execute!(stdout, Print(skip_message))?;
+            execute!(stdout, ResetColor)?;
+        } else {
+            // Display "SCORE" label
+            let score_label = "SCORE";
+            let score_label_col = center_col.saturating_sub(score_label.len() as u16 / 2);
+            execute!(stdout, MoveTo(score_label_col, score_label_row))?;
+            execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Cyan))?;
+            execute!(stdout, Print(score_label))?;
+            execute!(stdout, ResetColor)?;
+        }
 
         // Display large ASCII art numbers
-        let score_value = format!("{:.0}", metrics.challenge_score);
+        let score_value = if metrics.was_failed || metrics.was_skipped {
+            "---".to_string()
+        } else {
+            format!("{:.0}", metrics.challenge_score)
+        };
         let ascii_numbers = Self::create_ascii_numbers(&score_value);
         let score_start_row = score_label_row + 1;
         
         for (row_index, line) in ascii_numbers.iter().enumerate() {
             let line_col = center_col.saturating_sub(line.len() as u16 / 2);
             execute!(stdout, MoveTo(line_col, score_start_row + row_index as u16))?;
-            execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Green))?;
+            execute!(stdout, SetAttribute(Attribute::Bold))?;
+            if metrics.was_failed {
+                execute!(stdout, SetForegroundColor(Color::Red))?;
+            } else if metrics.was_skipped {
+                execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
+            } else {
+                execute!(stdout, SetForegroundColor(Color::Green))?;
+            }
             execute!(stdout, Print(line))?;
             execute!(stdout, ResetColor)?;
         }
@@ -376,5 +417,61 @@ impl ResultScreen {
                 }
             }
         }
+    }
+
+    pub fn show_session_summary_fail_mode(
+        total_stages: usize,
+        completed_stages: usize, 
+        stage_engines: &[(String, ScoringEngine)],
+    ) -> Result<()> {
+        let mut stdout = stdout();
+        execute!(stdout, terminal::Clear(ClearType::All))?;
+        let (terminal_width, terminal_height) = terminal::size()?;
+        let center_y = terminal_height / 2;
+
+        // Header - show FAILED status (centered)
+        let header_text = "SESSION FAILED";
+        let header_x = (terminal_width - header_text.len() as u16) / 2;
+        execute!(stdout, MoveTo(header_x, center_y.saturating_sub(4)))?;
+        execute!(stdout, SetForegroundColor(Color::Red), SetAttribute(Attribute::Bold))?;
+        execute!(stdout, Print(header_text))?;
+        execute!(stdout, ResetColor)?;
+
+        // Show stage progress (centered, cyan)
+        let stage_text = format!("Stages: {}/{}", completed_stages, total_stages);
+        let stage_x = (terminal_width - stage_text.len() as u16) / 2;
+        execute!(stdout, MoveTo(stage_x, center_y.saturating_sub(2)))?;
+        execute!(stdout, SetForegroundColor(Color::Cyan))?;
+        execute!(stdout, Print(stage_text))?;
+
+        // Show basic metrics if available (centered, white)
+        if !stage_engines.is_empty() {
+            let last_engine = &stage_engines.last().unwrap().1;
+            let metrics = last_engine.calculate_metrics_with_status(false, true).unwrap();
+            
+            let metrics_text = format!("CPM: {:.0} | WPM: {:.0} | Accuracy: {:.0}%", 
+                metrics.cpm, metrics.wpm, metrics.accuracy);
+            let metrics_x = (terminal_width - metrics_text.len() as u16) / 2;
+            execute!(stdout, MoveTo(metrics_x, center_y))?;
+            execute!(stdout, SetForegroundColor(Color::White))?;
+            execute!(stdout, Print(metrics_text))?;
+        }
+
+        // Failure message (centered)
+        let fail_text = "Challenge failed. Better luck next time!";
+        let fail_x = (terminal_width - fail_text.len() as u16) / 2;
+        execute!(stdout, MoveTo(fail_x, center_y + 2))?;
+        execute!(stdout, SetForegroundColor(Color::Red))?;
+        execute!(stdout, Print(fail_text))?;
+
+        // Navigation instructions (centered)
+        let nav_text = "[Enter] Back to Title | [ESC] Session Summary & Exit";
+        let nav_x = (terminal_width - nav_text.len() as u16) / 2;
+        execute!(stdout, MoveTo(nav_x, center_y + 4))?;
+        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, Print(nav_text))?;
+
+        execute!(stdout, ResetColor)?;
+        Ok(())
     }
 }

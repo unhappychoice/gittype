@@ -28,6 +28,7 @@ impl GameDisplay {
             comment_ranges,
             None,
             None,
+            3, // Default skip count
         )
     }
 
@@ -40,6 +41,7 @@ impl GameDisplay {
         comment_ranges: &[(usize, usize)],
         challenge: Option<&Challenge>,
         current_mistake_position: Option<usize>,
+        skips_remaining: usize,
     ) -> Result<()> {
         let mut stdout = stdout();
         let (terminal_width, terminal_height) = terminal::size()?;
@@ -59,7 +61,7 @@ impl GameDisplay {
             queue!(stdout, Print(format!("[Challenge] - Progress: {}%", progress)))?;
         }
         queue!(stdout, MoveTo(0, 1))?;
-        queue!(stdout, Print("Press ESC to quit"))?;
+        queue!(stdout, Print("Press ESC to skip challenge or Ctrl+ESC to fail"))?;
         queue!(stdout, MoveTo(0, 2))?;
         queue!(stdout, Print("─".repeat(terminal_width as usize)))?; // Separator line
         
@@ -200,10 +202,10 @@ impl GameDisplay {
         };
         
         queue!(stdout, ResetColor, Print(format!(
-            "CPM: {:.0} | WPM: {:.0} | Accuracy: {:.0}% | Mistakes: {} | Progress: {}/{}({:.0}%) | Time: {}s | Title: {} | [ESC to quit]",
+            "CPM: {:.0} | WPM: {:.0} | Accuracy: {:.0}% | Mistakes: {} | Progress: {}/{}({:.0}%) | Time: {}s | Title: {} | Skips: {} | [ESC=skip, Ctrl+ESC=fail]",
             metrics.cpm, metrics.wpm, metrics.accuracy, metrics.mistakes, 
             current_position, total_chars, progress_percent, elapsed_secs,
-            metrics.ranking_title
+            metrics.ranking_title, skips_remaining
         )))?;
         
         // Show cursor and flush all queued operations at once

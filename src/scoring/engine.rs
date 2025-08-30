@@ -19,6 +19,8 @@ pub struct ScoringEngine {
     current_streak: usize,
     streaks: Vec<usize>,
     recorded_duration: Option<std::time::Duration>,
+    paused_time: Option<Instant>,
+    total_paused_duration: std::time::Duration,
 }
 
 impl ScoringEngine {
@@ -30,6 +32,8 @@ impl ScoringEngine {
             current_streak: 0,
             streaks: Vec::new(),
             recorded_duration: None,
+            paused_time: None,
+            total_paused_duration: std::time::Duration::ZERO,
         }
     }
 
@@ -37,14 +41,43 @@ impl ScoringEngine {
         self.start_time = Some(Instant::now());
     }
 
+    pub fn pause(&mut self) {
+        if self.paused_time.is_none() {
+            self.paused_time = Some(Instant::now());
+        }
+    }
+
+    pub fn resume(&mut self) {
+        if let Some(paused_time) = self.paused_time {
+            self.total_paused_duration += paused_time.elapsed();
+            self.paused_time = None;
+        }
+    }
+
     pub fn finish(&mut self) {
+        // Make sure we're not paused when finishing
+        self.resume();
         if let Some(start) = self.start_time {
-            self.recorded_duration = Some(start.elapsed());
+            self.recorded_duration = Some(start.elapsed() - self.total_paused_duration);
         }
     }
 
     pub fn is_finished(&self) -> bool {
         self.recorded_duration.is_some()
+    }
+
+    pub fn get_elapsed_time(&self) -> std::time::Duration {
+        if let Some(start) = self.start_time {
+            let total_elapsed = start.elapsed();
+            let paused_duration = if let Some(paused_time) = self.paused_time {
+                self.total_paused_duration + paused_time.elapsed()
+            } else {
+                self.total_paused_duration
+            };
+            total_elapsed - paused_duration
+        } else {
+            std::time::Duration::ZERO
+        }
     }
 
     pub fn record_keystroke(&mut self, ch: char, position: usize) {
@@ -362,6 +395,14 @@ impl ScoringEngine {
     }
 
     pub fn calculate_metrics(&self) -> Result<TypingMetrics> {
+        self.calculate_metrics_with_status(false, false)
+    }
+    
+    pub fn calculate_metrics_with_skip_status(&self, was_skipped: bool) -> Result<TypingMetrics> {
+        self.calculate_metrics_with_status(was_skipped, false)
+    }
+    
+    pub fn calculate_metrics_with_status(&self, was_skipped: bool, was_failed: bool) -> Result<TypingMetrics> {
         if self.start_time.is_none() {
             return Err(crate::GitTypeError::TerminalError("Scoring not started".to_string()));
         }
@@ -378,6 +419,8 @@ impl ScoringEngine {
             completion_time: self.elapsed(),
             challenge_score,
             ranking_title,
+            was_skipped,
+            was_failed,
         })
     }
 
@@ -415,6 +458,8 @@ impl ScoringEngine {
             completion_time: temp_engine.elapsed(),
             challenge_score,
             ranking_title,
+            was_skipped: false, // Real-time metrics are not skipped
+            was_failed: false, // Real-time metrics are not failed
         }
     }
 }
@@ -461,6 +506,8 @@ impl Add for ScoringEngine {
             current_streak: 0, // Reset current streak for combined engine
             streaks: combined_streaks,
             recorded_duration: combined_duration,
+            paused_time: None,
+            total_paused_duration: std::time::Duration::ZERO,
         }
     }
 }

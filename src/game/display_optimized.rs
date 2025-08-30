@@ -40,6 +40,7 @@ impl GameDisplayOptimized {
         comment_ranges: &[(usize, usize)],
         challenge: Option<&Challenge>,
         current_mistake_position: Option<usize>,
+        skips_remaining: usize,
     ) -> Result<()> {
         let mut stdout = stdout();
         let (terminal_width, terminal_height) = terminal::size()?;
@@ -88,7 +89,7 @@ impl GameDisplayOptimized {
         }
         
         // Update metrics at bottom
-        self.display_metrics(&mut stdout, current_position, mistakes, start_time, line_starts, terminal_height)?;
+        self.display_metrics(&mut stdout, current_position, mistakes, start_time, line_starts, terminal_height, skips_remaining)?;
         
         queue!(stdout, Show)?;
         stdout.flush()?;
@@ -119,7 +120,7 @@ impl GameDisplayOptimized {
         }
         
         queue!(stdout, MoveTo(0, 1), terminal::Clear(ClearType::CurrentLine))?;
-        queue!(stdout, Print("Press ESC to quit"))?;
+        queue!(stdout, Print("Press ESC to skip challenge or Ctrl+ESC to fail"))?;
         
         queue!(stdout, MoveTo(0, 2), terminal::Clear(ClearType::CurrentLine))?;
         queue!(stdout, Print("─".repeat(terminal_width as usize)))?;
@@ -340,6 +341,7 @@ impl GameDisplayOptimized {
         start_time: &std::time::Instant,
         line_starts: &[usize],
         terminal_height: u16,
+        skips_remaining: usize,
     ) -> Result<()> {
         let metrics = crate::scoring::engine::ScoringEngine::calculate_real_time_metrics(current_position, mistakes, start_time);
         let _current_line = self.find_line_for_position(current_position, line_starts);
@@ -355,10 +357,10 @@ impl GameDisplayOptimized {
         };
         
         queue!(stdout, ResetColor, Print(format!(
-            "CPM: {:.0} | WPM: {:.0} | Accuracy: {:.0}% | Mistakes: {} | Progress: {}/{}({:.0}%) | Time: {}s | Title: {} | [ESC to quit]",
+            "CPM: {:.0} | WPM: {:.0} | Accuracy: {:.0}% | Mistakes: {} | Progress: {}/{}({:.0}%) | Time: {}s | Title: {} | Skips: {} | [ESC=skip, Ctrl+ESC=fail]",
             metrics.cpm, metrics.wpm, metrics.accuracy, metrics.mistakes, 
             current_position, total_chars, progress_percent, elapsed_secs,
-            metrics.ranking_title
+            metrics.ranking_title, skips_remaining
         )))?;
         
         Ok(())

@@ -40,6 +40,9 @@ impl GameDisplayRatatui {
         comment_ranges: &[(usize, usize)],
         challenge: Option<&Challenge>,
         current_mistake_position: Option<usize>,
+        skips_remaining: usize,
+        dialog_shown: bool,
+        scoring_engine: &crate::scoring::engine::ScoringEngine,
     ) -> Result<()> {
         // Update character cache if needed
         if self.chars.len() != challenge_text.chars().count() {
@@ -74,7 +77,7 @@ impl GameDisplayRatatui {
 
         let metrics = crate::scoring::engine::ScoringEngine::calculate_real_time_metrics(current_position, mistakes, start_time);
         let current_line = self.find_line_for_position(current_position, line_starts);
-        let elapsed_secs = start_time.elapsed().as_secs();
+        let elapsed_secs = scoring_engine.get_elapsed_time().as_secs();
         let total_chars = self.chars.len();
         let progress_percent = if total_chars > 0 {
             (current_position as f32 / total_chars as f32 * 100.0) as u8
@@ -83,10 +86,10 @@ impl GameDisplayRatatui {
         };
         
         let metrics_text = format!(
-            "CPM: {:.0} | WPM: {:.0} | Accuracy: {:.0}% | Mistakes: {} | Progress: {}/{}({:.0}%) | Time: {}s | Title: {} | [ESC to quit]",
+            "CPM: {:.0} | WPM: {:.0} | Accuracy: {:.0}% | Mistakes: {} | Progress: {}/{}({:.0}%) | Time: {}s | Title: {} | Skips: {} | [ESC=skip, Ctrl+ESC=fail]",
             metrics.cpm, metrics.wpm, metrics.accuracy, metrics.mistakes, 
             current_position, total_chars, progress_percent, elapsed_secs,
-            metrics.ranking_title
+            metrics.ranking_title, skips_remaining
         );
 
         self.terminal.draw(|f| {
@@ -122,6 +125,11 @@ impl GameDisplayRatatui {
             let metrics_widget = Paragraph::new(metrics_text.clone())
                 .style(Style::default().fg(Color::Yellow));
             f.render_widget(metrics_widget, chunks[2]);
+
+            // Render dialog if shown
+            if dialog_shown {
+                Self::render_dialog(f, skips_remaining);
+            }
         })?;
 
         self.last_position = current_position;
@@ -309,5 +317,65 @@ impl GameDisplayRatatui {
 
     fn is_position_in_comment(position: usize, comment_ranges: &[(usize, usize)]) -> bool {
         comment_ranges.iter().any(|&(start, end)| position >= start && position < end)
+    }
+
+    fn render_dialog(f: &mut ratatui::Frame, skips_remaining: usize) {
+        use ratatui::widgets::Clear;
+        
+        // Calculate dialog size and position
+        let area = f.size();
+        let dialog_width = 50.min(area.width - 4);
+        let dialog_height = 9; // Increased to accommodate all options
+        
+        let dialog_area = ratatui::layout::Rect {
+            x: (area.width - dialog_width) / 2,
+            y: (area.height - dialog_height) / 2,
+            width: dialog_width,
+            height: dialog_height,
+        };
+
+        // Clear the area behind the dialog
+        f.render_widget(Clear, dialog_area);
+        
+        // Create dialog content
+        let dialog_lines = vec![
+            Line::from(""),
+            Line::from(vec![
+                Span::styled("Choose an option:", Style::default().fg(Color::White).add_modifier(Modifier::BOLD))
+            ]),
+            Line::from(""),
+            Line::from(vec![
+                if skips_remaining > 0 {
+                    Span::styled("[S] ", Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
+                } else {
+                    Span::styled("[S] ", Style::default().fg(Color::DarkGray).add_modifier(Modifier::DIM))
+                },
+                if skips_remaining > 0 {
+                    Span::styled(format!("Skip challenge ({})", skips_remaining), Style::default().fg(Color::White))
+                } else {
+                    Span::styled("No skips remaining", Style::default().fg(Color::DarkGray).add_modifier(Modifier::DIM))
+                }
+            ]),
+            Line::from(vec![
+                Span::styled("[Q] ", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+                Span::styled("Quit (fail)", Style::default().fg(Color::White))
+            ]),
+            Line::from(vec![
+                Span::styled("[ESC] ", Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
+                Span::styled("Back to game", Style::default().fg(Color::White))
+            ]),
+            Line::from(""),
+        ];
+
+        let dialog = Paragraph::new(dialog_lines)
+            .block(Block::default()
+                .borders(Borders::ALL)
+                .title("Game Options")
+                .title_style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD))
+                .border_style(Style::default().fg(Color::Cyan))
+            )
+            .alignment(ratatui::layout::Alignment::Center);
+
+        f.render_widget(dialog, dialog_area);
     }
 }
