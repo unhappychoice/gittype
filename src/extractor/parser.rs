@@ -2,6 +2,7 @@ use std::path::Path;
 use std::fs;
 use tree_sitter::{Parser, Query, QueryCursor, Node, Tree};
 use ignore::WalkBuilder;
+use rayon::prelude::*;
 use crate::{Result, GitTypeError};
 use super::{CodeChunk, Language, ChunkType, ProgressReporter, NoOpProgressReporter};
 
@@ -22,31 +23,30 @@ impl Default for ExtractionOptions {
     }
 }
 
-pub struct CodeExtractor {
-    rust_parser: Parser,
-    typescript_parser: Parser,
-    python_parser: Parser,
-}
+pub struct CodeExtractor;
 
 impl CodeExtractor {
     pub fn new() -> Result<Self> {
-        let mut rust_parser = Parser::new();
-        rust_parser.set_language(tree_sitter_rust::language())
-            .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to set Rust language: {}", e)))?;
+        Ok(Self)
+    }
 
-        let mut typescript_parser = Parser::new();
-        typescript_parser.set_language(tree_sitter_typescript::language_typescript())
-            .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to set TypeScript language: {}", e)))?;
-
-        let mut python_parser = Parser::new();
-        python_parser.set_language(tree_sitter_python::language())
-            .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to set Python language: {}", e)))?;
-
-        Ok(Self {
-            rust_parser,
-            typescript_parser,
-            python_parser,
-        })
+    fn create_parser_for_language(language: Language) -> Result<Parser> {
+        let mut parser = Parser::new();
+        match language {
+            Language::Rust => {
+                parser.set_language(tree_sitter_rust::language())
+                    .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to set Rust language: {}", e)))?;
+            }
+            Language::TypeScript => {
+                parser.set_language(tree_sitter_typescript::language_typescript())
+                    .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to set TypeScript language: {}", e)))?;
+            }
+            Language::Python => {
+                parser.set_language(tree_sitter_python::language())
+                    .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to set Python language: {}", e)))?;
+            }
+        }
+        Ok(parser)
     }
 
     pub fn extract_chunks(&mut self, repo_path: &Path, options: ExtractionOptions) -> Result<Vec<CodeChunk>> {
@@ -59,8 +59,6 @@ impl CodeExtractor {
         options: ExtractionOptions,
         progress: &P,
     ) -> Result<Vec<CodeChunk>> {
-        let mut chunks = Vec::new();
-        
         progress.set_phase("Scanning repository".to_string());
         
         // Use ignore crate to respect .gitignore files
@@ -83,7 +81,7 @@ impl CodeExtractor {
 
             if let Some(extension) = path.extension().and_then(|e| e.to_str()) {
                 if let Some(language) = Language::from_extension(extension) {
-                    if self.should_process_file(path, &options) {
+                    if Self::should_process_file_static(path, &options) {
                         files_to_process.push((path.to_path_buf(), language));
                     }
                 }
@@ -93,13 +91,18 @@ impl CodeExtractor {
         let total_files = files_to_process.len();
         progress.set_phase("Parsing AST".to_string());
 
-        for (i, (path, language)) in files_to_process.iter().enumerate() {
-            progress.set_file_counts(i + 1, total_files);
-            if i % 3 == 0 { // Update spinner every 3 files to reduce flicker
-                progress.update_spinner();
-            }
-            
-            let file_chunks = self.extract_from_file(path, *language, &options)?;
+        // Process files in parallel using rayon without progress updates during parallel processing
+        let all_chunks: Result<Vec<Vec<CodeChunk>>> = files_to_process
+            .par_iter()
+            .map(|(path, language)| {
+                // Extract chunks from file
+                Self::extract_from_file_static(path, *language, &options)
+            })
+            .collect();
+
+        let all_chunks = all_chunks?;
+        let mut chunks = Vec::new();
+        for file_chunks in all_chunks {
             chunks.extend(file_chunks);
         }
 
@@ -111,6 +114,10 @@ impl CodeExtractor {
     }
 
     fn should_process_file(&self, path: &Path, options: &ExtractionOptions) -> bool {
+        Self::should_process_file_static(path, options)
+    }
+
+    fn should_process_file_static(path: &Path, options: &ExtractionOptions) -> bool {
         let path_str = path.to_string_lossy();
         
         // Check exclude patterns first
@@ -135,17 +142,17 @@ impl CodeExtractor {
     }
 
     pub fn extract_from_file(&mut self, file_path: &Path, language: Language, options: &ExtractionOptions) -> Result<Vec<CodeChunk>> {
+        Self::extract_from_file_static(file_path, language, options)
+    }
+
+    fn extract_from_file_static(file_path: &Path, language: Language, options: &ExtractionOptions) -> Result<Vec<CodeChunk>> {
         let content = fs::read_to_string(file_path)?;
-        let parser = match language {
-            Language::Rust => &mut self.rust_parser,
-            Language::TypeScript => &mut self.typescript_parser,
-            Language::Python => &mut self.python_parser,
-        };
+        let mut parser = Self::create_parser_for_language(language)?;
         
         let tree = parser.parse(&content, None)
             .ok_or_else(|| GitTypeError::ExtractionFailed(format!("Failed to parse file: {:?}", file_path)))?;
         
-        self.extract_chunks_from_tree(&tree, &content, file_path, language, options)
+        Self::extract_chunks_from_tree_static(&tree, &content, file_path, language, options)
     }
 
     fn extract_chunks_from_tree(
@@ -156,10 +163,20 @@ impl CodeExtractor {
         language: Language,
         options: &ExtractionOptions,
     ) -> Result<Vec<CodeChunk>> {
+        Self::extract_chunks_from_tree_static(tree, source_code, file_path, language, options)
+    }
+
+    fn extract_chunks_from_tree_static(
+        tree: &Tree,
+        source_code: &str,
+        file_path: &Path,
+        language: Language,
+        options: &ExtractionOptions,
+    ) -> Result<Vec<CodeChunk>> {
         let mut chunks = Vec::new();
         
         // Extract comment ranges for the entire file
-        let file_comment_ranges = self.extract_comment_ranges(tree, source_code, language.clone());
+        let file_comment_ranges = Self::extract_comment_ranges_static(tree, source_code, language.clone());
         
         let query_str = match language {
             Language::Rust => "
@@ -191,7 +208,7 @@ impl CodeExtractor {
                 let node = capture.node;
                 let capture_name = &query.capture_names()[capture.index as usize];
                 
-                if let Some(chunk) = self.node_to_chunk(node, source_code, file_path, language.clone(), &capture_name, options, &file_comment_ranges) {
+                if let Some(chunk) = Self::node_to_chunk_static(node, source_code, file_path, language.clone(), &capture_name, options, &file_comment_ranges) {
                     chunks.push(chunk);
                 }
             }
@@ -202,6 +219,18 @@ impl CodeExtractor {
 
     fn node_to_chunk(
         &self,
+        node: Node,
+        source_code: &str,
+        file_path: &Path,
+        language: Language,
+        capture_name: &str,
+        options: &ExtractionOptions,
+        file_comment_ranges: &[(usize, usize)],
+    ) -> Option<CodeChunk> {
+        Self::node_to_chunk_static(node, source_code, file_path, language, capture_name, options, file_comment_ranges)
+    }
+
+    fn node_to_chunk_static(
         node: Node,
         source_code: &str,
         file_path: &Path,
@@ -234,7 +263,7 @@ impl CodeExtractor {
             _ => return None,
         };
         
-        let name = self.extract_name(node, source_code).unwrap_or_else(|| "unknown".to_string());
+        let name = Self::extract_name_static(node, source_code).unwrap_or_else(|| "unknown".to_string());
         
         // Filter comment ranges that are within this chunk and make them relative to chunk content
         let chunk_comment_ranges: Vec<(usize, usize)> = file_comment_ranges.iter()
@@ -249,7 +278,7 @@ impl CodeExtractor {
             .collect();
         
         // Normalize indentation based on AST node position
-        let (normalized_content, normalized_comment_ranges) = self.normalize_indentation(
+        let (normalized_content, normalized_comment_ranges) = Self::normalize_indentation_static(
             content,
             original_indentation,
             &chunk_comment_ranges
@@ -269,6 +298,10 @@ impl CodeExtractor {
     }
     
     fn extract_name(&self, node: Node, source_code: &str) -> Option<String> {
+        Self::extract_name_static(node, source_code)
+    }
+
+    fn extract_name_static(node: Node, source_code: &str) -> Option<String> {
         // For variable_declarator, we need to get the name from the first child
         if node.kind() == "variable_declarator" {
             let mut cursor = node.walk();
@@ -301,6 +334,10 @@ impl CodeExtractor {
     }
 
     fn normalize_indentation(&self, content: &str, original_indentation: usize, comment_ranges: &[(usize, usize)]) -> (String, Vec<(usize, usize)>) {
+        Self::normalize_indentation_static(content, original_indentation, comment_ranges)
+    }
+
+    fn normalize_indentation_static(content: &str, original_indentation: usize, comment_ranges: &[(usize, usize)]) -> (String, Vec<(usize, usize)>) {
         let lines: Vec<&str> = content.lines().collect();
         if lines.is_empty() {
             return (content.to_string(), comment_ranges.to_vec());
@@ -396,6 +433,10 @@ impl CodeExtractor {
     }
 
     fn extract_comment_ranges(&self, tree: &Tree, source_code: &str, language: Language) -> Vec<(usize, usize)> {
+        Self::extract_comment_ranges_static(tree, source_code, language)
+    }
+
+    fn extract_comment_ranges_static(tree: &Tree, source_code: &str, language: Language) -> Vec<(usize, usize)> {
         let mut comment_ranges = Vec::new();
         
         let comment_query = match language {
