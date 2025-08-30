@@ -8,6 +8,8 @@ pub mod stage_manager;
 pub mod stage_builder;
 pub mod ascii_digits;
 pub mod ascii_rank_titles_generated;
+pub mod typing_animation;
+pub mod rank_messages;
 
 pub use screens::TypingScreen;
 pub use challenge::Challenge;
