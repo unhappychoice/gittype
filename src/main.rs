@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use gittype::game::StageManager;
+use gittype::game::{StageManager, stage_manager::show_session_summary_on_interrupt};
 use gittype::extractor::{ExtractionOptions, RepositoryLoader, ProgressReporter};
 use gittype::game::screens::loading_screen::LoadingScreen;
 use std::path::PathBuf;
@@ -63,9 +63,7 @@ enum Commands {
 fn main() -> anyhow::Result<()> {
     // Set up Ctrl+C handler
     ctrlc::set_handler(move || {
-        // Clean up terminal state if needed
-        let _ = crossterm::terminal::disable_raw_mode();
-        println!("\n\nInterrupted by user");
+        show_session_summary_on_interrupt();
         std::process::exit(0);
     }).expect("Error setting Ctrl-C handler");
     
