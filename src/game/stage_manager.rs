@@ -145,8 +145,8 @@ impl StageManager {
     }
 
     
-    fn count_challenges_by_difficulty(&self) -> [usize; 4] {
-        let mut counts = [0usize; 4];
+    fn count_challenges_by_difficulty(&self) -> [usize; 5] {
+        let mut counts = [0usize; 5];
         
         for challenge in &self.available_challenges {
             if let Some(ref difficulty) = challenge.difficulty_level {
@@ -154,7 +154,8 @@ impl StageManager {
                     DifficultyLevel::Easy => counts[0] += 1,
                     DifficultyLevel::Normal => counts[1] += 1,
                     DifficultyLevel::Hard => counts[2] += 1,
-                    DifficultyLevel::Zen => counts[3] += 1,
+                    DifficultyLevel::Wild => counts[3] += 1,
+                    DifficultyLevel::Zen => counts[4] += 1,
                 }
             }
         }

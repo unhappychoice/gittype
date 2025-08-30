@@ -50,15 +50,6 @@ impl Challenge {
         self
     }
 
-    pub fn calculate_difficulty_by_char_count(&self) -> DifficultyLevel {
-        let char_count = self.code_content.chars().count();
-        match char_count {
-            0..=100 => DifficultyLevel::Easy,
-            101..=300 => DifficultyLevel::Normal,
-            301..=500 => DifficultyLevel::Hard,
-            _ => DifficultyLevel::Zen,
-        }
-    }
 
     pub fn get_display_title(&self) -> String {
         if let Some(ref path) = self.source_file_path {
