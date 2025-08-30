@@ -17,9 +17,43 @@ pub enum GameMode {
 #[derive(Debug, Clone, PartialEq)]
 pub enum DifficultyLevel {
     Easy,    // ~100 characters
-    Normal,  // 200-300 characters  
+    Normal,  // ~200 characters  
     Hard,    // ~500 characters
+    Wild,    // Entire chunks, unpredictable length
     Zen,     // Entire file
+}
+
+impl DifficultyLevel {
+    pub fn char_limits(&self) -> (usize, usize) {
+        match self {
+            DifficultyLevel::Easy => (20, 100),
+            DifficultyLevel::Normal => (80, 200),
+            DifficultyLevel::Hard => (180, 500),
+            DifficultyLevel::Wild => (0, usize::MAX), // No limits - full chunks
+            DifficultyLevel::Zen => (0, usize::MAX),
+        }
+    }
+
+    pub fn description(&self) -> &'static str {
+        match self {
+            DifficultyLevel::Easy => "~100 characters",
+            DifficultyLevel::Normal => "~200 characters",
+            DifficultyLevel::Hard => "~500 characters",
+            DifficultyLevel::Wild => "Full chunks",
+            DifficultyLevel::Zen => "Entire files",
+        }
+    }
+
+    pub fn subtitle(&self) -> &'static str {
+        match self {
+            DifficultyLevel::Easy => "Short code snippets",
+            DifficultyLevel::Normal => "Medium functions",
+            DifficultyLevel::Hard => "Long functions or classes",
+            DifficultyLevel::Wild => "Unpredictable length chunks",
+            DifficultyLevel::Zen => "Complete files as challenges",
+        }
+    }
+
 }
 
 #[derive(Debug, Clone)]

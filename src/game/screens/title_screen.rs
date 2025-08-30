@@ -19,17 +19,18 @@ pub struct TitleScreen;
 impl TitleScreen {
     pub fn show() -> Result<TitleAction> {
         // Use default challenge counts when none provided
-        let default_counts = [0, 0, 0, 0];
+        let default_counts = [0, 0, 0, 0, 0];
         Self::show_with_challenge_counts(&default_counts)
     }
     
-    pub fn show_with_challenge_counts(challenge_counts: &[usize; 4]) -> Result<TitleAction> {
+    pub fn show_with_challenge_counts(challenge_counts: &[usize; 5]) -> Result<TitleAction> {
         let mut selected_difficulty = 1; // Start with Normal (index 1)
         let difficulties = [
-            ("Easy", DifficultyLevel::Easy, vec!["30-150 characters", "Short code snippets"]),
-            ("Normal", DifficultyLevel::Normal, vec!["120-350 characters", "Medium functions"]),
-            ("Hard", DifficultyLevel::Hard, vec!["300-700+ characters", "Long functions or classes"]),
-            ("Zen", DifficultyLevel::Zen, vec!["Entire files", "Complete files as challenges"]),
+            ("Easy", DifficultyLevel::Easy),
+            ("Normal", DifficultyLevel::Normal),
+            ("Hard", DifficultyLevel::Hard),
+            ("Wild", DifficultyLevel::Wild),
+            ("Zen", DifficultyLevel::Zen),
         ];
 
         let mut stdout = stdout();
@@ -135,12 +136,12 @@ impl TitleScreen {
         stdout: &mut std::io::Stdout, 
         center_row: u16, 
         center_col: u16,
-        difficulties: &[(&str, DifficultyLevel, Vec<&str>); 4],
+        difficulties: &[(&str, DifficultyLevel); 5],
         selected_difficulty: usize,
-        challenge_counts: &[usize; 4]
+        challenge_counts: &[usize; 5]
     ) -> Result<()> {
         let start_row = center_row + 1;
-        let (name, _, descriptions) = &difficulties[selected_difficulty];
+        let (name, difficulty_level) = &difficulties[selected_difficulty];
         let count = challenge_counts[selected_difficulty];
         
         // Clear previous difficulty display (multiple lines)
@@ -178,6 +179,7 @@ impl TitleScreen {
         execute!(stdout, ResetColor)?;
 
         // Line 3 & 4: Description lines
+        let descriptions = [difficulty_level.description(), difficulty_level.subtitle()];
         for (i, description) in descriptions.iter().enumerate() {
             let desc_col = center_col.saturating_sub(description.chars().count() as u16 / 2);
             execute!(stdout, MoveTo(desc_col, start_row + 2 + i as u16))?;

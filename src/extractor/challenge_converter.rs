@@ -24,11 +24,12 @@ impl ChallengeConverter {
         let mut all_challenges = Vec::new();
         
         for chunk in &chunks {
-            // Generate challenges for Easy, Normal, Hard only
+            // Generate challenges for Easy (~100), Normal (~200), Hard (~500), Wild (full chunks) only
             let difficulties = [
                 super::super::game::stage_builder::DifficultyLevel::Easy,
                 super::super::game::stage_builder::DifficultyLevel::Normal,
                 super::super::game::stage_builder::DifficultyLevel::Hard,
+                super::super::game::stage_builder::DifficultyLevel::Wild,
             ];
             
             for difficulty in &difficulties {
@@ -98,12 +99,18 @@ impl ChallengeConverter {
     fn split_chunk_by_difficulty(&self, chunk: &CodeChunk, difficulty: &super::super::game::stage_builder::DifficultyLevel) -> Vec<Challenge> {
         use super::super::game::stage_builder::DifficultyLevel;
         
-        let (min_chars, max_chars) = match difficulty {
-            DifficultyLevel::Easy => (30, 150),    // 30-150 chars
-            DifficultyLevel::Normal => (120, 350), // 120-350 chars  
-            DifficultyLevel::Hard => (300, 700),   // 300-700 chars
-            DifficultyLevel::Zen => return vec![self.convert_chunk_to_challenge(chunk.clone())],
-        };
+        if matches!(difficulty, DifficultyLevel::Zen) {
+            return vec![self.convert_chunk_to_challenge(chunk.clone())];
+        }
+        
+        // Wild difficulty uses the full chunk as-is
+        if matches!(difficulty, DifficultyLevel::Wild) {
+            let mut challenge = self.convert_chunk_to_challenge(chunk.clone());
+            challenge.difficulty_level = Some(difficulty.clone());
+            return vec![challenge];
+        }
+
+        let (min_chars, max_chars) = difficulty.char_limits();
 
         let content = &chunk.content;
         let lines: Vec<&str> = content.lines().collect();
