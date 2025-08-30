@@ -381,6 +381,7 @@ dependencies = [
  "ctrlc",
  "glob",
  "ignore",
+ "once_cell",
  "paste",
  "rand",
  "ratatui",

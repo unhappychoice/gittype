@@ -10,8 +10,10 @@ pub mod ascii_digits;
 pub mod ascii_rank_titles_generated;
 pub mod typing_animation;
 pub mod rank_messages;
+pub mod session_tracker;
 
 pub use screens::TypingScreen;
 pub use challenge::Challenge;
 pub use stage_manager::StageManager;
 pub use stage_builder::{StageBuilder, GameMode, DifficultyLevel, StageConfig};
+pub use session_tracker::{SessionTracker, SessionSummary};

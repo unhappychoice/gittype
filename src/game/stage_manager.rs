@@ -1,11 +1,19 @@
 use crate::Result;
 use crate::scoring::{TypingMetrics, ScoringEngine};
 use crossterm::terminal;
+use std::sync::{Arc, Mutex};
+use once_cell::sync::Lazy;
 use super::{
     challenge::Challenge,
-    screens::{TitleScreen, ResultScreen, CountdownScreen, TypingScreen, TitleAction, result_screen::ResultAction},
+    screens::{TitleScreen, ResultScreen, CountdownScreen, TypingScreen, TitleAction, result_screen::ResultAction, ExitSummaryScreen},
     stage_builder::{StageBuilder, GameMode, DifficultyLevel},
+    session_tracker::SessionTracker,
 };
+
+// Global session tracker for Ctrl+C handler
+static GLOBAL_SESSION_TRACKER: Lazy<Arc<Mutex<Option<SessionTracker>>>> = Lazy::new(|| {
+    Arc::new(Mutex::new(None))
+});
 
 pub struct StageManager {
     available_challenges: Vec<Challenge>,
@@ -13,6 +21,7 @@ pub struct StageManager {
     current_stage: usize,
     stage_engines: Vec<(String, ScoringEngine)>,
     current_game_mode: Option<GameMode>,
+    session_tracker: SessionTracker,
 }
 
 impl StageManager {
@@ -23,10 +32,17 @@ impl StageManager {
             current_stage: 0,
             stage_engines: Vec::new(),
             current_game_mode: None,
+            session_tracker: SessionTracker::new(),
         }
     }
 
     pub fn run_session(&mut self) -> Result<()> {
+        // Set global session tracker for Ctrl+C handler
+        {
+            let mut global_tracker = GLOBAL_SESSION_TRACKER.lock().unwrap();
+            *global_tracker = Some(self.session_tracker.clone());
+        }
+
         // Enable raw mode for entire application session
         match terminal::enable_raw_mode() {
             Ok(_) => {},
@@ -86,8 +102,19 @@ impl StageManager {
                         }
                     }
                 },
-                TitleAction::Quit => break,
+                TitleAction::Quit => {
+                    // Show session summary before exiting
+                    let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                    let _ = ExitSummaryScreen::show(&session_summary)?;
+                    break;
+                },
             }
+        }
+
+        // Clear global session tracker
+        {
+            let mut global_tracker = GLOBAL_SESSION_TRACKER.lock().unwrap();
+            *global_tracker = None;
         }
 
         terminal::disable_raw_mode()?;
@@ -111,7 +138,21 @@ impl StageManager {
             let metrics = screen.show()?; // Use show method like other screens
             
             // Record stage completion
-            self.stage_engines.push((challenge.get_display_title(), screen.get_scoring_engine().clone()));
+            let stage_name = challenge.get_display_title();
+            let engine = screen.get_scoring_engine().clone();
+            
+            self.stage_engines.push((stage_name.clone(), engine.clone()));
+            
+            // Track in session tracker
+            self.session_tracker.record_stage_completion(stage_name, metrics.clone(), &engine);
+            
+            // Update global session tracker
+            {
+                let mut global_tracker = GLOBAL_SESSION_TRACKER.lock().unwrap();
+                if let Some(ref mut tracker) = *global_tracker {
+                    *tracker = self.session_tracker.clone();
+                }
+            }
             
             // Show brief result and auto-advance
             self.show_stage_completion(&metrics)?;
@@ -124,6 +165,11 @@ impl StageManager {
         match self.show_session_summary()? {
             ResultAction::Retry => Ok(true), // Return true to indicate retry requested
             ResultAction::Quit => {
+                // Show session summary before exiting
+                terminal::disable_raw_mode()?;
+                let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                terminal::enable_raw_mode()?;
+                let _ = ExitSummaryScreen::show(&session_summary)?;
                 terminal::disable_raw_mode()?;
                 std::process::exit(0);
             },
@@ -182,5 +228,45 @@ impl StageManager {
         }
         
         counts
+    }
+}
+
+// Public function for Ctrl+C handler
+pub fn show_session_summary_on_interrupt() {
+    let _ = terminal::disable_raw_mode();
+    
+    let global_tracker = GLOBAL_SESSION_TRACKER.lock().unwrap();
+    if let Some(ref tracker) = *global_tracker {
+        let session_summary = tracker.clone().finalize_and_get_summary();
+        
+        // Show session summary
+        let _ = ExitSummaryScreen::show(&session_summary);
+    } else {
+        // Show simple interruption message in terminal UI style
+        use crossterm::{execute, style::{Print, SetForegroundColor, Color, ResetColor}, cursor::MoveTo};
+        use std::io::stdout;
+        
+        let mut stdout = stdout();
+        let _ = execute!(stdout, crossterm::terminal::Clear(crossterm::terminal::ClearType::All));
+        let _ = execute!(stdout, MoveTo(10, 5));
+        let _ = execute!(stdout, SetForegroundColor(Color::Yellow));
+        let _ = execute!(stdout, Print("Interrupted by user - no session data available"));
+        let _ = execute!(stdout, ResetColor);
+        let _ = execute!(stdout, MoveTo(10, 7));
+        let _ = execute!(stdout, Print("Thanks for playing GitType!"));
+        let _ = execute!(stdout, MoveTo(10, 9));
+        let _ = execute!(stdout, SetForegroundColor(Color::Grey));
+        let _ = execute!(stdout, Print("Press any key to exit..."));
+        let _ = execute!(stdout, ResetColor);
+        
+        // Wait for any key
+        use crossterm::event;
+        loop {
+            if let Ok(true) = event::poll(std::time::Duration::from_millis(100)) {
+                if let Ok(event::Event::Key(_)) = event::read() {
+                    break;
+                }
+            }
+        }
     }
 }
