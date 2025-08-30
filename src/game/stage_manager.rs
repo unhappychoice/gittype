@@ -7,7 +7,7 @@ use std::sync::{Arc, Mutex};
 use once_cell::sync::Lazy;
 use super::{
     challenge::Challenge,
-    screens::{TitleScreen, ResultScreen, CountdownScreen, TypingScreen, TitleAction, result_screen::ResultAction, ExitSummaryScreen, typing_screen::GameState},
+    screens::{TitleScreen, ResultScreen, CountdownScreen, TypingScreen, TitleAction, result_screen::ResultAction, ExitSummaryScreen, exit_summary_screen::ExitAction, typing_screen::GameState},
     stage_builder::{StageBuilder, GameMode, DifficultyLevel},
     session_tracker::SessionTracker,
 };
@@ -256,18 +256,49 @@ impl StageManager {
         }
         
         // All stages completed - show final results (raw mode still enabled)
-        match self.show_session_summary()? {
-            ResultAction::Retry => Ok(true), // Return true to indicate retry requested
-            ResultAction::Quit => {
-                // Show session summary before exiting
-                terminal::disable_raw_mode()?;
-                let session_summary = self.session_tracker.clone().finalize_and_get_summary();
-                terminal::enable_raw_mode()?;
-                let _ = ExitSummaryScreen::show(&session_summary)?;
-                terminal::disable_raw_mode()?;
-                std::process::exit(0);
-            },
-            _ => Ok(false), // Return false for back to title
+        let mut first_show = true;
+        loop {
+            let action = if first_show {
+                first_show = false;
+                self.show_session_summary()?
+            } else {
+                self.show_session_summary_no_animation()?
+            };
+
+            match action {
+                ResultAction::Retry => return Ok(true), // Return true to indicate retry requested
+                ResultAction::Share => {
+                    // Show sharing menu
+                    if let Some(last_engine) = self.stage_engines.last() {
+                        if let Ok(metrics) = last_engine.1.calculate_metrics() {
+                            let _ = ResultScreen::show_sharing_menu(&metrics);
+                        }
+                    }
+                    // Continue showing the summary screen after sharing (without animation)
+                    continue;
+                },
+                ResultAction::Quit => {
+                    // Show session summary before exiting
+                    terminal::disable_raw_mode()?;
+                    let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                    terminal::enable_raw_mode()?;
+                    
+                    loop {
+                        match ExitSummaryScreen::show(&session_summary)? {
+                            ExitAction::Exit => {
+                                terminal::disable_raw_mode()?;
+                                std::process::exit(0);
+                            },
+                            ExitAction::Share => {
+                                let _ = ExitSummaryScreen::show_sharing_menu(&session_summary);
+                                // Continue showing exit screen after sharing
+                                continue;
+                            },
+                        }
+                    }
+                },
+                _ => return Ok(false), // Return false for back to title
+            }
         }
     }
 
@@ -290,11 +321,27 @@ impl StageManager {
 
 
     fn show_session_summary(&self) -> Result<ResultAction> {
-        ResultScreen::show_session_summary_with_input(
-            self.current_challenges.len(),
-            self.stage_engines.len(),
-            &self.stage_engines,
-        )
+        self.show_session_summary_internal(true)
+    }
+
+    fn show_session_summary_no_animation(&self) -> Result<ResultAction> {
+        self.show_session_summary_internal(false)
+    }
+
+    fn show_session_summary_internal(&self, show_animation: bool) -> Result<ResultAction> {
+        if show_animation {
+            ResultScreen::show_session_summary_with_input(
+                self.current_challenges.len(),
+                self.stage_engines.len(),
+                &self.stage_engines,
+            )
+        } else {
+            ResultScreen::show_session_summary_with_input_no_animation(
+                self.current_challenges.len(),
+                self.stage_engines.len(),
+                &self.stage_engines,
+            )
+        }
     }
 
     pub fn get_current_stage(&self) -> usize {
