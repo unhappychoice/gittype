@@ -71,45 +71,16 @@ impl ResultScreen {
         let center_row = terminal_height / 2;
         let center_col = terminal_width / 2;
 
-        // Display ranking title as large ASCII art at the top
-        let rank_title_lines = get_rank_title_display(&metrics.ranking_title);
-        let rank_title_height = rank_title_lines.len() as u16;
-        
-        // Calculate total content height and center vertically
-        let total_content_height = rank_title_height + 1 + 1 + 4 + 1 + 1 + 4; // rank + gap + label + score + gap + metrics + options
-        let rank_start_row = if total_content_height < terminal_height {
-            center_row.saturating_sub(total_content_height / 2)
-        } else {
-            3
-        };
-
-        // Display stage title at the top
+        // Display stage title at the center
         let stage_title = format!("🎯 STAGE {} COMPLETE 🎯", current_stage);
         let title_col = center_col.saturating_sub(stage_title.len() as u16 / 2);
-        execute!(stdout, MoveTo(title_col, rank_start_row.saturating_sub(4)))?;
+        execute!(stdout, MoveTo(title_col, center_row.saturating_sub(6)))?;
         execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Yellow))?;
         execute!(stdout, Print(&stage_title))?;
         execute!(stdout, ResetColor)?;
 
-        // Display "you're:" label before rank title (no gap)
-        let youre_label = "YOU'RE:";
-        let youre_col = center_col.saturating_sub(youre_label.len() as u16 / 2);
-        execute!(stdout, MoveTo(youre_col, rank_start_row.saturating_sub(1)))?;
-        execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Cyan))?;
-        execute!(stdout, Print(youre_label))?;
-        execute!(stdout, ResetColor)?;
-        
-        for (row_index, line) in rank_title_lines.iter().enumerate() {
-            // Calculate actual display width without ANSI codes for centering
-            let display_width = Self::calculate_display_width(line);
-            let line_col = center_col.saturating_sub(display_width / 2);
-            execute!(stdout, MoveTo(line_col, rank_start_row + row_index as u16))?;
-            execute!(stdout, Print(line))?;
-            execute!(stdout, ResetColor)?;
-        }
-
-        // Calculate dynamic positioning based on rank title height
-        let score_label_row = rank_start_row + rank_title_height + 1;
+        // Position score label below title
+        let score_label_row = center_row.saturating_sub(3);
 
         // Display "SCORE" label
         let score_label = "SCORE";
@@ -196,6 +167,20 @@ impl ResultScreen {
     }
 
     pub fn show_session_summary(
+        total_stages: usize,
+        completed_stages: usize, 
+        stage_engines: &[(String, ScoringEngine)],
+    ) -> Result<()> {
+        use crate::game::screens::AnimationScreen;
+        
+        // First show the animation
+        AnimationScreen::show_session_animation(total_stages, completed_stages, stage_engines)?;
+        
+        // Then show the original result screen
+        Self::show_session_summary_original(total_stages, completed_stages, stage_engines)
+    }
+    
+    pub fn show_session_summary_original(
         _total_stages: usize,
         _completed_stages: usize, 
         stage_engines: &[(String, ScoringEngine)],
@@ -357,11 +342,17 @@ impl ResultScreen {
     }
 
     pub fn show_session_summary_with_input(
-        _total_stages: usize,
-        _completed_stages: usize, 
+        total_stages: usize,
+        completed_stages: usize, 
         stage_engines: &[(String, ScoringEngine)],
     ) -> Result<ResultAction> {
-        Self::show_session_summary(_total_stages, _completed_stages, stage_engines)?;
+        use crate::game::screens::AnimationScreen;
+        
+        // First show the animation
+        AnimationScreen::show_session_animation(total_stages, completed_stages, stage_engines)?;
+        
+        // Then show the original result screen
+        Self::show_session_summary_original(total_stages, completed_stages, stage_engines)?;
         
         // Wait for user input and return action
         loop {
