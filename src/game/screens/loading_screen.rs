@@ -154,7 +154,7 @@ impl LoadingScreen {
         let size = frame.size();
         
         // Calculate total content height
-        let content_height = 6 + 2 + 3 + 3; // Logo + Loading message + Phase + Progress
+        let content_height = 2 + 6 + 3 + 3; // Loading message + Description + Phase + Progress
         let vertical_margin = (size.height.saturating_sub(content_height)) / 2;
         
         // Create vertical centering layout
@@ -171,18 +171,18 @@ impl LoadingScreen {
         let main_layout = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
-                Constraint::Length(6),  // Logo
                 Constraint::Length(2),  // Loading message
+                Constraint::Length(6),  // Description
                 Constraint::Length(3),  // Phase
                 Constraint::Length(3),  // Progress
             ])
             .split(vertical_layout[1]);
-
-        // Draw logo
-        self.draw_logo(frame, main_layout[0]);
         
         // Draw loading message
-        self.draw_loading_message(frame, main_layout[1]);
+        self.draw_loading_message(frame, main_layout[0]);
+        
+        // Draw description
+        self.draw_description(frame, main_layout[1]);
         
         // Draw phase
         self.draw_phase(frame, main_layout[2]);
@@ -191,29 +191,10 @@ impl LoadingScreen {
         self.draw_progress(frame, main_layout[3]);
     }
 
-    fn draw_logo(&self, frame: &mut Frame, area: Rect) {
-        let logo_lines = vec![
-            "╔═══╗─╔══╗─╔════╗────╔════╗─╔╗──╔╗─╔═══╗─╔═══╗",
-            "║╔═╗║─╚╣╠╝─║╔╗╔╗║────║╔╗╔╗║─║╚╗╔╝║─║╔═╗║─║╔══╝",
-            "║║─╚╝──║║──╚╝║║╚╝────╚╝║║╚╝─╚╗╚╝╔╝─║╚═╝║─║╚══╗",
-            "║║╔═╗──║║────║║────────║║────╚╗╔╝──║╔══╝─║╔══╝",
-            "║╚╩═║─╔╣╠╗───║║────────║║─────║║───║║────║╚══╗",
-            "╚═══╝─╚══╝───╚╝────────╚╝─────╚╝───╚╝────╚═══╝",
-        ];
-
-        let logo_text: Vec<Line> = logo_lines.iter()
-            .map(|line| Line::from(Span::styled(*line, Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD))))
-            .collect();
-
-        let logo = Paragraph::new(logo_text)
-            .alignment(Alignment::Center);
-        
-        frame.render_widget(logo, area);
-    }
 
     fn draw_loading_message(&self, frame: &mut Frame, area: Rect) {
         let loading_msg = Line::from(vec![
-            Span::styled("🚀 ", Style::default().fg(Color::Yellow)),
+            Span::styled("» ", Style::default().fg(Color::Yellow)),
             Span::styled("Loading...", Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
         ]);
 
@@ -221,6 +202,48 @@ impl LoadingScreen {
             .alignment(Alignment::Center);
         
         frame.render_widget(loading, area);
+    }
+
+    fn draw_description(&self, frame: &mut Frame, area: Rect) {
+        let current_step = *self.current_step.lock().unwrap();
+        
+        // Define steps with their descriptions
+        let steps = [
+            "Scanning repository files",
+            "Extracting functions, classes, and code blocks", 
+            "Parsing AST and analyzing code structure",
+            "Generating challenges across difficulty levels",
+            "Preparing content for optimal typing practice"
+        ];
+        
+        let mut description_lines = vec![
+            Line::from(Span::styled(
+                "Analyzing your repository to create typing challenges...", 
+                Style::default().fg(Color::Gray)
+            )),
+        ];
+        
+        // Add steps with checkmarks/progress indicators
+        for (i, step_desc) in steps.iter().enumerate() {
+            let step_num = i + 1;
+            let (icon, color) = if step_num < current_step {
+                ("✓", Color::Green)
+            } else if step_num == current_step {
+                ("•", Color::Yellow)
+            } else {
+                ("◦", Color::DarkGray)
+            };
+            
+            description_lines.push(Line::from(vec![
+                Span::styled(format!("{} ", icon), Style::default().fg(color)),
+                Span::styled(*step_desc, Style::default().fg(if step_num <= current_step { Color::Gray } else { Color::DarkGray })),
+            ]));
+        }
+
+        let description_paragraph = Paragraph::new(description_lines)
+            .alignment(Alignment::Center);
+        
+        frame.render_widget(description_paragraph, area);
     }
 
     fn draw_phase(&self, frame: &mut Frame, area: Rect) {
@@ -232,9 +255,9 @@ impl LoadingScreen {
         }
 
         let phase_text = if *current_phase == "Completed" {
-            "✅ Loading complete!"
+            "✓ Loading complete!"
         } else {
-            &format!("🔄 {}/{} {}...", current_step, self.total_steps, current_phase)
+            &format!("• {}/{} {}...", current_step, self.total_steps, current_phase)
         };
 
         let phase_line = Line::from(Span::styled(
