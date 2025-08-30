@@ -91,26 +91,40 @@ impl CodeExtractor {
         let total_files = files_to_process.len();
         progress.set_phase("Parsing AST".to_string());
 
-        // Process files in parallel using rayon without progress updates during parallel processing
-        let all_chunks: Result<Vec<Vec<CodeChunk>>> = files_to_process
-            .par_iter()
-            .map(|(path, language)| {
-                // Extract chunks from file
-                Self::extract_from_file_static(path, *language, &options)
-            })
-            .collect();
+        // Process files in parallel with better progress tracking
+        // Split files into smaller chunks for better progress visibility
+        let chunk_size = (total_files / 20).max(1).min(10); // Process in smaller chunks of 1-10 files
+        let mut all_chunks = Vec::new();
+        let mut processed_files = 0;
 
-        let all_chunks = all_chunks?;
-        let mut chunks = Vec::new();
-        for file_chunks in all_chunks {
-            chunks.extend(file_chunks);
+        for chunk in files_to_process.chunks(chunk_size) {
+            // Process this chunk in parallel
+            let chunk_results: Result<Vec<Vec<CodeChunk>>> = chunk
+                .par_iter()
+                .map(|(path, language)| {
+                    Self::extract_from_file_static(path, *language, &options)
+                })
+                .collect();
+
+            // Update progress after each chunk
+            processed_files += chunk.len();
+            progress.set_file_counts(processed_files, total_files);
+            
+            // Update spinner for each chunk to show progress
+            progress.update_spinner();
+
+            // Collect results
+            let chunk_results = chunk_results?;
+            for file_chunks in chunk_results {
+                all_chunks.extend(file_chunks);
+            }
         }
 
         progress.set_file_counts(total_files, total_files);
         progress.set_current_file(None);
         progress.set_phase("Finalizing".to_string());
 
-        Ok(chunks)
+        Ok(all_chunks)
     }
 
     fn should_process_file(&self, path: &Path, options: &ExtractionOptions) -> bool {
