@@ -15,6 +15,7 @@ pub enum ResultAction {
     Restart,
     BackToTitle,
     Quit,
+    Retry,
 }
 
 pub struct ResultScreen;
@@ -330,6 +331,7 @@ impl ResultScreen {
 
         // Display options
         let options = vec![
+            "[R] Retry",
             "[T/ENTER] Back to Title",
             "[ESC] Quit",
         ];
@@ -351,13 +353,29 @@ impl ResultScreen {
 
         stdout.flush()?;
 
-        // Wait for user input before returning
+        Ok(())
+    }
+
+    pub fn show_session_summary_with_input(
+        _total_stages: usize,
+        _completed_stages: usize, 
+        stage_engines: &[(String, ScoringEngine)],
+    ) -> Result<ResultAction> {
+        Self::show_session_summary(_total_stages, _completed_stages, stage_engines)?;
+        
+        // Wait for user input and return action
         loop {
             if event::poll(std::time::Duration::from_millis(100))? {
                 if let Event::Key(key_event) = event::read()? {
                     match key_event.code {
-                        KeyCode::Char('t') | KeyCode::Char('T') | KeyCode::Enter | KeyCode::Esc => {
-                            return Ok(());
+                        KeyCode::Char('r') | KeyCode::Char('R') => {
+                            return Ok(ResultAction::Retry);
+                        },
+                        KeyCode::Char('t') | KeyCode::Char('T') | KeyCode::Enter => {
+                            return Ok(ResultAction::BackToTitle);
+                        },
+                        KeyCode::Esc => {
+                            return Ok(ResultAction::Quit);
                         },
                         KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
                             std::process::exit(0);
