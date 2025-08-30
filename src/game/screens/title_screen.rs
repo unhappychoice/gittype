@@ -1,5 +1,6 @@
 use crate::Result;
 use crate::game::stage_builder::DifficultyLevel;
+use crate::extractor::GitRepositoryInfo;
 use crossterm::{
     cursor::MoveTo,
     event::{self, Event, KeyCode, KeyModifiers},
@@ -24,6 +25,10 @@ impl TitleScreen {
     }
     
     pub fn show_with_challenge_counts(challenge_counts: &[usize; 5]) -> Result<TitleAction> {
+        Self::show_with_challenge_counts_and_git_info(challenge_counts, None)
+    }
+    
+    pub fn show_with_challenge_counts_and_git_info(challenge_counts: &[usize; 5], git_info: Option<&GitRepositoryInfo>) -> Result<TitleAction> {
         let mut selected_difficulty = 1; // Start with Normal (index 1)
         let difficulties = [
             ("Easy", DifficultyLevel::Easy),
@@ -41,7 +46,7 @@ impl TitleScreen {
         let center_col = terminal_width / 2;
 
         // Draw static elements once
-        Self::draw_static_elements(&mut stdout, center_row, center_col)?;
+        Self::draw_static_elements(&mut stdout, center_row, center_col, git_info)?;
         
         let mut last_difficulty = selected_difficulty;
         // Draw initial difficulty selection
@@ -84,7 +89,7 @@ impl TitleScreen {
         }
     }
 
-    fn draw_static_elements(stdout: &mut std::io::Stdout, center_row: u16, center_col: u16) -> Result<()> {
+    fn draw_static_elements(stdout: &mut std::io::Stdout, center_row: u16, center_col: u16, git_info: Option<&GitRepositoryInfo>) -> Result<()> {
         // ASCII logo lines
         let logo_lines = vec![
             "─╔═══╗─╔══╗─╔════╗────╔════╗─╔╗──╔╗─╔═══╗─╔═══╗─",
@@ -128,6 +133,9 @@ impl TitleScreen {
         execute!(stdout, SetForegroundColor(Color::Red))?;
         execute!(stdout, Print("[ESC] Quit"))?;
         execute!(stdout, ResetColor)?;
+
+        // Display git info at bottom
+        Self::draw_git_info(stdout, git_info)?;
 
         Ok(())
     }
@@ -188,6 +196,45 @@ impl TitleScreen {
             execute!(stdout, ResetColor)?;
         }
 
+        Ok(())
+    }
+
+    fn draw_git_info(stdout: &mut std::io::Stdout, git_info: Option<&GitRepositoryInfo>) -> Result<()> {
+        if let Some(info) = git_info {
+            let (terminal_width, terminal_height) = terminal::size()?;
+            let bottom_row = terminal_height - 1;
+            
+            // Build git info string
+            let mut parts = vec![
+                format!("📁 {}/{}", info.user_name, info.repository_name),
+            ];
+            
+            if let Some(ref branch) = info.branch {
+                parts.push(format!("🌿 {}", branch));
+            }
+            
+            if let Some(ref commit) = info.commit_hash {
+                parts.push(format!("📝 {}", &commit[..8]));
+            }
+            
+            let status_symbol = if info.is_dirty { "⚠️" } else { "✓" };
+            parts.push(status_symbol.to_string());
+            
+            let git_text = parts.join(" • ");
+            
+            // Calculate approximate display width considering emoji width
+            // Each emoji takes about 2 characters worth of width
+            let emoji_count = git_text.chars().filter(|c| *c as u32 > 127).count();
+            let approximate_width = git_text.chars().count() + emoji_count;
+            
+            // Center the text using approximate width
+            let git_col = terminal_width.saturating_sub(approximate_width as u16) / 2;
+            
+            execute!(stdout, MoveTo(git_col, bottom_row))?;
+            execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
+            execute!(stdout, Print(&git_text))?;
+            execute!(stdout, ResetColor)?;
+        }
         Ok(())
     }
 }

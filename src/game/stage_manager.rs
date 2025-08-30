@@ -1,5 +1,6 @@
 use crate::Result;
 use crate::scoring::{TypingMetrics, ScoringEngine};
+use crate::extractor::GitRepositoryInfo;
 use crossterm::terminal;
 use std::sync::{Arc, Mutex};
 use once_cell::sync::Lazy;
@@ -22,6 +23,7 @@ pub struct StageManager {
     stage_engines: Vec<(String, ScoringEngine)>,
     current_game_mode: Option<GameMode>,
     session_tracker: SessionTracker,
+    git_info: Option<GitRepositoryInfo>,
 }
 
 impl StageManager {
@@ -33,7 +35,12 @@ impl StageManager {
             stage_engines: Vec::new(),
             current_game_mode: None,
             session_tracker: SessionTracker::new(),
+            git_info: None,
         }
+    }
+    
+    pub fn set_git_info(&mut self, git_info: Option<GitRepositoryInfo>) {
+        self.git_info = git_info;
     }
 
     pub fn run_session(&mut self) -> Result<()> {
@@ -57,7 +64,7 @@ impl StageManager {
             // Count challenges by difficulty level
             let challenge_counts = self.count_challenges_by_difficulty();
             
-            match TitleScreen::show_with_challenge_counts(&challenge_counts)? {
+            match TitleScreen::show_with_challenge_counts_and_git_info(&challenge_counts, self.git_info.as_ref())? {
                 TitleAction::Start(difficulty) => {
                     // Build stages based on selected difficulty using pre-generated challenges
                     let game_mode = GameMode::Custom {

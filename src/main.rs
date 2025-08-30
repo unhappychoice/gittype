@@ -148,6 +148,7 @@ fn main() -> anyhow::Result<()> {
                 
                 // Create StageManager with pre-generated challenges
                 let mut stage_manager = StageManager::new(available_challenges);
+                stage_manager.set_git_info(loader.get_git_info().clone());
                 match stage_manager.run_session() {
                     Ok(_) => {
                         // println!("Thanks for playing GitType!");
