@@ -104,14 +104,16 @@ fn main() -> anyhow::Result<()> {
 
                 // Show loading screen during startup
                 let loading_screen = match LoadingScreen::new() {
-                    Ok(screen) => screen,
+                    Ok(screen) => Some(screen),
                     Err(e) => {
                         eprintln!("Failed to initialize loading screen: {}, continuing without it...", e);
-                        return Ok(());
+                        None
                     }
                 };
                 
-                loading_screen.show_initial()?;
+                if let Some(ref screen) = loading_screen {
+                    let _ = screen.show_initial();
+                }
 
                 let mut loader = match RepositoryLoader::new() {
                     Ok(loader) => loader,
@@ -122,19 +124,29 @@ fn main() -> anyhow::Result<()> {
                 };
 
                 // Load all code chunks (functions, classes, methods, etc.)
-                let mut available_challenges = loader.load_challenges_from_repository_with_progress(&repo_path, Some(options.clone()), &loading_screen)?;
+                let mut available_challenges = if let Some(ref screen) = loading_screen {
+                    loader.load_challenges_from_repository_with_progress(&repo_path, Some(options.clone()), screen)?
+                } else {
+                    loader.load_challenges_from_repository(&repo_path, Some(options.clone()))?
+                };
                 
                 // Generate additional Zen challenges for all source files in the repository
-                loading_screen.set_phase("Generating Zen challenges from all files".to_string());
+                if let Some(ref screen) = loading_screen {
+                    screen.set_phase("Generating Zen challenges from all files".to_string());
+                }
                 let all_file_zen_challenges = loader.load_all_files_as_zen_challenges(&repo_path)?;
                 available_challenges.extend(all_file_zen_challenges);
 
                 if available_challenges.is_empty() {
-                    let _ = loading_screen.show_completion();
+                    if let Some(ref screen) = loading_screen {
+                        let _ = screen.show_completion();
+                    }
                     eprintln!("No code chunks found in the repository");
                     return Ok(());
                 }
-                loading_screen.show_completion()?;
+                if let Some(ref screen) = loading_screen {
+                    let _ = screen.show_completion();
+                }
                 
                 // Create StageManager with pre-generated challenges
                 let mut stage_manager = StageManager::new(available_challenges);

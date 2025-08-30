@@ -31,7 +31,7 @@ fn test_scoring_with_metrics(target_cpm: f64, accuracy: f64, mistakes: usize) ->
         total_chars,
     );
     
-    let title = ScoringEngine::get_ranking_title_for_score(score);
+    let title = ScoringEngine::get_ranking_title_for_score(score).name().to_string();
     
     ScoringTestResult {
         actual_cpm: target_cpm,
