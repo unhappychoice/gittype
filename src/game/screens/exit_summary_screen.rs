@@ -93,7 +93,7 @@ impl ExitSummaryScreen {
             format!("Overall CPM: {:.1} | WPM: {:.1} | Accuracy: {:.1}%", 
                 session_summary.overall_cpm, session_summary.overall_wpm, session_summary.overall_accuracy),
             format!("Total Keystrokes: {} | Mistakes: {} | Challenges: {}/{}", 
-                session_summary.total_keystrokes, session_summary.total_mistakes,
+                session_summary.total_effort_keystrokes(), session_summary.total_effort_mistakes(),
                 session_summary.total_challenges_completed, session_summary.total_challenges_attempted),
         ];
 

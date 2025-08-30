@@ -11,8 +11,12 @@ pub struct SessionSummary {
     pub overall_accuracy: f64,
     pub overall_wpm: f64,
     pub overall_cpm: f64,
+    // Completed stages only (for score calculation)
     pub total_keystrokes: usize,
     pub total_mistakes: usize,
+    // Partial effort only (Skip + Exit stages)
+    pub total_partial_effort_keystrokes: usize,
+    pub total_partial_effort_mistakes: usize,
     pub best_stage_wpm: f64,
     pub worst_stage_wpm: f64,
     pub best_stage_accuracy: f64,
@@ -33,6 +37,8 @@ impl SessionSummary {
             overall_cpm: 0.0,
             total_keystrokes: 0,
             total_mistakes: 0,
+            total_partial_effort_keystrokes: 0,
+            total_partial_effort_mistakes: 0,
             best_stage_wpm: 0.0,
             worst_stage_wpm: f64::MAX,
             best_stage_accuracy: 0.0,
@@ -65,6 +71,20 @@ impl SessionSummary {
     pub fn add_skip(&mut self) {
         self.total_skips_used += 1;
         self.total_challenges_attempted += 1;
+    }
+
+    pub fn add_partial_effort(&mut self, keystrokes: usize, mistakes: usize) {
+        self.total_partial_effort_keystrokes += keystrokes;
+        self.total_partial_effort_mistakes += mistakes;
+    }
+
+    // Calculate total effort including both completed and partial
+    pub fn total_effort_keystrokes(&self) -> usize {
+        self.total_keystrokes + self.total_partial_effort_keystrokes
+    }
+
+    pub fn total_effort_mistakes(&self) -> usize {
+        self.total_mistakes + self.total_partial_effort_mistakes
     }
 
     pub fn finalize_session(&mut self) {
@@ -120,6 +140,10 @@ impl SessionTracker {
 
     pub fn record_skip(&mut self) {
         self.summary.add_skip();
+    }
+
+    pub fn record_partial_effort(&mut self, engine: &ScoringEngine, metrics: &TypingMetrics) {
+        self.summary.add_partial_effort(engine.total_chars(), metrics.mistakes);
     }
 
     pub fn finalize_and_get_summary(mut self) -> SessionSummary {

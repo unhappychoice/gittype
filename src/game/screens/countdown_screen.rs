@@ -146,7 +146,9 @@ impl CountdownScreen {
             if event::poll(std::time::Duration::from_millis(10))? {
                 if let Event::Key(key) = event::read()? {
                     if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('c') {
-                        return Err(crate::error::GitTypeError::TerminalError("Interrupted by user".to_string()));
+                        // Use global session tracker to show summary
+                        crate::game::stage_manager::show_session_summary_on_interrupt();
+                        std::process::exit(0);
                     }
                 }
             }

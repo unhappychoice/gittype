@@ -1,12 +1,13 @@
 use crate::Result;
 use crate::scoring::{TypingMetrics, ScoringEngine};
 use crate::extractor::GitRepositoryInfo;
-use crossterm::terminal;
+use crossterm::{terminal, execute, event::{KeyboardEnhancementFlags, PushKeyboardEnhancementFlags, PopKeyboardEnhancementFlags}};
+use std::io::stdout;
 use std::sync::{Arc, Mutex};
 use once_cell::sync::Lazy;
 use super::{
     challenge::Challenge,
-    screens::{TitleScreen, ResultScreen, CountdownScreen, TypingScreen, TitleAction, result_screen::ResultAction, ExitSummaryScreen},
+    screens::{TitleScreen, ResultScreen, CountdownScreen, TypingScreen, TitleAction, result_screen::ResultAction, ExitSummaryScreen, typing_screen::GameState},
     stage_builder::{StageBuilder, GameMode, DifficultyLevel},
     session_tracker::SessionTracker,
 };
@@ -24,6 +25,7 @@ pub struct StageManager {
     current_game_mode: Option<GameMode>,
     session_tracker: SessionTracker,
     git_info: Option<GitRepositoryInfo>,
+    skips_remaining: usize,
 }
 
 impl StageManager {
@@ -36,6 +38,7 @@ impl StageManager {
             current_game_mode: None,
             session_tracker: SessionTracker::new(),
             git_info: None,
+            skips_remaining: 3,
         }
     }
     
@@ -59,6 +62,14 @@ impl StageManager {
                 ));
             }
         }
+
+        // Enable keyboard enhancement flags to better detect modifier combinations
+        let mut stdout_handle = stdout();
+        execute!(stdout_handle, PushKeyboardEnhancementFlags(
+            KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES | 
+            KeyboardEnhancementFlags::REPORT_EVENT_TYPES |
+            KeyboardEnhancementFlags::REPORT_ALL_KEYS_AS_ESCAPE_CODES
+        )).ok(); // Ignore errors in case terminal doesn't support it
 
         loop {
             // Count challenges by difficulty level
@@ -94,6 +105,7 @@ impl StageManager {
                         // Reset session metrics
                         self.current_stage = 0;
                         self.stage_engines.clear();
+                        self.skips_remaining = 3;
                         
                         match self.run_stages() {
                             Ok(session_complete) => {
@@ -124,6 +136,10 @@ impl StageManager {
             *global_tracker = None;
         }
 
+        // Disable keyboard enhancement flags
+        let mut stdout_handle = stdout();
+        execute!(stdout_handle, PopKeyboardEnhancementFlags).ok();
+
         terminal::disable_raw_mode()?;
         Ok(())
     }
@@ -142,30 +158,101 @@ impl StageManager {
             }
             
             let mut screen = TypingScreen::new_with_challenge(challenge)?;
-            let metrics = screen.show()?; // Use show method like other screens
+            screen.set_skips_remaining(self.skips_remaining);
+            let (metrics, final_state) = screen.show_with_state()?;
+            self.skips_remaining = screen.get_skips_remaining();
             
-            // Record stage completion
-            let stage_name = challenge.get_display_title();
-            let engine = screen.get_scoring_engine().clone();
-            
-            self.stage_engines.push((stage_name.clone(), engine.clone()));
-            
-            // Track in session tracker
-            self.session_tracker.record_stage_completion(stage_name, metrics.clone(), &engine);
-            
-            // Update global session tracker
-            {
-                let mut global_tracker = GLOBAL_SESSION_TRACKER.lock().unwrap();
-                if let Some(ref mut tracker) = *global_tracker {
-                    *tracker = self.session_tracker.clone();
+            // Handle different exit states
+            match final_state {
+                GameState::Complete => {
+                    // Normal completion - advance to next stage
+                    let stage_name = challenge.get_display_title();
+                    let engine = screen.get_scoring_engine().clone();
+                    
+                    self.stage_engines.push((stage_name.clone(), engine.clone()));
+                    
+                    // Track in session tracker
+                    self.session_tracker.record_stage_completion(stage_name, metrics.clone(), &engine);
+                    
+                    // Update global session tracker
+                    {
+                        let mut global_tracker = GLOBAL_SESSION_TRACKER.lock().unwrap();
+                        if let Some(ref mut tracker) = *global_tracker {
+                            *tracker = self.session_tracker.clone();
+                        }
+                    }
+                    
+                    // Show brief result and auto-advance
+                    self.show_stage_completion(&metrics)?;
+                    
+                    // Move to next stage
+                    self.current_stage += 1;
+                },
+                GameState::Skip => {
+                    // Skipped - record skip and partial effort
+                    let engine = screen.get_scoring_engine();
+                    self.session_tracker.record_skip();
+                    self.session_tracker.record_partial_effort(engine, &metrics);
+                    
+                    // Update global session tracker
+                    {
+                        let mut global_tracker = GLOBAL_SESSION_TRACKER.lock().unwrap();
+                        if let Some(ref mut tracker) = *global_tracker {
+                            *tracker = self.session_tracker.clone();
+                        }
+                    }
+                    
+                    self.show_stage_completion(&metrics)?;
+                    
+                    // Generate a new challenge for the current stage
+                    if let Some(ref game_mode) = self.current_game_mode {
+                        let stage_builder = StageBuilder::with_mode(game_mode.clone());
+                        let new_challenges = stage_builder.build_stages(self.available_challenges.clone());
+                        
+                        if !new_challenges.is_empty() && self.current_stage < new_challenges.len() {
+                            // Replace current challenge with a new one
+                            self.current_challenges[self.current_stage] = new_challenges[self.current_stage].clone();
+                        }
+                    }
+                    // Don't increment current_stage - retry same stage with new challenge
+                },
+                GameState::Failed => {
+                    // Failed - show fail result screen with navigation options
+                    let stage_name = challenge.get_display_title();
+                    let engine = screen.get_scoring_engine().clone();
+                    
+                    self.stage_engines.push((stage_name.clone(), engine.clone()));
+                    
+                    // Track in session tracker
+                    self.session_tracker.record_stage_completion(stage_name, metrics.clone(), &engine);
+                    
+                    // Show fail result screen and handle navigation
+                    return self.handle_fail_result_navigation();
+                },
+                GameState::Exit => {
+                    // User wants to exit - record partial effort only
+                    let engine = screen.get_scoring_engine();
+                    self.session_tracker.record_partial_effort(engine, &metrics);
+                    
+                    // Update global session tracker with current state
+                    {
+                        let mut global_tracker = GLOBAL_SESSION_TRACKER.lock().unwrap();
+                        if let Some(ref mut tracker) = *global_tracker {
+                            *tracker = self.session_tracker.clone();
+                        }
+                    }
+                    
+                    // Show session summary and exit
+                    let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                    terminal::disable_raw_mode()?;
+                    let _ = ExitSummaryScreen::show(&session_summary)?;
+                    std::process::exit(0);
+                },
+                GameState::Continue | GameState::ShowDialog => {
+                    // This shouldn't happen in final state
+                    unreachable!("Continue/ShowDialog state should not be final");
                 }
             }
-            
-            // Show brief result and auto-advance
-            self.show_stage_completion(&metrics)?;
-            
-            // Move to next stage
-            self.current_stage += 1;
         }
         
         // All stages completed - show final results (raw mode still enabled)
@@ -219,6 +306,41 @@ impl StageManager {
     }
 
     
+    fn handle_fail_result_navigation(&self) -> Result<bool> {
+        use crossterm::event::{self, Event, KeyCode};
+        
+        // Show fail result screen
+        ResultScreen::show_session_summary_fail_mode(
+            self.current_challenges.len(),
+            self.stage_engines.len(),
+            &self.stage_engines,
+        )?;
+        
+        // Wait for navigation input
+        loop {
+            if event::poll(std::time::Duration::from_millis(100))? {
+                if let Event::Key(key_event) = event::read()? {
+                    match key_event.code {
+                        KeyCode::Enter => {
+                            // Back to title screen
+                            return Ok(false);
+                        },
+                        KeyCode::Esc => {
+                            // Show session summary and exit
+                            let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                            let _ = ExitSummaryScreen::show(&session_summary)?;
+                            std::process::exit(0);
+                        },
+                        KeyCode::Char('c') if key_event.modifiers.contains(crossterm::event::KeyModifiers::CONTROL) => {
+                            std::process::exit(0);
+                        },
+                        _ => {}
+                    }
+                }
+            }
+        }
+    }
+
     fn count_challenges_by_difficulty(&self) -> [usize; 5] {
         let mut counts = [0usize; 5];
         
@@ -240,16 +362,19 @@ impl StageManager {
 
 // Public function for Ctrl+C handler
 pub fn show_session_summary_on_interrupt() {
-    let _ = terminal::disable_raw_mode();
+    // Keep raw mode enabled since ExitSummaryScreen needs it for input handling
     
     let global_tracker = GLOBAL_SESSION_TRACKER.lock().unwrap();
     if let Some(ref tracker) = *global_tracker {
         let session_summary = tracker.clone().finalize_and_get_summary();
         
-        // Show session summary
+        // Show session summary with raw mode enabled
         let _ = ExitSummaryScreen::show(&session_summary);
+        // Disable raw mode after ExitSummaryScreen completes
+        let _ = terminal::disable_raw_mode();
     } else {
-        // Show simple interruption message in terminal UI style
+        // Show simple interruption message
+        let _ = terminal::disable_raw_mode();
         use crossterm::{execute, style::{Print, SetForegroundColor, Color, ResetColor}, cursor::MoveTo};
         use std::io::stdout;
         
@@ -266,7 +391,8 @@ pub fn show_session_summary_on_interrupt() {
         let _ = execute!(stdout, Print("Press any key to exit..."));
         let _ = execute!(stdout, ResetColor);
         
-        // Wait for any key
+        // Enable raw mode temporarily for input
+        let _ = terminal::enable_raw_mode();
         use crossterm::event;
         loop {
             if let Ok(true) = event::poll(std::time::Duration::from_millis(100)) {
@@ -275,5 +401,6 @@ pub fn show_session_summary_on_interrupt() {
                 }
             }
         }
+        let _ = terminal::disable_raw_mode();
     }
 }
