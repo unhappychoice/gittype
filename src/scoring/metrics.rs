@@ -10,4 +10,6 @@ pub struct TypingMetrics {
     pub completion_time: Duration,
     pub challenge_score: f64,
     pub ranking_title: String,
+    pub was_skipped: bool,
+    pub was_failed: bool,
 }
