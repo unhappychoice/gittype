@@ -1,11 +1,12 @@
 use std::path::Path;
 use crate::game::Challenge;
 use crate::{Result, GitTypeError};
-use super::{CodeExtractor, ExtractionOptions, ChallengeConverter, ProgressReporter, NoOpProgressReporter};
+use super::{CodeExtractor, ExtractionOptions, ChallengeConverter, ProgressReporter, NoOpProgressReporter, GitInfoExtractor, GitRepositoryInfo};
 
 pub struct RepositoryLoader {
     extractor: CodeExtractor,
     converter: ChallengeConverter,
+    git_info: Option<GitRepositoryInfo>,
 }
 
 impl RepositoryLoader {
@@ -16,6 +17,7 @@ impl RepositoryLoader {
         Ok(Self {
             extractor,
             converter,
+            git_info: None,
         })
     }
 
@@ -36,6 +38,9 @@ impl RepositoryLoader {
         if !repo_path.exists() {
             return Err(GitTypeError::RepositoryNotFound(repo_path.to_path_buf()));
         }
+
+        // Extract git information
+        self.git_info = GitInfoExtractor::extract_git_info(repo_path)?;
 
         let extraction_options = options.unwrap_or_default();
         let chunks = self.extractor.extract_chunks_with_progress(repo_path, extraction_options, progress)?;
@@ -134,4 +139,9 @@ impl RepositoryLoader {
         
         Ok(zen_challenges)
     }
+
+    pub fn get_git_info(&self) -> &Option<GitRepositoryInfo> {
+        &self.git_info
+    }
+
 }
