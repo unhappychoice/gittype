@@ -346,6 +346,7 @@ impl ChallengeConverter {
             super::Language::TypeScript => "typescript".to_string(),
             super::Language::Python => "python".to_string(),
             super::Language::Ruby => "ruby".to_string(),
+            super::Language::Go => "go".to_string(),
         }
     }
 }

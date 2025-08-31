@@ -4,6 +4,7 @@ pub enum Language {
     TypeScript,
     Python,
     Ruby,
+    Go,
 }
 
 impl Language {
@@ -13,6 +14,7 @@ impl Language {
             "ts" | "tsx" => Some(Language::TypeScript),
             "py" => Some(Language::Python),
             "rb" => Some(Language::Ruby),
+            "go" => Some(Language::Go),
             _ => None,
         }
     }
@@ -23,6 +25,7 @@ impl Language {
             Language::TypeScript => "ts",
             Language::Python => "py",
             Language::Ruby => "rb",
+            Language::Go => "go",
         }
     }
 }
