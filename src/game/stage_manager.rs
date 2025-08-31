@@ -310,10 +310,16 @@ impl StageManager {
             match action {
                 ResultAction::Retry => return Ok(true), // Return true to indicate retry requested
                 ResultAction::Share => {
-                    // Show sharing menu
-                    if let Some(last_engine) = self.stage_engines.last() {
-                        if let Ok(metrics) = last_engine.1.calculate_metrics() {
-                            let _ = ResultScreen::show_sharing_menu(&metrics);
+                    // Show sharing menu with combined engine metrics (same as result screen)
+                    if !self.stage_engines.is_empty() {
+                        let combined_engine = self.stage_engines
+                            .iter()
+                            .map(|(_, engine)| engine.clone())
+                            .reduce(|acc, engine| acc + engine)
+                            .unwrap();
+                            
+                        if let Ok(session_metrics) = combined_engine.calculate_metrics() {
+                            let _ = ResultScreen::show_sharing_menu(&session_metrics);
                         }
                     }
                     // Continue showing the summary screen after sharing (without animation)
@@ -392,6 +398,7 @@ impl StageManager {
     pub fn get_total_stages(&self) -> usize {
         self.current_challenges.len()
     }
+
 
     fn handle_fail_result_navigation(&self) -> Result<bool> {
         use crossterm::event::{self, Event, KeyCode};
