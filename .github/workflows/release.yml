@@ -26,6 +26,7 @@ jobs:
     outputs:
       new_version: ${{ steps.version.outputs.new_version }}
       upload_url: ${{ steps.create_release.outputs.upload_url }}
+      tag_sha: ${{ steps.tag_sha.outputs.tag_sha }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -62,6 +63,14 @@ jobs:
           git tag ${{ steps.version.outputs.new_version }}
           git push origin main
           git push origin ${{ steps.version.outputs.new_version }}
+
+      # Resolve the exact commit SHA for the newly created tag (used by Homebrew)
+      - name: Resolve tag commit SHA
+        id: tag_sha
+        run: |
+          TAG_SHA=$(git rev-list -n 1 ${{ steps.version.outputs.new_version }})
+          echo "tag_sha=$TAG_SHA" >> $GITHUB_OUTPUT
+          echo "Tag commit SHA: $TAG_SHA"
 
       # Create GitHub Release
       - name: Create Release
@@ -158,4 +167,4 @@ jobs:
           tap: unhappychoice/homebrew-tap
           formula: gittype
           tag: ${{ needs.release.outputs.new_version }}
-          revision: ${{ github.sha }}
+          revision: ${{ needs.release.outputs.tag_sha }}
