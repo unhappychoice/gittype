@@ -345,6 +345,7 @@ impl ChallengeConverter {
             super::Language::Rust => "rust".to_string(),
             super::Language::TypeScript => "typescript".to_string(),
             super::Language::Python => "python".to_string(),
+            super::Language::Ruby => "ruby".to_string(),
         }
     }
 }

@@ -21,6 +21,7 @@ impl Default for ExtractionOptions {
                 "**/*.ts".to_string(),
                 "**/*.tsx".to_string(),
                 "**/*.py".to_string(),
+                "**/*.rb".to_string(),
             ],
             exclude_patterns: vec![
                 "**/target/**".to_string(),
@@ -68,6 +69,16 @@ impl CodeExtractor {
                     .map_err(|e| {
                         GitTypeError::ExtractionFailed(format!(
                             "Failed to set Python language: {}",
+                            e
+                        ))
+                    })?;
+            }
+            Language::Ruby => {
+                parser
+                    .set_language(tree_sitter_ruby::language())
+                    .map_err(|e| {
+                        GitTypeError::ExtractionFailed(format!(
+                            "Failed to set Ruby language: {}",
                             e
                         ))
                     })?;
@@ -253,6 +264,11 @@ impl CodeExtractor {
                 (function_definition name: (identifier) @name) @function
                 (class_definition name: (identifier) @name) @class
             ",
+            Language::Ruby => "
+                (method name: (identifier) @name) @method
+                (class name: (constant) @name) @class
+                (module name: (constant) @name) @module
+            ",
         };
 
         let query = Query::new(tree.language(), query_str).map_err(|e| {
@@ -335,6 +351,7 @@ impl CodeExtractor {
             "method" => ChunkType::Method,
             "class" | "impl" => ChunkType::Class,
             "struct" => ChunkType::Struct,
+            "module" => ChunkType::Module,
             "arrow_function" => ChunkType::Function,
             "function_expression" => ChunkType::Function,
             _ => return None,
@@ -403,6 +420,7 @@ impl CodeExtractor {
                 if child.kind() == "identifier"
                     || child.kind() == "type_identifier"
                     || child.kind() == "property_identifier"
+                    || child.kind() == "constant"
                 {
                     let start = child.start_byte();
                     let end = child.end_byte();
@@ -547,6 +565,7 @@ impl CodeExtractor {
             Language::Rust => "[(line_comment) (block_comment)] @comment",
             Language::TypeScript => "(comment) @comment",
             Language::Python => "(comment) @comment",
+            Language::Ruby => "(comment) @comment",
         };
 
         let query = match Query::new(tree.language(), comment_query) {
@@ -569,6 +588,7 @@ impl CodeExtractor {
                     Language::Rust => node_kind == "line_comment" || node_kind == "block_comment",
                     Language::TypeScript => node_kind == "comment",
                     Language::Python => node_kind == "comment",
+                    Language::Ruby => node_kind == "comment",
                 };
 
                 if !is_valid_comment {
