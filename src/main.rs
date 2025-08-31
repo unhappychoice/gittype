@@ -1,7 +1,10 @@
 use clap::{Parser, Subcommand};
 use gittype::extractor::{ExtractionOptions, ProgressReporter, RepositoryLoader};
 use gittype::game::screens::loading_screen::LoadingScreen;
-use gittype::game::{stage_manager::show_session_summary_on_interrupt, StageManager};
+use gittype::game::{
+    stage_manager::{cleanup_terminal, show_session_summary_on_interrupt},
+    StageManager,
+};
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -57,6 +60,11 @@ enum Commands {
 }
 
 fn main() -> anyhow::Result<()> {
+    // Set up panic hook to ensure terminal cleanup
+    std::panic::set_hook(Box::new(|_| {
+        cleanup_terminal();
+    }));
+
     // Set up Ctrl+C handler
     ctrlc::set_handler(move || {
         show_session_summary_on_interrupt();
