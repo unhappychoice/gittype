@@ -481,11 +481,7 @@ impl ResultScreen {
         }
 
         // Display options
-        let options = [
-            "[S] Share Result",
-            "[T] Back to Title",
-            "[ESC] Quit",
-        ];
+        let options = ["[S] Share Result", "[T] Back to Title", "[ESC] Quit"];
 
         let options_start = if !stage_engines.is_empty() {
             let stage_results_start_row = summary_start_row + summary_lines.len() as u16 + 2;

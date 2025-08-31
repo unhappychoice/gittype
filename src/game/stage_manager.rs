@@ -212,14 +212,9 @@ impl StageManager {
                     }
 
                     // Show brief result and auto-advance
-                    if let Some(action) = self.show_stage_completion(&metrics)? {
-                        match action {
-                            ResultAction::Quit => {
-                                // Treat as failed - show fail result screen and handle navigation
-                                return self.handle_fail_result_navigation();
-                            }
-                            _ => {}
-                        }
+                    if let Some(ResultAction::Quit) = self.show_stage_completion(&metrics)? {
+                        // Treat as failed - show fail result screen and handle navigation
+                        return self.handle_fail_result_navigation();
                     }
 
                     // Move to next stage
@@ -239,14 +234,9 @@ impl StageManager {
                         }
                     }
 
-                    if let Some(action) = self.show_stage_completion(&metrics)? {
-                        match action {
-                            ResultAction::Quit => {
-                                // Treat as failed - show fail result screen and handle navigation
-                                return self.handle_fail_result_navigation();
-                            }
-                            _ => {}
-                        }
+                    if let Some(ResultAction::Quit) = self.show_stage_completion(&metrics)? {
+                        // Treat as failed - show fail result screen and handle navigation
+                        return self.handle_fail_result_navigation();
                     }
 
                     // Generate a new challenge for the current stage
