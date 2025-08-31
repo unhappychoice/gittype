@@ -18,6 +18,7 @@ pub enum ResultAction {
     Quit,
     Retry,
     Share,
+    Exit,
 }
 
 pub struct ResultScreen;
@@ -71,7 +72,7 @@ impl ResultScreen {
         total_stages: usize,
         has_next_stage: bool,
         keystrokes: usize,
-    ) -> Result<()> {
+    ) -> Result<Option<ResultAction>> {
         let mut stdout = stdout();
 
         // Comprehensive screen reset
@@ -224,7 +225,7 @@ impl ResultScreen {
         stdout.flush()?;
 
         // Show stage completion options
-        let options_text = "[SPACE] Continue  [R] Retry  [ESC] Quit";
+        let options_text = "[SPACE] Continue  [ESC] Quit";
         let options_col = center_col.saturating_sub(options_text.len() as u16 / 2);
         let options_row = if has_next_stage {
             progress_start_row + 3
@@ -243,20 +244,15 @@ impl ResultScreen {
                 if let Event::Key(key_event) = event::read()? {
                     match key_event.code {
                         KeyCode::Char(' ') => break, // Continue
-                        KeyCode::Char('r') | KeyCode::Char('R') => {
-                            // TODO: Handle retry - for now just continue
-                            break;
-                        }
                         KeyCode::Esc => {
-                            // TODO: Handle quit - for now just continue
-                            break;
+                            return Ok(Some(ResultAction::Quit));
                         }
                         _ => {}
                     }
                 }
             }
         }
-        Ok(())
+        Ok(None)
     }
 
     pub fn show_session_summary(
@@ -486,7 +482,6 @@ impl ResultScreen {
 
         // Display options
         let options = [
-            "[R] Retry",
             "[S] Share Result",
             "[T] Back to Title",
             "[ESC] Quit",
@@ -559,9 +554,6 @@ impl ResultScreen {
             if event::poll(std::time::Duration::from_millis(100))? {
                 if let Event::Key(key_event) = event::read()? {
                     match key_event.code {
-                        KeyCode::Char('r') | KeyCode::Char('R') => {
-                            return Ok(ResultAction::Retry);
-                        }
                         KeyCode::Char('s') | KeyCode::Char('S') => {
                             return Ok(ResultAction::Share);
                         }

@@ -212,7 +212,15 @@ impl StageManager {
                     }
 
                     // Show brief result and auto-advance
-                    self.show_stage_completion(&metrics)?;
+                    if let Some(action) = self.show_stage_completion(&metrics)? {
+                        match action {
+                            ResultAction::Quit => {
+                                // Treat as failed - show fail result screen and handle navigation
+                                return self.handle_fail_result_navigation();
+                            }
+                            _ => {}
+                        }
+                    }
 
                     // Move to next stage
                     self.current_stage += 1;
@@ -231,7 +239,15 @@ impl StageManager {
                         }
                     }
 
-                    self.show_stage_completion(&metrics)?;
+                    if let Some(action) = self.show_stage_completion(&metrics)? {
+                        match action {
+                            ResultAction::Quit => {
+                                // Treat as failed - show fail result screen and handle navigation
+                                return self.handle_fail_result_navigation();
+                            }
+                            _ => {}
+                        }
+                    }
 
                     // Generate a new challenge for the current stage
                     if let Some(ref game_mode) = self.current_game_mode {
@@ -333,12 +349,17 @@ impl StageManager {
                         }
                     }
                 }
+                ResultAction::Exit => {
+                    // Immediately exit without showing session summary
+                    terminal::disable_raw_mode()?;
+                    std::process::exit(0);
+                }
                 _ => return Ok(false), // Return false for back to title
             }
         }
     }
 
-    fn show_stage_completion(&self, metrics: &TypingMetrics) -> Result<()> {
+    fn show_stage_completion(&self, metrics: &TypingMetrics) -> Result<Option<ResultAction>> {
         // Get keystrokes from the latest scoring engine
         let keystrokes = if let Some((_, engine)) = self.stage_engines.last() {
             engine.total_chars()
