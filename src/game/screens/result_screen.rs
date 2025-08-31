@@ -317,7 +317,7 @@ impl ResultScreen {
         let rank_title_height = rank_title_lines.len() as u16;
 
         // Calculate total content height and center vertically
-        let total_content_height = rank_title_height + 1 + 1 + 2 + 4 + 2 + 2; // rank + gap + tier + extra gap + label + score + gap + summary
+        let total_content_height = 4 + rank_title_height + 1 + 3 + 1 + 4 + 2 + 2; // session_title_space + rank + tier + gap_after_tier + label + score + gap + summary
         let rank_start_row = if total_content_height < terminal_height {
             center_row.saturating_sub(total_content_height / 2)
         } else {
@@ -332,7 +332,7 @@ impl ResultScreen {
             let title_col = center_col.saturating_sub(line.len() as u16 / 2);
             execute!(
                 stdout,
-                MoveTo(title_col, rank_start_row.saturating_sub(5) + i as u16)
+                MoveTo(title_col, rank_start_row.saturating_sub(4) + i as u16)
             )?;
             execute!(
                 stdout,
@@ -346,7 +346,7 @@ impl ResultScreen {
         // Display "you're:" label before rank title (1 line gap from rank title)
         let youre_label = "YOU'RE:";
         let youre_col = center_col.saturating_sub(youre_label.len() as u16 / 2);
-        execute!(stdout, MoveTo(youre_col, rank_start_row.saturating_sub(2)))?;
+        execute!(stdout, MoveTo(youre_col, rank_start_row.saturating_sub(1)))?;
         execute!(
             stdout,
             SetAttribute(Attribute::Bold),
@@ -365,7 +365,7 @@ impl ResultScreen {
         }
 
         // Display tier information right after rank title (small gap after rank title)
-        let tier_info_row = rank_start_row + rank_title_height;
+        let tier_info_row = rank_start_row + rank_title_height + 1;
         let tier_info = format!(
             "{} tier - rank {}/{} (overall {}/{})",
             session_metrics.ranking_tier,
@@ -392,7 +392,7 @@ impl ResultScreen {
         execute!(stdout, ResetColor)?;
 
         // Calculate score position based on rank title height and tier info (add extra gap after tier info)
-        let score_label_row = rank_start_row + rank_title_height + 3;
+        let score_label_row = rank_start_row + rank_title_height + 4;
 
         // Display "SCORE" label in normal text with color
         let score_label = "SESSION SCORE";
