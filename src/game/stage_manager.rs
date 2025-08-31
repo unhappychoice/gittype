@@ -456,13 +456,17 @@ impl StageManager {
 
 // Comprehensive terminal cleanup function
 pub fn cleanup_terminal() {
-    use crossterm::{execute, terminal};
+    use crossterm::{event::PopKeyboardEnhancementFlags, execute, terminal};
     use std::io::{stdout, Write};
 
     // Disable raw mode first
     if let Err(e) = terminal::disable_raw_mode() {
         eprintln!("Warning: Failed to disable raw mode: {}", e);
     }
+
+    // Pop keyboard enhancement flags to avoid leaving terminal in special key-report mode
+    // This is especially important for iTerm2 which keeps modes until explicitly reverted
+    let _ = execute!(stdout(), PopKeyboardEnhancementFlags);
 
     // Exit alternate screen and restore cursor with explicit error handling
     if let Err(e) = execute!(
