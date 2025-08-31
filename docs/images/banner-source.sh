@@ -14,9 +14,6 @@ echo "Turn your own source code into typing challenges"
 echo
 echo "[*] Addictive gameplay  [>] Real-time feedback  [+] Track your progress"
 echo
-echo "$ brew install gittype"
-echo "$ gittype"
-echo
 echo "github.com/unhappychoice/gittype"
 
 # To regenerate the banner:
