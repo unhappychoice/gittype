@@ -83,7 +83,8 @@ fn main() -> anyhow::Result<()> {
             // TODO: Implement export functionality
         }
         None => {
-            if let Some(repo_path) = cli.repo_path {
+            let repo_path = cli.repo_path.unwrap_or_else(|| PathBuf::from("."));
+            {
                 // Build extraction options from CLI arguments
                 let mut options = ExtractionOptions::default();
 
@@ -164,8 +165,6 @@ fn main() -> anyhow::Result<()> {
                         }
                     }
                 }
-            } else {
-                println!("Please specify a repository path or use --help for usage information");
             }
         }
     }

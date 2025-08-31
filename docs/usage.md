@@ -7,7 +7,7 @@
    cd /path/to/your/project
    ```
 
-2. **Start typing practice:**
+2. **Start typing practice (uses current directory by default):**
    ```bash
    gittype
    ```
@@ -22,6 +22,8 @@
 ```bash
 gittype [OPTIONS] [REPO_PATH] [COMMAND]
 ```
+
+**Note:** `REPO_PATH` is optional and defaults to the current directory (`.`) if not specified.
 
 ### Basic Options
 

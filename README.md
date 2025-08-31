@@ -32,8 +32,11 @@ cargo install gittype
 # cd into your messy codebase
 cd ~/that-project-you-never-finished
 
-# Start typing your own spaghetti code
+# Start typing your own spaghetti code (uses current directory by default)
 gittype
+
+# Or specify a specific repository path
+gittype /path/to/another/repo
 ```
 
 ## Demo 🎮
