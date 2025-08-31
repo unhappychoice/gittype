@@ -67,7 +67,15 @@ impl ResultScreen {
 
     pub fn show_stage_completion(metrics: &TypingMetrics, current_stage: usize, total_stages: usize, has_next_stage: bool, keystrokes: usize) -> Result<()> {
         let mut stdout = stdout();
+        
+        // Comprehensive screen reset
         execute!(stdout, terminal::Clear(ClearType::All))?;
+        execute!(stdout, MoveTo(0, 0))?;
+        execute!(stdout, ResetColor)?;
+        stdout.flush()?;
+        
+        // Short delay to ensure terminal state is reset
+        std::thread::sleep(std::time::Duration::from_millis(10));
         
         let (terminal_width, terminal_height) = terminal::size()?;
         let center_row = terminal_height / 2;
@@ -75,13 +83,16 @@ impl ResultScreen {
 
         // Display stage title at the center
         let stage_title = if metrics.was_failed {
-            format!("❌ STAGE {} FAILED ❌", current_stage)
+            format!("=== STAGE {} FAILED ===", current_stage)
         } else if metrics.was_skipped {
-            format!("⏭️ STAGE {} SKIPPED ⏭️", current_stage)
+            format!("=== STAGE {} SKIPPED ===", current_stage)
         } else {
-            format!("🎯 STAGE {} COMPLETE 🎯", current_stage)
+            format!("=== STAGE {} COMPLETE ===", current_stage)
         };
+        
+        // Use simple character count for more reliable centering
         let title_col = center_col.saturating_sub(stage_title.len() as u16 / 2);
+        
         execute!(stdout, MoveTo(title_col, center_row.saturating_sub(6)))?;
         execute!(stdout, SetAttribute(Attribute::Bold))?;
         if metrics.was_failed {
@@ -89,7 +100,7 @@ impl ResultScreen {
         } else if metrics.was_skipped {
             execute!(stdout, SetForegroundColor(Color::Magenta))?;
         } else {
-            execute!(stdout, SetForegroundColor(Color::Yellow))?;
+            execute!(stdout, SetForegroundColor(Color::Cyan))?;
         }
         execute!(stdout, Print(&stage_title))?;
         execute!(stdout, ResetColor)?;
@@ -229,7 +240,15 @@ impl ResultScreen {
         stage_engines: &[(String, ScoringEngine)],
     ) -> Result<()> {
         let mut stdout = stdout();
+        
+        // Comprehensive screen reset
         execute!(stdout, terminal::Clear(ClearType::All))?;
+        execute!(stdout, MoveTo(0, 0))?;
+        execute!(stdout, ResetColor)?;
+        stdout.flush()?;
+        
+        // Short delay to ensure terminal state is reset
+        std::thread::sleep(std::time::Duration::from_millis(10));
         
         let (terminal_width, terminal_height) = terminal::size()?;
         let center_row = terminal_height / 2;
@@ -268,12 +287,16 @@ impl ResultScreen {
         };
 
         // Display session complete title at the top
-        let session_title = "🏆 SESSION COMPLETE 🏆";
-        let title_col = center_col.saturating_sub(session_title.len() as u16 / 2);
-        execute!(stdout, MoveTo(title_col, rank_start_row.saturating_sub(4)))?;
-        execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Yellow))?;
-        execute!(stdout, Print(session_title))?;
-        execute!(stdout, ResetColor)?;
+        let session_title = "=== SESSION COMPLETE ===";
+        let lines: Vec<&str> = session_title.split('\n').collect();
+        
+        for (i, line) in lines.iter().enumerate() {
+            let title_col = center_col.saturating_sub(line.len() as u16 / 2);
+            execute!(stdout, MoveTo(title_col, rank_start_row.saturating_sub(6) + i as u16))?;
+            execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Cyan))?;
+            execute!(stdout, Print(line))?;
+            execute!(stdout, ResetColor)?;
+        }
 
         // Display "you're:" label before rank title (no gap)
         let youre_label = "YOU'RE:";
@@ -450,17 +473,30 @@ impl ResultScreen {
         stage_engines: &[(String, ScoringEngine)],
     ) -> Result<()> {
         let mut stdout = stdout();
+        
+        // Comprehensive screen reset
         execute!(stdout, terminal::Clear(ClearType::All))?;
+        execute!(stdout, MoveTo(0, 0))?;
+        execute!(stdout, ResetColor)?;
+        stdout.flush()?;
+        
+        // Short delay to ensure terminal state is reset
+        std::thread::sleep(std::time::Duration::from_millis(10));
+        
         let (terminal_width, terminal_height) = terminal::size()?;
         let center_y = terminal_height / 2;
 
         // Header - show FAILED status (centered)
-        let header_text = "SESSION FAILED";
-        let header_x = (terminal_width - header_text.len() as u16) / 2;
-        execute!(stdout, MoveTo(header_x, center_y.saturating_sub(4)))?;
-        execute!(stdout, SetForegroundColor(Color::Red), SetAttribute(Attribute::Bold))?;
-        execute!(stdout, Print(header_text))?;
-        execute!(stdout, ResetColor)?;
+        let header_text = "=== SESSION FAILED ===";
+        let lines: Vec<&str> = header_text.split('\n').collect();
+        
+        for (i, line) in lines.iter().enumerate() {
+            let header_x = (terminal_width - line.len() as u16) / 2;
+            execute!(stdout, MoveTo(header_x, center_y.saturating_sub(6) + i as u16))?;
+            execute!(stdout, SetForegroundColor(Color::Red), SetAttribute(Attribute::Bold))?;
+            execute!(stdout, Print(line))?;
+            execute!(stdout, ResetColor)?;
+        }
 
         // Show stage progress (centered, cyan)
         let stage_text = format!("Stages: {}/{}", completed_stages, total_stages);
@@ -502,19 +538,31 @@ impl ResultScreen {
 
     pub fn show_sharing_menu(metrics: &TypingMetrics) -> Result<()> {
         let mut stdout = stdout();
+        
+        // Comprehensive screen reset
         execute!(stdout, terminal::Clear(ClearType::All))?;
+        execute!(stdout, MoveTo(0, 0))?;
+        execute!(stdout, ResetColor)?;
+        stdout.flush()?;
+        
+        // Short delay to ensure terminal state is reset
+        std::thread::sleep(std::time::Duration::from_millis(10));
         
         let (terminal_width, terminal_height) = terminal::size()?;
         let center_row = terminal_height / 2;
         let center_col = terminal_width / 2;
 
         // Title
-        let title = "📤 Share Your Result";
-        let title_col = center_col.saturating_sub(title.len() as u16 / 2);
-        execute!(stdout, MoveTo(title_col, center_row.saturating_sub(8)))?;
-        execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Yellow))?;
-        execute!(stdout, Print(title))?;
-        execute!(stdout, ResetColor)?;
+        let title = "=== SHARE YOUR RESULT ===";
+        let lines: Vec<&str> = title.split('\n').collect();
+        
+        for (i, line) in lines.iter().enumerate() {
+            let title_col = center_col.saturating_sub(line.len() as u16 / 2);
+            execute!(stdout, MoveTo(title_col, center_row.saturating_sub(10) + i as u16))?;
+            execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Cyan))?;
+            execute!(stdout, Print(line))?;
+            execute!(stdout, ResetColor)?;
+        }
 
         // Show preview of what will be shared
         let preview_text = format!(

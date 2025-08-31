@@ -150,11 +150,11 @@ impl StageManager {
             
             // Show countdown before each stage
             if self.current_stage == 0 {
-                // First stage - show initial countdown
-                CountdownScreen::show()?;
+                // First stage - show initial countdown with challenge info
+                CountdownScreen::show_with_challenge(Some(challenge))?;
             } else {
-                // Subsequent stages - show stage transition countdown
-                CountdownScreen::show_stage_transition(self.current_stage + 1, self.current_challenges.len())?;
+                // Subsequent stages - show stage transition countdown with challenge info
+                CountdownScreen::show_stage_transition_with_challenge(self.current_stage + 1, self.current_challenges.len(), Some(challenge))?;
             }
             
             let mut screen = TypingScreen::new_with_challenge(challenge)?;
