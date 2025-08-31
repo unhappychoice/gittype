@@ -18,7 +18,6 @@ pub enum ResultAction {
     Quit,
     Retry,
     Share,
-    Exit,
 }
 
 pub struct ResultScreen;

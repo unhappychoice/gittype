@@ -339,11 +339,6 @@ impl StageManager {
                         }
                     }
                 }
-                ResultAction::Exit => {
-                    // Immediately exit without showing session summary
-                    terminal::disable_raw_mode()?;
-                    std::process::exit(0);
-                }
                 _ => return Ok(false), // Return false for back to title
             }
         }
