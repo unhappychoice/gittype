@@ -7,13 +7,9 @@ use super::{
 use crate::scoring::{engine::ScoringEngine, TypingMetrics};
 use crate::Result;
 use crossterm::{
-    event::{
-        self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers, KeyboardEnhancementFlags,
-        PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags,
-    },
-    execute, terminal,
+    event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers},
+    terminal,
 };
-use std::io::stdout;
 
 pub struct TypingScreen {
     challenge: Option<Challenge>,
@@ -127,17 +123,6 @@ impl TypingScreen {
             }
         }
 
-        // Enable keyboard enhancement flags to better detect modifier combinations
-        let mut stdout_handle = stdout();
-        execute!(
-            stdout_handle,
-            PushKeyboardEnhancementFlags(
-                KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES
-                    | KeyboardEnhancementFlags::REPORT_EVENT_TYPES
-                    | KeyboardEnhancementFlags::REPORT_ALL_KEYS_AS_ESCAPE_CODES
-            )
-        )
-        .ok(); // Ignore errors in case terminal doesn't support it
 
         // Show countdown with challenge info if available
         CountdownScreen::show_with_challenge(self.challenge.as_ref())?;
@@ -191,9 +176,6 @@ impl TypingScreen {
 
         self.display.cleanup()?;
 
-        // Disable keyboard enhancement flags
-        let mut stdout_handle = stdout();
-        execute!(stdout_handle, PopKeyboardEnhancementFlags).ok();
 
         terminal::disable_raw_mode()?;
         self.scoring_engine.finish(); // Record final duration
@@ -300,6 +282,7 @@ impl TypingScreen {
         if !matches!(key_event.kind, KeyEventKind::Press) {
             return Ok(GameState::Continue);
         }
+
 
         match key_event.code {
             KeyCode::Esc => {
@@ -420,7 +403,14 @@ impl TypingScreen {
                 }
                 Ok(GameState::Continue)
             }
-            _ => Ok(GameState::Continue),
+            // Handle any other key
+            _ => {
+                if self.dialog_shown {
+                    self.dialog_shown = false;
+                    self.scoring_engine.resume();
+                }
+                Ok(GameState::Continue)
+            }
         }
     }
 
