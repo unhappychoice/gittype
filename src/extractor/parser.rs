@@ -10,7 +10,6 @@ use tree_sitter::{Node, Parser, Query, QueryCursor, Tree};
 pub struct ExtractionOptions {
     pub include_patterns: Vec<String>,
     pub exclude_patterns: Vec<String>,
-    pub max_lines: Option<usize>,
 }
 
 impl Default for ExtractionOptions {
@@ -29,7 +28,6 @@ impl Default for ExtractionOptions {
                 "**/node_modules/**".to_string(),
                 "**/__pycache__/**".to_string(),
             ],
-            max_lines: None,
         }
     }
 }
@@ -98,15 +96,15 @@ impl CodeExtractor {
     pub fn extract_chunks(
         &mut self,
         repo_path: &Path,
-        options: ExtractionOptions,
+        _options: ExtractionOptions,
     ) -> Result<Vec<CodeChunk>> {
-        self.extract_chunks_with_progress(repo_path, options, &NoOpProgressReporter)
+        self.extract_chunks_with_progress(repo_path, _options, &NoOpProgressReporter)
     }
 
     pub fn extract_chunks_with_progress<P: ProgressReporter + ?Sized>(
         &mut self,
         repo_path: &Path,
-        options: ExtractionOptions,
+        _options: ExtractionOptions,
         progress: &P,
     ) -> Result<Vec<CodeChunk>> {
         progress.set_phase("Scanning repository".to_string());
@@ -132,7 +130,7 @@ impl CodeExtractor {
 
             if let Some(extension) = path.extension().and_then(|e| e.to_str()) {
                 if let Some(language) = Language::from_extension(extension) {
-                    if Self::should_process_file_static(path, &options) {
+                    if Self::should_process_file_static(path, &_options) {
                         files_to_process.push((path.to_path_buf(), language));
                     }
                 }
@@ -152,7 +150,7 @@ impl CodeExtractor {
             // Process this chunk in parallel
             let chunk_results: Result<Vec<Vec<CodeChunk>>> = chunk
                 .par_iter()
-                .map(|(path, language)| Self::extract_from_file_static(path, *language, &options))
+                .map(|(path, language)| Self::extract_from_file_static(path, *language, &_options))
                 .collect();
 
             // Update progress after each chunk
@@ -177,15 +175,15 @@ impl CodeExtractor {
     }
 
     #[allow(dead_code)]
-    fn should_process_file(&self, path: &Path, options: &ExtractionOptions) -> bool {
-        Self::should_process_file_static(path, options)
+    fn should_process_file(&self, path: &Path, _options: &ExtractionOptions) -> bool {
+        Self::should_process_file_static(path, _options)
     }
 
-    fn should_process_file_static(path: &Path, options: &ExtractionOptions) -> bool {
+    fn should_process_file_static(path: &Path, _options: &ExtractionOptions) -> bool {
         let path_str = path.to_string_lossy();
 
         // Check exclude patterns first
-        for pattern in &options.exclude_patterns {
+        for pattern in &_options.exclude_patterns {
             if glob::Pattern::new(pattern)
                 .map(|p| p.matches(&path_str))
                 .unwrap_or(false)
@@ -195,7 +193,7 @@ impl CodeExtractor {
         }
 
         // Check include patterns
-        for pattern in &options.include_patterns {
+        for pattern in &_options.include_patterns {
             if glob::Pattern::new(pattern)
                 .map(|p| p.matches(&path_str))
                 .unwrap_or(false)
@@ -211,15 +209,15 @@ impl CodeExtractor {
         &mut self,
         file_path: &Path,
         language: Language,
-        options: &ExtractionOptions,
+        _options: &ExtractionOptions,
     ) -> Result<Vec<CodeChunk>> {
-        Self::extract_from_file_static(file_path, language, options)
+        Self::extract_from_file_static(file_path, language, _options)
     }
 
     fn extract_from_file_static(
         file_path: &Path,
         language: Language,
-        options: &ExtractionOptions,
+        _options: &ExtractionOptions,
     ) -> Result<Vec<CodeChunk>> {
         let content = fs::read_to_string(file_path)?;
         let mut parser = Self::create_parser_for_language(language)?;
@@ -228,7 +226,7 @@ impl CodeExtractor {
             GitTypeError::ExtractionFailed(format!("Failed to parse file: {:?}", file_path))
         })?;
 
-        Self::extract_chunks_from_tree_static(&tree, &content, file_path, language, options)
+        Self::extract_chunks_from_tree_static(&tree, &content, file_path, language, _options)
     }
 
     #[allow(dead_code)]
@@ -238,9 +236,9 @@ impl CodeExtractor {
         source_code: &str,
         file_path: &Path,
         language: Language,
-        options: &ExtractionOptions,
+        _options: &ExtractionOptions,
     ) -> Result<Vec<CodeChunk>> {
-        Self::extract_chunks_from_tree_static(tree, source_code, file_path, language, options)
+        Self::extract_chunks_from_tree_static(tree, source_code, file_path, language, _options)
     }
 
     fn extract_chunks_from_tree_static(
@@ -248,7 +246,7 @@ impl CodeExtractor {
         source_code: &str,
         file_path: &Path,
         language: Language,
-        options: &ExtractionOptions,
+        _options: &ExtractionOptions,
     ) -> Result<Vec<CodeChunk>> {
         let mut chunks = Vec::new();
 
@@ -303,7 +301,7 @@ impl CodeExtractor {
                     file_path,
                     language,
                     capture_name,
-                    options,
+                    _options,
                     &file_comment_ranges,
                 ) {
                     chunks.push(chunk);
@@ -323,7 +321,7 @@ impl CodeExtractor {
         file_path: &Path,
         language: Language,
         capture_name: &str,
-        options: &ExtractionOptions,
+        _options: &ExtractionOptions,
         file_comment_ranges: &[(usize, usize)],
     ) -> Option<CodeChunk> {
         Self::node_to_chunk_static(
@@ -332,7 +330,7 @@ impl CodeExtractor {
             file_path,
             language,
             capture_name,
-            options,
+            _options,
             file_comment_ranges,
         )
     }
@@ -343,7 +341,7 @@ impl CodeExtractor {
         file_path: &Path,
         language: Language,
         capture_name: &str,
-        options: &ExtractionOptions,
+        _options: &ExtractionOptions,
         file_comment_ranges: &[(usize, usize)],
     ) -> Option<CodeChunk> {
         let start_byte = node.start_byte();
@@ -354,11 +352,6 @@ impl CodeExtractor {
         let end_line = node.end_position().row + 1;
         let original_indentation = node.start_position().column;
 
-        if let Some(max_lines) = options.max_lines {
-            if end_line - start_line + 1 > max_lines {
-                return None;
-            }
-        }
 
         let chunk_type = match capture_name {
             "function" => ChunkType::Function,

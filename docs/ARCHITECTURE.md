@@ -72,7 +72,6 @@ Language-specific extraction is handled through the `Language` enum and associat
 pub struct Config {
     pub repo_path: PathBuf,
     pub languages: Vec<Language>,
-    pub max_lines: usize,
     pub stages: usize,
     // ...
 }

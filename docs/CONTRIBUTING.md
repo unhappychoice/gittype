@@ -252,7 +252,6 @@ Examples:
 pub fn extract_chunks(
     file_path: &Path,
     language: Language,
-    max_lines: usize,
 ) -> Result<Vec<CodeChunk>, ExtractionError> {
     let content = std::fs::read_to_string(file_path)
         .map_err(|e| ExtractionError::FileRead(e))?;
@@ -261,7 +260,7 @@ pub fn extract_chunks(
     let tree = parser.parse(&content, None)
         .ok_or(ExtractionError::ParseFailed)?;
     
-    extract_from_tree(&tree, &content, max_lines)
+    extract_from_tree(&tree, &content)
 }
 ```
 

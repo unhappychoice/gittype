@@ -23,9 +23,6 @@ struct Cli {
     #[arg(long, default_value_t = 3)]
     stages: usize,
 
-    /// Maximum lines per challenge
-    #[arg(long, default_value_t = 40)]
-    max_lines: usize,
 
     /// Glob patterns for files to include
     #[arg(long)]
@@ -99,7 +96,6 @@ fn main() -> anyhow::Result<()> {
                     options.exclude_patterns = exclude_patterns;
                 }
 
-                options.max_lines = Some(cli.max_lines);
 
                 // Show loading screen during startup
                 let loading_screen = match LoadingScreen::new() {
