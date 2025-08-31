@@ -279,19 +279,36 @@ impl StageManager {
                 },
                 ResultAction::Quit => {
                     // Show session summary before exiting
-                    terminal::disable_raw_mode()?;
                     let session_summary = self.session_tracker.clone().finalize_and_get_summary();
-                    terminal::enable_raw_mode()?;
                     
                     loop {
-                        match ExitSummaryScreen::show(&session_summary)? {
+                        eprintln!("Debug: About to call ExitSummaryScreen::show");
+                        eprintln!("Debug: Calling ExitSummaryScreen::show...");
+                        let exit_action = match ExitSummaryScreen::show(&session_summary) {
+                            Ok(action) => {
+                                eprintln!("Debug: ExitSummaryScreen::show returned: {:?}", action);
+                                action
+                            },
+                            Err(e) => {
+                                eprintln!("Error in ExitSummaryScreen::show: {}", e);
+                                return Err(e);
+                            }
+                        };
+                        
+                        match exit_action {
                             ExitAction::Exit => {
                                 terminal::disable_raw_mode()?;
                                 std::process::exit(0);
                             },
                             ExitAction::Share => {
-                                let _ = ExitSummaryScreen::show_sharing_menu(&session_summary);
+                                eprintln!("Debug: Share action received, calling show_sharing_menu");
+                                if let Err(e) = ExitSummaryScreen::show_sharing_menu(&session_summary) {
+                                    eprintln!("Failed to show sharing menu: {}", e);
+                                } else {
+                                    eprintln!("Debug: Sharing menu returned successfully");
+                                }
                                 // Continue showing exit screen after sharing
+                                eprintln!("Debug: Continuing to show exit screen");
                                 continue;
                             },
                         }
