@@ -171,6 +171,25 @@ impl GameDisplayRatatui {
         for (i, &ch) in self.chars.iter().enumerate() {
             // Handle explicit newlines
             if ch == '\n' {
+                // Use cached properties for newline styling
+                let should_skip = skip_cache.get(&i).copied().unwrap_or(false);
+                let is_comment = comment_cache.get(&i).copied().unwrap_or(false);
+                let is_current_line = line_number == current_line_number;
+                
+                if !should_skip {
+                    let style = self.get_char_style_with_highlight(
+                        i,
+                        current_position,
+                        should_skip,
+                        is_comment,
+                        current_mistake_position,
+                        is_current_line,
+                    );
+                    
+                    // Show newline as enter symbol
+                    current_line_spans.push(Span::styled("↵".to_string(), style));
+                }
+                
                 lines.push(Line::from(current_line_spans));
                 current_line_spans = Vec::new();
                 current_line_width = 0;
