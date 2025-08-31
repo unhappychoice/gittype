@@ -12,7 +12,6 @@ pub struct Challenge {
     pub difficulty_level: Option<DifficultyLevel>,
 }
 
-
 impl Challenge {
     pub fn new(id: String, code_content: String) -> Self {
         Self {
@@ -27,13 +26,17 @@ impl Challenge {
         }
     }
 
-    pub fn with_source_info(mut self, file_path: String, start_line: usize, end_line: usize) -> Self {
+    pub fn with_source_info(
+        mut self,
+        file_path: String,
+        start_line: usize,
+        end_line: usize,
+    ) -> Self {
         self.source_file_path = Some(file_path);
         self.start_line = Some(start_line);
         self.end_line = Some(end_line);
         self
     }
-
 
     pub fn with_language(mut self, language: String) -> Self {
         self.language = Some(language);
@@ -50,7 +53,6 @@ impl Challenge {
         self
     }
 
-
     pub fn get_display_title(&self) -> String {
         if let Some(ref path) = self.source_file_path {
             if let (Some(start), Some(end)) = (self.start_line, self.end_line) {
@@ -62,5 +64,4 @@ impl Challenge {
             format!("Challenge {}", self.id)
         }
     }
-
 }

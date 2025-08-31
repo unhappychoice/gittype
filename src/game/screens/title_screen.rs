@@ -1,7 +1,7 @@
-use crate::Result;
-use crate::game::stage_builder::DifficultyLevel;
-use crate::game::screens::{InfoDialog, InfoAction};
 use crate::extractor::GitRepositoryInfo;
+use crate::game::screens::{InfoAction, InfoDialog};
+use crate::game::stage_builder::DifficultyLevel;
+use crate::Result;
 use crossterm::{
     cursor::MoveTo,
     event::{self, Event, KeyCode, KeyModifiers},
@@ -24,12 +24,15 @@ impl TitleScreen {
         let default_counts = [0, 0, 0, 0, 0];
         Self::show_with_challenge_counts(&default_counts)
     }
-    
+
     pub fn show_with_challenge_counts(challenge_counts: &[usize; 5]) -> Result<TitleAction> {
         Self::show_with_challenge_counts_and_git_info(challenge_counts, None)
     }
-    
-    pub fn show_with_challenge_counts_and_git_info(challenge_counts: &[usize; 5], git_info: Option<&GitRepositoryInfo>) -> Result<TitleAction> {
+
+    pub fn show_with_challenge_counts_and_git_info(
+        challenge_counts: &[usize; 5],
+        git_info: Option<&GitRepositoryInfo>,
+    ) -> Result<TitleAction> {
         let mut selected_difficulty = 1; // Start with Normal (index 1)
         let difficulties = [
             ("Easy", DifficultyLevel::Easy),
@@ -41,23 +44,37 @@ impl TitleScreen {
 
         let mut stdout = stdout();
         execute!(stdout, terminal::Clear(ClearType::All))?;
-        
+
         let (terminal_width, terminal_height) = terminal::size()?;
         let center_row = terminal_height / 2;
         let center_col = terminal_width / 2;
 
         // Draw static elements once
         Self::draw_static_elements(&mut stdout, center_row, center_col, git_info)?;
-        
+
         let mut last_difficulty = selected_difficulty;
         // Draw initial difficulty selection
-        Self::draw_difficulty_selection(&mut stdout, center_row, center_col, &difficulties, selected_difficulty, challenge_counts)?;
+        Self::draw_difficulty_selection(
+            &mut stdout,
+            center_row,
+            center_col,
+            &difficulties,
+            selected_difficulty,
+            challenge_counts,
+        )?;
         stdout.flush()?;
 
         loop {
             // Only redraw difficulty selection if it changed
             if selected_difficulty != last_difficulty {
-                Self::draw_difficulty_selection(&mut stdout, center_row, center_col, &difficulties, selected_difficulty, challenge_counts)?;
+                Self::draw_difficulty_selection(
+                    &mut stdout,
+                    center_row,
+                    center_col,
+                    &difficulties,
+                    selected_difficulty,
+                    challenge_counts,
+                )?;
                 last_difficulty = selected_difficulty;
                 stdout.flush()?;
             }
@@ -67,29 +84,38 @@ impl TitleScreen {
                 if let Ok(Event::Key(key_event)) = event::read() {
                     match key_event.code {
                         KeyCode::Char(' ') => {
-                            return Ok(TitleAction::Start(difficulties[selected_difficulty].1.clone()));
-                        },
+                            return Ok(TitleAction::Start(
+                                difficulties[selected_difficulty].1.clone(),
+                            ));
+                        }
                         KeyCode::Left | KeyCode::Char('h') => {
                             selected_difficulty = if selected_difficulty == 0 {
                                 difficulties.len() - 1
                             } else {
                                 selected_difficulty - 1
                             };
-                        },
+                        }
                         KeyCode::Right | KeyCode::Char('l') => {
                             selected_difficulty = (selected_difficulty + 1) % difficulties.len();
-                        },
+                        }
                         KeyCode::Esc => return Ok(TitleAction::Quit),
-                        KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
+                        KeyCode::Char('c')
+                            if key_event.modifiers.contains(KeyModifiers::CONTROL) =>
+                        {
                             return Ok(TitleAction::Quit);
-                        },
+                        }
                         KeyCode::Char('i') | KeyCode::Char('?') => {
                             Self::handle_info_dialog()?;
                             // Redraw the entire screen after closing the dialog
                             execute!(stdout, terminal::Clear(ClearType::All))?;
-                            Self::draw_static_elements(&mut stdout, center_row, center_col, git_info)?;
+                            Self::draw_static_elements(
+                                &mut stdout,
+                                center_row,
+                                center_col,
+                                git_info,
+                            )?;
                             last_difficulty = selected_difficulty + 1; // Force redraw of difficulty selection
-                        },
+                        }
                         _ => {}
                     }
                 }
@@ -97,16 +123,19 @@ impl TitleScreen {
         }
     }
 
-    fn draw_static_elements(stdout: &mut std::io::Stdout, center_row: u16, center_col: u16, git_info: Option<&GitRepositoryInfo>) -> Result<()> {
+    fn draw_static_elements(
+        stdout: &mut std::io::Stdout,
+        center_row: u16,
+        center_col: u16,
+        git_info: Option<&GitRepositoryInfo>,
+    ) -> Result<()> {
         // ASCII logo lines
-        let logo_lines = vec![
-            "─╔═══╗─╔══╗─╔════╗────╔════╗─╔╗──╔╗─╔═══╗─╔═══╗─",
+        let logo_lines = ["─╔═══╗─╔══╗─╔════╗────╔════╗─╔╗──╔╗─╔═══╗─╔═══╗─",
             "─║╔═╗║─╚╣╠╝─║╔╗╔╗║────║╔╗╔╗║─║╚╗╔╝║─║╔═╗║─║╔══╝─",
             "─║║─╚╝──║║──╚╝║║╚╝────╚╝║║╚╝─╚╗╚╝╔╝─║╚═╝║─║╚══╗─",
             "─║║╔═╗──║║────║║────────║║────╚╗╔╝──║╔══╝─║╔══╝─",
             "─║╚╩═║─╔╣╠╗───║║────────║║─────║║───║║────║╚══╗─",
-            "─╚═══╝─╚══╝───╚╝────────╚╝─────╚╝───╚╝────╚═══╝─",
-        ];
+            "─╚═══╝─╚══╝───╚╝────────╚╝─────╚╝───╚╝────╚═══╝─"];
 
         // Display ASCII logo
         let logo_width = logo_lines[0].chars().count() as u16;
@@ -115,7 +144,11 @@ impl TitleScreen {
 
         for (i, line) in logo_lines.iter().enumerate() {
             execute!(stdout, MoveTo(logo_start_col, logo_start_row + i as u16))?;
-            execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Cyan))?;
+            execute!(
+                stdout,
+                SetAttribute(Attribute::Bold),
+                SetForegroundColor(Color::Cyan)
+            )?;
             execute!(stdout, Print(line))?;
             execute!(stdout, ResetColor)?;
         }
@@ -128,11 +161,10 @@ impl TitleScreen {
         execute!(stdout, Print(subtitle))?;
         execute!(stdout, ResetColor)?;
 
-
         // Display instructions (moved down to accommodate multi-line difficulty display)
         let instructions = "[←→/HL] Change Difficulty  [SPACE] Start  [I/?] Info  [ESC] Quit";
         let instructions_col = center_col.saturating_sub(instructions.len() as u16 / 2);
-        
+
         execute!(stdout, MoveTo(instructions_col, center_row + 6))?;
         execute!(stdout, SetForegroundColor(Color::Blue))?;
         execute!(stdout, Print("[←→/HL] Change Difficulty  "))?;
@@ -151,17 +183,17 @@ impl TitleScreen {
     }
 
     fn draw_difficulty_selection(
-        stdout: &mut std::io::Stdout, 
-        center_row: u16, 
+        stdout: &mut std::io::Stdout,
+        center_row: u16,
         center_col: u16,
         difficulties: &[(&str, DifficultyLevel); 5],
         selected_difficulty: usize,
-        challenge_counts: &[usize; 5]
+        challenge_counts: &[usize; 5],
     ) -> Result<()> {
         let start_row = center_row + 1;
         let (name, difficulty_level) = &difficulties[selected_difficulty];
         let count = challenge_counts[selected_difficulty];
-        
+
         // Clear previous difficulty display (multiple lines)
         for i in 0..4 {
             execute!(stdout, MoveTo(0, start_row + i))?;
@@ -171,13 +203,17 @@ impl TitleScreen {
         // Line 1: Difficulty selection
         let difficulty_text = format!("Difficulty: ← {} →", name);
         let difficulty_col = center_col.saturating_sub(difficulty_text.chars().count() as u16 / 2);
-        
+
         execute!(stdout, MoveTo(difficulty_col, start_row))?;
         execute!(stdout, SetForegroundColor(Color::White))?;
         execute!(stdout, Print("Difficulty: "))?;
         execute!(stdout, SetForegroundColor(Color::Yellow))?;
         execute!(stdout, Print("← "))?;
-        execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::White))?;
+        execute!(
+            stdout,
+            SetAttribute(Attribute::Bold),
+            SetForegroundColor(Color::White)
+        )?;
         execute!(stdout, Print(name))?;
         execute!(stdout, ResetColor, SetForegroundColor(Color::Yellow))?;
         execute!(stdout, Print(" →"))?;
@@ -190,7 +226,7 @@ impl TitleScreen {
             "Challenge count will be displayed after loading".to_string()
         };
         let count_col = center_col.saturating_sub(count_text.chars().count() as u16 / 2);
-        
+
         execute!(stdout, MoveTo(count_col, start_row + 1))?;
         execute!(stdout, SetForegroundColor(Color::Cyan))?;
         execute!(stdout, Print(count_text))?;
@@ -209,37 +245,38 @@ impl TitleScreen {
         Ok(())
     }
 
-    fn draw_git_info(stdout: &mut std::io::Stdout, git_info: Option<&GitRepositoryInfo>) -> Result<()> {
+    fn draw_git_info(
+        stdout: &mut std::io::Stdout,
+        git_info: Option<&GitRepositoryInfo>,
+    ) -> Result<()> {
         if let Some(info) = git_info {
             let (terminal_width, terminal_height) = terminal::size()?;
             let bottom_row = terminal_height - 1;
-            
+
             // Build git info string
-            let mut parts = vec![
-                format!("📁 {}/{}", info.user_name, info.repository_name),
-            ];
-            
+            let mut parts = vec![format!("📁 {}/{}", info.user_name, info.repository_name)];
+
             if let Some(ref branch) = info.branch {
                 parts.push(format!("🌿 {}", branch));
             }
-            
+
             if let Some(ref commit) = info.commit_hash {
                 parts.push(format!("📝 {}", &commit[..8]));
             }
-            
+
             let status_symbol = if info.is_dirty { "⚠️" } else { "✓" };
             parts.push(status_symbol.to_string());
-            
+
             let git_text = parts.join(" • ");
-            
+
             // Calculate approximate display width considering emoji width
             // Each emoji takes about 2 characters worth of width
             let emoji_count = git_text.chars().filter(|c| *c as u32 > 127).count();
             let approximate_width = git_text.chars().count() + emoji_count;
-            
+
             // Center the text using approximate width
             let git_col = terminal_width.saturating_sub(approximate_width as u16) / 2;
-            
+
             execute!(stdout, MoveTo(git_col, bottom_row))?;
             execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
             execute!(stdout, Print(&git_text))?;
@@ -252,10 +289,10 @@ impl TitleScreen {
         match InfoDialog::show()? {
             InfoAction::OpenGithub => {
                 InfoDialog::open_github()?;
-            },
+            }
             InfoAction::OpenTwitter => {
                 InfoDialog::open_twitter()?;
-            },
+            }
             InfoAction::Close => {
                 // Do nothing, just close the dialog
             }

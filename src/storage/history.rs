@@ -2,6 +2,12 @@ use crate::Result;
 
 pub struct SessionHistory;
 
+impl Default for SessionHistory {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SessionHistory {
     pub fn new() -> Self {
         Self

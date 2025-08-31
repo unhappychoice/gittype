@@ -14,7 +14,7 @@ struct ScoringTestResult {
 fn test_scoring_with_metrics(target_cpm: f64, accuracy: f64, mistakes: usize) -> ScoringTestResult {
     // Fixed 1 second elapsed time for consistent testing
     let elapsed_secs = 1.0;
-    
+
     // Calculate total chars based on CPM, accuracy, and mistakes
     let correct_chars = (target_cpm / 60.0) as usize; // chars per second
     let total_chars = if accuracy > 0.0 {
@@ -22,7 +22,7 @@ fn test_scoring_with_metrics(target_cpm: f64, accuracy: f64, mistakes: usize) ->
     } else {
         correct_chars + mistakes
     };
-    
+
     let score = ScoringEngine::calculate_score_from_metrics(
         target_cpm,
         accuracy,
@@ -30,9 +30,11 @@ fn test_scoring_with_metrics(target_cpm: f64, accuracy: f64, mistakes: usize) ->
         elapsed_secs,
         total_chars,
     );
-    
-    let title = ScoringEngine::get_ranking_title_for_score(score).name().to_string();
-    
+
+    let title = ScoringEngine::get_ranking_title_for_score(score)
+        .name()
+        .to_string();
+
     ScoringTestResult {
         actual_cpm: target_cpm,
         accuracy,
@@ -57,7 +59,7 @@ macro_rules! define_performance_test_cases {
                     $(
                         let expected_score = $score;
                         let expected_rank = $rank;
-                        
+
                         // Define mistakes based on condition
                         let (target_mistakes, accuracy) = match stringify!($condition) {
                             // Keep mistake ratios; raise accuracies as requested
@@ -67,27 +69,27 @@ macro_rules! define_performance_test_cases {
                             "perfect" => (0, 100.0),                             // 0% mistakes, 100% accuracy
                             _ => (($cpm as f64 * 0.02) as usize, 80.0),         // default to normal
                         };
-                        
+
                         let result = test_scoring_with_metrics($cpm as f64, accuracy, target_mistakes);
-                        
-                        println!("{}CPM, {} mistakes ({} condition) -> Actual CPM: {:.1}, Accuracy: {:.1}%, Score: {:.0}, Title: {}", 
-                                $cpm, target_mistakes, stringify!($condition), result.actual_cpm, result.accuracy, 
+
+                        println!("{}CPM, {} mistakes ({} condition) -> Actual CPM: {:.1}, Accuracy: {:.1}%, Score: {:.0}, Title: {}",
+                                $cpm, target_mistakes, stringify!($condition), result.actual_cpm, result.accuracy,
                                 result.score, result.title);
-                        
+
                         // Basic validations
                         assert!(result.actual_cpm >= 0.0, "CPM should be non-negative");
                         assert!(result.accuracy >= 0.0 && result.accuracy <= 100.0, "Accuracy should be 0-100%");
                         assert_eq!(result.mistakes, target_mistakes, "Mistakes should match: expected {}, got {}", target_mistakes, result.mistakes);
                         assert!(!result.title.is_empty(), "Title should not be empty");
-                        
-                        println!("  {} condition: expecting score ~{}, rank '{}'", 
+
+                        println!("  {} condition: expecting score ~{}, rank '{}'",
                                stringify!($condition), expected_score, expected_rank);
-                        
+
                         // Assert exact title match (this should fail in RED phase)
-                        assert_eq!(result.title, expected_rank, 
-                            "Expected title '{}' for {} condition with {}CPM and {} mistakes, but got '{}'", 
+                        assert_eq!(result.title, expected_rank,
+                            "Expected title '{}' for {} condition with {}CPM and {} mistakes, but got '{}'",
                             expected_rank, stringify!($condition), $cpm, target_mistakes, result.title);
-                        
+
                         // Assert score is within reasonable range (±20% tolerance)
                         let score_tolerance = (expected_score as f64) * 0.2;
                         let score_min = (expected_score as f64) - score_tolerance;
@@ -103,7 +105,7 @@ macro_rules! define_performance_test_cases {
 }
 
 // Define comprehensive test cases ensuring all 63 titles appear in normal condition
-// Population thick areas (200-350CPM) get more titles, sparse areas (700+CPM) get fewer  
+// Population thick areas (200-350CPM) get more titles, sparse areas (700+CPM) get fewer
 // Score formula: (CPM × accuracy% × 10) × 2 + 100 + bonuses ≈ CPM × 20 + bonuses
 define_performance_test_cases! {
     beginner: [
@@ -121,7 +123,7 @@ define_performance_test_cases! {
         (165, { normal: (4772, "Unit Test Trainee") }),
         (180, { normal: (5200, "Code Monkey") }),
     ],
-    
+
     intermediate: [
         // All 12 INTERMEDIATE titles (expanded, near-equal CPM steps)
         (200, { normal: (5760, "Ticket Picker") }),
@@ -137,7 +139,7 @@ define_performance_test_cases! {
         (250, { normal: (7175, "Code Reviewer") }),
         (255, { normal: (7318, "Release Handler") }),
     ],
-    
+
     advanced: [
         // All 12 ADVANCED titles (shifted lower, near-equal steps)
         (270, { normal: (7745, "Refactorer") }),
@@ -153,7 +155,7 @@ define_performance_test_cases! {
         (320, { normal: (9160, "Protocol Artisan") }),
         (325, { normal: (9302, "Kernel Hacker") }),
     ],
-    
+
     expert: [
         // All 12 EXPERT titles (expanded lower, near-equal steps; 340-395)
         (340, { normal: (9730, "Compiler") }),
@@ -169,7 +171,7 @@ define_performance_test_cases! {
         (390, { normal: (11145, "Stream Processor") }),
         (395, { normal: (11288, "Quantum Computer") }),
     ],
-    
+
     legendary: [
         // All 15 LEGENDARY titles (start from 400CPM; near-equal 20CPM steps until 680)
         (400, { normal: (11420, "GPU Cluster") }),
@@ -198,67 +200,81 @@ mod basic_functionality_tests {
     fn test_scoring_engine_lifecycle() {
         let target_text = "hello world test";
         let mut engine = ScoringEngine::new(target_text.to_string());
-        
+
         // Test initial state
         assert!(!engine.is_finished());
-        
+
         engine.start();
-        
+
         // Record some keystrokes
         engine.record_keystroke('h', 0);
         engine.record_keystroke('e', 1);
         engine.record_keystroke('l', 2);
         engine.record_keystroke('l', 3);
         engine.record_keystroke('o', 4);
-        
+
         // Record a mistake
         engine.record_keystroke('x', 5); // should be space
-        
+
         std::thread::sleep(Duration::from_millis(1000));
-        
+
         engine.finish();
         assert!(engine.is_finished());
-        
-        let metrics = engine.calculate_metrics().expect("Should calculate metrics");
-        
+
+        let metrics = engine
+            .calculate_metrics()
+            .expect("Should calculate metrics");
+
         assert_eq!(engine.correct_chars(), 5);
-        assert_eq!(engine.mistakes(), 1);  
+        assert_eq!(engine.mistakes(), 1);
         assert_eq!(engine.total_chars(), 6);
         assert!(metrics.cpm > 0.0);
         assert!(metrics.accuracy > 0.0 && metrics.accuracy <= 100.0);
         assert!(!metrics.ranking_title.is_empty());
-        
-        println!("Lifecycle test: {} correct, {} mistakes, CPM: {:.1}, Title: {}", 
-                engine.correct_chars(), engine.mistakes(), metrics.cpm, metrics.ranking_title);
+
+        println!(
+            "Lifecycle test: {} correct, {} mistakes, CPM: {:.1}, Title: {}",
+            engine.correct_chars(),
+            engine.mistakes(),
+            metrics.cpm,
+            metrics.ranking_title
+        );
     }
 
     #[test]
     fn test_engine_combination() {
         let mut engine1 = ScoringEngine::new("test session one".to_string());
         let mut engine2 = ScoringEngine::new("test session two".to_string());
-        
+
         engine1.start();
         engine1.record_keystroke('t', 0);
-        engine1.record_keystroke('e', 1); 
+        engine1.record_keystroke('e', 1);
         engine1.record_keystroke('s', 2);
         engine1.record_keystroke('t', 3);
         engine1.finish();
-        
+
         engine2.start();
         engine2.record_keystroke('t', 0);
         engine2.record_keystroke('e', 1);
         engine2.record_keystroke('x', 2); // mistake
         engine2.finish();
-        
+
         let combined = engine1 + engine2;
-        let combined_metrics = combined.calculate_metrics().expect("Should calculate combined metrics");
-        
+        let combined_metrics = combined
+            .calculate_metrics()
+            .expect("Should calculate combined metrics");
+
         assert_eq!(combined.correct_chars(), 6); // 4 + 2
         assert_eq!(combined.mistakes(), 1);
         assert!(combined_metrics.challenge_score > 0.0);
         assert!(!combined_metrics.ranking_title.is_empty());
-        
-        println!("Combination test: {} total correct, {} total mistakes, Score: {:.0}, Title: {}", 
-                combined.correct_chars(), combined.mistakes(), combined_metrics.challenge_score, combined_metrics.ranking_title);
+
+        println!(
+            "Combination test: {} total correct, {} total mistakes, Score: {:.0}, Title: {}",
+            combined.correct_chars(),
+            combined.mistakes(),
+            combined_metrics.challenge_score,
+            combined_metrics.ranking_title
+        );
     }
 }

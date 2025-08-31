@@ -1,5 +1,5 @@
-use rusqlite::Connection;
 use crate::Result;
+use rusqlite::Connection;
 
 pub struct Database {
     connection: Connection,

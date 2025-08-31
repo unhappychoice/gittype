@@ -1,3 +1,10 @@
+use crate::extractor::ProgressReporter;
+use crate::Result;
+use crossterm::{
+    event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers},
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    ExecutableCommand,
+};
 use ratatui::{
     backend::CrosstermBackend,
     layout::{Alignment, Constraint, Direction, Layout, Rect},
@@ -6,16 +13,9 @@ use ratatui::{
     widgets::{Block, Gauge, Paragraph},
     Frame, Terminal,
 };
-use crossterm::{
-    event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers},
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-    ExecutableCommand,
-};
 use std::io::stdout;
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
-use crate::Result;
-use crate::extractor::ProgressReporter;
 
 pub struct LoadingScreen {
     terminal: Mutex<Terminal<CrosstermBackend<std::io::Stdout>>>,
@@ -38,7 +38,7 @@ impl LoadingScreen {
         stdout.execute(EnterAlternateScreen)?;
         let backend = CrosstermBackend::new(stdout);
         let terminal = Terminal::new(backend)?;
-        
+
         Ok(Self {
             terminal: Mutex::new(terminal),
             current_phase: Mutex::new(String::new()),
@@ -62,7 +62,7 @@ impl LoadingScreen {
         let mut current_phase = self.current_phase.lock().unwrap();
         if *current_phase != phase {
             *current_phase = phase.to_string();
-            
+
             // Update step number based on phase
             let step_num = match phase {
                 "Initializing" => 1,
@@ -74,7 +74,7 @@ impl LoadingScreen {
             };
             *self.current_step.lock().unwrap() = step_num;
             drop(current_phase);
-            
+
             // Force render for phase changes
             self.render_throttled(true)?;
         }
@@ -85,29 +85,30 @@ impl LoadingScreen {
         *self.progress.lock().unwrap() = progress;
         *self.files_processed.lock().unwrap() = processed;
         *self.total_files.lock().unwrap() = total;
-        
+
         self.render()
     }
 
     pub fn update_spinner(&self) {
         // Check for Ctrl+C event
         if event::poll(Duration::from_millis(0)).unwrap_or(false) {
-            if let Ok(Event::Key(KeyEvent { 
-                code: KeyCode::Char('c'), 
+            if let Ok(Event::Key(KeyEvent {
+                code: KeyCode::Char('c'),
                 modifiers: KeyModifiers::CONTROL,
                 kind: KeyEventKind::Press,
                 ..
-            })) = event::read() {
+            })) = event::read()
+            {
                 // Cleanup and exit gracefully
                 let _ = self.cleanup();
                 std::process::exit(0);
             }
         }
-        
+
         let mut spinner_index = self.spinner_index.lock().unwrap();
         *spinner_index = (*spinner_index + 1) % self.spinner_chars.len();
         drop(spinner_index);
-        
+
         // Render with throttling to prevent excessive updates
         let _ = self.render_throttled(false);
     }
@@ -116,26 +117,26 @@ impl LoadingScreen {
         // Mark as completed and render
         *self.current_phase.lock().unwrap() = "Completed".to_string();
         *self.current_step.lock().unwrap() = self.total_steps;
-        
+
         // Force render for completion
         self.render_throttled(true)?;
-        
+
         // Wait a moment to show the completion
         std::thread::sleep(std::time::Duration::from_millis(800));
-        
+
         // Clean up terminal state before returning
         self.cleanup()?;
-        
+
         Ok(())
     }
 
     fn render(&self) -> Result<()> {
         self.render_throttled(false)
     }
-    
+
     fn render_throttled(&self, force: bool) -> Result<()> {
         let now = Instant::now();
-        
+
         if !force {
             let last_render = self.last_render.lock().unwrap();
             if now.duration_since(*last_render) < Duration::from_millis(50) {
@@ -143,7 +144,7 @@ impl LoadingScreen {
                 return Ok(());
             }
         }
-        
+
         let mut terminal = self.terminal.lock().unwrap();
         terminal.draw(|frame| self.draw_ui(frame))?;
         *self.last_render.lock().unwrap() = now;
@@ -152,11 +153,11 @@ impl LoadingScreen {
 
     fn draw_ui(&self, frame: &mut Frame) {
         let size = frame.size();
-        
+
         // Calculate total content height
         let content_height = 2 + 6 + 3 + 3; // Loading message + Description + Phase + Progress
         let vertical_margin = (size.height.saturating_sub(content_height)) / 2;
-        
+
         // Create vertical centering layout
         let vertical_layout = Layout::default()
             .direction(Direction::Vertical)
@@ -166,63 +167,64 @@ impl LoadingScreen {
                 Constraint::Min(0),
             ])
             .split(size);
-        
+
         // Main content layout
         let main_layout = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
-                Constraint::Length(2),  // Loading message
-                Constraint::Length(6),  // Description
-                Constraint::Length(3),  // Phase
-                Constraint::Length(3),  // Progress
+                Constraint::Length(2), // Loading message
+                Constraint::Length(6), // Description
+                Constraint::Length(3), // Phase
+                Constraint::Length(3), // Progress
             ])
             .split(vertical_layout[1]);
-        
+
         // Draw loading message
         self.draw_loading_message(frame, main_layout[0]);
-        
+
         // Draw description
         self.draw_description(frame, main_layout[1]);
-        
+
         // Draw phase
         self.draw_phase(frame, main_layout[2]);
-        
+
         // Draw progress
         self.draw_progress(frame, main_layout[3]);
     }
 
-
     fn draw_loading_message(&self, frame: &mut Frame, area: Rect) {
         let loading_msg = Line::from(vec![
             Span::styled("» ", Style::default().fg(Color::Yellow)),
-            Span::styled("Loading...", Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
+            Span::styled(
+                "Loading...",
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD),
+            ),
         ]);
 
-        let loading = Paragraph::new(vec![loading_msg])
-            .alignment(Alignment::Center);
-        
+        let loading = Paragraph::new(vec![loading_msg]).alignment(Alignment::Center);
+
         frame.render_widget(loading, area);
     }
 
     fn draw_description(&self, frame: &mut Frame, area: Rect) {
         let current_step = *self.current_step.lock().unwrap();
-        
+
         // Define steps with their descriptions
         let steps = [
             "Scanning repository files",
-            "Extracting functions, classes, and code blocks", 
+            "Extracting functions, classes, and code blocks",
             "Parsing AST and analyzing code structure",
             "Generating challenges across difficulty levels",
-            "Preparing content for optimal typing practice"
+            "Preparing content for optimal typing practice",
         ];
-        
-        let mut description_lines = vec![
-            Line::from(Span::styled(
-                "Analyzing your repository to create typing challenges...", 
-                Style::default().fg(Color::Gray)
-            )),
-        ];
-        
+
+        let mut description_lines = vec![Line::from(Span::styled(
+            "Analyzing your repository to create typing challenges...",
+            Style::default().fg(Color::Gray),
+        ))];
+
         // Add steps with checkmarks/progress indicators
         for (i, step_desc) in steps.iter().enumerate() {
             let step_num = i + 1;
@@ -233,23 +235,29 @@ impl LoadingScreen {
             } else {
                 ("◦", Color::DarkGray)
             };
-            
+
             description_lines.push(Line::from(vec![
                 Span::styled(format!("{} ", icon), Style::default().fg(color)),
-                Span::styled(*step_desc, Style::default().fg(if step_num <= current_step { Color::Gray } else { Color::DarkGray })),
+                Span::styled(
+                    *step_desc,
+                    Style::default().fg(if step_num <= current_step {
+                        Color::Gray
+                    } else {
+                        Color::DarkGray
+                    }),
+                ),
             ]));
         }
 
-        let description_paragraph = Paragraph::new(description_lines)
-            .alignment(Alignment::Center);
-        
+        let description_paragraph = Paragraph::new(description_lines).alignment(Alignment::Center);
+
         frame.render_widget(description_paragraph, area);
     }
 
     fn draw_phase(&self, frame: &mut Frame, area: Rect) {
         let current_phase = self.current_phase.lock().unwrap();
         let current_step = *self.current_step.lock().unwrap();
-        
+
         if current_phase.is_empty() {
             return;
         }
@@ -257,21 +265,25 @@ impl LoadingScreen {
         let phase_text = if *current_phase == "Completed" {
             "✓ Loading complete!"
         } else {
-            &format!("• {}/{} {}...", current_step, self.total_steps, current_phase)
+            &format!(
+                "• {}/{} {}...",
+                current_step, self.total_steps, current_phase
+            )
         };
 
         let phase_line = Line::from(Span::styled(
             phase_text,
             if *current_phase == "Completed" {
-                Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)
+                Style::default()
+                    .fg(Color::Green)
+                    .add_modifier(Modifier::BOLD)
             } else {
                 Style::default().fg(Color::Blue)
-            }
+            },
         ));
 
-        let phase_widget = Paragraph::new(vec![phase_line])
-            .alignment(Alignment::Center);
-        
+        let phase_widget = Paragraph::new(vec![phase_line]).alignment(Alignment::Center);
+
         frame.render_widget(phase_widget, area);
     }
 
@@ -280,7 +292,7 @@ impl LoadingScreen {
         let files_processed = *self.files_processed.lock().unwrap();
         let total_files = *self.total_files.lock().unwrap();
         let current_phase = self.current_phase.lock().unwrap();
-        
+
         if total_files == 0 || *current_phase == "Completed" {
             return;
         }
@@ -289,8 +301,13 @@ impl LoadingScreen {
         let spinner_index = *self.spinner_index.lock().unwrap();
         let spinner = self.spinner_chars[spinner_index % self.spinner_chars.len()];
 
-        let progress_text = format!("{} {:.1}% {}/{} files", 
-            spinner, progress * 100.0, files_processed, total_files);
+        let progress_text = format!(
+            "{} {:.1}% {}/{} files",
+            spinner,
+            progress * 100.0,
+            files_processed,
+            total_files
+        );
 
         // Progress bar
         let progress_area = Layout::default()
@@ -306,18 +323,17 @@ impl LoadingScreen {
             .block(Block::default())
             .gauge_style(Style::default().fg(Color::Green))
             .ratio(progress);
-        
+
         frame.render_widget(gauge, progress_area[0]);
 
         // Render progress text
         let progress_line = Line::from(Span::styled(
             progress_text,
-            Style::default().fg(Color::Green)
+            Style::default().fg(Color::Green),
         ));
 
-        let progress_widget = Paragraph::new(vec![progress_line])
-            .alignment(Alignment::Center);
-        
+        let progress_widget = Paragraph::new(vec![progress_line]).alignment(Alignment::Center);
+
         frame.render_widget(progress_widget, progress_area[1]);
     }
 
@@ -326,7 +342,7 @@ impl LoadingScreen {
         if *cleaned_up {
             return Ok(());
         }
-        
+
         disable_raw_mode()?;
         let mut stdout = stdout();
         stdout.execute(LeaveAlternateScreen)?;
@@ -345,22 +361,26 @@ impl ProgressReporter for LoadingScreen {
     fn set_phase(&self, phase: String) {
         let _ = self.update_phase(&phase);
     }
-    
+
     fn set_progress(&self, progress: f64) {
         let processed = *self.files_processed.lock().unwrap();
         let total = *self.total_files.lock().unwrap();
         let _ = self.update_progress(progress, processed, total);
     }
-    
+
     fn set_current_file(&self, _file: Option<String>) {
         // LoadingScreen doesn't display individual files
     }
-    
+
     fn set_file_counts(&self, processed: usize, total: usize) {
-        let progress = if total > 0 { processed as f64 / total as f64 } else { 0.0 };
+        let progress = if total > 0 {
+            processed as f64 / total as f64
+        } else {
+            0.0
+        };
         let _ = self.update_progress(progress, processed, total);
     }
-    
+
     fn update_spinner(&self) {
         self.update_spinner();
     }

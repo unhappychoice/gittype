@@ -1,7 +1,10 @@
-use std::path::Path;
+use super::{
+    ChallengeConverter, CodeExtractor, ExtractionOptions, GitInfoExtractor, GitRepositoryInfo,
+    NoOpProgressReporter, ProgressReporter,
+};
 use crate::game::Challenge;
-use crate::{Result, GitTypeError};
-use super::{CodeExtractor, ExtractionOptions, ChallengeConverter, ProgressReporter, NoOpProgressReporter, GitInfoExtractor, GitRepositoryInfo};
+use crate::{GitTypeError, Result};
+use std::path::Path;
 
 pub struct RepositoryLoader {
     extractor: CodeExtractor,
@@ -13,7 +16,7 @@ impl RepositoryLoader {
     pub fn new() -> Result<Self> {
         let extractor = CodeExtractor::new()?;
         let converter = ChallengeConverter::new();
-        
+
         Ok(Self {
             extractor,
             converter,
@@ -26,7 +29,11 @@ impl RepositoryLoader {
         repo_path: &Path,
         options: Option<ExtractionOptions>,
     ) -> Result<Vec<Challenge>> {
-        self.load_challenges_from_repository_with_progress(repo_path, options, &NoOpProgressReporter)
+        self.load_challenges_from_repository_with_progress(
+            repo_path,
+            options,
+            &NoOpProgressReporter,
+        )
     }
 
     pub fn load_challenges_from_repository_with_progress<P: ProgressReporter + ?Sized>(
@@ -43,8 +50,10 @@ impl RepositoryLoader {
         self.git_info = GitInfoExtractor::extract_git_info(repo_path)?;
 
         let extraction_options = options.unwrap_or_default();
-        let chunks = self.extractor.extract_chunks_with_progress(repo_path, extraction_options, progress)?;
-        
+        let chunks =
+            self.extractor
+                .extract_chunks_with_progress(repo_path, extraction_options, progress)?;
+
         if chunks.is_empty() {
             return Err(GitTypeError::NoSupportedFiles);
         }
@@ -52,11 +61,10 @@ impl RepositoryLoader {
         progress.set_phase("Generating challenges".to_string());
         // Expand chunks into multiple challenges across difficulties
         let challenges = self.converter.convert_chunks_to_challenges(chunks);
-        
+
         progress.set_phase("Finalizing".to_string());
         Ok(challenges)
     }
-
 
     pub fn load_challenges_with_difficulty<P: ProgressReporter + ?Sized>(
         &mut self,
@@ -66,7 +74,7 @@ impl RepositoryLoader {
         progress: &P,
     ) -> Result<Vec<Challenge>> {
         use crate::game::stage_builder::DifficultyLevel;
-        
+
         if !repo_path.exists() {
             return Err(GitTypeError::RepositoryNotFound(repo_path.to_path_buf()));
         }
@@ -81,15 +89,21 @@ impl RepositoryLoader {
             }
             _ => {
                 let extraction_options = options.unwrap_or_default();
-                let chunks = self.extractor.extract_chunks_with_progress(repo_path, extraction_options, progress)?;
-                
+                let chunks = self.extractor.extract_chunks_with_progress(
+                    repo_path,
+                    extraction_options,
+                    progress,
+                )?;
+
                 if chunks.is_empty() {
                     return Err(GitTypeError::NoSupportedFiles);
                 }
 
                 progress.set_phase("Generating challenges".to_string());
-                let challenges = self.converter.convert_with_difficulty_split(chunks, difficulty);
-                
+                let challenges = self
+                    .converter
+                    .convert_with_difficulty_split(chunks, difficulty);
+
                 progress.set_phase("Finalizing".to_string());
                 Ok(challenges)
             }
@@ -98,19 +112,24 @@ impl RepositoryLoader {
 
     fn collect_source_files(&self, repo_path: &Path) -> Result<Vec<std::path::PathBuf>> {
         use std::fs;
-        
+
         let mut files = Vec::new();
         let extensions = vec!["rs", "ts", "tsx", "py", "js", "jsx"];
-        
-        fn collect_recursive(dir: &Path, extensions: &[&str], files: &mut Vec<std::path::PathBuf>) -> std::io::Result<()> {
+
+        fn collect_recursive(
+            dir: &Path,
+            extensions: &[&str],
+            files: &mut Vec<std::path::PathBuf>,
+        ) -> std::io::Result<()> {
             if dir.is_dir() {
                 for entry in fs::read_dir(dir)? {
                     let entry = entry?;
                     let path = entry.path();
-                    
+
                     if path.is_dir() {
                         if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                            if !name.starts_with('.') && name != "target" && name != "node_modules" {
+                            if !name.starts_with('.') && name != "target" && name != "node_modules"
+                            {
                                 collect_recursive(&path, extensions, files)?;
                             }
                         }
@@ -123,25 +142,26 @@ impl RepositoryLoader {
             }
             Ok(())
         }
-        
+
         collect_recursive(repo_path, &extensions, &mut files)
-            .map_err(|e| GitTypeError::IoError(e))?;
-            
+            .map_err(GitTypeError::IoError)?;
+
         Ok(files)
     }
 
     pub fn load_all_files_as_zen_challenges(&mut self, repo_path: &Path) -> Result<Vec<Challenge>> {
         // Get all source files in the repository
         let all_source_files = self.collect_source_files(repo_path)?;
-        
+
         // Create Zen challenges for each file
-        let zen_challenges = self.converter.convert_whole_files_to_zen_challenges_only(all_source_files);
-        
+        let zen_challenges = self
+            .converter
+            .convert_whole_files_to_zen_challenges_only(all_source_files);
+
         Ok(zen_challenges)
     }
 
     pub fn get_git_info(&self) -> &Option<GitRepositoryInfo> {
         &self.git_info
     }
-
 }

@@ -1,7 +1,7 @@
-use std::time::Instant;
-use std::ops::Add;
-use super::{TypingMetrics, RankingTitle};
+use super::{RankingTitle, TypingMetrics};
 use crate::Result;
+use std::ops::Add;
+use std::time::Instant;
 
 #[derive(Debug, Clone)]
 pub struct Keystroke {
@@ -107,19 +107,16 @@ impl ScoringEngine {
 
         if is_correct {
             self.current_streak += 1;
-        } else {
-            if self.current_streak > 0 {
-                self.streaks.push(self.current_streak);
-                self.current_streak = 0;
-            }
+        } else if self.current_streak > 0 {
+            self.streaks.push(self.current_streak);
+            self.current_streak = 0;
         }
     }
 
     /// Get elapsed time since start (use recorded duration if available)
     pub fn elapsed(&self) -> std::time::Duration {
-        self.recorded_duration.unwrap_or_else(|| {
-            self.start_time.map(|t| t.elapsed()).unwrap_or_default()
-        })
+        self.recorded_duration
+            .unwrap_or_else(|| self.start_time.map(|t| t.elapsed()).unwrap_or_default())
     }
 
     /// Calculate current CPM (Characters Per Minute) - primary metric
@@ -127,7 +124,7 @@ impl ScoringEngine {
         if self.keystrokes.is_empty() {
             return 0.1; // Minimum to prevent 0 score
         }
-        
+
         let correct_chars = self.keystrokes.iter().filter(|k| k.is_correct).count() as f64;
         let elapsed_secs = self.elapsed().as_secs_f64().max(0.1);
         (correct_chars / elapsed_secs) * 60.0
@@ -143,7 +140,7 @@ impl ScoringEngine {
         if self.keystrokes.is_empty() {
             return 0.0;
         }
-        
+
         let correct_chars = self.keystrokes.iter().filter(|k| k.is_correct).count();
         (correct_chars as f64 / self.keystrokes.len() as f64) * 100.0
     }
@@ -177,17 +174,17 @@ impl ScoringEngine {
         let score = self.calculate_challenge_score();
         Self::get_ranking_title_for_score(score)
     }
-    
+
     /// Legacy method that returns title name as string for backward compatibility
     pub fn get_ranking_title_string(&self) -> String {
         self.get_ranking_title().name().to_string()
     }
-    
+
     /// Get ranking title for a specific score (pure function for testing)
     pub fn get_ranking_title_for_score(score: f64) -> RankingTitle {
         RankingTitle::for_score(score)
     }
-    
+
     /// Legacy method that returns title name as string for a score for backward compatibility
     pub fn get_ranking_title_string_for_score(score: f64) -> String {
         match score as usize {
@@ -263,9 +260,9 @@ impl ScoringEngine {
             17901..=18500 => "Heisenbug".to_string(),
             18501..=19100 => "Blue Screen".to_string(),
             _ => "Kernel Panic".to_string(),
-        }.into()
+        }
     }
-    
+
     /// Get legacy ranking title name for a specific score (deprecated - use get_ranking_title_for_score instead)
     pub fn get_ranking_title_legacy_for_score(score: f64) -> String {
         Self::get_ranking_title_for_score(score).name().to_string()
@@ -275,7 +272,7 @@ impl ScoringEngine {
     fn calculate_base_score(&self) -> f64 {
         self.cpm() * (self.accuracy() / 100.0) * 10.0 // 10x scaling for 1000+ range
     }
-    
+
     /// Calculate consistency bonus for real-time estimation
     fn calculate_realtime_consistency_bonus(&self) -> f64 {
         let base_score = self.calculate_base_score();
@@ -298,30 +295,30 @@ impl ScoringEngine {
         };
         base_score * factor
     }
-    
+
     /// Calculate consistency bonus from actual streak data
     fn calculate_streak_consistency_bonus(&self) -> f64 {
         let streaks = self.all_streaks();
         if streaks.is_empty() {
             return 0.0;
         }
-        
+
         let base_score = self.calculate_base_score();
         let avg_streak = streaks.iter().sum::<usize>() as f64 / streaks.len() as f64;
         let max_streak = *streaks.iter().max().unwrap_or(&0) as f64;
-        
+
         // More sophisticated consistency calculation
         let streak_score = (avg_streak * 2.0) + (max_streak * 1.5);
         base_score * (streak_score / 100.0).min(0.8) // Cap at 80% bonus
     }
-    
+
     /// Calculate time bonus for speed
     fn calculate_time_bonus(&self) -> f64 {
         let total_chars = self.total_chars();
         if total_chars <= 50 {
             return 0.0;
         }
-        
+
         let elapsed_secs = self.elapsed().as_secs_f64();
         let ideal_time = total_chars as f64 / 10.0; // 10 chars per second ideal
         if elapsed_secs < ideal_time {
@@ -330,12 +327,12 @@ impl ScoringEngine {
             0.0
         }
     }
-    
+
     /// Calculate mistake penalty
     fn calculate_mistake_penalty(&self) -> f64 {
         self.mistakes() as f64 * 5.0
     }
-    
+
     /// Calculate final challenge score
     fn calculate_challenge_score(&self) -> f64 {
         Self::calculate_score_from_metrics(
@@ -343,7 +340,7 @@ impl ScoringEngine {
             self.accuracy(),
             self.mistakes(),
             self.elapsed().as_secs_f64(),
-            self.total_chars()
+            self.total_chars(),
         )
     }
 
@@ -357,7 +354,7 @@ impl ScoringEngine {
     ) -> f64 {
         // Base score calculation
         let base_score = cpm * (accuracy / 100.0) * 10.0;
-        
+
         // Consistency bonus based on accuracy (continuous, smoothstep)
         let a = (accuracy.max(0.0).min(100.0)) / 100.0; // 0..1
         let consistency_factor = if a <= 0.7 {
@@ -377,7 +374,7 @@ impl ScoringEngine {
             0.5 + 0.2 * s
         };
         let consistency_bonus = base_score * consistency_factor;
-        
+
         // Time bonus for speed
         let time_bonus = if total_chars > 50 {
             let ideal_time = total_chars as f64 / 10.0; // 10 chars per second ideal
@@ -389,10 +386,10 @@ impl ScoringEngine {
         } else {
             0.0
         };
-        
+
         // Mistake penalty
         let mistake_penalty = mistakes as f64 * 5.0;
-        
+
         // Final calculation
         let raw_score = base_score + consistency_bonus + time_bonus - mistake_penalty;
         (raw_score * 2.0 + 100.0).max(0.0) // Final scaling + base offset
@@ -401,18 +398,26 @@ impl ScoringEngine {
     pub fn calculate_metrics(&self) -> Result<TypingMetrics> {
         self.calculate_metrics_with_status(false, false)
     }
-    
+
     pub fn calculate_metrics_with_skip_status(&self, was_skipped: bool) -> Result<TypingMetrics> {
         self.calculate_metrics_with_status(was_skipped, false)
     }
-    
-    pub fn calculate_metrics_with_status(&self, was_skipped: bool, was_failed: bool) -> Result<TypingMetrics> {
+
+    pub fn calculate_metrics_with_status(
+        &self,
+        was_skipped: bool,
+        was_failed: bool,
+    ) -> Result<TypingMetrics> {
         if self.start_time.is_none() {
-            return Err(crate::GitTypeError::TerminalError("Scoring not started".to_string()));
+            return Err(crate::GitTypeError::TerminalError(
+                "Scoring not started".to_string(),
+            ));
         }
 
         let challenge_score = self.calculate_challenge_score();
-        let ranking_title = Self::get_ranking_title_for_score(challenge_score).name().to_string();
+        let ranking_title = Self::get_ranking_title_for_score(challenge_score)
+            .name()
+            .to_string();
 
         Ok(TypingMetrics {
             cpm: self.cpm(),
@@ -439,7 +444,7 @@ impl ScoringEngine {
         let mut temp_engine = ScoringEngine::new(String::new());
         temp_engine.start_time = Some(*start_time);
         temp_engine.recorded_duration = Some(start_time.elapsed());
-        
+
         // Simulate keystrokes for calculations
         for i in 0..current_position {
             temp_engine.keystrokes.push(Keystroke {
@@ -449,10 +454,12 @@ impl ScoringEngine {
                 timestamp: *start_time,
             });
         }
-        
+
         let challenge_score = temp_engine.calculate_challenge_score();
-        let ranking_title = Self::get_ranking_title_for_score(challenge_score).name().to_string();
-        
+        let ranking_title = Self::get_ranking_title_for_score(challenge_score)
+            .name()
+            .to_string();
+
         TypingMetrics {
             cpm: temp_engine.cpm(),
             wpm: temp_engine.wpm(),
@@ -463,7 +470,7 @@ impl ScoringEngine {
             challenge_score,
             ranking_title,
             was_skipped: false, // Real-time metrics are not skipped
-            was_failed: false, // Real-time metrics are not failed
+            was_failed: false,  // Real-time metrics are not failed
         }
     }
 }

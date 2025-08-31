@@ -77,7 +77,6 @@ impl RankingTitle {
             RankingTitle::new("Linter Apprentice", RankingTier::Beginner, 4151, 4550),
             RankingTitle::new("Unit Test Trainee", RankingTier::Beginner, 4551, 5000),
             RankingTitle::new("Code Monkey", RankingTier::Beginner, 5001, 5600),
-
             // Intermediate Level (clean midpoints rounded to 50/100)
             RankingTitle::new("Ticket Picker", RankingTier::Intermediate, 5601, 5850),
             RankingTitle::new("Junior Dev", RankingTier::Intermediate, 5851, 6000),
@@ -91,7 +90,6 @@ impl RankingTitle {
             RankingTitle::new("Build Tamer", RankingTier::Intermediate, 7001, 7100),
             RankingTitle::new("Code Reviewer", RankingTier::Intermediate, 7101, 7250),
             RankingTitle::new("Release Handler", RankingTier::Intermediate, 7251, 7500),
-
             // Advanced Level (clean midpoints rounded)
             RankingTitle::new("Refactorer", RankingTier::Advanced, 7501, 7800),
             RankingTitle::new("Senior Dev", RankingTier::Advanced, 7801, 8000),
@@ -105,7 +103,6 @@ impl RankingTitle {
             RankingTitle::new("Architect", RankingTier::Advanced, 8951, 9100),
             RankingTitle::new("Protocol Artisan", RankingTier::Advanced, 9101, 9250),
             RankingTitle::new("Kernel Hacker", RankingTier::Advanced, 9251, 9500),
-
             // Expert Level
             RankingTitle::new("Compiler", RankingTier::Expert, 9501, 9800),
             RankingTitle::new("Bytecode Interpreter", RankingTier::Expert, 9801, 9950),
@@ -119,19 +116,28 @@ impl RankingTitle {
             RankingTitle::new("Container Orchestrator", RankingTier::Expert, 10951, 11100),
             RankingTitle::new("Stream Processor", RankingTier::Expert, 11101, 11200),
             RankingTitle::new("Quantum Computer", RankingTier::Expert, 11201, 11400),
-
             // Legendary Level
             RankingTitle::new("GPU Cluster", RankingTier::Legendary, 11401, 11700),
             RankingTitle::new("DNS Overlord", RankingTier::Legendary, 11701, 12250),
             RankingTitle::new("CDN Sentinel", RankingTier::Legendary, 12251, 12800),
-            RankingTitle::new("Load Balancer Primarch", RankingTier::Legendary, 12801, 13400),
+            RankingTitle::new(
+                "Load Balancer Primarch",
+                RankingTier::Legendary,
+                12801,
+                13400,
+            ),
             RankingTitle::new("Singularity", RankingTier::Legendary, 13401, 13950),
             RankingTitle::new("The Machine", RankingTier::Legendary, 13951, 14500),
             RankingTitle::new("Origin", RankingTier::Legendary, 14501, 15100),
             RankingTitle::new("SegFault", RankingTier::Legendary, 15101, 15650),
             RankingTitle::new("Buffer Overflow", RankingTier::Legendary, 15651, 16200),
             RankingTitle::new("Memory Leak", RankingTier::Legendary, 16201, 16800),
-            RankingTitle::new("Null Pointer Exception", RankingTier::Legendary, 16801, 17350),
+            RankingTitle::new(
+                "Null Pointer Exception",
+                RankingTier::Legendary,
+                16801,
+                17350,
+            ),
             RankingTitle::new("Undefined Behavior", RankingTier::Legendary, 17351, 17900),
             RankingTitle::new("Heisenbug", RankingTier::Legendary, 17901, 18500),
             RankingTitle::new("Blue Screen", RankingTier::Legendary, 18501, 19100),
@@ -212,9 +218,15 @@ mod tests {
         for i in 0..(titles.len() - 1) {
             let current = &titles[i];
             let next = &titles[i + 1];
-            assert_eq!(current.max_score + 1, next.min_score,
+            assert_eq!(
+                current.max_score + 1,
+                next.min_score,
                 "Gap found between {} (max: {}) and {} (min: {})",
-                current.name(), current.max_score, next.name(), next.min_score);
+                current.name(),
+                current.max_score,
+                next.name(),
+                next.min_score
+            );
         }
     }
 }

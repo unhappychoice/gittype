@@ -32,7 +32,13 @@ impl InfoDialog {
 
         // Draw dialog box
         Self::draw_dialog_box(&mut stdout, center_row, center_col)?;
-        Self::draw_dialog_content(&mut stdout, center_row, center_col, &options, selected_option)?;
+        Self::draw_dialog_content(
+            &mut stdout,
+            center_row,
+            center_col,
+            &options,
+            selected_option,
+        )?;
         stdout.flush()?;
 
         loop {
@@ -45,21 +51,33 @@ impl InfoDialog {
                                 1 => InfoAction::OpenTwitter,
                                 _ => InfoAction::Close,
                             });
-                        },
+                        }
                         KeyCode::Up | KeyCode::Char('k') => {
                             selected_option = if selected_option == 0 {
                                 options.len() - 1
                             } else {
                                 selected_option - 1
                             };
-                            Self::draw_dialog_content(&mut stdout, center_row, center_col, &options, selected_option)?;
+                            Self::draw_dialog_content(
+                                &mut stdout,
+                                center_row,
+                                center_col,
+                                &options,
+                                selected_option,
+                            )?;
                             stdout.flush()?;
-                        },
+                        }
                         KeyCode::Down | KeyCode::Char('j') => {
                             selected_option = (selected_option + 1) % options.len();
-                            Self::draw_dialog_content(&mut stdout, center_row, center_col, &options, selected_option)?;
+                            Self::draw_dialog_content(
+                                &mut stdout,
+                                center_row,
+                                center_col,
+                                &options,
+                                selected_option,
+                            )?;
                             stdout.flush()?;
-                        },
+                        }
                         KeyCode::Esc | KeyCode::Char('q') => return Ok(InfoAction::Close),
                         KeyCode::Char('g') => return Ok(InfoAction::OpenGithub),
                         KeyCode::Char('t') => return Ok(InfoAction::OpenTwitter),
@@ -70,7 +88,11 @@ impl InfoDialog {
         }
     }
 
-    fn draw_dialog_box(stdout: &mut std::io::Stdout, center_row: u16, center_col: u16) -> Result<()> {
+    fn draw_dialog_box(
+        stdout: &mut std::io::Stdout,
+        center_row: u16,
+        center_col: u16,
+    ) -> Result<()> {
         let dialog_width = 50;
         let dialog_height = 10;
         let start_col = center_col.saturating_sub(dialog_width / 2);
@@ -104,7 +126,7 @@ impl InfoDialog {
         center_row: u16,
         center_col: u16,
         options: &[(&str, InfoAction); 3],
-        selected_option: usize
+        selected_option: usize,
     ) -> Result<()> {
         let start_row = center_row.saturating_sub(4);
 
@@ -112,7 +134,11 @@ impl InfoDialog {
         let title = "Information & Links";
         let title_col = center_col.saturating_sub(title.len() as u16 / 2);
         execute!(stdout, MoveTo(title_col, start_row + 1))?;
-        execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Cyan))?;
+        execute!(
+            stdout,
+            SetAttribute(Attribute::Bold),
+            SetForegroundColor(Color::Cyan)
+        )?;
         execute!(stdout, Print(title))?;
         execute!(stdout, ResetColor)?;
 
@@ -120,9 +146,13 @@ impl InfoDialog {
         for (i, (label, _)) in options.iter().enumerate() {
             let option_col = center_col.saturating_sub(label.len() as u16 / 2 + 2);
             execute!(stdout, MoveTo(option_col, start_row + 3 + i as u16))?;
-            
+
             if i == selected_option {
-                execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Yellow))?;
+                execute!(
+                    stdout,
+                    SetAttribute(Attribute::Bold),
+                    SetForegroundColor(Color::Yellow)
+                )?;
                 execute!(stdout, Print("> "))?;
                 execute!(stdout, SetForegroundColor(Color::White))?;
                 execute!(stdout, Print(label))?;
@@ -147,7 +177,7 @@ impl InfoDialog {
 
     pub fn open_github() -> Result<()> {
         let url = "https://github.com/unhappychoice/gittype";
-        if let Err(_) = open::that(url) {
+        if open::that(url).is_err() {
             Self::show_url_fallback("GitHub Repository", url)?;
         }
         Ok(())
@@ -155,7 +185,7 @@ impl InfoDialog {
 
     pub fn open_twitter() -> Result<()> {
         let url = "https://twitter.com/search?q=%23gittype";
-        if let Err(_) = open::that(url) {
+        if open::that(url).is_err() {
             Self::show_url_fallback("Twitter Search", url)?;
         }
         Ok(())
@@ -178,10 +208,7 @@ impl InfoDialog {
         loop {
             if let Ok(true) = event::poll(std::time::Duration::from_millis(50)) {
                 if let Ok(Event::Key(key_event)) = event::read() {
-                    match key_event.code {
-                        KeyCode::Esc => break,
-                        _ => {}
-                    }
+                    if key_event.code == KeyCode::Esc { break }
                 }
             }
         }
@@ -194,7 +221,7 @@ impl InfoDialog {
         center_row: u16,
         center_col: u16,
         title: &str,
-        url: &str
+        url: &str,
     ) -> Result<()> {
         let dialog_width = std::cmp::max(60, url.len() + 4) as u16;
         let dialog_height = 8;
@@ -225,7 +252,11 @@ impl InfoDialog {
         let fallback_title = format!("Cannot open {}", title);
         let title_col = center_col.saturating_sub(fallback_title.len() as u16 / 2);
         execute!(stdout, MoveTo(title_col, start_row + 1))?;
-        execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Red))?;
+        execute!(
+            stdout,
+            SetAttribute(Attribute::Bold),
+            SetForegroundColor(Color::Red)
+        )?;
         execute!(stdout, Print(&fallback_title))?;
         execute!(stdout, ResetColor)?;
 
@@ -240,7 +271,11 @@ impl InfoDialog {
         // URL
         let url_col = center_col.saturating_sub(url.len() as u16 / 2);
         execute!(stdout, MoveTo(url_col, start_row + 4))?;
-        execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Cyan))?;
+        execute!(
+            stdout,
+            SetAttribute(Attribute::Bold),
+            SetForegroundColor(Color::Cyan)
+        )?;
         execute!(stdout, Print(url))?;
         execute!(stdout, ResetColor)?;
 

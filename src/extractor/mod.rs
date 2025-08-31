@@ -9,7 +9,7 @@ pub mod repository_loader;
 
 pub use centered_progress::CenteredProgressReporter;
 pub use challenge_converter::ChallengeConverter;
-pub use chunk::{CodeChunk, ChunkType};
+pub use chunk::{ChunkType, CodeChunk};
 pub use git_info::{GitInfoExtractor, GitRepositoryInfo};
 pub use language::Language;
 pub use parser::{CodeExtractor, ExtractionOptions};

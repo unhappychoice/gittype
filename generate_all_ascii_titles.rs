@@ -2,22 +2,28 @@
 #[path = "src/scoring/ranking_title.rs"]
 mod ranking_title;
 
-use std::collections::HashMap;
-use std::process::Command;
-use std::io::Write;
 use ranking_title::RankingTitle;
+use std::collections::HashMap;
+use std::io::Write;
+use std::process::Command;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Get all rank titles from the actual RankingTitle implementation
     let all_titles = RankingTitle::all_titles();
-    println!("Found {} rank titles from RankingTitle::all_titles()", all_titles.len());
+    println!(
+        "Found {} rank titles from RankingTitle::all_titles()",
+        all_titles.len()
+    );
 
     let rank_titles: Vec<(&str, &str)> = all_titles
         .iter()
         .map(|title| (title.name(), title.color_palette()))
         .collect();
 
-    println!("Generating ASCII art for {} rank titles...", rank_titles.len());
+    println!(
+        "Generating ASCII art for {} rank titles...",
+        rank_titles.len()
+    );
 
     let mut generated_patterns = HashMap::new();
 
@@ -28,7 +34,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         // Run npx oh-my-logo
         let output = Command::new("npx")
-            .args(&["oh-my-logo", title, palette])
+            .args(["oh-my-logo", title, palette])
             .env("FORCE_COLOR", "1")
             .output()?;
 
@@ -55,19 +61,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    println!("\nGenerated ASCII art for {} titles", generated_patterns.len());
+    println!(
+        "\nGenerated ASCII art for {} titles",
+        generated_patterns.len()
+    );
 
     // Generate the Rust file
     println!("Writing ascii_rank_titles_generated.rs...");
-    
+
     let mut file = std::fs::File::create("src/game/ascii_rank_titles_generated.rs")?;
-    
-    writeln!(file, "/// ASCII art rank title patterns using oh-my-logo style with colored ANSI codes")?;
-    writeln!(file, "/// Auto-generated from oh-my-logo with different palettes for different rank categories")?;
+
+    writeln!(
+        file,
+        "/// ASCII art rank title patterns using oh-my-logo style with colored ANSI codes"
+    )?;
+    writeln!(
+        file,
+        "/// Auto-generated from oh-my-logo with different palettes for different rank categories"
+    )?;
     writeln!(file)?;
     writeln!(file, "use std::collections::HashMap;")?;
     writeln!(file)?;
-    writeln!(file, "pub fn get_all_rank_patterns() -> HashMap<String, Vec<String>> {{")?;
+    writeln!(
+        file,
+        "pub fn get_all_rank_patterns() -> HashMap<String, Vec<String>> {{"
+    )?;
     writeln!(file, "    let mut patterns = HashMap::new();")?;
     writeln!(file)?;
 
@@ -79,7 +97,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let lines = &generated_patterns[title];
         writeln!(file, "    // {}", title)?;
         writeln!(file, "    patterns.insert(\"{}\".to_string(), vec![", title)?;
-        
+
         for line in lines {
             // Escape the line for Rust string literal
             let escaped_line = line
@@ -88,7 +106,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .replace("\x1b", "\\x1b");
             writeln!(file, "        \"{}\".to_string(),", escaped_line)?;
         }
-        
+
         writeln!(file, "    ]);")?;
         writeln!(file)?;
     }
@@ -96,11 +114,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     writeln!(file, "    patterns")?;
     writeln!(file, "}}")?;
     writeln!(file)?;
-    writeln!(file, "pub fn get_rank_title_display(rank_title: &str) -> Vec<String> {{")?;
+    writeln!(
+        file,
+        "pub fn get_rank_title_display(rank_title: &str) -> Vec<String> {{"
+    )?;
     writeln!(file, "    let patterns = get_all_rank_patterns();")?;
     writeln!(file, "    patterns.get(rank_title)")?;
     writeln!(file, "        .cloned()")?;
-    writeln!(file, "        .unwrap_or_else(|| vec![rank_title.to_string()])")?;
+    writeln!(
+        file,
+        "        .unwrap_or_else(|| vec![rank_title.to_string()])"
+    )?;
     writeln!(file, "}}")?;
 
     println!("✓ Generated src/game/ascii_rank_titles_generated.rs");
