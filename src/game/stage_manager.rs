@@ -319,10 +319,7 @@ impl StageManager {
                     let session_summary = self.session_tracker.clone().finalize_and_get_summary();
 
                     loop {
-                        let exit_action = match ExitSummaryScreen::show(&session_summary) {
-                            Ok(action) => action,
-                            Err(e) => return Err(e),
-                        };
+                        let exit_action = ExitSummaryScreen::show(&session_summary)?;
 
                         match exit_action {
                             ExitAction::Exit => {
