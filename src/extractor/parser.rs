@@ -125,7 +125,7 @@ impl CodeExtractor {
 
         // Process files in parallel with better progress tracking
         // Split files into smaller chunks for better progress visibility
-        let chunk_size = (total_files / 20).max(1).min(10); // Process in smaller chunks of 1-10 files
+        let chunk_size = (total_files / 20).clamp(1, 10); // Process in smaller chunks of 1-10 files
         let mut all_chunks = Vec::new();
         let mut processed_files = 0;
 
@@ -157,6 +157,7 @@ impl CodeExtractor {
         Ok(all_chunks)
     }
 
+    #[allow(dead_code)]
     fn should_process_file(&self, path: &Path, options: &ExtractionOptions) -> bool {
         Self::should_process_file_static(path, options)
     }
@@ -211,6 +212,7 @@ impl CodeExtractor {
         Self::extract_chunks_from_tree_static(&tree, &content, file_path, language, options)
     }
 
+    #[allow(dead_code)]
     fn extract_chunks_from_tree(
         &self,
         tree: &Tree,
@@ -232,8 +234,7 @@ impl CodeExtractor {
         let mut chunks = Vec::new();
 
         // Extract comment ranges for the entire file
-        let file_comment_ranges =
-            Self::extract_comment_ranges_static(tree, source_code, language);
+        let file_comment_ranges = Self::extract_comment_ranges_static(tree, source_code, language);
 
         let query_str = match language {
             Language::Rust => "
@@ -283,6 +284,8 @@ impl CodeExtractor {
         Ok(chunks)
     }
 
+    #[allow(dead_code)]
+    #[allow(clippy::too_many_arguments)]
     fn node_to_chunk(
         &self,
         node: Node,
@@ -373,6 +376,7 @@ impl CodeExtractor {
         })
     }
 
+    #[allow(dead_code)]
     fn extract_name(&self, node: Node, source_code: &str) -> Option<String> {
         Self::extract_name_static(node, source_code)
     }
@@ -412,6 +416,7 @@ impl CodeExtractor {
         None
     }
 
+    #[allow(dead_code)]
     fn normalize_indentation(
         &self,
         content: &str,
@@ -521,6 +526,7 @@ impl CodeExtractor {
         (normalized_text, final_ranges)
     }
 
+    #[allow(dead_code)]
     fn extract_comment_ranges(
         &self,
         tree: &Tree,

@@ -269,14 +269,16 @@ impl ScoringEngine {
     }
 
     /// Calculate base score from current metrics
+    #[allow(dead_code)]
     fn calculate_base_score(&self) -> f64 {
         self.cpm() * (self.accuracy() / 100.0) * 10.0 // 10x scaling for 1000+ range
     }
 
     /// Calculate consistency bonus for real-time estimation
+    #[allow(dead_code)]
     fn calculate_realtime_consistency_bonus(&self) -> f64 {
         let base_score = self.calculate_base_score();
-        let accuracy = self.accuracy().max(0.0).min(100.0) / 100.0; // normalize to 0..1
+        let accuracy = self.accuracy().clamp(0.0, 100.0) / 100.0; // normalize to 0..1
         let factor = if accuracy <= 0.7 {
             0.0
         } else if accuracy < 0.9 {
@@ -297,6 +299,7 @@ impl ScoringEngine {
     }
 
     /// Calculate consistency bonus from actual streak data
+    #[allow(dead_code)]
     fn calculate_streak_consistency_bonus(&self) -> f64 {
         let streaks = self.all_streaks();
         if streaks.is_empty() {
@@ -313,6 +316,7 @@ impl ScoringEngine {
     }
 
     /// Calculate time bonus for speed
+    #[allow(dead_code)]
     fn calculate_time_bonus(&self) -> f64 {
         let total_chars = self.total_chars();
         if total_chars <= 50 {
@@ -329,6 +333,7 @@ impl ScoringEngine {
     }
 
     /// Calculate mistake penalty
+    #[allow(dead_code)]
     fn calculate_mistake_penalty(&self) -> f64 {
         self.mistakes() as f64 * 5.0
     }
@@ -356,7 +361,7 @@ impl ScoringEngine {
         let base_score = cpm * (accuracy / 100.0) * 10.0;
 
         // Consistency bonus based on accuracy (continuous, smoothstep)
-        let a = (accuracy.max(0.0).min(100.0)) / 100.0; // 0..1
+        let a = accuracy.clamp(0.0, 100.0) / 100.0; // 0..1
         let consistency_factor = if a <= 0.7 {
             0.0
         } else if a < 0.9 {

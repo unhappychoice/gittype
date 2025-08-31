@@ -34,6 +34,7 @@ impl GameDisplay {
         )
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn display_challenge_with_info(
         challenge_text: &str,
         current_position: usize,

@@ -240,8 +240,7 @@ impl TextProcessor {
 
         // Check if we've reached the end of the actual code content on this line
         // (i.e., next characters until newline are only whitespace or comments)
-        for i in current_position..chars.len() {
-            let ch = chars[i];
+        for (i, &ch) in chars.iter().enumerate().skip(current_position) {
             if ch == '\n' {
                 return true; // Everything until newline was skippable
             }
@@ -311,8 +310,7 @@ impl TextProcessor {
         }
 
         // Check if everything from line_start to position is whitespace or comment
-        for i in line_start..position {
-            let ch = chars[i];
+        for (i, &ch) in chars.iter().enumerate().take(position).skip(line_start) {
             if !ch.is_whitespace() {
                 // Found non-whitespace, check if it's part of a comment
                 if !comment_ranges

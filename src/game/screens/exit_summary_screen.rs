@@ -192,14 +192,16 @@ impl ExitSummaryScreen {
         if session_summary.total_challenges_completed > 0 {
             let performance_start_row = stats_start_row + stats_lines.len() as u16 + 1;
 
-            let performance_lines = [format!(
+            let performance_lines = [
+                format!(
                     "Best Stage: {:.1} WPM, {:.1}% accuracy",
                     session_summary.best_stage_wpm, session_summary.best_stage_accuracy
                 ),
                 format!(
                     "Worst Stage: {:.1} WPM, {:.1}% accuracy",
                     session_summary.worst_stage_wpm, session_summary.worst_stage_accuracy
-                )];
+                ),
+            ];
 
             for (i, line) in performance_lines.iter().enumerate() {
                 let line_col = center_col.saturating_sub(line.len() as u16 / 2);
@@ -508,7 +510,9 @@ impl ExitSummaryScreen {
         loop {
             if event::poll(std::time::Duration::from_millis(100))? {
                 if let Event::Key(key_event) = event::read()? {
-                    if key_event.code == KeyCode::Esc { break }
+                    if key_event.code == KeyCode::Esc {
+                        break;
+                    }
                 }
             }
         }

@@ -113,7 +113,7 @@ fn test_ascii_art_quality() {
             let visible_chars = cleaned_line.chars().count();
 
             assert!(
-                visible_chars >= 10 && visible_chars <= 100,
+                (10..=100).contains(&visible_chars),
                 "Line {} of {} has {} visible characters (expected 10-100)",
                 i,
                 title.name(),
@@ -132,7 +132,7 @@ fn remove_ansi_sequences(text: &str) -> String {
             // Skip escape sequence: ESC [ ... m
             if let Some('[') = chars.next() {
                 // Skip until we find 'm' (end of color sequence)
-                while let Some(c) = chars.next() {
+                for c in chars.by_ref() {
                     if c == 'm' {
                         break;
                     }

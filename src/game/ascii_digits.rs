@@ -1,6 +1,5 @@
 /// ASCII art digit patterns using oh-my-logo style with simple block font
 /// Each digit has consistent width within its own pattern for proper alignment
-
 pub fn get_digit_patterns() -> [Vec<&'static str>; 10] {
     [
         // 0 - width 7

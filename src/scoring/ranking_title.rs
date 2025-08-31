@@ -46,11 +46,13 @@ impl RankingTitle {
     }
 
     /// Get the tier of the ranking title
+    #[allow(dead_code)]
     pub fn tier(&self) -> &RankingTier {
         &self.tier
     }
 
     /// Check if a score falls within this ranking title's range
+    #[allow(dead_code)]
     pub fn contains_score(&self, score: f64) -> bool {
         let score = score as u32;
         score >= self.min_score && score <= self.max_score
@@ -146,6 +148,7 @@ impl RankingTitle {
     }
 
     /// Find the ranking title for a given score
+    #[allow(dead_code)]
     pub fn for_score(score: f64) -> RankingTitle {
         Self::all_titles()
             .into_iter()

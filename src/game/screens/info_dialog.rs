@@ -208,7 +208,9 @@ impl InfoDialog {
         loop {
             if let Ok(true) = event::poll(std::time::Duration::from_millis(50)) {
                 if let Ok(Event::Key(key_event)) = event::read() {
-                    if key_event.code == KeyCode::Esc { break }
+                    if key_event.code == KeyCode::Esc {
+                        break;
+                    }
                 }
             }
         }

@@ -32,6 +32,7 @@ impl GameDisplayOptimized {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn display_challenge_with_info(
         &mut self,
         challenge_text: &str,
@@ -169,6 +170,7 @@ impl GameDisplayOptimized {
         Ok(())
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn display_content(
         &self,
         stdout: &mut std::io::Stdout,
@@ -269,6 +271,7 @@ impl GameDisplayOptimized {
         Ok(())
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn render_character_optimized(
         &self,
         stdout: &mut std::io::Stdout,
@@ -376,6 +379,7 @@ impl GameDisplayOptimized {
         Ok(())
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn display_metrics(
         &self,
         stdout: &mut std::io::Stdout,

@@ -517,7 +517,9 @@ pub fn show_session_summary_on_interrupt() {
         loop {
             if let Ok(true) = event::poll(std::time::Duration::from_millis(100)) {
                 if let Ok(event::Event::Key(key_event)) = event::read() {
-                    if key_event.code == event::KeyCode::Esc { break }
+                    if key_event.code == event::KeyCode::Esc {
+                        break;
+                    }
                 }
             }
         }

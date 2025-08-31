@@ -143,8 +143,7 @@ impl RepositoryLoader {
             Ok(())
         }
 
-        collect_recursive(repo_path, &extensions, &mut files)
-            .map_err(GitTypeError::IoError)?;
+        collect_recursive(repo_path, &extensions, &mut files).map_err(GitTypeError::IoError)?;
 
         Ok(files)
     }

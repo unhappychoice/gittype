@@ -29,6 +29,7 @@ pub struct TypingScreen {
     display: GameDisplayRatatui,
     scoring_engine: ScoringEngine,
     skips_remaining: usize,
+    #[allow(dead_code)]
     last_esc_time: Option<std::time::Instant>,
     dialog_shown: bool,
 }

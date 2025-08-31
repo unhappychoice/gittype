@@ -180,7 +180,8 @@ impl ResultScreen {
         let stage_metrics_row = score_start_row + ascii_height + 2;
 
         // Display compact metrics below the score
-        let metrics_lines = [format!(
+        let metrics_lines = [
+            format!(
                 "CPM: {:.0} | WPM: {:.0} | Time: {:.1}s",
                 metrics.cpm,
                 metrics.wpm,
@@ -189,7 +190,8 @@ impl ResultScreen {
             format!(
                 "Keystrokes: {} | Accuracy: {:.1}% | Mistakes: {}",
                 keystrokes, metrics.accuracy, metrics.mistakes
-            )];
+            ),
+        ];
 
         for (i, line) in metrics_lines.iter().enumerate() {
             let line_col = center_col.saturating_sub(line.len() as u16 / 2);
@@ -399,7 +401,8 @@ impl ResultScreen {
         let summary_start_row = score_start_row + ascii_height + 2;
 
         // Display session summary with compact format like other screens
-        let summary_lines = [format!(
+        let summary_lines = [
+            format!(
                 "CPM: {:.0} | WPM: {:.0} | Time: {:.1}s",
                 session_metrics.cpm,
                 session_metrics.wpm,
@@ -413,7 +416,8 @@ impl ResultScreen {
                     .sum::<usize>(),
                 session_metrics.accuracy,
                 session_metrics.mistakes
-            )];
+            ),
+        ];
 
         for (i, line) in summary_lines.iter().enumerate() {
             let line_col = center_col.saturating_sub(line.len() as u16 / 2);
@@ -454,10 +458,12 @@ impl ResultScreen {
         }
 
         // Display options
-        let options = ["[R] Retry",
+        let options = [
+            "[R] Retry",
             "[S] Share Result",
             "[T] Back to Title",
-            "[ESC] Quit"];
+            "[ESC] Quit",
+        ];
 
         let options_start = if !stage_engines.is_empty() {
             let stage_results_start_row = summary_start_row + summary_lines.len() as u16 + 2;

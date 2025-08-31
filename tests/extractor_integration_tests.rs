@@ -103,7 +103,7 @@ fn calculate_sum(a: i32, b: i32) -> i32 {
     }
 
     // The extractor now creates both function-based and file-based challenges
-    assert!(challenges.len() >= 1, "Expected at least 1 challenge");
+    assert!(!challenges.is_empty(), "Expected at least 1 challenge");
 
     let challenge = &challenges[0];
     println!("Challenge content: '{}'", challenge.code_content);

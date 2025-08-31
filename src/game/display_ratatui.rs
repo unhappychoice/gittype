@@ -30,6 +30,7 @@ impl GameDisplayRatatui {
         })
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn display_challenge_with_info(
         &mut self,
         challenge_text: &str,

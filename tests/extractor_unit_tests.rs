@@ -110,8 +110,10 @@ fn large_function() {
     fs::write(&file_path, rust_code).unwrap();
 
     let mut extractor = CodeExtractor::new().unwrap();
-    let mut options = ExtractionOptions::default();
-    options.max_lines = Some(3);
+    let options = ExtractionOptions {
+        max_lines: Some(3),
+        ..Default::default()
+    };
 
     let chunks = extractor.extract_chunks(temp_dir.path(), options).unwrap();
 
@@ -219,7 +221,7 @@ struct Person {
 
     // Repository loader may filter out too-small chunks by difficulty thresholds.
     // Ensure at least one challenge is produced from repository contents.
-    assert!(challenges.len() >= 1);
+    assert!(!challenges.is_empty());
     assert!(challenges[0].source_file_path.is_some());
     assert!(challenges[0].language.is_some());
     assert!(!challenges[0].id.is_empty());
