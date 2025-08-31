@@ -352,7 +352,6 @@ impl CodeExtractor {
         let end_line = node.end_position().row + 1;
         let original_indentation = node.start_position().column;
 
-
         let chunk_type = match capture_name {
             "function" => ChunkType::Function,
             "method" => ChunkType::Method,

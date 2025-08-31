@@ -23,7 +23,6 @@ struct Cli {
     #[arg(long, default_value_t = 3)]
     stages: usize,
 
-
     /// Glob patterns for files to include
     #[arg(long)]
     include: Option<Vec<String>>,
@@ -95,7 +94,6 @@ fn main() -> anyhow::Result<()> {
                 if let Some(exclude_patterns) = cli.exclude {
                     options.exclude_patterns = exclude_patterns;
                 }
-
 
                 // Show loading screen during startup
                 let loading_screen = match LoadingScreen::new() {

@@ -90,7 +90,6 @@ pub struct Config {
     assert!(matches!(chunks[0].chunk_type, ChunkType::Struct));
 }
 
-
 #[test]
 fn test_gitignore_respected() {
     let temp_dir = TempDir::new().unwrap();
