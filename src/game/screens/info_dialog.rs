@@ -39,14 +39,14 @@ impl InfoDialog {
             if let Ok(true) = event::poll(std::time::Duration::from_millis(50)) {
                 if let Ok(Event::Key(key_event)) = event::read() {
                     match key_event.code {
-                        KeyCode::Enter => {
+                        KeyCode::Char(' ') => {
                             return Ok(match selected_option {
                                 0 => InfoAction::OpenGithub,
                                 1 => InfoAction::OpenTwitter,
                                 _ => InfoAction::Close,
                             });
                         },
-                        KeyCode::Up => {
+                        KeyCode::Up | KeyCode::Char('k') => {
                             selected_option = if selected_option == 0 {
                                 options.len() - 1
                             } else {
@@ -55,7 +55,7 @@ impl InfoDialog {
                             Self::draw_dialog_content(&mut stdout, center_row, center_col, &options, selected_option)?;
                             stdout.flush()?;
                         },
-                        KeyCode::Down => {
+                        KeyCode::Down | KeyCode::Char('j') => {
                             selected_option = (selected_option + 1) % options.len();
                             Self::draw_dialog_content(&mut stdout, center_row, center_col, &options, selected_option)?;
                             stdout.flush()?;
@@ -135,7 +135,7 @@ impl InfoDialog {
         }
 
         // Instructions
-        let instructions = "[↑↓] Navigate [ENTER] Select [ESC] Close";
+        let instructions = "[↑↓/JK] Navigate [SPACE] Select [ESC] Close";
         let instructions_col = center_col.saturating_sub(instructions.len() as u16 / 2);
         execute!(stdout, MoveTo(instructions_col, start_row + 7))?;
         execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
@@ -174,11 +174,14 @@ impl InfoDialog {
         Self::draw_fallback_dialog(&mut stdout, center_row, center_col, title, url)?;
         stdout.flush()?;
 
-        // Wait for user to press any key
+        // Wait for ESC key
         loop {
             if let Ok(true) = event::poll(std::time::Duration::from_millis(50)) {
-                if let Ok(Event::Key(_)) = event::read() {
-                    break;
+                if let Ok(Event::Key(key_event)) = event::read() {
+                    match key_event.code {
+                        KeyCode::Esc => break,
+                        _ => {}
+                    }
                 }
             }
         }
@@ -242,7 +245,7 @@ impl InfoDialog {
         execute!(stdout, ResetColor)?;
 
         // Instructions
-        let instructions = "Press any key to continue...";
+        let instructions = "[ESC] Back";
         let instructions_col = center_col.saturating_sub(instructions.len() as u16 / 2);
         execute!(stdout, MoveTo(instructions_col, start_row + 6))?;
         execute!(stdout, SetForegroundColor(Color::DarkGrey))?;

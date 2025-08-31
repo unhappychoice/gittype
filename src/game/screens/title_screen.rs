@@ -66,17 +66,17 @@ impl TitleScreen {
             if let Ok(true) = event::poll(std::time::Duration::from_millis(50)) {
                 if let Ok(Event::Key(key_event)) = event::read() {
                     match key_event.code {
-                        KeyCode::Enter => {
+                        KeyCode::Char(' ') => {
                             return Ok(TitleAction::Start(difficulties[selected_difficulty].1.clone()));
                         },
-                        KeyCode::Left => {
+                        KeyCode::Left | KeyCode::Char('h') => {
                             selected_difficulty = if selected_difficulty == 0 {
                                 difficulties.len() - 1
                             } else {
                                 selected_difficulty - 1
                             };
                         },
-                        KeyCode::Right => {
+                        KeyCode::Right | KeyCode::Char('l') => {
                             selected_difficulty = (selected_difficulty + 1) % difficulties.len();
                         },
                         KeyCode::Esc => return Ok(TitleAction::Quit),
@@ -130,14 +130,14 @@ impl TitleScreen {
 
 
         // Display instructions (moved down to accommodate multi-line difficulty display)
-        let instructions = "[←→] Change Difficulty  [ENTER] Start  [I/?] Info  [ESC] Quit";
+        let instructions = "[←→/HL] Change Difficulty  [SPACE] Start  [I/?] Info  [ESC] Quit";
         let instructions_col = center_col.saturating_sub(instructions.len() as u16 / 2);
         
         execute!(stdout, MoveTo(instructions_col, center_row + 6))?;
         execute!(stdout, SetForegroundColor(Color::Blue))?;
-        execute!(stdout, Print("[←→] Change Difficulty  "))?;
+        execute!(stdout, Print("[←→/HL] Change Difficulty  "))?;
         execute!(stdout, SetForegroundColor(Color::Green))?;
-        execute!(stdout, Print("[ENTER] Start  "))?;
+        execute!(stdout, Print("[SPACE] Start  "))?;
         execute!(stdout, SetForegroundColor(Color::Cyan))?;
         execute!(stdout, Print("[I/?] Info  "))?;
         execute!(stdout, SetForegroundColor(Color::Red))?;

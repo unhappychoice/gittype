@@ -404,7 +404,7 @@ impl ExitSummaryScreen {
         execute!(stdout, ResetColor)?;
 
         // Continue prompt
-        let continue_text = "Press any key to continue...";
+        let continue_text = "[ESC] Exit";
         let continue_col = center_col.saturating_sub(continue_text.len() as u16 / 2);
         execute!(stdout, MoveTo(continue_col, center_row + 4))?;
         execute!(stdout, SetForegroundColor(Color::Green))?;
@@ -416,8 +416,11 @@ impl ExitSummaryScreen {
         // Wait for user input
         loop {
             if event::poll(std::time::Duration::from_millis(100))? {
-                if let Event::Key(_) = event::read()? {
-                    break;
+                if let Event::Key(key_event) = event::read()? {
+                    match key_event.code {
+                        KeyCode::Esc => break,
+                        _ => {}
+                    }
                 }
             }
         }
