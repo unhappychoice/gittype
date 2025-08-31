@@ -1,7 +1,7 @@
+use crate::Result;
+use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::process::Command;
-use serde::{Deserialize, Serialize};
-use crate::Result;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct GitRepositoryInfo {
@@ -14,6 +14,12 @@ pub struct GitRepositoryInfo {
 }
 
 pub struct GitInfoExtractor;
+
+impl Default for GitInfoExtractor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl GitInfoExtractor {
     pub fn new() -> Self {
@@ -29,7 +35,7 @@ impl GitInfoExtractor {
                 return Ok(None);
             }
         };
-        
+
         // Find git repository root (may be parent directory)
         let git_root = match Self::find_git_repository_root(&canonical_path) {
             Some(root) => root,
@@ -57,13 +63,13 @@ impl GitInfoExtractor {
 
     fn find_git_repository_root(start_path: &Path) -> Option<std::path::PathBuf> {
         let mut current_path = start_path;
-        
+
         loop {
             let git_dir = current_path.join(".git");
             if git_dir.exists() {
                 return Some(current_path.to_path_buf());
             }
-            
+
             // Move to parent directory
             match current_path.parent() {
                 Some(parent) => current_path = parent,
@@ -83,10 +89,12 @@ impl GitInfoExtractor {
             .current_dir(repo_path)
             .args(["remote", "get-url", "origin"])
             .output()
-            .map_err(|e| crate::GitTypeError::IoError(e))?;
+            .map_err(crate::GitTypeError::IoError)?;
 
         if !output.status.success() {
-            return Err(crate::GitTypeError::ExtractionFailed("Failed to get remote URL".to_string()));
+            return Err(crate::GitTypeError::ExtractionFailed(
+                "Failed to get remote URL".to_string(),
+            ));
         }
 
         let url = String::from_utf8_lossy(&output.stdout).trim().to_string();
@@ -103,7 +111,7 @@ impl GitInfoExtractor {
                 return Some((parts[0].to_string(), parts[1].to_string()));
             }
         }
-        
+
         // Handle SSH URLs like git@github.com:user/repo.git
         if url.starts_with("git@github.com:") {
             let path = url.strip_prefix("git@github.com:")?;
@@ -113,7 +121,7 @@ impl GitInfoExtractor {
                 return Some((parts[0].to_string(), parts[1].to_string()));
             }
         }
-        
+
         // Handle SSH URLs like ssh://git@github.com/user/repo.git or ssh://git@github.com/user/repo
         if url.starts_with("ssh://git@github.com/") {
             let path = url.strip_prefix("ssh://git@github.com/")?;
@@ -132,10 +140,12 @@ impl GitInfoExtractor {
             .current_dir(repo_path)
             .args(["branch", "--show-current"])
             .output()
-            .map_err(|e| crate::GitTypeError::IoError(e))?;
+            .map_err(crate::GitTypeError::IoError)?;
 
         if !output.status.success() {
-            return Err(crate::GitTypeError::ExtractionFailed("Failed to get current branch".to_string()));
+            return Err(crate::GitTypeError::ExtractionFailed(
+                "Failed to get current branch".to_string(),
+            ));
         }
 
         let branch = String::from_utf8_lossy(&output.stdout).trim().to_string();
@@ -147,10 +157,12 @@ impl GitInfoExtractor {
             .current_dir(repo_path)
             .args(["rev-parse", "HEAD"])
             .output()
-            .map_err(|e| crate::GitTypeError::IoError(e))?;
+            .map_err(crate::GitTypeError::IoError)?;
 
         if !output.status.success() {
-            return Err(crate::GitTypeError::ExtractionFailed("Failed to get current commit hash".to_string()));
+            return Err(crate::GitTypeError::ExtractionFailed(
+                "Failed to get current commit hash".to_string(),
+            ));
         }
 
         let hash = String::from_utf8_lossy(&output.stdout).trim().to_string();
@@ -162,10 +174,12 @@ impl GitInfoExtractor {
             .current_dir(repo_path)
             .args(["status", "--porcelain"])
             .output()
-            .map_err(|e| crate::GitTypeError::IoError(e))?;
+            .map_err(crate::GitTypeError::IoError)?;
 
         if !output.status.success() {
-            return Err(crate::GitTypeError::ExtractionFailed("Failed to check working directory status".to_string()));
+            return Err(crate::GitTypeError::ExtractionFailed(
+                "Failed to check working directory status".to_string(),
+            ));
         }
 
         let status = String::from_utf8_lossy(&output.stdout);

@@ -1,7 +1,8 @@
-use rusqlite::Connection;
 use crate::Result;
+use rusqlite::Connection;
 
 pub struct Database {
+    #[allow(dead_code)]
     connection: Connection,
 }
 

@@ -1,5 +1,5 @@
+use crate::scoring::{ScoringEngine, TypingMetrics};
 use std::time::{Duration, Instant};
-use crate::scoring::{TypingMetrics, ScoringEngine};
 
 #[derive(Debug, Clone)]
 pub struct SessionSummary {
@@ -47,12 +47,17 @@ impl SessionSummary {
         }
     }
 
-    pub fn add_stage_result(&mut self, _stage_name: String, metrics: TypingMetrics, engine: &ScoringEngine) {
+    pub fn add_stage_result(
+        &mut self,
+        _stage_name: String,
+        metrics: TypingMetrics,
+        engine: &ScoringEngine,
+    ) {
         self.total_challenges_completed += 1;
         self.total_keystrokes += engine.total_chars();
         self.total_mistakes += metrics.mistakes;
         self.session_score += metrics.challenge_score;
-        
+
         // Track best/worst performance
         if metrics.wpm > self.best_stage_wpm {
             self.best_stage_wpm = metrics.wpm;
@@ -90,14 +95,18 @@ impl SessionSummary {
     pub fn finalize_session(&mut self) {
         self.total_session_time = self.session_start_time.elapsed();
         self.total_challenges_attempted = self.total_challenges_completed + self.total_skips_used;
-        
+
         // Calculate overall metrics - simplified since we don't track individual stage times
         if self.total_session_time.as_secs() > 0 && self.total_keystrokes > 0 {
-            self.overall_cpm = (self.total_keystrokes as f64 / self.total_session_time.as_secs_f64()) * 60.0;
+            self.overall_cpm =
+                (self.total_keystrokes as f64 / self.total_session_time.as_secs_f64()) * 60.0;
             self.overall_wpm = self.overall_cpm / 5.0;
-            self.overall_accuracy = ((self.total_keystrokes.saturating_sub(self.total_mistakes)) as f64 / self.total_keystrokes as f64) * 100.0;
+            self.overall_accuracy = ((self.total_keystrokes.saturating_sub(self.total_mistakes))
+                as f64
+                / self.total_keystrokes as f64)
+                * 100.0;
         }
-        
+
         // Handle edge cases for worst performance
         if self.worst_stage_wpm == f64::MAX {
             self.worst_stage_wpm = 0.0;
@@ -110,7 +119,9 @@ impl SessionSummary {
     pub fn get_session_completion_status(&self) -> String {
         match (self.total_challenges_completed, self.total_skips_used) {
             (0, 0) => "No challenges attempted".to_string(),
-            (completed, 0) if completed > 0 => format!("Perfect session! {} challenges completed", completed),
+            (completed, 0) if completed > 0 => {
+                format!("Perfect session! {} challenges completed", completed)
+            }
             (completed, skips) => format!("{} completed, {} skipped", completed, skips),
         }
     }
@@ -134,7 +145,12 @@ impl SessionTracker {
         }
     }
 
-    pub fn record_stage_completion(&mut self, stage_name: String, metrics: TypingMetrics, engine: &ScoringEngine) {
+    pub fn record_stage_completion(
+        &mut self,
+        stage_name: String,
+        metrics: TypingMetrics,
+        engine: &ScoringEngine,
+    ) {
         self.summary.add_stage_result(stage_name, metrics, engine);
     }
 
@@ -143,7 +159,8 @@ impl SessionTracker {
     }
 
     pub fn record_partial_effort(&mut self, engine: &ScoringEngine, metrics: &TypingMetrics) {
-        self.summary.add_partial_effort(engine.total_chars(), metrics.mistakes);
+        self.summary
+            .add_partial_effort(engine.total_chars(), metrics.mistakes);
     }
 
     pub fn finalize_and_get_summary(mut self) -> SessionSummary {

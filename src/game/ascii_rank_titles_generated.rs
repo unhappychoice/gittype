@@ -1,6 +1,5 @@
 /// ASCII art rank title patterns using oh-my-logo style with colored ANSI codes
 /// Auto-generated from oh-my-logo with different palettes for different rank categories
-
 use std::collections::HashMap;
 
 pub fn get_all_rank_patterns() -> HashMap<String, Vec<String>> {
@@ -703,7 +702,8 @@ pub fn get_all_rank_patterns() -> HashMap<String, Vec<String>> {
 
 pub fn get_rank_title_display(rank_title: &str) -> Vec<String> {
     let patterns = get_all_rank_patterns();
-    patterns.get(rank_title)
+    patterns
+        .get(rank_title)
         .cloned()
         .unwrap_or_else(|| vec![rank_title.to_string()])
 }

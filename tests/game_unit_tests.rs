@@ -1,31 +1,33 @@
-use gittype::game::{Challenge, StageBuilder, GameMode, DifficultyLevel};
+use gittype::game::{Challenge, DifficultyLevel, GameMode, StageBuilder};
 
 fn create_test_challenges(count: usize) -> Vec<Challenge> {
-    (0..count).map(|i| {
-        let content = match i % 3 {
+    (0..count)
+        .map(|i| {
+            let content = match i % 3 {
             0 => format!("fn short_{}() {{ {} }}", i, i), // Short
-            1 => format!("fn medium_{}() {{\n    let x = {};\n    println!(\"x = {{}}\", x);\n    x\n}}", i, i), // Medium  
+            1 => format!("fn medium_{}() {{\n    let x = {};\n    println!(\"x = {{}}\", x);\n    x\n}}", i, i), // Medium
             2 => format!("fn long_{}() {{\n    let mut result = 0;\n    for i in 0..10 {{\n        result += i;\n        println!(\"Step {{}}: result = {{}}\", i, result);\n    }}\n    result\n}}", i), // Long
             _ => unreachable!(),
         };
-        
-        let difficulty = match i % 3 {
-            0 => DifficultyLevel::Easy,
-            1 => DifficultyLevel::Normal,
-            _ => DifficultyLevel::Hard,
-        };
-        
-        Challenge::new(format!("test_{}", i), content)
-            .with_language("rust".to_string())
-            .with_difficulty_level(difficulty)
-    }).collect()
+
+            let difficulty = match i % 3 {
+                0 => DifficultyLevel::Easy,
+                1 => DifficultyLevel::Normal,
+                _ => DifficultyLevel::Hard,
+            };
+
+            Challenge::new(format!("test_{}", i), content)
+                .with_language("rust".to_string())
+                .with_difficulty_level(difficulty)
+        })
+        .collect()
 }
 
 #[test]
 fn test_normal_mode_limits_stages() {
     let challenges = create_test_challenges(10);
     let builder = StageBuilder::with_mode(GameMode::Normal).with_max_stages(3);
-    
+
     let stages = builder.build_stages(challenges);
     assert_eq!(stages.len(), 3);
 }
@@ -34,7 +36,7 @@ fn test_normal_mode_limits_stages() {
 fn test_time_attack_mode_uses_all() {
     let challenges = create_test_challenges(5);
     let builder = StageBuilder::with_mode(GameMode::TimeAttack);
-    
+
     let stages = builder.build_stages(challenges);
     assert_eq!(stages.len(), 5);
 }
@@ -45,10 +47,10 @@ fn test_seeded_randomness_is_reproducible() {
     let builder = StageBuilder::with_mode(GameMode::Normal)
         .with_max_stages(3)
         .with_seed(42);
-    
+
     let stages1 = builder.build_stages(challenges.clone());
     let stages2 = builder.build_stages(challenges);
-    
+
     // Same seed should produce same results
     assert_eq!(stages1.len(), stages2.len());
     for (s1, s2) in stages1.iter().zip(stages2.iter()) {
@@ -65,13 +67,16 @@ fn test_custom_mode_easy_prefers_short() {
         time_limit: None,
         difficulty: DifficultyLevel::Easy,
     });
-    
+
     let stages = builder.build_stages(challenges);
     assert_eq!(stages.len(), 3);
-    
+
     // Check that shorter chunks are selected
     for stage in &stages {
         let line_count = stage.code_content.lines().count();
-        assert!(line_count <= 4, "Easy mode should prefer shorter challenges");
+        assert!(
+            line_count <= 4,
+            "Easy mode should prefer shorter challenges"
+        );
     }
 }

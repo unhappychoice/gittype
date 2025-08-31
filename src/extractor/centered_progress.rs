@@ -41,7 +41,7 @@ impl ProgressReporter for CenteredProgressReporter {
     fn update_spinner(&self) {
         self.display.update_spinner();
     }
-    
+
     fn finish(&self) -> crate::Result<()> {
         self.display.show_completion()
     }

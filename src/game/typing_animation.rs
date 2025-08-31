@@ -19,7 +19,6 @@ pub struct HackingLine {
     pub completed: bool,
 }
 
-
 /// Typing animation controller
 pub struct TypingAnimation {
     phase: AnimationPhase,
@@ -43,12 +42,15 @@ impl TypingAnimation {
     pub fn set_rank_messages(&mut self, ranking_title: &str) {
         use crate::game::rank_messages::get_colored_messages_for_rank;
         let colored_messages = get_colored_messages_for_rank(ranking_title);
-        self.hacking_lines = colored_messages.into_iter().map(|msg| HackingLine {
-            text: msg.text,
-            color: msg.color,
-            typed_length: 0,
-            completed: false,
-        }).collect();
+        self.hacking_lines = colored_messages
+            .into_iter()
+            .map(|msg| HackingLine {
+                text: msg.text,
+                color: msg.color,
+                typed_length: 0,
+                completed: false,
+            })
+            .collect();
     }
 
     pub fn update(&mut self) -> bool {
@@ -62,9 +64,11 @@ impl TypingAnimation {
                     let line = &mut self.hacking_lines[self.current_line];
                     if line.typed_length < line.text.len() {
                         // Type characters at moderate speed - one character every 30ms
-                        let chars_to_type = ((phase_elapsed.as_millis() / 30) as usize + 1).saturating_sub(line.typed_length);
+                        let chars_to_type = ((phase_elapsed.as_millis() / 30) as usize + 1)
+                            .saturating_sub(line.typed_length);
                         if chars_to_type > 0 {
-                            line.typed_length = (line.typed_length + chars_to_type.min(1)).min(line.text.len());
+                            line.typed_length =
+                                (line.typed_length + chars_to_type.min(1)).min(line.text.len());
                         }
                     } else if !line.completed {
                         line.completed = true;

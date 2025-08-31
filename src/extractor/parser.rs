@@ -1,10 +1,10 @@
-use std::path::Path;
-use std::fs;
-use tree_sitter::{Parser, Query, QueryCursor, Node, Tree};
+use super::{ChunkType, CodeChunk, Language, NoOpProgressReporter, ProgressReporter};
+use crate::{GitTypeError, Result};
 use ignore::WalkBuilder;
 use rayon::prelude::*;
-use crate::{Result, GitTypeError};
-use super::{CodeChunk, Language, ChunkType, ProgressReporter, NoOpProgressReporter};
+use std::fs;
+use std::path::Path;
+use tree_sitter::{Node, Parser, Query, QueryCursor, Tree};
 
 #[derive(Debug, Clone)]
 pub struct ExtractionOptions {
@@ -16,8 +16,17 @@ pub struct ExtractionOptions {
 impl Default for ExtractionOptions {
     fn default() -> Self {
         Self {
-            include_patterns: vec!["**/*.rs".to_string(), "**/*.ts".to_string(), "**/*.tsx".to_string(), "**/*.py".to_string()],
-            exclude_patterns: vec!["**/target/**".to_string(), "**/node_modules/**".to_string(), "**/__pycache__/**".to_string()],
+            include_patterns: vec![
+                "**/*.rs".to_string(),
+                "**/*.ts".to_string(),
+                "**/*.tsx".to_string(),
+                "**/*.py".to_string(),
+            ],
+            exclude_patterns: vec![
+                "**/target/**".to_string(),
+                "**/node_modules/**".to_string(),
+                "**/__pycache__/**".to_string(),
+            ],
             max_lines: None,
         }
     }
@@ -34,22 +43,44 @@ impl CodeExtractor {
         let mut parser = Parser::new();
         match language {
             Language::Rust => {
-                parser.set_language(tree_sitter_rust::language())
-                    .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to set Rust language: {}", e)))?;
+                parser
+                    .set_language(tree_sitter_rust::language())
+                    .map_err(|e| {
+                        GitTypeError::ExtractionFailed(format!(
+                            "Failed to set Rust language: {}",
+                            e
+                        ))
+                    })?;
             }
             Language::TypeScript => {
-                parser.set_language(tree_sitter_typescript::language_typescript())
-                    .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to set TypeScript language: {}", e)))?;
+                parser
+                    .set_language(tree_sitter_typescript::language_typescript())
+                    .map_err(|e| {
+                        GitTypeError::ExtractionFailed(format!(
+                            "Failed to set TypeScript language: {}",
+                            e
+                        ))
+                    })?;
             }
             Language::Python => {
-                parser.set_language(tree_sitter_python::language())
-                    .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to set Python language: {}", e)))?;
+                parser
+                    .set_language(tree_sitter_python::language())
+                    .map_err(|e| {
+                        GitTypeError::ExtractionFailed(format!(
+                            "Failed to set Python language: {}",
+                            e
+                        ))
+                    })?;
             }
         }
         Ok(parser)
     }
 
-    pub fn extract_chunks(&mut self, repo_path: &Path, options: ExtractionOptions) -> Result<Vec<CodeChunk>> {
+    pub fn extract_chunks(
+        &mut self,
+        repo_path: &Path,
+        options: ExtractionOptions,
+    ) -> Result<Vec<CodeChunk>> {
         self.extract_chunks_with_progress(repo_path, options, &NoOpProgressReporter)
     }
 
@@ -60,7 +91,7 @@ impl CodeExtractor {
         progress: &P,
     ) -> Result<Vec<CodeChunk>> {
         progress.set_phase("Scanning repository".to_string());
-        
+
         // Use ignore crate to respect .gitignore files
         let walker = WalkBuilder::new(repo_path)
             .hidden(false) // Include hidden files
@@ -68,13 +99,14 @@ impl CodeExtractor {
             .git_global(true) // Respect global gitignore
             .git_exclude(true) // Respect .git/info/exclude
             .build();
-        
+
         // Collect all files to process first to get total count
         let mut files_to_process = Vec::new();
         for entry in walker {
-            let entry = entry.map_err(|e| GitTypeError::ExtractionFailed(format!("Walk error: {}", e)))?;
+            let entry =
+                entry.map_err(|e| GitTypeError::ExtractionFailed(format!("Walk error: {}", e)))?;
             let path = entry.path();
-            
+
             if !path.is_file() {
                 continue;
             }
@@ -93,7 +125,7 @@ impl CodeExtractor {
 
         // Process files in parallel with better progress tracking
         // Split files into smaller chunks for better progress visibility
-        let chunk_size = (total_files / 20).max(1).min(10); // Process in smaller chunks of 1-10 files
+        let chunk_size = (total_files / 20).clamp(1, 10); // Process in smaller chunks of 1-10 files
         let mut all_chunks = Vec::new();
         let mut processed_files = 0;
 
@@ -101,15 +133,13 @@ impl CodeExtractor {
             // Process this chunk in parallel
             let chunk_results: Result<Vec<Vec<CodeChunk>>> = chunk
                 .par_iter()
-                .map(|(path, language)| {
-                    Self::extract_from_file_static(path, *language, &options)
-                })
+                .map(|(path, language)| Self::extract_from_file_static(path, *language, &options))
                 .collect();
 
             // Update progress after each chunk
             processed_files += chunk.len();
             progress.set_file_counts(processed_files, total_files);
-            
+
             // Update spinner for each chunk to show progress
             progress.update_spinner();
 
@@ -127,48 +157,62 @@ impl CodeExtractor {
         Ok(all_chunks)
     }
 
+    #[allow(dead_code)]
     fn should_process_file(&self, path: &Path, options: &ExtractionOptions) -> bool {
         Self::should_process_file_static(path, options)
     }
 
     fn should_process_file_static(path: &Path, options: &ExtractionOptions) -> bool {
         let path_str = path.to_string_lossy();
-        
+
         // Check exclude patterns first
         for pattern in &options.exclude_patterns {
             if glob::Pattern::new(pattern)
                 .map(|p| p.matches(&path_str))
-                .unwrap_or(false) {
+                .unwrap_or(false)
+            {
                 return false;
             }
         }
-        
+
         // Check include patterns
         for pattern in &options.include_patterns {
             if glob::Pattern::new(pattern)
                 .map(|p| p.matches(&path_str))
-                .unwrap_or(false) {
+                .unwrap_or(false)
+            {
                 return true;
             }
         }
-        
+
         false
     }
 
-    pub fn extract_from_file(&mut self, file_path: &Path, language: Language, options: &ExtractionOptions) -> Result<Vec<CodeChunk>> {
+    pub fn extract_from_file(
+        &mut self,
+        file_path: &Path,
+        language: Language,
+        options: &ExtractionOptions,
+    ) -> Result<Vec<CodeChunk>> {
         Self::extract_from_file_static(file_path, language, options)
     }
 
-    fn extract_from_file_static(file_path: &Path, language: Language, options: &ExtractionOptions) -> Result<Vec<CodeChunk>> {
+    fn extract_from_file_static(
+        file_path: &Path,
+        language: Language,
+        options: &ExtractionOptions,
+    ) -> Result<Vec<CodeChunk>> {
         let content = fs::read_to_string(file_path)?;
         let mut parser = Self::create_parser_for_language(language)?;
-        
-        let tree = parser.parse(&content, None)
-            .ok_or_else(|| GitTypeError::ExtractionFailed(format!("Failed to parse file: {:?}", file_path)))?;
-        
+
+        let tree = parser.parse(&content, None).ok_or_else(|| {
+            GitTypeError::ExtractionFailed(format!("Failed to parse file: {:?}", file_path))
+        })?;
+
         Self::extract_chunks_from_tree_static(&tree, &content, file_path, language, options)
     }
 
+    #[allow(dead_code)]
     fn extract_chunks_from_tree(
         &self,
         tree: &Tree,
@@ -188,10 +232,10 @@ impl CodeExtractor {
         options: &ExtractionOptions,
     ) -> Result<Vec<CodeChunk>> {
         let mut chunks = Vec::new();
-        
+
         // Extract comment ranges for the entire file
-        let file_comment_ranges = Self::extract_comment_ranges_static(tree, source_code, language.clone());
-        
+        let file_comment_ranges = Self::extract_comment_ranges_static(tree, source_code, language);
+
         let query_str = match language {
             Language::Rust => "
                 (function_item name: (identifier) @name) @function
@@ -211,26 +255,37 @@ impl CodeExtractor {
             ",
         };
 
-        let query = Query::new(tree.language(), query_str)
-            .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to create query: {}", e)))?;
-        
+        let query = Query::new(tree.language(), query_str).map_err(|e| {
+            GitTypeError::ExtractionFailed(format!("Failed to create query: {}", e))
+        })?;
+
         let mut cursor = QueryCursor::new();
         let matches = cursor.matches(&query, tree.root_node(), source_code.as_bytes());
-        
+
         for match_ in matches {
             for capture in match_.captures {
                 let node = capture.node;
                 let capture_name = &query.capture_names()[capture.index as usize];
-                
-                if let Some(chunk) = Self::node_to_chunk_static(node, source_code, file_path, language.clone(), &capture_name, options, &file_comment_ranges) {
+
+                if let Some(chunk) = Self::node_to_chunk_static(
+                    node,
+                    source_code,
+                    file_path,
+                    language,
+                    capture_name,
+                    options,
+                    &file_comment_ranges,
+                ) {
                     chunks.push(chunk);
                 }
             }
         }
-        
+
         Ok(chunks)
     }
 
+    #[allow(dead_code)]
+    #[allow(clippy::too_many_arguments)]
     fn node_to_chunk(
         &self,
         node: Node,
@@ -241,7 +296,15 @@ impl CodeExtractor {
         options: &ExtractionOptions,
         file_comment_ranges: &[(usize, usize)],
     ) -> Option<CodeChunk> {
-        Self::node_to_chunk_static(node, source_code, file_path, language, capture_name, options, file_comment_ranges)
+        Self::node_to_chunk_static(
+            node,
+            source_code,
+            file_path,
+            language,
+            capture_name,
+            options,
+            file_comment_ranges,
+        )
     }
 
     fn node_to_chunk_static(
@@ -256,17 +319,17 @@ impl CodeExtractor {
         let start_byte = node.start_byte();
         let end_byte = node.end_byte();
         let content = &source_code[start_byte..end_byte];
-        
+
         let start_line = node.start_position().row + 1;
         let end_line = node.end_position().row + 1;
         let original_indentation = node.start_position().column;
-        
+
         if let Some(max_lines) = options.max_lines {
             if end_line - start_line + 1 > max_lines {
                 return None;
             }
         }
-        
+
         let chunk_type = match capture_name {
             "function" => ChunkType::Function,
             "method" => ChunkType::Method,
@@ -276,11 +339,13 @@ impl CodeExtractor {
             "function_expression" => ChunkType::Function,
             _ => return None,
         };
-        
-        let name = Self::extract_name_static(node, source_code).unwrap_or_else(|| "unknown".to_string());
-        
+
+        let name =
+            Self::extract_name_static(node, source_code).unwrap_or_else(|| "unknown".to_string());
+
         // Filter comment ranges that are within this chunk and make them relative to chunk content
-        let chunk_comment_ranges: Vec<(usize, usize)> = file_comment_ranges.iter()
+        let chunk_comment_ranges: Vec<(usize, usize)> = file_comment_ranges
+            .iter()
             .filter_map(|&(comment_start, comment_end)| {
                 if comment_start >= start_byte && comment_end <= end_byte {
                     // Convert to relative position within chunk content
@@ -290,14 +355,14 @@ impl CodeExtractor {
                 }
             })
             .collect();
-        
+
         // Normalize indentation based on AST node position
         let (normalized_content, normalized_comment_ranges) = Self::normalize_indentation_static(
             content,
             original_indentation,
-            &chunk_comment_ranges
+            &chunk_comment_ranges,
         );
-        
+
         Some(CodeChunk {
             content: normalized_content,
             file_path: file_path.to_path_buf(),
@@ -310,7 +375,8 @@ impl CodeExtractor {
             original_indentation,
         })
     }
-    
+
+    #[allow(dead_code)]
     fn extract_name(&self, node: Node, source_code: &str) -> Option<String> {
         Self::extract_name_static(node, source_code)
     }
@@ -328,13 +394,16 @@ impl CodeExtractor {
                 }
             }
         }
-        
+
         // Try to find identifier child node for other cases
         let mut cursor = node.walk();
         if cursor.goto_first_child() {
             loop {
                 let child = cursor.node();
-                if child.kind() == "identifier" || child.kind() == "type_identifier" || child.kind() == "property_identifier" {
+                if child.kind() == "identifier"
+                    || child.kind() == "type_identifier"
+                    || child.kind() == "property_identifier"
+                {
                     let start = child.start_byte();
                     let end = child.end_byte();
                     return Some(source_code[start..end].to_string());
@@ -347,11 +416,21 @@ impl CodeExtractor {
         None
     }
 
-    fn normalize_indentation(&self, content: &str, original_indentation: usize, comment_ranges: &[(usize, usize)]) -> (String, Vec<(usize, usize)>) {
+    #[allow(dead_code)]
+    fn normalize_indentation(
+        &self,
+        content: &str,
+        original_indentation: usize,
+        comment_ranges: &[(usize, usize)],
+    ) -> (String, Vec<(usize, usize)>) {
         Self::normalize_indentation_static(content, original_indentation, comment_ranges)
     }
 
-    fn normalize_indentation_static(content: &str, original_indentation: usize, comment_ranges: &[(usize, usize)]) -> (String, Vec<(usize, usize)>) {
+    fn normalize_indentation_static(
+        content: &str,
+        original_indentation: usize,
+        comment_ranges: &[(usize, usize)],
+    ) -> (String, Vec<(usize, usize)>) {
         let lines: Vec<&str> = content.lines().collect();
         if lines.is_empty() {
             return (content.to_string(), comment_ranges.to_vec());
@@ -365,7 +444,7 @@ impl CodeExtractor {
 
         for (line_idx, line) in lines.iter().enumerate() {
             let line_chars: Vec<char> = line.chars().collect();
-            
+
             if line_idx == 0 {
                 // Keep first line as-is
                 for _ in &line_chars {
@@ -406,7 +485,7 @@ impl CodeExtractor {
                     normalized_lines.push(line.to_string());
                 }
             }
-            
+
             // Handle newline character
             if line_idx < lines.len() - 1 {
                 position_map.push(Some(normalized_pos));
@@ -419,22 +498,23 @@ impl CodeExtractor {
 
         // Map AST comment ranges using the position mapping
         let mut final_ranges = Vec::new();
-        
+
         for &(orig_start, orig_end) in comment_ranges {
             if orig_start < position_map.len() && orig_end <= position_map.len() {
                 // Find mapped start position
                 let norm_start = position_map.get(orig_start).and_then(|&pos| pos);
-                
+
                 // Find mapped end position (exclusive, so we look for the position just before end)
                 let norm_end = if orig_end > 0 && orig_end <= position_map.len() {
                     // Find the last mapped position before orig_end
-                    (0..orig_end).rev()
+                    (0..orig_end)
+                        .rev()
                         .find_map(|i| position_map.get(i).and_then(|&pos| pos))
                         .map(|pos| pos + 1) // +1 because end is exclusive
                 } else {
                     None
                 };
-                
+
                 if let (Some(start), Some(end)) = (norm_start, norm_end) {
                     if start < end && end <= normalized_text.len() {
                         final_ranges.push((start, end));
@@ -446,33 +526,43 @@ impl CodeExtractor {
         (normalized_text, final_ranges)
     }
 
-    fn extract_comment_ranges(&self, tree: &Tree, source_code: &str, language: Language) -> Vec<(usize, usize)> {
+    #[allow(dead_code)]
+    fn extract_comment_ranges(
+        &self,
+        tree: &Tree,
+        source_code: &str,
+        language: Language,
+    ) -> Vec<(usize, usize)> {
         Self::extract_comment_ranges_static(tree, source_code, language)
     }
 
-    fn extract_comment_ranges_static(tree: &Tree, source_code: &str, language: Language) -> Vec<(usize, usize)> {
+    fn extract_comment_ranges_static(
+        tree: &Tree,
+        source_code: &str,
+        language: Language,
+    ) -> Vec<(usize, usize)> {
         let mut comment_ranges = Vec::new();
-        
+
         let comment_query = match language {
             Language::Rust => "[(line_comment) (block_comment)] @comment",
             Language::TypeScript => "(comment) @comment",
             Language::Python => "(comment) @comment",
         };
-        
+
         let query = match Query::new(tree.language(), comment_query) {
             Ok(q) => q,
             Err(_) => return comment_ranges, // Fallback to empty if query fails
         };
-        
+
         let mut cursor = QueryCursor::new();
         let matches = cursor.matches(&query, tree.root_node(), source_code.as_bytes());
-        
+
         for m in matches {
             for capture in m.captures {
                 let node = capture.node;
                 let start = node.start_byte();
                 let end = node.end_byte();
-                
+
                 // Validate that this is actually a comment node
                 let node_kind = node.kind();
                 let is_valid_comment = match language {
@@ -480,17 +570,16 @@ impl CodeExtractor {
                     Language::TypeScript => node_kind == "comment",
                     Language::Python => node_kind == "comment",
                 };
-                
+
                 if !is_valid_comment {
                     continue;
                 }
-                
+
                 comment_ranges.push((start, end));
             }
         }
-        
+
         comment_ranges.sort_by_key(|&(start, _)| start);
         comment_ranges
     }
-    
 }

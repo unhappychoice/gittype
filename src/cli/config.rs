@@ -22,7 +22,11 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             extraction: ExtractionConfig {
-                languages: vec!["rust".to_string(), "typescript".to_string(), "python".to_string()],
+                languages: vec![
+                    "rust".to_string(),
+                    "typescript".to_string(),
+                    "python".to_string(),
+                ],
                 max_lines: 40,
                 include: vec!["src/**".to_string()],
                 exclude: vec!["target/**".to_string(), "node_modules/**".to_string()],

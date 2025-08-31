@@ -1,4 +1,3 @@
-
 pub trait ProgressReporter {
     fn set_phase(&self, phase: String);
     fn set_progress(&self, progress: f64);
@@ -9,7 +8,6 @@ pub trait ProgressReporter {
         Ok(())
     }
 }
-
 
 pub struct NoOpProgressReporter;
 
@@ -26,6 +24,12 @@ pub struct ConsoleProgressReporter {
     last_progress: std::sync::Mutex<f64>,
     spinner_chars: &'static [char],
     spinner_index: std::sync::Mutex<usize>,
+}
+
+impl Default for ConsoleProgressReporter {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl ConsoleProgressReporter {
@@ -77,8 +81,13 @@ impl ProgressReporter for ConsoleProgressReporter {
                 .and_then(|name| name.to_str())
                 .unwrap_or(&file_path);
             // Clear the line and show current file being processed
-            print!("\r{} {} {:.1}% {:<50}\r", 
-                spinner, progress_bar, progress * 100.0, filename);
+            print!(
+                "\r{} {} {:.1}% {:<50}\r",
+                spinner,
+                progress_bar,
+                progress * 100.0,
+                filename
+            );
             std::io::Write::flush(&mut std::io::stdout()).unwrap_or(());
         }
     }
@@ -88,9 +97,15 @@ impl ProgressReporter for ConsoleProgressReporter {
             let progress = processed as f64 / total as f64;
             let spinner = self.get_spinner_char();
             let progress_bar = self.create_progress_bar(progress, 20);
-            
-            print!("\r{} {} {:.1}% ({}/{})                    ", 
-                spinner, progress_bar, progress * 100.0, processed, total);
+
+            print!(
+                "\r{} {} {:.1}% ({}/{})                    ",
+                spinner,
+                progress_bar,
+                progress * 100.0,
+                processed,
+                total
+            );
             std::io::Write::flush(&mut std::io::stdout()).unwrap_or(());
         }
     }

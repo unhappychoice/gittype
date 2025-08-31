@@ -15,7 +15,7 @@ impl SharingPlatform {
         match self {
             Self::Twitter => "Twitter",
             Self::Reddit => "Reddit",
-            Self::LinkedIn => "LinkedIn", 
+            Self::LinkedIn => "LinkedIn",
             Self::Facebook => "Facebook",
         }
     }
@@ -30,7 +30,7 @@ pub struct SharingService;
 impl SharingService {
     pub fn share_result(metrics: &TypingMetrics, platform: SharingPlatform) -> Result<()> {
         let url = Self::generate_share_url(metrics, &platform);
-        
+
         match Self::open_browser(&url) {
             Ok(()) => {
                 // Browser opened successfully
@@ -45,26 +45,39 @@ impl SharingService {
 
     fn generate_share_url(metrics: &TypingMetrics, platform: &SharingPlatform) -> String {
         let text = Self::create_share_text(metrics);
-        
+
         match platform {
             SharingPlatform::Twitter => {
-                format!("https://twitter.com/intent/tweet?text={}", urlencoding::encode(&text))
-            },
+                format!(
+                    "https://twitter.com/intent/tweet?text={}",
+                    urlencoding::encode(&text)
+                )
+            }
             SharingPlatform::Reddit => {
-                let title = format!("Achieved {} rank with {:.0} points in gittype!", metrics.ranking_title, metrics.challenge_score);
-                format!("https://www.reddit.com/submit?title={}&selftext=true&text={}", 
-                    urlencoding::encode(&title), urlencoding::encode(&text))
-            },
+                let title = format!(
+                    "Achieved {} rank with {:.0} points in gittype!",
+                    metrics.ranking_title, metrics.challenge_score
+                );
+                format!(
+                    "https://www.reddit.com/submit?title={}&selftext=true&text={}",
+                    urlencoding::encode(&title),
+                    urlencoding::encode(&text)
+                )
+            }
             SharingPlatform::LinkedIn => {
-                format!("https://www.linkedin.com/feed/?shareActive=true&mini=true&text={}",
-                    urlencoding::encode(&text))
-            },
+                format!(
+                    "https://www.linkedin.com/feed/?shareActive=true&mini=true&text={}",
+                    urlencoding::encode(&text)
+                )
+            }
             SharingPlatform::Facebook => {
                 // Facebook's quote parameter may not work reliably, but it's still the best option
-                format!("https://www.facebook.com/sharer/sharer.php?u={}&quote={}",
+                format!(
+                    "https://www.facebook.com/sharer/sharer.php?u={}&quote={}",
                     urlencoding::encode("https://github.com/unhappychoice/gittype"),
-                    urlencoding::encode(&text))
-            },
+                    urlencoding::encode(&text)
+                )
+            }
         }
     }
 
@@ -94,7 +107,7 @@ impl SharingService {
 
         let mut stdout = stdout();
         execute!(stdout, terminal::Clear(ClearType::All))?;
-        
+
         let (terminal_width, terminal_height) = terminal::size()?;
         let center_row = terminal_height / 2;
         let center_col = terminal_width / 2;
@@ -103,14 +116,21 @@ impl SharingService {
         let title = format!("⚠️  Could not open {} automatically", platform.name());
         let title_col = center_col.saturating_sub(title.len() as u16 / 2);
         execute!(stdout, MoveTo(title_col, center_row.saturating_sub(6)))?;
-        execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Yellow))?;
+        execute!(
+            stdout,
+            SetAttribute(Attribute::Bold),
+            SetForegroundColor(Color::Yellow)
+        )?;
         execute!(stdout, Print(&title))?;
         execute!(stdout, ResetColor)?;
 
         // Instructions
         let instruction = "Please copy the URL below and open it in your browser:";
         let instruction_col = center_col.saturating_sub(instruction.len() as u16 / 2);
-        execute!(stdout, MoveTo(instruction_col, center_row.saturating_sub(4)))?;
+        execute!(
+            stdout,
+            MoveTo(instruction_col, center_row.saturating_sub(4))
+        )?;
         execute!(stdout, SetForegroundColor(Color::White))?;
         execute!(stdout, Print(instruction))?;
         execute!(stdout, ResetColor)?;
@@ -119,7 +139,11 @@ impl SharingService {
         let url_display = format!("📋 {}", url);
         let url_col = center_col.saturating_sub(url_display.len() as u16 / 2);
         execute!(stdout, MoveTo(url_col, center_row.saturating_sub(1)))?;
-        execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Cyan))?;
+        execute!(
+            stdout,
+            SetAttribute(Attribute::Bold),
+            SetForegroundColor(Color::Cyan)
+        )?;
         execute!(stdout, Print(&url_display))?;
         execute!(stdout, ResetColor)?;
 
@@ -145,9 +169,8 @@ impl SharingService {
         loop {
             if event::poll(std::time::Duration::from_millis(100))? {
                 if let Event::Key(key_event) = event::read()? {
-                    match key_event.code {
-                        KeyCode::Esc => break,
-                        _ => {}
+                    if key_event.code == KeyCode::Esc {
+                        break;
                     }
                 }
             }
