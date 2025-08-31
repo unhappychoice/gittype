@@ -1,6 +1,6 @@
 [package]
 name = "gittype"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["unhappychoice"]
 description = "A typing practice tool using your own code repositories"
