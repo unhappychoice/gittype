@@ -158,3 +158,4 @@ jobs:
           tap: unhappychoice/homebrew-tap
           formula: gittype
           tag: ${{ needs.release.outputs.new_version }}
+          revision: ${{ github.sha }}
