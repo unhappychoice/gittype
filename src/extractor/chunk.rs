@@ -7,6 +7,7 @@ pub enum ChunkType {
     Class,
     Method,
     Struct,
+    Module,
 }
 
 #[derive(Debug, Clone)]

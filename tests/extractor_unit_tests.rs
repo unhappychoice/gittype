@@ -24,6 +24,7 @@ fn test_language_from_extension() {
     assert_eq!(Language::from_extension("ts"), Some(Language::TypeScript));
     assert_eq!(Language::from_extension("tsx"), Some(Language::TypeScript));
     assert_eq!(Language::from_extension("py"), Some(Language::Python));
+    assert_eq!(Language::from_extension("rb"), Some(Language::Ruby));
     assert_eq!(Language::from_extension("unknown"), None);
 }
 
@@ -333,4 +334,124 @@ class TsClass{} {{
         duration.as_millis() < 5000,
         "Parallel parsing should complete within 5 seconds"
     );
+}
+
+#[test]
+fn test_ruby_function_extraction() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("test.rb");
+
+    let ruby_code = r#"
+def hello_world
+  puts "Hello, world!"
+end
+
+def calculate_sum(a, b)
+  a + b
+end
+"#;
+    fs::write(&file_path, ruby_code).unwrap();
+
+    let mut extractor = CodeExtractor::new().unwrap();
+    let chunks = extractor
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .unwrap();
+
+    assert_eq!(chunks.len(), 2);
+    assert_eq!(chunks[0].name, "hello_world");
+    assert_eq!(chunks[1].name, "calculate_sum");
+    assert!(matches!(chunks[0].chunk_type, ChunkType::Method));
+    assert!(matches!(chunks[1].chunk_type, ChunkType::Method));
+}
+
+#[test]
+fn test_ruby_class_extraction() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("test.rb");
+
+    let ruby_code = r#"
+class Person
+  attr_accessor :name, :age
+  
+  def initialize(name, age)
+    @name = name
+    @age = age
+  end
+  
+  def greet
+    puts "Hello, I'm #{@name}!"
+  end
+end
+"#;
+    fs::write(&file_path, ruby_code).unwrap();
+
+    let mut extractor = CodeExtractor::new().unwrap();
+    let chunks = extractor
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .unwrap();
+
+    assert_eq!(chunks.len(), 3); // class + 2 methods
+
+    // Find class chunk
+    let class_chunk = chunks
+        .iter()
+        .find(|c| matches!(c.chunk_type, ChunkType::Class))
+        .unwrap();
+    assert_eq!(class_chunk.name, "Person");
+
+    // Find method chunks
+    let method_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Method))
+        .collect();
+    assert_eq!(method_chunks.len(), 2);
+
+    let method_names: Vec<&String> = method_chunks.iter().map(|c| &c.name).collect();
+    assert!(method_names.contains(&&"initialize".to_string()));
+    assert!(method_names.contains(&&"greet".to_string()));
+}
+
+#[test]
+fn test_ruby_module_extraction() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("test.rb");
+
+    let ruby_code = r#"
+module Authentication
+  def login(username, password)
+    puts "Logging in #{username}"
+    true
+  end
+  
+  def logout
+    puts "Logged out"
+  end
+end
+"#;
+    fs::write(&file_path, ruby_code).unwrap();
+
+    let mut extractor = CodeExtractor::new().unwrap();
+    let chunks = extractor
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .unwrap();
+
+    assert_eq!(chunks.len(), 3); // module + 2 methods
+
+    // Find module chunk
+    let module_chunk = chunks
+        .iter()
+        .find(|c| matches!(c.chunk_type, ChunkType::Module))
+        .unwrap();
+    assert_eq!(module_chunk.name, "Authentication");
+
+    // Find method chunks
+    let method_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Method))
+        .collect();
+    assert_eq!(method_chunks.len(), 2);
+
+    let method_names: Vec<&String> = method_chunks.iter().map(|c| &c.name).collect();
+    assert!(method_names.contains(&&"login".to_string()));
+    assert!(method_names.contains(&&"logout".to_string()));
 }

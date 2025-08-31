@@ -10,19 +10,37 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dtolnay/rust-toolchain@stable
+      with:
+        components: rustfmt
+    - uses: Swatinem/rust-cache@v2
+    - name: Check formatting
+      run: cargo fmt --all -- --check
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dtolnay/rust-toolchain@stable
+      with:
+        components: clippy
+    - uses: Swatinem/rust-cache@v2
+    - name: Run clippy
+      run: cargo clippy --all-targets --all-features -- -D warnings
+
   test:
     name: Test
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: dtolnay/rust-toolchain@stable
-      with:
-        components: rustfmt, clippy
     - uses: Swatinem/rust-cache@v2
-    - name: Check formatting
-      run: cargo fmt --all -- --check
-    - name: Run clippy
-      run: cargo clippy --all-targets --all-features -- -D warnings
     - name: Run tests
       run: cargo test
 

@@ -3,6 +3,7 @@ pub enum Language {
     Rust,
     TypeScript,
     Python,
+    Ruby,
 }
 
 impl Language {
@@ -11,6 +12,7 @@ impl Language {
             "rs" => Some(Language::Rust),
             "ts" | "tsx" => Some(Language::TypeScript),
             "py" => Some(Language::Python),
+            "rb" => Some(Language::Ruby),
             _ => None,
         }
     }
@@ -20,6 +22,7 @@ impl Language {
             Language::Rust => "rs",
             Language::TypeScript => "ts",
             Language::Python => "py",
+            Language::Ruby => "rb",
         }
     }
 }
