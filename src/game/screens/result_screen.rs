@@ -71,7 +71,7 @@ impl ResultScreen {
         total_stages: usize,
         has_next_stage: bool,
         keystrokes: usize,
-    ) -> Result<()> {
+    ) -> Result<Option<ResultAction>> {
         let mut stdout = stdout();
 
         // Comprehensive screen reset
@@ -224,7 +224,7 @@ impl ResultScreen {
         stdout.flush()?;
 
         // Show stage completion options
-        let options_text = "[SPACE] Continue  [R] Retry  [ESC] Quit";
+        let options_text = "[SPACE] Continue  [ESC] Quit";
         let options_col = center_col.saturating_sub(options_text.len() as u16 / 2);
         let options_row = if has_next_stage {
             progress_start_row + 3
@@ -243,20 +243,15 @@ impl ResultScreen {
                 if let Event::Key(key_event) = event::read()? {
                     match key_event.code {
                         KeyCode::Char(' ') => break, // Continue
-                        KeyCode::Char('r') | KeyCode::Char('R') => {
-                            // TODO: Handle retry - for now just continue
-                            break;
-                        }
                         KeyCode::Esc => {
-                            // TODO: Handle quit - for now just continue
-                            break;
+                            return Ok(Some(ResultAction::Quit));
                         }
                         _ => {}
                     }
                 }
             }
         }
-        Ok(())
+        Ok(None)
     }
 
     pub fn show_session_summary(
@@ -653,7 +648,7 @@ impl ResultScreen {
         execute!(stdout, Print(fail_text))?;
 
         // Navigation instructions (centered)
-        let nav_text = "[Enter] Back to Title | [ESC] Session Summary & Exit";
+        let nav_text = "[T] Back to Title | [ESC] Session Summary & Exit";
         let nav_x = (terminal_width - nav_text.len() as u16) / 2;
         execute!(stdout, MoveTo(nav_x, center_y + 4))?;
         execute!(stdout, SetForegroundColor(Color::White))?;

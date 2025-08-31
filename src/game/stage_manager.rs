@@ -212,7 +212,10 @@ impl StageManager {
                     }
 
                     // Show brief result and auto-advance
-                    self.show_stage_completion(&metrics)?;
+                    if let Some(ResultAction::Quit) = self.show_stage_completion(&metrics)? {
+                        // Treat as failed - show fail result screen and handle navigation
+                        return self.handle_fail_result_navigation();
+                    }
 
                     // Move to next stage
                     self.current_stage += 1;
@@ -231,7 +234,10 @@ impl StageManager {
                         }
                     }
 
-                    self.show_stage_completion(&metrics)?;
+                    if let Some(ResultAction::Quit) = self.show_stage_completion(&metrics)? {
+                        // Treat as failed - show fail result screen and handle navigation
+                        return self.handle_fail_result_navigation();
+                    }
 
                     // Generate a new challenge for the current stage
                     if let Some(ref game_mode) = self.current_game_mode {
@@ -338,7 +344,7 @@ impl StageManager {
         }
     }
 
-    fn show_stage_completion(&self, metrics: &TypingMetrics) -> Result<()> {
+    fn show_stage_completion(&self, metrics: &TypingMetrics) -> Result<Option<ResultAction>> {
         // Get keystrokes from the latest scoring engine
         let keystrokes = if let Some((_, engine)) = self.stage_engines.last() {
             engine.total_chars()
@@ -402,7 +408,7 @@ impl StageManager {
             if event::poll(std::time::Duration::from_millis(100))? {
                 if let Event::Key(key_event) = event::read()? {
                     match key_event.code {
-                        KeyCode::Enter => {
+                        KeyCode::Char('t') | KeyCode::Char('T') => {
                             // Back to title screen
                             return Ok(false);
                         }
