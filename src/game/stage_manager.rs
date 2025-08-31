@@ -11,7 +11,7 @@ use crate::extractor::GitRepositoryInfo;
 use crate::scoring::{ScoringEngine, TypingMetrics};
 use crate::Result;
 use crossterm::{
-    event::{KeyboardEnhancementFlags, PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags},
+    event::{KeyboardEnhancementFlags, PushKeyboardEnhancementFlags},
     execute, terminal,
 };
 use once_cell::sync::Lazy;
@@ -149,18 +149,8 @@ impl StageManager {
             }
         }
 
-        // Clear global session tracker
-        {
-            let mut global_tracker = GLOBAL_SESSION_TRACKER.lock().unwrap();
-            *global_tracker = None;
-        }
-
-        // Disable keyboard enhancement flags
-        let mut stdout_handle = stdout();
-        execute!(stdout_handle, PopKeyboardEnhancementFlags).ok();
-
-        cleanup_terminal();
-        Ok(())
+        // This code is never reached due to exit(0) calls in the loop above
+        unreachable!()
     }
 
     fn run_stages(&mut self) -> Result<bool> {
