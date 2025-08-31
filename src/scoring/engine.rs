@@ -80,6 +80,10 @@ impl ScoringEngine {
         }
     }
 
+    pub fn get_current_streak(&self) -> usize {
+        self.current_streak
+    }
+
     pub fn record_keystroke(&mut self, ch: char, position: usize) {
         // Don't accept keystrokes after finish() has been called
         if self.is_finished() {

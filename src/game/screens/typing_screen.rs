@@ -125,10 +125,8 @@ impl TypingScreen {
             KeyboardEnhancementFlags::REPORT_ALL_KEYS_AS_ESCAPE_CODES
         )).ok(); // Ignore errors in case terminal doesn't support it
 
-        // Only show countdown for standalone sessions (not when called from StageManager)
-        if self.challenge.is_none() {
-            CountdownScreen::show()?;
-        }
+        // Show countdown with challenge info if available
+        CountdownScreen::show_with_challenge(self.challenge.as_ref())?;
         
         // Reset start time after countdown
         self.start_time = std::time::Instant::now();

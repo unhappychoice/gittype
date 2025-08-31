@@ -1,4 +1,5 @@
 use crate::Result;
+use crate::game::challenge::Challenge;
 use crossterm::{
     cursor::MoveTo,
     event::{self, Event, KeyCode, KeyModifiers},
@@ -12,15 +13,53 @@ pub struct CountdownScreen;
 
 impl CountdownScreen {
     pub fn show() -> Result<()> {
+        Self::show_with_challenge(None)
+    }
+
+    pub fn show_with_challenge(challenge: Option<&Challenge>) -> Result<()> {
         let mut stdout = stdout();
         let (terminal_width, terminal_height) = terminal::size()?;
         let center_row = terminal_height / 2;
         let center_col = terminal_width / 2;
 
+
+        // Show source info if available
+        if let Some(challenge) = challenge {
+            if let Some(ref path) = challenge.source_file_path {
+                let source_msg = if let (Some(start), Some(end)) = (challenge.start_line, challenge.end_line) {
+                    format!("Source: {}:{}-{}", path, start, end)
+                } else {
+                    format!("Source: {}", path)
+                };
+                let source_col = center_col.saturating_sub(source_msg.len() as u16 / 2);
+                execute!(stdout, MoveTo(source_col, center_row - 4))?;
+                execute!(stdout, SetForegroundColor(Color::Cyan))?;
+                execute!(stdout, Print(&source_msg))?;
+                execute!(stdout, ResetColor)?;
+            }
+        }
+
         // Show "Get Ready!" message
         let ready_msg = "Get Ready!";
         let ready_col = center_col.saturating_sub(ready_msg.len() as u16 / 2);
         execute!(stdout, terminal::Clear(ClearType::All))?;
+        
+        // Show source again after clear
+        if let Some(challenge) = challenge {
+            if let Some(ref path) = challenge.source_file_path {
+                let source_msg = if let (Some(start), Some(end)) = (challenge.start_line, challenge.end_line) {
+                    format!("Source: {}:{}-{}", path, start, end)
+                } else {
+                    format!("Source: {}", path)
+                };
+                let source_col = center_col.saturating_sub(source_msg.len() as u16 / 2);
+                execute!(stdout, MoveTo(source_col, center_row - 4))?;
+                execute!(stdout, SetForegroundColor(Color::Cyan))?;
+                execute!(stdout, Print(&source_msg))?;
+                execute!(stdout, ResetColor)?;
+            }
+        }
+        
         execute!(stdout, MoveTo(ready_col, center_row - 2))?;
         execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Yellow))?;
         execute!(stdout, Print(ready_msg))?;
@@ -32,6 +71,22 @@ impl CountdownScreen {
         // Countdown from 3 to 1
         for count in (1..=3).rev() {
             execute!(stdout, terminal::Clear(ClearType::All))?;
+            
+            // Show source info if available
+            if let Some(challenge) = challenge {
+                if let Some(ref path) = challenge.source_file_path {
+                    let source_msg = if let (Some(start), Some(end)) = (challenge.start_line, challenge.end_line) {
+                        format!("Source: {}:{}-{}", path, start, end)
+                    } else {
+                        format!("Source: {}", path)
+                    };
+                    let source_col = center_col.saturating_sub(source_msg.len() as u16 / 2);
+                    execute!(stdout, MoveTo(source_col, center_row - 4))?;
+                    execute!(stdout, SetForegroundColor(Color::Cyan))?;
+                    execute!(stdout, Print(&source_msg))?;
+                    execute!(stdout, ResetColor)?;
+                }
+            }
             
             // Show "Get Ready!" message
             execute!(stdout, MoveTo(ready_col, center_row - 2))?;
@@ -76,15 +131,52 @@ impl CountdownScreen {
     }
 
     pub fn show_stage_transition(stage_number: usize, total_stages: usize) -> Result<()> {
+        Self::show_stage_transition_with_challenge(stage_number, total_stages, None)
+    }
+
+    pub fn show_stage_transition_with_challenge(stage_number: usize, total_stages: usize, challenge: Option<&Challenge>) -> Result<()> {
         let mut stdout = stdout();
         let (terminal_width, terminal_height) = terminal::size()?;
         let center_row = terminal_height / 2;
         let center_col = terminal_width / 2;
 
+        // Show source info if available
+        if let Some(challenge) = challenge {
+            if let Some(ref path) = challenge.source_file_path {
+                let source_msg = if let (Some(start), Some(end)) = (challenge.start_line, challenge.end_line) {
+                    format!("Source: {}:{}-{}", path, start, end)
+                } else {
+                    format!("Source: {}", path)
+                };
+                let source_col = center_col.saturating_sub(source_msg.len() as u16 / 2);
+                execute!(stdout, MoveTo(source_col, center_row - 4))?;
+                execute!(stdout, SetForegroundColor(Color::Cyan))?;
+                execute!(stdout, Print(&source_msg))?;
+                execute!(stdout, ResetColor)?;
+            }
+        }
+
         // Show "Next Stage" message
         let stage_text = format!("Stage {} / {}", stage_number, total_stages);
         let stage_col = center_col.saturating_sub(stage_text.len() as u16 / 2);
         execute!(stdout, terminal::Clear(ClearType::All))?;
+        
+        // Show source again after clear
+        if let Some(challenge) = challenge {
+            if let Some(ref path) = challenge.source_file_path {
+                let source_msg = if let (Some(start), Some(end)) = (challenge.start_line, challenge.end_line) {
+                    format!("Source: {}:{}-{}", path, start, end)
+                } else {
+                    format!("Source: {}", path)
+                };
+                let source_col = center_col.saturating_sub(source_msg.len() as u16 / 2);
+                execute!(stdout, MoveTo(source_col, center_row - 4))?;
+                execute!(stdout, SetForegroundColor(Color::Cyan))?;
+                execute!(stdout, Print(&source_msg))?;
+                execute!(stdout, ResetColor)?;
+            }
+        }
+        
         execute!(stdout, MoveTo(stage_col, center_row - 2))?;
         execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Cyan))?;
         execute!(stdout, Print(&stage_text))?;
@@ -96,6 +188,22 @@ impl CountdownScreen {
         // Countdown from 3 to 1
         for count in (1..=3).rev() {
             execute!(stdout, terminal::Clear(ClearType::All))?;
+            
+            // Show source info if available
+            if let Some(challenge) = challenge {
+                if let Some(ref path) = challenge.source_file_path {
+                    let source_msg = if let (Some(start), Some(end)) = (challenge.start_line, challenge.end_line) {
+                        format!("Source: {}:{}-{}", path, start, end)
+                    } else {
+                        format!("Source: {}", path)
+                    };
+                    let source_col = center_col.saturating_sub(source_msg.len() as u16 / 2);
+                    execute!(stdout, MoveTo(source_col, center_row - 4))?;
+                    execute!(stdout, SetForegroundColor(Color::Cyan))?;
+                    execute!(stdout, Print(&source_msg))?;
+                    execute!(stdout, ResetColor)?;
+                }
+            }
             
             // Show stage number
             execute!(stdout, MoveTo(stage_col, center_row - 2))?;

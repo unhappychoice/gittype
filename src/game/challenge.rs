@@ -62,4 +62,5 @@ impl Challenge {
             format!("Challenge {}", self.id)
         }
     }
+
 }

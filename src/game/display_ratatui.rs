@@ -49,9 +49,9 @@ impl GameDisplayRatatui {
             self.chars = challenge_text.chars().collect();
         }
 
-        // Pre-calculate all data before drawing
-        let progress = if !self.chars.is_empty() {
-            (current_position as f32 / self.chars.len() as f32 * 100.0) as u32
+        // Pre-calculate progress percentage for progress bar
+        let progress_percent = if !self.chars.is_empty() {
+            (current_position as f32 / self.chars.len() as f32 * 100.0) as u8
         } else {
             0
         };
@@ -61,9 +61,9 @@ impl GameDisplayRatatui {
                 Some(difficulty) => format!("{:?}", difficulty),
                 None => "Unknown".to_string(),
             };
-            format!("[{}] [{}] - Progress: {}%", challenge.get_display_title(), difficulty_text, progress)
+            format!("[{}] [{}]", challenge.get_display_title(), difficulty_text)
         } else {
-            format!("[Challenge] - Progress: {}%", progress)
+            "[Challenge]".to_string()
         };
 
         let terminal_size = self.terminal.size()?;
@@ -78,34 +78,34 @@ impl GameDisplayRatatui {
         let metrics = crate::scoring::engine::ScoringEngine::calculate_real_time_metrics(current_position, mistakes, start_time);
         let current_line = self.find_line_for_position(current_position, line_starts);
         let elapsed_secs = scoring_engine.get_elapsed_time().as_secs();
-        let total_chars = self.chars.len();
-        let progress_percent = if total_chars > 0 {
-            (current_position as f32 / total_chars as f32 * 100.0) as u8
-        } else {
-            0
-        };
         
-        let metrics_text = format!(
-            "CPM: {:.0} | WPM: {:.0} | Accuracy: {:.0}% | Mistakes: {} | Progress: {}/{}({:.0}%) | Time: {}s | Title: {} | Skips: {} | [ESC=skip, Ctrl+ESC=fail]",
-            metrics.cpm, metrics.wpm, metrics.accuracy, metrics.mistakes, 
-            current_position, total_chars, progress_percent, elapsed_secs,
-            metrics.ranking_title, skips_remaining
+        let streak = scoring_engine.get_current_streak();
+        let first_line = format!(
+            "WPM: {:.0} | CPM: {:.0} | Accuracy: {:.0}% | Mistakes: {} | Streak: {} | Time: {}s | Skips: {}",
+            metrics.wpm, metrics.cpm, metrics.accuracy, metrics.mistakes, streak, elapsed_secs, skips_remaining
         );
+        
+        let second_line = "[ESC] Options".to_string();
 
         self.terminal.draw(|f| {
             let chunks = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints([
-                    Constraint::Length(3), // Header
+                    Constraint::Length(4), // Header with metrics
                     Constraint::Min(1),    // Content
-                    Constraint::Length(1), // Metrics
+                    Constraint::Length(1), // Progress bar at bottom
                 ].as_ref())
                 .split(f.size());
 
-            // Header
+            // Header with consolidated information
             let header = Paragraph::new(vec![
                 Line::from(header_text.clone()),
-                Line::from("Press ESC to quit"),
+                Line::from(vec![
+                    Span::styled(first_line.clone(), Style::default().fg(Color::White))
+                ]),
+                Line::from(vec![
+                    Span::styled(second_line.clone(), Style::default().fg(Color::White))
+                ]),
             ])
             .block(Block::default().borders(Borders::BOTTOM));
             f.render_widget(header, chunks[0]);
@@ -121,10 +121,12 @@ impl GameDisplayRatatui {
                 .scroll((scroll_offset, 0));
             f.render_widget(content, chunks[1]);
 
-            // Metrics
-            let metrics_widget = Paragraph::new(metrics_text.clone())
-                .style(Style::default().fg(Color::Yellow));
-            f.render_widget(metrics_widget, chunks[2]);
+            // Progress bar at the bottom, full width
+            let terminal_width = f.size().width as u8;
+            let full_width_progress = Self::create_progress_bar(progress_percent, terminal_width);
+            let progress_widget = Paragraph::new(full_width_progress)
+                .style(Style::default().fg(Color::White));
+            f.render_widget(progress_widget, chunks[2]);
 
             // Render dialog if shown
             if dialog_shown {
@@ -152,6 +154,9 @@ impl GameDisplayRatatui {
         // Pre-calculate all character properties to avoid O(n²) complexity
         let skip_cache = self.create_skip_cache(line_starts, comment_ranges);
         let comment_cache = self.create_comment_cache(comment_ranges);
+        let current_line_number = self.find_line_for_position(current_position, line_starts);
+        
+        let mut line_number = 0;
         
         for (i, &ch) in self.chars.iter().enumerate() {
             // Handle explicit newlines
@@ -159,14 +164,16 @@ impl GameDisplayRatatui {
                 lines.push(Line::from(current_line_spans));
                 current_line_spans = Vec::new();
                 current_line_width = 0;
+                line_number += 1;
                 continue;
             }
 
             // Use cached properties - O(1) lookup instead of O(n) calculation
             let should_skip = skip_cache.get(&i).copied().unwrap_or(false);
             let is_comment = comment_cache.get(&i).copied().unwrap_or(false);
+            let is_current_line = line_number == current_line_number;
             
-            let style = self.get_char_style(i, current_position, should_skip, is_comment, current_mistake_position);
+            let style = self.get_char_style_with_highlight(i, current_position, should_skip, is_comment, current_mistake_position, is_current_line);
 
             let (display_char, char_width) = match ch {
                 '\t' => ("    ".to_string(), 4),
@@ -264,17 +271,19 @@ impl GameDisplayRatatui {
         Self::is_position_in_comment(position, comment_ranges)
     }
 
-    fn get_char_style(
+
+    fn get_char_style_with_highlight(
         &self,
         i: usize,
         current_position: usize,
         should_skip: bool,
         is_comment: bool,
         current_mistake_position: Option<usize>,
+        is_current_line: bool,
     ) -> Style {
-        if i < current_position || should_skip {
+        let mut style = if i < current_position || should_skip {
             if is_comment {
-                Style::default().fg(Color::Green).add_modifier(Modifier::DIM)
+                Style::default().fg(Color::LightBlue)
             } else if should_skip {
                 Style::default().fg(Color::DarkGray).add_modifier(Modifier::DIM)
             } else {
@@ -285,18 +294,25 @@ impl GameDisplayRatatui {
                 if i == mistake_pos {
                     Style::default().fg(Color::White).bg(Color::Red)
                 } else {
-                    Style::default().fg(Color::Black).bg(Color::Yellow)
+                    Style::default().fg(Color::Black).bg(Color::White)
                 }
             } else {
-                Style::default().fg(Color::Black).bg(Color::Yellow)
+                Style::default().fg(Color::Black).bg(Color::White)
             }
         } else {
             if is_comment {
-                Style::default().fg(Color::Green).add_modifier(Modifier::DIM)
+                Style::default().fg(Color::LightBlue)
             } else {
                 Style::default().fg(Color::White).add_modifier(Modifier::DIM)
             }
+        };
+
+        // Add subtle background highlight for current line
+        if is_current_line && i != current_position {
+            style = style.bg(Color::Rgb(32, 32, 32)); // Very dark gray background for current line
         }
+
+        style
     }
 
 
@@ -311,12 +327,33 @@ impl GameDisplayRatatui {
 
 
     pub fn cleanup(&mut self) -> Result<()> {
+        use crossterm::{cursor::MoveTo, terminal::ClearType, execute};
+        use std::io::{stdout, Write};
+        
         self.terminal.clear()?;
+        
+        // Additional cleanup for proper state reset
+        let mut stdout = stdout();
+        execute!(stdout, crossterm::terminal::Clear(ClearType::All))?;
+        execute!(stdout, MoveTo(0, 0))?;
+        execute!(stdout, crossterm::style::ResetColor)?;
+        stdout.flush()?;
+        
         Ok(())
     }
 
     fn is_position_in_comment(position: usize, comment_ranges: &[(usize, usize)]) -> bool {
         comment_ranges.iter().any(|&(start, end)| position >= start && position < end)
+    }
+
+    fn create_progress_bar(progress_percent: u8, width: u8) -> String {
+        let filled_width = (progress_percent as f32 / 100.0 * width as f32) as u8;
+        let empty_width = width - filled_width;
+        
+        format!("{}{}", 
+            "█".repeat(filled_width as usize),
+            "░".repeat(empty_width as usize)
+        )
     }
 
     fn render_dialog(f: &mut ratatui::Frame, skips_remaining: usize) {

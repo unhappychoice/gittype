@@ -70,18 +70,30 @@ impl ExitSummaryScreen {
 
     pub fn show(session_summary: &SessionSummary) -> Result<ExitAction> {
         let mut stdout = stdout();
+        
+        // Comprehensive screen reset
         execute!(stdout, terminal::Clear(ClearType::All))?;
+        execute!(stdout, MoveTo(0, 0))?;
+        execute!(stdout, ResetColor)?;
+        stdout.flush()?;
+        
+        // Short delay to ensure terminal state is reset
+        std::thread::sleep(std::time::Duration::from_millis(10));
         
         let (terminal_width, terminal_height) = terminal::size()?;
         let center_row = terminal_height / 2;
         let center_col = terminal_width / 2;
 
-        let title = "🎮 SESSION SUMMARY 🎮";
-        let title_col = center_col.saturating_sub(title.len() as u16 / 2);
-        execute!(stdout, MoveTo(title_col, center_row.saturating_sub(12)))?;
-        execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Yellow))?;
-        execute!(stdout, Print(&title))?;
-        execute!(stdout, ResetColor)?;
+        let title = "=== SESSION SUMMARY ===";
+        let lines: Vec<&str> = title.split('\n').collect();
+        
+        for (i, line) in lines.iter().enumerate() {
+            let title_col = center_col.saturating_sub(line.len() as u16 / 2);
+            execute!(stdout, MoveTo(title_col, center_row.saturating_sub(14) + i as u16))?;
+            execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Cyan))?;
+            execute!(stdout, Print(line))?;
+            execute!(stdout, ResetColor)?;
+        }
 
         // Show session duration
         let duration_text = format!("Session Duration: {:.1} minutes", session_summary.total_session_time.as_secs_f64() / 60.0);
@@ -185,7 +197,7 @@ impl ExitSummaryScreen {
         for (i, option) in options.iter().enumerate() {
             let option_col = center_col.saturating_sub(option.len() as u16 / 2);
             execute!(stdout, MoveTo(option_col, options_start + 2 + i as u16))?;
-            execute!(stdout, SetForegroundColor(Color::Yellow))?;
+            execute!(stdout, SetForegroundColor(Color::Cyan))?;
             execute!(stdout, Print(option))?;
             execute!(stdout, ResetColor)?;
         }
@@ -232,10 +244,10 @@ impl ExitSummaryScreen {
         let center_col = terminal_width / 2;
 
         // Title
-        let title = "📤 Share Your Session Result";
+        let title = "Share Your Session Result";
         let title_col = center_col.saturating_sub(title.len() as u16 / 2);
         execute!(stdout, MoveTo(title_col, center_row.saturating_sub(8)))?;
-        execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Yellow))?;
+        execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Cyan))?;
         execute!(stdout, Print(title))?;
         execute!(stdout, ResetColor)?;
 
@@ -368,10 +380,10 @@ impl ExitSummaryScreen {
         let center_col = terminal_width / 2;
 
         // Title
-        let title = format!("⚠️  Could not open {} automatically", platform.name());
+        let title = format!("Could not open {} automatically", platform.name());
         let title_col = center_col.saturating_sub(title.len() as u16 / 2);
         execute!(stdout, MoveTo(title_col, center_row.saturating_sub(6)))?;
-        execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Yellow))?;
+        execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Cyan))?;
         execute!(stdout, Print(&title))?;
         execute!(stdout, ResetColor)?;
 
@@ -384,7 +396,7 @@ impl ExitSummaryScreen {
         execute!(stdout, ResetColor)?;
 
         // URL display box
-        let url_display = format!("📋 {}", url);
+        let url_display = format!("{}", url);
         let url_col = center_col.saturating_sub(url_display.len() as u16 / 2);
         execute!(stdout, MoveTo(url_col, center_row.saturating_sub(1)))?;
         execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Cyan))?;
