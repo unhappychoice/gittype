@@ -14,12 +14,21 @@
 - 🎯 **Actually useful**: Build muscle memory with *real* syntax patterns
 - 🔍 **Smart filtering**: Skip the `node_modules` nightmare automatically
 
+## Installation 📦
+
+### Homebrew (macOS/Linux)
+```bash
+brew install unhappychoice/tap/gittype
+```
+
+### Cargo (Universal)
+```bash
+cargo install gittype
+```
+
 ## Quick Start 🚀
 
 ```bash
-# Install (yes, it's that easy)
-brew install gittype
-
 # cd into your messy codebase
 cd ~/that-project-you-never-finished
 
