@@ -30,5 +30,11 @@ Thumbs.db
 *.bak
 *.tmp
 
+# Coverage reports
+lcov.info
+cobertura.xml
+*.profdata
+*.profraw
+
 # Claude Code
 .claude/
