@@ -319,10 +319,10 @@ impl GameDisplayRatatui {
                 if i == mistake_pos {
                     Style::default().fg(Color::White).bg(Color::Red)
                 } else {
-                    Style::default().fg(Color::Black).bg(Color::White)
+                    Style::default().fg(Color::Black).bg(Color::Gray)
                 }
             } else {
-                Style::default().fg(Color::Black).bg(Color::White)
+                Style::default().fg(Color::Black).bg(Color::Gray)
             }
         } else if is_comment {
             Style::default().fg(Color::LightBlue)
@@ -332,10 +332,6 @@ impl GameDisplayRatatui {
                 .add_modifier(Modifier::DIM)
         };
 
-        // Add subtle background highlight for current line
-        if is_current_line && i != current_position {
-            style = style.bg(Color::Rgb(32, 32, 32)); // Very dark gray background for current line
-        }
 
         style
     }
