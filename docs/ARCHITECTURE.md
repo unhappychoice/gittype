@@ -280,6 +280,8 @@ Multi-layered rendering system:
 | Rust | `tree-sitter-rust` | ✅ Full support |
 | TypeScript | `tree-sitter-typescript` | ✅ Full support |
 | Python | `tree-sitter-python` | ✅ Full support |
+| Go | `tree-sitter-go` | ✅ Full support |
+| Ruby | `tree-sitter-ruby` | ✅ Full support |
 
 ---
 

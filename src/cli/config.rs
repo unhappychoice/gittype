@@ -26,6 +26,8 @@ impl Default for Config {
                     "rust".to_string(),
                     "typescript".to_string(),
                     "python".to_string(),
+                    "go".to_string(),
+                    "ruby".to_string(),
                 ],
                 max_lines: 40,
                 include: vec!["src/**".to_string()],

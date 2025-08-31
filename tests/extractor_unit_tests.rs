@@ -25,6 +25,7 @@ fn test_language_from_extension() {
     assert_eq!(Language::from_extension("tsx"), Some(Language::TypeScript));
     assert_eq!(Language::from_extension("py"), Some(Language::Python));
     assert_eq!(Language::from_extension("rb"), Some(Language::Ruby));
+    assert_eq!(Language::from_extension("go"), Some(Language::Go));
     assert_eq!(Language::from_extension("unknown"), None);
 }
 
@@ -454,4 +455,157 @@ end
     let method_names: Vec<&String> = method_chunks.iter().map(|c| &c.name).collect();
     assert!(method_names.contains(&&"login".to_string()));
     assert!(method_names.contains(&&"logout".to_string()));
+}
+
+#[test]
+fn test_go_function_extraction() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("test.go");
+
+    let go_code = r#"package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Hello, world!")
+}
+
+func add(a, b int) int {
+    return a + b
+}
+
+func multiply(x int, y int) int {
+    return x * y
+}
+"#;
+    fs::write(&file_path, go_code).unwrap();
+
+    let mut extractor = CodeExtractor::new().unwrap();
+    let chunks = extractor
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .unwrap();
+
+    assert_eq!(chunks.len(), 3);
+
+    let function_names: Vec<&String> = chunks.iter().map(|c| &c.name).collect();
+    assert!(function_names.contains(&&"main".to_string()));
+    assert!(function_names.contains(&&"add".to_string()));
+    assert!(function_names.contains(&&"multiply".to_string()));
+
+    for chunk in &chunks {
+        assert!(matches!(chunk.chunk_type, ChunkType::Function));
+        assert_eq!(chunk.language, Language::Go);
+    }
+}
+
+#[test]
+fn test_go_struct_extraction() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("test.go");
+
+    let go_code = r#"package main
+
+type Person struct {
+    Name string
+    Age  int
+}
+
+type Address struct {
+    Street string
+    City   string
+    Zip    string
+}
+
+func (p Person) GetName() string {
+    return p.Name
+}
+
+func (a *Address) GetFullAddress() string {
+    return a.Street + ", " + a.City + " " + a.Zip
+}
+"#;
+    fs::write(&file_path, go_code).unwrap();
+
+    let mut extractor = CodeExtractor::new().unwrap();
+    let chunks = extractor
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .unwrap();
+
+    assert_eq!(chunks.len(), 4); // 2 structs + 2 methods
+
+    // Find struct chunks
+    let struct_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Struct))
+        .collect();
+    assert_eq!(struct_chunks.len(), 2);
+
+    let struct_names: Vec<&String> = struct_chunks.iter().map(|c| &c.name).collect();
+    assert!(struct_names.contains(&&"Person".to_string()));
+    assert!(struct_names.contains(&&"Address".to_string()));
+
+    // Find method chunks
+    let method_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Method))
+        .collect();
+    assert_eq!(method_chunks.len(), 2);
+
+    let method_names: Vec<&String> = method_chunks.iter().map(|c| &c.name).collect();
+    assert!(method_names.contains(&&"GetName".to_string()));
+    assert!(method_names.contains(&&"GetFullAddress".to_string()));
+}
+
+#[test]
+fn test_go_interface_extraction() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("test.go");
+
+    let go_code = r#"package main
+
+type Writer interface {
+    Write([]byte) (int, error)
+}
+
+type Reader interface {
+    Read([]byte) (int, error)
+}
+
+type ReadWriter interface {
+    Reader
+    Writer
+}
+
+func process(rw ReadWriter) {
+    // Implementation here
+}
+"#;
+    fs::write(&file_path, go_code).unwrap();
+
+    let mut extractor = CodeExtractor::new().unwrap();
+    let chunks = extractor
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .unwrap();
+
+    assert_eq!(chunks.len(), 4); // 3 interfaces + 1 function
+
+    // Find interface chunks
+    let interface_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Interface))
+        .collect();
+    assert_eq!(interface_chunks.len(), 3);
+
+    let interface_names: Vec<&String> = interface_chunks.iter().map(|c| &c.name).collect();
+    assert!(interface_names.contains(&&"Writer".to_string()));
+    assert!(interface_names.contains(&&"Reader".to_string()));
+    assert!(interface_names.contains(&&"ReadWriter".to_string()));
+
+    // Find function chunk
+    let function_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Function))
+        .collect();
+    assert_eq!(function_chunks.len(), 1);
+    assert_eq!(function_chunks[0].name, "process");
 }
