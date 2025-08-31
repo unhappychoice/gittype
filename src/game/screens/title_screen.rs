@@ -129,30 +129,25 @@ impl TitleScreen {
         center_col: u16,
         git_info: Option<&GitRepositoryInfo>,
     ) -> Result<()> {
-        // ASCII logo lines
+        // ASCII logo lines from oh-my-logo "GitType" purple
         let logo_lines = [
-            "─╔═══╗─╔══╗─╔════╗────╔════╗─╔╗──╔╗─╔═══╗─╔═══╗─",
-            "─║╔═╗║─╚╣╠╝─║╔╗╔╗║────║╔╗╔╗║─║╚╗╔╝║─║╔═╗║─║╔══╝─",
-            "─║║─╚╝──║║──╚╝║║╚╝────╚╝║║╚╝─╚╗╚╝╔╝─║╚═╝║─║╚══╗─",
-            "─║║╔═╗──║║────║║────────║║────╚╗╔╝──║╔══╝─║╔══╝─",
-            "─║╚╩═║─╔╣╠╗───║║────────║║─────║║───║║────║╚══╗─",
-            "─╚═══╝─╚══╝───╚╝────────╚╝─────╚╝───╚╝────╚═══╝─",
+            "\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m_\x1b[39m\x1b[38;5;104m_\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m_\x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m",
+            "\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m/\x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m_\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m(\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;74m)\x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m|\x1b[39m\x1b[38;5;74m|\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;32m_\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m_\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m_\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m \x1b[39m",
+            "\x1b[38;5;104m \x1b[39m\x1b[38;5;104m|\x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m|\x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m|\x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;74m|\x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m_\x1b[39m\x1b[38;5;74m_\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m|\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m'\x1b[39m\x1b[38;5;32m_\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m\\\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m/\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m\\\x1b[39m",
+            "\x1b[38;5;104m \x1b[39m\x1b[38;5;104m|\x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m|\x1b[39m\x1b[38;5;104m_\x1b[39m\x1b[38;5;68m|\x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;68m|\x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;74m|\x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m|\x1b[39m\x1b[38;5;74m_\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m|\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m|\x1b[39m\x1b[38;5;32m_\x1b[39m\x1b[38;5;33m)\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m|\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m/\x1b[39m",
+            "\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m\\\x1b[39m\x1b[38;5;104m_\x1b[39m\x1b[38;5;104m_\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m|\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;74m|\x1b[39m\x1b[38;5;74m\\\x1b[39m\x1b[38;5;74m_\x1b[39m\x1b[38;5;74m_\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m\\\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m,\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m|\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m.\x1b[39m\x1b[38;5;32m_\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m/\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m\\\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m|\x1b[39m",
+            "\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;32m/\x1b[39m\x1b[38;5;32m|\x1b[39m\x1b[38;5;32m_\x1b[39m\x1b[38;5;32m|\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m",
         ];
 
         // Display ASCII logo
-        let logo_width = logo_lines[0].chars().count() as u16;
-        let logo_start_col = center_col.saturating_sub(logo_width / 2);
+        // GitType logo width is approximately 47 visible characters
+        let logo_width = 47u16;
+        let logo_start_col = center_col.saturating_sub(logo_width / 2) + 5;
         let logo_start_row = center_row.saturating_sub(8);
 
         for (i, line) in logo_lines.iter().enumerate() {
             execute!(stdout, MoveTo(logo_start_col, logo_start_row + i as u16))?;
-            execute!(
-                stdout,
-                SetAttribute(Attribute::Bold),
-                SetForegroundColor(Color::Cyan)
-            )?;
             execute!(stdout, Print(line))?;
-            execute!(stdout, ResetColor)?;
         }
 
         // Display subtitle
