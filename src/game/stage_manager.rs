@@ -23,9 +23,7 @@ struct RawModeGuard;
 
 impl Drop for RawModeGuard {
     fn drop(&mut self) {
-        if let Err(e) = terminal::disable_raw_mode() {
-            eprintln!("Warning: Failed to disable raw mode during cleanup: {}", e);
-        }
+        cleanup_terminal();
     }
 }
 
@@ -135,7 +133,7 @@ impl StageManager {
                                 // If session_complete is true, retry with same settings
                             }
                             Err(e) => {
-                                terminal::disable_raw_mode()?;
+                                cleanup_terminal();
                                 return Err(e);
                             }
                         }
@@ -145,13 +143,15 @@ impl StageManager {
                     // Show session summary before exiting
                     let session_summary = self.session_tracker.clone().finalize_and_get_summary();
                     let _ = ExitSummaryScreen::show(&session_summary)?;
-                    break;
+                    cleanup_terminal();
+                    std::process::exit(0);
                 }
             }
         }
 
-        // Clear global session tracker
+        #[allow(unreachable_code)]
         {
+            // Clear global session tracker
             let mut global_tracker = GLOBAL_SESSION_TRACKER.lock().unwrap();
             *global_tracker = None;
         }
@@ -160,7 +160,7 @@ impl StageManager {
         let mut stdout_handle = stdout();
         execute!(stdout_handle, PopKeyboardEnhancementFlags).ok();
 
-        terminal::disable_raw_mode()?;
+        cleanup_terminal();
         Ok(())
     }
 
@@ -457,20 +457,26 @@ impl StageManager {
 // Comprehensive terminal cleanup function
 pub fn cleanup_terminal() {
     use crossterm::{execute, terminal};
+    use std::io::{stdout, Write};
 
-    // Disable raw mode
+    // Disable raw mode first
     if let Err(e) = terminal::disable_raw_mode() {
         eprintln!("Warning: Failed to disable raw mode: {}", e);
     }
 
-    // Exit alternate screen and restore cursor
-    let _ = execute!(
-        std::io::stdout(),
+    // Exit alternate screen and restore cursor with explicit error handling
+    if let Err(e) = execute!(
+        stdout(),
         crossterm::terminal::LeaveAlternateScreen,
         crossterm::cursor::Show,
         crossterm::style::ResetColor,
         crossterm::terminal::Clear(crossterm::terminal::ClearType::All)
-    );
+    ) {
+        eprintln!("Warning: Failed to cleanup terminal: {}", e);
+    }
+
+    // Ensure output is flushed
+    let _ = stdout().flush();
 }
 
 // Public function for Ctrl+C handler

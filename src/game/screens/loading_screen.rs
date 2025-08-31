@@ -2,7 +2,7 @@ use crate::extractor::ProgressReporter;
 use crate::Result;
 use crossterm::{
     event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers},
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    terminal::{enable_raw_mode, EnterAlternateScreen},
     ExecutableCommand,
 };
 use ratatui::{
@@ -343,9 +343,7 @@ impl LoadingScreen {
             return Ok(());
         }
 
-        disable_raw_mode()?;
-        let mut stdout = stdout();
-        stdout.execute(LeaveAlternateScreen)?;
+        crate::game::stage_manager::cleanup_terminal();
         *cleaned_up = true;
         Ok(())
     }
