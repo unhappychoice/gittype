@@ -18,6 +18,17 @@ use once_cell::sync::Lazy;
 use std::io::stdout;
 use std::sync::{Arc, Mutex};
 
+// Raw mode cleanup guard to ensure raw mode is disabled on drop
+struct RawModeGuard;
+
+impl Drop for RawModeGuard {
+    fn drop(&mut self) {
+        if let Err(e) = terminal::disable_raw_mode() {
+            eprintln!("Warning: Failed to disable raw mode during cleanup: {}", e);
+        }
+    }
+}
+
 // Global session tracker for Ctrl+C handler
 static GLOBAL_SESSION_TRACKER: Lazy<Arc<Mutex<Option<SessionTracker>>>> =
     Lazy::new(|| Arc::new(Mutex::new(None)));
@@ -69,6 +80,9 @@ impl StageManager {
             }
         }
 
+        // Create guard to ensure raw mode is disabled on function exit
+        let _raw_mode_guard = RawModeGuard;
+
         // Enable keyboard enhancement flags to better detect modifier combinations
         let mut stdout_handle = stdout();
         execute!(
@@ -105,24 +119,7 @@ impl StageManager {
                         self.current_challenges =
                             stage_builder.build_stages(self.available_challenges.clone());
 
-                        // Debug output
-                        println!("Selected difficulty: {:?}", difficulty);
-                        println!(
-                            "Built {} challenges with difficulty {:?}",
-                            self.current_challenges.len(),
-                            difficulty
-                        );
-                        for (i, challenge) in self.current_challenges.iter().enumerate() {
-                            println!(
-                                "  Challenge {}: {} ({} lines)",
-                                i + 1,
-                                challenge.id,
-                                challenge.code_content.lines().count()
-                            );
-                        }
-
                         if self.current_challenges.is_empty() {
-                            println!("No challenges found for difficulty {:?}", difficulty);
                             break; // Go back to title screen
                         }
 
@@ -284,8 +281,8 @@ impl StageManager {
 
                     // Show session summary and exit
                     let session_summary = self.session_tracker.clone().finalize_and_get_summary();
-                    terminal::disable_raw_mode()?;
                     let _ = ExitSummaryScreen::show(&session_summary)?;
+                    terminal::disable_raw_mode()?;
                     std::process::exit(0);
                 }
                 GameState::Continue | GameState::ShowDialog => {
@@ -322,17 +319,9 @@ impl StageManager {
                     let session_summary = self.session_tracker.clone().finalize_and_get_summary();
 
                     loop {
-                        eprintln!("Debug: About to call ExitSummaryScreen::show");
-                        eprintln!("Debug: Calling ExitSummaryScreen::show...");
                         let exit_action = match ExitSummaryScreen::show(&session_summary) {
-                            Ok(action) => {
-                                eprintln!("Debug: ExitSummaryScreen::show returned: {:?}", action);
-                                action
-                            }
-                            Err(e) => {
-                                eprintln!("Error in ExitSummaryScreen::show: {}", e);
-                                return Err(e);
-                            }
+                            Ok(action) => action,
+                            Err(e) => return Err(e),
                         };
 
                         match exit_action {
@@ -341,18 +330,8 @@ impl StageManager {
                                 std::process::exit(0);
                             }
                             ExitAction::Share => {
-                                eprintln!(
-                                    "Debug: Share action received, calling show_sharing_menu"
-                                );
-                                if let Err(e) =
-                                    ExitSummaryScreen::show_sharing_menu(&session_summary)
-                                {
-                                    eprintln!("Failed to show sharing menu: {}", e);
-                                } else {
-                                    eprintln!("Debug: Sharing menu returned successfully");
-                                }
+                                let _ = ExitSummaryScreen::show_sharing_menu(&session_summary);
                                 // Continue showing exit screen after sharing
-                                eprintln!("Debug: Continuing to show exit screen");
                                 continue;
                             }
                         }
@@ -436,6 +415,7 @@ impl StageManager {
                             let session_summary =
                                 self.session_tracker.clone().finalize_and_get_summary();
                             let _ = ExitSummaryScreen::show(&session_summary)?;
+                            terminal::disable_raw_mode()?;
                             std::process::exit(0);
                         }
                         KeyCode::Char('c')
@@ -443,6 +423,7 @@ impl StageManager {
                                 .modifiers
                                 .contains(crossterm::event::KeyModifiers::CONTROL) =>
                         {
+                            let _ = terminal::disable_raw_mode();
                             std::process::exit(0);
                         }
                         _ => {}
@@ -482,10 +463,14 @@ pub fn show_session_summary_on_interrupt() {
         // Show session summary with raw mode enabled
         let _ = ExitSummaryScreen::show(&session_summary);
         // Disable raw mode after ExitSummaryScreen completes
-        let _ = terminal::disable_raw_mode();
+        if let Err(e) = terminal::disable_raw_mode() {
+            eprintln!("Warning: Failed to disable raw mode: {}", e);
+        }
     } else {
         // Show simple interruption message
-        let _ = terminal::disable_raw_mode();
+        if let Err(e) = terminal::disable_raw_mode() {
+            eprintln!("Warning: Failed to disable raw mode: {}", e);
+        }
         use crossterm::{
             cursor::MoveTo,
             execute,
@@ -524,6 +509,8 @@ pub fn show_session_summary_on_interrupt() {
                 }
             }
         }
-        let _ = terminal::disable_raw_mode();
+        if let Err(e) = terminal::disable_raw_mode() {
+            eprintln!("Warning: Failed to disable raw mode: {}", e);
+        }
     }
 }
