@@ -452,7 +452,7 @@ pub fn show_session_summary_on_interrupt() {
         let _ = execute!(stdout, Print("Thanks for playing GitType!"));
         let _ = execute!(stdout, MoveTo(10, 9));
         let _ = execute!(stdout, SetForegroundColor(Color::Grey));
-        let _ = execute!(stdout, Print("Press any key to exit..."));
+        let _ = execute!(stdout, Print("[ESC] Exit"));
         let _ = execute!(stdout, ResetColor);
         
         // Enable raw mode temporarily for input
@@ -460,8 +460,11 @@ pub fn show_session_summary_on_interrupt() {
         use crossterm::event;
         loop {
             if let Ok(true) = event::poll(std::time::Duration::from_millis(100)) {
-                if let Ok(event::Event::Key(_)) = event::read() {
-                    break;
+                if let Ok(event::Event::Key(key_event)) = event::read() {
+                    match key_event.code {
+                        event::KeyCode::Esc => break,
+                        _ => {}
+                    }
                 }
             }
         }

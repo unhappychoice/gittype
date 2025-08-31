@@ -199,21 +199,32 @@ impl ResultScreen {
 
         stdout.flush()?;
 
-        // Show results with user input to proceed
-        let continue_text = "Press any key to continue...";
-        let continue_col = center_col.saturating_sub(continue_text.len() as u16 / 2);
-        let continue_row = if has_next_stage { progress_start_row + 3 } else { progress_start_row };
-        execute!(stdout, MoveTo(continue_col, continue_row))?;
-        execute!(stdout, SetForegroundColor(Color::Grey))?;
-        execute!(stdout, Print(continue_text))?;
+        // Show stage completion options
+        let options_text = "[SPACE] Continue  [R] Retry  [ESC] Quit";
+        let options_col = center_col.saturating_sub(options_text.len() as u16 / 2);
+        let options_row = if has_next_stage { progress_start_row + 3 } else { progress_start_row };
+        execute!(stdout, MoveTo(options_col, options_row))?;
+        execute!(stdout, SetForegroundColor(Color::Cyan))?;
+        execute!(stdout, Print(options_text))?;
         execute!(stdout, ResetColor)?;
         stdout.flush()?;
         
         // Wait for user input
         loop {
             if event::poll(std::time::Duration::from_millis(100))? {
-                if let Event::Key(_) = event::read()? {
-                    break;
+                if let Event::Key(key_event) = event::read()? {
+                    match key_event.code {
+                        KeyCode::Char(' ') => break, // Continue
+                        KeyCode::Char('r') | KeyCode::Char('R') => {
+                            // TODO: Handle retry - for now just continue
+                            break;
+                        },
+                        KeyCode::Esc => {
+                            // TODO: Handle quit - for now just continue  
+                            break;
+                        },
+                        _ => {}
+                    }
                 }
             }
         }
@@ -383,8 +394,8 @@ impl ResultScreen {
         // Display options
         let options = vec![
             "[R] Retry",
-            "[S] Share Result",
-            "[T/ENTER] Back to Title",
+            "[S] Share Result", 
+            "[T] Back to Title",
             "[ESC] Quit",
         ];
 
@@ -451,7 +462,7 @@ impl ResultScreen {
                         KeyCode::Char('s') | KeyCode::Char('S') => {
                             return Ok(ResultAction::Share);
                         },
-                        KeyCode::Char('t') | KeyCode::Char('T') | KeyCode::Enter => {
+                        KeyCode::Char('t') | KeyCode::Char('T') => {
                             return Ok(ResultAction::BackToTitle);
                         },
                         KeyCode::Esc => {
