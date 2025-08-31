@@ -96,7 +96,6 @@ langs = ["rust", "typescript", "python", "go", "ruby"]
 - **Comments Only**: Blocks with only comments
 - **Import Statements**: Standalone import/use declarations
 - **Very Short Code**: Code blocks under minimum threshold
-- **Very Long Code**: Code blocks exceeding `--max-lines`
 
 ## Adding New Language Support
 

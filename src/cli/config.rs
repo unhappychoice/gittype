@@ -7,7 +7,6 @@ pub struct Config {
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct ExtractionConfig {
     pub languages: Vec<String>,
-    pub max_lines: usize,
     pub include: Vec<String>,
     pub exclude: Vec<String>,
 }
@@ -29,7 +28,6 @@ impl Default for Config {
                     "go".to_string(),
                     "ruby".to_string(),
                 ],
-                max_lines: 40,
                 include: vec!["src/**".to_string()],
                 exclude: vec!["target/**".to_string(), "node_modules/**".to_string()],
             },

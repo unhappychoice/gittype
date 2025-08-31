@@ -15,7 +15,6 @@ fn test_extraction_options_default() {
     assert!(options
         .exclude_patterns
         .contains(&"**/target/**".to_string()));
-    assert_eq!(options.max_lines, None);
 }
 
 #[test]
@@ -89,38 +88,6 @@ pub struct Config {
     assert_eq!(chunks[0].name, "Person");
     assert_eq!(chunks[1].name, "Config");
     assert!(matches!(chunks[0].chunk_type, ChunkType::Struct));
-}
-
-#[test]
-fn test_max_lines_filtering() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.rs");
-
-    let rust_code = r#"
-fn small_function() {
-    println!("small");
-}
-
-fn large_function() {
-    println!("line 1");
-    println!("line 2");
-    println!("line 3");
-    println!("line 4");
-    println!("line 5");
-}
-"#;
-    fs::write(&file_path, rust_code).unwrap();
-
-    let mut extractor = CodeExtractor::new().unwrap();
-    let options = ExtractionOptions {
-        max_lines: Some(3),
-        ..Default::default()
-    };
-
-    let chunks = extractor.extract_chunks(temp_dir.path(), options).unwrap();
-
-    assert_eq!(chunks.len(), 1);
-    assert_eq!(chunks[0].name, "small_function");
 }
 
 #[test]
