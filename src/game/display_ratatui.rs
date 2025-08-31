@@ -300,9 +300,9 @@ impl GameDisplayRatatui {
         should_skip: bool,
         is_comment: bool,
         current_mistake_position: Option<usize>,
-        is_current_line: bool,
+        _is_current_line: bool,
     ) -> Style {
-        let mut style = if i < current_position || should_skip {
+        if i < current_position || should_skip {
             if is_comment {
                 Style::default().fg(Color::LightBlue)
             } else if should_skip {
@@ -319,10 +319,10 @@ impl GameDisplayRatatui {
                 if i == mistake_pos {
                     Style::default().fg(Color::White).bg(Color::Red)
                 } else {
-                    Style::default().fg(Color::Black).bg(Color::White)
+                    Style::default().fg(Color::Black).bg(Color::Gray)
                 }
             } else {
-                Style::default().fg(Color::Black).bg(Color::White)
+                Style::default().fg(Color::Black).bg(Color::Gray)
             }
         } else if is_comment {
             Style::default().fg(Color::LightBlue)
@@ -330,14 +330,7 @@ impl GameDisplayRatatui {
             Style::default()
                 .fg(Color::White)
                 .add_modifier(Modifier::DIM)
-        };
-
-        // Add subtle background highlight for current line
-        if is_current_line && i != current_position {
-            style = style.bg(Color::Rgb(32, 32, 32)); // Very dark gray background for current line
         }
-
-        style
     }
 
     fn find_line_for_position(&self, position: usize, line_starts: &[usize]) -> usize {
