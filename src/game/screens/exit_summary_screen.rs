@@ -237,11 +237,19 @@ impl ExitSummaryScreen {
         execute!(stdout, Print(thanks_message))?;
         execute!(stdout, ResetColor)?;
 
+        // Show GitHub link and star message
+        let github_message = "⭐ Star us on GitHub: https://github.com/unhappychoice/gittype";
+        let github_col = center_col.saturating_sub(github_message.len() as u16 / 2);
+        execute!(stdout, MoveTo(github_col, options_start + 1))?;
+        execute!(stdout, SetForegroundColor(Color::Yellow))?;
+        execute!(stdout, Print(github_message))?;
+        execute!(stdout, ResetColor)?;
+
         let options = ["[S] Share Result", "[ESC] Exit"];
 
         for (i, option) in options.iter().enumerate() {
             let option_col = center_col.saturating_sub(option.len() as u16 / 2);
-            execute!(stdout, MoveTo(option_col, options_start + 2 + i as u16))?;
+            execute!(stdout, MoveTo(option_col, options_start + 3 + i as u16))?;
             execute!(stdout, SetForegroundColor(Color::Cyan))?;
             execute!(stdout, Print(option))?;
             execute!(stdout, ResetColor)?;
