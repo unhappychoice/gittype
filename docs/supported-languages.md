@@ -7,6 +7,8 @@
 | Rust | `.rs` | ✅ Full support | `tree-sitter-rust` |
 | TypeScript | `.ts`, `.tsx` | ✅ Full support | `tree-sitter-typescript` |
 | Python | `.py` | ✅ Full support | `tree-sitter-python` |
+| Go | `.go` | ✅ Full support | `tree-sitter-go` |
+| Ruby | `.rb` | ✅ Full support | `tree-sitter-ruby` |
 
 ## Extraction Features
 
@@ -33,6 +35,20 @@
 - Decorators
 - Lambda functions
 
+### Go
+- Functions (`func`)
+- Methods (with receivers)
+- Structs (`type ... struct`)
+- Interfaces (`type ... interface`)
+- Type declarations
+
+### Ruby
+- Methods (`def`)
+- Classes (`class`)
+- Modules (`module`)
+- Instance methods
+- Class methods
+
 ## Planned Support
 
 | Language | Priority | Expected | Notes |
@@ -40,8 +56,6 @@
 | JavaScript | High | Next release | ESM/CommonJS support |
 | Swift | High | Q1 2025 | iOS/macOS development |
 | Kotlin | High | Q1 2025 | Android/JVM support |
-| Ruby | High | Q1 2025 | Rails patterns, blocks |
-| Go | Medium | Q2 2025 | Goroutines, interfaces |
 | Java | Medium | Q2 2025 | Spring Boot patterns |
 | C++ | Medium | Q3 2025 | Modern C++17/20 |
 | C# | Medium | Q3 2025 | .NET 6+ features |
@@ -57,14 +71,14 @@
 gittype --langs rust
 
 # Multiple languages
-gittype --langs rust,typescript,python
+gittype --langs rust,typescript,python,go,ruby
 ```
 
 ### Configuration File
 
 ```toml
 [default]
-langs = ["rust", "typescript"]
+langs = ["rust", "typescript", "python", "go", "ruby"]
 ```
 
 ## Code Extraction Quality

@@ -105,6 +105,8 @@ impl ChallengeConverter {
             Some("rs") => "rust".to_string(),
             Some("ts") | Some("tsx") => "typescript".to_string(),
             Some("py") => "python".to_string(),
+            Some("go") => "go".to_string(),
+            Some("rb") => "ruby".to_string(),
             Some("js") | Some("jsx") => "javascript".to_string(),
             _ => "text".to_string(),
         }

@@ -9,7 +9,7 @@
 ## Features ✨
 
 - 🌳 **Tree-sitter powered**: Extracts actual functions, not random code snippets
-- 🦀🐍⚡ **Multi-language**: Rust, TypeScript, Python (more languages incoming!)  
+- 🦀🐍⚡🐹💎 **Multi-language**: Rust, TypeScript, Python, Go, Ruby (more languages incoming!)  
 - 📊 **Git stats vibes**: Track your WPM like you track your commit frequency
 - 🎯 **Actually useful**: Build muscle memory with *real* syntax patterns
 - 🔍 **Smart filtering**: Skip the `node_modules` nightmare automatically
