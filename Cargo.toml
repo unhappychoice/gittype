@@ -6,17 +6,25 @@ authors = ["unhappychoice"]
 description = "A typing practice tool using your own code repositories"
 license = "MIT"
 repository = "https://github.com/unhappychoice/gittype"
+homepage = "https://github.com/unhappychoice/gittype"
+documentation = "https://docs.rs/gittype"
 keywords = ["typing", "practice", "cli", "git", "code"]
 categories = ["command-line-utilities", "games"]
 default-run = "gittype"
+exclude = [
+    "*.png",
+    "*.gif",
+    "*.jpg",
+    "*.jpeg",
+    "docs/",
+    "examples/",
+    "tests/fixtures/",
+    ".github/",
+]
 
 [[bin]]
 name = "gittype"
 path = "src/main.rs"
-
-[[bin]]
-name = "generate_all_ascii_titles"
-path = "generate_all_ascii_titles.rs"
 
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
