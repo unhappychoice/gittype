@@ -88,10 +88,7 @@ impl CodeExtractor {
                 parser
                     .set_language(tree_sitter_go::language())
                     .map_err(|e| {
-                        GitTypeError::ExtractionFailed(format!(
-                            "Failed to set Go language: {}",
-                            e
-                        ))
+                        GitTypeError::ExtractionFailed(format!("Failed to set Go language: {}", e))
                     })?;
             }
         }

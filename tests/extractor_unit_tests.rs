@@ -486,12 +486,12 @@ func multiply(x int, y int) int {
         .unwrap();
 
     assert_eq!(chunks.len(), 3);
-    
+
     let function_names: Vec<&String> = chunks.iter().map(|c| &c.name).collect();
     assert!(function_names.contains(&&"main".to_string()));
     assert!(function_names.contains(&&"add".to_string()));
     assert!(function_names.contains(&&"multiply".to_string()));
-    
+
     for chunk in &chunks {
         assert!(matches!(chunk.chunk_type, ChunkType::Function));
         assert_eq!(chunk.language, Language::Go);
