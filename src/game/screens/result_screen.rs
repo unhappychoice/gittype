@@ -569,6 +569,7 @@ impl ResultScreen {
                         KeyCode::Char('c')
                             if key_event.modifiers.contains(KeyModifiers::CONTROL) =>
                         {
+                            crate::game::stage_manager::cleanup_terminal();
                             std::process::exit(0);
                         }
                         _ => continue,
@@ -757,6 +758,7 @@ impl ResultScreen {
                         KeyCode::Char('c')
                             if key_event.modifiers.contains(KeyModifiers::CONTROL) =>
                         {
+                            crate::game::stage_manager::cleanup_terminal();
                             std::process::exit(0);
                         }
                         _ => continue,

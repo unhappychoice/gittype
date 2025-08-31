@@ -287,7 +287,7 @@ impl StageManager {
                     // Show session summary and exit
                     let session_summary = self.session_tracker.clone().finalize_and_get_summary();
                     let _ = ExitSummaryScreen::show(&session_summary)?;
-                    terminal::disable_raw_mode()?;
+                    cleanup_terminal();
                     std::process::exit(0);
                 }
                 GameState::Continue | GameState::ShowDialog => {
@@ -328,7 +328,7 @@ impl StageManager {
 
                         match exit_action {
                             ExitAction::Exit => {
-                                terminal::disable_raw_mode()?;
+                                cleanup_terminal();
                                 std::process::exit(0);
                             }
                             ExitAction::Share => {
@@ -417,7 +417,7 @@ impl StageManager {
                             let session_summary =
                                 self.session_tracker.clone().finalize_and_get_summary();
                             let _ = ExitSummaryScreen::show(&session_summary)?;
-                            terminal::disable_raw_mode()?;
+                            cleanup_terminal();
                             std::process::exit(0);
                         }
                         KeyCode::Char('c')
@@ -425,7 +425,7 @@ impl StageManager {
                                 .modifiers
                                 .contains(crossterm::event::KeyModifiers::CONTROL) =>
                         {
-                            let _ = terminal::disable_raw_mode();
+                            cleanup_terminal();
                             std::process::exit(0);
                         }
                         _ => {}
@@ -454,6 +454,25 @@ impl StageManager {
     }
 }
 
+// Comprehensive terminal cleanup function
+pub fn cleanup_terminal() {
+    use crossterm::{execute, terminal};
+    
+    // Disable raw mode
+    if let Err(e) = terminal::disable_raw_mode() {
+        eprintln!("Warning: Failed to disable raw mode: {}", e);
+    }
+    
+    // Exit alternate screen and restore cursor
+    let _ = execute!(
+        std::io::stdout(),
+        crossterm::terminal::LeaveAlternateScreen,
+        crossterm::cursor::Show,
+        crossterm::style::ResetColor,
+        crossterm::terminal::Clear(crossterm::terminal::ClearType::All)
+    );
+}
+
 // Public function for Ctrl+C handler
 pub fn show_session_summary_on_interrupt() {
     // Keep raw mode enabled since ExitSummaryScreen needs it for input handling
@@ -464,10 +483,8 @@ pub fn show_session_summary_on_interrupt() {
 
         // Show session summary with raw mode enabled
         let _ = ExitSummaryScreen::show(&session_summary);
-        // Disable raw mode after ExitSummaryScreen completes
-        if let Err(e) = terminal::disable_raw_mode() {
-            eprintln!("Warning: Failed to disable raw mode: {}", e);
-        }
+        // Complete terminal cleanup after ExitSummaryScreen completes
+        cleanup_terminal();
     } else {
         // Show simple interruption message
         if let Err(e) = terminal::disable_raw_mode() {
@@ -511,8 +528,6 @@ pub fn show_session_summary_on_interrupt() {
                 }
             }
         }
-        if let Err(e) = terminal::disable_raw_mode() {
-            eprintln!("Warning: Failed to disable raw mode: {}", e);
-        }
+        cleanup_terminal();
     }
 }
