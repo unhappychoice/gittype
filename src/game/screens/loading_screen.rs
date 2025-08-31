@@ -343,9 +343,7 @@ impl LoadingScreen {
             return Ok(());
         }
 
-        disable_raw_mode()?;
-        let mut stdout = stdout();
-        stdout.execute(LeaveAlternateScreen)?;
+        crate::game::stage_manager::cleanup_terminal();
         *cleaned_up = true;
         Ok(())
     }

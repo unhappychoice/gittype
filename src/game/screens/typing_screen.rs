@@ -175,7 +175,7 @@ impl TypingScreen {
 
         self.display.cleanup()?;
 
-        terminal::disable_raw_mode()?;
+        crate::game::stage_manager::cleanup_terminal();
         self.scoring_engine.finish(); // Record final duration
         Ok(self.calculate_metrics())
     }
