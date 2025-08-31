@@ -135,10 +135,9 @@ impl SharingService {
         execute!(stdout, Print(instruction))?;
         execute!(stdout, ResetColor)?;
 
-        // URL display box
+        // URL display - show full URL on single line, let it overflow if needed
         let url_display = format!("📋 {}", url);
-        let url_col = center_col.saturating_sub(url_display.len() as u16 / 2);
-        execute!(stdout, MoveTo(url_col, center_row.saturating_sub(1)))?;
+        execute!(stdout, MoveTo(2, center_row.saturating_sub(1)))?;
         execute!(
             stdout,
             SetAttribute(Attribute::Bold),
@@ -150,7 +149,7 @@ impl SharingService {
         // Additional info
         let info = "💡 Tip: Select and copy the URL with your mouse or keyboard";
         let info_col = center_col.saturating_sub(info.len() as u16 / 2);
-        execute!(stdout, MoveTo(info_col, center_row + 2))?;
+        execute!(stdout, MoveTo(info_col, center_row + 4))?;
         execute!(stdout, SetForegroundColor(Color::Grey))?;
         execute!(stdout, Print(info))?;
         execute!(stdout, ResetColor)?;
@@ -158,7 +157,7 @@ impl SharingService {
         // Continue prompt
         let continue_text = "[ESC] Back";
         let continue_col = center_col.saturating_sub(continue_text.len() as u16 / 2);
-        execute!(stdout, MoveTo(continue_col, center_row + 4))?;
+        execute!(stdout, MoveTo(continue_col, center_row + 6))?;
         execute!(stdout, SetForegroundColor(Color::Green))?;
         execute!(stdout, Print(continue_text))?;
         execute!(stdout, ResetColor)?;
