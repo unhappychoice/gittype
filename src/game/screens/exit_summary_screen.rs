@@ -40,6 +40,8 @@ impl ExitSummaryScreen {
             ScoringEngine::get_ranking_title_for_score(session_summary.session_score)
                 .name()
                 .to_string();
+        let (tier_name, tier_position, tier_total, overall_position, overall_total) =
+            ScoringEngine::calculate_tier_info(session_summary.session_score);
 
         TypingMetrics {
             cpm: session_summary.overall_cpm,
@@ -50,6 +52,11 @@ impl ExitSummaryScreen {
             completion_time: session_summary.total_session_time,
             challenge_score: session_summary.session_score,
             ranking_title,
+            ranking_tier: tier_name,
+            tier_position,
+            tier_total,
+            overall_position,
+            overall_total,
             was_skipped: false,
             was_failed: false,
         }

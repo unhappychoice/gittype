@@ -185,6 +185,55 @@ impl ScoringEngine {
         RankingTitle::for_score(score)
     }
 
+    /// Calculate tier position and total for a given score
+    pub fn calculate_tier_info(score: f64) -> (String, usize, usize, usize, usize) {
+        let all_titles = RankingTitle::all_titles();
+        let current_title = Self::get_ranking_title_for_score(score);
+
+        // Find titles in the same tier
+        let same_tier_titles: Vec<_> = all_titles
+            .iter()
+            .filter(|title| title.tier() == current_title.tier())
+            .collect();
+
+        let tier_name = match current_title.tier() {
+            super::RankingTier::Beginner => "Beginner",
+            super::RankingTier::Intermediate => "Intermediate",
+            super::RankingTier::Advanced => "Advanced",
+            super::RankingTier::Expert => "Expert",
+            super::RankingTier::Legendary => "Legendary",
+        }
+        .to_string();
+
+        // Find position within tier (1-based, highest score = rank 1)
+        let tier_position = same_tier_titles
+            .iter()
+            .rev() // Reverse to get highest scores first
+            .position(|title| title.name() == current_title.name())
+            .map(|pos| pos + 1)
+            .unwrap_or(1);
+
+        let tier_total = same_tier_titles.len();
+
+        // Find position in all titles (1-based, highest score = rank 1)
+        let overall_position = all_titles
+            .iter()
+            .rev() // Reverse to get highest scores first
+            .position(|title| title.name() == current_title.name())
+            .map(|pos| pos + 1)
+            .unwrap_or(1);
+
+        let overall_total = all_titles.len();
+
+        (
+            tier_name,
+            tier_position,
+            tier_total,
+            overall_position,
+            overall_total,
+        )
+    }
+
     /// Legacy method that returns title name as string for a score for backward compatibility
     pub fn get_ranking_title_string_for_score(score: f64) -> String {
         match score as usize {
@@ -423,6 +472,8 @@ impl ScoringEngine {
         let ranking_title = Self::get_ranking_title_for_score(challenge_score)
             .name()
             .to_string();
+        let (tier_name, tier_position, tier_total, overall_position, overall_total) =
+            Self::calculate_tier_info(challenge_score);
 
         Ok(TypingMetrics {
             cpm: self.cpm(),
@@ -433,6 +484,11 @@ impl ScoringEngine {
             completion_time: self.elapsed(),
             challenge_score,
             ranking_title,
+            ranking_tier: tier_name,
+            tier_position,
+            tier_total,
+            overall_position,
+            overall_total,
             was_skipped,
             was_failed,
         })
@@ -464,6 +520,8 @@ impl ScoringEngine {
         let ranking_title = Self::get_ranking_title_for_score(challenge_score)
             .name()
             .to_string();
+        let (tier_name, tier_position, tier_total, overall_position, overall_total) =
+            Self::calculate_tier_info(challenge_score);
 
         TypingMetrics {
             cpm: temp_engine.cpm(),
@@ -474,6 +532,11 @@ impl ScoringEngine {
             completion_time: temp_engine.elapsed(),
             challenge_score,
             ranking_title,
+            ranking_tier: tier_name,
+            tier_position,
+            tier_total,
+            overall_position,
+            overall_total,
             was_skipped: false, // Real-time metrics are not skipped
             was_failed: false,  // Real-time metrics are not failed
         }
