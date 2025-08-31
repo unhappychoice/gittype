@@ -1,5 +1,6 @@
 use crate::Result;
 use crate::game::stage_builder::DifficultyLevel;
+use crate::game::screens::{InfoDialog, InfoAction};
 use crate::extractor::GitRepositoryInfo;
 use crossterm::{
     cursor::MoveTo,
@@ -82,6 +83,13 @@ impl TitleScreen {
                         KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
                             return Ok(TitleAction::Quit);
                         },
+                        KeyCode::Char('i') | KeyCode::Char('?') => {
+                            Self::handle_info_dialog()?;
+                            // Redraw the entire screen after closing the dialog
+                            execute!(stdout, terminal::Clear(ClearType::All))?;
+                            Self::draw_static_elements(&mut stdout, center_row, center_col, git_info)?;
+                            last_difficulty = selected_difficulty + 1; // Force redraw of difficulty selection
+                        },
                         _ => {}
                     }
                 }
@@ -122,7 +130,7 @@ impl TitleScreen {
 
 
         // Display instructions (moved down to accommodate multi-line difficulty display)
-        let instructions = "[←→] Change Difficulty  [ENTER] Start  [ESC] Quit";
+        let instructions = "[←→] Change Difficulty  [ENTER] Start  [I/?] Info  [ESC] Quit";
         let instructions_col = center_col.saturating_sub(instructions.len() as u16 / 2);
         
         execute!(stdout, MoveTo(instructions_col, center_row + 6))?;
@@ -130,6 +138,8 @@ impl TitleScreen {
         execute!(stdout, Print("[←→] Change Difficulty  "))?;
         execute!(stdout, SetForegroundColor(Color::Green))?;
         execute!(stdout, Print("[ENTER] Start  "))?;
+        execute!(stdout, SetForegroundColor(Color::Cyan))?;
+        execute!(stdout, Print("[I/?] Info  "))?;
         execute!(stdout, SetForegroundColor(Color::Red))?;
         execute!(stdout, Print("[ESC] Quit"))?;
         execute!(stdout, ResetColor)?;
@@ -234,6 +244,21 @@ impl TitleScreen {
             execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
             execute!(stdout, Print(&git_text))?;
             execute!(stdout, ResetColor)?;
+        }
+        Ok(())
+    }
+
+    fn handle_info_dialog() -> Result<()> {
+        match InfoDialog::show()? {
+            InfoAction::OpenGithub => {
+                InfoDialog::open_github()?;
+            },
+            InfoAction::OpenTwitter => {
+                InfoDialog::open_twitter()?;
+            },
+            InfoAction::Close => {
+                // Do nothing, just close the dialog
+            }
         }
         Ok(())
     }
