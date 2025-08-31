@@ -481,7 +481,12 @@ impl ResultScreen {
         }
 
         // Display options
-        let options = ["[S] Share Result", "[T] Back to Title", "[ESC] Quit"];
+        let options = [
+            "[R] Retry",
+            "[S] Share Result", 
+            "[T] Back to Title", 
+            "[ESC] Quit"
+        ];
 
         let options_start = if !stage_engines.is_empty() {
             let stage_results_start_row = summary_start_row + summary_lines.len() as u16 + 2;
@@ -550,6 +555,9 @@ impl ResultScreen {
             if event::poll(std::time::Duration::from_millis(100))? {
                 if let Event::Key(key_event) = event::read()? {
                     match key_event.code {
+                        KeyCode::Char('r') | KeyCode::Char('R') => {
+                            return Ok(ResultAction::Retry);
+                        }
                         KeyCode::Char('s') | KeyCode::Char('S') => {
                             return Ok(ResultAction::Share);
                         }
