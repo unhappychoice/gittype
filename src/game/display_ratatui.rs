@@ -353,11 +353,11 @@ impl GameDisplayRatatui {
         execute!(stdout, crossterm::terminal::Clear(ClearType::All))?;
         execute!(stdout, MoveTo(0, 0))?;
         execute!(stdout, crossterm::style::ResetColor)?;
-        
+
         // Ensure alternate screen is exited and cursor is restored
         execute!(stdout, crossterm::terminal::LeaveAlternateScreen)?;
         execute!(stdout, crossterm::cursor::Show)?;
-        
+
         stdout.flush()?;
 
         Ok(())

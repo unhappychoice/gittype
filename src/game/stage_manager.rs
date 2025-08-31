@@ -457,12 +457,12 @@ impl StageManager {
 // Comprehensive terminal cleanup function
 pub fn cleanup_terminal() {
     use crossterm::{execute, terminal};
-    
+
     // Disable raw mode
     if let Err(e) = terminal::disable_raw_mode() {
         eprintln!("Warning: Failed to disable raw mode: {}", e);
     }
-    
+
     // Exit alternate screen and restore cursor
     let _ = execute!(
         std::io::stdout(),
