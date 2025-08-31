@@ -40,7 +40,7 @@ impl ExitSummaryScreen {
             ScoringEngine::get_ranking_title_for_score(session_summary.session_score)
                 .name()
                 .to_string();
-        let (tier_name, tier_position, tier_total, overall_position, overall_total) = 
+        let (tier_name, tier_position, tier_total, overall_position, overall_total) =
             ScoringEngine::calculate_tier_info(session_summary.session_score);
 
         TypingMetrics {

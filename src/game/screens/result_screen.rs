@@ -366,9 +366,10 @@ impl ResultScreen {
 
         // Display tier information right after rank title (small gap after rank title)
         let tier_info_row = rank_start_row + rank_title_height;
-        let tier_info = format!("{} tier - rank {}/{} (overall {}/{})", 
-            session_metrics.ranking_tier, 
-            session_metrics.tier_position, 
+        let tier_info = format!(
+            "{} tier - rank {}/{} (overall {}/{})",
+            session_metrics.ranking_tier,
+            session_metrics.tier_position,
             session_metrics.tier_total,
             session_metrics.overall_position,
             session_metrics.overall_total
@@ -376,7 +377,7 @@ impl ResultScreen {
         let tier_info_col = center_col.saturating_sub(tier_info.len() as u16 / 2);
         execute!(stdout, MoveTo(tier_info_col, tier_info_row))?;
         execute!(stdout, SetAttribute(Attribute::Bold))?;
-        
+
         // Set color based on tier
         let tier_color = match session_metrics.ranking_tier.as_str() {
             "Beginner" => Color::Blue,
