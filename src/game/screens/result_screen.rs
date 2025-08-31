@@ -483,9 +483,9 @@ impl ResultScreen {
         // Display options
         let options = [
             "[R] Retry",
-            "[S] Share Result", 
-            "[T] Back to Title", 
-            "[ESC] Quit"
+            "[S] Share Result",
+            "[T] Back to Title",
+            "[ESC] Quit",
         ];
 
         let options_start = if !stage_engines.is_empty() {
