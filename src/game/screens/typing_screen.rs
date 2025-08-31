@@ -123,7 +123,6 @@ impl TypingScreen {
             }
         }
 
-
         // Show countdown with challenge info if available
         CountdownScreen::show_with_challenge(self.challenge.as_ref())?;
 
@@ -175,7 +174,6 @@ impl TypingScreen {
         }
 
         self.display.cleanup()?;
-
 
         terminal::disable_raw_mode()?;
         self.scoring_engine.finish(); // Record final duration
@@ -282,7 +280,6 @@ impl TypingScreen {
         if !matches!(key_event.kind, KeyEventKind::Press) {
             return Ok(GameState::Continue);
         }
-
 
         match key_event.code {
             KeyCode::Esc => {

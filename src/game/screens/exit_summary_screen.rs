@@ -255,9 +255,7 @@ impl ExitSummaryScreen {
                 if let Event::Key(key_event) = event::read()? {
                     match key_event.code {
                         KeyCode::Char('s') | KeyCode::Char('S') => {
-                            if let Err(e) = Self::show_sharing_menu(session_summary) {
-                                eprintln!("Failed to show sharing menu: {}", e);
-                            }
+                            let _ = Self::show_sharing_menu(session_summary);
                             // Redraw exit screen after sharing
                             return Self::show(session_summary);
                         }
