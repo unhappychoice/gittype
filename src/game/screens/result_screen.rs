@@ -1,5 +1,6 @@
 use crate::Result;
 use crate::scoring::{TypingMetrics, ScoringEngine};
+use crate::sharing::{SharingService, SharingPlatform};
 use crate::game::ascii_digits::get_digit_patterns;
 use crate::game::ascii_rank_titles_generated::get_rank_title_display;
 use crossterm::{
@@ -16,6 +17,7 @@ pub enum ResultAction {
     BackToTitle,
     Quit,
     Retry,
+    Share,
 }
 
 pub struct ResultScreen;
@@ -358,6 +360,7 @@ impl ResultScreen {
         // Display options
         let options = vec![
             "[R] Retry",
+            "[S] Share Result",
             "[T/ENTER] Back to Title",
             "[ESC] Quit",
         ];
@@ -387,12 +390,31 @@ impl ResultScreen {
         completed_stages: usize, 
         stage_engines: &[(String, ScoringEngine)],
     ) -> Result<ResultAction> {
+        Self::show_session_summary_with_input_internal(total_stages, completed_stages, stage_engines, true)
+    }
+
+    pub fn show_session_summary_with_input_no_animation(
+        total_stages: usize,
+        completed_stages: usize, 
+        stage_engines: &[(String, ScoringEngine)],
+    ) -> Result<ResultAction> {
+        Self::show_session_summary_with_input_internal(total_stages, completed_stages, stage_engines, false)
+    }
+
+    fn show_session_summary_with_input_internal(
+        total_stages: usize,
+        completed_stages: usize, 
+        stage_engines: &[(String, ScoringEngine)],
+        show_animation: bool,
+    ) -> Result<ResultAction> {
         use crate::game::screens::AnimationScreen;
         
-        // First show the animation
-        AnimationScreen::show_session_animation(total_stages, completed_stages, stage_engines)?;
+        // Show animation only if requested
+        if show_animation {
+            AnimationScreen::show_session_animation(total_stages, completed_stages, stage_engines)?;
+        }
         
-        // Then show the original result screen
+        // Show the result screen
         Self::show_session_summary_original(total_stages, completed_stages, stage_engines)?;
         
         // Wait for user input and return action
@@ -402,6 +424,9 @@ impl ResultScreen {
                     match key_event.code {
                         KeyCode::Char('r') | KeyCode::Char('R') => {
                             return Ok(ResultAction::Retry);
+                        },
+                        KeyCode::Char('s') | KeyCode::Char('S') => {
+                            return Ok(ResultAction::Share);
                         },
                         KeyCode::Char('t') | KeyCode::Char('T') | KeyCode::Enter => {
                             return Ok(ResultAction::BackToTitle);
@@ -472,6 +497,93 @@ impl ResultScreen {
         execute!(stdout, Print(nav_text))?;
 
         execute!(stdout, ResetColor)?;
+        Ok(())
+    }
+
+    pub fn show_sharing_menu(metrics: &TypingMetrics) -> Result<()> {
+        let mut stdout = stdout();
+        execute!(stdout, terminal::Clear(ClearType::All))?;
+        
+        let (terminal_width, terminal_height) = terminal::size()?;
+        let center_row = terminal_height / 2;
+        let center_col = terminal_width / 2;
+
+        // Title
+        let title = "📤 Share Your Result";
+        let title_col = center_col.saturating_sub(title.len() as u16 / 2);
+        execute!(stdout, MoveTo(title_col, center_row.saturating_sub(8)))?;
+        execute!(stdout, SetAttribute(Attribute::Bold), SetForegroundColor(Color::Yellow))?;
+        execute!(stdout, Print(title))?;
+        execute!(stdout, ResetColor)?;
+
+        // Show preview of what will be shared
+        let preview_text = format!(
+            "\"{}\" - Score: {:.0}, CPM: {:.0}, Mistakes: {}",
+            metrics.ranking_title,
+            metrics.challenge_score,
+            metrics.cpm,
+            metrics.mistakes
+        );
+        let preview_col = center_col.saturating_sub(preview_text.len() as u16 / 2);
+        execute!(stdout, MoveTo(preview_col, center_row.saturating_sub(5)))?;
+        execute!(stdout, SetForegroundColor(Color::Cyan))?;
+        execute!(stdout, Print(&preview_text))?;
+        execute!(stdout, ResetColor)?;
+
+        // Platform options
+        let platforms = SharingPlatform::all();
+        let start_row = center_row.saturating_sub(2);
+        
+        for (i, platform) in platforms.iter().enumerate() {
+            let option_text = format!("[{}] {}", i + 1, platform.name());
+            let option_col = center_col.saturating_sub(option_text.len() as u16 / 2);
+            execute!(stdout, MoveTo(option_col, start_row + i as u16))?;
+            execute!(stdout, SetForegroundColor(Color::White))?;
+            execute!(stdout, Print(&option_text))?;
+            execute!(stdout, ResetColor)?;
+        }
+
+        // Back option
+        let back_text = "[ESC] Back to Results";
+        let back_col = center_col.saturating_sub(back_text.len() as u16 / 2);
+        execute!(stdout, MoveTo(back_col, start_row + platforms.len() as u16 + 2))?;
+        execute!(stdout, SetForegroundColor(Color::Grey))?;
+        execute!(stdout, Print(back_text))?;
+        execute!(stdout, ResetColor)?;
+
+        stdout.flush()?;
+
+        // Handle input
+        loop {
+            if event::poll(std::time::Duration::from_millis(100))? {
+                if let Event::Key(key_event) = event::read()? {
+                    match key_event.code {
+                        KeyCode::Char('1') => {
+                            let _ = SharingService::share_result(metrics, SharingPlatform::Twitter);
+                            break;
+                        },
+                        KeyCode::Char('2') => {
+                            let _ = SharingService::share_result(metrics, SharingPlatform::Reddit);
+                            break;
+                        },
+                        KeyCode::Char('3') => {
+                            let _ = SharingService::share_result(metrics, SharingPlatform::LinkedIn);
+                            break;
+                        },
+                        KeyCode::Char('4') => {
+                            let _ = SharingService::share_result(metrics, SharingPlatform::Facebook);
+                            break;
+                        },
+                        KeyCode::Esc => break,
+                        KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
+                            std::process::exit(0);
+                        },
+                        _ => continue,
+                    }
+                }
+            }
+        }
+
         Ok(())
     }
 }
