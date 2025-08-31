@@ -653,7 +653,7 @@ impl ResultScreen {
         execute!(stdout, Print(fail_text))?;
 
         // Navigation instructions (centered)
-        let nav_text = "[Enter] Back to Title | [ESC] Session Summary & Exit";
+        let nav_text = "[T] Back to Title | [ESC] Session Summary & Exit";
         let nav_x = (terminal_width - nav_text.len() as u16) / 2;
         execute!(stdout, MoveTo(nav_x, center_y + 4))?;
         execute!(stdout, SetForegroundColor(Color::White))?;

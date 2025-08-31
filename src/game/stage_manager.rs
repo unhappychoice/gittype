@@ -402,7 +402,7 @@ impl StageManager {
             if event::poll(std::time::Duration::from_millis(100))? {
                 if let Event::Key(key_event) = event::read()? {
                     match key_event.code {
-                        KeyCode::Enter => {
+                        KeyCode::Char('t') | KeyCode::Char('T') => {
                             // Back to title screen
                             return Ok(false);
                         }
