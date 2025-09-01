@@ -7,6 +7,7 @@ use tree_sitter::{Node, Parser, Query};
 pub mod go;
 pub mod java;
 pub mod kotlin;
+pub mod php;
 pub mod python;
 pub mod ruby;
 pub mod rust;
@@ -77,6 +78,10 @@ impl ParserRegistry {
 
         registry.register(Language::Java, java::JavaExtractor::create_parser, || {
             Box::new(java::JavaExtractor)
+        });
+
+        registry.register(Language::Php, php::PhpExtractor::create_parser, || {
+            Box::new(php::PhpExtractor)
         });
 
         registry

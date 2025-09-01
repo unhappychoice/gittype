@@ -11,6 +11,8 @@
 | Ruby | `.rb` | ✅ Full support | `tree-sitter-ruby` |
 | Swift | `.swift` | ✅ Full support | `tree-sitter-swift` |
 | Kotlin | `.kt`, `.kts` | ✅ Full support | `tree-sitter-kotlin` |
+| Java | `.java` | ✅ Full support | `tree-sitter-java` |
+| PHP | `.php`, `.phtml`, `.php3`, `.php4`, `.php5` | ✅ Full support | `tree-sitter-php` |
 
 ## Extraction Features
 
@@ -87,15 +89,35 @@
 - Lambda expressions
 - Interface implementations
 
+### Java
+- Methods (`public/private/protected methods`)
+- Classes (`class`)
+- Interfaces (`interface`)
+- Enums (`enum`)
+- Constructors
+- Static methods and fields
+- Abstract classes and methods
+- Nested classes and interfaces
+
+### PHP
+- Functions (`function`)
+- Methods (`public/private/protected methods`)
+- Classes (`class`)
+- Interfaces (`interface`)
+- Traits (`trait`)
+- Namespaces (`namespace`)
+- Magic methods (`__construct`, `__toString`, etc.)
+- Static methods and properties
+- Anonymous functions and closures
+- Exception handling (`try/catch/finally`)
+
 ## Planned Support
 
 | Language | Priority | Expected | Notes |
 |----------|----------|----------|--------|
 | JavaScript | High | Next release | ESM/CommonJS support |
-| Java | Medium | Q2 2025 | Spring Boot patterns |
 | C++ | Medium | Q3 2025 | Modern C++17/20 |
 | C# | Medium | Q3 2025 | .NET 6+ features |
-| PHP | Low | Future | Laravel/Symfony |
 | Dart | Low | Future | Flutter development |
 
 ## Language-Specific Options
@@ -107,14 +129,14 @@
 gittype --langs rust
 
 # Multiple languages
-gittype --langs rust,typescript,python,go,ruby,swift,kotlin
+gittype --langs rust,typescript,python,go,ruby,swift,kotlin,java,php
 ```
 
 ### Configuration File
 
 ```toml
 [default]
-langs = ["rust", "typescript", "python", "go", "ruby", "swift", "kotlin"]
+langs = ["rust", "typescript", "python", "go", "ruby", "swift", "kotlin", "java", "php"]
 ```
 
 ## Code Extraction Quality
