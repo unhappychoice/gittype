@@ -55,11 +55,13 @@
 - Channel types
 
 ### Ruby
-- Methods (`def`)
+- Instance methods (`def method_name`)
+- Class methods (`def self.method_name`)
+- Singleton methods (methods defined on specific objects)
 - Classes (`class`)
 - Modules (`module`)
-- Instance methods
-- Class methods
+- Attribute accessors (`attr_accessor`, `attr_reader`, `attr_writer`)
+- Method aliases (`alias`)
 
 ### Swift
 - Functions (`func`)

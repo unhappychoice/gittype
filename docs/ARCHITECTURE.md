@@ -286,7 +286,7 @@ Multi-layered rendering system:
 | TypeScript | `tree-sitter-typescript` | ✅ Full support |
 | Python | `tree-sitter-python` | ✅ Full support |
 | Go | `tree-sitter-go` | ✅ Full support |
-| Ruby | `tree-sitter-ruby` | ✅ Full support |
+| Ruby | `tree-sitter-ruby` | ✅ Full support (includes class methods, singleton methods, attr_accessor) |
 | Swift | `tree-sitter-swift` | ✅ Full support |
 
 ---
