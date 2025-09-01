@@ -7,6 +7,7 @@ pub enum Language {
     Go,
     Swift,
     Kotlin,
+    Java,
 }
 
 impl std::fmt::Display for Language {
@@ -19,6 +20,7 @@ impl std::fmt::Display for Language {
             Language::Go => "go",
             Language::Swift => "swift",
             Language::Kotlin => "kotlin",
+            Language::Java => "java",
         };
         write!(f, "{}", s)
     }
@@ -34,6 +36,7 @@ impl Language {
             "go" => Some(Language::Go),
             "swift" => Some(Language::Swift),
             "kt" | "kts" => Some(Language::Kotlin),
+            "java" => Some(Language::Java),
             _ => None,
         }
     }
@@ -47,6 +50,7 @@ impl Language {
             Language::Go => "go",
             Language::Swift => "swift",
             Language::Kotlin => "kt",
+            Language::Java => "java",
         }
     }
 
@@ -60,6 +64,7 @@ impl Language {
             Some("js") | Some("jsx") => "javascript".to_string(),
             Some("swift") => "swift".to_string(),
             Some("kt") | Some("kts") => "kotlin".to_string(),
+            Some("java") => "java".to_string(),
             _ => "text".to_string(),
         }
     }

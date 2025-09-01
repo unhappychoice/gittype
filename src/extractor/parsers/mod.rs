@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use tree_sitter::{Node, Parser, Query};
 
 pub mod go;
+pub mod java;
 pub mod kotlin;
 pub mod python;
 pub mod ruby;
@@ -72,6 +73,12 @@ impl ParserRegistry {
             Language::Kotlin,
             kotlin::KotlinExtractor::create_parser,
             || Box::new(kotlin::KotlinExtractor),
+        );
+
+        registry.register(
+            Language::Java,
+            java::JavaExtractor::create_parser,
+            || Box::new(java::JavaExtractor),
         );
 
         registry
