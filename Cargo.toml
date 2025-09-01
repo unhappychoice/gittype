@@ -31,6 +31,7 @@ clap = { version = "4.0", features = ["derive"] }
 tree-sitter = "0.20"
 tree-sitter-rust = "0.20"
 tree-sitter-typescript = "0.20"
+tree-sitter-javascript = "0.20"
 tree-sitter-python = "0.20"
 tree-sitter-ruby = "0.20"
 tree-sitter-go = "0.20"
