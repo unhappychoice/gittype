@@ -241,24 +241,23 @@ extension Point: Drawable {
     let has_class = challenges
         .iter()
         .any(|c| c.code_content.contains("class Calculator"));
-    let has_struct = challenges
-        .iter()
-        .any(|c| c.code_content.contains("struct Point") || c.code_content.contains("let x: Double"));
+    let has_struct = challenges.iter().any(|c| {
+        c.code_content.contains("struct Point") || c.code_content.contains("let x: Double")
+    });
     let has_functions = challenges
         .iter()
         .any(|c| c.code_content.contains("func add"));
     let has_protocol = challenges
         .iter()
         .any(|c| c.code_content.contains("protocol Drawable"));
-    let has_extension_block = challenges
-        .iter()
-        .any(|c| c.code_content.contains("extension Point: Drawable {") 
-             && c.code_content.contains("func draw()") 
-             && c.code_content.contains("Drawing point"));
-    let has_enum = challenges
-        .iter()
-        .any(|c| c.code_content.contains("enum Direction {") 
-             && c.code_content.contains("case north"));
+    let has_extension_block = challenges.iter().any(|c| {
+        c.code_content.contains("extension Point: Drawable {")
+            && c.code_content.contains("func draw()")
+            && c.code_content.contains("Drawing point")
+    });
+    let has_enum = challenges.iter().any(|c| {
+        c.code_content.contains("enum Direction {") && c.code_content.contains("case north")
+    });
     let has_init = challenges
         .iter()
         .any(|c| c.code_content.contains("init(") && c.code_content.contains("self.x = x"));
@@ -270,7 +269,10 @@ extension Point: Drawable {
     assert!(has_struct, "Should extract Swift struct");
     assert!(has_functions, "Should extract Swift functions");
     assert!(has_protocol, "Should extract Swift protocol");
-    assert!(has_extension_block, "Should extract entire Swift extension blocks");
+    assert!(
+        has_extension_block,
+        "Should extract entire Swift extension blocks"
+    );
     assert!(has_enum, "Should extract Swift enums");
     assert!(has_init, "Should extract Swift initializers");
     assert!(has_deinit, "Should extract Swift deinitializers");
