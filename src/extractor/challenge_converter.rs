@@ -350,6 +350,7 @@ impl ChallengeConverter {
             super::Language::Ruby => "ruby".to_string(),
             super::Language::Go => "go".to_string(),
             super::Language::Swift => "swift".to_string(),
+            super::Language::Kotlin => "kotlin".to_string(),
         }
     }
 }

@@ -23,6 +23,8 @@ impl Default for ExtractionOptions {
                 "**/*.rb".to_string(),
                 "**/*.go".to_string(),
                 "**/*.swift".to_string(),
+                "**/*.kt".to_string(),
+                "**/*.kts".to_string(),
             ],
             exclude_patterns: vec![
                 "**/target/**".to_string(),
@@ -96,6 +98,16 @@ impl CodeExtractor {
                     .map_err(|e| {
                         GitTypeError::ExtractionFailed(format!(
                             "Failed to set Swift language: {}",
+                            e
+                        ))
+                    })?;
+            }
+            Language::Kotlin => {
+                parser
+                    .set_language(tree_sitter_kotlin::language())
+                    .map_err(|e| {
+                        GitTypeError::ExtractionFailed(format!(
+                            "Failed to set Kotlin language: {}",
                             e
                         ))
                     })?;
@@ -320,6 +332,14 @@ impl CodeExtractor {
                   declaration_kind: \"extension\"
                   name: (_) @name) @extension
             ",
+            Language::Kotlin => "
+                (function_declaration (simple_identifier) @name) @function
+                (class_declaration (type_identifier) @name) @class
+                (object_declaration (type_identifier) @name) @object
+                (property_declaration (variable_declaration (simple_identifier) @name)) @property
+                (companion_object) @companion
+                (enum_entry (simple_identifier) @name) @enum_entry
+            ",
         };
 
         let query = Query::new(tree.language(), query_str).map_err(|e| {
@@ -409,6 +429,10 @@ impl CodeExtractor {
             "function_expression" => ChunkType::Function,
             "const_block" => ChunkType::Const,
             "var_block" => ChunkType::Variable,
+            "object" => ChunkType::Class,
+            "property" => ChunkType::Variable,
+            "companion" => ChunkType::Class,
+            "enum_entry" => ChunkType::Const,
             _ => return None,
         };
 
@@ -674,6 +698,7 @@ impl CodeExtractor {
             Language::Ruby => "(comment) @comment",
             Language::Go => "(comment) @comment",
             Language::Swift => "[(comment) (multiline_comment)] @comment",
+            Language::Kotlin => "[(line_comment) (multiline_comment)] @comment",
         };
 
         let query = match Query::new(tree.language(), comment_query) {
@@ -699,6 +724,9 @@ impl CodeExtractor {
                     Language::Ruby => node_kind == "comment",
                     Language::Go => node_kind == "comment",
                     Language::Swift => node_kind == "comment" || node_kind == "multiline_comment",
+                    Language::Kotlin => {
+                        node_kind == "line_comment" || node_kind == "multiline_comment"
+                    }
                 };
 
                 if !is_valid_comment {
@@ -897,6 +925,83 @@ end
         assert!(
             !attr_chunks.is_empty(),
             "Should extract attr_accessor, attr_reader, attr_writer"
+        );
+    }
+
+    #[test]
+    fn test_kotlin_class_extraction() {
+        let kotlin_code = r#"
+class MainActivity : AppCompatActivity() {
+    companion object {
+        const val TAG = "MainActivity"
+        
+        fun staticMethod(): String {
+            return "Hello from static method"
+        }
+    }
+    
+    private val name: String = "GitType"
+    
+    fun greetUser(username: String): String {
+        return "Hello, $username! Welcome to $name."
+    }
+}
+
+data class User(
+    val id: Long,
+    val name: String,
+    val email: String
+) {
+    fun getDisplayName(): String = "$name ($email)"
+}
+
+object DatabaseHelper {
+    fun connect(): Connection {
+        return DriverManager.getConnection("jdbc:sqlite:app.db")
+    }
+}
+"#;
+
+        let mut file = NamedTempFile::new().unwrap();
+        file.write_all(kotlin_code.as_bytes()).unwrap();
+        file.flush().unwrap();
+
+        let mut extractor = CodeExtractor::new().unwrap();
+        let options = ExtractionOptions::default();
+        let chunks = extractor
+            .extract_from_file(file.path(), Language::Kotlin, &options)
+            .unwrap();
+
+        let class_chunks: Vec<_> = chunks
+            .iter()
+            .filter(|chunk| chunk.name.contains("MainActivity") || chunk.name.contains("User"))
+            .collect();
+        assert!(
+            !class_chunks.is_empty(),
+            "Should extract classes MainActivity and User"
+        );
+
+        let function_chunks: Vec<_> = chunks
+            .iter()
+            .filter(|chunk| {
+                chunk.name.contains("greetUser")
+                    || chunk.name.contains("getDisplayName")
+                    || chunk.name.contains("staticMethod")
+                    || chunk.name.contains("connect")
+            })
+            .collect();
+        assert!(
+            !function_chunks.is_empty(),
+            "Should extract functions from classes and objects"
+        );
+
+        let object_chunks: Vec<_> = chunks
+            .iter()
+            .filter(|chunk| chunk.name.contains("DatabaseHelper"))
+            .collect();
+        assert!(
+            !object_chunks.is_empty(),
+            "Should extract object declarations"
         );
     }
 }

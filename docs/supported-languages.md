@@ -10,6 +10,7 @@
 | Go | `.go` | ✅ Full support | `tree-sitter-go` |
 | Ruby | `.rb` | ✅ Full support | `tree-sitter-ruby` |
 | Swift | `.swift` | ✅ Full support | `tree-sitter-swift` |
+| Kotlin | `.kt`, `.kts` | ✅ Full support | `tree-sitter-kotlin` |
 
 ## Extraction Features
 
@@ -75,12 +76,22 @@
 - Methods (instance and static)
 - Computed properties
 
+### Kotlin
+- Functions (`fun`)
+- Classes (`class`, `data class`, `sealed class`)
+- Object declarations (`object`)
+- Companion objects (`companion object`)
+- Properties (`val`, `var`)
+- Enum entries
+- Extension functions
+- Lambda expressions
+- Interface implementations
+
 ## Planned Support
 
 | Language | Priority | Expected | Notes |
 |----------|----------|----------|--------|
 | JavaScript | High | Next release | ESM/CommonJS support |
-| Kotlin | High | Q1 2025 | Android/JVM support |
 | Java | Medium | Q2 2025 | Spring Boot patterns |
 | C++ | Medium | Q3 2025 | Modern C++17/20 |
 | C# | Medium | Q3 2025 | .NET 6+ features |
@@ -96,14 +107,14 @@
 gittype --langs rust
 
 # Multiple languages
-gittype --langs rust,typescript,python,go,ruby,swift
+gittype --langs rust,typescript,python,go,ruby,swift,kotlin
 ```
 
 ### Configuration File
 
 ```toml
 [default]
-langs = ["rust", "typescript", "python", "go", "ruby", "swift"]
+langs = ["rust", "typescript", "python", "go", "ruby", "swift", "kotlin"]
 ```
 
 ## Code Extraction Quality

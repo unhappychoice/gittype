@@ -6,6 +6,7 @@ pub enum Language {
     Ruby,
     Go,
     Swift,
+    Kotlin,
 }
 
 impl Language {
@@ -17,6 +18,7 @@ impl Language {
             "rb" => Some(Language::Ruby),
             "go" => Some(Language::Go),
             "swift" => Some(Language::Swift),
+            "kt" | "kts" => Some(Language::Kotlin),
             _ => None,
         }
     }
@@ -29,6 +31,7 @@ impl Language {
             Language::Ruby => "rb",
             Language::Go => "go",
             Language::Swift => "swift",
+            Language::Kotlin => "kt",
         }
     }
 }
