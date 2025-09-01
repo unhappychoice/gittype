@@ -299,6 +299,15 @@ impl CodeExtractor {
                 (method_declaration receiver: _ name: (field_identifier) @name) @method
                 (type_spec name: (type_identifier) @name type: (struct_type)) @struct
                 (type_spec name: (type_identifier) @name type: (interface_type)) @interface
+                (const_declaration) @const_block
+                (var_declaration) @var_block
+                (type_spec name: (type_identifier) @name type: (type_identifier)) @type_alias
+                (type_spec name: (type_identifier) @name type: (function_type)) @type_alias
+                (type_spec name: (type_identifier) @name type: (pointer_type)) @type_alias
+                (type_spec name: (type_identifier) @name type: (slice_type)) @type_alias
+                (type_spec name: (type_identifier) @name type: (array_type)) @type_alias
+                (type_spec name: (type_identifier) @name type: (map_type)) @type_alias
+                (type_spec name: (type_identifier) @name type: (channel_type)) @type_alias
             ",
             Language::Swift => "
                 (function_declaration name: (simple_identifier) @name) @function
@@ -391,11 +400,17 @@ impl CodeExtractor {
             "module" | "extension" | "namespace" => ChunkType::Module,
             "arrow_function" => ChunkType::Function,
             "function_expression" => ChunkType::Function,
+            "const_block" => ChunkType::Const,
+            "var_block" => ChunkType::Variable,
             _ => return None,
         };
 
-        let name =
-            Self::extract_name_static(node, source_code).unwrap_or_else(|| "unknown".to_string());
+        let name = match capture_name {
+            "const_block" => Self::extract_const_var_names_static(node, source_code, "const"),
+            "var_block" => Self::extract_const_var_names_static(node, source_code, "var"),
+            _ => Self::extract_name_static(node, source_code)
+                .unwrap_or_else(|| "unknown".to_string()),
+        };
 
         // Filter comment ranges that are within this chunk and make them relative to chunk content
         let chunk_comment_ranges: Vec<(usize, usize)> = file_comment_ranges
@@ -471,6 +486,49 @@ impl CodeExtractor {
             }
         }
         None
+    }
+
+    fn extract_const_var_names_static(
+        node: Node,
+        source_code: &str,
+        declaration_type: &str,
+    ) -> String {
+        let mut names = Vec::new();
+        let mut cursor = node.walk();
+
+        if cursor.goto_first_child() {
+            loop {
+                let child = cursor.node();
+                if child.kind() == "const_spec" || child.kind() == "var_spec" {
+                    let mut spec_cursor = child.walk();
+                    if spec_cursor.goto_first_child() {
+                        loop {
+                            let spec_child = spec_cursor.node();
+                            if spec_child.kind() == "identifier" {
+                                let start = spec_child.start_byte();
+                                let end = spec_child.end_byte();
+                                names.push(source_code[start..end].to_string());
+                                break;
+                            }
+                            if !spec_cursor.goto_next_sibling() {
+                                break;
+                            }
+                        }
+                    }
+                }
+                if !cursor.goto_next_sibling() {
+                    break;
+                }
+            }
+        }
+
+        if names.is_empty() {
+            format!("{}_block", declaration_type)
+        } else if names.len() == 1 {
+            names[0].clone()
+        } else {
+            format!("{} ({})", names.join(", "), names.len())
+        }
     }
 
     #[allow(dead_code)]

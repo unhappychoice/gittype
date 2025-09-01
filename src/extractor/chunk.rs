@@ -12,6 +12,8 @@ pub enum ChunkType {
     TypeAlias,
     Interface,
     Module,
+    Const,
+    Variable,
 }
 
 #[derive(Debug, Clone)]

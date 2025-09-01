@@ -225,6 +225,8 @@ pub enum ChunkType {
     TypeAlias,
     Interface,
     Module,
+    Const,      // Constant declarations (Go const blocks, etc.)
+    Variable,   // Variable declarations (Go var blocks, etc.)
 }
 ```
 

@@ -45,7 +45,14 @@
 - Methods (with receivers)
 - Structs (`type ... struct`)
 - Interfaces (`type ... interface`)
-- Type declarations
+- Constant declarations (`const` blocks and single constants)
+- Variable declarations (`var` blocks and single variables) 
+- Type aliases (`type UserID int64`, `type Handler func(...)`)
+- Function types
+- Pointer types
+- Slice/array types
+- Map types
+- Channel types
 
 ### Ruby
 - Methods (`def`)
