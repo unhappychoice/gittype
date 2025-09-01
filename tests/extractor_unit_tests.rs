@@ -602,7 +602,7 @@ enum Color {
         .unwrap();
 
     assert_eq!(chunks.len(), 2);
-    
+
     let enum_chunks: Vec<_> = chunks
         .iter()
         .filter(|c| matches!(c.chunk_type, ChunkType::Enum))
@@ -640,7 +640,7 @@ trait Clone {
         .unwrap();
 
     assert_eq!(chunks.len(), 3); // 2 traits + 1 function from trait
-    
+
     let trait_chunks: Vec<_> = chunks
         .iter()
         .filter(|c| matches!(c.chunk_type, ChunkType::Trait))
@@ -680,7 +680,7 @@ mod private_utils {
         .unwrap();
 
     assert_eq!(chunks.len(), 5); // 2 modules + 1 function + 1 struct + 1 function from private module
-    
+
     let module_chunks: Vec<_> = chunks
         .iter()
         .filter(|c| matches!(c.chunk_type, ChunkType::Module))
@@ -710,7 +710,7 @@ type Point = (f64, f64);
         .unwrap();
 
     assert_eq!(chunks.len(), 3);
-    
+
     let type_alias_chunks: Vec<_> = chunks
         .iter()
         .filter(|c| matches!(c.chunk_type, ChunkType::TypeAlias))
@@ -777,15 +777,36 @@ pub fn create_user(name: String) -> User {
         .unwrap();
 
     assert_eq!(chunks.len(), 9); // 1 enum + 1 trait + 1 module + 1 type_alias + 1 struct + 1 impl + 2 functions + 1 nested function
-    
+
     // Verify each chunk type
-    let enum_count = chunks.iter().filter(|c| matches!(c.chunk_type, ChunkType::Enum)).count();
-    let trait_count = chunks.iter().filter(|c| matches!(c.chunk_type, ChunkType::Trait)).count();
-    let module_count = chunks.iter().filter(|c| matches!(c.chunk_type, ChunkType::Module)).count();
-    let type_alias_count = chunks.iter().filter(|c| matches!(c.chunk_type, ChunkType::TypeAlias)).count();
-    let struct_count = chunks.iter().filter(|c| matches!(c.chunk_type, ChunkType::Struct)).count();
-    let class_count = chunks.iter().filter(|c| matches!(c.chunk_type, ChunkType::Class)).count(); // impl
-    let function_count = chunks.iter().filter(|c| matches!(c.chunk_type, ChunkType::Function)).count();
+    let enum_count = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Enum))
+        .count();
+    let trait_count = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Trait))
+        .count();
+    let module_count = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Module))
+        .count();
+    let type_alias_count = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::TypeAlias))
+        .count();
+    let struct_count = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Struct))
+        .count();
+    let class_count = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Class))
+        .count(); // impl
+    let function_count = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Function))
+        .count();
 
     assert_eq!(enum_count, 1, "Should find 1 enum");
     assert_eq!(trait_count, 1, "Should find 1 trait");
@@ -794,7 +815,7 @@ pub fn create_user(name: String) -> User {
     assert_eq!(struct_count, 1, "Should find 1 struct");
     assert_eq!(class_count, 1, "Should find 1 impl (class)");
     assert_eq!(function_count, 3, "Should find 3 functions");
-    
+
     // Verify names
     let chunk_names: Vec<&String> = chunks.iter().map(|c| &c.name).collect();
     assert!(chunk_names.contains(&&"Result".to_string()));
