@@ -18,6 +18,11 @@ impl Default for ExtractionOptions {
                 "**/*.kt".to_string(),
                 "**/*.kts".to_string(),
                 "**/*.java".to_string(),
+                "**/*.php".to_string(),
+                "**/*.phtml".to_string(),
+                "**/*.php3".to_string(),
+                "**/*.php4".to_string(),
+                "**/*.php5".to_string(),
             ],
             exclude_patterns: vec![
                 "**/target/**".to_string(),

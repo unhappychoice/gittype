@@ -8,6 +8,7 @@ pub enum Language {
     Swift,
     Kotlin,
     Java,
+    Php,
 }
 
 impl std::fmt::Display for Language {
@@ -21,6 +22,7 @@ impl std::fmt::Display for Language {
             Language::Swift => "swift",
             Language::Kotlin => "kotlin",
             Language::Java => "java",
+            Language::Php => "php",
         };
         write!(f, "{}", s)
     }
@@ -37,6 +39,7 @@ impl Language {
             "swift" => Some(Language::Swift),
             "kt" | "kts" => Some(Language::Kotlin),
             "java" => Some(Language::Java),
+            "php" | "phtml" | "php3" | "php4" | "php5" => Some(Language::Php),
             _ => None,
         }
     }
@@ -51,6 +54,7 @@ impl Language {
             Language::Swift => "swift",
             Language::Kotlin => "kt",
             Language::Java => "java",
+            Language::Php => "php",
         }
     }
 
@@ -65,6 +69,7 @@ impl Language {
             Some("swift") => "swift".to_string(),
             Some("kt") | Some("kts") => "kotlin".to_string(),
             Some("java") => "java".to_string(),
+            Some("php") | Some("phtml") | Some("php3") | Some("php4") | Some("php5") => "php".to_string(),
             _ => "text".to_string(),
         }
     }
