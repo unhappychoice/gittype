@@ -75,11 +75,9 @@ impl ParserRegistry {
             || Box::new(kotlin::KotlinExtractor),
         );
 
-        registry.register(
-            Language::Java,
-            java::JavaExtractor::create_parser,
-            || Box::new(java::JavaExtractor),
-        );
+        registry.register(Language::Java, java::JavaExtractor::create_parser, || {
+            Box::new(java::JavaExtractor)
+        });
 
         registry
     }
