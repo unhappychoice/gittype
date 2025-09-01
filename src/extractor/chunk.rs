@@ -7,6 +7,9 @@ pub enum ChunkType {
     Class,
     Method,
     Struct,
+    Enum,
+    Trait,
+    TypeAlias,
     Interface,
     Module,
 }

@@ -576,3 +576,232 @@ func process(rw ReadWriter) {
     assert_eq!(function_chunks.len(), 1);
     assert_eq!(function_chunks[0].name, "process");
 }
+
+#[test]
+fn test_rust_enum_extraction() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("test.rs");
+
+    let rust_code = r#"
+pub enum Result<T, E> {
+    Ok(T),
+    Err(E),
+}
+
+enum Color {
+    Red,
+    Green,
+    Blue,
+}
+"#;
+    fs::write(&file_path, rust_code).unwrap();
+
+    let mut extractor = CodeExtractor::new().unwrap();
+    let chunks = extractor
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .unwrap();
+
+    assert_eq!(chunks.len(), 2);
+    
+    let enum_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Enum))
+        .collect();
+    assert_eq!(enum_chunks.len(), 2);
+
+    let enum_names: Vec<&String> = enum_chunks.iter().map(|c| &c.name).collect();
+    assert!(enum_names.contains(&&"Result".to_string()));
+    assert!(enum_names.contains(&&"Color".to_string()));
+}
+
+#[test]
+fn test_rust_trait_extraction() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("test.rs");
+
+    let rust_code = r#"
+pub trait Display {
+    fn fmt(&self) -> String;
+    
+    fn to_string(&self) -> String {
+        self.fmt()
+    }
+}
+
+trait Clone {
+    fn clone(&self) -> Self;
+}
+"#;
+    fs::write(&file_path, rust_code).unwrap();
+
+    let mut extractor = CodeExtractor::new().unwrap();
+    let chunks = extractor
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .unwrap();
+
+    assert_eq!(chunks.len(), 3); // 2 traits + 1 function from trait
+    
+    let trait_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Trait))
+        .collect();
+    assert_eq!(trait_chunks.len(), 2);
+
+    let trait_names: Vec<&String> = trait_chunks.iter().map(|c| &c.name).collect();
+    assert!(trait_names.contains(&&"Display".to_string()));
+    assert!(trait_names.contains(&&"Clone".to_string()));
+}
+
+#[test]
+fn test_rust_module_extraction() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("test.rs");
+
+    let rust_code = r#"
+pub mod utils {
+    pub fn helper() -> i32 { 
+        42 
+    }
+    
+    pub struct Config {
+        value: String,
+    }
+}
+
+mod private_utils {
+    fn internal_function() {}
+}
+"#;
+    fs::write(&file_path, rust_code).unwrap();
+
+    let mut extractor = CodeExtractor::new().unwrap();
+    let chunks = extractor
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .unwrap();
+
+    assert_eq!(chunks.len(), 5); // 2 modules + 1 function + 1 struct + 1 function from private module
+    
+    let module_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Module))
+        .collect();
+    assert_eq!(module_chunks.len(), 2);
+
+    let module_names: Vec<&String> = module_chunks.iter().map(|c| &c.name).collect();
+    assert!(module_names.contains(&&"utils".to_string()));
+    assert!(module_names.contains(&&"private_utils".to_string()));
+}
+
+#[test]
+fn test_rust_type_alias_extraction() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("test.rs");
+
+    let rust_code = r#"
+pub type UserId = u64;
+pub type DatabaseResult<T> = Result<T, String>;
+type Point = (f64, f64);
+"#;
+    fs::write(&file_path, rust_code).unwrap();
+
+    let mut extractor = CodeExtractor::new().unwrap();
+    let chunks = extractor
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .unwrap();
+
+    assert_eq!(chunks.len(), 3);
+    
+    let type_alias_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::TypeAlias))
+        .collect();
+    assert_eq!(type_alias_chunks.len(), 3);
+
+    let type_names: Vec<&String> = type_alias_chunks.iter().map(|c| &c.name).collect();
+    assert!(type_names.contains(&&"UserId".to_string()));
+    assert!(type_names.contains(&&"DatabaseResult".to_string()));
+    assert!(type_names.contains(&&"Point".to_string()));
+}
+
+#[test]
+fn test_rust_all_constructs_combined() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("test.rs");
+
+    let rust_code = r#"
+// Enum with variants
+pub enum Result<T, E> {
+    Ok(T),
+    Err(E),
+}
+
+// Trait definition
+pub trait Display {
+    fn fmt(&self) -> String;
+}
+
+// Module definition
+pub mod utils {
+    pub fn helper() -> i32 { 
+        42 
+    }
+}
+
+// Type alias
+pub type UserId = u64;
+
+// Existing constructs (should still work)
+pub struct User {
+    id: UserId,
+    name: String,
+}
+
+impl Display for User {
+    fn fmt(&self) -> String {
+        format!("User({})", self.name)
+    }
+}
+
+pub fn create_user(name: String) -> User {
+    User {
+        id: 1,
+        name,
+    }
+}
+"#;
+    fs::write(&file_path, rust_code).unwrap();
+
+    let mut extractor = CodeExtractor::new().unwrap();
+    let chunks = extractor
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .unwrap();
+
+    assert_eq!(chunks.len(), 9); // 1 enum + 1 trait + 1 module + 1 type_alias + 1 struct + 1 impl + 2 functions + 1 nested function
+    
+    // Verify each chunk type
+    let enum_count = chunks.iter().filter(|c| matches!(c.chunk_type, ChunkType::Enum)).count();
+    let trait_count = chunks.iter().filter(|c| matches!(c.chunk_type, ChunkType::Trait)).count();
+    let module_count = chunks.iter().filter(|c| matches!(c.chunk_type, ChunkType::Module)).count();
+    let type_alias_count = chunks.iter().filter(|c| matches!(c.chunk_type, ChunkType::TypeAlias)).count();
+    let struct_count = chunks.iter().filter(|c| matches!(c.chunk_type, ChunkType::Struct)).count();
+    let class_count = chunks.iter().filter(|c| matches!(c.chunk_type, ChunkType::Class)).count(); // impl
+    let function_count = chunks.iter().filter(|c| matches!(c.chunk_type, ChunkType::Function)).count();
+
+    assert_eq!(enum_count, 1, "Should find 1 enum");
+    assert_eq!(trait_count, 1, "Should find 1 trait");
+    assert_eq!(module_count, 1, "Should find 1 module");
+    assert_eq!(type_alias_count, 1, "Should find 1 type alias");
+    assert_eq!(struct_count, 1, "Should find 1 struct");
+    assert_eq!(class_count, 1, "Should find 1 impl (class)");
+    assert_eq!(function_count, 3, "Should find 3 functions");
+    
+    // Verify names
+    let chunk_names: Vec<&String> = chunks.iter().map(|c| &c.name).collect();
+    assert!(chunk_names.contains(&&"Result".to_string()));
+    assert!(chunk_names.contains(&&"Display".to_string()));
+    assert!(chunk_names.contains(&&"utils".to_string()));
+    assert!(chunk_names.contains(&&"UserId".to_string()));
+    assert!(chunk_names.contains(&&"User".to_string()));
+    assert!(chunk_names.contains(&&"create_user".to_string()));
+    assert!(chunk_names.contains(&&"helper".to_string()));
+}
