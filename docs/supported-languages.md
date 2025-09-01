@@ -53,10 +53,13 @@
 ### Swift
 - Functions (`func`)
 - Classes (`class`)
+- Structs (`struct`) - complete struct definitions with properties and methods
+- Enums (`enum`) - complete enum definitions with cases and methods
 - Protocols (`protocol`)
 - Extensions (`extension`) - complete extension blocks
-- Methods
 - Initializers (`init`)
+- Deinitializers (`deinit`)
+- Methods (instance and static)
 - Computed properties
 
 ## Planned Support

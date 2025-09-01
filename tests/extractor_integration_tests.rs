@@ -151,6 +151,10 @@ class Calculator {
         self.value = 0
     }
     
+    deinit {
+        print("Calculator deallocated")
+    }
+    
     func add(_ number: Int) -> Int {
         value += number
         return value
@@ -174,8 +178,26 @@ struct Point {
     let x: Double
     let y: Double
     
+    init(x: Double, y: Double) {
+        self.x = x
+        self.y = y
+    }
+    
     func distance(to other: Point) -> Double {
         return sqrt(pow(x - other.x, 2) + pow(y - other.y, 2))
+    }
+}
+
+enum Direction {
+    case north, south, east, west
+    
+    func opposite() -> Direction {
+        switch self {
+        case .north: return .south
+        case .south: return .north
+        case .east: return .west
+        case .west: return .east
+        }
     }
 }
 
@@ -233,12 +255,25 @@ extension Point: Drawable {
         .any(|c| c.code_content.contains("extension Point: Drawable {") 
              && c.code_content.contains("func draw()") 
              && c.code_content.contains("Drawing point"));
+    let has_enum = challenges
+        .iter()
+        .any(|c| c.code_content.contains("enum Direction {") 
+             && c.code_content.contains("case north"));
+    let has_init = challenges
+        .iter()
+        .any(|c| c.code_content.contains("init(") && c.code_content.contains("self.x = x"));
+    let has_deinit = challenges
+        .iter()
+        .any(|c| c.code_content.contains("deinit {") && c.code_content.contains("deallocated"));
 
     assert!(has_class, "Should extract Swift class");
     assert!(has_struct, "Should extract Swift struct");
     assert!(has_functions, "Should extract Swift functions");
     assert!(has_protocol, "Should extract Swift protocol");
     assert!(has_extension_block, "Should extract entire Swift extension blocks");
+    assert!(has_enum, "Should extract Swift enums");
+    assert!(has_init, "Should extract Swift initializers");
+    assert!(has_deinit, "Should extract Swift deinitializers");
 
     let _ = fs::remove_file(&temp_path);
 }
