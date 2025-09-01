@@ -1170,7 +1170,7 @@ func main() {}
         .iter()
         .filter(|c| matches!(c.chunk_type, ChunkType::Function))
         .collect();
-    assert!(function_chunks.len() >= 1);
+    assert!(!function_chunks.is_empty());
 
     let function_names: Vec<&String> = function_chunks.iter().map(|c| &c.name).collect();
     assert!(function_names.contains(&&"main".to_string()));
