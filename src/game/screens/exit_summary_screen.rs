@@ -245,13 +245,19 @@ impl ExitSummaryScreen {
         execute!(stdout, Print(github_message))?;
         execute!(stdout, ResetColor)?;
 
-        let options = ["[S] Share Result", "[ESC] Exit"];
+        let options_data = [
+            ("[S]", " Share Result", Color::Cyan),
+            ("[ESC]", " Exit", Color::Red),
+        ];
 
-        for (i, option) in options.iter().enumerate() {
-            let option_col = center_col.saturating_sub(option.len() as u16 / 2);
+        for (i, (key, label, key_color)) in options_data.iter().enumerate() {
+            let full_text_len = key.len() + label.len();
+            let option_col = center_col.saturating_sub(full_text_len as u16 / 2);
             execute!(stdout, MoveTo(option_col, options_start + 3 + i as u16))?;
-            execute!(stdout, SetForegroundColor(Color::Cyan))?;
-            execute!(stdout, Print(option))?;
+            execute!(stdout, SetForegroundColor(*key_color))?;
+            execute!(stdout, Print(key))?;
+            execute!(stdout, SetForegroundColor(Color::White))?;
+            execute!(stdout, Print(label))?;
             execute!(stdout, ResetColor)?;
         }
 
@@ -336,15 +342,19 @@ impl ExitSummaryScreen {
             execute!(stdout, ResetColor)?;
         }
 
-        // Back option
-        let back_text = "[ESC] Back to Exit Screen";
-        let back_col = center_col.saturating_sub(back_text.len() as u16 / 2);
+        // Back option with color coding
+        let back_key = "[ESC]";
+        let back_label = " Back to Exit Screen";
+        let full_back_len = back_key.len() + back_label.len();
+        let back_col = center_col.saturating_sub(full_back_len as u16 / 2);
         execute!(
             stdout,
             MoveTo(back_col, start_row + platforms.len() as u16 + 2)
         )?;
-        execute!(stdout, SetForegroundColor(Color::Grey))?;
-        execute!(stdout, Print(back_text))?;
+        execute!(stdout, SetForegroundColor(Color::Green))?;
+        execute!(stdout, Print(back_key))?;
+        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, Print(back_label))?;
         execute!(stdout, ResetColor)?;
 
         stdout.flush()?;
@@ -509,12 +519,16 @@ impl ExitSummaryScreen {
         execute!(stdout, Print(&url_display))?;
         execute!(stdout, ResetColor)?;
 
-        // Continue prompt
-        let continue_text = "[ESC] Exit";
-        let continue_col = center_col.saturating_sub(continue_text.len() as u16 / 2);
+        // Continue prompt with color coding
+        let exit_key = "[ESC]";
+        let exit_label = " Exit";
+        let total_exit_len = exit_key.len() + exit_label.len();
+        let continue_col = center_col.saturating_sub(total_exit_len as u16 / 2);
         execute!(stdout, MoveTo(continue_col, center_row + 4))?;
-        execute!(stdout, SetForegroundColor(Color::Green))?;
-        execute!(stdout, Print(continue_text))?;
+        execute!(stdout, SetForegroundColor(Color::Red))?;
+        execute!(stdout, Print(exit_key))?;
+        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, Print(exit_label))?;
         execute!(stdout, ResetColor)?;
 
         stdout.flush()?;

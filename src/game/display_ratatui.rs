@@ -90,8 +90,6 @@ impl GameDisplayRatatui {
             metrics.wpm, metrics.cpm, metrics.accuracy, metrics.mistakes, streak, elapsed_secs, skips_remaining
         );
 
-        let second_line = "[ESC] Options".to_string();
-
         self.terminal.draw(|f| {
             let chunks = Layout::default()
                 .direction(Direction::Vertical)
@@ -112,10 +110,10 @@ impl GameDisplayRatatui {
                     first_line.clone(),
                     Style::default().fg(Color::White),
                 )]),
-                Line::from(vec![Span::styled(
-                    second_line.clone(),
-                    Style::default().fg(Color::White),
-                )]),
+                Line::from(vec![
+                    Span::styled("[ESC]", Style::default().fg(Color::Cyan)),
+                    Span::styled(" Options", Style::default().fg(Color::White)),
+                ]),
             ])
             .block(Block::default().borders(Borders::BOTTOM));
             f.render_widget(header, chunks[0]);
@@ -432,7 +430,7 @@ impl GameDisplayRatatui {
                     Span::styled(
                         "[S] ",
                         Style::default()
-                            .fg(Color::Green)
+                            .fg(Color::Yellow)
                             .add_modifier(Modifier::BOLD),
                     )
                 } else {
@@ -468,7 +466,7 @@ impl GameDisplayRatatui {
                 Span::styled(
                     "[ESC] ",
                     Style::default()
-                        .fg(Color::Yellow)
+                        .fg(Color::Green)
                         .add_modifier(Modifier::BOLD),
                 ),
                 Span::styled("Back to game", Style::default().fg(Color::White)),

@@ -223,17 +223,26 @@ impl ResultScreen {
 
         stdout.flush()?;
 
-        // Show stage completion options
-        let options_text = "[SPACE] Continue  [ESC] Quit";
-        let options_col = center_col.saturating_sub(options_text.len() as u16 / 2);
+        // Show stage completion options with color coding
         let options_row = if has_next_stage {
             progress_start_row + 3
         } else {
             progress_start_row
         };
-        execute!(stdout, MoveTo(options_col, options_row))?;
-        execute!(stdout, SetForegroundColor(Color::Cyan))?;
-        execute!(stdout, Print(options_text))?;
+
+        // Calculate position for centered text
+        let total_text_length = "[SPACE] Continue  [ESC] Quit".len();
+        let start_col = center_col.saturating_sub(total_text_length as u16 / 2);
+
+        execute!(stdout, MoveTo(start_col, options_row))?;
+        execute!(stdout, SetForegroundColor(Color::Green))?;
+        execute!(stdout, Print("[SPACE]"))?;
+        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, Print(" Continue  "))?;
+        execute!(stdout, SetForegroundColor(Color::Red))?;
+        execute!(stdout, Print("[ESC]"))?;
+        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, Print(" Quit"))?;
         execute!(stdout, ResetColor)?;
         stdout.flush()?;
 
@@ -479,12 +488,12 @@ impl ResultScreen {
             }
         }
 
-        // Display options
-        let options = [
-            "[R] Retry",
-            "[S] Share Result",
-            "[T] Back to Title",
-            "[ESC] Quit",
+        // Display options with color coding
+        let options_data = [
+            ("[R]", " Retry", Color::Green),
+            ("[S]", " Share Result", Color::Cyan),
+            ("[T]", " Back to Title", Color::Green),
+            ("[ESC]", " Quit", Color::Red),
         ];
 
         let options_start = if !stage_engines.is_empty() {
@@ -494,11 +503,14 @@ impl ResultScreen {
             summary_start_row + summary_lines.len() as u16 + 2
         };
 
-        for (i, option) in options.iter().enumerate() {
-            let option_col = center_col.saturating_sub(option.len() as u16 / 2);
+        for (i, (key, label, key_color)) in options_data.iter().enumerate() {
+            let full_text_len = key.len() + label.len();
+            let option_col = center_col.saturating_sub(full_text_len as u16 / 2);
             execute!(stdout, MoveTo(option_col, options_start + i as u16))?;
-            execute!(stdout, SetForegroundColor(Color::Cyan))?;
-            execute!(stdout, Print(option))?;
+            execute!(stdout, SetForegroundColor(*key_color))?;
+            execute!(stdout, Print(key))?;
+            execute!(stdout, SetForegroundColor(Color::White))?;
+            execute!(stdout, Print(label))?;
             execute!(stdout, ResetColor)?;
         }
 
@@ -648,12 +660,18 @@ impl ResultScreen {
         execute!(stdout, SetForegroundColor(Color::Red))?;
         execute!(stdout, Print(fail_text))?;
 
-        // Navigation instructions (centered)
-        let nav_text = "[T] Back to Title | [ESC] Session Summary & Exit";
-        let nav_x = (terminal_width - nav_text.len() as u16) / 2;
+        // Navigation instructions with color coding
+        let full_text_len = "[T] Back to Title | [ESC] Session Summary & Exit".len();
+        let nav_x = (terminal_width - full_text_len as u16) / 2;
         execute!(stdout, MoveTo(nav_x, center_y + 4))?;
+        execute!(stdout, SetForegroundColor(Color::Green))?;
+        execute!(stdout, Print("[T]"))?;
         execute!(stdout, SetForegroundColor(Color::White))?;
-        execute!(stdout, Print(nav_text))?;
+        execute!(stdout, Print(" Back to Title | "))?;
+        execute!(stdout, SetForegroundColor(Color::Red))?;
+        execute!(stdout, Print("[ESC]"))?;
+        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, Print(" Session Summary & Exit"))?;
 
         execute!(stdout, ResetColor)?;
         Ok(())
@@ -718,15 +736,19 @@ impl ResultScreen {
             execute!(stdout, ResetColor)?;
         }
 
-        // Back option
-        let back_text = "[ESC] Back to Results";
-        let back_col = center_col.saturating_sub(back_text.len() as u16 / 2);
+        // Back option with color coding
+        let back_key = "[ESC]";
+        let back_label = " Back to Results";
+        let full_back_len = back_key.len() + back_label.len();
+        let back_col = center_col.saturating_sub(full_back_len as u16 / 2);
         execute!(
             stdout,
             MoveTo(back_col, start_row + platforms.len() as u16 + 2)
         )?;
-        execute!(stdout, SetForegroundColor(Color::Grey))?;
-        execute!(stdout, Print(back_text))?;
+        execute!(stdout, SetForegroundColor(Color::Green))?;
+        execute!(stdout, Print(back_key))?;
+        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, Print(back_label))?;
         execute!(stdout, ResetColor)?;
 
         stdout.flush()?;

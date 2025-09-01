@@ -158,19 +158,28 @@ impl TitleScreen {
         execute!(stdout, Print(subtitle))?;
         execute!(stdout, ResetColor)?;
 
-        // Display instructions (moved down to accommodate multi-line difficulty display)
-        let instructions = "[←→/HL] Change Difficulty  [SPACE] Start  [I/?] Info  [ESC] Quit";
-        let instructions_col = center_col.saturating_sub(instructions.len() as u16 / 2);
+        // Display instructions with color coding (keys only)
+        let total_instructions_len =
+            "[←→/HL] Change Difficulty  [SPACE] Start  [I/?] Info  [ESC] Quit".len();
+        let instructions_col = center_col.saturating_sub(total_instructions_len as u16 / 2);
 
         execute!(stdout, MoveTo(instructions_col, center_row + 6))?;
         execute!(stdout, SetForegroundColor(Color::Blue))?;
-        execute!(stdout, Print("[←→/HL] Change Difficulty  "))?;
+        execute!(stdout, Print("[←→/HL]"))?;
+        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, Print(" Change Difficulty  "))?;
         execute!(stdout, SetForegroundColor(Color::Green))?;
-        execute!(stdout, Print("[SPACE] Start  "))?;
+        execute!(stdout, Print("[SPACE]"))?;
+        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, Print(" Start  "))?;
         execute!(stdout, SetForegroundColor(Color::Cyan))?;
-        execute!(stdout, Print("[I/?] Info  "))?;
+        execute!(stdout, Print("[I/?]"))?;
+        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, Print(" Info  "))?;
         execute!(stdout, SetForegroundColor(Color::Red))?;
-        execute!(stdout, Print("[ESC] Quit"))?;
+        execute!(stdout, Print("[ESC]"))?;
+        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, Print(" Quit"))?;
         execute!(stdout, ResetColor)?;
 
         // Display git info at bottom
