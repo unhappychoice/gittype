@@ -69,7 +69,9 @@ impl Language {
             Some("swift") => "swift".to_string(),
             Some("kt") | Some("kts") => "kotlin".to_string(),
             Some("java") => "java".to_string(),
-            Some("php") | Some("phtml") | Some("php3") | Some("php4") | Some("php5") => "php".to_string(),
+            Some("php") | Some("phtml") | Some("php3") | Some("php4") | Some("php5") => {
+                "php".to_string()
+            }
             _ => "text".to_string(),
         }
     }

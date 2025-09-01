@@ -55,7 +55,7 @@ impl LanguageExtractor for PhpExtractor {
             let end = node.end_byte();
             return Some(source_code[start..end].to_string());
         }
-        
+
         // Fallback to searching for name child
         self.extract_name_from_node(node, source_code)
     }

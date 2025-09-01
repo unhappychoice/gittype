@@ -159,10 +159,10 @@ class UserService {
         .iter()
         .filter(|c| matches!(c.chunk_type, ChunkType::Class))
         .collect();
-    
+
     // Should find the UserService class
     assert!(class_chunks.len() >= 1);
-    
+
     let class_names: Vec<&String> = class_chunks.iter().map(|c| &c.name).collect();
     assert!(class_names.contains(&&"UserService".to_string()));
 }
@@ -221,7 +221,7 @@ class Shape implements Drawable {
 
     // Should find the interface, trait, and class
     assert!(class_chunks.len() >= 3);
-    
+
     let class_names: Vec<&String> = class_chunks.iter().map(|c| &c.name).collect();
     assert!(class_names.contains(&&"Drawable".to_string()));
     assert!(class_names.contains(&&"Timestampable".to_string()));
