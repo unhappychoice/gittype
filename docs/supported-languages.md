@@ -54,6 +54,7 @@
 - Functions (`func`)
 - Classes (`class`)
 - Protocols (`protocol`)
+- Extension methods (functions within extensions)
 - Methods
 - Initializers (`init`)
 - Computed properties

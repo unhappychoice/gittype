@@ -228,15 +228,15 @@ extension Point: Drawable {
     let has_protocol = challenges
         .iter()
         .any(|c| c.code_content.contains("protocol Drawable"));
-    // let has_extension = challenges
-    //     .iter()
-    //     .any(|c| c.code_content.contains("extension Point"));
+    let has_extension_func = challenges
+        .iter()
+        .any(|c| c.code_content.contains("func draw()") && c.code_content.contains("Drawing point"));
 
     assert!(has_class, "Should extract Swift class");
     assert!(has_struct, "Should extract Swift struct");
     assert!(has_functions, "Should extract Swift functions");
     assert!(has_protocol, "Should extract Swift protocol");
-    // assert!(has_extension, "Should extract Swift extension");
+    assert!(has_extension_func, "Should extract functions from Swift extensions");
 
     let _ = fs::remove_file(&temp_path);
 }
