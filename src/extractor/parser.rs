@@ -288,6 +288,8 @@ impl CodeExtractor {
             Language::Python => "
                 (function_definition name: (identifier) @name) @function
                 (class_definition name: (identifier) @name) @class
+                (decorated_definition definition: (function_definition name: (identifier) @name)) @decorated_function
+                (decorated_definition definition: (class_definition name: (identifier) @name)) @decorated_class
             ",
             Language::Ruby => "
                 (method name: (identifier) @name) @method
@@ -391,6 +393,8 @@ impl CodeExtractor {
             "module" | "extension" | "namespace" => ChunkType::Module,
             "arrow_function" => ChunkType::Function,
             "function_expression" => ChunkType::Function,
+            "decorated_function" => ChunkType::Function,
+            "decorated_class" => ChunkType::Class,
             _ => return None,
         };
 
@@ -436,6 +440,23 @@ impl CodeExtractor {
     }
 
     fn extract_name_static(node: Node, source_code: &str) -> Option<String> {
+        // For decorated_definition, we need to get the name from the definition child
+        if node.kind() == "decorated_definition" {
+            let mut cursor = node.walk();
+            if cursor.goto_first_child() {
+                loop {
+                    let child = cursor.node();
+                    if child.kind() == "function_definition" || child.kind() == "class_definition" {
+                        // Recursively extract name from the definition
+                        return Self::extract_name_static(child, source_code);
+                    }
+                    if !cursor.goto_next_sibling() {
+                        break;
+                    }
+                }
+            }
+        }
+
         // For variable_declarator, we need to get the name from the first child
         if node.kind() == "variable_declarator" {
             let mut cursor = node.walk();
