@@ -269,6 +269,10 @@ impl CodeExtractor {
                 (function_item name: (identifier) @name) @function
                 (impl_item type: (type_identifier) @name) @impl
                 (struct_item name: (type_identifier) @name) @struct
+                (enum_item name: (type_identifier) @name) @enum
+                (trait_item name: (type_identifier) @name) @trait
+                (mod_item name: (identifier) @name) @module
+                (type_item name: (type_identifier) @name) @type_alias
             ",
             Language::TypeScript => "
                 (function_declaration name: (identifier) @name) @function
@@ -376,6 +380,9 @@ impl CodeExtractor {
             "method" => ChunkType::Method,
             "class" | "impl" => ChunkType::Class,
             "struct" => ChunkType::Struct,
+            "enum" => ChunkType::Enum,
+            "trait" => ChunkType::Trait,
+            "type_alias" => ChunkType::TypeAlias,
             "interface" | "protocol" => ChunkType::Interface,
             "module" | "extension" => ChunkType::Module,
             "arrow_function" => ChunkType::Function,
