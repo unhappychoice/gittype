@@ -280,6 +280,10 @@ impl CodeExtractor {
                 (class_declaration name: (type_identifier) @name) @class
                 (variable_declarator name: (identifier) value: (arrow_function)) @arrow_function
                 (variable_declarator name: (identifier) value: (function_expression)) @function_expression
+                (interface_declaration name: (type_identifier) @name) @interface
+                (type_alias_declaration name: (type_identifier) @name) @type_alias
+                (enum_declaration name: (identifier) @name) @enum
+                (internal_module name: (identifier) @name) @namespace
             ",
             Language::Python => "
                 (function_definition name: (identifier) @name) @function
@@ -384,7 +388,7 @@ impl CodeExtractor {
             "trait" => ChunkType::Trait,
             "type_alias" => ChunkType::TypeAlias,
             "interface" | "protocol" => ChunkType::Interface,
-            "module" | "extension" => ChunkType::Module,
+            "module" | "extension" | "namespace" => ChunkType::Module,
             "arrow_function" => ChunkType::Function,
             "function_expression" => ChunkType::Function,
             _ => return None,

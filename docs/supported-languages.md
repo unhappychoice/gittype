@@ -25,10 +25,13 @@
 ### TypeScript
 - Functions (`function`)
 - Classes (`class`)
-- Interfaces (`interface`)
+- Interfaces (`interface`) - interface declarations with properties and methods
 - Methods
 - Arrow functions
-- Type definitions (`type`)
+- Function expressions
+- Type definitions (`type`) - type alias declarations
+- Enums (`enum`) - enum declarations with values and computed properties
+- Namespaces (`namespace`) - namespace declarations with exported members
 
 ### Python
 - Functions (`def`)
