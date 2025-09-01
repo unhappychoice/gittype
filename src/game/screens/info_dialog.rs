@@ -164,12 +164,22 @@ impl InfoDialog {
             execute!(stdout, ResetColor)?;
         }
 
-        // Instructions
-        let instructions = "[↑↓/JK] Navigate [SPACE] Select [ESC] Close";
-        let instructions_col = center_col.saturating_sub(instructions.len() as u16 / 2);
+        // Instructions with color coding
+        let total_instructions_len = "[↑↓/JK] Navigate [SPACE] Select [ESC] Close".len();
+        let instructions_col = center_col.saturating_sub(total_instructions_len as u16 / 2);
         execute!(stdout, MoveTo(instructions_col, start_row + 7))?;
-        execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
-        execute!(stdout, Print(instructions))?;
+        execute!(stdout, SetForegroundColor(Color::Cyan))?;
+        execute!(stdout, Print("[↑↓/JK]"))?;
+        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, Print(" Navigate "))?;
+        execute!(stdout, SetForegroundColor(Color::Green))?;
+        execute!(stdout, Print("[SPACE]"))?;
+        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, Print(" Select "))?;
+        execute!(stdout, SetForegroundColor(Color::Red))?;
+        execute!(stdout, Print("[ESC]"))?;
+        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, Print(" Close"))?;
         execute!(stdout, ResetColor)?;
 
         Ok(())
@@ -281,12 +291,16 @@ impl InfoDialog {
         execute!(stdout, Print(url))?;
         execute!(stdout, ResetColor)?;
 
-        // Instructions
-        let instructions = "[ESC] Back";
-        let instructions_col = center_col.saturating_sub(instructions.len() as u16 / 2);
+        // Instructions with color coding
+        let back_key = "[ESC]";
+        let back_label = " Back";
+        let total_back_len = back_key.len() + back_label.len();
+        let instructions_col = center_col.saturating_sub(total_back_len as u16 / 2);
         execute!(stdout, MoveTo(instructions_col, start_row + 6))?;
-        execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
-        execute!(stdout, Print(instructions))?;
+        execute!(stdout, SetForegroundColor(Color::Green))?;
+        execute!(stdout, Print(back_key))?;
+        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, Print(back_label))?;
         execute!(stdout, ResetColor)?;
 
         Ok(())
