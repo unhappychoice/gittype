@@ -17,7 +17,7 @@ impl ChallengeConverter {
 
     pub fn convert_chunk_to_challenge(&self, chunk: CodeChunk) -> Challenge {
         let id = Uuid::new_v4().to_string();
-        let language = self.language_to_string(&chunk.language);
+        let language = chunk.language.to_string();
         let file_path = chunk.file_path.to_string_lossy().to_string();
 
         Challenge::new(id, chunk.content)
@@ -84,7 +84,7 @@ impl ChallengeConverter {
         for file_path in file_paths {
             if let Ok(content) = std::fs::read_to_string(&file_path) {
                 let id = Uuid::new_v4().to_string();
-                let language = self.detect_language_from_path(&file_path);
+                let language = super::Language::detect_from_path(&file_path);
                 let file_path_str = file_path.to_string_lossy().to_string();
 
                 let line_count = content.lines().count();
@@ -98,18 +98,6 @@ impl ChallengeConverter {
         }
 
         challenges
-    }
-
-    fn detect_language_from_path(&self, path: &std::path::Path) -> String {
-        match path.extension().and_then(|ext| ext.to_str()) {
-            Some("rs") => "rust".to_string(),
-            Some("ts") | Some("tsx") => "typescript".to_string(),
-            Some("py") => "python".to_string(),
-            Some("go") => "go".to_string(),
-            Some("rb") => "ruby".to_string(),
-            Some("js") | Some("jsx") => "javascript".to_string(),
-            _ => "text".to_string(),
-        }
     }
 
     fn split_chunk_by_difficulty(
@@ -177,7 +165,7 @@ impl ChallengeConverter {
                 // Only create challenge if it meets minimum size for this difficulty
                 if truncated_code_chars >= min_chars {
                     let id = Uuid::new_v4().to_string();
-                    let language = self.language_to_string(&chunk.language);
+                    let language = chunk.language.to_string();
                     let file_path = chunk.file_path.to_string_lossy().to_string();
 
                     let challenge = Challenge::new(id, truncated_content.to_string())
@@ -326,7 +314,7 @@ impl ChallengeConverter {
         for file_path in file_paths {
             if let Ok(content) = std::fs::read_to_string(&file_path) {
                 let id = uuid::Uuid::new_v4().to_string();
-                let language = self.detect_language_from_path(&file_path);
+                let language = super::Language::detect_from_path(&file_path);
                 let file_path_str = file_path.to_string_lossy().to_string();
 
                 let line_count = content.lines().count();
@@ -340,17 +328,5 @@ impl ChallengeConverter {
         }
 
         zen_challenges
-    }
-
-    fn language_to_string(&self, language: &super::Language) -> String {
-        match language {
-            super::Language::Rust => "rust".to_string(),
-            super::Language::TypeScript => "typescript".to_string(),
-            super::Language::Python => "python".to_string(),
-            super::Language::Ruby => "ruby".to_string(),
-            super::Language::Go => "go".to_string(),
-            super::Language::Swift => "swift".to_string(),
-            super::Language::Kotlin => "kotlin".to_string(),
-        }
     }
 }
