@@ -37,7 +37,9 @@
 - Functions (`def`)
 - Classes (`class`)
 - Methods
-- Decorators
+- **Decorated Functions** (`@staticmethod`, `@property`, `@classmethod`, etc.)
+- **Decorated Classes** (`@dataclass`, custom decorators)
+- Async functions (`async def`)
 - Lambda functions
 
 ### Go

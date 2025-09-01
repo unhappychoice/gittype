@@ -39,8 +39,14 @@ gittype [OPTIONS] [REPO_PATH] [COMMAND]
 # Practice with Rust and TypeScript files only
 gittype --langs rust,typescript
 
+# Practice with Python decorated functions and classes
+gittype --langs python
+
 # Include only source files, exclude tests
 gittype --include "src/**" --exclude "**/tests/**"
+
+# Focus on Python models and services (great for typing @dataclass decorators!)
+gittype --langs python --include "**/models/**" --include "**/services/**"
 
 # Exclude multiple patterns
 gittype --exclude "**/tests/**" --exclude "**/node_modules/**"
