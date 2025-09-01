@@ -5,6 +5,7 @@ pub enum Language {
     Python,
     Ruby,
     Go,
+    Swift,
 }
 
 impl Language {
@@ -15,6 +16,7 @@ impl Language {
             "py" => Some(Language::Python),
             "rb" => Some(Language::Ruby),
             "go" => Some(Language::Go),
+            "swift" => Some(Language::Swift),
             _ => None,
         }
     }
@@ -26,6 +28,7 @@ impl Language {
             Language::Python => "py",
             Language::Ruby => "rb",
             Language::Go => "go",
+            Language::Swift => "swift",
         }
     }
 }

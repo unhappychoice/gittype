@@ -22,6 +22,7 @@ impl Default for ExtractionOptions {
                 "**/*.py".to_string(),
                 "**/*.rb".to_string(),
                 "**/*.go".to_string(),
+                "**/*.swift".to_string(),
             ],
             exclude_patterns: vec![
                 "**/target/**".to_string(),
@@ -87,6 +88,16 @@ impl CodeExtractor {
                     .set_language(tree_sitter_go::language())
                     .map_err(|e| {
                         GitTypeError::ExtractionFailed(format!("Failed to set Go language: {}", e))
+                    })?;
+            }
+            Language::Swift => {
+                parser
+                    .set_language(tree_sitter_swift::language())
+                    .map_err(|e| {
+                        GitTypeError::ExtractionFailed(format!(
+                            "Failed to set Swift language: {}",
+                            e
+                        ))
                     })?;
             }
         }
@@ -281,6 +292,14 @@ impl CodeExtractor {
                 (type_spec name: (type_identifier) @name type: (struct_type)) @struct
                 (type_spec name: (type_identifier) @name type: (interface_type)) @interface
             ",
+            Language::Swift => "
+                (function_declaration name: (simple_identifier) @name) @function
+                (class_declaration name: (type_identifier) @name) @class
+                (protocol_declaration name: (type_identifier) @name) @protocol
+                (_ 
+                  declaration_kind: \"extension\"
+                  name: (_) @name) @extension
+            ",
         };
 
         let query = Query::new(tree.language(), query_str).map_err(|e| {
@@ -357,8 +376,8 @@ impl CodeExtractor {
             "method" => ChunkType::Method,
             "class" | "impl" => ChunkType::Class,
             "struct" => ChunkType::Struct,
-            "interface" => ChunkType::Interface,
-            "module" => ChunkType::Module,
+            "interface" | "protocol" => ChunkType::Interface,
+            "module" | "extension" => ChunkType::Module,
             "arrow_function" => ChunkType::Function,
             "function_expression" => ChunkType::Function,
             _ => return None,
@@ -429,6 +448,7 @@ impl CodeExtractor {
                     || child.kind() == "property_identifier"
                     || child.kind() == "field_identifier"
                     || child.kind() == "constant"
+                    || child.kind() == "simple_identifier"
                 {
                     let start = child.start_byte();
                     let end = child.end_byte();
@@ -575,6 +595,7 @@ impl CodeExtractor {
             Language::Python => "(comment) @comment",
             Language::Ruby => "(comment) @comment",
             Language::Go => "(comment) @comment",
+            Language::Swift => "[(comment) (multiline_comment)] @comment",
         };
 
         let query = match Query::new(tree.language(), comment_query) {
@@ -599,6 +620,7 @@ impl CodeExtractor {
                     Language::Python => node_kind == "comment",
                     Language::Ruby => node_kind == "comment",
                     Language::Go => node_kind == "comment",
+                    Language::Swift => node_kind == "comment" || node_kind == "multiline_comment",
                 };
 
                 if !is_valid_comment {
