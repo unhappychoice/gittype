@@ -8,7 +8,7 @@
 
 ## Features ✨
 
-- 🦀🐍⚡🐹💎🍎 **Multi-language**: Rust (with enums, traits, modules!), TypeScript, Python, Go, Ruby, Swift (more languages incoming!)  
+- 🦀🐍⚡🐹💎🍎 **Multi-language**: Rust, TypeScript, Python, Go, Ruby, Swift (more languages incoming!)  
 - 📊 **Real-time metrics**: Live WPM, accuracy, and consistency tracking as you type
 - 🏆 **Ranking system**: Unlock developer titles from "Hello World Newbie" to "Quantum Computer" with ASCII art
 - 🎮 **Multiple game modes**: Normal, Time Attack, and custom difficulty levels (Easy to Zen)
@@ -43,20 +43,17 @@ gittype /path/to/another/repo
 ## Demo 🎮
 
 ```rust
-[src/types.rs:15-23] (Rust enum) 
+[src/main.rs:42-58] (Rust function) 
 // ^ This could be YOUR code!
 
-pub enum DatabaseResult<T> {
-    Success(T),
-    ConnectionError(String),
-    Timeout,
+fn debug_everything(life: &str) -> Result<(), PanicMode> {
+    println!("It works on my machine: {}", life);
+    todo!("fix this before prod")
 }
 > _
 ```
 
-*Type it exactly as shown - from your actual enums, traits, modules, and functions!*
-
-**New in v0.1.4**: Enhanced Rust support now extracts enums, traits, modules, and type aliases from your codebase!
+*Type it exactly as shown. Yes, including that `todo!()` you left 6 months ago.*
 
 ## Why GitType? 🤔
 
