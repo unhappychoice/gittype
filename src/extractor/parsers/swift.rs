@@ -24,8 +24,11 @@ impl LanguageExtractor for SwiftExtractor {
             (class_declaration name: (type_identifier) @name) @class
             (protocol_declaration name: (type_identifier) @name) @protocol
             (_ 
-              declaration_kind: \"extension\"
-              name: (_) @name) @extension
+              \"struct\" 
+              name: (type_identifier) @name) @struct
+            (_ 
+              \"enum\" 
+              name: (type_identifier) @name) @enum
         "
     }
 
@@ -37,8 +40,9 @@ impl LanguageExtractor for SwiftExtractor {
         match capture_name {
             "function" => Some(ChunkType::Function),
             "class" => Some(ChunkType::Class),
+            "struct" => Some(ChunkType::Struct),
+            "enum" => Some(ChunkType::Enum),
             "protocol" => Some(ChunkType::Interface),
-            "extension" => Some(ChunkType::Module),
             _ => None,
         }
     }

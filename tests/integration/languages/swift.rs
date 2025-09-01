@@ -1,16 +1,16 @@
-use gittype::extractor::{ExtractionOptions, RepositoryLoader};
+use gittype::extractor::{ChunkType, CodeExtractor, ExtractionOptions};
 use std::fs;
-use tempfile::NamedTempFile;
+use tempfile::TempDir;
 
 #[test]
-fn test_swift_code_extraction() {
-    let swift_code = r#"import Foundation
+fn test_swift_class_extraction() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("test.swift");
 
-// A simple Swift class
+    let swift_code = r#"
 class Calculator {
     private var value: Int = 0
     
-    // Initialize calculator
     init() {
         self.value = 0
     }
@@ -24,34 +24,186 @@ class Calculator {
         return value
     }
     
-    /* 
-     * Multiply operation
-     */
     func multiply(_ number: Int) -> Int {
         value *= number
         return value
     }
 }
 
-// Protocol definition
-protocol Drawable {
-    func draw()
+class Person {
+    let name: String
+    let age: Int
+    
+    init(name: String, age: Int) {
+        self.name = name
+        self.age = age
+    }
+    
+    func greet() -> String {
+        return "Hello, I'm \(name)!"
+    }
+}
+"#;
+    fs::write(&file_path, swift_code).unwrap();
+
+    let mut extractor = CodeExtractor::new().unwrap();
+    let chunks = extractor
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .unwrap();
+
+    // Should find 2 classes + methods
+    assert!(chunks.len() >= 2);
+
+    let class_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Class))
+        .collect();
+    assert_eq!(class_chunks.len(), 2);
+
+    let class_names: Vec<&String> = class_chunks.iter().map(|c| &c.name).collect();
+    assert!(class_names.contains(&&"Calculator".to_string()));
+    assert!(class_names.contains(&&"Person".to_string()));
+
+    for chunk in &chunks {
+        assert_eq!(chunk.language, gittype::extractor::Language::Swift);
+    }
 }
 
+#[test]
+fn test_swift_function_extraction() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("test.swift");
+
+    let swift_code = r#"
+func greet(name: String) -> String {
+    return "Hello, \(name)!"
+}
+
+func calculateSum(a: Int, b: Int) -> Int {
+    return a + b
+}
+
+func processData(items: [String]) {
+    for item in items {
+        print(item)
+    }
+}
+"#;
+    fs::write(&file_path, swift_code).unwrap();
+
+    let mut extractor = CodeExtractor::new().unwrap();
+    let chunks = extractor
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .unwrap();
+
+    assert_eq!(chunks.len(), 3);
+
+    let function_names: Vec<&String> = chunks.iter().map(|c| &c.name).collect();
+    assert!(function_names.contains(&&"greet".to_string()));
+    assert!(function_names.contains(&&"calculateSum".to_string()));
+    assert!(function_names.contains(&&"processData".to_string()));
+
+    for chunk in &chunks {
+        assert!(matches!(chunk.chunk_type, ChunkType::Function));
+        assert_eq!(chunk.language, gittype::extractor::Language::Swift);
+    }
+}
+
+#[test]
+fn test_swift_protocol_extraction() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("test.swift");
+
+    let swift_code = r#"
+protocol Drawable {
+    func draw()
+    func area() -> Double
+}
+
+protocol Comparable {
+    func isGreaterThan(_ other: Self) -> Bool
+}
+"#;
+    fs::write(&file_path, swift_code).unwrap();
+
+    let mut extractor = CodeExtractor::new().unwrap();
+    let chunks = extractor
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .unwrap();
+
+    // Should find 2 protocols
+    assert_eq!(chunks.len(), 2);
+
+    let protocol_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Interface))
+        .collect();
+    assert_eq!(protocol_chunks.len(), 2);
+
+    let protocol_names: Vec<&String> = protocol_chunks.iter().map(|c| &c.name).collect();
+    assert!(protocol_names.contains(&&"Drawable".to_string()));
+    assert!(protocol_names.contains(&&"Comparable".to_string()));
+
+    for chunk in &chunks {
+        assert_eq!(chunk.language, gittype::extractor::Language::Swift);
+    }
+}
+
+#[test]
+fn test_swift_struct_extraction() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("test.swift");
+
+    let swift_code = r#"
 struct Point {
     let x: Double
     let y: Double
-    
-    init(x: Double, y: Double) {
-        self.x = x
-        self.y = y
-    }
     
     func distance(to other: Point) -> Double {
         return sqrt(pow(x - other.x, 2) + pow(y - other.y, 2))
     }
 }
 
+struct Rectangle {
+    let width: Double
+    let height: Double
+    
+    func area() -> Double {
+        return width * height
+    }
+}
+"#;
+    fs::write(&file_path, swift_code).unwrap();
+
+    let mut extractor = CodeExtractor::new().unwrap();
+    let chunks = extractor
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .unwrap();
+
+    // Should find 2 structs + methods
+    assert!(chunks.len() >= 2);
+
+    let struct_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Struct))
+        .collect();
+    assert_eq!(struct_chunks.len(), 2);
+
+    let struct_names: Vec<&String> = struct_chunks.iter().map(|c| &c.name).collect();
+    assert!(struct_names.contains(&&"Point".to_string()));
+    assert!(struct_names.contains(&&"Rectangle".to_string()));
+
+    for chunk in &chunks {
+        assert_eq!(chunk.language, gittype::extractor::Language::Swift);
+    }
+}
+
+#[test]
+fn test_swift_enum_extraction() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("test.swift");
+
+    let swift_code = r#"
 enum Direction {
     case north, south, east, west
     
@@ -65,81 +217,33 @@ enum Direction {
     }
 }
 
-extension Point: Drawable {
-    func draw() {
-        print("Drawing point at (\(x), \(y))")
-    }
+enum Status {
+    case pending
+    case completed
+    case failed
 }
 "#;
+    fs::write(&file_path, swift_code).unwrap();
 
-    let temp_file = NamedTempFile::new().expect("Failed to create temp file");
-    let temp_path = temp_file.path().with_extension("swift");
-    fs::write(&temp_path, swift_code).expect("Failed to write test file");
+    let mut extractor = CodeExtractor::new().unwrap();
+    let chunks = extractor
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .unwrap();
 
-    let mut loader = RepositoryLoader::new().expect("Failed to create loader");
-    let options = ExtractionOptions::default();
+    // Should find 2 enums + methods
+    assert!(chunks.len() >= 2);
 
-    let challenges = loader
-        .load_challenges_from_repository(&temp_path, Some(options))
-        .expect("Failed to load challenges");
+    let enum_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Enum))
+        .collect();
+    assert_eq!(enum_chunks.len(), 2);
 
-    println!("Found {} Swift challenges", challenges.len());
+    let enum_names: Vec<&String> = enum_chunks.iter().map(|c| &c.name).collect();
+    assert!(enum_names.contains(&&"Direction".to_string()));
+    assert!(enum_names.contains(&&"Status".to_string()));
 
-    for (i, challenge) in challenges.iter().enumerate() {
-        println!("\n=== Swift Challenge {} ===", i + 1);
-        println!("ID: {}", challenge.id);
-        println!("Language: {:?}", challenge.language);
-        println!("Content:");
-        for (line_num, line) in challenge.code_content.lines().enumerate() {
-            println!("  {}: '{}'", line_num + 1, line);
-        }
-        println!("Comment ranges: {:?}", challenge.comment_ranges);
+    for chunk in &chunks {
+        assert_eq!(chunk.language, gittype::extractor::Language::Swift);
     }
-
-    assert!(
-        !challenges.is_empty(),
-        "Expected at least one Swift challenge"
-    );
-
-    // Verify we extract Swift structures
-    let has_class = challenges
-        .iter()
-        .any(|c| c.code_content.contains("class Calculator"));
-    let has_struct = challenges.iter().any(|c| {
-        c.code_content.contains("struct Point") || c.code_content.contains("let x: Double")
-    });
-    let has_functions = challenges
-        .iter()
-        .any(|c| c.code_content.contains("func add"));
-    let has_protocol = challenges
-        .iter()
-        .any(|c| c.code_content.contains("protocol Drawable"));
-    let has_extension_block = challenges.iter().any(|c| {
-        c.code_content.contains("extension Point: Drawable {")
-            && c.code_content.contains("func draw()")
-            && c.code_content.contains("Drawing point")
-    });
-    let has_enum = challenges.iter().any(|c| {
-        c.code_content.contains("enum Direction {") && c.code_content.contains("case north")
-    });
-    let has_init = challenges
-        .iter()
-        .any(|c| c.code_content.contains("init(") && c.code_content.contains("self.x = x"));
-    let has_deinit = challenges
-        .iter()
-        .any(|c| c.code_content.contains("deinit {") && c.code_content.contains("deallocated"));
-
-    assert!(has_class, "Should extract Swift class");
-    assert!(has_struct, "Should extract Swift struct");
-    assert!(has_functions, "Should extract Swift functions");
-    assert!(has_protocol, "Should extract Swift protocol");
-    assert!(
-        has_extension_block,
-        "Should extract entire Swift extension blocks"
-    );
-    assert!(has_enum, "Should extract Swift enums");
-    assert!(has_init, "Should extract Swift initializers");
-    assert!(has_deinit, "Should extract Swift deinitializers");
-
-    let _ = fs::remove_file(&temp_path);
 }

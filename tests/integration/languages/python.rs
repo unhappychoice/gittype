@@ -83,3 +83,74 @@ class Calculator:
     assert!(class_names.contains(&&"Person".to_string()));
     assert!(class_names.contains(&&"Calculator".to_string()));
 }
+
+#[test]
+fn test_python_combined_extraction() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("test.py");
+
+    let python_code = r#"
+# Module-level function
+def calculate_total(items):
+    return sum(items)
+
+# Class definition
+class User:
+    def __init__(self, name, email):
+        self.name = name
+        self.email = email
+    
+    def get_display_name(self):
+        return f"{self.name} ({self.email})"
+
+# Another class
+class Database:
+    def __init__(self):
+        self.connections = []
+    
+    def connect(self):
+        return "Connected"
+    
+    def disconnect(self):
+        print("Disconnected")
+
+# Another function
+def process_data(data):
+    return [item.upper() for item in data]
+"#;
+    fs::write(&file_path, python_code).unwrap();
+
+    let mut extractor = CodeExtractor::new().unwrap();
+    let chunks = extractor
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .unwrap();
+
+    // Should find 2 classes + 6 functions = 8 total minimum
+    assert!(
+        chunks.len() >= 8,
+        "Should find at least 8 chunks, got {}",
+        chunks.len()
+    );
+
+    let class_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Class))
+        .collect();
+    let function_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Function))
+        .collect();
+
+    assert_eq!(class_chunks.len(), 2);
+    assert!(function_chunks.len() >= 6);
+
+    // Verify class names
+    let class_names: Vec<&String> = class_chunks.iter().map(|c| &c.name).collect();
+    assert!(class_names.contains(&&"User".to_string()));
+    assert!(class_names.contains(&&"Database".to_string()));
+
+    // Verify some function names
+    let function_names: Vec<&String> = function_chunks.iter().map(|c| &c.name).collect();
+    assert!(function_names.contains(&&"calculate_total".to_string()));
+    assert!(function_names.contains(&&"process_data".to_string()));
+}

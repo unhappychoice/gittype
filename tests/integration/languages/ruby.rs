@@ -1,7 +1,6 @@
-use gittype::extractor::{ChunkType, CodeExtractor, ExtractionOptions, Language};
+use gittype::extractor::{ChunkType, CodeExtractor, ExtractionOptions};
 use std::fs;
-use std::io::Write;
-use tempfile::{NamedTempFile, TempDir};
+use tempfile::TempDir;
 
 #[test]
 fn test_ruby_function_extraction() {
@@ -132,6 +131,9 @@ end
 
 #[test]
 fn test_ruby_class_method_extraction() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("test.rb");
+
     let ruby_code = r#"
 class User
   def self.find_by_email(email)
@@ -143,15 +145,11 @@ class User
   end
 end
 "#;
-
-    let mut file = NamedTempFile::new().unwrap();
-    file.write_all(ruby_code.as_bytes()).unwrap();
-    file.flush().unwrap();
+    fs::write(&file_path, ruby_code).unwrap();
 
     let mut extractor = CodeExtractor::new().unwrap();
-    let options = ExtractionOptions::default();
     let chunks = extractor
-        .extract_from_file(file.path(), Language::Ruby, &options)
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
         .unwrap();
 
     let class_methods: Vec<_> = chunks
@@ -175,6 +173,9 @@ end
 
 #[test]
 fn test_ruby_attr_accessor_extraction() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("test.rb");
+
     let ruby_code = r#"
 class Product
   attr_accessor :name, :price
@@ -182,15 +183,11 @@ class Product
   attr_writer :description
 end
 "#;
-
-    let mut file = NamedTempFile::new().unwrap();
-    file.write_all(ruby_code.as_bytes()).unwrap();
-    file.flush().unwrap();
+    fs::write(&file_path, ruby_code).unwrap();
 
     let mut extractor = CodeExtractor::new().unwrap();
-    let options = ExtractionOptions::default();
     let chunks = extractor
-        .extract_from_file(file.path(), Language::Ruby, &options)
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
         .unwrap();
 
     let attr_chunks: Vec<_> = chunks
