@@ -17,9 +17,10 @@
 - Functions (`fn`)
 - Implementations (`impl`)
 - Structs (`struct`)
-- Enums (`enum`)
-- Traits (`trait`)
-- Modules (`mod`)
+- Enums (`enum`) - complete enum definitions with variants and methods
+- Traits (`trait`) - trait definitions with associated types and functions
+- Modules (`mod`) - module blocks and their contents
+- Type aliases (`type`) - type alias declarations
 
 ### TypeScript
 - Functions (`function`)
