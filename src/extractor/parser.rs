@@ -296,6 +296,9 @@ impl CodeExtractor {
                 (function_declaration name: (simple_identifier) @name) @function
                 (class_declaration name: (type_identifier) @name) @class
                 (protocol_declaration name: (type_identifier) @name) @protocol
+                (_ 
+                  declaration_kind: \"extension\"
+                  name: (_) @name) @extension
             ",
         };
 
