@@ -291,8 +291,11 @@ impl CodeExtractor {
             ",
             Language::Ruby => "
                 (method name: (identifier) @name) @method
+                (singleton_method object: (self) name: (identifier) @name) @class_method
+                (singleton_method name: (identifier) @name) @singleton_method
                 (class name: (constant) @name) @class
                 (module name: (constant) @name) @module
+                (call method: (identifier) @method_name (#match? @method_name \"^(attr_accessor|attr_reader|attr_writer)$\") arguments: (argument_list)) @attr_accessor
             ",
             Language::Go => "
                 (function_declaration name: (identifier) @name) @function
@@ -391,6 +394,10 @@ impl CodeExtractor {
         let chunk_type = match capture_name {
             "function" => ChunkType::Function,
             "method" => ChunkType::Method,
+            "class_method" => ChunkType::Method,
+            "singleton_method" => ChunkType::Method,
+            "attr_accessor" => ChunkType::Method,
+            "alias" => ChunkType::Method,
             "class" | "impl" => ChunkType::Class,
             "struct" => ChunkType::Struct,
             "enum" => ChunkType::Enum,
@@ -408,6 +415,8 @@ impl CodeExtractor {
         let name = match capture_name {
             "const_block" => Self::extract_const_var_names_static(node, source_code, "const"),
             "var_block" => Self::extract_const_var_names_static(node, source_code, "var"),
+            "attr_accessor" => Self::extract_attr_accessor_name_static(node, source_code),
+            "alias" => Self::extract_alias_name_static(node, source_code),
             _ => Self::extract_name_static(node, source_code)
                 .unwrap_or_else(|| "unknown".to_string()),
         };
@@ -702,5 +711,192 @@ impl CodeExtractor {
 
         comment_ranges.sort_by_key(|&(start, _)| start);
         comment_ranges
+    }
+
+    fn extract_attr_accessor_name_static(node: Node, source_code: &str) -> String {
+        let mut cursor = node.walk();
+        let mut symbols = Vec::new();
+
+        if cursor.goto_first_child() {
+            loop {
+                let child = cursor.node();
+                if child.kind() == "identifier" {
+                    let start = child.start_byte();
+                    let end = child.end_byte();
+                    let method_name = &source_code[start..end];
+
+                    if method_name == "attr_accessor"
+                        || method_name == "attr_reader"
+                        || method_name == "attr_writer"
+                    {
+                        // Continue to find the arguments
+                        if cursor.goto_next_sibling() {
+                            let args_node = cursor.node();
+                            if args_node.kind() == "argument_list" {
+                                let mut args_cursor = args_node.walk();
+                                if args_cursor.goto_first_child() {
+                                    loop {
+                                        let arg = args_cursor.node();
+                                        if arg.kind() == "simple_symbol" {
+                                            let start = arg.start_byte();
+                                            let end = arg.end_byte();
+                                            let symbol = &source_code[start..end];
+                                            symbols
+                                                .push(symbol.trim_start_matches(':').to_string());
+                                        }
+                                        if !args_cursor.goto_next_sibling() {
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+                if !cursor.goto_next_sibling() {
+                    break;
+                }
+            }
+        }
+
+        if symbols.is_empty() {
+            "unknown_attr".to_string()
+        } else {
+            format!("{} ({})", symbols.join(", "), symbols.len())
+        }
+    }
+
+    fn extract_alias_name_static(node: Node, source_code: &str) -> String {
+        let mut cursor = node.walk();
+        let mut alias_name = None;
+        let mut original_name = None;
+
+        if cursor.goto_first_child() {
+            loop {
+                let child = cursor.node();
+                if child.kind() == "identifier" {
+                    let start = child.start_byte();
+                    let end = child.end_byte();
+                    let name = &source_code[start..end];
+
+                    if name == "alias" {
+                        // Continue to find alias name and original name
+                        if cursor.goto_next_sibling() {
+                            let alias_node = cursor.node();
+                            if alias_node.kind() == "identifier" {
+                                let start = alias_node.start_byte();
+                                let end = alias_node.end_byte();
+                                alias_name = Some(&source_code[start..end]);
+
+                                if cursor.goto_next_sibling() {
+                                    let orig_node = cursor.node();
+                                    if orig_node.kind() == "identifier" {
+                                        let start = orig_node.start_byte();
+                                        let end = orig_node.end_byte();
+                                        original_name = Some(&source_code[start..end]);
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+                if !cursor.goto_next_sibling() {
+                    break;
+                }
+            }
+        }
+
+        match (alias_name, original_name) {
+            (Some(alias), Some(original)) => format!("{} -> {}", alias, original),
+            (Some(alias), None) => alias.to_string(),
+            _ => "unknown_alias".to_string(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::Write;
+    use tempfile::NamedTempFile;
+
+    #[test]
+    fn test_ruby_class_method_extraction() {
+        let ruby_code = r#"
+class User
+  def self.find_by_email(email)
+    puts "Finding user by email: #{email}"
+  end
+  
+  def instance_method
+    "instance"
+  end
+end
+"#;
+
+        let mut file = NamedTempFile::new().unwrap();
+        file.write_all(ruby_code.as_bytes()).unwrap();
+        file.flush().unwrap();
+
+        let mut extractor = CodeExtractor::new().unwrap();
+        let options = ExtractionOptions::default();
+        let chunks = extractor
+            .extract_from_file(file.path(), Language::Ruby, &options)
+            .unwrap();
+
+        let class_methods: Vec<_> = chunks
+            .iter()
+            .filter(|chunk| chunk.name.contains("find_by_email"))
+            .collect();
+        assert!(
+            !class_methods.is_empty(),
+            "Should extract class method find_by_email"
+        );
+
+        let instance_methods: Vec<_> = chunks
+            .iter()
+            .filter(|chunk| chunk.name.contains("instance_method"))
+            .collect();
+        assert!(
+            !instance_methods.is_empty(),
+            "Should extract instance method"
+        );
+    }
+
+    #[test]
+    fn test_ruby_attr_accessor_extraction() {
+        let ruby_code = r#"
+class Product
+  attr_accessor :name, :price
+  attr_reader :id
+  attr_writer :description
+end
+"#;
+
+        let mut file = NamedTempFile::new().unwrap();
+        file.write_all(ruby_code.as_bytes()).unwrap();
+        file.flush().unwrap();
+
+        let mut extractor = CodeExtractor::new().unwrap();
+        let options = ExtractionOptions::default();
+        let chunks = extractor
+            .extract_from_file(file.path(), Language::Ruby, &options)
+            .unwrap();
+
+        let attr_chunks: Vec<_> = chunks
+            .iter()
+            .filter(|chunk| {
+                chunk.name.contains("name")
+                    || chunk.name.contains("price")
+                    || chunk.name.contains("id")
+                    || chunk.name.contains("description")
+            })
+            .collect();
+        assert!(
+            !attr_chunks.is_empty(),
+            "Should extract attr_accessor, attr_reader, attr_writer"
+        );
     }
 }
