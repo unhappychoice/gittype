@@ -89,6 +89,7 @@ impl CommonExtractor {
         match language {
             Language::Rust => node_kind == "line_comment" || node_kind == "block_comment",
             Language::TypeScript => node_kind == "comment",
+            Language::JavaScript => node_kind == "comment",
             Language::Python => node_kind == "comment",
             Language::Ruby => node_kind == "comment",
             Language::Go => node_kind == "comment",
