@@ -161,7 +161,7 @@ class UserService {
         .collect();
 
     // Should find the UserService class
-    assert!(class_chunks.len() >= 1);
+    assert!(!class_chunks.is_empty());
 
     let class_names: Vec<&String> = class_chunks.iter().map(|c| &c.name).collect();
     assert!(class_names.contains(&&"UserService".to_string()));
