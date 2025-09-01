@@ -90,8 +90,6 @@ impl GameDisplayRatatui {
             metrics.wpm, metrics.cpm, metrics.accuracy, metrics.mistakes, streak, elapsed_secs, skips_remaining
         );
 
-        let second_line = "[ESC] Options".to_string();
-
         self.terminal.draw(|f| {
             let chunks = Layout::default()
                 .direction(Direction::Vertical)

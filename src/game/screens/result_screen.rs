@@ -229,11 +229,11 @@ impl ResultScreen {
         } else {
             progress_start_row
         };
-        
+
         // Calculate position for centered text
         let total_text_length = "[SPACE] Continue  [ESC] Quit".len();
         let start_col = center_col.saturating_sub(total_text_length as u16 / 2);
-        
+
         execute!(stdout, MoveTo(start_col, options_row))?;
         execute!(stdout, SetForegroundColor(Color::Green))?;
         execute!(stdout, Print("[SPACE]"))?;
@@ -491,7 +491,7 @@ impl ResultScreen {
         // Display options with color coding
         let options_data = [
             ("[R]", " Retry", Color::Green),
-            ("[S]", " Share Result", Color::Cyan), 
+            ("[S]", " Share Result", Color::Cyan),
             ("[T]", " Back to Title", Color::Green),
             ("[ESC]", " Quit", Color::Red),
         ];

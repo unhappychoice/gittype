@@ -159,7 +159,8 @@ impl TitleScreen {
         execute!(stdout, ResetColor)?;
 
         // Display instructions with color coding (keys only)
-        let total_instructions_len = "[←→/HL] Change Difficulty  [SPACE] Start  [I/?] Info  [ESC] Quit".len();
+        let total_instructions_len =
+            "[←→/HL] Change Difficulty  [SPACE] Start  [I/?] Info  [ESC] Quit".len();
         let instructions_col = center_col.saturating_sub(total_instructions_len as u16 / 2);
 
         execute!(stdout, MoveTo(instructions_col, center_row + 6))?;
