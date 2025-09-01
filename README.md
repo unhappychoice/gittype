@@ -8,11 +8,12 @@
 
 ## Features ✨
 
-- 🌳 **Tree-sitter powered**: Extracts actual functions, not random code snippets
 - 🦀🐍⚡🐹💎 **Multi-language**: Rust, TypeScript, Python, Go, Ruby (more languages incoming!)  
-- 📊 **Git stats vibes**: Track your WPM like you track your commit frequency
-- 🎯 **Actually useful**: Build muscle memory with *real* syntax patterns
-- 🔍 **Smart filtering**: Skip the `node_modules` nightmare automatically
+- 📊 **Real-time metrics**: Live WPM, accuracy, and consistency tracking as you type
+- 🏆 **Ranking system**: Unlock developer titles from "Hello World Newbie" to "Quantum Computer" with ASCII art
+- 🎮 **Multiple game modes**: Normal, Time Attack, and custom difficulty levels (Easy to Zen)
+- ⏸️ **Pause/resume**: Take breaks without ruining your stats
+- 🎯 **Your own code**: Type functions from your actual projects, not boring examples
 
 ## Installation 📦
 
@@ -64,6 +65,7 @@ fn debug_everything(life: &str) -> Result<(), PanicMode> {
 - **Embrace your legacy code** → Finally face those variable names you're not proud of
 - **Debug your typing skills** → Because `pubic static void main` isn't a typo anymore
 - **Therapeutic code reliving** → Type through your programming journey, tears included
+- **Climb the dev ladder** → From "Code Monkey" to "Quantum Computer" - each rank comes with fancy ASCII art
 
 *"Basically, you need an excuse to avoid real work, and this one's pretty good."*
 
