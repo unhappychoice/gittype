@@ -17,6 +17,7 @@ impl Default for ExtractionOptions {
                 "**/*.swift".to_string(),
                 "**/*.kt".to_string(),
                 "**/*.kts".to_string(),
+                "**/*.java".to_string(),
             ],
             exclude_patterns: vec![
                 "**/target/**".to_string(),

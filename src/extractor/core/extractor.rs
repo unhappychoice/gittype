@@ -94,6 +94,7 @@ impl CommonExtractor {
             Language::Go => node_kind == "comment",
             Language::Swift => node_kind == "comment" || node_kind == "multiline_comment",
             Language::Kotlin => node_kind == "line_comment" || node_kind == "multiline_comment",
+            Language::Java => node_kind == "line_comment" || node_kind == "block_comment",
         }
     }
 
