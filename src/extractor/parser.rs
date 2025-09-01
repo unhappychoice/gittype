@@ -94,7 +94,10 @@ impl CodeExtractor {
                 parser
                     .set_language(tree_sitter_swift::language())
                     .map_err(|e| {
-                        GitTypeError::ExtractionFailed(format!("Failed to set Swift language: {}", e))
+                        GitTypeError::ExtractionFailed(format!(
+                            "Failed to set Swift language: {}",
+                            e
+                        ))
                     })?;
             }
         }

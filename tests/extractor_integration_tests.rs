@@ -210,15 +210,24 @@ extension Point: Drawable {
         println!("Comment ranges: {:?}", challenge.comment_ranges);
     }
 
-    assert!(!challenges.is_empty(), "Expected at least one Swift challenge");
+    assert!(
+        !challenges.is_empty(),
+        "Expected at least one Swift challenge"
+    );
 
     // Verify we extract Swift structures
-    let has_class = challenges.iter().any(|c| c.code_content.contains("class Calculator"));
-    let has_struct = challenges.iter().any(|c| c.code_content.contains("struct Point"));
-    let has_functions = challenges.iter().any(|c| c.code_content.contains("func add"));
+    let has_class = challenges
+        .iter()
+        .any(|c| c.code_content.contains("class Calculator"));
+    let has_struct = challenges
+        .iter()
+        .any(|c| c.code_content.contains("struct Point"));
+    let has_functions = challenges
+        .iter()
+        .any(|c| c.code_content.contains("func add"));
 
     assert!(has_class, "Should extract Swift class");
-    assert!(has_struct, "Should extract Swift struct");  
+    assert!(has_struct, "Should extract Swift struct");
     assert!(has_functions, "Should extract Swift functions");
 
     let _ = fs::remove_file(&temp_path);
