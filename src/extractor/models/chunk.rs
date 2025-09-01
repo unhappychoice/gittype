@@ -14,6 +14,7 @@ pub enum ChunkType {
     Module,
     Const,
     Variable,
+    Component, // JSX/TSX React components
 }
 
 #[derive(Debug, Clone)]

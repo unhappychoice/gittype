@@ -7,4 +7,5 @@ pub mod python;
 pub mod ruby;
 pub mod rust;
 pub mod swift;
+pub mod tsx_jsx_test;
 pub mod typescript;

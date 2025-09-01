@@ -6,7 +6,7 @@
 |----------|-----------|--------|-------------------|
 | Rust | `.rs` | ✅ Full support | `tree-sitter-rust` |
 | TypeScript | `.ts`, `.tsx` | ✅ Full support | `tree-sitter-typescript` |
-| JavaScript | `.js`, `.mjs`, `.cjs` | ⚠️ Partial support | `tree-sitter-javascript` |
+| JavaScript | `.js`, `.jsx`, `.mjs`, `.cjs` | ✅ Full support | `tree-sitter-javascript` |
 | Python | `.py` | ✅ Full support | `tree-sitter-python` |
 | Go | `.go` | ✅ Full support | `tree-sitter-go` |
 | Ruby | `.rb` | ✅ Full support | `tree-sitter-ruby` |
@@ -47,8 +47,14 @@
 - Async functions (`async function`)
 - Export/import statements (ES modules)
 - Object literal methods
+- **JSX syntax** - React component definitions (`.jsx` files)
 
-> **Note**: JavaScript support is currently in development. Tree-sitter patterns need refinement for full extraction capability.
+### TypeScript/TSX
+- All JavaScript features plus:
+- **JSX/TSX syntax** - React components with TypeScript (`.tsx` files)
+- Full TSX parser support for mixed TypeScript and JSX content
+
+> **Note**: JSX/TSX components are extracted as function and class definitions. Individual JSX elements (`<Component />`) are not extracted as separate typing challenges, but the component definitions that contain JSX are fully supported.
 
 ### Python
 - Functions (`def`)

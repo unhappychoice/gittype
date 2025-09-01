@@ -1,0 +1,258 @@
+use gittype::extractor::{ChunkType, CodeExtractor, ExtractionOptions};
+use std::fs;
+use tempfile::TempDir;
+
+#[test]
+fn test_tsx_jsx_component_extraction() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("test.tsx");
+
+    let tsx_code = r#"
+interface Props {
+    name: string;
+    age: number;
+}
+
+const UserCard = ({ name, age }: Props) => {
+    return (
+        <div className="user-card">
+            <h2>{name}</h2>
+            <p>Age: {age}</p>
+        </div>
+    );
+};
+
+function WelcomeComponent(props: Props) {
+    return <h1>Hello, {props.name}!</h1>;
+}
+
+export default function App() {
+    return (
+        <div>
+            <UserCard name="Alice" age={25} />
+            <WelcomeComponent name="Bob" age={30} />
+        </div>
+    );
+}
+
+const Button = () => <button>Click me</button>;
+
+class Dialog extends React.Component<Props> {
+    render() {
+        return (
+            <div className="modal">
+                <h1>{this.props.name}</h1>
+            </div>
+        );
+    }
+}
+"#;
+    fs::write(&file_path, tsx_code).unwrap();
+
+    let mut extractor = CodeExtractor::new().unwrap();
+    let chunks = extractor
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .unwrap();
+
+    // Should find functions, classes, interface, and JSX components
+    assert!(!chunks.is_empty(), "Should find code chunks in TSX file");
+
+    let function_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Function))
+        .collect();
+    let interface_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Interface))
+        .collect();
+    let class_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Class))
+        .collect();
+
+    println!("Found {} total chunks", chunks.len());
+    println!("Functions: {}", function_chunks.len());
+    println!("Interfaces: {}", interface_chunks.len());
+    println!("Classes: {}", class_chunks.len());
+
+    let all_names: Vec<&String> = chunks.iter().map(|c| &c.name).collect();
+    println!("All chunk names: {:?}", all_names);
+
+    // Should find at least the interface and functions (React component functions)
+    assert!(!interface_chunks.is_empty(), "Should find Props interface");
+    assert!(!function_chunks.is_empty(), "Should find function components");
+
+    let interface_names: Vec<&String> = interface_chunks.iter().map(|c| &c.name).collect();
+    assert!(interface_names.contains(&&"Props".to_string()));
+
+    let function_names: Vec<&String> = function_chunks.iter().map(|c| &c.name).collect();
+    assert!(function_names.contains(&&"UserCard".to_string()));
+    assert!(function_names.contains(&&"WelcomeComponent".to_string()));
+    assert!(function_names.contains(&&"App".to_string()));
+    assert!(function_names.contains(&&"Button".to_string()));
+}
+
+#[test]
+fn test_jsx_self_closing_elements() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("test.jsx");
+
+    let jsx_code = r#"
+const ProfileCard = ({ user }) => {
+    return (
+        <div>
+            <img src={user.avatar} alt="Profile" />
+            <input type="text" placeholder="Enter name" />
+            <br />
+            <CustomComponent prop1="value1" prop2={variable} />
+        </div>
+    );
+};
+
+function FormComponent() {
+    return (
+        <form>
+            <input type="email" required />
+            <button type="submit">Submit</button>
+            <hr />
+        </form>
+    );
+}
+"#;
+    fs::write(&file_path, jsx_code).unwrap();
+
+    let mut extractor = CodeExtractor::new().unwrap();
+    let chunks = extractor
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .unwrap();
+
+    assert!(!chunks.is_empty(), "Should find code chunks in JSX file");
+
+    let function_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Function))
+        .collect();
+
+    println!("Found {} function chunks", function_chunks.len());
+    let function_names: Vec<&String> = function_chunks.iter().map(|c| &c.name).collect();
+    println!("Function names: {:?}", function_names);
+
+    assert!(function_names.contains(&&"ProfileCard".to_string()));
+    assert!(function_names.contains(&&"FormComponent".to_string()));
+}
+
+#[test]
+fn test_mixed_tsx_content() {
+    let temp_dir = TempDir::new().unwrap();
+    let file_path = temp_dir.path().join("mixed.tsx");
+
+    let mixed_code = r#"
+import React, { useState } from 'react';
+
+interface User {
+    id: number;
+    name: string;
+    email: string;
+}
+
+type UserListProps = {
+    users: User[];
+    onUserClick: (user: User) => void;
+};
+
+enum Status {
+    Loading = 'loading',
+    Success = 'success',
+    Error = 'error'
+}
+
+const UserList: React.FC<UserListProps> = ({ users, onUserClick }) => {
+    const [status, setStatus] = useState<Status>(Status.Loading);
+
+    const handleClick = (user: User) => {
+        onUserClick(user);
+    };
+
+    if (status === Status.Loading) {
+        return <div>Loading...</div>;
+    }
+
+    return (
+        <div className="user-list">
+            {users.map(user => (
+                <UserCard 
+                    key={user.id} 
+                    user={user}
+                    onClick={() => handleClick(user)}
+                />
+            ))}
+        </div>
+    );
+};
+
+class ErrorBoundary extends React.Component {
+    state = { hasError: false };
+
+    static getDerivedStateFromError() {
+        return { hasError: true };
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return <h1>Something went wrong.</h1>;
+        }
+
+        return this.props.children;
+    }
+}
+
+export { UserList, ErrorBoundary };
+export default UserList;
+"#;
+    fs::write(&file_path, mixed_code).unwrap();
+
+    let mut extractor = CodeExtractor::new().unwrap();
+    let chunks = extractor
+        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .unwrap();
+
+    assert!(!chunks.is_empty(), "Should find code chunks in mixed TSX file");
+
+    // Check for different types of constructs
+    let interface_count = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Interface))
+        .count();
+    let type_alias_count = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::TypeAlias))
+        .count();
+    let enum_count = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Enum))
+        .count();
+    let function_count = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Function))
+        .count();
+    let class_count = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Class))
+        .count();
+
+    println!("Mixed TSX content analysis:");
+    println!("  Interfaces: {}", interface_count);
+    println!("  Type aliases: {}", type_alias_count);
+    println!("  Enums: {}", enum_count);
+    println!("  Functions: {}", function_count);
+    println!("  Classes: {}", class_count);
+
+    let all_names: Vec<&String> = chunks.iter().map(|c| &c.name).collect();
+    println!("  All names: {:?}", all_names);
+
+    // Should find at least some of each type
+    assert!(interface_count > 0, "Should find User interface");
+    assert!(enum_count > 0, "Should find Status enum");
+    assert!(function_count > 0, "Should find UserList component");
+    assert!(class_count > 0, "Should find ErrorBoundary class");
+}

@@ -15,7 +15,8 @@ impl LanguageExtractor for TypeScriptExtractor {
     }
 
     fn tree_sitter_language(&self) -> tree_sitter::Language {
-        tree_sitter_typescript::language_typescript()
+        // Use TSX parser which supports both TypeScript and JSX syntax
+        tree_sitter_typescript::language_tsx()
     }
 
     fn query_patterns(&self) -> &str {
@@ -97,9 +98,9 @@ impl TypeScriptExtractor {
     pub fn create_parser() -> Result<Parser> {
         let mut parser = Parser::new();
         parser
-            .set_language(tree_sitter_typescript::language_typescript())
+            .set_language(tree_sitter_typescript::language_tsx())
             .map_err(|e| {
-                GitTypeError::ExtractionFailed(format!("Failed to set TypeScript language: {}", e))
+                GitTypeError::ExtractionFailed(format!("Failed to set TypeScript/TSX language: {}", e))
             })?;
         Ok(parser)
     }
