@@ -53,6 +53,7 @@
 ### Swift
 - Functions (`func`)
 - Classes (`class`)
+- Protocols (`protocol`)
 - Methods
 - Initializers (`init`)
 - Computed properties
