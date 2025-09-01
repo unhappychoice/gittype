@@ -281,6 +281,7 @@ Multi-layered rendering system:
 | Python | `tree-sitter-python` | ✅ Full support |
 | Go | `tree-sitter-go` | ✅ Full support |
 | Ruby | `tree-sitter-ruby` | ✅ Full support |
+| Swift | `tree-sitter-swift` | ✅ Full support |
 
 ---
 

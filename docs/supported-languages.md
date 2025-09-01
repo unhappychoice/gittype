@@ -9,6 +9,7 @@
 | Python | `.py` | ✅ Full support | `tree-sitter-python` |
 | Go | `.go` | ✅ Full support | `tree-sitter-go` |
 | Ruby | `.rb` | ✅ Full support | `tree-sitter-ruby` |
+| Swift | `.swift` | ✅ Full support | `tree-sitter-swift` |
 
 ## Extraction Features
 
@@ -49,12 +50,18 @@
 - Instance methods
 - Class methods
 
+### Swift
+- Functions (`func`)
+- Classes (`class`)
+- Methods
+- Initializers (`init`)
+- Computed properties
+
 ## Planned Support
 
 | Language | Priority | Expected | Notes |
 |----------|----------|----------|--------|
 | JavaScript | High | Next release | ESM/CommonJS support |
-| Swift | High | Q1 2025 | iOS/macOS development |
 | Kotlin | High | Q1 2025 | Android/JVM support |
 | Java | Medium | Q2 2025 | Spring Boot patterns |
 | C++ | Medium | Q3 2025 | Modern C++17/20 |
@@ -71,14 +78,14 @@
 gittype --langs rust
 
 # Multiple languages
-gittype --langs rust,typescript,python,go,ruby
+gittype --langs rust,typescript,python,go,ruby,swift
 ```
 
 ### Configuration File
 
 ```toml
 [default]
-langs = ["rust", "typescript", "python", "go", "ruby"]
+langs = ["rust", "typescript", "python", "go", "ruby", "swift"]
 ```
 
 ## Code Extraction Quality
