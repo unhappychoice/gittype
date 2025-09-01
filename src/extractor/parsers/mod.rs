@@ -6,6 +6,7 @@ use tree_sitter::{Node, Parser, Query};
 
 pub mod go;
 pub mod java;
+pub mod javascript;
 pub mod kotlin;
 pub mod php;
 pub mod python;
@@ -48,6 +49,12 @@ impl ParserRegistry {
             Language::TypeScript,
             typescript::TypeScriptExtractor::create_parser,
             || Box::new(typescript::TypeScriptExtractor),
+        );
+
+        registry.register(
+            Language::JavaScript,
+            javascript::JavaScriptExtractor::create_parser,
+            || Box::new(javascript::JavaScriptExtractor),
         );
 
         registry.register(
