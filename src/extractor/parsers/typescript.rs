@@ -30,6 +30,8 @@ impl LanguageExtractor for TypeScriptExtractor {
             (type_alias_declaration name: (type_identifier) @name) @type_alias
             (enum_declaration name: (identifier) @name) @enum
             (internal_module name: (identifier) @name) @namespace
+            (jsx_element open_tag: (jsx_opening_element name: (identifier) @name)) @jsx_element
+            (jsx_self_closing_element name: (identifier) @name) @jsx_self_closing_element
         "
     }
 
@@ -48,6 +50,8 @@ impl LanguageExtractor for TypeScriptExtractor {
             "type_alias" => Some(ChunkType::TypeAlias),
             "enum" => Some(ChunkType::Enum),
             "namespace" => Some(ChunkType::Module),
+            "jsx_element" => Some(ChunkType::Component),
+            "jsx_self_closing_element" => Some(ChunkType::Component),
             _ => None,
         }
     }
@@ -63,6 +67,23 @@ impl LanguageExtractor for TypeScriptExtractor {
                             let start = name_node.start_byte();
                             let end = name_node.end_byte();
                             return Some(source_code[start..end].to_string());
+                        }
+                    }
+                }
+                None
+            }
+            "jsx_element" | "jsx_self_closing_element" => {
+                let mut cursor = node.walk();
+                if cursor.goto_first_child() {
+                    loop {
+                        let child = cursor.node();
+                        if child.kind() == "identifier" || child.kind() == "jsx_identifier" {
+                            let start = child.start_byte();
+                            let end = child.end_byte();
+                            return Some(source_code[start..end].to_string());
+                        }
+                        if !cursor.goto_next_sibling() {
+                            break;
                         }
                     }
                 }
@@ -100,7 +121,10 @@ impl TypeScriptExtractor {
         parser
             .set_language(tree_sitter_typescript::language_tsx())
             .map_err(|e| {
-                GitTypeError::ExtractionFailed(format!("Failed to set TypeScript/TSX language: {}", e))
+                GitTypeError::ExtractionFailed(format!(
+                    "Failed to set TypeScript/TSX language: {}",
+                    e
+                ))
             })?;
         Ok(parser)
     }
