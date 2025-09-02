@@ -14,6 +14,7 @@
 | Kotlin | `.kt`, `.kts` | ✅ Full support | `tree-sitter-kotlin` |
 | Java | `.java` | ✅ Full support | `tree-sitter-java` |
 | PHP | `.php`, `.phtml`, `.php3`, `.php4`, `.php5` | ✅ Full support | `tree-sitter-php` |
+| C# | `.cs`, `.csx` | ✅ Full support | `tree-sitter-c-sharp` |
 
 ## Extraction Features
 
@@ -131,12 +132,29 @@
 - Anonymous functions and closures
 - Exception handling (`try/catch/finally`)
 
+### C#
+- Methods (`public/private/protected methods`)
+- Classes (`class`)
+- Structs (`struct`)
+- Interfaces (`interface`)
+- Enums (`enum`)
+- Records (`record`)
+- Constructors and destructors
+- Properties (auto-properties and with getters/setters)
+- Events (`event`)
+- Delegates (`delegate`)
+- Namespaces (`namespace`)
+- Extension methods
+- Async/await methods
+- LINQ expressions
+- Attributes
+- Access modifiers (public, private, protected, internal)
+
 ## Planned Support
 
 | Language | Priority | Expected | Notes |
 |----------|----------|----------|--------|
 | C++ | High | Q2 2025 | Modern C++17/20 features |
-| C# | Medium | Q3 2025 | .NET 6+ features |
 | Dart | Medium | Q4 2025 | Flutter development |
 | Zig | Low | Future | Systems programming |
 
@@ -149,14 +167,14 @@
 gittype --langs rust
 
 # Multiple languages
-gittype --langs rust,typescript,javascript,python,go,ruby,swift,kotlin,java,php
+gittype --langs rust,typescript,javascript,python,go,ruby,swift,kotlin,java,php,csharp
 ```
 
 ### Configuration File
 
 ```toml
 [default]
-langs = ["rust", "typescript", "javascript", "python", "go", "ruby", "swift", "kotlin", "java", "php"]
+langs = ["rust", "typescript", "javascript", "python", "go", "ruby", "swift", "kotlin", "java", "php", "csharp"]
 ```
 
 ## Code Extraction Quality
