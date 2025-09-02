@@ -15,6 +15,7 @@ pub enum ChunkType {
     Const,
     Variable,
     Component, // JSX/TSX React components
+    Namespace, // For C# namespaces
 }
 
 #[derive(Debug, Clone)]

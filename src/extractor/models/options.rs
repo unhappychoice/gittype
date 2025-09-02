@@ -27,6 +27,8 @@ impl Default for ExtractionOptions {
                 "**/*.php3".to_string(),
                 "**/*.php4".to_string(),
                 "**/*.php5".to_string(),
+                "**/*.cs".to_string(),
+                "**/*.csx".to_string(),
             ],
             exclude_patterns: vec![
                 "**/target/**".to_string(),
