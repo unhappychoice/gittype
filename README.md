@@ -38,6 +38,11 @@ gittype
 
 # Or specify a specific repository path
 gittype /path/to/another/repo
+
+# Clone and play with any GitHub repository
+gittype --repo microsoft/TypeScript
+gittype --repo https://github.com/rust-lang/rust
+gittype --repo git@github.com:facebook/react.git
 ```
 
 ## Demo 🎮
