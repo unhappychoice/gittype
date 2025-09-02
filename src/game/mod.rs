@@ -1,9 +1,8 @@
 pub mod ascii_digits;
 pub mod ascii_rank_titles_generated;
 pub mod challenge;
-pub mod display;
-pub mod display_optimized;
 pub mod display_ratatui;
+pub mod models;
 pub mod rank_messages;
 pub mod screens;
 pub mod session_tracker;
