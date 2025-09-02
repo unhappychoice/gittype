@@ -34,27 +34,30 @@ function generate_section_for_commits() {
         local message=$(echo "$commit" | cut -d' ' -f2-)
         local commit_hash=$(echo "$commit" | cut -d' ' -f1)
         
+        # Get repository URL from git remote
+        local repo_url=$(git remote get-url origin | sed 's/\.git$//' | sed 's/git@github\.com:/https:\/\/github\.com\//')
+        
         # Categorize commit based on conventional commit format
         case "$message" in
             feat*|feature*)
-                features="${features}- ${message} (${commit_hash:0:7})\n"
+                features="${features}- ${message} ([${commit_hash:0:7}](${repo_url}/commit/${commit_hash}))\n"
                 ;;
             fix*)
-                fixes="${fixes}- ${message} (${commit_hash:0:7})\n"
+                fixes="${fixes}- ${message} ([${commit_hash:0:7}](${repo_url}/commit/${commit_hash}))\n"
                 ;;
             *"BREAKING CHANGE"*|*"!"*)
-                breaking="${breaking}- ${message} (${commit_hash:0:7})\n"
+                breaking="${breaking}- ${message} ([${commit_hash:0:7}](${repo_url}/commit/${commit_hash}))\n"
                 ;;
             chore*|docs*|style*|refactor*|test*|build*|ci*)
-                others="${others}- ${message} (${commit_hash:0:7})\n"
+                others="${others}- ${message} ([${commit_hash:0:7}](${repo_url}/commit/${commit_hash}))\n"
                 ;;
             "Merge pull request"*)
                 # Extract PR info
                 local pr_info=$(echo "$message" | sed 's/Merge pull request #\([0-9]*\) from .*/PR #\1/')
-                others="${others}- ${pr_info}: ${message} (${commit_hash:0:7})\n"
+                others="${others}- ${pr_info}: ${message} ([${commit_hash:0:7}](${repo_url}/commit/${commit_hash}))\n"
                 ;;
             *)
-                others="${others}- ${message} (${commit_hash:0:7})\n"
+                others="${others}- ${message} ([${commit_hash:0:7}](${repo_url}/commit/${commit_hash}))\n"
                 ;;
         esac
     done < <(git log --oneline --no-merges "$range" 2>/dev/null || true)
