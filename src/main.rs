@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
-use gittype::extractor::{ExtractionOptions, ProgressReporter, RepositoryLoader};
-use gittype::game::screens::loading_screen::LoadingScreen;
+use gittype::extractor::ExtractionOptions;
+use gittype::game::screens::loading_screen::{LoadingScreen, ProcessingResult};
 use gittype::game::{
     stage_manager::{cleanup_terminal, show_session_summary_on_interrupt},
     StageManager,
@@ -17,6 +17,10 @@ struct Cli {
     /// Repository path to extract code from
     #[arg(value_name = "REPO_PATH")]
     repo_path: Option<PathBuf>,
+
+    /// GitHub repository URL or path to clone and play with (e.g., owner/repo, https://github.com/owner/repo, git@github.com:owner/repo.git)
+    #[arg(long)]
+    repo: Option<String>,
 
     /// Filter by programming languages
     #[arg(long, value_delimiter = ',')]
@@ -91,85 +95,101 @@ fn main() -> anyhow::Result<()> {
             // TODO: Implement export functionality
         }
         None => {
-            let repo_path = cli.repo_path.unwrap_or_else(|| PathBuf::from("."));
-            {
-                // Build extraction options from CLI arguments
-                let mut options = ExtractionOptions::default();
+            // Build extraction options from CLI arguments
+            let mut options = ExtractionOptions::default();
 
-                if let Some(include_patterns) = cli.include {
-                    options.include_patterns = include_patterns;
-                }
+            if let Some(include_patterns) = cli.include {
+                options.include_patterns = include_patterns;
+            }
 
-                if let Some(exclude_patterns) = cli.exclude {
-                    options.exclude_patterns = exclude_patterns;
-                }
+            if let Some(exclude_patterns) = cli.exclude {
+                options.exclude_patterns = exclude_patterns;
+            }
 
-                // Show loading screen during startup
-                let loading_screen = match LoadingScreen::new() {
-                    Ok(screen) => Some(screen),
-                    Err(e) => {
-                        eprintln!(
-                            "Failed to initialize loading screen: {}, continuing without it...",
-                            e
-                        );
-                        None
+            // Process repository using LoadingScreen
+            let repo_spec = cli.repo.as_deref();
+            let default_repo_path = cli.repo_path.unwrap_or_else(|| PathBuf::from("."));
+            let initial_repo_path = if repo_spec.is_some() {
+                None
+            } else {
+                Some(&default_repo_path)
+            };
+
+            // Process repository using LoadingScreen
+            // Process everything in a Result chain
+            let session_result = LoadingScreen::new()
+                .and_then(|mut loading_screen| {
+                    let result =
+                        loading_screen.process_repository(repo_spec, initial_repo_path, &options);
+                    let _ = loading_screen.cleanup();
+                    result
+                })
+                .and_then(|result| {
+                    if result.challenges.is_empty() {
+                        Err(gittype::GitTypeError::NoSupportedFiles)
+                    } else {
+                        Ok(result)
                     }
-                };
+                })
+                .and_then(
+                    |ProcessingResult {
+                         challenges,
+                         git_info,
+                     }| {
+                        // Create StageManager with processed challenges
+                        let mut stage_manager = StageManager::new(challenges);
+                        stage_manager.set_git_info(git_info);
 
-                if let Some(ref screen) = loading_screen {
-                    let _ = screen.show_initial();
+                        // Run session
+                        stage_manager.run_session()
+                    },
+                );
+
+            match session_result {
+                Ok(_) => {
+                    // println!("Thanks for playing GitType!");
                 }
-
-                let mut loader = match RepositoryLoader::new() {
-                    Ok(loader) => loader,
-                    Err(e) => {
-                        eprintln!("Failed to initialize code extractor: {}", e);
-                        return Ok(());
-                    }
-                };
-
-                // Load all code chunks (functions, classes, methods, etc.)
-                let mut available_challenges = if let Some(ref screen) = loading_screen {
-                    loader.load_challenges_from_repository_with_progress(
-                        &repo_path,
-                        Some(options.clone()),
-                        screen,
-                    )?
-                } else {
-                    loader.load_challenges_from_repository(&repo_path, Some(options.clone()))?
-                };
-
-                // Generate additional Zen challenges for all source files in the repository
-                if let Some(ref screen) = loading_screen {
-                    screen.set_phase("Generating Zen challenges from all files".to_string());
-                }
-                let all_file_zen_challenges =
-                    loader.load_all_files_as_zen_challenges(&repo_path)?;
-                available_challenges.extend(all_file_zen_challenges);
-
-                if available_challenges.is_empty() {
-                    if let Some(ref screen) = loading_screen {
-                        let _ = screen.show_completion();
-                    }
-                    eprintln!("No code chunks found in the repository");
-                    return Ok(());
-                }
-                if let Some(ref screen) = loading_screen {
-                    let _ = screen.show_completion();
-                }
-
-                // Create StageManager with pre-generated challenges
-                let mut stage_manager = StageManager::new(available_challenges);
-                stage_manager.set_git_info(loader.get_git_info().clone());
-                match stage_manager.run_session() {
-                    Ok(_) => {
-                        // println!("Thanks for playing GitType!");
-                    }
-                    Err(e) => {
-                        eprintln!("Error during game session: {}", e);
-                        if e.to_string().contains("No such device or address") {
-                            eprintln!("\nHint: This error often occurs in WSL or SSH environments where terminal features are limited.");
-                            eprintln!("Try running GitType in a native terminal or GUI terminal emulator.");
+                Err(e) => {
+                    // Handle all errors at the end of the chain
+                    match e {
+                        gittype::GitTypeError::NoSupportedFiles => {
+                            panic!("No code chunks found in the repository");
+                        }
+                        gittype::GitTypeError::RepositoryNotFound(path) => {
+                            panic!("Repository not found at path: {}", path.display());
+                        }
+                        gittype::GitTypeError::RepositoryCloneError(git_error) => {
+                            panic!("Failed to clone repository: {}", git_error);
+                        }
+                        gittype::GitTypeError::ExtractionFailed(msg) => {
+                            panic!("Code extraction failed: {}", msg);
+                        }
+                        gittype::GitTypeError::InvalidRepositoryFormat(msg) => {
+                            panic!("Invalid repository format: {}", msg);
+                        }
+                        gittype::GitTypeError::IoError(io_error) => {
+                            panic!("IO error: {}", io_error);
+                        }
+                        gittype::GitTypeError::DatabaseError(db_error) => {
+                            panic!("Database error: {}", db_error);
+                        }
+                        gittype::GitTypeError::GlobPatternError(glob_error) => {
+                            panic!("Glob pattern error: {}", glob_error);
+                        }
+                        gittype::GitTypeError::SerializationError(json_error) => {
+                            panic!("Serialization error: {}", json_error);
+                        }
+                        gittype::GitTypeError::TerminalError(msg) => {
+                            // Special handling for terminal errors with helpful hints
+                            eprintln!("Terminal error: {}", msg);
+                            if msg.contains("No such device or address") {
+                                eprintln!("\nHint: This error often occurs in WSL or SSH environments where terminal features are limited.");
+                                eprintln!("Try running GitType in a native terminal or GUI terminal emulator.");
+                            }
+                            panic!("Terminal error: {}", msg);
+                        }
+                        gittype::GitTypeError::WalkDirError(walk_error) => {
+                            panic!("Directory walk error: {}", walk_error);
                         }
                     }
                 }

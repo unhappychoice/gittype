@@ -36,7 +36,7 @@ impl RepositoryLoader {
         )
     }
 
-    pub fn load_challenges_from_repository_with_progress<P: ProgressReporter + ?Sized>(
+    pub fn load_challenges_from_repository_with_progress<P: ProgressReporter>(
         &mut self,
         repo_path: &Path,
         options: Option<ExtractionOptions>,
@@ -58,15 +58,17 @@ impl RepositoryLoader {
             return Err(GitTypeError::NoSupportedFiles);
         }
 
-        progress.set_phase("Generating challenges".to_string());
+        progress.set_step(crate::game::models::loading_steps::StepType::Generating);
         // Expand chunks into multiple challenges across difficulties
-        let challenges = self.converter.convert_chunks_to_challenges(chunks);
+        let challenges = self
+            .converter
+            .convert_chunks_to_challenges_with_progress(chunks, progress);
 
-        progress.set_phase("Finalizing".to_string());
+        progress.set_step(crate::game::models::loading_steps::StepType::Finalizing);
         Ok(challenges)
     }
 
-    pub fn load_challenges_with_difficulty<P: ProgressReporter + ?Sized>(
+    pub fn load_challenges_with_difficulty<P: ProgressReporter>(
         &mut self,
         repo_path: &Path,
         options: Option<ExtractionOptions>,
@@ -81,10 +83,10 @@ impl RepositoryLoader {
 
         match difficulty {
             DifficultyLevel::Zen => {
-                progress.set_phase("Loading whole files".to_string());
+                progress.set_step(crate::game::models::loading_steps::StepType::Generating);
                 let file_paths = self.collect_source_files(repo_path)?;
                 let challenges = self.converter.convert_whole_files_to_challenges(file_paths);
-                progress.set_phase("Finalizing".to_string());
+                progress.set_step(crate::game::models::loading_steps::StepType::Finalizing);
                 Ok(challenges)
             }
             _ => {
@@ -99,12 +101,12 @@ impl RepositoryLoader {
                     return Err(GitTypeError::NoSupportedFiles);
                 }
 
-                progress.set_phase("Generating challenges".to_string());
+                progress.set_step(crate::game::models::loading_steps::StepType::Generating);
                 let challenges = self
                     .converter
                     .convert_with_difficulty_split(chunks, difficulty);
 
-                progress.set_phase("Finalizing".to_string());
+                progress.set_step(crate::game::models::loading_steps::StepType::Finalizing);
                 Ok(challenges)
             }
         }

@@ -1,6 +1,15 @@
-use super::CodeChunk;
+use super::{CodeChunk, ProgressReporter};
 use crate::game::Challenge;
 use uuid::Uuid;
+
+struct NoOpProgressReporter;
+
+impl ProgressReporter for NoOpProgressReporter {
+    fn set_step(&self, _step_type: crate::game::models::loading_steps::StepType) {}
+    fn set_progress(&self, _progress: f64) {}
+    fn set_current_file(&self, _file: Option<String>) {}
+    fn set_file_counts(&self, _processed: usize, _total: usize) {}
+}
 
 pub struct ChallengeConverter;
 
@@ -27,9 +36,23 @@ impl ChallengeConverter {
     }
 
     pub fn convert_chunks_to_challenges(&self, chunks: Vec<CodeChunk>) -> Vec<Challenge> {
-        let mut all_challenges = Vec::new();
+        self.convert_chunks_to_challenges_with_progress(chunks, &NoOpProgressReporter)
+    }
 
-        for chunk in &chunks {
+    pub fn convert_chunks_to_challenges_with_progress(
+        &self,
+        chunks: Vec<CodeChunk>,
+        progress: &dyn ProgressReporter,
+    ) -> Vec<Challenge> {
+        let mut all_challenges = Vec::new();
+        let total_chunks = chunks.len();
+
+        for (chunk_index, chunk) in chunks.iter().enumerate() {
+            // Update progress
+            let chunk_progress = chunk_index as f64 / total_chunks as f64;
+            progress.set_progress(chunk_progress);
+            progress.set_file_counts(chunk_index, total_chunks);
+
             // Generate challenges for Easy (~100), Normal (~200), Hard (~500), Wild (full chunks) only
             let difficulties = [
                 super::super::game::stage_builder::DifficultyLevel::Easy,
@@ -43,6 +66,10 @@ impl ChallengeConverter {
                 all_challenges.extend(split_challenges);
             }
         }
+
+        // Final progress update
+        progress.set_progress(1.0);
+        progress.set_file_counts(total_chunks, total_chunks);
 
         // Zen challenges are now handled separately in main.rs
         all_challenges

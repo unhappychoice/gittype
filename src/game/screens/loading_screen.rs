@@ -1,8 +1,10 @@
-use crate::extractor::ProgressReporter;
+use crate::extractor::{ExtractionOptions, RepositoryLoader};
+use crate::game::models::loading_steps::{ExecutionContext, StepManager, StepType};
+use crate::game::Challenge;
 use crate::Result;
 use crossterm::{
-    event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers},
-    terminal::{enable_raw_mode, EnterAlternateScreen},
+    event::{self, Event, KeyCode, KeyModifiers},
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
 use ratatui::{
@@ -14,115 +16,197 @@ use ratatui::{
     Frame, Terminal,
 };
 use std::io::stdout;
-use std::sync::Mutex;
+use std::path::PathBuf;
+use std::sync::{
+    atomic::{AtomicBool, AtomicUsize, Ordering},
+    Arc, RwLock,
+};
+use std::thread;
 use std::time::{Duration, Instant};
 
+pub trait ProgressReporter {
+    fn set_step(&self, step_type: StepType);
+    fn set_progress(&self, progress: f64);
+    fn set_current_file(&self, file: Option<String>);
+    fn set_file_counts(&self, processed: usize, total: usize);
+    fn finish(&self) -> crate::Result<()> {
+        Ok(())
+    }
+}
+
+pub struct NoOpProgressReporter;
+
+impl ProgressReporter for NoOpProgressReporter {
+    fn set_step(&self, _step_type: StepType) {}
+    fn set_progress(&self, _progress: f64) {}
+    fn set_current_file(&self, _file: Option<String>) {}
+    fn set_file_counts(&self, _processed: usize, _total: usize) {}
+}
+
+#[derive(Clone)]
+pub struct LoadingScreenState {
+    pub current_step: Arc<RwLock<StepType>>,
+    pub progress: Arc<RwLock<f64>>,
+    pub files_processed: Arc<AtomicUsize>,
+    pub total_files: Arc<AtomicUsize>,
+    pub spinner_index: Arc<AtomicUsize>,
+    pub should_stop: Arc<AtomicBool>,
+    pub repo_info: Arc<RwLock<Option<String>>>,
+    pub all_steps: Arc<RwLock<Vec<StepInfo>>>,
+}
+
+#[derive(Clone, Debug)]
+pub struct StepInfo {
+    pub step_type: StepType,
+    pub step_number: usize,
+    pub step_name: String,
+    pub description: String,
+}
+
 pub struct LoadingScreen {
-    terminal: Mutex<Terminal<CrosstermBackend<std::io::Stdout>>>,
-    current_phase: Mutex<String>,
-    current_step: Mutex<usize>,
-    total_steps: usize,
-    spinner_chars: Vec<char>,
-    spinner_index: Mutex<usize>,
-    progress: Mutex<f64>,
-    files_processed: Mutex<usize>,
-    total_files: Mutex<usize>,
-    last_render: Mutex<Instant>,
-    cleaned_up: Mutex<bool>,
+    state: LoadingScreenState,
+    render_handle: Option<thread::JoinHandle<Result<()>>>,
+}
+
+const SPINNER_CHARS: &[char] = &['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+
+pub struct ProcessingResult {
+    pub challenges: Vec<Challenge>,
+    pub git_info: Option<crate::extractor::GitRepositoryInfo>,
 }
 
 impl LoadingScreen {
     pub fn new() -> Result<Self> {
-        enable_raw_mode()?;
-        let mut stdout = stdout();
-        stdout.execute(EnterAlternateScreen)?;
-        let backend = CrosstermBackend::new(stdout);
-        let terminal = Terminal::new(backend)?;
+        let step_manager = Arc::new(StepManager::new());
+
+        // Initialize step info from StepManager
+        let steps_info: Vec<StepInfo> = step_manager
+            .get_all_steps()
+            .iter()
+            .map(|step| StepInfo {
+                step_type: step.step_type(),
+                step_number: step.step_number(),
+                step_name: step.step_name().to_string(),
+                description: step.description().to_string(),
+            })
+            .collect();
+
+        let state = LoadingScreenState {
+            current_step: Arc::new(RwLock::new(StepType::Cloning)),
+            progress: Arc::new(RwLock::new(0.0)),
+            files_processed: Arc::new(AtomicUsize::new(0)),
+            total_files: Arc::new(AtomicUsize::new(0)),
+            spinner_index: Arc::new(AtomicUsize::new(0)),
+            should_stop: Arc::new(AtomicBool::new(false)),
+            repo_info: Arc::new(RwLock::new(None)),
+            all_steps: Arc::new(RwLock::new(steps_info)),
+        };
 
         Ok(Self {
-            terminal: Mutex::new(terminal),
-            current_phase: Mutex::new(String::new()),
-            current_step: Mutex::new(0),
-            total_steps: 5, // Initializing, Scanning, Parsing AST, Generating challenges, Finalizing
-            spinner_chars: vec!['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'],
-            spinner_index: Mutex::new(0),
-            progress: Mutex::new(0.0),
-            files_processed: Mutex::new(0),
-            total_files: Mutex::new(0),
-            last_render: Mutex::new(Instant::now()),
-            cleaned_up: Mutex::new(false),
+            state,
+            render_handle: None,
         })
     }
 
-    pub fn show_initial(&self) -> Result<()> {
-        self.render()
+    pub fn show_initial(&mut self) -> Result<()> {
+        self.start_rendering()?;
+        Ok(())
     }
 
-    pub fn update_phase(&self, phase: &str) -> Result<()> {
-        let mut current_phase = self.current_phase.lock().unwrap();
-        if *current_phase != phase {
-            *current_phase = phase.to_string();
+    fn start_rendering(&mut self) -> Result<()> {
+        enable_raw_mode()?;
+        let mut stdout = stdout();
+        stdout.execute(EnterAlternateScreen)?;
 
-            // Update step number based on phase
-            let step_num = match phase {
-                "Initializing" => 1,
-                "Scanning repository" => 2,
-                "Parsing AST" => 3,
-                "Generating challenges" => 4,
-                "Finalizing" => 5,
-                _ => *self.current_step.lock().unwrap(),
-            };
-            *self.current_step.lock().unwrap() = step_num;
-            drop(current_phase);
+        let state = self.state.clone();
 
-            // Force render for phase changes
-            self.render_throttled(true)?;
-        }
+        let handle = thread::spawn(move || -> Result<()> {
+            let backend = CrosstermBackend::new(stdout);
+            let mut terminal = Terminal::new(backend)?;
+
+            let target_fps = 60;
+            let frame_duration = Duration::from_millis(1000 / target_fps);
+            let mut last_spinner_update = Instant::now();
+
+            loop {
+                let start = Instant::now();
+
+                // Update spinner every 100ms
+                if last_spinner_update.elapsed() >= Duration::from_millis(100) {
+                    let current_index = state.spinner_index.load(Ordering::Relaxed);
+                    state
+                        .spinner_index
+                        .store((current_index + 1) % SPINNER_CHARS.len(), Ordering::Relaxed);
+                    last_spinner_update = Instant::now();
+                }
+
+                // Render frame
+                terminal.draw(|frame| Self::draw_ui_static(frame, &state))?;
+
+                // Check for stop signal
+                if state.should_stop.load(Ordering::Relaxed) {
+                    break;
+                }
+
+                // Check for Ctrl+C (optional graceful handling)
+                if event::poll(Duration::from_millis(0))? {
+                    if let Event::Key(key) = event::read()? {
+                        if key.code == KeyCode::Char('c')
+                            && key.modifiers.contains(KeyModifiers::CONTROL)
+                        {
+                            // Use global session tracker to show summary
+                            crate::game::stage_manager::show_session_summary_on_interrupt();
+                            std::process::exit(0);
+                        }
+                    }
+                }
+
+                // Sleep to maintain target FPS
+                let elapsed = start.elapsed();
+                if elapsed < frame_duration {
+                    thread::sleep(frame_duration - elapsed);
+                }
+            }
+
+            disable_raw_mode()?;
+            terminal.backend_mut().execute(LeaveAlternateScreen)?;
+            Ok(())
+        });
+
+        self.render_handle = Some(handle);
+
+        // Give the render thread a moment to initialize
+        thread::sleep(Duration::from_millis(50));
         Ok(())
     }
 
     pub fn update_progress(&self, progress: f64, processed: usize, total: usize) -> Result<()> {
-        *self.progress.lock().unwrap() = progress;
-        *self.files_processed.lock().unwrap() = processed;
-        *self.total_files.lock().unwrap() = total;
-
-        self.render()
+        // Update state atomically - no rendering needed, render thread handles it
+        if let Ok(mut p) = self.state.progress.write() {
+            *p = progress;
+        }
+        self.state
+            .files_processed
+            .store(processed, Ordering::Relaxed);
+        self.state.total_files.store(total, Ordering::Relaxed);
+        Ok(())
     }
 
-    pub fn update_spinner(&self) {
-        // Check for Ctrl+C event
-        if event::poll(Duration::from_millis(0)).unwrap_or(false) {
-            if let Ok(Event::Key(KeyEvent {
-                code: KeyCode::Char('c'),
-                modifiers: KeyModifiers::CONTROL,
-                kind: KeyEventKind::Press,
-                ..
-            })) = event::read()
-            {
-                // Cleanup and exit gracefully
-                let _ = self.cleanup();
-                std::process::exit(0);
-            }
+    pub fn set_repo_info(&self, repo_info: String) -> Result<()> {
+        if let Ok(mut info) = self.state.repo_info.write() {
+            *info = Some(repo_info);
+        }
+        Ok(())
+    }
+
+    pub fn show_completion(&mut self) -> Result<()> {
+        // Mark as completed
+        if let Ok(mut current_step) = self.state.current_step.write() {
+            *current_step = StepType::Completed;
         }
 
-        let mut spinner_index = self.spinner_index.lock().unwrap();
-        *spinner_index = (*spinner_index + 1) % self.spinner_chars.len();
-        drop(spinner_index);
-
-        // Render with throttling to prevent excessive updates
-        let _ = self.render_throttled(false);
-    }
-
-    pub fn show_completion(&self) -> Result<()> {
-        // Mark as completed and render
-        *self.current_phase.lock().unwrap() = "Completed".to_string();
-        *self.current_step.lock().unwrap() = self.total_steps;
-
-        // Force render for completion
-        self.render_throttled(true)?;
-
         // Wait a moment to show the completion
-        std::thread::sleep(std::time::Duration::from_millis(800));
+        thread::sleep(Duration::from_millis(800));
 
         // Clean up terminal state before returning
         self.cleanup()?;
@@ -130,38 +214,80 @@ impl LoadingScreen {
         Ok(())
     }
 
-    fn render(&self) -> Result<()> {
-        self.render_throttled(false)
-    }
-
-    fn render_throttled(&self, force: bool) -> Result<()> {
-        let now = Instant::now();
-
-        if !force {
-            let last_render = self.last_render.lock().unwrap();
-            if now.duration_since(*last_render) < Duration::from_millis(50) {
-                // Skip render if less than 50ms since last render
-                return Ok(());
-            }
+    pub fn show_completion_without_cleanup(&self) -> Result<()> {
+        // Mark as completed
+        if let Ok(mut current_step) = self.state.current_step.write() {
+            *current_step = StepType::Completed;
         }
 
-        let mut terminal = self.terminal.lock().unwrap();
-        terminal.draw(|frame| self.draw_ui(frame))?;
-        *self.last_render.lock().unwrap() = now;
+        // Wait a moment to show the completion
+        thread::sleep(Duration::from_millis(500));
+
         Ok(())
     }
 
-    fn draw_ui(&self, frame: &mut Frame) {
+    pub fn process_repository(
+        &mut self,
+        repo_spec: Option<&str>,
+        repo_path: Option<&PathBuf>,
+        options: &ExtractionOptions,
+    ) -> Result<ProcessingResult> {
+        // Start rendering
+        self.show_initial()?;
+
+        // Execute step system
+        let step_manager = StepManager::new();
+        let mut loader = RepositoryLoader::new()?;
+
+        let mut context = ExecutionContext {
+            repo_spec,
+            repo_path,
+            extraction_options: Some(options),
+            loading_screen: Some(self),
+            repository_loader: Some(&mut loader),
+            current_repo_path: None,
+        };
+
+        match step_manager.execute_pipeline(&mut context) {
+            Ok(challenges) => {
+                // Show completion
+                let _ = self.show_completion_without_cleanup();
+
+                Ok(ProcessingResult {
+                    challenges,
+                    git_info: loader.get_git_info().clone(),
+                })
+            }
+            Err(e) => {
+                let _ = self.cleanup();
+                Err(e)
+            }
+        }
+    }
+
+    fn draw_ui_static(frame: &mut Frame, state: &LoadingScreenState) {
         let size = frame.size();
 
+        // Check if repo info exists to adjust layout
+        let repo_info = state
+            .repo_info
+            .read()
+            .map(|r| r.clone())
+            .unwrap_or_default();
+        let has_repo_info = repo_info.is_some();
+
         // Calculate total content height
-        let content_height = 2 + 6 + 3 + 3; // Loading message + Description + Phase + Progress
+        let content_height = if has_repo_info {
+            2 + 8 + 1 + 3 + 1 + 2 // Loading message + Description + Spacing + Progress + Spacing + Repo info
+        } else {
+            2 + 8 + 1 + 3 // Loading message + Description + Spacing + Progress
+        };
         let vertical_margin = (size.height.saturating_sub(content_height)) / 2;
 
         // Create vertical centering layout
         let vertical_layout = Layout::default()
             .direction(Direction::Vertical)
-            .constraints([
+            .constraints(vec![
                 Constraint::Length(vertical_margin),
                 Constraint::Length(content_height),
                 Constraint::Min(0),
@@ -171,28 +297,43 @@ impl LoadingScreen {
         // Main content layout
         let main_layout = Layout::default()
             .direction(Direction::Vertical)
-            .constraints([
-                Constraint::Length(2), // Loading message
-                Constraint::Length(6), // Description
-                Constraint::Length(3), // Phase
-                Constraint::Length(3), // Progress
-            ])
+            .constraints(if has_repo_info {
+                vec![
+                    Constraint::Length(2), // Loading message
+                    Constraint::Length(8), // Description
+                    Constraint::Length(1), // Spacing
+                    Constraint::Length(3), // Progress
+                    Constraint::Length(1), // Spacing
+                    Constraint::Length(2), // Repo info
+                ]
+            } else {
+                vec![
+                    Constraint::Length(2), // Loading message
+                    Constraint::Length(8), // Description
+                    Constraint::Length(1), // Spacing
+                    Constraint::Length(3), // Progress
+                ]
+            })
             .split(vertical_layout[1]);
 
         // Draw loading message
-        self.draw_loading_message(frame, main_layout[0]);
+        Self::draw_loading_message_static(frame, main_layout[0]);
 
         // Draw description
-        self.draw_description(frame, main_layout[1]);
+        Self::draw_description_static(frame, main_layout[1], state);
 
-        // Draw phase
-        self.draw_phase(frame, main_layout[2]);
+        // Skip main_layout[2] for spacing
 
         // Draw progress
-        self.draw_progress(frame, main_layout[3]);
+        Self::draw_progress_static(frame, main_layout[3], state);
+
+        // Draw repo info if available
+        if has_repo_info && main_layout.len() > 4 {
+            Self::draw_repo_info_static(frame, main_layout[5], &repo_info.unwrap());
+        }
     }
 
-    fn draw_loading_message(&self, frame: &mut Frame, area: Rect) {
+    fn draw_loading_message_static(frame: &mut Frame, area: Rect) {
         let loading_msg = Line::from(vec![
             Span::styled("» ", Style::default().fg(Color::Yellow)),
             Span::styled(
@@ -208,45 +349,58 @@ impl LoadingScreen {
         frame.render_widget(loading, area);
     }
 
-    fn draw_description(&self, frame: &mut Frame, area: Rect) {
-        let current_step = *self.current_step.lock().unwrap();
+    fn draw_description_static(frame: &mut Frame, area: Rect, state: &LoadingScreenState) {
+        let current_step_type = state
+            .current_step
+            .read()
+            .map(|x| x.clone())
+            .unwrap_or(StepType::Cloning);
 
-        // Define steps with their descriptions
-        let steps = [
-            "Scanning repository files",
-            "Extracting functions, classes, and code blocks",
-            "Parsing AST and analyzing code structure",
-            "Generating challenges across difficulty levels",
-            "Preparing content for optimal typing practice",
+        let mut description_lines = vec![
+            Line::from(Span::styled(
+                "Analyzing your repository to create typing challenges...",
+                Style::default().fg(Color::Gray),
+            )),
+            Line::from(Span::raw("")), // Empty line for spacing
         ];
 
-        let mut description_lines = vec![Line::from(Span::styled(
-            "Analyzing your repository to create typing challenges...",
-            Style::default().fg(Color::Gray),
-        ))];
+        // Get steps from state
+        if let Ok(steps) = state.all_steps.read() {
+            for step_info in steps.iter() {
+                let is_current = current_step_type == step_info.step_type;
+                let is_completed = if current_step_type == StepType::Completed {
+                    // If completed, all steps are completed
+                    true
+                } else {
+                    // Check if this step comes before the current step in the sequence
+                    step_info.step_number
+                        < steps
+                            .iter()
+                            .find(|s| s.step_type == current_step_type)
+                            .map(|s| s.step_number)
+                            .unwrap_or(0)
+                };
 
-        // Add steps with checkmarks/progress indicators
-        for (i, step_desc) in steps.iter().enumerate() {
-            let step_num = i + 1;
-            let (icon, color) = if step_num < current_step {
-                ("✓", Color::Green)
-            } else if step_num == current_step {
-                ("•", Color::Yellow)
-            } else {
-                ("◦", Color::DarkGray)
-            };
+                let (icon, color) = if is_completed {
+                    ("✓", Color::Green)
+                } else if is_current {
+                    ("⚡", Color::Yellow)
+                } else {
+                    ("○", Color::DarkGray)
+                };
 
-            description_lines.push(Line::from(vec![
-                Span::styled(format!("{} ", icon), Style::default().fg(color)),
-                Span::styled(
-                    *step_desc,
-                    Style::default().fg(if step_num <= current_step {
-                        Color::Gray
-                    } else {
-                        Color::DarkGray
-                    }),
-                ),
-            ]));
+                description_lines.push(Line::from(vec![
+                    Span::styled(format!("{} ", icon), Style::default().fg(color)),
+                    Span::styled(
+                        step_info.description.clone(),
+                        Style::default().fg(if is_completed || is_current {
+                            Color::Gray
+                        } else {
+                            Color::DarkGray
+                        }),
+                    ),
+                ]));
+            }
         }
 
         let description_paragraph = Paragraph::new(description_lines).alignment(Alignment::Center);
@@ -254,60 +408,61 @@ impl LoadingScreen {
         frame.render_widget(description_paragraph, area);
     }
 
-    fn draw_phase(&self, frame: &mut Frame, area: Rect) {
-        let current_phase = self.current_phase.lock().unwrap();
-        let current_step = *self.current_step.lock().unwrap();
+    fn draw_progress_static(frame: &mut Frame, area: Rect, state: &LoadingScreenState) {
+        let progress = state.progress.read().map(|x| *x).unwrap_or(0.0);
+        let files_processed = state.files_processed.load(Ordering::Relaxed);
+        let total_files = state.total_files.load(Ordering::Relaxed);
+        let current_step_type = state
+            .current_step
+            .read()
+            .map(|x| x.clone())
+            .unwrap_or(StepType::Cloning);
 
-        if current_phase.is_empty() {
+        if current_step_type == StepType::Completed {
             return;
         }
 
-        let phase_text = if *current_phase == "Completed" {
-            "✓ Loading complete!"
-        } else {
-            &format!(
-                "• {}/{} {}...",
-                current_step, self.total_steps, current_phase
+        // Show spinner for steps without meaningful progress data
+        // Note: during scanning, total_files might be 0 but we still want to show progress
+        if total_files == 0
+            && files_processed == 0
+            && !matches!(
+                current_step_type,
+                StepType::Cloning
+                    | StepType::Scanning
+                    | StepType::Generating
+                    | StepType::Finalizing
             )
-        };
-
-        let phase_line = Line::from(Span::styled(
-            phase_text,
-            if *current_phase == "Completed" {
-                Style::default()
-                    .fg(Color::Green)
-                    .add_modifier(Modifier::BOLD)
-            } else {
-                Style::default().fg(Color::Blue)
-            },
-        ));
-
-        let phase_widget = Paragraph::new(vec![phase_line]).alignment(Alignment::Center);
-
-        frame.render_widget(phase_widget, area);
-    }
-
-    fn draw_progress(&self, frame: &mut Frame, area: Rect) {
-        let progress = *self.progress.lock().unwrap();
-        let files_processed = *self.files_processed.lock().unwrap();
-        let total_files = *self.total_files.lock().unwrap();
-        let current_phase = self.current_phase.lock().unwrap();
-
-        if total_files == 0 || *current_phase == "Completed" {
+        {
             return;
         }
 
         // Get spinner character
-        let spinner_index = *self.spinner_index.lock().unwrap();
-        let spinner = self.spinner_chars[spinner_index % self.spinner_chars.len()];
+        let spinner_index = state.spinner_index.load(Ordering::Relaxed);
+        let spinner = SPINNER_CHARS[spinner_index % SPINNER_CHARS.len()];
 
-        let progress_text = format!(
-            "{} {:.1}% {}/{} files",
-            spinner,
-            progress * 100.0,
-            files_processed,
-            total_files
-        );
+        let progress_text = if total_files > 0 {
+            let unit = match current_step_type {
+                StepType::Generating => "challenges",
+                StepType::Cloning => "", // Just show percentage for cloning
+                _ => "files",
+            };
+
+            if current_step_type == StepType::Cloning {
+                format!("{} {:.1}%", spinner, progress * 100.0)
+            } else {
+                format!(
+                    "{} {:.1}% {}/{} {}",
+                    spinner,
+                    progress * 100.0,
+                    files_processed,
+                    total_files,
+                    unit
+                )
+            }
+        } else {
+            format!("{} Working...", spinner)
+        };
 
         // Progress bar
         let progress_area = Layout::default()
@@ -318,13 +473,15 @@ impl LoadingScreen {
             ])
             .split(area);
 
-        // Render progress bar
-        let gauge = Gauge::default()
-            .block(Block::default())
-            .gauge_style(Style::default().fg(Color::Green))
-            .ratio(progress);
+        // Render progress bar (only if we have meaningful progress)
+        if total_files > 0 {
+            let gauge = Gauge::default()
+                .block(Block::default())
+                .gauge_style(Style::default().fg(Color::Green))
+                .ratio(progress.clamp(0.0, 1.0)); // Clamp progress to valid range
 
-        frame.render_widget(gauge, progress_area[0]);
+            frame.render_widget(gauge, progress_area[0]);
+        }
 
         // Render progress text
         let progress_line = Line::from(Span::styled(
@@ -337,14 +494,24 @@ impl LoadingScreen {
         frame.render_widget(progress_widget, progress_area[1]);
     }
 
-    pub fn cleanup(&self) -> Result<()> {
-        let mut cleaned_up = self.cleaned_up.lock().unwrap();
-        if *cleaned_up {
-            return Ok(());
+    fn draw_repo_info_static(frame: &mut Frame, area: Rect, repo_info: &str) {
+        let repo_line = Line::from(Span::styled(repo_info, Style::default().fg(Color::Cyan)));
+
+        let repo_widget = Paragraph::new(vec![repo_line]).alignment(Alignment::Center);
+
+        frame.render_widget(repo_widget, area);
+    }
+
+    pub fn cleanup(&mut self) -> Result<()> {
+        // Signal render thread to stop
+        self.state.should_stop.store(true, Ordering::Relaxed);
+
+        // Wait for render thread to finish
+        if let Some(handle) = self.render_handle.take() {
+            let _ = handle.join();
         }
 
-        crate::game::stage_manager::cleanup_terminal();
-        *cleaned_up = true;
+        // Cleanup is now handled by the render thread itself
         Ok(())
     }
 }
@@ -356,13 +523,16 @@ impl Drop for LoadingScreen {
 }
 
 impl ProgressReporter for LoadingScreen {
-    fn set_phase(&self, phase: String) {
-        let _ = self.update_phase(&phase);
+    fn set_step(&self, step_type: StepType) {
+        if let Ok(mut current_step) = self.state.current_step.write() {
+            *current_step = step_type;
+        }
     }
 
     fn set_progress(&self, progress: f64) {
-        let processed = *self.files_processed.lock().unwrap();
-        let total = *self.total_files.lock().unwrap();
+        // Safely get current values, use defaults if lock fails
+        let processed = self.state.files_processed.load(Ordering::Relaxed);
+        let total = self.state.total_files.load(Ordering::Relaxed);
         let _ = self.update_progress(progress, processed, total);
     }
 
@@ -377,9 +547,5 @@ impl ProgressReporter for LoadingScreen {
             0.0
         };
         let _ = self.update_progress(progress, processed, total);
-    }
-
-    fn update_spinner(&self) {
-        self.update_spinner();
     }
 }
