@@ -1,5 +1,5 @@
 use crate::extractor::models::{CodeChunk, Language};
-use crate::extractor::parsers::get_parser_registry;
+use crate::extractor::parsers::{get_parser_registry, parse_with_thread_local};
 use crate::{GitTypeError, Result};
 use std::fs;
 use std::path::Path;
@@ -46,10 +46,8 @@ impl CommonExtractor {
 
     pub fn extract_from_file(file_path: &Path, language: Language) -> Result<Vec<CodeChunk>> {
         let content = fs::read_to_string(file_path)?;
-        let registry = get_parser_registry();
-        let mut parser = registry.create_parser(language)?;
-
-        let tree = parser.parse(&content, None).ok_or_else(|| {
+        // Reuse per-thread parser instance for the language
+        let tree = parse_with_thread_local(language, &content).ok_or_else(|| {
             GitTypeError::ExtractionFailed(format!("Failed to parse file: {:?}", file_path))
         })?;
 

@@ -29,6 +29,18 @@ impl CodeExtractor {
     ) -> Result<Vec<CodeChunk>> {
         progress.set_step(crate::game::models::loading_steps::StepType::Scanning);
 
+        // Compile glob patterns once for faster matching
+        let include_patterns: Vec<glob::Pattern> = _options
+            .include_patterns
+            .iter()
+            .filter_map(|p| glob::Pattern::new(p).ok())
+            .collect();
+        let exclude_patterns: Vec<glob::Pattern> = _options
+            .exclude_patterns
+            .iter()
+            .filter_map(|p| glob::Pattern::new(p).ok())
+            .collect();
+
         // First pass: count total files to process
         let walker_count = WalkBuilder::new(repo_path)
             .hidden(false) // Include hidden files
@@ -50,7 +62,11 @@ impl CodeExtractor {
 
             if let Some(extension) = path.extension().and_then(|e| e.to_str()) {
                 if let Some(_language) = Language::from_extension(extension) {
-                    if Self::should_process_file_static(path, &_options) {
+                    if Self::should_process_file_compiled(
+                        path,
+                        &include_patterns,
+                        &exclude_patterns,
+                    ) {
                         total_files_to_process += 1;
                     }
                 }
@@ -79,7 +95,11 @@ impl CodeExtractor {
 
             if let Some(extension) = path.extension().and_then(|e| e.to_str()) {
                 if let Some(language) = Language::from_extension(extension) {
-                    if Self::should_process_file_static(path, &_options) {
+                    if Self::should_process_file_compiled(
+                        path,
+                        &include_patterns,
+                        &exclude_patterns,
+                    ) {
                         files_to_process.push((path.to_path_buf(), language));
                         processed_count += 1;
 
@@ -142,30 +162,33 @@ impl CodeExtractor {
         Ok(all_chunks)
     }
 
+    #[allow(dead_code)]
     fn should_process_file_static(path: &Path, _options: &ExtractionOptions) -> bool {
+        // Kept for backward compatibility; build patterns on the fly (slower)
+        let include_patterns: Vec<glob::Pattern> = _options
+            .include_patterns
+            .iter()
+            .filter_map(|p| glob::Pattern::new(p).ok())
+            .collect();
+        let exclude_patterns: Vec<glob::Pattern> = _options
+            .exclude_patterns
+            .iter()
+            .filter_map(|p| glob::Pattern::new(p).ok())
+            .collect();
+        Self::should_process_file_compiled(path, &include_patterns, &exclude_patterns)
+    }
+
+    fn should_process_file_compiled(
+        path: &Path,
+        include_patterns: &[glob::Pattern],
+        exclude_patterns: &[glob::Pattern],
+    ) -> bool {
         let path_str = path.to_string_lossy();
 
-        // Check exclude patterns first
-        for pattern in &_options.exclude_patterns {
-            if glob::Pattern::new(pattern)
-                .map(|p| p.matches(&path_str))
-                .unwrap_or(false)
-            {
-                return false;
-            }
+        if exclude_patterns.iter().any(|p| p.matches(&path_str)) {
+            return false;
         }
-
-        // Check include patterns
-        for pattern in &_options.include_patterns {
-            if glob::Pattern::new(pattern)
-                .map(|p| p.matches(&path_str))
-                .unwrap_or(false)
-            {
-                return true;
-            }
-        }
-
-        false
+        include_patterns.iter().any(|p| p.matches(&path_str))
     }
 
     pub fn extract_from_file(

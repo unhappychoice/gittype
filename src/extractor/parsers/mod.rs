@@ -1,8 +1,9 @@
 use crate::extractor::models::{ChunkType, Language};
 use crate::{GitTypeError, Result};
 use once_cell::sync::Lazy;
+use std::cell::RefCell;
 use std::collections::HashMap;
-use tree_sitter::{Node, Parser, Query};
+use tree_sitter::{Node, Parser, Query, Tree};
 
 pub mod csharp;
 pub mod go;
@@ -164,4 +165,29 @@ static REGISTRY: Lazy<ParserRegistry> = Lazy::new(ParserRegistry::new);
 
 pub fn get_parser_registry() -> &'static ParserRegistry {
     &REGISTRY
+}
+
+thread_local! {
+    static TL_PARSERS: RefCell<std::collections::HashMap<Language, Parser>> = RefCell::new(std::collections::HashMap::new());
+}
+
+/// Parse source using a thread-local parser per language to avoid re-allocations.
+pub fn parse_with_thread_local(language: Language, content: &str) -> Option<Tree> {
+    TL_PARSERS.with(|cell| {
+        let mut map = cell.borrow_mut();
+        let parser = match map.get_mut(&language) {
+            Some(p) => p,
+            None => {
+                // Create and insert parser if not exists
+                match REGISTRY.create_parser(language) {
+                    Ok(p) => {
+                        map.insert(language, p);
+                        map.get_mut(&language).unwrap()
+                    }
+                    Err(_) => return None,
+                }
+            }
+        };
+        parser.parse(content, None)
+    })
 }
