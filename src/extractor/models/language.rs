@@ -10,6 +10,7 @@ pub enum Language {
     Kotlin,
     Java,
     Php,
+    CSharp,
 }
 
 impl std::fmt::Display for Language {
@@ -25,6 +26,7 @@ impl std::fmt::Display for Language {
             Language::Kotlin => "kotlin",
             Language::Java => "java",
             Language::Php => "php",
+            Language::CSharp => "csharp",
         };
         write!(f, "{}", s)
     }
@@ -43,6 +45,7 @@ impl Language {
             "kt" | "kts" => Some(Language::Kotlin),
             "java" => Some(Language::Java),
             "php" | "phtml" | "php3" | "php4" | "php5" => Some(Language::Php),
+            "cs" | "csx" => Some(Language::CSharp),
             _ => None,
         }
     }
@@ -59,6 +62,7 @@ impl Language {
             Language::Kotlin => "kt",
             Language::Java => "java",
             Language::Php => "php",
+            Language::CSharp => "cs",
         }
     }
 
@@ -76,6 +80,7 @@ impl Language {
             Some("php") | Some("phtml") | Some("php3") | Some("php4") | Some("php5") => {
                 "php".to_string()
             }
+            Some("cs") | Some("csx") => "csharp".to_string(),
             _ => "text".to_string(),
         }
     }
