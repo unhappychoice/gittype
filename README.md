@@ -40,9 +40,9 @@ gittype
 gittype /path/to/another/repo
 
 # Clone and play with any GitHub repository
-gittype --repo microsoft/TypeScript
-gittype --repo https://github.com/rust-lang/rust
-gittype --repo git@github.com:facebook/react.git
+gittype --repo clap-rs/clap
+gittype --repo https://github.com/ratatui-org/ratatui
+gittype --repo git@github.com:dtolnay/anyhow.git
 ```
 
 ## Demo 🎮
