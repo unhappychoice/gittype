@@ -4,6 +4,7 @@ use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use tree_sitter::{Node, Parser, Query};
 
+pub mod csharp;
 pub mod go;
 pub mod java;
 pub mod javascript;
@@ -90,6 +91,12 @@ impl ParserRegistry {
         registry.register(Language::Php, php::PhpExtractor::create_parser, || {
             Box::new(php::PhpExtractor)
         });
+
+        registry.register(
+            Language::CSharp,
+            csharp::CSharpExtractor::create_parser,
+            || Box::new(csharp::CSharpExtractor),
+        );
 
         registry
     }
