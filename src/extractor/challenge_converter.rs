@@ -1,8 +1,11 @@
 use super::{CodeChunk, ProgressReporter};
 use crate::game::Challenge;
-use uuid::Uuid;
 use rayon::prelude::*;
-use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
+use std::sync::{
+    atomic::{AtomicUsize, Ordering},
+    Arc,
+};
+use uuid::Uuid;
 
 struct NoOpProgressReporter;
 
@@ -57,6 +60,9 @@ impl ChallengeConverter {
             super::super::game::stage_builder::DifficultyLevel::Wild,
         ];
 
+        // Initialize progress bounds (0 processed yet)
+        progress.set_file_counts(0, total);
+
         let all: Vec<Challenge> = chunks
             .into_par_iter()
             .flat_map(|chunk| {
@@ -66,15 +72,13 @@ impl ChallengeConverter {
                     local.extend(split);
                 }
 
-                // Update progress per chunk (best-effort)
-                let done = processed.fetch_add(1, Ordering::Relaxed) + 1;
-                progress.set_file_counts(done, total);
-                progress.set_progress(done as f64 / total as f64);
-
+                // Track progress count without calling reporter from parallel context
+                let _ = processed.fetch_add(1, Ordering::Relaxed);
                 local
             })
             .collect();
 
+        // Final progress update only (avoid Sync bound on ProgressReporter)
         progress.set_file_counts(total, total);
         progress.set_progress(1.0);
 
@@ -110,7 +114,11 @@ impl ChallengeConverter {
         use super::super::game::stage_builder::DifficultyLevel;
         file_paths
             .into_par_iter()
-            .filter_map(|file_path| std::fs::read_to_string(&file_path).ok().map(|c| (file_path, c)))
+            .filter_map(|file_path| {
+                std::fs::read_to_string(&file_path)
+                    .ok()
+                    .map(|c| (file_path, c))
+            })
             .map(|(file_path, content)| {
                 let id = Uuid::new_v4().to_string();
                 let language = super::Language::detect_from_path(&file_path);
@@ -335,7 +343,11 @@ impl ChallengeConverter {
     ) -> Vec<Challenge> {
         file_paths
             .into_par_iter()
-            .filter_map(|file_path| std::fs::read_to_string(&file_path).ok().map(|c| (file_path, c)))
+            .filter_map(|file_path| {
+                std::fs::read_to_string(&file_path)
+                    .ok()
+                    .map(|c| (file_path, c))
+            })
             .map(|(file_path, content)| {
                 let id = uuid::Uuid::new_v4().to_string();
                 let language = super::Language::detect_from_path(&file_path);
