@@ -28,6 +28,12 @@ pub enum GitTypeError {
 
     #[error("Walk directory error: {0}")]
     WalkDirError(#[from] walkdir::Error),
+
+    #[error("Repository clone error: {0}")]
+    RepositoryCloneError(#[from] git2::Error),
+
+    #[error("Invalid repository format: {0}")]
+    InvalidRepositoryFormat(String),
 }
 
 pub type Result<T> = std::result::Result<T, GitTypeError>;
