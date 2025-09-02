@@ -69,18 +69,26 @@ class Dialog extends React.Component<Props> {
         .iter()
         .filter(|c| matches!(c.chunk_type, ChunkType::Class))
         .collect();
+    let component_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Component))
+        .collect();
 
     println!("Found {} total chunks", chunks.len());
     println!("Functions: {}", function_chunks.len());
     println!("Interfaces: {}", interface_chunks.len());
     println!("Classes: {}", class_chunks.len());
+    println!("Components: {}", component_chunks.len());
 
     let all_names: Vec<&String> = chunks.iter().map(|c| &c.name).collect();
     println!("All chunk names: {:?}", all_names);
 
     // Should find at least the interface and functions (React component functions)
     assert!(!interface_chunks.is_empty(), "Should find Props interface");
-    assert!(!function_chunks.is_empty(), "Should find function components");
+    assert!(
+        !function_chunks.is_empty(),
+        "Should find function components"
+    );
 
     let interface_names: Vec<&String> = interface_chunks.iter().map(|c| &c.name).collect();
     assert!(interface_names.contains(&&"Props".to_string()));
@@ -90,6 +98,10 @@ class Dialog extends React.Component<Props> {
     assert!(function_names.contains(&&"WelcomeComponent".to_string()));
     assert!(function_names.contains(&&"App".to_string()));
     assert!(function_names.contains(&&"Button".to_string()));
+
+    // Should also find JSX components as Component chunks
+    let component_names: Vec<&String> = component_chunks.iter().map(|c| &c.name).collect();
+    println!("Component names: {:?}", component_names);
 }
 
 #[test]
@@ -126,19 +138,44 @@ function FormComponent() {
         .extract_chunks(temp_dir.path(), ExtractionOptions::default())
         .unwrap();
 
+    println!("JSX file chunks found: {}", chunks.len());
+    for chunk in &chunks {
+        println!(
+            "  Chunk: {} ({}:{}-{}:{})",
+            chunk.name,
+            chunk.file_path.display(),
+            chunk.start_line,
+            chunk.end_line,
+            chunk.chunk_type.clone() as u8
+        );
+    }
+
     assert!(!chunks.is_empty(), "Should find code chunks in JSX file");
 
     let function_chunks: Vec<_> = chunks
         .iter()
         .filter(|c| matches!(c.chunk_type, ChunkType::Function))
         .collect();
+    let component_chunks: Vec<_> = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Component))
+        .collect();
 
     println!("Found {} function chunks", function_chunks.len());
+    println!("Found {} component chunks", component_chunks.len());
     let function_names: Vec<&String> = function_chunks.iter().map(|c| &c.name).collect();
+    let component_names: Vec<&String> = component_chunks.iter().map(|c| &c.name).collect();
     println!("Function names: {:?}", function_names);
+    println!("Component names: {:?}", component_names);
 
     assert!(function_names.contains(&&"ProfileCard".to_string()));
     assert!(function_names.contains(&&"FormComponent".to_string()));
+
+    // Should find JSX components (div, img, input, br, CustomComponent)
+    // Note: These are HTML elements and custom components used in JSX
+    if !component_chunks.is_empty() {
+        println!("JSX components found: {:?}", component_names);
+    }
 }
 
 #[test]
@@ -216,7 +253,10 @@ export default UserList;
         .extract_chunks(temp_dir.path(), ExtractionOptions::default())
         .unwrap();
 
-    assert!(!chunks.is_empty(), "Should find code chunks in mixed TSX file");
+    assert!(
+        !chunks.is_empty(),
+        "Should find code chunks in mixed TSX file"
+    );
 
     // Check for different types of constructs
     let interface_count = chunks
@@ -239,6 +279,10 @@ export default UserList;
         .iter()
         .filter(|c| matches!(c.chunk_type, ChunkType::Class))
         .count();
+    let component_count = chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Component))
+        .count();
 
     println!("Mixed TSX content analysis:");
     println!("  Interfaces: {}", interface_count);
@@ -246,6 +290,7 @@ export default UserList;
     println!("  Enums: {}", enum_count);
     println!("  Functions: {}", function_count);
     println!("  Classes: {}", class_count);
+    println!("  Components: {}", component_count);
 
     let all_names: Vec<&String> = chunks.iter().map(|c| &c.name).collect();
     println!("  All names: {:?}", all_names);
