@@ -160,11 +160,26 @@ jobs:
     runs-on: ubuntu-latest
     needs: [release, build-and-upload]
     steps:
-      - name: Update Homebrew formula
-        uses: dawidd6/action-homebrew-bump-formula@v3
+      - name: Checkout homebrew tap
+        uses: actions/checkout@v4
         with:
+          repository: unhappychoice/homebrew-tap
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
-          tap: unhappychoice/homebrew-tap
-          formula: gittype
-          tag: ${{ needs.release.outputs.new_version }}
-          revision: ${{ needs.release.outputs.tag_sha }}
+          path: homebrew-tap
+      
+      - name: Update Homebrew formula
+        run: |
+          # Calculate the SHA256 of the source tarball
+          TARBALL_URL="https://github.com/unhappychoice/gittype/archive/${{ needs.release.outputs.new_version }}.tar.gz"
+          SHA256=$(curl -sL "$TARBALL_URL" | sha256sum | cut -d' ' -f1)
+          
+          # Update the formula
+          sed -i "s|url \".*\"|url \"$TARBALL_URL\"|" homebrew-tap/Formula/gittype.rb
+          sed -i "s|sha256 \".*\"|sha256 \"$SHA256\"|" homebrew-tap/Formula/gittype.rb
+          
+          cd homebrew-tap
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add Formula/gittype.rb
+          git commit -m "chore: update gittype to ${{ needs.release.outputs.new_version }}"
+          git push
