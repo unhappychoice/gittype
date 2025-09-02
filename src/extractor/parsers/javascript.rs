@@ -3,33 +3,28 @@ use crate::extractor::models::{ChunkType, Language};
 use crate::{GitTypeError, Result};
 use tree_sitter::{Node, Parser};
 
-pub struct TypeScriptExtractor;
+pub struct JavaScriptExtractor;
 
-impl LanguageExtractor for TypeScriptExtractor {
+impl LanguageExtractor for JavaScriptExtractor {
     fn language(&self) -> Language {
-        Language::TypeScript
+        Language::JavaScript
     }
 
     fn file_extensions(&self) -> &[&str] {
-        &["ts", "tsx"]
+        &["js", "mjs", "cjs", "jsx"]
     }
 
     fn tree_sitter_language(&self) -> tree_sitter::Language {
-        // Use TSX parser which supports both TypeScript and JSX syntax
-        tree_sitter_typescript::language_tsx()
+        tree_sitter_javascript::language()
     }
 
     fn query_patterns(&self) -> &str {
         "
             (function_declaration name: (identifier) @name) @function
             (method_definition name: (property_identifier) @name) @method
-            (class_declaration name: (type_identifier) @name) @class
+            (class_declaration name: (identifier) @name) @class
             (variable_declarator name: (identifier) value: (arrow_function)) @arrow_function
             (variable_declarator name: (identifier) value: (function_expression)) @function_expression
-            (interface_declaration name: (type_identifier) @name) @interface
-            (type_alias_declaration name: (type_identifier) @name) @type_alias
-            (enum_declaration name: (identifier) @name) @enum
-            (internal_module name: (identifier) @name) @namespace
             (jsx_element open_tag: (jsx_opening_element name: (identifier) @name)) @jsx_element
             (jsx_self_closing_element name: (identifier) @name) @jsx_self_closing_element
         "
@@ -46,12 +41,9 @@ impl LanguageExtractor for TypeScriptExtractor {
             "class" => Some(ChunkType::Class),
             "arrow_function" => Some(ChunkType::Function),
             "function_expression" => Some(ChunkType::Function),
-            "interface" => Some(ChunkType::Interface),
-            "type_alias" => Some(ChunkType::TypeAlias),
-            "enum" => Some(ChunkType::Enum),
-            "namespace" => Some(ChunkType::Module),
             "jsx_element" => Some(ChunkType::Component),
             "jsx_self_closing_element" => Some(ChunkType::Component),
+            "variable" => Some(ChunkType::Variable),
             _ => None,
         }
     }
@@ -89,21 +81,36 @@ impl LanguageExtractor for TypeScriptExtractor {
                 }
                 None
             }
+            "method" => {
+                if node.kind() == "assignment_expression" {
+                    let mut cursor = node.walk();
+                    if cursor.goto_first_child() && cursor.node().kind() == "member_expression" {
+                        let member_cursor = cursor.node().walk();
+                        let mut cursor = member_cursor;
+                        while cursor.goto_next_sibling() {
+                            let child = cursor.node();
+                            if child.kind() == "property_identifier" {
+                                let start = child.start_byte();
+                                let end = child.end_byte();
+                                return Some(source_code[start..end].to_string());
+                            }
+                        }
+                    }
+                }
+                self.extract_name_from_node(node, source_code)
+            }
             _ => self.extract_name_from_node(node, source_code),
         }
     }
 }
 
-impl TypeScriptExtractor {
+impl JavaScriptExtractor {
     fn extract_name_from_node(&self, node: Node, source_code: &str) -> Option<String> {
         let mut cursor = node.walk();
         if cursor.goto_first_child() {
             loop {
                 let child = cursor.node();
-                if child.kind() == "identifier"
-                    || child.kind() == "type_identifier"
-                    || child.kind() == "property_identifier"
-                {
+                if child.kind() == "identifier" || child.kind() == "property_identifier" {
                     let start = child.start_byte();
                     let end = child.end_byte();
                     return Some(source_code[start..end].to_string());
@@ -119,12 +126,9 @@ impl TypeScriptExtractor {
     pub fn create_parser() -> Result<Parser> {
         let mut parser = Parser::new();
         parser
-            .set_language(tree_sitter_typescript::language_tsx())
+            .set_language(tree_sitter_javascript::language())
             .map_err(|e| {
-                GitTypeError::ExtractionFailed(format!(
-                    "Failed to set TypeScript/TSX language: {}",
-                    e
-                ))
+                GitTypeError::ExtractionFailed(format!("Failed to set JavaScript language: {}", e))
             })?;
         Ok(parser)
     }

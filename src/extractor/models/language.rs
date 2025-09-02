@@ -2,6 +2,7 @@
 pub enum Language {
     Rust,
     TypeScript,
+    JavaScript,
     Python,
     Ruby,
     Go,
@@ -16,6 +17,7 @@ impl std::fmt::Display for Language {
         let s = match self {
             Language::Rust => "rust",
             Language::TypeScript => "typescript",
+            Language::JavaScript => "javascript",
             Language::Python => "python",
             Language::Ruby => "ruby",
             Language::Go => "go",
@@ -33,6 +35,7 @@ impl Language {
         match extension {
             "rs" => Some(Language::Rust),
             "ts" | "tsx" => Some(Language::TypeScript),
+            "js" | "jsx" | "mjs" | "cjs" => Some(Language::JavaScript),
             "py" => Some(Language::Python),
             "rb" => Some(Language::Ruby),
             "go" => Some(Language::Go),
@@ -48,6 +51,7 @@ impl Language {
         match self {
             Language::Rust => "rs",
             Language::TypeScript => "ts",
+            Language::JavaScript => "js",
             Language::Python => "py",
             Language::Ruby => "rb",
             Language::Go => "go",
@@ -62,10 +66,10 @@ impl Language {
         match path.extension().and_then(|ext| ext.to_str()) {
             Some("rs") => "rust".to_string(),
             Some("ts") | Some("tsx") => "typescript".to_string(),
+            Some("js") | Some("jsx") | Some("mjs") | Some("cjs") => "javascript".to_string(),
             Some("py") => "python".to_string(),
             Some("go") => "go".to_string(),
             Some("rb") => "ruby".to_string(),
-            Some("js") | Some("jsx") => "javascript".to_string(),
             Some("swift") => "swift".to_string(),
             Some("kt") | Some("kts") => "kotlin".to_string(),
             Some("java") => "java".to_string(),

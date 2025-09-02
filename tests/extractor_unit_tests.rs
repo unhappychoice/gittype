@@ -22,6 +22,9 @@ fn test_language_from_extension() {
     assert_eq!(Language::from_extension("rs"), Some(Language::Rust));
     assert_eq!(Language::from_extension("ts"), Some(Language::TypeScript));
     assert_eq!(Language::from_extension("tsx"), Some(Language::TypeScript));
+    assert_eq!(Language::from_extension("js"), Some(Language::JavaScript));
+    assert_eq!(Language::from_extension("mjs"), Some(Language::JavaScript));
+    assert_eq!(Language::from_extension("cjs"), Some(Language::JavaScript));
     assert_eq!(Language::from_extension("py"), Some(Language::Python));
     assert_eq!(Language::from_extension("rb"), Some(Language::Ruby));
     assert_eq!(Language::from_extension("go"), Some(Language::Go));

@@ -6,6 +6,7 @@
 |----------|-----------|--------|-------------------|
 | Rust | `.rs` | ✅ Full support | `tree-sitter-rust` |
 | TypeScript | `.ts`, `.tsx` | ✅ Full support | `tree-sitter-typescript` |
+| JavaScript | `.js`, `.jsx`, `.mjs`, `.cjs` | ✅ Full support | `tree-sitter-javascript` |
 | Python | `.py` | ✅ Full support | `tree-sitter-python` |
 | Go | `.go` | ✅ Full support | `tree-sitter-go` |
 | Ruby | `.rb` | ✅ Full support | `tree-sitter-ruby` |
@@ -35,6 +36,25 @@
 - Type definitions (`type`) - type alias declarations
 - Enums (`enum`) - enum declarations with values and computed properties
 - Namespaces (`namespace`) - namespace declarations with exported members
+
+### JavaScript
+- Function declarations (`function`)
+- Arrow functions (`() => {}`)
+- Function expressions
+- Classes (`class`) - ES6+ class syntax
+- Methods (class and object methods)
+- Variable declarations with functions (`const fn = () => {}`)
+- Async functions (`async function`)
+- Export/import statements (ES modules)
+- Object literal methods
+- **JSX syntax** - React component definitions (`.jsx` files)
+
+### TypeScript/TSX
+- All JavaScript features plus:
+- **JSX/TSX syntax** - React components with TypeScript (`.tsx` files)
+- Full TSX parser support for mixed TypeScript and JSX content
+
+> **Note**: JSX/TSX components are extracted as function and class definitions. Individual JSX elements (`<Component />`) are not extracted as separate typing challenges, but the component definitions that contain JSX are fully supported.
 
 ### Python
 - Functions (`def`)
@@ -115,10 +135,10 @@
 
 | Language | Priority | Expected | Notes |
 |----------|----------|----------|--------|
-| JavaScript | High | Next release | ESM/CommonJS support |
-| C++ | Medium | Q3 2025 | Modern C++17/20 |
+| C++ | High | Q2 2025 | Modern C++17/20 features |
 | C# | Medium | Q3 2025 | .NET 6+ features |
-| Dart | Low | Future | Flutter development |
+| Dart | Medium | Q4 2025 | Flutter development |
+| Zig | Low | Future | Systems programming |
 
 ## Language-Specific Options
 
@@ -129,14 +149,14 @@
 gittype --langs rust
 
 # Multiple languages
-gittype --langs rust,typescript,python,go,ruby,swift,kotlin,java,php
+gittype --langs rust,typescript,javascript,python,go,ruby,swift,kotlin,java,php
 ```
 
 ### Configuration File
 
 ```toml
 [default]
-langs = ["rust", "typescript", "python", "go", "ruby", "swift", "kotlin", "java", "php"]
+langs = ["rust", "typescript", "javascript", "python", "go", "ruby", "swift", "kotlin", "java", "php"]
 ```
 
 ## Code Extraction Quality
