@@ -38,6 +38,11 @@ gittype
 
 # Or specify a specific repository path
 gittype /path/to/another/repo
+
+# Clone and play with any GitHub repository
+gittype --repo clap-rs/clap
+gittype --repo https://github.com/ratatui-org/ratatui
+gittype --repo git@github.com:dtolnay/anyhow.git
 ```
 
 ## Demo 🎮
