@@ -35,7 +35,7 @@ impl Language {
         match extension {
             "rs" => Some(Language::Rust),
             "ts" | "tsx" => Some(Language::TypeScript),
-            "js" | "mjs" | "cjs" => Some(Language::JavaScript),
+            "js" | "jsx" | "mjs" | "cjs" => Some(Language::JavaScript),
             "py" => Some(Language::Python),
             "rb" => Some(Language::Ruby),
             "go" => Some(Language::Go),
