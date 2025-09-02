@@ -65,7 +65,6 @@ pub struct StepInfo {
 
 pub struct LoadingScreen {
     state: LoadingScreenState,
-    step_manager: Arc<StepManager>,
     render_handle: Option<thread::JoinHandle<Result<()>>>,
 }
 
@@ -105,7 +104,6 @@ impl LoadingScreen {
 
         Ok(Self {
             state,
-            step_manager,
             render_handle: None,
         })
     }
@@ -289,19 +287,11 @@ impl LoadingScreen {
         // Create vertical centering layout
         let vertical_layout = Layout::default()
             .direction(Direction::Vertical)
-            .constraints(if has_repo_info {
-                vec![
-                    Constraint::Length(vertical_margin),
-                    Constraint::Length(content_height),
-                    Constraint::Min(0),
-                ]
-            } else {
-                vec![
-                    Constraint::Length(vertical_margin),
-                    Constraint::Length(content_height),
-                    Constraint::Min(0),
-                ]
-            })
+            .constraints(vec![
+                Constraint::Length(vertical_margin),
+                Constraint::Length(content_height),
+                Constraint::Min(0),
+            ])
             .split(size);
 
         // Main content layout

@@ -38,16 +38,11 @@ impl CodeExtractor {
             .build();
 
         let mut total_files_to_process = 0;
-        let mut scanned_count = 0;
 
         for entry in walker_count {
             let entry =
                 entry.map_err(|e| GitTypeError::ExtractionFailed(format!("Walk error: {}", e)))?;
             let path = entry.path();
-
-            scanned_count += 1;
-
-            if scanned_count % 200 == 0 {}
 
             if !path.is_file() {
                 continue;

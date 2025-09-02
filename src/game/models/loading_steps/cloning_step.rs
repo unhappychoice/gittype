@@ -49,24 +49,20 @@ impl Step for CloningStep {
 
     fn execute(&self, context: &mut ExecutionContext) -> Result<StepResult> {
         if let Some(repo_spec) = context.repo_spec {
-            match RepoManager::parse_repo_url(repo_spec)? {
-                repo_info => {
-                    let repo_display = format!(
-                        "Repository: {}/{} ({})",
-                        repo_info.owner, repo_info.name, repo_info.origin
-                    );
+            let repo_info = RepoManager::parse_repo_url(repo_spec)?;
+            let repo_display = format!(
+                "Repository: {}/{} ({})",
+                repo_info.owner, repo_info.name, repo_info.origin
+            );
 
-                    // Set repo info in LoadingScreen
-                    if let Some(screen) = context.loading_screen {
-                        let _ = screen.set_repo_info(repo_display);
-                    }
-
-                    // Clone repository
-                    let repo_path =
-                        RepoManager::clone_or_update_repo(&repo_info, context.loading_screen)?;
-                    Ok(StepResult::RepoPath(repo_path))
-                }
+            // Set repo info in LoadingScreen
+            if let Some(screen) = context.loading_screen {
+                let _ = screen.set_repo_info(repo_display);
             }
+
+            // Clone repository
+            let repo_path = RepoManager::clone_or_update_repo(&repo_info, context.loading_screen)?;
+            Ok(StepResult::RepoPath(repo_path))
         } else {
             // Skip this step if no remote repo specified
             Ok(StepResult::Skipped)

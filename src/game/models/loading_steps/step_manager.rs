@@ -10,6 +10,12 @@ pub struct StepManager {
     steps: Vec<Box<dyn Step>>,
 }
 
+impl Default for StepManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl StepManager {
     pub fn new() -> Self {
         Self {

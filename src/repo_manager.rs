@@ -270,7 +270,7 @@ impl RepoManager {
 
         // Phase 1: Git garbage collection
         let _output = Command::new("git")
-            .args(&["gc", "--aggressive", "--prune=now"])
+            .args(["gc", "--aggressive", "--prune=now"])
             .current_dir(repo_path)
             .output();
 
