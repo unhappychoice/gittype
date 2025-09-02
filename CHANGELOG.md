@@ -10,6 +10,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### ✨ Features
 
 - feat: use vendored OpenSSL for all targets to avoid cross-compilation issues ([2bc3269](https://github.com/unhappychoice/gittype/commit/2bc3269))
+
+### 🐛 Bug Fixes
+
+- fix(ci): improve Homebrew formula update process with awk ([7c0b626](https://github.com/unhappychoice/gittype/commit/7c0b626))
+
+### 📝 Other Changes
+
+- chore: bump version to v0.3.0 ([33f0df0](https://github.com/unhappychoice/gittype/commit/33f0df0))
+
+
+## [0.3.0] - 2025-09-02
+
+### ✨ Features
+
+- feat: use vendored OpenSSL for all targets to avoid cross-compilation issues ([420f877](https://github.com/unhappychoice/gittype/commit/420f877))
 - feat: update Homebrew to use prebuilt binaries and add ARM64 support ([96836dd](https://github.com/unhappychoice/gittype/commit/96836dd))
 - feat: add repository management with GitHub support ([d08a93b](https://github.com/unhappychoice/gittype/commit/d08a93b))
 - feat: add GitHub links to commit hashes in changelog ([5881873](https://github.com/unhappychoice/gittype/commit/5881873))
@@ -21,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📝 Other Changes
 
+- chore: bump version to v0.3.0 ([806a529](https://github.com/unhappychoice/gittype/commit/806a529))
 - perf(extractor): reuse thread-local tree-sitter parser and precompile glob patterns in scanner ([b5f84e0](https://github.com/unhappychoice/gittype/commit/b5f84e0))
 - perf(extractor): parallelize challenge conversion and zen file processing ([55a2ac0](https://github.com/unhappychoice/gittype/commit/55a2ac0))
 - chore: Fix cargo clippy warnings ([4cfedac](https://github.com/unhappychoice/gittype/commit/4cfedac))
