@@ -25,6 +25,8 @@ impl LanguageExtractor for JavaScriptExtractor {
             (class_declaration name: (identifier) @name) @class
             (variable_declarator name: (identifier) value: (arrow_function)) @arrow_function
             (variable_declarator name: (identifier) value: (function_expression)) @function_expression
+            (jsx_element open_tag: (jsx_opening_element name: (identifier) @name)) @jsx_element
+            (jsx_self_closing_element name: (identifier) @name) @jsx_self_closing_element
         "
     }
 
@@ -39,6 +41,8 @@ impl LanguageExtractor for JavaScriptExtractor {
             "class" => Some(ChunkType::Class),
             "arrow_function" => Some(ChunkType::Function),
             "function_expression" => Some(ChunkType::Function),
+            "jsx_element" => Some(ChunkType::Component),
+            "jsx_self_closing_element" => Some(ChunkType::Component),
             "variable" => Some(ChunkType::Variable),
             _ => None,
         }
@@ -55,6 +59,23 @@ impl LanguageExtractor for JavaScriptExtractor {
                             let start = name_node.start_byte();
                             let end = name_node.end_byte();
                             return Some(source_code[start..end].to_string());
+                        }
+                    }
+                }
+                None
+            }
+            "jsx_element" | "jsx_self_closing_element" => {
+                let mut cursor = node.walk();
+                if cursor.goto_first_child() {
+                    loop {
+                        let child = cursor.node();
+                        if child.kind() == "identifier" || child.kind() == "jsx_identifier" {
+                            let start = child.start_byte();
+                            let end = child.end_byte();
+                            return Some(source_code[start..end].to_string());
+                        }
+                        if !cursor.goto_next_sibling() {
+                            break;
                         }
                     }
                 }
