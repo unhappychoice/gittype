@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### ✨ Features
+
+- feat: use vendored OpenSSL for all targets to avoid cross-compilation issues ([2bc3269](https://github.com/unhappychoice/gittype/commit/2bc3269))
+- feat: update Homebrew to use prebuilt binaries and add ARM64 support ([96836dd](https://github.com/unhappychoice/gittype/commit/96836dd))
+- feat: add repository management with GitHub support ([d08a93b](https://github.com/unhappychoice/gittype/commit/d08a93b))
+- feat: add GitHub links to commit hashes in changelog ([5881873](https://github.com/unhappychoice/gittype/commit/5881873))
+- feat: add automatic CHANGELOG.md generation ([7a2ae38](https://github.com/unhappychoice/gittype/commit/7a2ae38))
+
+### 🐛 Bug Fixes
+
+- fix(extractor): avoid progress updates in parallel path to satisfy Sync and pass clippy ([b8e433d](https://github.com/unhappychoice/gittype/commit/b8e433d))
+
+### 📝 Other Changes
+
+- perf(extractor): reuse thread-local tree-sitter parser and precompile glob patterns in scanner ([b5f84e0](https://github.com/unhappychoice/gittype/commit/b5f84e0))
+- perf(extractor): parallelize challenge conversion and zen file processing ([55a2ac0](https://github.com/unhappychoice/gittype/commit/55a2ac0))
+- chore: Fix cargo clippy warnings ([4cfedac](https://github.com/unhappychoice/gittype/commit/4cfedac))
+- refactor: cleanup and module organization ([c2e14c0](https://github.com/unhappychoice/gittype/commit/c2e14c0))
+- refactor: update extractor system for new step architecture ([8c46a02](https://github.com/unhappychoice/gittype/commit/8c46a02))
+- refactor: improve error handling in main with Result chaining ([73b023d](https://github.com/unhappychoice/gittype/commit/73b023d))
+- refactor: improve LoadingScreen with polymorphic step system ([c553e3a](https://github.com/unhappychoice/gittype/commit/c553e3a))
+
+
 ## [0.2.0] - 2025-09-02
 
 ### ✨ Features
