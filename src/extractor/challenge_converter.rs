@@ -1,6 +1,8 @@
 use super::{CodeChunk, ProgressReporter};
 use crate::game::Challenge;
 use uuid::Uuid;
+use rayon::prelude::*;
+use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
 
 struct NoOpProgressReporter;
 
@@ -44,35 +46,39 @@ impl ChallengeConverter {
         chunks: Vec<CodeChunk>,
         progress: &dyn ProgressReporter,
     ) -> Vec<Challenge> {
-        let mut all_challenges = Vec::new();
-        let total_chunks = chunks.len();
+        // Parallelize per-chunk conversion with atomic progress updates
+        let total = chunks.len();
+        let processed = Arc::new(AtomicUsize::new(0));
 
-        for (chunk_index, chunk) in chunks.iter().enumerate() {
-            // Update progress
-            let chunk_progress = chunk_index as f64 / total_chunks as f64;
-            progress.set_progress(chunk_progress);
-            progress.set_file_counts(chunk_index, total_chunks);
+        let difficulties = [
+            super::super::game::stage_builder::DifficultyLevel::Easy,
+            super::super::game::stage_builder::DifficultyLevel::Normal,
+            super::super::game::stage_builder::DifficultyLevel::Hard,
+            super::super::game::stage_builder::DifficultyLevel::Wild,
+        ];
 
-            // Generate challenges for Easy (~100), Normal (~200), Hard (~500), Wild (full chunks) only
-            let difficulties = [
-                super::super::game::stage_builder::DifficultyLevel::Easy,
-                super::super::game::stage_builder::DifficultyLevel::Normal,
-                super::super::game::stage_builder::DifficultyLevel::Hard,
-                super::super::game::stage_builder::DifficultyLevel::Wild,
-            ];
+        let all: Vec<Challenge> = chunks
+            .into_par_iter()
+            .flat_map(|chunk| {
+                let mut local = Vec::new();
+                for difficulty in &difficulties {
+                    let split = self.split_chunk_by_difficulty(&chunk, difficulty);
+                    local.extend(split);
+                }
 
-            for difficulty in &difficulties {
-                let split_challenges = self.split_chunk_by_difficulty(chunk, difficulty);
-                all_challenges.extend(split_challenges);
-            }
-        }
+                // Update progress per chunk (best-effort)
+                let done = processed.fetch_add(1, Ordering::Relaxed) + 1;
+                progress.set_file_counts(done, total);
+                progress.set_progress(done as f64 / total as f64);
 
-        // Final progress update
+                local
+            })
+            .collect();
+
+        progress.set_file_counts(total, total);
         progress.set_progress(1.0);
-        progress.set_file_counts(total_chunks, total_chunks);
 
-        // Zen challenges are now handled separately in main.rs
-        all_challenges
+        all
     }
 
     pub fn convert_with_filter<F>(&self, chunks: Vec<CodeChunk>, filter: F) -> Vec<Challenge>
@@ -91,14 +97,10 @@ impl ChallengeConverter {
         chunks: Vec<CodeChunk>,
         difficulty: &super::super::game::stage_builder::DifficultyLevel,
     ) -> Vec<Challenge> {
-        let mut challenges = Vec::new();
-
-        for chunk in chunks {
-            let split_challenges = self.split_chunk_by_difficulty(&chunk, difficulty);
-            challenges.extend(split_challenges);
-        }
-
-        challenges
+        chunks
+            .into_par_iter()
+            .flat_map(|chunk| self.split_chunk_by_difficulty(&chunk, difficulty))
+            .collect()
     }
 
     pub fn convert_whole_files_to_challenges(
@@ -106,25 +108,20 @@ impl ChallengeConverter {
         file_paths: Vec<std::path::PathBuf>,
     ) -> Vec<Challenge> {
         use super::super::game::stage_builder::DifficultyLevel;
-        let mut challenges = Vec::new();
-
-        for file_path in file_paths {
-            if let Ok(content) = std::fs::read_to_string(&file_path) {
+        file_paths
+            .into_par_iter()
+            .filter_map(|file_path| std::fs::read_to_string(&file_path).ok().map(|c| (file_path, c)))
+            .map(|(file_path, content)| {
                 let id = Uuid::new_v4().to_string();
                 let language = super::Language::detect_from_path(&file_path);
                 let file_path_str = file_path.to_string_lossy().to_string();
-
                 let line_count = content.lines().count();
-                let challenge = Challenge::new(id, content)
+                Challenge::new(id, content)
                     .with_source_info(file_path_str, 1, line_count)
                     .with_language(language)
-                    .with_difficulty_level(DifficultyLevel::Zen);
-
-                challenges.push(challenge);
-            }
-        }
-
-        challenges
+                    .with_difficulty_level(DifficultyLevel::Zen)
+            })
+            .collect()
     }
 
     fn split_chunk_by_difficulty(
@@ -336,24 +333,19 @@ impl ChallengeConverter {
         &self,
         file_paths: Vec<std::path::PathBuf>,
     ) -> Vec<Challenge> {
-        let mut zen_challenges = Vec::new();
-
-        for file_path in file_paths {
-            if let Ok(content) = std::fs::read_to_string(&file_path) {
+        file_paths
+            .into_par_iter()
+            .filter_map(|file_path| std::fs::read_to_string(&file_path).ok().map(|c| (file_path, c)))
+            .map(|(file_path, content)| {
                 let id = uuid::Uuid::new_v4().to_string();
                 let language = super::Language::detect_from_path(&file_path);
                 let file_path_str = file_path.to_string_lossy().to_string();
-
                 let line_count = content.lines().count();
-                let challenge = Challenge::new(id, content)
+                Challenge::new(id, content)
                     .with_source_info(file_path_str, 1, line_count)
                     .with_language(language)
-                    .with_difficulty_level(super::super::game::stage_builder::DifficultyLevel::Zen);
-
-                zen_challenges.push(challenge);
-            }
-        }
-
-        zen_challenges
+                    .with_difficulty_level(super::super::game::stage_builder::DifficultyLevel::Zen)
+            })
+            .collect()
     }
 }
