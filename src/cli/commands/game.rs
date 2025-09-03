@@ -96,5 +96,8 @@ fn handle_game_error(e: GitTypeError) -> Result<()> {
         GitTypeError::WalkDirError(walk_error) => {
             panic!("Directory walk error: {}", walk_error);
         }
+        GitTypeError::TreeSitterLanguageError(lang_error) => {
+            panic!("Tree-sitter language error: {}", lang_error);
+        }
     }
 }

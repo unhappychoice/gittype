@@ -34,6 +34,9 @@ pub enum GitTypeError {
 
     #[error("Invalid repository format: {0}")]
     InvalidRepositoryFormat(String),
+
+    #[error("Tree-sitter language error: {0}")]
+    TreeSitterLanguageError(#[from] tree_sitter::LanguageError),
 }
 
 pub type Result<T> = std::result::Result<T, GitTypeError>;
