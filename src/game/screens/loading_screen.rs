@@ -199,6 +199,32 @@ impl LoadingScreen {
         Ok(())
     }
 
+    pub fn set_git_info(&self, git_info: &crate::extractor::GitRepositoryInfo) -> Result<()> {
+        // Build git info string in same format as title_screen
+        let mut parts = vec![format!(
+            "📁 {}/{}",
+            git_info.user_name, git_info.repository_name
+        )];
+
+        if let Some(ref branch) = git_info.branch {
+            parts.push(format!("🌿 {}", branch));
+        }
+
+        if let Some(ref commit) = git_info.commit_hash {
+            parts.push(format!("📝 {}", &commit[..8]));
+        }
+
+        let status_symbol = if git_info.is_dirty { "⚠️" } else { "✓" };
+        parts.push(status_symbol.to_string());
+
+        let git_text = parts.join(" • ");
+
+        if let Ok(mut info) = self.state.repo_info.write() {
+            *info = Some(git_text);
+        }
+        Ok(())
+    }
+
     pub fn show_completion(&mut self) -> Result<()> {
         // Mark as completed
         if let Ok(mut current_step) = self.state.current_step.write() {
@@ -268,68 +294,45 @@ impl LoadingScreen {
     fn draw_ui_static(frame: &mut Frame, state: &LoadingScreenState) {
         let size = frame.size();
 
-        // Check if repo info exists to adjust layout
+        // Get repo info for bottom display
         let repo_info = state
             .repo_info
             .read()
             .map(|r| r.clone())
             .unwrap_or_default();
-        let has_repo_info = repo_info.is_some();
 
-        // Calculate total content height
-        let content_height = if has_repo_info {
-            2 + 8 + 1 + 3 + 1 + 2 // Loading message + Description + Spacing + Progress + Spacing + Repo info
-        } else {
-            2 + 8 + 1 + 3 // Loading message + Description + Spacing + Progress
-        };
+        // Calculate main content height (excluding repo info at bottom)
+        let content_height = 2 + 8 + 1 + 3; // Loading message + Description + Spacing + Progress
         let vertical_margin = (size.height.saturating_sub(content_height)) / 2;
 
-        // Create vertical centering layout
-        let vertical_layout = Layout::default()
+        // Create layout with main content centered and repo info at bottom
+        let main_layout = Layout::default()
             .direction(Direction::Vertical)
             .constraints(vec![
                 Constraint::Length(vertical_margin),
-                Constraint::Length(content_height),
-                Constraint::Min(0),
+                Constraint::Length(2), // Loading message
+                Constraint::Length(8), // Description
+                Constraint::Length(1), // Spacing
+                Constraint::Length(3), // Progress
+                Constraint::Min(1),    // Flexible space
+                Constraint::Length(1), // Repo info at bottom
             ])
             .split(size);
 
-        // Main content layout
-        let main_layout = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints(if has_repo_info {
-                vec![
-                    Constraint::Length(2), // Loading message
-                    Constraint::Length(8), // Description
-                    Constraint::Length(1), // Spacing
-                    Constraint::Length(3), // Progress
-                    Constraint::Length(1), // Spacing
-                    Constraint::Length(2), // Repo info
-                ]
-            } else {
-                vec![
-                    Constraint::Length(2), // Loading message
-                    Constraint::Length(8), // Description
-                    Constraint::Length(1), // Spacing
-                    Constraint::Length(3), // Progress
-                ]
-            })
-            .split(vertical_layout[1]);
-
         // Draw loading message
-        Self::draw_loading_message_static(frame, main_layout[0]);
+        Self::draw_loading_message_static(frame, main_layout[1]);
 
         // Draw description
-        Self::draw_description_static(frame, main_layout[1], state);
+        Self::draw_description_static(frame, main_layout[2], state);
 
-        // Skip main_layout[2] for spacing
+        // Skip main_layout[3] for spacing
 
         // Draw progress
-        Self::draw_progress_static(frame, main_layout[3], state);
+        Self::draw_progress_static(frame, main_layout[4], state);
 
-        // Draw repo info if available
-        if has_repo_info && main_layout.len() > 4 {
-            Self::draw_repo_info_static(frame, main_layout[5], &repo_info.unwrap());
+        // Draw repo info at bottom if available
+        if let Some(ref repo_info_text) = repo_info {
+            Self::draw_repo_info_at_bottom_static(frame, main_layout[6], repo_info_text);
         }
     }
 
@@ -494,8 +497,12 @@ impl LoadingScreen {
         frame.render_widget(progress_widget, progress_area[1]);
     }
 
-    fn draw_repo_info_static(frame: &mut Frame, area: Rect, repo_info: &str) {
-        let repo_line = Line::from(Span::styled(repo_info, Style::default().fg(Color::Cyan)));
+    fn draw_repo_info_at_bottom_static(frame: &mut Frame, area: Rect, repo_info: &str) {
+        // Use same style as title_screen: DarkGrey color and centered
+        let repo_line = Line::from(Span::styled(
+            repo_info,
+            Style::default().fg(Color::DarkGray),
+        ));
 
         let repo_widget = Paragraph::new(vec![repo_line]).alignment(Alignment::Center);
 

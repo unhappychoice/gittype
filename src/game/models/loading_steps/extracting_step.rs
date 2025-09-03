@@ -76,6 +76,12 @@ impl Step for ExtractingStep {
                 Some(options.clone()),
                 screen,
             )?;
+
+            // Set git info in loading screen if available (for local paths)
+            if let Some(git_info) = loader.get_git_info() {
+                let _ = screen.set_git_info(git_info);
+            }
+
             Ok(StepResult::Challenges(challenges))
         } else {
             // Fallback to direct CodeExtractor
