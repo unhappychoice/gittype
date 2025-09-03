@@ -1,7 +1,8 @@
+use crate::game::ascii_digits;
 use crate::game::challenge::Challenge;
 use crate::{extractor::GitRepositoryInfo, Result};
 use crossterm::{
-    cursor::MoveTo,
+    cursor::{Hide, MoveTo, Show},
     event::{self, Event, KeyCode, KeyModifiers},
     execute,
     style::{Attribute, Color, Print, ResetColor, SetAttribute, SetForegroundColor},
@@ -28,6 +29,9 @@ impl CountdownScreen {
         let (terminal_width, terminal_height) = terminal::size()?;
         let center_row = terminal_height / 2;
         let center_col = terminal_width / 2;
+
+        // Hide cursor during countdown
+        execute!(stdout, Hide)?;
 
         // Show source and repository info if available
         Self::draw_source_and_repo_info(&mut stdout, center_row, center_col, challenge, repo_info)?;
@@ -75,21 +79,29 @@ impl CountdownScreen {
             execute!(stdout, Print(ready_msg))?;
             execute!(stdout, ResetColor)?;
 
-            // Show countdown number
-            let count_str = count.to_string();
-            let count_col = center_col.saturating_sub(count_str.len() as u16 / 2);
-            execute!(stdout, MoveTo(count_col, center_row))?;
-            execute!(stdout, SetAttribute(Attribute::Bold))?;
+            // Show countdown number as ASCII art
+            let digit_patterns = ascii_digits::get_digit_patterns();
+            let pattern = &digit_patterns[count];
 
             // Different colors for each number
-            match count {
-                3 => execute!(stdout, SetForegroundColor(Color::Red))?,
-                2 => execute!(stdout, SetForegroundColor(Color::Yellow))?,
-                1 => execute!(stdout, SetForegroundColor(Color::Green))?,
-                _ => execute!(stdout, SetForegroundColor(Color::White))?,
+            let color = match count {
+                3 => Color::Red,
+                2 => Color::Yellow,
+                1 => Color::Green,
+                _ => Color::White,
+            };
+
+            execute!(stdout, SetAttribute(Attribute::Bold))?;
+            execute!(stdout, SetForegroundColor(color))?;
+
+            // Display each line of the ASCII art, positioned below stage text
+            let ascii_start_row = center_row + 1;
+            for (i, line) in pattern.iter().enumerate() {
+                let line_col = center_col.saturating_sub(line.len() as u16 / 2);
+                execute!(stdout, MoveTo(line_col, ascii_start_row + i as u16))?;
+                execute!(stdout, Print(line))?;
             }
 
-            execute!(stdout, Print(&count_str))?;
             execute!(stdout, ResetColor)?;
             stdout.flush()?;
 
@@ -112,6 +124,9 @@ impl CountdownScreen {
         stdout.flush()?;
 
         Self::clear_input_buffer_and_wait(400)?;
+
+        // Show cursor again
+        execute!(stdout, Show)?;
 
         Ok(())
     }
@@ -143,6 +158,9 @@ impl CountdownScreen {
         let (terminal_width, terminal_height) = terminal::size()?;
         let center_row = terminal_height / 2;
         let center_col = terminal_width / 2;
+
+        // Hide cursor during countdown
+        execute!(stdout, Hide)?;
 
         // Show source and repository info if available
         Self::draw_source_and_repo_info(&mut stdout, center_row, center_col, challenge, repo_info)?;
@@ -190,21 +208,29 @@ impl CountdownScreen {
             execute!(stdout, Print(&stage_text))?;
             execute!(stdout, ResetColor)?;
 
-            // Show countdown number
-            let count_str = count.to_string();
-            let count_col = center_col.saturating_sub(count_str.len() as u16 / 2);
-            execute!(stdout, MoveTo(count_col, center_row))?;
-            execute!(stdout, SetAttribute(Attribute::Bold))?;
+            // Show countdown number as ASCII art
+            let digit_patterns = ascii_digits::get_digit_patterns();
+            let pattern = &digit_patterns[count];
 
             // Different colors for each number
-            match count {
-                3 => execute!(stdout, SetForegroundColor(Color::Red))?,
-                2 => execute!(stdout, SetForegroundColor(Color::Yellow))?,
-                1 => execute!(stdout, SetForegroundColor(Color::Green))?,
-                _ => execute!(stdout, SetForegroundColor(Color::White))?,
+            let color = match count {
+                3 => Color::Red,
+                2 => Color::Yellow,
+                1 => Color::Green,
+                _ => Color::White,
+            };
+
+            execute!(stdout, SetAttribute(Attribute::Bold))?;
+            execute!(stdout, SetForegroundColor(color))?;
+
+            // Display each line of the ASCII art, positioned below stage text
+            let ascii_start_row = center_row + 1;
+            for (i, line) in pattern.iter().enumerate() {
+                let line_col = center_col.saturating_sub(line.len() as u16 / 2);
+                execute!(stdout, MoveTo(line_col, ascii_start_row + i as u16))?;
+                execute!(stdout, Print(line))?;
             }
 
-            execute!(stdout, Print(&count_str))?;
             execute!(stdout, ResetColor)?;
             stdout.flush()?;
 
@@ -227,6 +253,9 @@ impl CountdownScreen {
         stdout.flush()?;
 
         Self::clear_input_buffer_and_wait(400)?;
+
+        // Show cursor again
+        execute!(stdout, Show)?;
 
         Ok(())
     }
