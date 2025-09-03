@@ -37,6 +37,7 @@ impl Default for ExtractionOptions {
                 "**/*.hpp".to_string(),
                 "**/*.hs".to_string(),
                 "**/*.lhs".to_string(),
+                "**/*.dart".to_string(),
             ],
             exclude_patterns: vec![
                 "**/target/**".to_string(),
