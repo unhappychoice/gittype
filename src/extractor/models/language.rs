@@ -14,6 +14,7 @@ pub enum Language {
     C,
     Cpp,
     Haskell,
+    Dart,
 }
 
 impl std::fmt::Display for Language {
@@ -33,6 +34,7 @@ impl std::fmt::Display for Language {
             Language::C => "c",
             Language::Cpp => "cpp",
             Language::Haskell => "haskell",
+            Language::Dart => "dart",
         };
         write!(f, "{}", s)
     }
@@ -55,6 +57,7 @@ impl Language {
             "c" | "h" => Some(Language::C),
             "cpp" | "cc" | "cxx" | "hpp" => Some(Language::Cpp),
             "hs" | "lhs" => Some(Language::Haskell),
+            "dart" => Some(Language::Dart),
             _ => None,
         }
     }
@@ -75,6 +78,7 @@ impl Language {
             Language::C => "c",
             Language::Cpp => "cpp",
             Language::Haskell => "hs",
+            Language::Dart => "dart",
         }
     }
 
@@ -96,6 +100,7 @@ impl Language {
             Some("c") | Some("h") => "c".to_string(),
             Some("cpp") | Some("cc") | Some("cxx") | Some("hpp") => "cpp".to_string(),
             Some("hs") | Some("lhs") => "haskell".to_string(),
+            Some("dart") => "dart".to_string(),
             _ => "text".to_string(),
         }
     }

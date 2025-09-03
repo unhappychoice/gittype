@@ -8,6 +8,7 @@ use tree_sitter::{Node, Parser, Query, Tree};
 pub mod c;
 pub mod cpp;
 pub mod csharp;
+pub mod dart;
 pub mod go;
 pub mod haskell;
 pub mod java;
@@ -115,6 +116,10 @@ impl ParserRegistry {
             haskell::HaskellExtractor::create_parser,
             || Box::new(haskell::HaskellExtractor),
         );
+
+        registry.register(Language::Dart, dart::DartExtractor::create_parser, || {
+            Box::new(dart::DartExtractor)
+        });
 
         registry
     }

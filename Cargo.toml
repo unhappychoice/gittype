@@ -43,6 +43,7 @@ tree-sitter-c-sharp = "0.23"
 tree-sitter-c = "0.23"
 tree-sitter-cpp = "0.23"
 tree-sitter-haskell = "0.23"
+tree-sitter-dart = "0.0.4"
 crossterm = "0.27"
 ratatui = "0.26"
 rusqlite = { version = "0.29", features = ["bundled"] }

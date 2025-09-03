@@ -100,6 +100,7 @@ impl CommonExtractor {
             Language::C => node_kind == "comment",
             Language::Cpp => node_kind == "comment",
             Language::Haskell => node_kind == "comment",
+            Language::Dart => node_kind == "comment" || node_kind == "documentation_comment",
         }
     }
 
