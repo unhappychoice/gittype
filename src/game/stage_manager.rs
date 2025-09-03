@@ -430,7 +430,7 @@ impl StageManager {
         match action {
             ResultAction::Retry => {
                 // Restart the same challenge
-                Ok(true)// Return true to indicate retry
+                Ok(true) // Return true to indicate retry
             }
             ResultAction::BackToTitle => {
                 // Back to title screen
@@ -464,7 +464,7 @@ impl StageManager {
         match action {
             ResultAction::Retry => {
                 // Restart the same challenge
-                Ok(true)// Return true to indicate retry
+                Ok(true) // Return true to indicate retry
             }
             ResultAction::BackToTitle => {
                 // Back to title screen
