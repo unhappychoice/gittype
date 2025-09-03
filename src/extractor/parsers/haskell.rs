@@ -86,7 +86,7 @@ impl LanguageExtractor for HaskellExtractor {
             }
             name if name.contains("module") => self.extract_module_name(node, source_code),
             name if name.contains("import") => self.extract_import_name(node, source_code),
-            _ => self.extract_name_from_node(node, source_code),
+            _ => extract_name_from_node(node, source_code),
         }
     }
 }
@@ -94,45 +94,37 @@ impl LanguageExtractor for HaskellExtractor {
 impl HaskellExtractor {
     fn extract_function_name(&self, node: Node, source_code: &str) -> Option<String> {
         // Look for variable node in function definition
-        self.find_child_by_kind(node, source_code, "variable")
+        find_child_by_kind(node, source_code, "variable")
     }
 
     fn extract_signature_name(&self, node: Node, source_code: &str) -> Option<String> {
         // Look for variable node in type signature
-        self.find_child_by_kind(node, source_code, "variable")
+        find_child_by_kind(node, source_code, "variable")
     }
 
     fn extract_type_name(&self, node: Node, source_code: &str) -> Option<String> {
         // Look for type node in data/newtype declaration
-        self.find_child_by_kind(node, source_code, "type")
+        find_child_by_kind(node, source_code, "type")
     }
 
     fn extract_declaration_name(&self, node: Node, source_code: &str) -> Option<String> {
         // Look for variable node in general declarations
-        self.find_child_by_kind(node, source_code, "variable")
+        find_child_by_kind(node, source_code, "variable")
     }
 
     fn extract_constructor_name(&self, node: Node, source_code: &str) -> Option<String> {
         // Look for constructor node
-        self.find_child_by_kind(node, source_code, "constructor")
+        find_child_by_kind(node, source_code, "constructor")
     }
 
     fn extract_module_name(&self, node: Node, source_code: &str) -> Option<String> {
         // Look for module_name node
-        self.find_child_by_kind(node, source_code, "module_name")
+        find_child_by_kind(node, source_code, "module_name")
     }
 
     fn extract_import_name(&self, node: Node, source_code: &str) -> Option<String> {
         // Look for module_name node in import
-        self.find_child_by_kind(node, source_code, "module_name")
-    }
-
-    fn find_child_by_kind(&self, node: Node, source_code: &str, kind: &str) -> Option<String> {
-        find_child_by_kind_impl(node, source_code, kind)
-    }
-
-    fn extract_name_from_node(&self, node: Node, source_code: &str) -> Option<String> {
-        extract_name_from_node_impl(node, source_code)
+        find_child_by_kind(node, source_code, "module_name")
     }
 
     pub fn create_parser() -> Result<Parser> {
@@ -146,7 +138,7 @@ impl HaskellExtractor {
     }
 }
 
-fn find_child_by_kind_impl(node: Node, source_code: &str, kind: &str) -> Option<String> {
+fn find_child_by_kind(node: Node, source_code: &str, kind: &str) -> Option<String> {
     let mut cursor = node.walk();
     if cursor.goto_first_child() {
         loop {
@@ -158,7 +150,7 @@ fn find_child_by_kind_impl(node: Node, source_code: &str, kind: &str) -> Option<
                     .map(|s| s.to_string());
             }
             // Recursively search in child nodes
-            if let Some(name) = find_child_by_kind_impl(child, source_code, kind) {
+            if let Some(name) = find_child_by_kind(child, source_code, kind) {
                 return Some(name);
             }
             if !cursor.goto_next_sibling() {
@@ -169,7 +161,7 @@ fn find_child_by_kind_impl(node: Node, source_code: &str, kind: &str) -> Option<
     None
 }
 
-fn extract_name_from_node_impl(node: Node, source_code: &str) -> Option<String> {
+fn extract_name_from_node(node: Node, source_code: &str) -> Option<String> {
     let mut cursor = node.walk();
     if cursor.goto_first_child() {
         loop {
@@ -183,7 +175,7 @@ fn extract_name_from_node_impl(node: Node, source_code: &str) -> Option<String> 
                 }
                 _ => {
                     // Recursively search in child nodes
-                    if let Some(name) = extract_name_from_node_impl(child, source_code) {
+                    if let Some(name) = extract_name_from_node(child, source_code) {
                         return Some(name);
                     }
                 }
