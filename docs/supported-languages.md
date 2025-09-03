@@ -15,6 +15,8 @@
 | Java | `.java` | ✅ Full support | `tree-sitter-java` |
 | PHP | `.php`, `.phtml`, `.php3`, `.php4`, `.php5` | ✅ Full support | `tree-sitter-php` |
 | C# | `.cs`, `.csx` | ✅ Full support | `tree-sitter-c-sharp` |
+| C | `.c`, `.h` | ✅ Full support | `tree-sitter-c` |
+| C++ | `.cpp`, `.cc`, `.cxx`, `.hpp` | ✅ Full support | `tree-sitter-cpp` |
 
 ## Extraction Features
 
@@ -150,11 +152,35 @@
 - Attributes
 - Access modifiers (public, private, protected, internal)
 
+### C
+- Functions (`int main()`, `void function()`)
+- Structs (`struct`)
+- Type definitions (`typedef`)
+- Enum definitions (`enum`)
+- Global variables
+- Macro definitions (`#define`)
+- Static functions and variables
+- Function pointers
+- Union definitions (`union`)
+
+### C++
+- Functions (`int main()`, `void function()`)
+- Methods (class and struct member functions)
+- Classes (`class`)
+- Structs (`struct`)
+- Template classes (`template<typename T> class`)
+- Template functions (`template<typename T> T function()`)
+- Constructors and destructors
+- Operator overloading
+- Global variables
+- Type definitions (`typedef`, `using`)
+- Enum definitions (`enum`, `enum class`)
+- Namespace functions (functions within namespaces)
+
 ## Planned Support
 
 | Language | Priority | Expected | Notes |
 |----------|----------|----------|--------|
-| C++ | High | Q2 2025 | Modern C++17/20 features |
 | Dart | Medium | Q4 2025 | Flutter development |
 | Zig | Low | Future | Systems programming |
 
@@ -167,14 +193,14 @@
 gittype --langs rust
 
 # Multiple languages
-gittype --langs rust,typescript,javascript,python,go,ruby,swift,kotlin,java,php,csharp
+gittype --langs rust,typescript,javascript,python,go,ruby,swift,kotlin,java,php,csharp,c,cpp
 ```
 
 ### Configuration File
 
 ```toml
 [default]
-langs = ["rust", "typescript", "javascript", "python", "go", "ruby", "swift", "kotlin", "java", "php", "csharp"]
+langs = ["rust", "typescript", "javascript", "python", "go", "ruby", "swift", "kotlin", "java", "php", "csharp", "c", "cpp"]
 ```
 
 ## Code Extraction Quality

@@ -8,7 +8,7 @@
 
 ## Features ✨
 
-- 🦀🐍⚡🐹💎🍎🎯☕🐘#️⃣ **Multi-language**: Rust, TypeScript, JavaScript, Python, Go, Ruby, Swift, Kotlin, Java, PHP, C# (more languages incoming!)  
+- 🦀🐍⚡🐹💎🍎🎯☕🐘#️⃣🔧➕ **Multi-language**: Rust, TypeScript, JavaScript, Python, Go, Ruby, Swift, Kotlin, Java, PHP, C#, C, C++ (more languages incoming!)  
 - 📊 **Real-time metrics**: Live WPM, accuracy, and consistency tracking as you type
 - 🏆 **Ranking system**: Unlock developer titles from "Hello World Newbie" to "Quantum Computer" with ASCII art
 - 🎮 **Multiple game modes**: Normal, Time Attack, and custom difficulty levels (Easy to Zen)
