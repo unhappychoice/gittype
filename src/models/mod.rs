@@ -1,16 +1,16 @@
-pub mod chunk;
 pub mod challenge;
-pub mod stage;
-pub mod session;
-pub mod total;
-pub mod rank;
+pub mod chunk;
 pub mod git_repository;
+pub mod rank;
+pub mod session;
+pub mod stage;
+pub mod total;
 
 // Re-export main types for easy access
-pub use chunk::{ChunkType, CodeChunk};
 pub use challenge::Challenge;
-pub use stage::{Stage, StageResult};
-pub use session::{Session, SessionResult};
-pub use total::{Total, TotalResult};
-pub use rank::{RankTier, Rank};
+pub use chunk::{ChunkType, CodeChunk};
 pub use git_repository::GitRepository;
+pub use rank::{Rank, RankTier};
+pub use session::{Session, SessionResult};
+pub use stage::{Stage, StageResult};
+pub use total::{Total, TotalResult};

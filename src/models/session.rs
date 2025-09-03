@@ -17,8 +17,8 @@ pub struct SessionResult {
     pub stages_attempted: usize,
     pub stages_skipped: usize,
     pub total_challenges_completed: usize, // Alias for stages_completed
-    pub total_challenges_attempted: usize, // Alias for stages_attempted  
-    pub total_skips_used: usize, // Alias for stages_skipped
+    pub total_challenges_attempted: usize, // Alias for stages_attempted
+    pub total_skips_used: usize,           // Alias for stages_skipped
     pub stage_results: Vec<StageResult>,
     pub overall_accuracy: f64,
     pub overall_wpm: f64,

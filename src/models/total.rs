@@ -68,7 +68,7 @@ impl TotalResult {
 
     pub fn finalize(&mut self) {
         self.total_duration = self.start_time.elapsed();
-        
+
         // Handle edge cases for worst performance
         if self.worst_session_wpm == f64::MAX {
             self.worst_session_wpm = 0.0;
