@@ -296,8 +296,8 @@ impl TitleScreen {
             InfoAction::OpenGithub => {
                 InfoDialog::open_github()?;
             }
-            InfoAction::OpenTwitter => {
-                InfoDialog::open_twitter()?;
+            InfoAction::OpenX => {
+                InfoDialog::open_x()?;
             }
             InfoAction::Close => {
                 // Do nothing, just close the dialog

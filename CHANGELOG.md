@@ -176,7 +176,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - feat: add Go language support ([1baa6fc](https://github.com/unhappychoice/gittype/commit/1baa6fc))
 - feat: add Ruby language support ([aa293da](https://github.com/unhappychoice/gittype/commit/aa293da))
 - feat: improve typing screen UI/UX ([f89e6e8](https://github.com/unhappychoice/gittype/commit/f89e6e8))
-- feat: add info dialog with GitHub and Twitter links ([9d3a407](https://github.com/unhappychoice/gittype/commit/9d3a407))
+- feat: add info dialog with GitHub and X links ([9d3a407](https://github.com/unhappychoice/gittype/commit/9d3a407))
 - feat: enhance exit summary screen with session-based sharing ([86fced3](https://github.com/unhappychoice/gittype/commit/86fced3))
 - feat: add comprehensive SNS sharing functionality ([5f110b1](https://github.com/unhappychoice/gittype/commit/5f110b1))
 - feat: improve progress reporting for parallel AST parsing ([614b0ac](https://github.com/unhappychoice/gittype/commit/614b0ac))

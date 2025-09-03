@@ -4,7 +4,7 @@ use crossterm::event::KeyCode;
 
 #[derive(Debug, Clone)]
 pub enum SharingPlatform {
-    Twitter,
+    X,
     Reddit,
     LinkedIn,
     Facebook,
@@ -13,7 +13,7 @@ pub enum SharingPlatform {
 impl SharingPlatform {
     pub fn name(&self) -> &'static str {
         match self {
-            Self::Twitter => "Twitter",
+            Self::X => "X",
             Self::Reddit => "Reddit",
             Self::LinkedIn => "LinkedIn",
             Self::Facebook => "Facebook",
@@ -21,7 +21,7 @@ impl SharingPlatform {
     }
 
     pub fn all() -> Vec<Self> {
-        vec![Self::Twitter, Self::Reddit, Self::LinkedIn, Self::Facebook]
+        vec![Self::X, Self::Reddit, Self::LinkedIn, Self::Facebook]
     }
 }
 
@@ -47,9 +47,9 @@ impl SharingService {
         let text = Self::create_share_text(metrics);
 
         match platform {
-            SharingPlatform::Twitter => {
+            SharingPlatform::X => {
                 format!(
-                    "https://twitter.com/intent/tweet?text={}",
+                    "https://x.com/intent/tweet?text={}",
                     urlencoding::encode(&text)
                 )
             }

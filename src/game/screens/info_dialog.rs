@@ -10,7 +10,7 @@ use std::io::{stdout, Write};
 
 pub enum InfoAction {
     OpenGithub,
-    OpenTwitter,
+    OpenX,
     Close,
 }
 
@@ -21,7 +21,7 @@ impl InfoDialog {
         let mut selected_option = 0;
         let options = [
             ("GitHub Repository", InfoAction::OpenGithub),
-            ("Twitter #gittype", InfoAction::OpenTwitter),
+            ("X #gittype", InfoAction::OpenX),
             ("Close", InfoAction::Close),
         ];
 
@@ -48,7 +48,7 @@ impl InfoDialog {
                         KeyCode::Char(' ') => {
                             return Ok(match selected_option {
                                 0 => InfoAction::OpenGithub,
-                                1 => InfoAction::OpenTwitter,
+                                1 => InfoAction::OpenX,
                                 _ => InfoAction::Close,
                             });
                         }
@@ -80,7 +80,7 @@ impl InfoDialog {
                         }
                         KeyCode::Esc | KeyCode::Char('q') => return Ok(InfoAction::Close),
                         KeyCode::Char('g') => return Ok(InfoAction::OpenGithub),
-                        KeyCode::Char('t') => return Ok(InfoAction::OpenTwitter),
+                        KeyCode::Char('x') => return Ok(InfoAction::OpenX),
                         _ => {}
                     }
                 }
@@ -193,10 +193,10 @@ impl InfoDialog {
         Ok(())
     }
 
-    pub fn open_twitter() -> Result<()> {
-        let url = "https://twitter.com/search?q=%23gittype";
+    pub fn open_x() -> Result<()> {
+        let url = "https://x.com/search?q=%23gittype";
         if open::that(url).is_err() {
-            Self::show_url_fallback("Twitter Search", url)?;
+            Self::show_url_fallback("X Search", url)?;
         }
         Ok(())
     }

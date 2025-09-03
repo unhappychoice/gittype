@@ -365,10 +365,7 @@ impl ExitSummaryScreen {
                 if let Event::Key(key_event) = event::read()? {
                     match key_event.code {
                         KeyCode::Char('1') => {
-                            let _ = Self::share_session_result(
-                                session_summary,
-                                SharingPlatform::Twitter,
-                            );
+                            let _ = Self::share_session_result(session_summary, SharingPlatform::X);
                             break;
                         }
                         KeyCode::Char('2') => {
@@ -426,9 +423,9 @@ impl ExitSummaryScreen {
         session_summary: &SessionSummary,
     ) -> String {
         match platform {
-            SharingPlatform::Twitter => {
+            SharingPlatform::X => {
                 format!(
-                    "https://twitter.com/intent/tweet?text={}",
+                    "https://x.com/intent/tweet?text={}",
                     urlencoding::encode(text)
                 )
             }

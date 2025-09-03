@@ -759,7 +759,7 @@ impl ResultScreen {
                 if let Event::Key(key_event) = event::read()? {
                     match key_event.code {
                         KeyCode::Char('1') => {
-                            let _ = SharingService::share_result(metrics, SharingPlatform::Twitter);
+                            let _ = SharingService::share_result(metrics, SharingPlatform::X);
                             break;
                         }
                         KeyCode::Char('2') => {
