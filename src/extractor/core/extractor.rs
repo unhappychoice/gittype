@@ -96,6 +96,7 @@ impl CommonExtractor {
             Language::Java => node_kind == "line_comment" || node_kind == "block_comment",
             Language::Php => node_kind == "comment" || node_kind == "shell_comment_line",
             Language::CSharp => node_kind == "comment",
+            Language::C => node_kind == "comment",
         }
     }
 
