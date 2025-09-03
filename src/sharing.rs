@@ -1,3 +1,4 @@
+use crate::extractor::GitRepositoryInfo;
 use crate::scoring::TypingMetrics;
 use anyhow::Result;
 use crossterm::event::KeyCode;
@@ -28,8 +29,12 @@ impl SharingPlatform {
 pub struct SharingService;
 
 impl SharingService {
-    pub fn share_result(metrics: &TypingMetrics, platform: SharingPlatform) -> Result<()> {
-        let url = Self::generate_share_url(metrics, &platform);
+    pub fn share_result(
+        metrics: &TypingMetrics,
+        platform: SharingPlatform,
+        repo_info: &Option<GitRepositoryInfo>,
+    ) -> Result<()> {
+        let url = Self::generate_share_url(metrics, &platform, repo_info);
 
         match Self::open_browser(&url) {
             Ok(()) => {
@@ -43,8 +48,12 @@ impl SharingService {
         }
     }
 
-    fn generate_share_url(metrics: &TypingMetrics, platform: &SharingPlatform) -> String {
-        let text = Self::create_share_text(metrics);
+    fn generate_share_url(
+        metrics: &TypingMetrics,
+        platform: &SharingPlatform,
+        repo_info: &Option<GitRepositoryInfo>,
+    ) -> String {
+        let text = Self::create_share_text(metrics, repo_info);
 
         match platform {
             SharingPlatform::X => {
@@ -81,14 +90,26 @@ impl SharingService {
         }
     }
 
-    fn create_share_text(metrics: &TypingMetrics) -> String {
-        format!(
-            "I achieved the rank \"{}\" with a score of {:.0} points! CPM: {:.0}, Mistakes: {} in gittype! 🚀\n\nType your own code! https://github.com/unhappychoice/gittype\n\n#gittype #typing #coding",
-            metrics.ranking_title,
-            metrics.challenge_score,
-            metrics.cpm,
-            metrics.mistakes
-        )
+    fn create_share_text(metrics: &TypingMetrics, repo_info: &Option<GitRepositoryInfo>) -> String {
+        if let Some(repo) = repo_info {
+            format!(
+                "Achieved \"{}\" with {:.0}pts on [{}/{}] in gittype! CPM: {:.0}, Mistakes: {} 🚀\n\nType your own code! https://github.com/unhappychoice/gittype\n\n#gittype #typing #coding",
+                metrics.ranking_title,
+                metrics.challenge_score,
+                repo.user_name,
+                repo.repository_name,
+                metrics.cpm,
+                metrics.mistakes
+            )
+        } else {
+            format!(
+                "Achieved \"{}\" with {:.0}pts in gittype! CPM: {:.0}, Mistakes: {} 🚀\n\nType your own code! https://github.com/unhappychoice/gittype\n\n#gittype #typing #coding",
+                metrics.ranking_title,
+                metrics.challenge_score,
+                metrics.cpm,
+                metrics.mistakes
+            )
+        }
     }
 
     fn open_browser(url: &str) -> Result<()> {
