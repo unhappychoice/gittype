@@ -1,19 +1,11 @@
 use super::LanguageExtractor;
-use crate::extractor::models::{ChunkType, Language};
+use crate::extractor::models::ChunkType;
 use crate::{GitTypeError, Result};
 use tree_sitter::{Node, Parser};
 
 pub struct TypeScriptExtractor;
 
 impl LanguageExtractor for TypeScriptExtractor {
-    fn language(&self) -> Language {
-        Language::TypeScript
-    }
-
-    fn file_extensions(&self) -> &[&str] {
-        &["ts", "tsx"]
-    }
-
     fn tree_sitter_language(&self) -> tree_sitter::Language {
         // Use TSX parser which supports both TypeScript and JSX syntax
         tree_sitter_typescript::LANGUAGE_TSX.into()

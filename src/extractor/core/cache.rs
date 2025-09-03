@@ -15,17 +15,14 @@ impl ParserCache {
         Self
     }
 
-    pub fn create_parser(
-        &self,
-        language: crate::extractor::models::Language,
-    ) -> crate::Result<tree_sitter::Parser> {
+    pub fn create_parser(&self, language: &str) -> crate::Result<tree_sitter::Parser> {
         let registry = crate::extractor::parsers::get_parser_registry();
         registry.create_parser(language)
     }
 
     pub fn create_query(
         &self,
-        language: crate::extractor::models::Language,
+        language: &str,
         query_str: &str,
     ) -> crate::Result<tree_sitter::Query> {
         let registry = crate::extractor::parsers::get_parser_registry();

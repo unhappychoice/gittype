@@ -1,19 +1,11 @@
 use super::LanguageExtractor;
-use crate::extractor::models::{ChunkType, Language};
+use crate::extractor::models::ChunkType;
 use crate::{GitTypeError, Result};
 use tree_sitter::{Node, Parser};
 
 pub struct SwiftExtractor;
 
 impl LanguageExtractor for SwiftExtractor {
-    fn language(&self) -> Language {
-        Language::Swift
-    }
-
-    fn file_extensions(&self) -> &[&str] {
-        &["swift"]
-    }
-
     fn tree_sitter_language(&self) -> tree_sitter::Language {
         tree_sitter_swift::LANGUAGE.into()
     }

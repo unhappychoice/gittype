@@ -1,19 +1,11 @@
 use super::LanguageExtractor;
-use crate::extractor::models::{ChunkType, Language};
+use crate::extractor::models::ChunkType;
 use crate::{GitTypeError, Result};
 use tree_sitter::{Node, Parser};
 
 pub struct KotlinExtractor;
 
 impl LanguageExtractor for KotlinExtractor {
-    fn language(&self) -> Language {
-        Language::Kotlin
-    }
-
-    fn file_extensions(&self) -> &[&str] {
-        &["kt", "kts"]
-    }
-
     fn tree_sitter_language(&self) -> tree_sitter::Language {
         tree_sitter_kotlin_ng::LANGUAGE.into()
     }

@@ -1,19 +1,11 @@
 use super::LanguageExtractor;
-use crate::extractor::models::{ChunkType, Language};
+use crate::extractor::models::ChunkType;
 use crate::{GitTypeError, Result};
 use tree_sitter::{Node, Parser};
 
 pub struct JavaScriptExtractor;
 
 impl LanguageExtractor for JavaScriptExtractor {
-    fn language(&self) -> Language {
-        Language::JavaScript
-    }
-
-    fn file_extensions(&self) -> &[&str] {
-        &["js", "mjs", "cjs", "jsx"]
-    }
-
     fn tree_sitter_language(&self) -> tree_sitter::Language {
         tree_sitter_javascript::LANGUAGE.into()
     }

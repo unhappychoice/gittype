@@ -1,19 +1,11 @@
 use super::LanguageExtractor;
-use crate::extractor::models::{ChunkType, Language};
+use crate::extractor::models::ChunkType;
 use crate::{GitTypeError, Result};
 use tree_sitter::{Node, Parser};
 
 pub struct RustExtractor;
 
 impl LanguageExtractor for RustExtractor {
-    fn language(&self) -> Language {
-        Language::Rust
-    }
-
-    fn file_extensions(&self) -> &[&str] {
-        &["rs"]
-    }
-
     fn tree_sitter_language(&self) -> tree_sitter::Language {
         tree_sitter_rust::LANGUAGE.into()
     }

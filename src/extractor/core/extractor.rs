@@ -1,4 +1,4 @@
-use crate::extractor::models::{CodeChunk, Language};
+use crate::extractor::models::CodeChunk;
 use crate::extractor::parsers::{get_parser_registry, parse_with_thread_local};
 use crate::{GitTypeError, Result};
 use std::fs;
@@ -13,7 +13,7 @@ impl CommonExtractor {
         tree: &Tree,
         source_code: &str,
         file_path: &Path,
-        language: Language,
+        language: &str,
     ) -> Result<Vec<CodeChunk>> {
         let mut chunks = Vec::new();
         let registry = get_parser_registry();
@@ -45,7 +45,7 @@ impl CommonExtractor {
         Ok(chunks)
     }
 
-    pub fn extract_from_file(file_path: &Path, language: Language) -> Result<Vec<CodeChunk>> {
+    pub fn extract_from_file(file_path: &Path, language: &str) -> Result<Vec<CodeChunk>> {
         let content = fs::read_to_string(file_path)?;
         // Reuse per-thread parser instance for the language
         let tree = parse_with_thread_local(language, &content).ok_or_else(|| {
@@ -58,7 +58,7 @@ impl CommonExtractor {
     fn extract_comment_ranges(
         tree: &Tree,
         source_code: &str,
-        language: Language,
+        language: &str,
     ) -> Result<Vec<(usize, usize)>> {
         let registry = get_parser_registry();
         let comment_query = registry.create_comment_query(language)?;
@@ -83,24 +83,25 @@ impl CommonExtractor {
         Ok(comment_ranges)
     }
 
-    fn is_valid_comment_node(node: Node, language: Language) -> bool {
+    fn is_valid_comment_node(node: Node, language: &str) -> bool {
         let node_kind = node.kind();
         match language {
-            Language::Rust => node_kind == "line_comment" || node_kind == "block_comment",
-            Language::TypeScript => node_kind == "comment",
-            Language::JavaScript => node_kind == "comment",
-            Language::Python => node_kind == "comment",
-            Language::Ruby => node_kind == "comment",
-            Language::Go => node_kind == "comment",
-            Language::Swift => node_kind == "comment" || node_kind == "multiline_comment",
-            Language::Kotlin => node_kind == "line_comment" || node_kind == "multiline_comment",
-            Language::Java => node_kind == "line_comment" || node_kind == "block_comment",
-            Language::Php => node_kind == "comment" || node_kind == "shell_comment_line",
-            Language::CSharp => node_kind == "comment",
-            Language::C => node_kind == "comment",
-            Language::Cpp => node_kind == "comment",
-            Language::Haskell => node_kind == "comment",
-            Language::Dart => node_kind == "comment" || node_kind == "documentation_comment",
+            "rust" => node_kind == "line_comment" || node_kind == "block_comment",
+            "typescript" => node_kind == "comment",
+            "javascript" => node_kind == "comment",
+            "python" => node_kind == "comment",
+            "ruby" => node_kind == "comment",
+            "go" => node_kind == "comment",
+            "swift" => node_kind == "comment" || node_kind == "multiline_comment",
+            "kotlin" => node_kind == "line_comment" || node_kind == "multiline_comment",
+            "java" => node_kind == "line_comment" || node_kind == "block_comment",
+            "php" => node_kind == "comment" || node_kind == "shell_comment_line",
+            "csharp" => node_kind == "comment",
+            "c" => node_kind == "comment",
+            "cpp" => node_kind == "comment",
+            "haskell" => node_kind == "comment",
+            "dart" => node_kind == "comment" || node_kind == "documentation_comment",
+            _ => false,
         }
     }
 
@@ -108,7 +109,7 @@ impl CommonExtractor {
         node: Node,
         source_code: &str,
         file_path: &Path,
-        language: Language,
+        language: &str,
         capture_name: &str,
         file_comment_ranges: &[(usize, usize)],
     ) -> Option<CodeChunk> {
@@ -149,7 +150,7 @@ impl CommonExtractor {
             file_path: file_path.to_path_buf(),
             start_line,
             end_line,
-            language,
+            language: language.to_string(),
             chunk_type,
             name,
             comment_ranges: normalized_comment_ranges,

@@ -1,5 +1,6 @@
-use super::{CodeChunk, Language, NoOpProgressReporter, ProgressReporter};
+use super::{CodeChunk, NoOpProgressReporter, ProgressReporter};
 use crate::extractor::core::CommonExtractor;
+use crate::extractor::models::language::{Language, LanguageRegistry};
 use crate::extractor::models::ExtractionOptions;
 use crate::{GitTypeError, Result};
 use ignore::WalkBuilder;
@@ -61,7 +62,7 @@ impl CodeExtractor {
             }
 
             if let Some(extension) = path.extension().and_then(|e| e.to_str()) {
-                if let Some(_language) = Language::from_extension(extension) {
+                if let Some(_language) = LanguageRegistry::from_extension(extension) {
                     if Self::should_process_file_compiled(
                         path,
                         &include_patterns,
@@ -94,7 +95,7 @@ impl CodeExtractor {
             }
 
             if let Some(extension) = path.extension().and_then(|e| e.to_str()) {
-                if let Some(language) = Language::from_extension(extension) {
+                if let Some(language) = LanguageRegistry::from_extension(extension) {
                     if Self::should_process_file_compiled(
                         path,
                         &include_patterns,
@@ -128,7 +129,9 @@ impl CodeExtractor {
             // Process this chunk in parallel
             let chunk_results: Vec<Result<Vec<CodeChunk>>> = chunk
                 .par_iter()
-                .map(|(path, language)| Self::extract_from_file_static(path, *language, &_options))
+                .map(|(path, language)| {
+                    Self::extract_from_file_static(path, language.as_ref(), &_options)
+                })
                 .collect();
 
             // Update progress after each chunk
@@ -162,22 +165,6 @@ impl CodeExtractor {
         Ok(all_chunks)
     }
 
-    #[allow(dead_code)]
-    fn should_process_file_static(path: &Path, _options: &ExtractionOptions) -> bool {
-        // Kept for backward compatibility; build patterns on the fly (slower)
-        let include_patterns: Vec<glob::Pattern> = _options
-            .include_patterns
-            .iter()
-            .filter_map(|p| glob::Pattern::new(p).ok())
-            .collect();
-        let exclude_patterns: Vec<glob::Pattern> = _options
-            .exclude_patterns
-            .iter()
-            .filter_map(|p| glob::Pattern::new(p).ok())
-            .collect();
-        Self::should_process_file_compiled(path, &include_patterns, &exclude_patterns)
-    }
-
     fn should_process_file_compiled(
         path: &Path,
         include_patterns: &[glob::Pattern],
@@ -194,29 +181,19 @@ impl CodeExtractor {
     pub fn extract_from_file(
         &mut self,
         file_path: &Path,
-        language: Language,
+        language: &str,
         _options: &ExtractionOptions,
     ) -> Result<Vec<CodeChunk>> {
-        Self::extract_from_file_static(file_path, language, _options)
+        // For backwards compatibility, convert string to Language object
+        // In practice, we just pass the string directly to CommonExtractor
+        CommonExtractor::extract_from_file(file_path, language)
     }
 
     fn extract_from_file_static(
         file_path: &Path,
-        language: Language,
+        language: &dyn Language,
         _options: &ExtractionOptions,
     ) -> Result<Vec<CodeChunk>> {
-        CommonExtractor::extract_from_file(file_path, language)
-    }
-
-    #[allow(dead_code)]
-    fn extract_chunks_from_tree(
-        &self,
-        tree: &tree_sitter::Tree,
-        source_code: &str,
-        file_path: &Path,
-        language: Language,
-        _options: &ExtractionOptions,
-    ) -> Result<Vec<CodeChunk>> {
-        CommonExtractor::extract_chunks_from_tree(tree, source_code, file_path, language)
+        CommonExtractor::extract_from_file(file_path, language.name())
     }
 }
