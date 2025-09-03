@@ -1,4 +1,5 @@
 use super::stage_builder::DifficultyLevel;
+use crate::extractor::GitRepositoryInfo;
 
 #[derive(Debug, Clone)]
 pub struct Challenge {
@@ -55,13 +56,62 @@ impl Challenge {
 
     pub fn get_display_title(&self) -> String {
         if let Some(ref path) = self.source_file_path {
+            // Convert absolute path to relative path for cleaner display
+            let relative_path = self.get_relative_path(path);
             if let (Some(start), Some(end)) = (self.start_line, self.end_line) {
-                format!("{}:{}-{}", path, start, end)
+                format!("{}:{}-{}", relative_path, start, end)
             } else {
-                path.clone()
+                relative_path
             }
         } else {
             format!("Challenge {}", self.id)
+        }
+    }
+
+    pub fn get_display_title_with_repo(&self, repo_info: &Option<GitRepositoryInfo>) -> String {
+        if let Some(ref path) = self.source_file_path {
+            let relative_path = self.get_relative_path(path);
+            let file_info = if let (Some(start), Some(end)) = (self.start_line, self.end_line) {
+                format!("{}:{}-{}", relative_path, start, end)
+            } else {
+                relative_path
+            };
+
+            if let Some(repo) = repo_info {
+                format!(
+                    "[{}/{}] {}",
+                    repo.user_name, repo.repository_name, file_info
+                )
+            } else {
+                file_info
+            }
+        } else {
+            format!("Challenge {}", self.id)
+        }
+    }
+
+    fn get_relative_path(&self, path: &str) -> String {
+        use std::path::Path;
+
+        // Try to extract just the filename if it's a full path
+        if let Some(file_name) = Path::new(path).file_name() {
+            if let Some(parent) = Path::new(path).parent() {
+                if let Some(parent_name) = parent.file_name() {
+                    // Show parent_dir/filename for better context
+                    format!(
+                        "{}/{}",
+                        parent_name.to_string_lossy(),
+                        file_name.to_string_lossy()
+                    )
+                } else {
+                    file_name.to_string_lossy().to_string()
+                }
+            } else {
+                file_name.to_string_lossy().to_string()
+            }
+        } else {
+            // Fallback to original path if extraction fails
+            path.to_string()
         }
     }
 }
