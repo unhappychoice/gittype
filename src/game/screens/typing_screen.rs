@@ -1,5 +1,5 @@
 use super::{
-    super::{display_ratatui::GameDisplayRatatui, text_processor::TextProcessor},
+    super::{stage_renderer::StageRenderer, text_processor::TextProcessor},
     CountdownScreen,
 };
 use crate::models::Challenge;
@@ -22,7 +22,7 @@ pub struct TypingScreen {
     comment_ranges: Vec<(usize, usize)>,
     mistake_positions: Vec<usize>,
     current_mistake_position: Option<usize>,
-    display: GameDisplayRatatui,
+    renderer: StageRenderer,
     scoring_engine: ScoringEngine,
     skips_remaining: usize,
     #[allow(dead_code)]
@@ -51,7 +51,7 @@ impl TypingScreen {
             0,
             &comment_ranges,
         );
-        let display = GameDisplayRatatui::new(&processed_text)?;
+        let renderer = StageRenderer::new(&processed_text)?;
         let mut scoring_engine = ScoringEngine::new(processed_text.clone());
         scoring_engine.start(); // Start timing immediately
 
@@ -66,7 +66,7 @@ impl TypingScreen {
             comment_ranges,
             mistake_positions: Vec::new(),
             current_mistake_position: None,
-            display,
+            renderer,
             scoring_engine,
             skips_remaining: 3,
             last_esc_time: None,
@@ -94,7 +94,7 @@ impl TypingScreen {
             0,
             &mapped_comment_ranges,
         );
-        let display = GameDisplayRatatui::new(&processed_text)?;
+        let renderer = StageRenderer::new(&processed_text)?;
         let mut scoring_engine = ScoringEngine::new(processed_text.clone());
         scoring_engine.start(); // Start timing immediately
 
@@ -109,7 +109,7 @@ impl TypingScreen {
             comment_ranges: mapped_comment_ranges,
             mistake_positions: Vec::new(),
             current_mistake_position: None,
-            display,
+            renderer,
             scoring_engine,
             skips_remaining: 3,
             last_esc_time: None,
@@ -135,7 +135,7 @@ impl TypingScreen {
         // Reset start time after countdown
         self.start_time = std::time::Instant::now();
 
-        self.display.display_challenge_with_info(
+        self.renderer.display_challenge_with_info(
             &self.challenge_text,
             self.current_position,
             self.mistakes,
@@ -180,7 +180,7 @@ impl TypingScreen {
             }
         }
 
-        self.display.cleanup()?;
+        self.renderer.cleanup()?;
 
         crate::game::stage_manager::cleanup_terminal();
         self.scoring_engine.finish(); // Record final duration
@@ -191,7 +191,7 @@ impl TypingScreen {
         // For stage manager - assumes raw mode is already enabled
         self.start_time = std::time::Instant::now();
 
-        self.display.display_challenge_with_info(
+        self.renderer.display_challenge_with_info(
             &self.challenge_text,
             self.current_position,
             self.mistakes,
@@ -244,7 +244,7 @@ impl TypingScreen {
         // For stage manager - assumes raw mode is already enabled
         self.start_time = std::time::Instant::now();
 
-        self.display.display_challenge_with_info(
+        self.renderer.display_challenge_with_info(
             &self.challenge_text,
             self.current_position,
             self.mistakes,
@@ -421,7 +421,7 @@ impl TypingScreen {
     }
 
     fn update_display(&mut self) -> Result<()> {
-        self.display.display_challenge_with_info(
+        self.renderer.display_challenge_with_info(
             &self.challenge_text,
             self.current_position,
             self.mistakes,
