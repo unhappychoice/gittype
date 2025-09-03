@@ -9,9 +9,9 @@ pub struct RepoInfo {
     pub name: String,
 }
 
-pub struct RepoManager;
+pub struct RepositoryManager;
 
-impl RepoManager {
+impl RepositoryManager {
     pub fn parse_repo_url(repo_spec: &str) -> Result<RepoInfo> {
         // Handle different formats:
         // 1. owner/repo (short format)
@@ -387,7 +387,7 @@ mod tests {
 
     #[test]
     fn test_parse_short_format() {
-        let repo_info = RepoManager::parse_repo_url("owner/repo").unwrap();
+        let repo_info = RepositoryManager::parse_repo_url("owner/repo").unwrap();
         assert_eq!(repo_info.origin, "github.com");
         assert_eq!(repo_info.owner, "owner");
         assert_eq!(repo_info.name, "repo");
@@ -395,7 +395,7 @@ mod tests {
 
     #[test]
     fn test_parse_https_format() {
-        let repo_info = RepoManager::parse_repo_url("https://github.com/rust-lang/rust").unwrap();
+        let repo_info = RepositoryManager::parse_repo_url("https://github.com/rust-lang/rust").unwrap();
         assert_eq!(repo_info.origin, "github.com");
         assert_eq!(repo_info.owner, "rust-lang");
         assert_eq!(repo_info.name, "rust");
@@ -404,7 +404,7 @@ mod tests {
     #[test]
     fn test_parse_https_format_with_git_suffix() {
         let repo_info =
-            RepoManager::parse_repo_url("https://github.com/microsoft/vscode.git").unwrap();
+            RepositoryManager::parse_repo_url("https://github.com/microsoft/vscode.git").unwrap();
         assert_eq!(repo_info.origin, "github.com");
         assert_eq!(repo_info.owner, "microsoft");
         assert_eq!(repo_info.name, "vscode");
@@ -413,7 +413,7 @@ mod tests {
     #[test]
     fn test_parse_ssh_format() {
         let repo_info =
-            RepoManager::parse_repo_url("git@github.com:unhappychoice/gittype.git").unwrap();
+            RepositoryManager::parse_repo_url("git@github.com:unhappychoice/gittype.git").unwrap();
         assert_eq!(repo_info.origin, "github.com");
         assert_eq!(repo_info.owner, "unhappychoice");
         assert_eq!(repo_info.name, "gittype");

@@ -1,5 +1,5 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
-use crate::repo_manager::RepoManager;
+use crate::repository_manager::RepositoryManager;
 use crate::Result;
 use ratatui::style::Color;
 
@@ -49,10 +49,10 @@ impl Step for CloningStep {
 
     fn execute(&self, context: &mut ExecutionContext) -> Result<StepResult> {
         if let Some(repo_spec) = context.repo_spec {
-            let repo_info = RepoManager::parse_repo_url(repo_spec)?;
+            let repo_info = RepositoryManager::parse_repo_url(repo_spec)?;
 
             // Clone repository
-            let repo_path = RepoManager::clone_or_update_repo(&repo_info, context.loading_screen)?;
+            let repo_path = RepositoryManager::clone_or_update_repo(&repo_info, context.loading_screen)?;
 
             // Extract actual git info from cloned repository and set it in loading screen
             if let Some(screen) = context.loading_screen {
