@@ -613,7 +613,7 @@ impl ResultScreen {
         total_stages: usize,
         completed_stages: usize,
         stage_engines: &[(String, ScoringEngine)],
-        repo_info: &Option<GitRepositoryInfo>,
+        _repo_info: &Option<GitRepositoryInfo>,
     ) -> Result<()> {
         let mut stdout = stdout();
 
