@@ -1,6 +1,7 @@
 pub mod c;
 pub mod cpp;
 pub mod csharp;
+pub mod dart;
 pub mod go;
 pub mod haskell;
 pub mod java;
