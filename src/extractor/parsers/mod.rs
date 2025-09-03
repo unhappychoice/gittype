@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use tree_sitter::{Node, Parser, Query, Tree};
 
 pub mod c;
+pub mod cpp;
 pub mod csharp;
 pub mod go;
 pub mod java;
@@ -102,6 +103,10 @@ impl ParserRegistry {
 
         registry.register(Language::C, c::CExtractor::create_parser, || {
             Box::new(c::CExtractor)
+        });
+
+        registry.register(Language::Cpp, cpp::CppExtractor::create_parser, || {
+            Box::new(cpp::CppExtractor)
         });
 
         registry
