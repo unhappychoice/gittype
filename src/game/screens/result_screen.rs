@@ -477,13 +477,22 @@ impl ResultScreen {
             execute!(stdout, Print(&stage_label))?;
             execute!(stdout, ResetColor)?;
 
+            // Calculate maximum stage name width for alignment
+            let max_stage_name_width = stage_engines
+                .iter()
+                .take(5)
+                .map(|(stage_name, _)| stage_name.len())
+                .max()
+                .unwrap_or(0);
+
             for (i, (stage_name, engine)) in stage_engines.iter().enumerate().take(5) {
                 let result_line = format!(
-                    "{}: CPM {:.0}, WPM {:.0}, Acc {:.1}%",
+                    "{:>width$}: CPM {:.0}, WPM {:.0}, Acc {:.1}%",
                     stage_name,
                     engine.cpm(),
                     engine.wpm(),
-                    engine.accuracy()
+                    engine.accuracy(),
+                    width = max_stage_name_width
                 );
                 let result_col = center_col.saturating_sub(result_line.len() as u16 / 2);
                 execute!(
