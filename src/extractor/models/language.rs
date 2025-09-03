@@ -11,6 +11,7 @@ pub enum Language {
     Java,
     Php,
     CSharp,
+    C,
 }
 
 impl std::fmt::Display for Language {
@@ -27,6 +28,7 @@ impl std::fmt::Display for Language {
             Language::Java => "java",
             Language::Php => "php",
             Language::CSharp => "csharp",
+            Language::C => "c",
         };
         write!(f, "{}", s)
     }
@@ -46,6 +48,7 @@ impl Language {
             "java" => Some(Language::Java),
             "php" | "phtml" | "php3" | "php4" | "php5" => Some(Language::Php),
             "cs" | "csx" => Some(Language::CSharp),
+            "c" | "h" => Some(Language::C),
             _ => None,
         }
     }
@@ -63,6 +66,7 @@ impl Language {
             Language::Java => "java",
             Language::Php => "php",
             Language::CSharp => "cs",
+            Language::C => "c",
         }
     }
 
@@ -81,6 +85,7 @@ impl Language {
                 "php".to_string()
             }
             Some("cs") | Some("csx") => "csharp".to_string(),
+            Some("c") | Some("h") => "c".to_string(),
             _ => "text".to_string(),
         }
     }
