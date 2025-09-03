@@ -31,7 +31,7 @@ pub struct TypingScreen {
     repo_info: Option<GitRepository>,
 }
 
-pub enum GameState {
+pub enum SessionState {
     Continue,
     Complete,
     Exit,
@@ -154,24 +154,24 @@ impl TypingScreen {
             if event::poll(std::time::Duration::from_millis(100))? {
                 if let Event::Key(key_event) = event::read()? {
                     match self.handle_key(key_event)? {
-                        GameState::Continue => {
+                        SessionState::Continue => {
                             self.update_display()?;
                         }
-                        GameState::Complete => {
+                        SessionState::Complete => {
                             break;
                         }
-                        GameState::Exit => {
+                        SessionState::Exit => {
                             break;
                         }
-                        GameState::Skip => {
+                        SessionState::Skip => {
                             // Mark challenge as skipped and complete
                             break;
                         }
-                        GameState::Failed => {
+                        SessionState::Failed => {
                             // Mark challenge as failed and complete
                             break;
                         }
-                        GameState::ShowDialog => {
+                        SessionState::ShowDialog => {
                             // Dialog was opened, update display to show dialog
                             self.update_display()?;
                         }
@@ -210,24 +210,24 @@ impl TypingScreen {
             if event::poll(std::time::Duration::from_millis(100))? {
                 if let Event::Key(key_event) = event::read()? {
                     match self.handle_key(key_event)? {
-                        GameState::Continue => {
+                        SessionState::Continue => {
                             self.update_display()?;
                         }
-                        GameState::Complete => {
+                        SessionState::Complete => {
                             break;
                         }
-                        GameState::Exit => {
+                        SessionState::Exit => {
                             break;
                         }
-                        GameState::Skip => {
+                        SessionState::Skip => {
                             // Mark challenge as skipped and complete
                             break;
                         }
-                        GameState::Failed => {
+                        SessionState::Failed => {
                             // Mark challenge as failed and complete
                             break;
                         }
-                        GameState::ShowDialog => {
+                        SessionState::ShowDialog => {
                             // Dialog was opened, update display to show dialog
                             self.update_display()?;
                         }
@@ -240,7 +240,7 @@ impl TypingScreen {
         Ok(self.calculate_result())
     }
 
-    pub fn show_with_state(&mut self) -> Result<(StageResult, GameState)> {
+    pub fn show_with_state(&mut self) -> Result<(StageResult, SessionState)> {
         // For stage manager - assumes raw mode is already enabled
         self.start_time = std::time::Instant::now();
 
@@ -263,16 +263,16 @@ impl TypingScreen {
             if event::poll(std::time::Duration::from_millis(100))? {
                 if let Event::Key(key_event) = event::read()? {
                     match self.handle_key(key_event)? {
-                        GameState::Continue => {
+                        SessionState::Continue => {
                             self.update_display()?;
                         }
-                        GameState::ShowDialog => {
+                        SessionState::ShowDialog => {
                             self.update_display()?;
                         }
-                        state @ (GameState::Complete
-                        | GameState::Exit
-                        | GameState::Skip
-                        | GameState::Failed) => {
+                        state @ (SessionState::Complete
+                        | SessionState::Exit
+                        | SessionState::Skip
+                        | SessionState::Failed) => {
                             break state;
                         }
                     }
@@ -284,10 +284,10 @@ impl TypingScreen {
         Ok((self.calculate_result_with_state(&final_state), final_state))
     }
 
-    fn handle_key(&mut self, key_event: KeyEvent) -> Result<GameState> {
+    fn handle_key(&mut self, key_event: KeyEvent) -> Result<SessionState> {
         // Only process key press events, ignore release/repeat
         if !matches!(key_event.kind, KeyEventKind::Press) {
-            return Ok(GameState::Continue);
+            return Ok(SessionState::Continue);
         }
 
         match key_event.code {
@@ -296,12 +296,12 @@ impl TypingScreen {
                     // Dialog is shown, Esc closes it
                     self.dialog_shown = false;
                     self.scoring_engine.resume();
-                    Ok(GameState::Continue)
+                    Ok(SessionState::Continue)
                 } else {
                     // No dialog, show Skip/Quit dialog
                     self.dialog_shown = true;
                     self.scoring_engine.pause();
-                    Ok(GameState::ShowDialog)
+                    Ok(SessionState::ShowDialog)
                 }
             }
             KeyCode::Char('s') | KeyCode::Char('S') => {
@@ -310,9 +310,9 @@ impl TypingScreen {
                     self.scoring_engine.resume();
                     if self.skips_remaining > 0 {
                         self.skips_remaining -= 1;
-                        Ok(GameState::Skip)
+                        Ok(SessionState::Skip)
                     } else {
-                        Ok(GameState::Continue)
+                        Ok(SessionState::Continue)
                     }
                 } else {
                     // Normal typing - handle as character input with actual character
@@ -328,7 +328,7 @@ impl TypingScreen {
                 if self.dialog_shown {
                     self.dialog_shown = false;
                     self.scoring_engine.resume();
-                    Ok(GameState::Failed)
+                    Ok(SessionState::Failed)
                 } else {
                     // Normal typing - handle as character input with actual character
                     let ch = if key_event.code == KeyCode::Char('Q') {
@@ -341,14 +341,14 @@ impl TypingScreen {
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
                 // Show session summary and exit
-                Ok(GameState::Exit)
+                Ok(SessionState::Exit)
             }
             KeyCode::Char(ch) => {
                 if self.dialog_shown {
                     // Dialog is shown, any other char closes it
                     self.dialog_shown = false;
                     self.scoring_engine.resume();
-                    Ok(GameState::Continue)
+                    Ok(SessionState::Continue)
                 } else {
                     // Normal typing
                     self.handle_character_input(ch, key_event)
@@ -374,7 +374,7 @@ impl TypingScreen {
                         // Skip over any non-typeable characters (comments, whitespace)
                         self.advance_to_next_typeable_character();
                         if self.current_position >= self.challenge_text.len() {
-                            return Ok(GameState::Complete);
+                            return Ok(SessionState::Complete);
                         }
                     } else {
                         self.mistakes += 1;
@@ -382,7 +382,7 @@ impl TypingScreen {
                         self.current_mistake_position = Some(self.current_position);
                     }
                 }
-                Ok(GameState::Continue)
+                Ok(SessionState::Continue)
             }
             KeyCode::Enter => {
                 // Auto-advance when reaching end of line (after last code character)
@@ -399,7 +399,7 @@ impl TypingScreen {
                         self.current_mistake_position = None;
                         self.advance_to_next_line()?;
                         if self.current_position >= self.challenge_text.len() {
-                            return Ok(GameState::Complete);
+                            return Ok(SessionState::Complete);
                         }
                     } else {
                         self.mistakes += 1;
@@ -407,7 +407,7 @@ impl TypingScreen {
                         self.current_mistake_position = Some(self.current_position);
                     }
                 }
-                Ok(GameState::Continue)
+                Ok(SessionState::Continue)
             }
             // Handle any other key
             _ => {
@@ -415,7 +415,7 @@ impl TypingScreen {
                     self.dialog_shown = false;
                     self.scoring_engine.resume();
                 }
-                Ok(GameState::Continue)
+                Ok(SessionState::Continue)
             }
         }
     }
@@ -472,9 +472,9 @@ impl TypingScreen {
             .unwrap()
     }
 
-    pub fn calculate_result_with_state(&self, state: &GameState) -> StageResult {
-        let was_skipped = matches!(state, GameState::Skip);
-        let was_failed = matches!(state, GameState::Failed);
+    pub fn calculate_result_with_state(&self, state: &SessionState) -> StageResult {
+        let was_skipped = matches!(state, SessionState::Skip);
+        let was_failed = matches!(state, SessionState::Failed);
         self.scoring_engine
             .calculate_result_with_status(was_skipped, was_failed)
             .unwrap()
@@ -502,7 +502,7 @@ impl TypingScreen {
         false // For now, we'll handle this in stage manager
     }
 
-    fn handle_character_input(&mut self, ch: char, _key_event: KeyEvent) -> Result<GameState> {
+    fn handle_character_input(&mut self, ch: char, _key_event: KeyEvent) -> Result<SessionState> {
         if self.current_position < self.challenge_chars.len() {
             let expected_char = self.challenge_chars[self.current_position];
             let is_correct = ch == expected_char;
@@ -517,7 +517,7 @@ impl TypingScreen {
                 // Skip over any non-typeable characters (comments, whitespace)
                 self.advance_to_next_typeable_character();
                 if self.current_position >= self.challenge_chars.len() {
-                    return Ok(GameState::Complete);
+                    return Ok(SessionState::Complete);
                 }
             } else {
                 self.mistakes += 1;
@@ -525,7 +525,7 @@ impl TypingScreen {
                 self.current_mistake_position = Some(self.current_position);
             }
         }
-        Ok(GameState::Continue)
+        Ok(SessionState::Continue)
     }
 
     fn advance_to_next_typeable_character(&mut self) {

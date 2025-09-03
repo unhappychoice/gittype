@@ -1,7 +1,7 @@
 use super::{
     screens::{
         exit_summary_screen::ExitAction, session_summary_screen::ResultAction,
-        typing_screen::GameState, CancelScreen, CountdownScreen, ExitSummaryScreen, FailureScreen,
+        typing_screen::SessionState, CancelScreen, CountdownScreen, ExitSummaryScreen, FailureScreen,
         SessionSummaryScreen, SharingScreen, TitleAction, TitleScreen, TypingScreen,
     },
     session_tracker::SessionTracker,
@@ -190,7 +190,7 @@ impl StageManager {
 
             // Handle different exit states
             match final_state {
-                GameState::Complete => {
+                SessionState::Complete => {
                     // Normal completion - advance to next stage
                     let stage_name = challenge.get_display_title();
                     let engine = screen.get_scoring_engine().clone();
@@ -222,7 +222,7 @@ impl StageManager {
                     // Move to next stage
                     self.current_stage += 1;
                 }
-                GameState::Skip => {
+                SessionState::Skip => {
                     // Skipped - record skip and partial effort
                     let engine = screen.get_scoring_engine();
                     self.session_tracker.record_skip();
@@ -255,7 +255,7 @@ impl StageManager {
                     }
                     // Don't increment current_stage - retry same stage with new challenge
                 }
-                GameState::Failed => {
+                SessionState::Failed => {
                     // Failed - show fail result screen with navigation options
                     let stage_name = challenge.get_display_title();
                     let engine = screen.get_scoring_engine().clone();
@@ -280,7 +280,7 @@ impl StageManager {
                         return Ok(false);
                     }
                 }
-                GameState::Exit => {
+                SessionState::Exit => {
                     // User wants to exit - record partial effort only
                     let engine = screen.get_scoring_engine();
                     self.session_tracker.record_partial_effort(engine, &stage_result);
@@ -303,7 +303,7 @@ impl StageManager {
                         return Ok(false);
                     }
                 }
-                GameState::Continue | GameState::ShowDialog => {
+                SessionState::Continue | SessionState::ShowDialog => {
                     // This shouldn't happen in final state
                     unreachable!("Continue/ShowDialog state should not be final");
                 }
