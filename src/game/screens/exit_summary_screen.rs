@@ -1,4 +1,4 @@
-use crate::game::{ascii_digits::get_digit_patterns, SessionSummary};
+use crate::game::{ascii_digits::get_digit_patterns, SessionResult};
 use crate::sharing::SharingPlatform;
 use crate::Result;
 use crossterm::{
@@ -19,7 +19,7 @@ pub enum ExitAction {
 pub struct ExitSummaryScreen;
 
 impl ExitSummaryScreen {
-    fn create_session_share_text(session_summary: &SessionSummary) -> String {
+    fn create_session_share_text(session_summary: &SessionResult) -> String {
         format!(
             "Just demolished {} keystrokes in gittype! 🔥 Total Score: {:.0}, CPM: {:.0}, Mistakes: {}, Time: {:.1}min 💪\n\nYour turn to abuse your keyboard! https://github.com/unhappychoice/gittype\n\n#gittype #typing #coding #keyboardwarrior",
             session_summary.total_effort_keystrokes(),
@@ -31,11 +31,11 @@ impl ExitSummaryScreen {
     }
 
     fn session_summary_to_typing_metrics(
-        session_summary: &SessionSummary,
+        session_summary: &SessionResult,
     ) -> crate::scoring::StageResult {
         use crate::scoring::{ScoringEngine, StageResult};
 
-        // Create a StageResult from SessionSummary data
+        // Create a StageResult from SessionResult data
         let rank_name =
             ScoringEngine::get_rank_for_score(session_summary.session_score)
                 .name()
@@ -80,7 +80,7 @@ impl ExitSummaryScreen {
         result
     }
 
-    pub fn show(session_summary: &SessionSummary) -> Result<ExitAction> {
+    pub fn show(session_summary: &SessionResult) -> Result<ExitAction> {
         let mut stdout = stdout();
 
         // Comprehensive screen reset
@@ -290,7 +290,7 @@ impl ExitSummaryScreen {
         }
     }
 
-    pub fn show_sharing_menu(session_summary: &SessionSummary) -> Result<()> {
+    pub fn show_sharing_menu(session_summary: &SessionResult) -> Result<()> {
         let _metrics = Self::session_summary_to_typing_metrics(session_summary);
 
         // Raw mode should already be enabled from the parent function
@@ -405,7 +405,7 @@ impl ExitSummaryScreen {
     }
 
     fn share_session_result(
-        session_summary: &SessionSummary,
+        session_summary: &SessionResult,
         platform: SharingPlatform,
     ) -> crate::Result<()> {
         let text = Self::create_session_share_text(session_summary);
@@ -420,7 +420,7 @@ impl ExitSummaryScreen {
     fn generate_session_share_url(
         text: &str,
         platform: &SharingPlatform,
-        session_summary: &SessionSummary,
+        session_summary: &SessionResult,
     ) -> String {
         match platform {
             SharingPlatform::X => {
