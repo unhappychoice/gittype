@@ -5,20 +5,20 @@ use std::process::Command;
 
 // Re-export for backward compatibility - removed duplicate import
 
-pub struct GitInfoExtractor;
+pub struct GitRepositoryExtractor;
 
-impl Default for GitInfoExtractor {
+impl Default for GitRepositoryExtractor {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl GitInfoExtractor {
+impl GitRepositoryExtractor {
     pub fn new() -> Self {
         Self
     }
 
-    pub fn extract_git_info(repo_path: &Path) -> Result<Option<GitRepository>> {
+    pub fn extract_git_repository(repo_path: &Path) -> Result<Option<GitRepository>> {
         // Canonicalize the path to handle relative paths like ../../
         let canonical_path = match repo_path.canonicalize() {
             Ok(path) => path,

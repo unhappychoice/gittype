@@ -77,9 +77,9 @@ impl Step for ExtractingStep {
                 screen,
             )?;
 
-            // Set git info in loading screen if available (for local paths)
-            if let Some(git_info) = loader.get_git_info() {
-                let _ = screen.set_git_info(git_info);
+            // Set git repository in loading screen if available (for local paths)
+            if let Some(git_repository) = loader.get_git_repository() {
+                let _ = screen.set_git_repository(git_repository);
             }
 
             Ok(StepResult::Challenges(challenges))

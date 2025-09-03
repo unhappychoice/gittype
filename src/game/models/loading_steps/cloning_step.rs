@@ -56,13 +56,13 @@ impl Step for CloningStep {
 
             // Extract actual git info from cloned repository and set it in loading screen
             if let Some(screen) = context.loading_screen {
-                if let Ok(Some(git_info)) =
-                    crate::extractor::GitInfoExtractor::extract_git_info(&repo_path)
+                if let Ok(Some(git_repository)) =
+                    crate::extractor::GitRepositoryExtractor::extract_git_repository(&repo_path)
                 {
-                    let _ = screen.set_git_info(&git_info);
+                    let _ = screen.set_git_repository(&git_repository);
                 } else {
                     // Fallback to basic info from RepoInfo if git extraction fails
-                    let git_info = crate::models::GitRepository {
+                    let git_repository = crate::models::GitRepository {
                         user_name: repo_info.owner.clone(),
                         repository_name: repo_info.name.clone(),
                         remote_url: format!(
@@ -73,7 +73,7 @@ impl Step for CloningStep {
                         commit_hash: None,
                         is_dirty: false,
                     };
-                    let _ = screen.set_git_info(&git_info);
+                    let _ = screen.set_git_repository(&git_repository);
                 }
             }
 

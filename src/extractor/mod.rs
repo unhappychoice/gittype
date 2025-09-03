@@ -8,7 +8,7 @@ pub mod repository_loader;
 
 pub use crate::game::screens::loading_screen::{NoOpProgressReporter, ProgressReporter};
 pub use challenge_converter::ChallengeConverter;
-pub use git_info::GitInfoExtractor;
+pub use git_info::GitRepositoryExtractor;
 pub use models::{ExtractionOptions, Language};
 pub use crate::models::{GitRepository, ChunkType, CodeChunk};
 pub use parser::CodeExtractor;

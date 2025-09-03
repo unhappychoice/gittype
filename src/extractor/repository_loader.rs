@@ -1,5 +1,5 @@
 use super::{
-    ChallengeConverter, CodeExtractor, ExtractionOptions, GitInfoExtractor, GitRepository,
+    ChallengeConverter, CodeExtractor, ExtractionOptions, GitRepositoryExtractor, GitRepository,
     NoOpProgressReporter, ProgressReporter,
 };
 use crate::models::Challenge;
@@ -9,7 +9,7 @@ use std::path::Path;
 pub struct RepositoryLoader {
     extractor: CodeExtractor,
     converter: ChallengeConverter,
-    git_info: Option<GitRepository>,
+    git_repository: Option<GitRepository>,
 }
 
 impl RepositoryLoader {
@@ -20,7 +20,7 @@ impl RepositoryLoader {
         Ok(Self {
             extractor,
             converter,
-            git_info: None,
+            git_repository: None,
         })
     }
 
@@ -47,7 +47,7 @@ impl RepositoryLoader {
         }
 
         // Extract git information
-        self.git_info = GitInfoExtractor::extract_git_info(repo_path)?;
+        self.git_repository = GitRepositoryExtractor::extract_git_repository(repo_path)?;
 
         let extraction_options = options.unwrap_or_default();
         let chunks =
@@ -162,7 +162,7 @@ impl RepositoryLoader {
         Ok(zen_challenges)
     }
 
-    pub fn get_git_info(&self) -> &Option<GitRepository> {
-        &self.git_info
+    pub fn get_git_repository(&self) -> &Option<GitRepository> {
+        &self.git_repository
     }
 }
