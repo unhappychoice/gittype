@@ -15,7 +15,7 @@ impl LanguageExtractor for RustExtractor {
     }
 
     fn tree_sitter_language(&self) -> tree_sitter::Language {
-        tree_sitter_rust::language()
+        tree_sitter_rust::LANGUAGE.into()
     }
 
     fn query_patterns(&self) -> &str {
@@ -74,7 +74,7 @@ impl RustExtractor {
     pub fn create_parser() -> Result<Parser> {
         let mut parser = Parser::new();
         parser
-            .set_language(tree_sitter_rust::language())
+            .set_language(&tree_sitter_rust::LANGUAGE.into())
             .map_err(|e| {
                 GitTypeError::ExtractionFailed(format!("Failed to set Rust language: {}", e))
             })?;

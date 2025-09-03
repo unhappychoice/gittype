@@ -32,7 +32,7 @@ impl ParserCache {
         let extractor = registry.get_extractor(language)?;
         let tree_sitter_lang = extractor.tree_sitter_language();
 
-        tree_sitter::Query::new(tree_sitter_lang, query_str).map_err(|e| {
+        tree_sitter::Query::new(&tree_sitter_lang, query_str).map_err(|e| {
             crate::GitTypeError::ExtractionFailed(format!("Failed to create query: {}", e))
         })
     }

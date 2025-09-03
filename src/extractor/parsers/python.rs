@@ -15,7 +15,7 @@ impl LanguageExtractor for PythonExtractor {
     }
 
     fn tree_sitter_language(&self) -> tree_sitter::Language {
-        tree_sitter_python::language()
+        tree_sitter_python::LANGUAGE.into()
     }
 
     fn query_patterns(&self) -> &str {
@@ -64,7 +64,7 @@ impl PythonExtractor {
     pub fn create_parser() -> Result<Parser> {
         let mut parser = Parser::new();
         parser
-            .set_language(tree_sitter_python::language())
+            .set_language(&tree_sitter_python::LANGUAGE.into())
             .map_err(|e| {
                 GitTypeError::ExtractionFailed(format!("Failed to set Python language: {}", e))
             })?;

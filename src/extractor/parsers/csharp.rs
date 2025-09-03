@@ -15,7 +15,7 @@ impl LanguageExtractor for CSharpExtractor {
     }
 
     fn tree_sitter_language(&self) -> tree_sitter::Language {
-        tree_sitter_c_sharp::language()
+        tree_sitter_c_sharp::LANGUAGE.into()
     }
 
     fn query_patterns(&self) -> &str {
@@ -146,7 +146,7 @@ impl CSharpExtractor {
     pub fn create_parser() -> Result<Parser> {
         let mut parser = Parser::new();
         parser
-            .set_language(tree_sitter_c_sharp::language())
+            .set_language(&tree_sitter_c_sharp::LANGUAGE.into())
             .map_err(|e| {
                 GitTypeError::ExtractionFailed(format!("Failed to set C# language: {}", e))
             })?;

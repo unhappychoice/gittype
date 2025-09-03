@@ -15,38 +15,50 @@ impl LanguageExtractor for KotlinExtractor {
     }
 
     fn tree_sitter_language(&self) -> tree_sitter::Language {
-        tree_sitter_kotlin::language()
+        tree_sitter_kotlin_ng::LANGUAGE.into()
     }
 
     fn query_patterns(&self) -> &str {
         "
-            (function_declaration (simple_identifier) @name) @function
-            (class_declaration (type_identifier) @name) @class
-            (object_declaration (type_identifier) @name) @object
-            (property_declaration (variable_declaration (simple_identifier) @name)) @property
+            (function_declaration) @function
+            (anonymous_function) @function
+            (class_declaration) @class
+            (object_declaration) @object
             (companion_object) @companion
-            (enum_entry (simple_identifier) @name) @enum_entry
+            (property_declaration) @property
+            (enum_entry) @enum_entry
+            (type_alias) @type_alias
         "
     }
 
     fn comment_query(&self) -> &str {
-        "(comment) @comment"
+        "
+            (line_comment) @comment
+            (block_comment) @comment
+        "
     }
 
     fn capture_name_to_chunk_type(&self, capture_name: &str) -> Option<ChunkType> {
         match capture_name {
             "function" => Some(ChunkType::Function),
             "class" => Some(ChunkType::Class),
+            "interface" => Some(ChunkType::Class),
             "object" => Some(ChunkType::Class),
-            "property" => Some(ChunkType::Variable),
             "companion" => Some(ChunkType::Class),
+            "property" => Some(ChunkType::Variable),
             "enum_entry" => Some(ChunkType::Const),
+            "type_alias" => Some(ChunkType::Class),
+            "lambda" => Some(ChunkType::Function),
             _ => None,
         }
     }
 
-    fn extract_name(&self, node: Node, source_code: &str, _capture_name: &str) -> Option<String> {
-        self.extract_name_from_node(node, source_code)
+    fn extract_name(&self, node: Node, source_code: &str, capture_name: &str) -> Option<String> {
+        match capture_name {
+            "property" => self.extract_property_name(node, source_code),
+            "companion" => Some("companion object".to_string()),
+            _ => self.extract_name_from_node(node, source_code),
+        }
     }
 }
 
@@ -69,10 +81,41 @@ impl KotlinExtractor {
         None
     }
 
+    fn extract_property_name(&self, node: Node, source_code: &str) -> Option<String> {
+        let mut cursor = node.walk();
+        if cursor.goto_first_child() {
+            loop {
+                let child = cursor.node();
+                if child.kind() == "variable_declaration" {
+                    // Look for simple_identifier in variable_declaration
+                    let mut var_cursor = child.walk();
+                    if var_cursor.goto_first_child() {
+                        loop {
+                            let var_child = var_cursor.node();
+                            if var_child.kind() == "simple_identifier" {
+                                let start = var_child.start_byte();
+                                let end = var_child.end_byte();
+                                return Some(source_code[start..end].to_string());
+                            }
+                            if !var_cursor.goto_next_sibling() {
+                                break;
+                            }
+                        }
+                    }
+                }
+                if !cursor.goto_next_sibling() {
+                    break;
+                }
+            }
+        }
+        // Fall back to general name extraction
+        self.extract_name_from_node(node, source_code)
+    }
+
     pub fn create_parser() -> Result<Parser> {
         let mut parser = Parser::new();
         parser
-            .set_language(tree_sitter_kotlin::language())
+            .set_language(&tree_sitter_kotlin_ng::LANGUAGE.into())
             .map_err(|e| {
                 GitTypeError::ExtractionFailed(format!("Failed to set Kotlin language: {}", e))
             })?;

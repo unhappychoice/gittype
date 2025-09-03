@@ -15,7 +15,7 @@ impl LanguageExtractor for GoExtractor {
     }
 
     fn tree_sitter_language(&self) -> tree_sitter::Language {
-        tree_sitter_go::language()
+        tree_sitter_go::LANGUAGE.into()
     }
 
     fn query_patterns(&self) -> &str {
@@ -131,7 +131,7 @@ impl GoExtractor {
     pub fn create_parser() -> Result<Parser> {
         let mut parser = Parser::new();
         parser
-            .set_language(tree_sitter_go::language())
+            .set_language(&tree_sitter_go::LANGUAGE.into())
             .map_err(|e| {
                 GitTypeError::ExtractionFailed(format!("Failed to set Go language: {}", e))
             })?;

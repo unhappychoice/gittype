@@ -8,8 +8,8 @@ pub struct CppExtractor;
 impl CppExtractor {
     pub fn create_parser() -> Result<Parser> {
         let mut parser = Parser::new();
-        let language = tree_sitter_cpp::language();
-        parser.set_language(language)?;
+        let language = tree_sitter_cpp::LANGUAGE;
+        parser.set_language(&language.into())?;
         Ok(parser)
     }
 }
@@ -24,7 +24,7 @@ impl LanguageExtractor for CppExtractor {
     }
 
     fn tree_sitter_language(&self) -> tree_sitter::Language {
-        tree_sitter_cpp::language()
+        tree_sitter_cpp::LANGUAGE.into()
     }
 
     fn query_patterns(&self) -> &str {

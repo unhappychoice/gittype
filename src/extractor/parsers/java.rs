@@ -15,7 +15,7 @@ impl LanguageExtractor for JavaExtractor {
     }
 
     fn tree_sitter_language(&self) -> tree_sitter::Language {
-        tree_sitter_java::language()
+        tree_sitter_java::LANGUAGE.into()
     }
 
     fn query_patterns(&self) -> &str {
@@ -108,7 +108,7 @@ impl JavaExtractor {
     pub fn create_parser() -> Result<Parser> {
         let mut parser = Parser::new();
         parser
-            .set_language(tree_sitter_java::language())
+            .set_language(&tree_sitter_java::LANGUAGE.into())
             .map_err(|e| {
                 GitTypeError::ExtractionFailed(format!("Failed to set Java language: {}", e))
             })?;

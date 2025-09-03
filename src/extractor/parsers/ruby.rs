@@ -15,7 +15,7 @@ impl LanguageExtractor for RubyExtractor {
     }
 
     fn tree_sitter_language(&self) -> tree_sitter::Language {
-        tree_sitter_ruby::language()
+        tree_sitter_ruby::LANGUAGE.into()
     }
 
     fn query_patterns(&self) -> &str {
@@ -128,7 +128,7 @@ impl RubyExtractor {
     pub fn create_parser() -> Result<Parser> {
         let mut parser = Parser::new();
         parser
-            .set_language(tree_sitter_ruby::language())
+            .set_language(&tree_sitter_ruby::LANGUAGE.into())
             .map_err(|e| {
                 GitTypeError::ExtractionFailed(format!("Failed to set Ruby language: {}", e))
             })?;

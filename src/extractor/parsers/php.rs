@@ -15,7 +15,7 @@ impl LanguageExtractor for PhpExtractor {
     }
 
     fn tree_sitter_language(&self) -> tree_sitter::Language {
-        tree_sitter_php::language_php()
+        tree_sitter_php::LANGUAGE_PHP.into()
     }
 
     fn query_patterns(&self) -> &str {
@@ -83,7 +83,7 @@ impl PhpExtractor {
     pub fn create_parser() -> Result<Parser> {
         let mut parser = Parser::new();
         parser
-            .set_language(tree_sitter_php::language_php())
+            .set_language(&tree_sitter_php::LANGUAGE_PHP.into())
             .map_err(|e| {
                 GitTypeError::ExtractionFailed(format!("Failed to set PHP language: {}", e))
             })?;
