@@ -3,6 +3,7 @@ use crate::extractor::parsers::{get_parser_registry, parse_with_thread_local};
 use crate::{GitTypeError, Result};
 use std::fs;
 use std::path::Path;
+use streaming_iterator::StreamingIterator;
 use tree_sitter::{Node, QueryCursor, Tree};
 
 pub struct CommonExtractor;
@@ -21,9 +22,9 @@ impl CommonExtractor {
         let query = registry.create_query(language)?;
 
         let mut cursor = QueryCursor::new();
-        let matches = cursor.matches(&query, tree.root_node(), source_code.as_bytes());
+        let mut matches = cursor.matches(&query, tree.root_node(), source_code.as_bytes());
 
-        for match_ in matches {
+        while let Some(match_) = matches.next() {
             for capture in match_.captures {
                 let node = capture.node;
                 let capture_name = &query.capture_names()[capture.index as usize];
@@ -64,9 +65,9 @@ impl CommonExtractor {
         let mut comment_ranges = Vec::new();
 
         let mut cursor = QueryCursor::new();
-        let matches = cursor.matches(&comment_query, tree.root_node(), source_code.as_bytes());
+        let mut matches = cursor.matches(&comment_query, tree.root_node(), source_code.as_bytes());
 
-        for m in matches {
+        while let Some(m) = matches.next() {
             for capture in m.captures {
                 let node = capture.node;
                 let start = node.start_byte();
@@ -98,6 +99,7 @@ impl CommonExtractor {
             Language::CSharp => node_kind == "comment",
             Language::C => node_kind == "comment",
             Language::Cpp => node_kind == "comment",
+            Language::Haskell => node_kind == "comment",
         }
     }
 
