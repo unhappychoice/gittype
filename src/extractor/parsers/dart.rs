@@ -48,12 +48,12 @@ impl LanguageExtractor for DartExtractor {
     }
 
     fn extract_name(&self, node: Node, source_code: &str, _capture_name: &str) -> Option<String> {
-        self.extract_name_from_node(node, source_code)
+        Self::extract_name_from_node(node, source_code)
     }
 }
 
 impl DartExtractor {
-    fn extract_name_from_node(&self, node: Node, source_code: &str) -> Option<String> {
+    fn extract_name_from_node(node: Node, source_code: &str) -> Option<String> {
         // First try direct identifier children
         let mut cursor = node.walk();
         if cursor.goto_first_child() {
@@ -67,14 +67,14 @@ impl DartExtractor {
 
                 // For function signatures, recursively look for identifier
                 if child.kind() == "function_signature" {
-                    if let Some(name) = self.extract_name_from_node(child, source_code) {
+                    if let Some(name) = Self::extract_name_from_node(child, source_code) {
                         return Some(name);
                     }
                 }
 
                 // For variable declarations, look deeper
                 if child.kind() == "initialized_variable_definition" {
-                    if let Some(name) = self.extract_name_from_node(child, source_code) {
+                    if let Some(name) = Self::extract_name_from_node(child, source_code) {
                         return Some(name);
                     }
                 }
