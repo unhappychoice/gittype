@@ -1,4 +1,4 @@
-use crate::extractor::models::{ChunkType, Language};
+use crate::extractor::models::ChunkType;
 use crate::extractor::parsers::LanguageExtractor;
 use crate::Result;
 use tree_sitter::{Node, Parser};
@@ -15,14 +15,6 @@ impl CExtractor {
 }
 
 impl LanguageExtractor for CExtractor {
-    fn language(&self) -> Language {
-        Language::C
-    }
-
-    fn file_extensions(&self) -> &[&str] {
-        &["c", "h"]
-    }
-
     fn tree_sitter_language(&self) -> tree_sitter::Language {
         tree_sitter_c::LANGUAGE.into()
     }

@@ -1,4 +1,5 @@
-use gittype::extractor::{ChunkType, CodeExtractor, ExtractionOptions};
+use crate::integration::test_extraction_options;
+use gittype::extractor::{ChunkType, CodeExtractor};
 use std::fs;
 use tempfile::TempDir;
 
@@ -31,7 +32,7 @@ fn test_java_class_method_extraction() {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Remove debug output
@@ -58,7 +59,7 @@ fn test_java_class_method_extraction() {
     assert!(method_names.contains(&&"calculateLength".to_string()));
 
     for chunk in &chunks {
-        assert_eq!(chunk.language, gittype::extractor::Language::Java);
+        assert_eq!(chunk.language, "java".to_string());
     }
 }
 
@@ -117,7 +118,7 @@ public class Circle implements Drawable, Resizable {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Find interface chunks
@@ -147,7 +148,7 @@ public class Circle implements Drawable, Resizable {
     assert!(method_chunks.len() >= 8); // Interface methods + class methods
 
     for chunk in &chunks {
-        assert_eq!(chunk.language, gittype::extractor::Language::Java);
+        assert_eq!(chunk.language, "java".to_string());
     }
 }
 
@@ -188,7 +189,7 @@ public class ColorTest {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Find enum chunk
@@ -220,7 +221,7 @@ public class ColorTest {
     assert!(method_names.contains(&&"testColor".to_string()));
 
     for chunk in &chunks {
-        assert_eq!(chunk.language, gittype::extractor::Language::Java);
+        assert_eq!(chunk.language, "java".to_string());
     }
 }
 
@@ -253,7 +254,7 @@ fn test_java_field_extraction() {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Find class chunk
@@ -284,6 +285,6 @@ fn test_java_field_extraction() {
     assert!(method_chunks.len() >= 3); // constructor + getName + getAge
 
     for chunk in &chunks {
-        assert_eq!(chunk.language, gittype::extractor::Language::Java);
+        assert_eq!(chunk.language, "java".to_string());
     }
 }

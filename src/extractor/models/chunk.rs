@@ -1,4 +1,3 @@
-use super::Language;
 use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
@@ -24,7 +23,7 @@ pub struct CodeChunk {
     pub file_path: PathBuf,
     pub start_line: usize,
     pub end_line: usize,
-    pub language: Language,
+    pub language: String,
     pub chunk_type: ChunkType,
     pub name: String,
     pub comment_ranges: Vec<(usize, usize)>, // Character-based ranges for comments relative to content

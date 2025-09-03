@@ -1,4 +1,5 @@
-use gittype::extractor::{ChunkType, CodeExtractor, ExtractionOptions};
+use crate::integration::test_extraction_options;
+use gittype::extractor::{ChunkType, CodeExtractor};
 use std::fs;
 use tempfile::TempDir;
 
@@ -45,7 +46,7 @@ class Person {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Should find 2 classes + methods
@@ -62,7 +63,7 @@ class Person {
     assert!(class_names.contains(&&"Person".to_string()));
 
     for chunk in &chunks {
-        assert_eq!(chunk.language, gittype::extractor::Language::Dart);
+        assert_eq!(chunk.language, "dart".to_string());
     }
 }
 
@@ -95,7 +96,7 @@ void processItems(List<String> items) {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     assert!(chunks.len() >= 4);
@@ -108,7 +109,7 @@ void processItems(List<String> items) {
 
     for chunk in &chunks {
         assert!(matches!(chunk.chunk_type, ChunkType::Function));
-        assert_eq!(chunk.language, gittype::extractor::Language::Dart);
+        assert_eq!(chunk.language, "dart".to_string());
     }
 }
 
@@ -145,7 +146,7 @@ enum Status {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Should find 2 enums + methods
@@ -162,7 +163,7 @@ enum Status {
     assert!(enum_names.contains(&&"Status".to_string()));
 
     for chunk in &chunks {
-        assert_eq!(chunk.language, gittype::extractor::Language::Dart);
+        assert_eq!(chunk.language, "dart".to_string());
     }
 }
 
@@ -200,7 +201,7 @@ class Bird with Flyable {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Should find 2 mixins + 1 class + methods
@@ -218,7 +219,7 @@ class Bird with Flyable {
     assert!(chunk_names.contains(&&"Bird".to_string()));
 
     for chunk in &chunks {
-        assert_eq!(chunk.language, gittype::extractor::Language::Dart);
+        assert_eq!(chunk.language, "dart".to_string());
     }
 }
 
@@ -244,7 +245,7 @@ class Config {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Should find variables + class
@@ -262,7 +263,7 @@ class Config {
     assert!(variable_names.contains(&&"isEnabled".to_string()));
 
     for chunk in &chunks {
-        assert_eq!(chunk.language, gittype::extractor::Language::Dart);
+        assert_eq!(chunk.language, "dart".to_string());
     }
 }
 
@@ -293,7 +294,7 @@ extension ListExtensions<T> on List<T> {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Should find 2 extensions + methods
@@ -310,6 +311,6 @@ extension ListExtensions<T> on List<T> {
     assert!(extension_names.contains(&&"ListExtensions".to_string()));
 
     for chunk in &chunks {
-        assert_eq!(chunk.language, gittype::extractor::Language::Dart);
+        assert_eq!(chunk.language, "dart".to_string());
     }
 }

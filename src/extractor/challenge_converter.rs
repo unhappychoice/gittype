@@ -121,7 +121,8 @@ impl ChallengeConverter {
             })
             .map(|(file_path, content)| {
                 let id = Uuid::new_v4().to_string();
-                let language = super::Language::detect_from_path(&file_path);
+                let language =
+                    super::models::language::LanguageRegistry::detect_from_path(&file_path);
                 let file_path_str = file_path.to_string_lossy().to_string();
                 let line_count = content.lines().count();
                 Challenge::new(id, content)
@@ -350,7 +351,8 @@ impl ChallengeConverter {
             })
             .map(|(file_path, content)| {
                 let id = uuid::Uuid::new_v4().to_string();
-                let language = super::Language::detect_from_path(&file_path);
+                let language =
+                    super::models::language::LanguageRegistry::detect_from_path(&file_path);
                 let file_path_str = file_path.to_string_lossy().to_string();
                 let line_count = content.lines().count();
                 Challenge::new(id, content)

@@ -1,5 +1,6 @@
+use gittype::extractor::models::language::LanguageRegistry;
 use gittype::extractor::{
-    ChallengeConverter, ChunkType, CodeExtractor, ExtractionOptions, Language, RepositoryLoader,
+    ChallengeConverter, ChunkType, CodeExtractor, ExtractionOptions, RepositoryLoader,
 };
 use gittype::GitTypeError;
 use std::fs;
@@ -19,16 +20,43 @@ fn test_extraction_options_default() {
 
 #[test]
 fn test_language_from_extension() {
-    assert_eq!(Language::from_extension("rs"), Some(Language::Rust));
-    assert_eq!(Language::from_extension("ts"), Some(Language::TypeScript));
-    assert_eq!(Language::from_extension("tsx"), Some(Language::TypeScript));
-    assert_eq!(Language::from_extension("js"), Some(Language::JavaScript));
-    assert_eq!(Language::from_extension("mjs"), Some(Language::JavaScript));
-    assert_eq!(Language::from_extension("cjs"), Some(Language::JavaScript));
-    assert_eq!(Language::from_extension("py"), Some(Language::Python));
-    assert_eq!(Language::from_extension("rb"), Some(Language::Ruby));
-    assert_eq!(Language::from_extension("go"), Some(Language::Go));
-    assert_eq!(Language::from_extension("unknown"), None);
+    assert_eq!(
+        LanguageRegistry::from_extension("rs").map(|l| l.name().to_string()),
+        Some("rust".to_string())
+    );
+    assert_eq!(
+        LanguageRegistry::from_extension("ts").map(|l| l.name().to_string()),
+        Some("typescript".to_string())
+    );
+    assert_eq!(
+        LanguageRegistry::from_extension("tsx").map(|l| l.name().to_string()),
+        Some("typescript".to_string())
+    );
+    assert_eq!(
+        LanguageRegistry::from_extension("js").map(|l| l.name().to_string()),
+        Some("javascript".to_string())
+    );
+    assert_eq!(
+        LanguageRegistry::from_extension("mjs").map(|l| l.name().to_string()),
+        Some("javascript".to_string())
+    );
+    assert_eq!(
+        LanguageRegistry::from_extension("cjs").map(|l| l.name().to_string()),
+        Some("javascript".to_string())
+    );
+    assert_eq!(
+        LanguageRegistry::from_extension("py").map(|l| l.name().to_string()),
+        Some("python".to_string())
+    );
+    assert_eq!(
+        LanguageRegistry::from_extension("rb").map(|l| l.name().to_string()),
+        Some("ruby".to_string())
+    );
+    assert_eq!(
+        LanguageRegistry::from_extension("go").map(|l| l.name().to_string()),
+        Some("go".to_string())
+    );
+    assert_eq!(LanguageRegistry::from_extension("unknown"), None);
 }
 
 #[test]
@@ -59,22 +87,45 @@ fn test_gitignore_respected() {
     let target_file = temp_dir.path().join("target/debug/main.rs");
     let log_file = temp_dir.path().join("debug.log.rs");
 
-    let rust_code = r#"fn test() {}"#;
+    let rust_code = r#"
+fn main() {
+    println!("Hello, world!");
+}
+
+fn test_function() {
+    // This is a test function
+}
+
+struct TestStruct {
+    value: i32,
+}
+"#;
     fs::write(&src_file, rust_code).unwrap();
     fs::write(&target_file, rust_code).unwrap();
     fs::write(&log_file, rust_code).unwrap();
 
     let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
-        .unwrap();
+    let mut options = ExtractionOptions::default();
+    // Remove tmp/** pattern for this test since we're using a temp directory
+    options.exclude_patterns.retain(|p| p != "**/tmp/**");
 
-    // Should only find src/main.rs
-    assert_eq!(chunks.len(), 1);
-    assert!(chunks[0]
-        .file_path
-        .to_string_lossy()
-        .contains("src/main.rs"));
+    let chunks = extractor.extract_chunks(temp_dir.path(), options).unwrap();
+
+    // Should find multiple chunks (functions + struct) but all from src/main.rs
+    assert!(
+        chunks.len() >= 3,
+        "Expected at least 3 chunks, found {}",
+        chunks.len()
+    );
+
+    // All chunks should be from src/main.rs (not from target/ or debug.log.rs)
+    for chunk in &chunks {
+        assert!(
+            chunk.file_path.to_string_lossy().contains("src/main.rs"),
+            "Found chunk from unexpected file: {}",
+            chunk.file_path.display()
+        );
+    }
     assert!(!chunks[0].file_path.to_string_lossy().contains("target"));
 
     for chunk in &chunks {
@@ -93,7 +144,7 @@ fn test_convert_chunk_to_challenge() {
         file_path: PathBuf::from("src/main.rs"),
         start_line: 10,
         end_line: 12,
-        language: Language::Rust,
+        language: "rust".to_string(),
         chunk_type: ChunkType::Function,
         name: "test".to_string(),
         comment_ranges: vec![],
@@ -131,8 +182,12 @@ struct Person {
     fs::write(&file_path, rust_code).unwrap();
 
     let mut loader = RepositoryLoader::new().unwrap();
+    let mut options = ExtractionOptions::default();
+    // Remove tmp/** pattern for this test since we're using a temp directory
+    options.exclude_patterns.retain(|p| p != "**/tmp/**");
+
     let challenges = loader
-        .load_challenges_from_repository(temp_dir.path(), None)
+        .load_challenges_from_repository(temp_dir.path(), Some(options))
         .unwrap();
 
     // Repository loader may filter out too-small chunks by difficulty thresholds.
@@ -205,7 +260,9 @@ class TsClass{} {{
     }
 
     let mut extractor = CodeExtractor::new().unwrap();
-    let options = ExtractionOptions::default();
+    let mut options = ExtractionOptions::default();
+    // Remove tmp/** pattern for this test since we're using a temp directory
+    options.exclude_patterns.retain(|p| p != "**/tmp/**");
 
     let start = Instant::now();
     let chunks = extractor.extract_chunks(temp_dir.path(), options).unwrap();

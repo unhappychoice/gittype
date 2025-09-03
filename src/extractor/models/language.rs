@@ -1,107 +1,113 @@
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum Language {
-    Rust,
-    TypeScript,
-    JavaScript,
-    Python,
-    Ruby,
-    Go,
-    Swift,
-    Kotlin,
-    Java,
-    Php,
-    CSharp,
-    C,
-    Cpp,
-    Haskell,
-    Dart,
-}
+use std::hash::{Hash, Hasher};
 
-impl std::fmt::Display for Language {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let s = match self {
-            Language::Rust => "rust",
-            Language::TypeScript => "typescript",
-            Language::JavaScript => "javascript",
-            Language::Python => "python",
-            Language::Ruby => "ruby",
-            Language::Go => "go",
-            Language::Swift => "swift",
-            Language::Kotlin => "kotlin",
-            Language::Java => "java",
-            Language::Php => "php",
-            Language::CSharp => "csharp",
-            Language::C => "c",
-            Language::Cpp => "cpp",
-            Language::Haskell => "haskell",
-            Language::Dart => "dart",
-        };
-        write!(f, "{}", s)
+pub trait Language: std::fmt::Debug + Send + Sync {
+    fn name(&self) -> &'static str;
+    fn extensions(&self) -> Vec<&'static str>;
+    fn aliases(&self) -> Vec<&'static str> {
+        vec![]
+    }
+    fn file_patterns(&self) -> Vec<String> {
+        self.extensions()
+            .into_iter()
+            .map(|ext| format!("**/*.{}", ext))
+            .collect()
+    }
+
+    // For hashing - use the name as unique identifier
+    fn as_hash_key(&self) -> &'static str {
+        self.name()
     }
 }
 
-impl Language {
-    pub fn from_extension(extension: &str) -> Option<Self> {
-        match extension {
-            "rs" => Some(Language::Rust),
-            "ts" | "tsx" => Some(Language::TypeScript),
-            "js" | "jsx" | "mjs" | "cjs" => Some(Language::JavaScript),
-            "py" => Some(Language::Python),
-            "rb" => Some(Language::Ruby),
-            "go" => Some(Language::Go),
-            "swift" => Some(Language::Swift),
-            "kt" | "kts" => Some(Language::Kotlin),
-            "java" => Some(Language::Java),
-            "php" | "phtml" | "php3" | "php4" | "php5" => Some(Language::Php),
-            "cs" | "csx" => Some(Language::CSharp),
-            "c" | "h" => Some(Language::C),
-            "cpp" | "cc" | "cxx" | "hpp" => Some(Language::Cpp),
-            "hs" | "lhs" => Some(Language::Haskell),
-            "dart" => Some(Language::Dart),
-            _ => None,
+// Implement Hash for Box<dyn Language>
+impl Hash for dyn Language {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.as_hash_key().hash(state);
+    }
+}
+
+impl PartialEq for dyn Language {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_hash_key() == other.as_hash_key()
+    }
+}
+
+impl Eq for dyn Language {}
+
+// Re-export language implementations from languages/
+pub use super::languages::{
+    CSharp, Cpp, Dart, Go, Haskell, Java, JavaScript, Kotlin, Php, Python, Ruby, Rust, Swift,
+    TypeScript, C,
+};
+
+pub struct LanguageRegistry;
+
+impl LanguageRegistry {
+    pub fn all_languages() -> Vec<Box<dyn Language>> {
+        vec![
+            Box::new(Rust),
+            Box::new(TypeScript),
+            Box::new(JavaScript),
+            Box::new(Python),
+            Box::new(Ruby),
+            Box::new(Go),
+            Box::new(Swift),
+            Box::new(Kotlin),
+            Box::new(Java),
+            Box::new(Php),
+            Box::new(CSharp),
+            Box::new(C),
+            Box::new(Cpp),
+            Box::new(Haskell),
+            Box::new(Dart),
+        ]
+    }
+
+    pub fn all_file_patterns() -> Vec<String> {
+        Self::all_languages()
+            .into_iter()
+            .flat_map(|lang| lang.file_patterns())
+            .collect()
+    }
+
+    pub fn get_supported_languages() -> Vec<&'static str> {
+        Self::all_languages()
+            .into_iter()
+            .flat_map(|lang| {
+                let mut names = vec![lang.name()];
+                names.extend(lang.aliases());
+                names
+            })
+            .collect()
+    }
+
+    pub fn validate_languages(languages: &[String]) -> Result<(), Vec<String>> {
+        let supported = Self::get_supported_languages();
+        let unsupported: Vec<String> = languages
+            .iter()
+            .filter(|lang| !supported.contains(&lang.to_lowercase().as_str()))
+            .cloned()
+            .collect();
+
+        if unsupported.is_empty() {
+            Ok(())
+        } else {
+            Err(unsupported)
         }
     }
 
-    pub fn extension(&self) -> &'static str {
-        match self {
-            Language::Rust => "rs",
-            Language::TypeScript => "ts",
-            Language::JavaScript => "js",
-            Language::Python => "py",
-            Language::Ruby => "rb",
-            Language::Go => "go",
-            Language::Swift => "swift",
-            Language::Kotlin => "kt",
-            Language::Java => "java",
-            Language::Php => "php",
-            Language::CSharp => "cs",
-            Language::C => "c",
-            Language::Cpp => "cpp",
-            Language::Haskell => "hs",
-            Language::Dart => "dart",
-        }
+    pub fn from_extension(extension: &str) -> Option<Box<dyn Language>> {
+        Self::all_languages()
+            .into_iter()
+            .find(|lang| lang.extensions().contains(&extension))
     }
 
     pub fn detect_from_path(path: &std::path::Path) -> String {
         match path.extension().and_then(|ext| ext.to_str()) {
-            Some("rs") => "rust".to_string(),
-            Some("ts") | Some("tsx") => "typescript".to_string(),
-            Some("js") | Some("jsx") | Some("mjs") | Some("cjs") => "javascript".to_string(),
-            Some("py") => "python".to_string(),
-            Some("go") => "go".to_string(),
-            Some("rb") => "ruby".to_string(),
-            Some("swift") => "swift".to_string(),
-            Some("kt") | Some("kts") => "kotlin".to_string(),
-            Some("java") => "java".to_string(),
-            Some("php") | Some("phtml") | Some("php3") | Some("php4") | Some("php5") => {
-                "php".to_string()
-            }
-            Some("cs") | Some("csx") => "csharp".to_string(),
-            Some("c") | Some("h") => "c".to_string(),
-            Some("cpp") | Some("cc") | Some("cxx") | Some("hpp") => "cpp".to_string(),
-            Some("hs") | Some("lhs") => "haskell".to_string(),
-            Some("dart") => "dart".to_string(),
-            _ => "text".to_string(),
+            Some(ext) => Self::from_extension(ext)
+                .map(|lang| lang.name().to_string())
+                .unwrap_or_else(|| "text".to_string()),
+            None => "text".to_string(),
         }
     }
 }

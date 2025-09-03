@@ -8,12 +8,27 @@ use std::path::PathBuf;
 pub fn run_game_session(cli: Cli) -> Result<()> {
     let mut options = ExtractionOptions::default();
 
-    if let Some(include_patterns) = cli.include {
-        options.include_patterns = include_patterns;
-    }
+    if let Some(langs) = cli.langs {
+        if let Err(unsupported_langs) =
+            crate::extractor::models::language::LanguageRegistry::validate_languages(&langs)
+        {
+            eprintln!(
+                "❌ Unsupported language(s): {}",
+                unsupported_langs.join(", ")
+            );
+            eprintln!("💡 Supported languages:");
+            let supported =
+                crate::extractor::models::language::LanguageRegistry::get_supported_languages();
+            let mut supported_display = supported.clone();
+            supported_display.dedup();
+            for chunk in supported_display.chunks(6) {
+                eprintln!("   {}", chunk.join(", "));
+            }
+            std::process::exit(1);
+        }
 
-    if let Some(exclude_patterns) = cli.exclude {
-        options.exclude_patterns = exclude_patterns;
+        options.languages = Some(langs);
+        options.apply_language_filter();
     }
 
     let repo_spec = cli.repo.as_deref();
@@ -59,45 +74,72 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
 fn handle_game_error(e: GitTypeError) -> Result<()> {
     match e {
         GitTypeError::NoSupportedFiles => {
-            panic!("No code chunks found in the repository");
+            eprintln!("❌ No code chunks found in the repository");
+            eprintln!("💡 Try:");
+            eprintln!("   • Using a different repository path");
+            eprintln!("   • Adjusting --langs filter (e.g., --langs rust,python)");
+            std::process::exit(1);
         }
         GitTypeError::RepositoryNotFound(path) => {
-            panic!("Repository not found at path: {}", path.display());
+            eprintln!("❌ Repository not found at path: {}", path.display());
+            eprintln!("💡 Ensure the path exists and is a valid repository");
+            std::process::exit(1);
         }
         GitTypeError::RepositoryCloneError(git_error) => {
-            panic!("Failed to clone repository: {}", git_error);
+            eprintln!("❌ Failed to clone repository: {}", git_error);
+            eprintln!("💡 Check:");
+            eprintln!("   • Repository URL is correct");
+            eprintln!("   • You have access to the repository");
+            eprintln!("   • Internet connection is available");
+            std::process::exit(1);
         }
         GitTypeError::ExtractionFailed(msg) => {
-            panic!("Code extraction failed: {}", msg);
+            eprintln!("❌ Code extraction failed: {}", msg);
+            eprintln!("💡 Try using different --langs filter");
+            std::process::exit(1);
         }
         GitTypeError::InvalidRepositoryFormat(msg) => {
-            panic!("Invalid repository format: {}", msg);
+            eprintln!("❌ Invalid repository format: {}", msg);
+            eprintln!("💡 Supported formats:");
+            eprintln!("   • owner/repo");
+            eprintln!("   • https://github.com/owner/repo");
+            eprintln!("   • git@github.com:owner/repo.git");
+            std::process::exit(1);
         }
         GitTypeError::IoError(io_error) => {
-            panic!("IO error: {}", io_error);
+            eprintln!("❌ IO error: {}", io_error);
+            std::process::exit(1);
         }
         GitTypeError::DatabaseError(db_error) => {
-            panic!("Database error: {}", db_error);
+            eprintln!("❌ Database error: {}", db_error);
+            std::process::exit(1);
         }
         GitTypeError::GlobPatternError(glob_error) => {
-            panic!("Glob pattern error: {}", glob_error);
+            eprintln!("❌ Invalid glob pattern: {}", glob_error);
+            eprintln!("💡 Check your glob patterns in ExtractionOptions");
+            std::process::exit(1);
         }
         GitTypeError::SerializationError(json_error) => {
-            panic!("Serialization error: {}", json_error);
+            eprintln!("❌ Serialization error: {}", json_error);
+            std::process::exit(1);
         }
         GitTypeError::TerminalError(msg) => {
-            eprintln!("Terminal error: {}", msg);
+            eprintln!("❌ Terminal error: {}", msg);
             if msg.contains("No such device or address") {
-                eprintln!("\nHint: This error often occurs in WSL or SSH environments where terminal features are limited.");
-                eprintln!("Try running GitType in a native terminal or GUI terminal emulator.");
+                eprintln!("💡 This error often occurs in WSL or SSH environments where terminal features are limited.");
+                eprintln!("   Try running GitType in a native terminal or GUI terminal emulator.");
             }
-            panic!("Terminal error: {}", msg);
+            std::process::exit(1);
         }
         GitTypeError::WalkDirError(walk_error) => {
-            panic!("Directory walk error: {}", walk_error);
+            eprintln!("❌ Directory walk error: {}", walk_error);
+            eprintln!("💡 Check directory permissions and try again");
+            std::process::exit(1);
         }
         GitTypeError::TreeSitterLanguageError(lang_error) => {
-            panic!("Tree-sitter language error: {}", lang_error);
+            eprintln!("❌ Language parsing error: {}", lang_error);
+            eprintln!("💡 This might be caused by unsupported language features");
+            std::process::exit(1);
         }
     }
 }

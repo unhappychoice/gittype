@@ -1,6 +1,5 @@
-use gittype::extractor::{
-    ChallengeConverter, ChunkType, CodeExtractor, ExtractionOptions, Language,
-};
+use crate::integration::test_extraction_options;
+use gittype::extractor::{ChallengeConverter, ChunkType, CodeExtractor};
 use std::fs;
 use std::path::PathBuf;
 use tempfile::TempDir;
@@ -23,7 +22,7 @@ quicksort (x:xs) = quicksort [y | y <- xs, y < x] ++ [x] ++ quicksort [y | y <- 
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     let function_chunks: Vec<_> = chunks
@@ -60,7 +59,7 @@ newtype UserId = UserId Int
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Should find data type related chunks
@@ -96,7 +95,7 @@ instance Eq Int where
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     assert!(
@@ -135,7 +134,7 @@ head' (x:_) = x
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     assert!(!chunks.is_empty(), "Should extract chunks from module");
@@ -180,7 +179,7 @@ instance Eq Int where
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     assert!(
@@ -234,7 +233,7 @@ fn test_haskell_converter() {
         file_path: PathBuf::from("src/Math.hs"),
         start_line: 5,
         end_line: 7,
-        language: Language::Haskell,
+        language: "haskell".to_string(),
         chunk_type: ChunkType::Function,
         name: "factorial".to_string(),
         comment_ranges: vec![],

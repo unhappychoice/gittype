@@ -1,19 +1,11 @@
 use super::LanguageExtractor;
-use crate::extractor::models::{ChunkType, Language};
+use crate::extractor::models::ChunkType;
 use crate::{GitTypeError, Result};
 use tree_sitter::{Node, Parser};
 
 pub struct GoExtractor;
 
 impl LanguageExtractor for GoExtractor {
-    fn language(&self) -> Language {
-        Language::Go
-    }
-
-    fn file_extensions(&self) -> &[&str] {
-        &["go"]
-    }
-
     fn tree_sitter_language(&self) -> tree_sitter::Language {
         tree_sitter_go::LANGUAGE.into()
     }

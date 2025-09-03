@@ -1,19 +1,11 @@
 use super::LanguageExtractor;
-use crate::extractor::models::{ChunkType, Language};
+use crate::extractor::models::ChunkType;
 use crate::{GitTypeError, Result};
 use tree_sitter::{Node, Parser};
 
 pub struct PythonExtractor;
 
 impl LanguageExtractor for PythonExtractor {
-    fn language(&self) -> Language {
-        Language::Python
-    }
-
-    fn file_extensions(&self) -> &[&str] {
-        &["py"]
-    }
-
     fn tree_sitter_language(&self) -> tree_sitter::Language {
         tree_sitter_python::LANGUAGE.into()
     }
