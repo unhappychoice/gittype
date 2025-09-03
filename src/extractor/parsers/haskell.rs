@@ -128,53 +128,11 @@ impl HaskellExtractor {
     }
 
     fn find_child_by_kind(&self, node: Node, source_code: &str, kind: &str) -> Option<String> {
-        let mut cursor = node.walk();
-        if cursor.goto_first_child() {
-            loop {
-                let child = cursor.node();
-                if child.kind() == kind {
-                    return child
-                        .utf8_text(source_code.as_bytes())
-                        .ok()
-                        .map(|s| s.to_string());
-                }
-                // Recursively search in child nodes
-                if let Some(name) = self.find_child_by_kind(child, source_code, kind) {
-                    return Some(name);
-                }
-                if !cursor.goto_next_sibling() {
-                    break;
-                }
-            }
-        }
-        None
+        find_child_by_kind_impl(node, source_code, kind)
     }
 
     fn extract_name_from_node(&self, node: Node, source_code: &str) -> Option<String> {
-        let mut cursor = node.walk();
-        if cursor.goto_first_child() {
-            loop {
-                let child = cursor.node();
-                match child.kind() {
-                    "variable" | "type" | "module_name" | "constructor" => {
-                        return child
-                            .utf8_text(source_code.as_bytes())
-                            .ok()
-                            .map(|s| s.to_string());
-                    }
-                    _ => {
-                        // Recursively search in child nodes
-                        if let Some(name) = self.extract_name_from_node(child, source_code) {
-                            return Some(name);
-                        }
-                    }
-                }
-                if !cursor.goto_next_sibling() {
-                    break;
-                }
-            }
-        }
-        None
+        extract_name_from_node_impl(node, source_code)
     }
 
     pub fn create_parser() -> Result<Parser> {
@@ -186,4 +144,54 @@ impl HaskellExtractor {
             })?;
         Ok(parser)
     }
+}
+
+fn find_child_by_kind_impl(node: Node, source_code: &str, kind: &str) -> Option<String> {
+    let mut cursor = node.walk();
+    if cursor.goto_first_child() {
+        loop {
+            let child = cursor.node();
+            if child.kind() == kind {
+                return child
+                    .utf8_text(source_code.as_bytes())
+                    .ok()
+                    .map(|s| s.to_string());
+            }
+            // Recursively search in child nodes
+            if let Some(name) = find_child_by_kind_impl(child, source_code, kind) {
+                return Some(name);
+            }
+            if !cursor.goto_next_sibling() {
+                break;
+            }
+        }
+    }
+    None
+}
+
+fn extract_name_from_node_impl(node: Node, source_code: &str) -> Option<String> {
+    let mut cursor = node.walk();
+    if cursor.goto_first_child() {
+        loop {
+            let child = cursor.node();
+            match child.kind() {
+                "variable" | "type" | "module_name" | "constructor" => {
+                    return child
+                        .utf8_text(source_code.as_bytes())
+                        .ok()
+                        .map(|s| s.to_string());
+                }
+                _ => {
+                    // Recursively search in child nodes
+                    if let Some(name) = extract_name_from_node_impl(child, source_code) {
+                        return Some(name);
+                    }
+                }
+            }
+            if !cursor.goto_next_sibling() {
+                break;
+            }
+        }
+    }
+    None
 }
