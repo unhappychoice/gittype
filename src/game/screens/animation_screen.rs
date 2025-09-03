@@ -147,12 +147,12 @@ impl AnimationScreen {
         frame.render_widget(skip_paragraph, skip_area);
     }
 
-    // Helper function to get tier from ranking title name
-    fn get_tier_from_title(title_name: &str) -> crate::models::RankTier {
+    // Helper function to get tier from rank name
+    fn get_tier_from_rank_name(rank_name: &str) -> crate::models::RankTier {
         Rank::all_ranks()
             .iter()
-            .find(|title| title.name() == title_name)
-            .map(|title| title.tier().clone())
+            .find(|rank| rank.name() == rank_name)
+            .map(|rank| rank.tier().clone())
             .unwrap_or(crate::models::RankTier::Beginner)
     }
 
@@ -186,7 +186,7 @@ impl AnimationScreen {
         terminal.clear()?;
 
         // Create typing animation for session complete
-        let tier = Self::get_tier_from_title(&session_metrics.rank_name);
+        let tier = Self::get_tier_from_rank_name(&session_metrics.rank_name);
         let mut typing_animation =
             TypingAnimation::new(tier, terminal.size()?.width, terminal.size()?.height);
         typing_animation.set_rank_messages(&session_metrics.rank_name);
@@ -196,9 +196,9 @@ impl AnimationScreen {
             let updated = typing_animation.update();
 
             if updated {
-                let ranking_title = session_metrics.rank_name.clone();
+                let rank_name = session_metrics.rank_name.clone();
                 terminal.draw(|frame| {
-                    Self::render_typing_animation_ratatui(frame, &typing_animation, &ranking_title);
+                    Self::render_typing_animation_ratatui(frame, &typing_animation, &rank_name);
                 })?;
             }
 

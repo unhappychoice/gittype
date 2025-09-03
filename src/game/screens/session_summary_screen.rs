@@ -322,7 +322,7 @@ impl SessionSummaryScreen {
             }
         };
 
-        // Display ranking title as large ASCII art at the top
+        // Display rank as large ASCII art at the top
         let rank_lines = get_rank_display(&session_metrics.rank_name);
         let rank_height = rank_lines.len() as u16;
 
@@ -346,7 +346,7 @@ impl SessionSummaryScreen {
         execute!(stdout, Print(session_title))?;
         execute!(stdout, ResetColor)?;
 
-        // Display "you're:" label before rank title (1 line gap from rank title)
+        // Display "you're:" label before rank (1 line gap from rank)
         let youre_label = "YOU'RE:";
         let youre_col = center_col.saturating_sub(youre_label.len() as u16 / 2);
         execute!(stdout, MoveTo(youre_col, rank_start_row.saturating_sub(1)))?;
@@ -367,7 +367,7 @@ impl SessionSummaryScreen {
             execute!(stdout, ResetColor)?;
         }
 
-        // Display tier information right after rank title (small gap after rank title)
+        // Display tier information right after rank (small gap after rank)
         let tier_info_row = rank_start_row + rank_height + 1;
         let tier_info = format!(
             "{} tier - {}/{} (overall {}/{})",
@@ -394,7 +394,7 @@ impl SessionSummaryScreen {
         execute!(stdout, Print(&tier_info))?;
         execute!(stdout, ResetColor)?;
 
-        // Calculate score position based on rank title height and tier info (add extra gap after tier info)
+        // Calculate score position based on rank height and tier info (add extra gap after tier info)
         let score_label_row = rank_start_row + rank_height + 4;
 
         // Display "SCORE" label in normal text with color

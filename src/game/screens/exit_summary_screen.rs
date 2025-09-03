@@ -36,7 +36,7 @@ impl ExitSummaryScreen {
         use crate::scoring::{ScoringEngine, StageResult};
 
         // Create a StageResult from SessionSummary data
-        let ranking_title =
+        let rank_name =
             ScoringEngine::get_rank_for_score(session_summary.session_score)
                 .name()
                 .to_string();
@@ -51,7 +51,7 @@ impl ExitSummaryScreen {
             consistency_streaks: vec![], // Not available in session summary
             completion_time: session_summary.total_session_time,
             challenge_score: session_summary.session_score,
-            rank_name: ranking_title,
+            rank_name,
             tier_name,
             tier_position,
             tier_total,

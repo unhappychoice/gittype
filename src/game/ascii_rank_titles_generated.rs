@@ -1,4 +1,4 @@
-/// ASCII art rank title patterns using oh-my-logo style with colored ANSI codes
+/// ASCII art rank patterns using oh-my-logo style with colored ANSI codes
 /// Auto-generated from oh-my-logo with different palettes for different rank categories
 use std::collections::HashMap;
 

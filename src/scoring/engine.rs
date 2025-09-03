@@ -187,16 +187,16 @@ impl ScoringEngine {
 
     /// Calculate tier position and total for a given score
     pub fn calculate_tier_info(score: f64) -> (String, usize, usize, usize, usize) {
-        let all_titles = Rank::all_ranks();
-        let current_title = Self::get_rank_for_score(score);
+        let all_ranks = Rank::all_ranks();
+        let current_rank = Self::get_rank_for_score(score);
 
-        // Find titles in the same tier
-        let same_tier_titles: Vec<_> = all_titles
+        // Find ranks in the same tier
+        let same_tier_ranks: Vec<_> = all_ranks
             .iter()
-            .filter(|title| title.tier() == current_title.tier())
+            .filter(|rank| rank.tier() == current_rank.tier())
             .collect();
 
-        let tier_name = match current_title.tier() {
+        let tier_name = match current_rank.tier() {
             RankTier::Beginner => "Beginner",
             RankTier::Intermediate => "Intermediate",
             RankTier::Advanced => "Advanced",
@@ -206,24 +206,24 @@ impl ScoringEngine {
         .to_string();
 
         // Find position within tier (1-based, highest score = rank 1)
-        let tier_position = same_tier_titles
+        let tier_position = same_tier_ranks
             .iter()
             .rev() // Reverse to get highest scores first
-            .position(|title| title.name() == current_title.name())
+            .position(|rank| rank.name() == current_rank.name())
             .map(|pos| pos + 1)
             .unwrap_or(1);
 
-        let tier_total = same_tier_titles.len();
+        let tier_total = same_tier_ranks.len();
 
-        // Find position in all titles (1-based, highest score = rank 1)
-        let overall_position = all_titles
+        // Find position in all ranks (1-based, highest score = rank 1)
+        let overall_position = all_ranks
             .iter()
             .rev() // Reverse to get highest scores first
-            .position(|title| title.name() == current_title.name())
+            .position(|rank| rank.name() == current_rank.name())
             .map(|pos| pos + 1)
             .unwrap_or(1);
 
-        let overall_total = all_titles.len();
+        let overall_total = all_ranks.len();
 
         (
             tier_name,
