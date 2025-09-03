@@ -13,6 +13,7 @@ pub enum Language {
     CSharp,
     C,
     Cpp,
+    Haskell,
 }
 
 impl std::fmt::Display for Language {
@@ -31,6 +32,7 @@ impl std::fmt::Display for Language {
             Language::CSharp => "csharp",
             Language::C => "c",
             Language::Cpp => "cpp",
+            Language::Haskell => "haskell",
         };
         write!(f, "{}", s)
     }
@@ -52,6 +54,7 @@ impl Language {
             "cs" | "csx" => Some(Language::CSharp),
             "c" | "h" => Some(Language::C),
             "cpp" | "cc" | "cxx" | "hpp" => Some(Language::Cpp),
+            "hs" | "lhs" => Some(Language::Haskell),
             _ => None,
         }
     }
@@ -71,6 +74,7 @@ impl Language {
             Language::CSharp => "cs",
             Language::C => "c",
             Language::Cpp => "cpp",
+            Language::Haskell => "hs",
         }
     }
 
@@ -91,6 +95,7 @@ impl Language {
             Some("cs") | Some("csx") => "csharp".to_string(),
             Some("c") | Some("h") => "c".to_string(),
             Some("cpp") | Some("cc") | Some("cxx") | Some("hpp") => "cpp".to_string(),
+            Some("hs") | Some("lhs") => "haskell".to_string(),
             _ => "text".to_string(),
         }
     }

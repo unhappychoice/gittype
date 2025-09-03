@@ -9,6 +9,7 @@ pub mod c;
 pub mod cpp;
 pub mod csharp;
 pub mod go;
+pub mod haskell;
 pub mod java;
 pub mod javascript;
 pub mod kotlin;
@@ -109,6 +110,12 @@ impl ParserRegistry {
             Box::new(cpp::CppExtractor)
         });
 
+        registry.register(
+            Language::Haskell,
+            haskell::HaskellExtractor::create_parser,
+            || Box::new(haskell::HaskellExtractor),
+        );
+
         registry
     }
 
@@ -145,7 +152,7 @@ impl ParserRegistry {
         let tree_sitter_lang = extractor.tree_sitter_language();
         let query_str = extractor.query_patterns();
 
-        Query::new(tree_sitter_lang, query_str).map_err(|e| {
+        Query::new(&tree_sitter_lang, query_str).map_err(|e| {
             GitTypeError::ExtractionFailed(format!(
                 "Failed to create query for {:?}: {}",
                 language, e
@@ -158,7 +165,7 @@ impl ParserRegistry {
         let tree_sitter_lang = extractor.tree_sitter_language();
         let query_str = extractor.comment_query();
 
-        Query::new(tree_sitter_lang, query_str).map_err(|e| {
+        Query::new(&tree_sitter_lang, query_str).map_err(|e| {
             GitTypeError::ExtractionFailed(format!(
                 "Failed to create comment query for {:?}: {}",
                 language, e
