@@ -1,4 +1,4 @@
-use crate::scoring::{ScoringEngine, TypingMetrics};
+use crate::scoring::{ScoringEngine, StageResult};
 use std::time::{Duration, Instant};
 
 #[derive(Debug, Clone)]
@@ -50,26 +50,26 @@ impl SessionSummary {
     pub fn add_stage_result(
         &mut self,
         _stage_name: String,
-        metrics: TypingMetrics,
+        stage_result: StageResult,
         engine: &ScoringEngine,
     ) {
         self.total_challenges_completed += 1;
         self.total_keystrokes += engine.total_chars();
-        self.total_mistakes += metrics.mistakes;
-        self.session_score += metrics.challenge_score;
+        self.total_mistakes += stage_result.mistakes;
+        self.session_score += stage_result.challenge_score;
 
         // Track best/worst performance
-        if metrics.wpm > self.best_stage_wpm {
-            self.best_stage_wpm = metrics.wpm;
+        if stage_result.wpm > self.best_stage_wpm {
+            self.best_stage_wpm = stage_result.wpm;
         }
-        if metrics.wpm < self.worst_stage_wpm {
-            self.worst_stage_wpm = metrics.wpm;
+        if stage_result.wpm < self.worst_stage_wpm {
+            self.worst_stage_wpm = stage_result.wpm;
         }
-        if metrics.accuracy > self.best_stage_accuracy {
-            self.best_stage_accuracy = metrics.accuracy;
+        if stage_result.accuracy > self.best_stage_accuracy {
+            self.best_stage_accuracy = stage_result.accuracy;
         }
-        if metrics.accuracy < self.worst_stage_accuracy {
-            self.worst_stage_accuracy = metrics.accuracy;
+        if stage_result.accuracy < self.worst_stage_accuracy {
+            self.worst_stage_accuracy = stage_result.accuracy;
         }
     }
 
@@ -148,19 +148,19 @@ impl SessionTracker {
     pub fn record_stage_completion(
         &mut self,
         stage_name: String,
-        metrics: TypingMetrics,
+        stage_result: StageResult,
         engine: &ScoringEngine,
     ) {
-        self.summary.add_stage_result(stage_name, metrics, engine);
+        self.summary.add_stage_result(stage_name, stage_result, engine);
     }
 
     pub fn record_skip(&mut self) {
         self.summary.add_skip();
     }
 
-    pub fn record_partial_effort(&mut self, engine: &ScoringEngine, metrics: &TypingMetrics) {
+    pub fn record_partial_effort(&mut self, engine: &ScoringEngine, stage_result: &StageResult) {
         self.summary
-            .add_partial_effort(engine.total_chars(), metrics.mistakes);
+            .add_partial_effort(engine.total_chars(), stage_result.mistakes);
     }
 
     pub fn finalize_and_get_summary(mut self) -> SessionSummary {

@@ -1,11 +1,11 @@
 use super::{
-    super::{
-        challenge::Challenge, display_ratatui::GameDisplayRatatui, text_processor::TextProcessor,
-    },
+    super::{display_ratatui::GameDisplayRatatui, text_processor::TextProcessor},
     CountdownScreen,
 };
-use crate::scoring::{engine::ScoringEngine, TypingMetrics};
-use crate::{extractor::GitRepositoryInfo, Result};
+use crate::models::Challenge;
+use crate::scoring::engine::ScoringEngine;
+use crate::models::StageResult;
+use crate::{models::GitRepository, Result};
 use crossterm::{
     event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers},
     terminal,
@@ -28,7 +28,7 @@ pub struct TypingScreen {
     #[allow(dead_code)]
     last_esc_time: Option<std::time::Instant>,
     dialog_shown: bool,
-    repo_info: Option<GitRepositoryInfo>,
+    repo_info: Option<GitRepository>,
 }
 
 pub enum GameState {
@@ -41,7 +41,7 @@ pub enum GameState {
 }
 
 impl TypingScreen {
-    pub fn new(challenge_text: String, repo_info: Option<GitRepositoryInfo>) -> Result<Self> {
+    pub fn new(challenge_text: String, repo_info: Option<GitRepository>) -> Result<Self> {
         let processed_text = TextProcessor::process_challenge_text(&challenge_text);
         let challenge_chars: Vec<char> = processed_text.chars().collect();
         let line_starts = TextProcessor::calculate_line_starts(&processed_text);
@@ -77,7 +77,7 @@ impl TypingScreen {
 
     pub fn new_with_challenge(
         challenge: &Challenge,
-        repo_info: Option<GitRepositoryInfo>,
+        repo_info: Option<GitRepository>,
     ) -> Result<Self> {
         // Apply basic text processing (remove empty lines, etc.)
         // Indentation normalization is already done in extractor
@@ -118,7 +118,7 @@ impl TypingScreen {
         })
     }
 
-    pub fn start_session(&mut self) -> Result<TypingMetrics> {
+    pub fn start_session(&mut self) -> Result<StageResult> {
         match terminal::enable_raw_mode() {
             Ok(_) => {}
             Err(e) => {
@@ -184,10 +184,10 @@ impl TypingScreen {
 
         crate::game::stage_manager::cleanup_terminal();
         self.scoring_engine.finish(); // Record final duration
-        Ok(self.calculate_metrics())
+        Ok(self.calculate_result())
     }
 
-    pub fn show(&mut self) -> Result<TypingMetrics> {
+    pub fn show(&mut self) -> Result<StageResult> {
         // For stage manager - assumes raw mode is already enabled
         self.start_time = std::time::Instant::now();
 
@@ -237,10 +237,10 @@ impl TypingScreen {
         }
 
         self.scoring_engine.finish(); // Record final duration
-        Ok(self.calculate_metrics())
+        Ok(self.calculate_result())
     }
 
-    pub fn show_with_state(&mut self) -> Result<(TypingMetrics, GameState)> {
+    pub fn show_with_state(&mut self) -> Result<(StageResult, GameState)> {
         // For stage manager - assumes raw mode is already enabled
         self.start_time = std::time::Instant::now();
 
@@ -281,7 +281,7 @@ impl TypingScreen {
         };
 
         self.scoring_engine.finish(); // Record final duration
-        Ok((self.calculate_metrics_with_state(&final_state), final_state))
+        Ok((self.calculate_result_with_state(&final_state), final_state))
     }
 
     fn handle_key(&mut self, key_event: KeyEvent) -> Result<GameState> {
@@ -464,19 +464,19 @@ impl TypingScreen {
         Ok(())
     }
 
-    fn calculate_metrics(&self) -> TypingMetrics {
+    fn calculate_result(&self) -> StageResult {
         let was_skipped = self.was_skipped();
         let was_failed = self.was_failed();
         self.scoring_engine
-            .calculate_metrics_with_status(was_skipped, was_failed)
+            .calculate_result_with_status(was_skipped, was_failed)
             .unwrap()
     }
 
-    pub fn calculate_metrics_with_state(&self, state: &GameState) -> TypingMetrics {
+    pub fn calculate_result_with_state(&self, state: &GameState) -> StageResult {
         let was_skipped = matches!(state, GameState::Skip);
         let was_failed = matches!(state, GameState::Failed);
         self.scoring_engine
-            .calculate_metrics_with_status(was_skipped, was_failed)
+            .calculate_result_with_status(was_skipped, was_failed)
             .unwrap()
     }
 

@@ -1,6 +1,6 @@
-use crate::scoring::TypingMetrics;
+use crate::scoring::StageResult;
 use crate::sharing::{SharingPlatform, SharingService};
-use crate::{extractor::GitRepositoryInfo, Result};
+use crate::{models::GitRepository, Result};
 use crossterm::{
     cursor::MoveTo,
     event::{self, Event, KeyCode, KeyModifiers},
@@ -14,8 +14,8 @@ pub struct SharingScreen;
 
 impl SharingScreen {
     pub fn show_sharing_menu(
-        metrics: &TypingMetrics,
-        repo_info: &Option<GitRepositoryInfo>,
+        metrics: &StageResult,
+        repo_info: &Option<GitRepository>,
     ) -> Result<()> {
         let mut stdout = stdout();
 

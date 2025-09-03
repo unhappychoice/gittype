@@ -1,5 +1,5 @@
 use gittype::game::ascii_rank_titles_generated::get_rank_title_display;
-use gittype::scoring::RankingTitle;
+use gittype::models::RankingTitle;
 
 #[test]
 fn test_identify_missing_ascii_art() {

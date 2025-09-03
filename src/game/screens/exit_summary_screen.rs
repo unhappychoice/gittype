@@ -32,10 +32,10 @@ impl ExitSummaryScreen {
 
     fn session_summary_to_typing_metrics(
         session_summary: &SessionSummary,
-    ) -> crate::scoring::TypingMetrics {
-        use crate::scoring::{ScoringEngine, TypingMetrics};
+    ) -> crate::scoring::StageResult {
+        use crate::scoring::{ScoringEngine, StageResult};
 
-        // Create a TypingMetrics from SessionSummary data
+        // Create a StageResult from SessionSummary data
         let ranking_title =
             ScoringEngine::get_ranking_title_for_score(session_summary.session_score)
                 .name()
@@ -43,7 +43,7 @@ impl ExitSummaryScreen {
         let (tier_name, tier_position, tier_total, overall_position, overall_total) =
             ScoringEngine::calculate_tier_info(session_summary.session_score);
 
-        TypingMetrics {
+        StageResult {
             cpm: session_summary.overall_cpm,
             wpm: session_summary.overall_wpm,
             accuracy: session_summary.overall_accuracy,
@@ -52,7 +52,7 @@ impl ExitSummaryScreen {
             completion_time: session_summary.total_session_time,
             challenge_score: session_summary.session_score,
             ranking_title,
-            ranking_tier: tier_name,
+            rank: tier_name,
             tier_position,
             tier_total,
             overall_position,

@@ -1,7 +1,8 @@
 use gittype::extractor::models::language::LanguageRegistry;
 use gittype::extractor::{
-    ChallengeConverter, ChunkType, CodeExtractor, ExtractionOptions, RepositoryLoader,
+    ChallengeConverter, CodeExtractor, ExtractionOptions, RepositoryLoader,
 };
+use gittype::models::{ChunkType, CodeChunk};
 use gittype::GitTypeError;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -136,7 +137,7 @@ struct TestStruct {
 // Challenge converter tests
 #[test]
 fn test_convert_chunk_to_challenge() {
-    use gittype::extractor::CodeChunk;
+    // CodeChunk is now imported from models at the top
 
     let converter = ChallengeConverter::new();
     let chunk = CodeChunk {

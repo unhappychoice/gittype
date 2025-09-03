@@ -62,7 +62,7 @@ impl Step for CloningStep {
                     let _ = screen.set_git_info(&git_info);
                 } else {
                     // Fallback to basic info from RepoInfo if git extraction fails
-                    let git_info = crate::extractor::GitRepositoryInfo {
+                    let git_info = crate::models::GitRepository {
                         user_name: repo_info.owner.clone(),
                         repository_name: repo_info.name.clone(),
                         remote_url: format!(

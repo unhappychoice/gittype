@@ -1,5 +1,6 @@
 use crate::integration::test_extraction_options;
-use gittype::extractor::{ChallengeConverter, ChunkType, CodeExtractor};
+use gittype::extractor::{ChallengeConverter, CodeExtractor};
+use gittype::models::{ChunkType, CodeChunk};
 use std::fs;
 use std::path::PathBuf;
 use tempfile::TempDir;
@@ -223,7 +224,7 @@ instance Eq Int where
 
 #[test]
 fn test_haskell_converter() {
-    use gittype::extractor::CodeChunk;
+    // CodeChunk is now imported from models at the top
 
     let converter = ChallengeConverter::new();
     let chunk = CodeChunk {

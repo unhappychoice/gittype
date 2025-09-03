@@ -1,15 +1,15 @@
 use super::{
-    ChallengeConverter, CodeExtractor, ExtractionOptions, GitInfoExtractor, GitRepositoryInfo,
+    ChallengeConverter, CodeExtractor, ExtractionOptions, GitInfoExtractor, GitRepository,
     NoOpProgressReporter, ProgressReporter,
 };
-use crate::game::Challenge;
+use crate::models::Challenge;
 use crate::{GitTypeError, Result};
 use std::path::Path;
 
 pub struct RepositoryLoader {
     extractor: CodeExtractor,
     converter: ChallengeConverter,
-    git_info: Option<GitRepositoryInfo>,
+    git_info: Option<GitRepository>,
 }
 
 impl RepositoryLoader {
@@ -162,7 +162,7 @@ impl RepositoryLoader {
         Ok(zen_challenges)
     }
 
-    pub fn get_git_info(&self) -> &Option<GitRepositoryInfo> {
+    pub fn get_git_info(&self) -> &Option<GitRepository> {
         &self.git_info
     }
 }

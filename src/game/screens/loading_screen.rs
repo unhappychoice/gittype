@@ -1,6 +1,6 @@
 use crate::extractor::{ExtractionOptions, RepositoryLoader};
 use crate::game::models::loading_steps::{ExecutionContext, StepManager, StepType};
-use crate::game::Challenge;
+use crate::models::Challenge;
 use crate::Result;
 use crossterm::{
     event::{self, Event, KeyCode, KeyModifiers},
@@ -72,7 +72,7 @@ const SPINNER_CHARS: &[char] = &['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦'
 
 pub struct ProcessingResult {
     pub challenges: Vec<Challenge>,
-    pub git_info: Option<crate::extractor::GitRepositoryInfo>,
+    pub git_info: Option<crate::models::GitRepository>,
 }
 
 impl LoadingScreen {
@@ -199,7 +199,7 @@ impl LoadingScreen {
         Ok(())
     }
 
-    pub fn set_git_info(&self, git_info: &crate::extractor::GitRepositoryInfo) -> Result<()> {
+    pub fn set_git_info(&self, git_info: &crate::models::GitRepository) -> Result<()> {
         // Build git info string in same format as title_screen
         let mut parts = vec![format!(
             "📁 {}/{}",

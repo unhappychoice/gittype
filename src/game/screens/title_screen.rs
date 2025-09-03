@@ -1,4 +1,4 @@
-use crate::extractor::GitRepositoryInfo;
+use crate::models::GitRepository;
 use crate::game::screens::{InfoAction, InfoDialog};
 use crate::game::stage_builder::DifficultyLevel;
 use crate::Result;
@@ -31,7 +31,7 @@ impl TitleScreen {
 
     pub fn show_with_challenge_counts_and_git_info(
         challenge_counts: &[usize; 5],
-        git_info: Option<&GitRepositoryInfo>,
+        git_info: Option<&GitRepository>,
     ) -> Result<TitleAction> {
         let mut selected_difficulty = 1; // Start with Normal (index 1)
         let difficulties = [
@@ -127,7 +127,7 @@ impl TitleScreen {
         stdout: &mut std::io::Stdout,
         center_row: u16,
         center_col: u16,
-        git_info: Option<&GitRepositoryInfo>,
+        git_info: Option<&GitRepository>,
     ) -> Result<()> {
         // ASCII logo lines from oh-my-logo "GitType" purple
         let logo_lines = [
@@ -253,7 +253,7 @@ impl TitleScreen {
 
     fn draw_git_info(
         stdout: &mut std::io::Stdout,
-        git_info: Option<&GitRepositoryInfo>,
+        git_info: Option<&GitRepository>,
     ) -> Result<()> {
         if let Some(info) = git_info {
             let (terminal_width, terminal_height) = terminal::size()?;

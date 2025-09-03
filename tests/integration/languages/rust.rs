@@ -1,4 +1,5 @@
-use gittype::extractor::{ChunkType, CodeExtractor, RepositoryLoader};
+use gittype::extractor::{CodeExtractor, RepositoryLoader};
+use gittype::models::ChunkType;
 use std::fs;
 use tempfile::{NamedTempFile, TempDir};
 

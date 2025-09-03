@@ -1,6 +1,6 @@
 use crate::game::screens::session_summary_screen::ResultAction;
-use crate::scoring::{ScoringEngine, TypingMetrics};
-use crate::{extractor::GitRepositoryInfo, Result};
+use crate::scoring::{ScoringEngine, StageResult};
+use crate::{models::GitRepository, Result};
 use crossterm::{
     cursor::MoveTo,
     event::{self, Event, KeyCode, KeyModifiers},
@@ -17,7 +17,7 @@ impl CancelScreen {
         total_stages: usize,
         completed_stages: usize,
         stage_engines: &[(String, ScoringEngine)],
-        _repo_info: &Option<GitRepositoryInfo>,
+        _repo_info: &Option<GitRepository>,
     ) -> Result<ResultAction> {
         let mut stdout = stdout();
 
@@ -56,10 +56,10 @@ impl CancelScreen {
         if !stage_engines.is_empty() {
             let last_engine = &stage_engines.last().unwrap().1;
             let metrics = last_engine
-                .calculate_metrics_with_status(false, false)
+                .calculate_result_with_status(false, false)
                 .unwrap_or_else(|_| {
                     // Create basic metrics if calculation fails
-                    TypingMetrics {
+                    StageResult {
                         cpm: last_engine.cpm(),
                         wpm: last_engine.wpm(),
                         accuracy: last_engine.accuracy(),
@@ -68,7 +68,7 @@ impl CancelScreen {
                         completion_time: std::time::Duration::new(0, 0),
                         challenge_score: 0.0,
                         ranking_title: "Unranked".to_string(),
-                        ranking_tier: "Beginner".to_string(),
+                        rank: "Beginner".to_string(),
                         tier_position: 0,
                         tier_total: 0,
                         overall_position: 0,

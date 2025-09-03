@@ -1,4 +1,4 @@
-use super::challenge::Challenge;
+use crate::models::Challenge;
 use std::time::Duration;
 
 #[derive(Debug, Clone)]
@@ -17,7 +17,7 @@ pub struct StageResult {
     pub completion_time: Duration,
     pub challenge_score: f64,
     pub ranking_title: String,
-    pub ranking_tier: String,
+    pub rank: String,
     pub tier_position: usize,
     pub tier_total: usize,
     pub overall_position: usize,

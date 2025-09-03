@@ -1,7 +1,7 @@
 use crate::game::ascii_digits::get_digit_patterns;
 use crate::game::ascii_rank_titles_generated::get_rank_title_display;
-use crate::scoring::{RankingTitle, ScoringEngine, TypingMetrics};
-use crate::{extractor::GitRepositoryInfo, Result};
+use crate::scoring::{RankingTitle, ScoringEngine, StageResult};
+use crate::{models::GitRepository, Result};
 use crossterm::{
     cursor::MoveTo,
     event::{self, Event, KeyCode, KeyModifiers},
@@ -66,7 +66,7 @@ impl SessionSummaryScreen {
     }
 
     pub fn show_stage_completion(
-        metrics: &TypingMetrics,
+        metrics: &StageResult,
         current_stage: usize,
         total_stages: usize,
         has_next_stage: bool,
@@ -286,7 +286,7 @@ impl SessionSummaryScreen {
         _total_stages: usize,
         _completed_stages: usize,
         stage_engines: &[(String, ScoringEngine)],
-        repo_info: &Option<GitRepositoryInfo>,
+        repo_info: &Option<GitRepository>,
     ) -> Result<()> {
         let mut stdout = stdout();
 
@@ -314,7 +314,7 @@ impl SessionSummaryScreen {
             .reduce(|acc, engine| acc + engine)
             .unwrap(); // Safe because we checked is_empty() above
 
-        let session_metrics = match combined_engine.calculate_metrics() {
+        let session_metrics = match combined_engine.calculate_result() {
             Ok(metrics) => metrics,
             Err(_) => {
                 // Fallback if calculation fails
@@ -371,7 +371,7 @@ impl SessionSummaryScreen {
         let tier_info_row = rank_start_row + rank_title_height + 1;
         let tier_info = format!(
             "{} tier - rank {}/{} (overall {}/{})",
-            session_metrics.ranking_tier,
+            session_metrics.rank,
             session_metrics.tier_position,
             session_metrics.tier_total,
             session_metrics.overall_position,
@@ -382,7 +382,7 @@ impl SessionSummaryScreen {
         execute!(stdout, SetAttribute(Attribute::Bold))?;
 
         // Set color based on tier
-        let tier_color = match session_metrics.ranking_tier.as_str() {
+        let tier_color = match session_metrics.rank.as_str() {
             "Beginner" => Color::Blue,
             "Intermediate" => Color::Green,
             "Advanced" => Color::Cyan,
@@ -540,7 +540,7 @@ impl SessionSummaryScreen {
         total_stages: usize,
         completed_stages: usize,
         stage_engines: &[(String, ScoringEngine)],
-        repo_info: &Option<GitRepositoryInfo>,
+        repo_info: &Option<GitRepository>,
     ) -> Result<ResultAction> {
         Self::show_session_summary_with_input_internal(
             total_stages,
@@ -555,7 +555,7 @@ impl SessionSummaryScreen {
         total_stages: usize,
         completed_stages: usize,
         stage_engines: &[(String, ScoringEngine)],
-        repo_info: &Option<GitRepositoryInfo>,
+        repo_info: &Option<GitRepository>,
     ) -> Result<ResultAction> {
         Self::show_session_summary_with_input_internal(
             total_stages,
@@ -570,7 +570,7 @@ impl SessionSummaryScreen {
         total_stages: usize,
         completed_stages: usize,
         stage_engines: &[(String, ScoringEngine)],
-        repo_info: &Option<GitRepositoryInfo>,
+        repo_info: &Option<GitRepository>,
         show_animation: bool,
     ) -> Result<ResultAction> {
         use crate::game::screens::AnimationScreen;

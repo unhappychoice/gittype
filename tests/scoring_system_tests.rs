@@ -222,8 +222,8 @@ mod basic_functionality_tests {
         assert!(engine.is_finished());
 
         let metrics = engine
-            .calculate_metrics()
-            .expect("Should calculate metrics");
+            .calculate_result()
+            .expect("Should calculate result");
 
         assert_eq!(engine.correct_chars(), 5);
         assert_eq!(engine.mistakes(), 1);
@@ -261,8 +261,8 @@ mod basic_functionality_tests {
 
         let combined = engine1 + engine2;
         let combined_metrics = combined
-            .calculate_metrics()
-            .expect("Should calculate combined metrics");
+            .calculate_result()
+            .expect("Should calculate combined result");
 
         assert_eq!(combined.correct_chars(), 6); // 4 + 2
         assert_eq!(combined.mistakes(), 1);

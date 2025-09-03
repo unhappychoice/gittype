@@ -1,6 +1,6 @@
 use crate::game::ascii_digits;
-use crate::game::challenge::Challenge;
-use crate::{extractor::GitRepositoryInfo, Result};
+use crate::models::Challenge;
+use crate::{models::GitRepository, Result};
 use crossterm::{
     cursor::{Hide, MoveTo, Show},
     event::{self, Event, KeyCode, KeyModifiers},
@@ -23,7 +23,7 @@ impl CountdownScreen {
 
     pub fn show_with_challenge_and_repo(
         challenge: Option<&Challenge>,
-        repo_info: &Option<GitRepositoryInfo>,
+        repo_info: &Option<GitRepository>,
     ) -> Result<()> {
         let mut stdout = stdout();
         let (terminal_width, terminal_height) = terminal::size()?;
@@ -152,7 +152,7 @@ impl CountdownScreen {
         stage_number: usize,
         total_stages: usize,
         challenge: Option<&Challenge>,
-        repo_info: &Option<GitRepositoryInfo>,
+        repo_info: &Option<GitRepository>,
     ) -> Result<()> {
         let mut stdout = stdout();
         let (terminal_width, terminal_height) = terminal::size()?;
@@ -284,7 +284,7 @@ impl CountdownScreen {
         center_row: u16,
         center_col: u16,
         challenge: Option<&Challenge>,
-        repo_info: &Option<GitRepositoryInfo>,
+        repo_info: &Option<GitRepository>,
     ) -> Result<()> {
         if let Some(challenge) = challenge {
             if challenge.source_file_path.is_some() {

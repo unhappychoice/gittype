@@ -1,4 +1,4 @@
-use super::Challenge;
+use crate::models::Challenge;
 use rand::rngs::StdRng;
 use rand::seq::SliceRandom;
 use rand::SeedableRng;

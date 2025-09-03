@@ -1,5 +1,5 @@
-use crate::extractor::GitRepositoryInfo;
-use crate::scoring::TypingMetrics;
+use crate::models::GitRepository;
+use crate::scoring::StageResult;
 use anyhow::Result;
 use crossterm::event::KeyCode;
 
@@ -30,9 +30,9 @@ pub struct SharingService;
 
 impl SharingService {
     pub fn share_result(
-        metrics: &TypingMetrics,
+        metrics: &StageResult,
         platform: SharingPlatform,
-        repo_info: &Option<GitRepositoryInfo>,
+        repo_info: &Option<GitRepository>,
     ) -> Result<()> {
         let url = Self::generate_share_url(metrics, &platform, repo_info);
 
@@ -49,9 +49,9 @@ impl SharingService {
     }
 
     fn generate_share_url(
-        metrics: &TypingMetrics,
+        metrics: &StageResult,
         platform: &SharingPlatform,
-        repo_info: &Option<GitRepositoryInfo>,
+        repo_info: &Option<GitRepository>,
     ) -> String {
         let text = Self::create_share_text(metrics, repo_info);
 
@@ -90,7 +90,7 @@ impl SharingService {
         }
     }
 
-    fn create_share_text(metrics: &TypingMetrics, repo_info: &Option<GitRepositoryInfo>) -> String {
+    fn create_share_text(metrics: &StageResult, repo_info: &Option<GitRepository>) -> String {
         if let Some(repo) = repo_info {
             format!(
                 "Achieved \"{}\" with {:.0}pts on [{}/{}] in gittype! CPM: {:.0}, Mistakes: {} 🚀\n\nType your own code! https://github.com/unhappychoice/gittype\n\n#gittype #typing #coding",

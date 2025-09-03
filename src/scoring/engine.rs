@@ -1,4 +1,4 @@
-use super::{RankingTitle, TypingMetrics};
+use crate::models::{StageResult, RankingTitle, Rank};
 use crate::Result;
 use std::ops::Add;
 use std::time::Instant;
@@ -197,11 +197,11 @@ impl ScoringEngine {
             .collect();
 
         let tier_name = match current_title.tier() {
-            super::RankingTier::Beginner => "Beginner",
-            super::RankingTier::Intermediate => "Intermediate",
-            super::RankingTier::Advanced => "Advanced",
-            super::RankingTier::Expert => "Expert",
-            super::RankingTier::Legendary => "Legendary",
+            Rank::Beginner => "Beginner",
+            Rank::Intermediate => "Intermediate",
+            Rank::Advanced => "Advanced",
+            Rank::Expert => "Expert",
+            Rank::Legendary => "Legendary",
         }
         .to_string();
 
@@ -449,19 +449,19 @@ impl ScoringEngine {
         (raw_score * 2.0 + 100.0).max(0.0) // Final scaling + base offset
     }
 
-    pub fn calculate_metrics(&self) -> Result<TypingMetrics> {
-        self.calculate_metrics_with_status(false, false)
+    pub fn calculate_result(&self) -> Result<StageResult> {
+        self.calculate_result_with_status(false, false)
     }
 
-    pub fn calculate_metrics_with_skip_status(&self, was_skipped: bool) -> Result<TypingMetrics> {
-        self.calculate_metrics_with_status(was_skipped, false)
+    pub fn calculate_result_with_skip_status(&self, was_skipped: bool) -> Result<StageResult> {
+        self.calculate_result_with_status(was_skipped, false)
     }
 
-    pub fn calculate_metrics_with_status(
+    pub fn calculate_result_with_status(
         &self,
         was_skipped: bool,
         was_failed: bool,
-    ) -> Result<TypingMetrics> {
+    ) -> Result<StageResult> {
         if self.start_time.is_none() {
             return Err(crate::GitTypeError::TerminalError(
                 "Scoring not started".to_string(),
@@ -475,7 +475,7 @@ impl ScoringEngine {
         let (tier_name, tier_position, tier_total, overall_position, overall_total) =
             Self::calculate_tier_info(challenge_score);
 
-        Ok(TypingMetrics {
+        Ok(StageResult {
             cpm: self.cpm(),
             wpm: self.wpm(),
             accuracy: self.accuracy(),
@@ -484,7 +484,7 @@ impl ScoringEngine {
             completion_time: self.elapsed(),
             challenge_score,
             ranking_title,
-            ranking_tier: tier_name,
+            rank: tier_name,
             tier_position,
             tier_total,
             overall_position,
@@ -496,11 +496,11 @@ impl ScoringEngine {
 
     /// Calculate metrics from current position during real-time typing
     /// This uses the same logic as the full ScoringEngine but works with current state
-    pub fn calculate_real_time_metrics(
+    pub fn calculate_real_time_result(
         current_position: usize,
         mistakes: usize,
         start_time: &std::time::Instant,
-    ) -> TypingMetrics {
+    ) -> StageResult {
         // Create temporary engine with real-time data
         let mut temp_engine = ScoringEngine::new(String::new());
         temp_engine.start_time = Some(*start_time);
@@ -523,7 +523,7 @@ impl ScoringEngine {
         let (tier_name, tier_position, tier_total, overall_position, overall_total) =
             Self::calculate_tier_info(challenge_score);
 
-        TypingMetrics {
+        StageResult {
             cpm: temp_engine.cpm(),
             wpm: temp_engine.wpm(),
             accuracy: temp_engine.accuracy(),
@@ -532,7 +532,7 @@ impl ScoringEngine {
             completion_time: temp_engine.elapsed(),
             challenge_score,
             ranking_title,
-            ranking_tier: tier_name,
+            rank: tier_name,
             tier_position,
             tier_total,
             overall_position,

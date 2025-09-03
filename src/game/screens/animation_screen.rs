@@ -148,12 +148,12 @@ impl AnimationScreen {
     }
 
     // Helper function to get tier from ranking title name
-    fn get_tier_from_title(title_name: &str) -> crate::scoring::RankingTier {
+    fn get_tier_from_title(title_name: &str) -> crate::models::Rank {
         RankingTitle::all_titles()
             .iter()
             .find(|title| title.name() == title_name)
             .map(|title| title.tier().clone())
-            .unwrap_or(crate::scoring::RankingTier::Beginner)
+            .unwrap_or(crate::models::Rank::Beginner)
     }
 
     pub fn show_session_animation(
@@ -172,7 +172,7 @@ impl AnimationScreen {
             .reduce(|acc, engine| acc + engine)
             .unwrap(); // Safe because we checked is_empty() above
 
-        let session_metrics = match combined_engine.calculate_metrics() {
+        let session_metrics = match combined_engine.calculate_result() {
             Ok(metrics) => metrics,
             Err(_) => {
                 // Fallback if calculation fails

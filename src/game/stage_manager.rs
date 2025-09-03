@@ -1,5 +1,4 @@
 use super::{
-    challenge::Challenge,
     screens::{
         exit_summary_screen::ExitAction, session_summary_screen::ResultAction,
         typing_screen::GameState, CancelScreen, CountdownScreen, ExitSummaryScreen, FailureScreen,
@@ -8,8 +7,9 @@ use super::{
     session_tracker::SessionTracker,
     stage_builder::{DifficultyLevel, GameMode, StageBuilder},
 };
-use crate::extractor::GitRepositoryInfo;
-use crate::scoring::{ScoringEngine, TypingMetrics};
+use crate::models::GitRepository;
+use crate::models::Challenge;
+use crate::scoring::{ScoringEngine, StageResult};
 use crate::Result;
 use crossterm::{
     event::{KeyboardEnhancementFlags, PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags},
@@ -39,7 +39,7 @@ pub struct StageManager {
     stage_engines: Vec<(String, ScoringEngine)>,
     current_game_mode: Option<GameMode>,
     session_tracker: SessionTracker,
-    git_info: Option<GitRepositoryInfo>,
+    git_info: Option<GitRepository>,
     skips_remaining: usize,
 }
 
@@ -57,7 +57,7 @@ impl StageManager {
         }
     }
 
-    pub fn set_git_info(&mut self, git_info: Option<GitRepositoryInfo>) {
+    pub fn set_git_info(&mut self, git_info: Option<GitRepository>) {
         self.git_info = git_info;
     }
 
@@ -185,7 +185,7 @@ impl StageManager {
 
             let mut screen = TypingScreen::new_with_challenge(challenge, self.git_info.clone())?;
             screen.set_skips_remaining(self.skips_remaining);
-            let (metrics, final_state) = screen.show_with_state()?;
+            let (stage_result, final_state) = screen.show_with_state()?;
             self.skips_remaining = screen.get_skips_remaining();
 
             // Handle different exit states
@@ -201,7 +201,7 @@ impl StageManager {
                     // Track in session tracker
                     self.session_tracker.record_stage_completion(
                         stage_name,
-                        metrics.clone(),
+                        stage_result.clone(),
                         &engine,
                     );
 
@@ -214,7 +214,7 @@ impl StageManager {
                     }
 
                     // Show brief result and auto-advance
-                    if let Some(ResultAction::Quit) = self.show_stage_completion(&metrics)? {
+                    if let Some(ResultAction::Quit) = self.show_stage_completion(&stage_result)? {
                         // Treat as failed - show fail result screen and handle navigation
                         return self.handle_fail_result_navigation();
                     }
@@ -226,7 +226,7 @@ impl StageManager {
                     // Skipped - record skip and partial effort
                     let engine = screen.get_scoring_engine();
                     self.session_tracker.record_skip();
-                    self.session_tracker.record_partial_effort(engine, &metrics);
+                    self.session_tracker.record_partial_effort(engine, &stage_result);
 
                     // Update global session tracker
                     {
@@ -236,7 +236,7 @@ impl StageManager {
                         }
                     }
 
-                    if let Some(ResultAction::Quit) = self.show_stage_completion(&metrics)? {
+                    if let Some(ResultAction::Quit) = self.show_stage_completion(&stage_result)? {
                         // Treat as failed - show fail result screen and handle navigation
                         return self.handle_fail_result_navigation();
                     }
@@ -266,7 +266,7 @@ impl StageManager {
                     // Track in session tracker
                     self.session_tracker.record_stage_completion(
                         stage_name,
-                        metrics.clone(),
+                        stage_result.clone(),
                         &engine,
                     );
 
@@ -283,7 +283,7 @@ impl StageManager {
                 GameState::Exit => {
                     // User wants to exit - record partial effort only
                     let engine = screen.get_scoring_engine();
-                    self.session_tracker.record_partial_effort(engine, &metrics);
+                    self.session_tracker.record_partial_effort(engine, &stage_result);
 
                     // Update global session tracker with current state
                     {
@@ -332,7 +332,7 @@ impl StageManager {
                             .reduce(|acc, engine| acc + engine)
                             .unwrap();
 
-                        if let Ok(session_metrics) = combined_engine.calculate_metrics() {
+                        if let Ok(session_metrics) = combined_engine.calculate_result() {
                             let _ =
                                 SharingScreen::show_sharing_menu(&session_metrics, &self.git_info);
                         }
@@ -365,7 +365,7 @@ impl StageManager {
         }
     }
 
-    fn show_stage_completion(&self, metrics: &TypingMetrics) -> Result<Option<ResultAction>> {
+    fn show_stage_completion(&self, stage_result: &StageResult) -> Result<Option<ResultAction>> {
         // Get keystrokes from the latest scoring engine
         let keystrokes = if let Some((_, engine)) = self.stage_engines.last() {
             engine.total_chars()
@@ -374,7 +374,7 @@ impl StageManager {
         };
 
         SessionSummaryScreen::show_stage_completion(
-            metrics,
+            stage_result,
             self.current_stage + 1,
             self.current_challenges.len(),
             self.current_stage < self.current_challenges.len() - 1, // has_next_stage

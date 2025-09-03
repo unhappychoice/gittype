@@ -1,5 +1,6 @@
 use crate::integration::test_extraction_options;
-use gittype::extractor::{ChunkType, CodeExtractor};
+use gittype::extractor::{CodeExtractor};
+use gittype::models::{ChunkType};
 use std::fs;
 use tempfile::TempDir;
 

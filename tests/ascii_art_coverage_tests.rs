@@ -1,5 +1,5 @@
 use gittype::game::ascii_rank_titles_generated::get_rank_title_display;
-use gittype::scoring::{RankingTier, RankingTitle};
+use gittype::models::{Rank, RankingTitle};
 
 #[test]
 fn test_all_rank_titles_have_ascii_art() {
@@ -46,23 +46,23 @@ fn test_all_tiers_represented() {
 
     // Verify all tiers have titles
     assert!(
-        tier_counts.contains_key(&RankingTier::Beginner),
+        tier_counts.contains_key(&Rank::Beginner),
         "Missing Beginner titles"
     );
     assert!(
-        tier_counts.contains_key(&RankingTier::Intermediate),
+        tier_counts.contains_key(&Rank::Intermediate),
         "Missing Intermediate titles"
     );
     assert!(
-        tier_counts.contains_key(&RankingTier::Advanced),
+        tier_counts.contains_key(&Rank::Advanced),
         "Missing Advanced titles"
     );
     assert!(
-        tier_counts.contains_key(&RankingTier::Expert),
+        tier_counts.contains_key(&Rank::Expert),
         "Missing Expert titles"
     );
     assert!(
-        tier_counts.contains_key(&RankingTier::Legendary),
+        tier_counts.contains_key(&Rank::Legendary),
         "Missing Legendary titles"
     );
 
