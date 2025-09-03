@@ -8,8 +8,8 @@ pub struct CExtractor;
 impl CExtractor {
     pub fn create_parser() -> Result<Parser> {
         let mut parser = Parser::new();
-        let language = tree_sitter_c::language();
-        parser.set_language(language)?;
+        let language = tree_sitter_c::LANGUAGE;
+        parser.set_language(&language.into())?;
         Ok(parser)
     }
 }
@@ -24,7 +24,7 @@ impl LanguageExtractor for CExtractor {
     }
 
     fn tree_sitter_language(&self) -> tree_sitter::Language {
-        tree_sitter_c::language()
+        tree_sitter_c::LANGUAGE.into()
     }
 
     fn query_patterns(&self) -> &str {
