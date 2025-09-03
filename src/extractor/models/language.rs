@@ -12,6 +12,7 @@ pub enum Language {
     Php,
     CSharp,
     C,
+    Cpp,
 }
 
 impl std::fmt::Display for Language {
@@ -29,6 +30,7 @@ impl std::fmt::Display for Language {
             Language::Php => "php",
             Language::CSharp => "csharp",
             Language::C => "c",
+            Language::Cpp => "cpp",
         };
         write!(f, "{}", s)
     }
@@ -49,6 +51,7 @@ impl Language {
             "php" | "phtml" | "php3" | "php4" | "php5" => Some(Language::Php),
             "cs" | "csx" => Some(Language::CSharp),
             "c" | "h" => Some(Language::C),
+            "cpp" | "cc" | "cxx" | "hpp" => Some(Language::Cpp),
             _ => None,
         }
     }
@@ -67,6 +70,7 @@ impl Language {
             Language::Php => "php",
             Language::CSharp => "cs",
             Language::C => "c",
+            Language::Cpp => "cpp",
         }
     }
 
@@ -86,6 +90,7 @@ impl Language {
             }
             Some("cs") | Some("csx") => "csharp".to_string(),
             Some("c") | Some("h") => "c".to_string(),
+            Some("cpp") | Some("cc") | Some("cxx") | Some("hpp") => "cpp".to_string(),
             _ => "text".to_string(),
         }
     }
