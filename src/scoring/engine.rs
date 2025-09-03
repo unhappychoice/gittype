@@ -1,4 +1,4 @@
-use crate::models::{StageResult, RankingTitle, Rank};
+use crate::models::{StageResult, Rank, RankTier};
 use crate::Result;
 use std::ops::Add;
 use std::time::Instant;
@@ -170,7 +170,7 @@ impl ScoringEngine {
     }
 
     /// Get ranking title for current engine state
-    pub fn get_ranking_title(&self) -> RankingTitle {
+    pub fn get_ranking_title(&self) -> Rank {
         let score = self.calculate_challenge_score();
         Self::get_ranking_title_for_score(score)
     }
@@ -181,13 +181,13 @@ impl ScoringEngine {
     }
 
     /// Get ranking title for a specific score (pure function for testing)
-    pub fn get_ranking_title_for_score(score: f64) -> RankingTitle {
-        RankingTitle::for_score(score)
+    pub fn get_ranking_title_for_score(score: f64) -> Rank {
+        Rank::for_score(score)
     }
 
     /// Calculate tier position and total for a given score
     pub fn calculate_tier_info(score: f64) -> (String, usize, usize, usize, usize) {
-        let all_titles = RankingTitle::all_titles();
+        let all_titles = Rank::all_titles();
         let current_title = Self::get_ranking_title_for_score(score);
 
         // Find titles in the same tier
@@ -197,11 +197,11 @@ impl ScoringEngine {
             .collect();
 
         let tier_name = match current_title.tier() {
-            Rank::Beginner => "Beginner",
-            Rank::Intermediate => "Intermediate",
-            Rank::Advanced => "Advanced",
-            Rank::Expert => "Expert",
-            Rank::Legendary => "Legendary",
+            RankTier::Beginner => "Beginner",
+            RankTier::Intermediate => "Intermediate",
+            RankTier::Advanced => "Advanced",
+            RankTier::Expert => "Expert",
+            RankTier::Legendary => "Legendary",
         }
         .to_string();
 

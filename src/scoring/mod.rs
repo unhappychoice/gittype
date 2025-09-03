@@ -3,4 +3,4 @@ pub mod metrics;
 
 pub use engine::ScoringEngine;
 pub use metrics::TypingMetrics;
-pub use crate::models::{StageResult, Rank as RankingTier, RankingTitle};
+pub use crate::models::{StageResult, RankTier, Rank};

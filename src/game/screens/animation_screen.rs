@@ -1,5 +1,5 @@
 use crate::game::typing_animation::{AnimationPhase, TypingAnimation};
-use crate::scoring::{RankingTitle, ScoringEngine};
+use crate::scoring::{Rank, ScoringEngine};
 use crate::Result;
 use crossterm::event::{self, Event, KeyCode};
 use ratatui::{
@@ -148,12 +148,12 @@ impl AnimationScreen {
     }
 
     // Helper function to get tier from ranking title name
-    fn get_tier_from_title(title_name: &str) -> crate::models::Rank {
-        RankingTitle::all_titles()
+    fn get_tier_from_title(title_name: &str) -> crate::models::RankTier {
+        Rank::all_titles()
             .iter()
             .find(|title| title.name() == title_name)
             .map(|title| title.tier().clone())
-            .unwrap_or(crate::models::Rank::Beginner)
+            .unwrap_or(crate::models::RankTier::Beginner)
     }
 
     pub fn show_session_animation(

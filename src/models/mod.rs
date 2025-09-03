@@ -12,5 +12,5 @@ pub use challenge::Challenge;
 pub use stage::{Stage, StageResult};
 pub use session::{Session, SessionResult};
 pub use total::{Total, TotalResult};
-pub use rank::{Rank, RankingTitle};
+pub use rank::{RankTier, Rank};
 pub use git_repository::GitRepository;

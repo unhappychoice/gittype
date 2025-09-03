@@ -1,9 +1,9 @@
 use gittype::game::ascii_rank_titles_generated::get_rank_title_display;
-use gittype::models::{Rank, RankingTitle};
+use gittype::models::{RankTier, Rank};
 
 #[test]
 fn test_all_rank_titles_have_ascii_art() {
-    let titles = RankingTitle::all_titles();
+    let titles = Rank::all_titles();
 
     for title in &titles {
         let ascii_art = get_rank_title_display(title.name());
@@ -37,7 +37,7 @@ fn test_all_rank_titles_have_ascii_art() {
 
 #[test]
 fn test_all_tiers_represented() {
-    let titles = RankingTitle::all_titles();
+    let titles = Rank::all_titles();
 
     let mut tier_counts = std::collections::HashMap::new();
     for title in &titles {
@@ -46,23 +46,23 @@ fn test_all_tiers_represented() {
 
     // Verify all tiers have titles
     assert!(
-        tier_counts.contains_key(&Rank::Beginner),
+        tier_counts.contains_key(&RankTier::Beginner),
         "Missing Beginner titles"
     );
     assert!(
-        tier_counts.contains_key(&Rank::Intermediate),
+        tier_counts.contains_key(&RankTier::Intermediate),
         "Missing Intermediate titles"
     );
     assert!(
-        tier_counts.contains_key(&Rank::Advanced),
+        tier_counts.contains_key(&RankTier::Advanced),
         "Missing Advanced titles"
     );
     assert!(
-        tier_counts.contains_key(&Rank::Expert),
+        tier_counts.contains_key(&RankTier::Expert),
         "Missing Expert titles"
     );
     assert!(
-        tier_counts.contains_key(&Rank::Legendary),
+        tier_counts.contains_key(&RankTier::Legendary),
         "Missing Legendary titles"
     );
 
@@ -74,7 +74,7 @@ fn test_all_tiers_represented() {
 
 #[test]
 fn test_ascii_art_quality() {
-    let titles = RankingTitle::all_titles();
+    let titles = Rank::all_titles();
 
     for title in titles.iter().take(10) {
         // Test first 10 titles for performance

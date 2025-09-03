@@ -1,4 +1,4 @@
-use crate::models::Rank;
+use crate::models::RankTier;
 use crossterm::style::Color;
 use std::time::{Duration, Instant};
 
@@ -29,7 +29,7 @@ pub struct TypingAnimation {
 }
 
 impl TypingAnimation {
-    pub fn new(_tier: Rank, _terminal_width: u16, _terminal_height: u16) -> Self {
+    pub fn new(_tier: RankTier, _terminal_width: u16, _terminal_height: u16) -> Self {
         Self {
             phase: AnimationPhase::ConcentrationLines,
             phase_start: Instant::now(),

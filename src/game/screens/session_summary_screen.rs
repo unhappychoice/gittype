@@ -1,6 +1,6 @@
 use crate::game::ascii_digits::get_digit_patterns;
 use crate::game::ascii_rank_titles_generated::get_rank_title_display;
-use crate::scoring::{RankingTitle, ScoringEngine, StageResult};
+use crate::scoring::{Rank, ScoringEngine, StageResult};
 use crate::{models::GitRepository, Result};
 use crossterm::{
     cursor::MoveTo,
@@ -172,7 +172,7 @@ impl SessionSummaryScreen {
                 execute!(
                     stdout,
                     SetForegroundColor(
-                        RankingTitle::for_score(metrics.challenge_score).terminal_color()
+                        Rank::for_score(metrics.challenge_score).terminal_color()
                     )
                 )?;
             }
@@ -370,7 +370,7 @@ impl SessionSummaryScreen {
         // Display tier information right after rank title (small gap after rank title)
         let tier_info_row = rank_start_row + rank_title_height + 1;
         let tier_info = format!(
-            "{} rank - {}/{} (overall {}/{})",
+            "{} tier - {}/{} (overall {}/{})",
             session_metrics.rank,
             session_metrics.tier_position,
             session_metrics.tier_total,
@@ -421,7 +421,7 @@ impl SessionSummaryScreen {
                 stdout,
                 SetAttribute(Attribute::Bold),
                 SetForegroundColor(
-                    RankingTitle::for_score(session_metrics.challenge_score).terminal_color()
+                    Rank::for_score(session_metrics.challenge_score).terminal_color()
                 )
             )?;
             execute!(stdout, Print(line))?;
