@@ -171,17 +171,18 @@ impl StageManager {
             // Show countdown before each stage
             if self.current_stage == 0 {
                 // First stage - show initial countdown with challenge info
-                CountdownScreen::show_with_challenge(Some(challenge))?;
+                CountdownScreen::show_with_challenge_and_repo(Some(challenge), &self.git_info)?;
             } else {
                 // Subsequent stages - show stage transition countdown with challenge info
-                CountdownScreen::show_stage_transition_with_challenge(
+                CountdownScreen::show_stage_transition_with_challenge_and_repo(
                     self.current_stage + 1,
                     self.current_challenges.len(),
                     Some(challenge),
+                    &self.git_info,
                 )?;
             }
 
-            let mut screen = TypingScreen::new_with_challenge(challenge)?;
+            let mut screen = TypingScreen::new_with_challenge(challenge, self.git_info.clone())?;
             screen.set_skips_remaining(self.skips_remaining);
             let (metrics, final_state) = screen.show_with_state()?;
             self.skips_remaining = screen.get_skips_remaining();
@@ -320,7 +321,8 @@ impl StageManager {
                             .unwrap();
 
                         if let Ok(session_metrics) = combined_engine.calculate_metrics() {
-                            let _ = ResultScreen::show_sharing_menu(&session_metrics);
+                            let _ =
+                                ResultScreen::show_sharing_menu(&session_metrics, &self.git_info);
                         }
                     }
                     // Continue showing the summary screen after sharing (without animation)
@@ -382,12 +384,14 @@ impl StageManager {
                 self.current_challenges.len(),
                 self.stage_engines.len(),
                 &self.stage_engines,
+                &self.git_info,
             )
         } else {
             ResultScreen::show_session_summary_with_input_no_animation(
                 self.current_challenges.len(),
                 self.stage_engines.len(),
                 &self.stage_engines,
+                &self.git_info,
             )
         }
     }
@@ -408,6 +412,7 @@ impl StageManager {
             self.current_challenges.len(),
             self.stage_engines.len(),
             &self.stage_engines,
+            &self.git_info,
         )?;
 
         // Wait for navigation input
