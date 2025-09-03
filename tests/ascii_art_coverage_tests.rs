@@ -1,5 +1,5 @@
 use gittype::game::ascii_rank_titles_generated::get_rank_display;
-use gittype::models::{RankTier, Rank};
+use gittype::models::{Rank, RankTier};
 
 #[test]
 fn test_all_rank_titles_have_ascii_art() {

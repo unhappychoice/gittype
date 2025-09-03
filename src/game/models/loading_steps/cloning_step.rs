@@ -52,7 +52,8 @@ impl Step for CloningStep {
             let repo_info = RepositoryManager::parse_repo_url(repo_spec)?;
 
             // Clone repository
-            let repo_path = RepositoryManager::clone_or_update_repo(&repo_info, context.loading_screen)?;
+            let repo_path =
+                RepositoryManager::clone_or_update_repo(&repo_info, context.loading_screen)?;
 
             // Extract actual git info from cloned repository and set it in loading screen
             if let Some(screen) = context.loading_screen {

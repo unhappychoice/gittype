@@ -1,4 +1,4 @@
-use crate::models::{StageResult, Rank, RankTier};
+use crate::models::{Rank, RankTier, StageResult};
 use crate::Result;
 use std::ops::Add;
 use std::time::Instant;
@@ -469,9 +469,7 @@ impl ScoringEngine {
         }
 
         let challenge_score = self.calculate_challenge_score();
-        let rank_name = Self::get_rank_for_score(challenge_score)
-            .name()
-            .to_string();
+        let rank_name = Self::get_rank_for_score(challenge_score).name().to_string();
         let (tier_name, tier_position, tier_total, overall_position, overall_total) =
             Self::calculate_tier_info(challenge_score);
 
@@ -517,9 +515,7 @@ impl ScoringEngine {
         }
 
         let challenge_score = temp_engine.calculate_challenge_score();
-        let rank_name = Self::get_rank_for_score(challenge_score)
-            .name()
-            .to_string();
+        let rank_name = Self::get_rank_for_score(challenge_score).name().to_string();
         let (tier_name, tier_position, tier_total, overall_position, overall_total) =
             Self::calculate_tier_info(challenge_score);
 

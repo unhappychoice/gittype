@@ -36,10 +36,9 @@ impl ExitSummaryScreen {
         use crate::scoring::{ScoringEngine, StageResult};
 
         // Create a StageResult from SessionResult data
-        let rank_name =
-            ScoringEngine::get_rank_for_score(session_summary.session_score)
-                .name()
-                .to_string();
+        let rank_name = ScoringEngine::get_rank_for_score(session_summary.session_score)
+            .name()
+            .to_string();
         let (tier_name, tier_position, tier_total, overall_position, overall_total) =
             ScoringEngine::calculate_tier_info(session_summary.session_score);
 

@@ -171,9 +171,7 @@ impl SessionSummaryScreen {
             } else {
                 execute!(
                     stdout,
-                    SetForegroundColor(
-                        Rank::for_score(metrics.challenge_score).terminal_color()
-                    )
+                    SetForegroundColor(Rank::for_score(metrics.challenge_score).terminal_color())
                 )?;
             }
             execute!(stdout, Print(line))?;

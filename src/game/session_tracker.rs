@@ -21,7 +21,8 @@ impl SessionTracker {
         stage_result: StageResult,
         engine: &ScoringEngine,
     ) {
-        self.summary.add_stage_result(stage_name, stage_result, engine);
+        self.summary
+            .add_stage_result(stage_name, stage_result, engine);
     }
 
     pub fn record_skip(&mut self) {

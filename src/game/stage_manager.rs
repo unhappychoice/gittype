@@ -1,14 +1,14 @@
 use super::{
     screens::{
         exit_summary_screen::ExitAction, session_summary_screen::ResultAction,
-        typing_screen::SessionState, CancelScreen, CountdownScreen, ExitSummaryScreen, FailureScreen,
-        SessionSummaryScreen, SharingScreen, TitleAction, TitleScreen, TypingScreen,
+        typing_screen::SessionState, CancelScreen, CountdownScreen, ExitSummaryScreen,
+        FailureScreen, SessionSummaryScreen, SharingScreen, TitleAction, TitleScreen, TypingScreen,
     },
     session_tracker::SessionTracker,
     stage_builder::{DifficultyLevel, GameMode, StageBuilder},
 };
-use crate::models::GitRepository;
 use crate::models::Challenge;
+use crate::models::GitRepository;
 use crate::scoring::{ScoringEngine, StageResult};
 use crate::Result;
 use crossterm::{
@@ -172,18 +172,22 @@ impl StageManager {
             // Show countdown before each stage
             if self.current_stage == 0 {
                 // First stage - show initial countdown with challenge info
-                CountdownScreen::show_with_challenge_and_repo(Some(challenge), &self.git_repository)?;
+                CountdownScreen::show_with_challenge_and_repo(
+                    Some(challenge),
+                    &self.git_repository,
+                )?;
             } else {
                 // Subsequent stages - show stage transition countdown with challenge info
                 CountdownScreen::show_stage_transition_with_challenge_and_repo(
                     self.current_stage + 1,
                     self.current_challenges.len(),
                     Some(challenge),
-    &self.git_repository,
+                    &self.git_repository,
                 )?;
             }
 
-            let mut screen = TypingScreen::new_with_challenge(challenge, self.git_repository.clone())?;
+            let mut screen =
+                TypingScreen::new_with_challenge(challenge, self.git_repository.clone())?;
             screen.set_skips_remaining(self.skips_remaining);
             let (stage_result, final_state) = screen.show_with_state()?;
             self.skips_remaining = screen.get_skips_remaining();
@@ -226,7 +230,8 @@ impl StageManager {
                     // Skipped - record skip and partial effort
                     let engine = screen.get_scoring_engine();
                     self.session_tracker.record_skip();
-                    self.session_tracker.record_partial_effort(engine, &stage_result);
+                    self.session_tracker
+                        .record_partial_effort(engine, &stage_result);
 
                     // Update global session tracker
                     {
@@ -283,7 +288,8 @@ impl StageManager {
                 SessionState::Exit => {
                     // User wants to exit - record partial effort only
                     let engine = screen.get_scoring_engine();
-                    self.session_tracker.record_partial_effort(engine, &stage_result);
+                    self.session_tracker
+                        .record_partial_effort(engine, &stage_result);
 
                     // Update global session tracker with current state
                     {
@@ -333,8 +339,10 @@ impl StageManager {
                             .unwrap();
 
                         if let Ok(session_metrics) = combined_engine.calculate_result() {
-                            let _ =
-                                SharingScreen::show_sharing_menu(&session_metrics, &self.git_repository);
+                            let _ = SharingScreen::show_sharing_menu(
+                                &session_metrics,
+                                &self.git_repository,
+                            );
                         }
                     }
                     // Continue showing the summary screen after sharing (without animation)
@@ -396,14 +404,14 @@ impl StageManager {
                 self.current_challenges.len(),
                 self.stage_engines.len(),
                 &self.stage_engines,
-&self.git_repository,
+                &self.git_repository,
             )
         } else {
             SessionSummaryScreen::show_session_summary_with_input_no_animation(
                 self.current_challenges.len(),
                 self.stage_engines.len(),
                 &self.stage_engines,
-&self.git_repository,
+                &self.git_repository,
             )
         }
     }
@@ -424,7 +432,7 @@ impl StageManager {
             self.current_challenges.len(),
             self.stage_engines.len(),
             &self.stage_engines,
-&self.git_repository,
+            &self.git_repository,
         )?;
 
         match action {
@@ -458,7 +466,7 @@ impl StageManager {
             self.current_challenges.len(),
             self.stage_engines.len(),
             &self.stage_engines,
-&self.git_repository,
+            &self.git_repository,
         )?;
 
         match action {

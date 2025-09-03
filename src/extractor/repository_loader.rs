@@ -1,5 +1,5 @@
 use super::{
-    ChallengeConverter, CodeExtractor, ExtractionOptions, GitRepositoryExtractor, GitRepository,
+    ChallengeConverter, CodeExtractor, ExtractionOptions, GitRepository, GitRepositoryExtractor,
     NoOpProgressReporter, ProgressReporter,
 };
 use crate::models::Challenge;

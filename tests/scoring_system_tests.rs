@@ -31,9 +31,7 @@ fn test_scoring_with_metrics(target_cpm: f64, accuracy: f64, mistakes: usize) ->
         total_chars,
     );
 
-    let title = ScoringEngine::get_rank_for_score(score)
-        .name()
-        .to_string();
+    let title = ScoringEngine::get_rank_for_score(score).name().to_string();
 
     ScoringTestResult {
         actual_cpm: target_cpm,
@@ -221,9 +219,7 @@ mod basic_functionality_tests {
         engine.finish();
         assert!(engine.is_finished());
 
-        let metrics = engine
-            .calculate_result()
-            .expect("Should calculate result");
+        let metrics = engine.calculate_result().expect("Should calculate result");
 
         assert_eq!(engine.correct_chars(), 5);
         assert_eq!(engine.mistakes(), 1);

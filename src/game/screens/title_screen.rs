@@ -1,6 +1,6 @@
-use crate::models::GitRepository;
 use crate::game::screens::{InfoAction, InfoDialog};
 use crate::game::stage_builder::DifficultyLevel;
+use crate::models::GitRepository;
 use crate::Result;
 use crossterm::{
     cursor::MoveTo,

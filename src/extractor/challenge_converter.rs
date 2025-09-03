@@ -1,5 +1,5 @@
 use super::ProgressReporter;
-use crate::models::{CodeChunk, Challenge};
+use crate::models::{Challenge, CodeChunk};
 use rayon::prelude::*;
 use std::sync::{
     atomic::{AtomicUsize, Ordering},

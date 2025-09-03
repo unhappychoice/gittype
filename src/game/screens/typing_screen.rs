@@ -3,8 +3,8 @@ use super::{
     CountdownScreen,
 };
 use crate::models::Challenge;
-use crate::scoring::engine::ScoringEngine;
 use crate::models::StageResult;
+use crate::scoring::engine::ScoringEngine;
 use crate::{models::GitRepository, Result};
 use crossterm::{
     event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers},

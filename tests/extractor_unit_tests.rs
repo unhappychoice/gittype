@@ -1,7 +1,5 @@
 use gittype::extractor::models::language::LanguageRegistry;
-use gittype::extractor::{
-    ChallengeConverter, CodeExtractor, ExtractionOptions, RepositoryLoader,
-};
+use gittype::extractor::{ChallengeConverter, CodeExtractor, ExtractionOptions, RepositoryLoader};
 use gittype::models::{ChunkType, CodeChunk};
 use gittype::GitTypeError;
 use std::fs;

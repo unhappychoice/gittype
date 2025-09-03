@@ -214,7 +214,11 @@ impl LoadingScreen {
             parts.push(format!("📝 {}", &commit[..8]));
         }
 
-        let status_symbol = if git_repository.is_dirty { "⚠️" } else { "✓" };
+        let status_symbol = if git_repository.is_dirty {
+            "⚠️"
+        } else {
+            "✓"
+        };
         parts.push(status_symbol.to_string());
 
         let git_text = parts.join(" • ");

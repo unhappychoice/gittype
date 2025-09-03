@@ -1,5 +1,5 @@
-use crate::models::ChunkType;
 use crate::extractor::parsers::LanguageExtractor;
+use crate::models::ChunkType;
 use crate::Result;
 use tree_sitter::{Node, Parser};
 

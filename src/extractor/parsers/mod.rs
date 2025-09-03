@@ -1,8 +1,6 @@
-use crate::extractor::models::{
-    language::{
-        CSharp, Cpp, Dart, Go, Haskell, Java, JavaScript, Kotlin, Language, Php, Python, Ruby,
-        Rust, Swift, TypeScript, C,
-    },
+use crate::extractor::models::language::{
+    CSharp, Cpp, Dart, Go, Haskell, Java, JavaScript, Kotlin, Language, Php, Python, Ruby, Rust,
+    Swift, TypeScript, C,
 };
 use crate::models::ChunkType;
 use crate::{GitTypeError, Result};

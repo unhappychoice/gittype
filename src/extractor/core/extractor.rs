@@ -1,5 +1,5 @@
-use crate::models::CodeChunk;
 use crate::extractor::parsers::{get_parser_registry, parse_with_thread_local};
+use crate::models::CodeChunk;
 use crate::{GitTypeError, Result};
 use std::fs;
 use std::path::Path;
