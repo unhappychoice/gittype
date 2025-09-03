@@ -395,7 +395,8 @@ mod tests {
 
     #[test]
     fn test_parse_https_format() {
-        let repo_info = RepositoryManager::parse_repo_url("https://github.com/rust-lang/rust").unwrap();
+        let repo_info =
+            RepositoryManager::parse_repo_url("https://github.com/rust-lang/rust").unwrap();
         assert_eq!(repo_info.origin, "github.com");
         assert_eq!(repo_info.owner, "rust-lang");
         assert_eq!(repo_info.name, "rust");

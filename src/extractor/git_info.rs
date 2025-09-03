@@ -1,5 +1,5 @@
-use crate::Result;
 use crate::models::GitRepository;
+use crate::Result;
 use std::path::Path;
 use std::process::Command;
 
