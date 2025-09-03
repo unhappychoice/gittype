@@ -71,7 +71,7 @@ impl CountdownScreen {
         execute!(stdout, ResetColor)?;
         stdout.flush()?;
 
-        Self::clear_input_buffer_and_wait(1000)?;
+        Self::clear_input_buffer_and_wait(600)?;
 
         // Countdown from 3 to 1
         for count in (1..=3).rev() {
@@ -123,7 +123,7 @@ impl CountdownScreen {
             execute!(stdout, ResetColor)?;
             stdout.flush()?;
 
-            Self::clear_input_buffer_and_wait(1000)?;
+            Self::clear_input_buffer_and_wait(600)?;
         }
 
         // Show "GO!" message
@@ -140,7 +140,7 @@ impl CountdownScreen {
         execute!(stdout, ResetColor)?;
         stdout.flush()?;
 
-        Self::clear_input_buffer_and_wait(500)?;
+        Self::clear_input_buffer_and_wait(400)?;
 
         Ok(())
     }
@@ -208,7 +208,7 @@ impl CountdownScreen {
         execute!(stdout, ResetColor)?;
         stdout.flush()?;
 
-        Self::clear_input_buffer_and_wait(1000)?;
+        Self::clear_input_buffer_and_wait(600)?;
 
         // Countdown from 3 to 1
         for count in (1..=3).rev() {
@@ -260,7 +260,7 @@ impl CountdownScreen {
             execute!(stdout, ResetColor)?;
             stdout.flush()?;
 
-            Self::clear_input_buffer_and_wait(800)?;
+            Self::clear_input_buffer_and_wait(600)?;
         }
 
         // Show "START!" message
@@ -277,7 +277,7 @@ impl CountdownScreen {
         execute!(stdout, ResetColor)?;
         stdout.flush()?;
 
-        Self::clear_input_buffer_and_wait(500)?;
+        Self::clear_input_buffer_and_wait(400)?;
 
         Ok(())
     }
