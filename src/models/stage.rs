@@ -16,7 +16,7 @@ pub struct StageResult {
     pub consistency_streaks: Vec<usize>,
     pub completion_time: Duration,
     pub challenge_score: f64,
-    pub ranking_title: String,
+    pub rank_name: String,
     pub rank: String,
     pub tier_position: usize,
     pub tier_total: usize,

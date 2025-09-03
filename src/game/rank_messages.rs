@@ -965,17 +965,17 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
 }
 
 /// Get hacking messages for a specific rank
-pub fn get_hacking_messages_for_rank(ranking_title: &str) -> Vec<String> {
+pub fn get_hacking_messages_for_rank(rank_name: &str) -> Vec<String> {
     // Check all three message maps
-    if let Some(messages) = get_rank_messages().get(ranking_title) {
+    if let Some(messages) = get_rank_messages().get(rank_name) {
         return messages.iter().map(|(text, _)| text.to_string()).collect();
     }
 
-    if let Some(messages) = get_rank_messages_2().get(ranking_title) {
+    if let Some(messages) = get_rank_messages_2().get(rank_name) {
         return messages.iter().map(|(text, _)| text.to_string()).collect();
     }
 
-    if let Some(messages) = get_rank_messages_3().get(ranking_title) {
+    if let Some(messages) = get_rank_messages_3().get(rank_name) {
         return messages.iter().map(|(text, _)| text.to_string()).collect();
     }
 
@@ -989,9 +989,9 @@ pub fn get_hacking_messages_for_rank(ranking_title: &str) -> Vec<String> {
 }
 
 /// Get colored messages for a specific rank
-pub fn get_colored_messages_for_rank(ranking_title: &str) -> Vec<ColoredMessage> {
+pub fn get_colored_messages_for_rank(rank_name: &str) -> Vec<ColoredMessage> {
     // Check all three message maps
-    if let Some(messages) = get_rank_messages().get(ranking_title) {
+    if let Some(messages) = get_rank_messages().get(rank_name) {
         return messages
             .iter()
             .map(|(text, color)| ColoredMessage {
@@ -1001,7 +1001,7 @@ pub fn get_colored_messages_for_rank(ranking_title: &str) -> Vec<ColoredMessage>
             .collect();
     }
 
-    if let Some(messages) = get_rank_messages_2().get(ranking_title) {
+    if let Some(messages) = get_rank_messages_2().get(rank_name) {
         return messages
             .iter()
             .map(|(text, color)| ColoredMessage {
@@ -1011,7 +1011,7 @@ pub fn get_colored_messages_for_rank(ranking_title: &str) -> Vec<ColoredMessage>
             .collect();
     }
 
-    if let Some(messages) = get_rank_messages_3().get(ranking_title) {
+    if let Some(messages) = get_rank_messages_3().get(rank_name) {
         return messages
             .iter()
             .map(|(text, color)| ColoredMessage {

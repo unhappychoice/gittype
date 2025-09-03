@@ -55,7 +55,7 @@ impl SharingScreen {
         let preview_text = if let Some(repo) = repo_info {
             format!(
                 "\"{}\" with {:.0}pts on [{}/{}] - CPM: {:.0}, Mistakes: {}",
-                metrics.ranking_title,
+                metrics.rank_name,
                 metrics.challenge_score,
                 repo.user_name,
                 repo.repository_name,
@@ -65,7 +65,7 @@ impl SharingScreen {
         } else {
             format!(
                 "\"{}\" with {:.0}pts - CPM: {:.0}, Mistakes: {}",
-                metrics.ranking_title, metrics.challenge_score, metrics.cpm, metrics.mistakes
+                metrics.rank_name, metrics.challenge_score, metrics.cpm, metrics.mistakes
             )
         };
         let preview_col = center_col.saturating_sub(preview_text.len() as u16 / 2);

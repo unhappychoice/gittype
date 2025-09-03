@@ -65,7 +65,7 @@ impl SharingService {
             SharingPlatform::Reddit => {
                 let title = format!(
                     "Achieved {} rank with {:.0} points in gittype!",
-                    metrics.ranking_title, metrics.challenge_score
+                    metrics.rank_name, metrics.challenge_score
                 );
                 format!(
                     "https://www.reddit.com/submit?title={}&selftext=true&text={}",
@@ -94,7 +94,7 @@ impl SharingService {
         if let Some(repo) = repo_info {
             format!(
                 "Achieved \"{}\" with {:.0}pts on [{}/{}] in gittype! CPM: {:.0}, Mistakes: {} 🚀\n\nType your own code! https://github.com/unhappychoice/gittype\n\n#gittype #typing #coding",
-                metrics.ranking_title,
+                metrics.rank_name,
                 metrics.challenge_score,
                 repo.user_name,
                 repo.repository_name,
@@ -104,7 +104,7 @@ impl SharingService {
         } else {
             format!(
                 "Achieved \"{}\" with {:.0}pts in gittype! CPM: {:.0}, Mistakes: {} 🚀\n\nType your own code! https://github.com/unhappychoice/gittype\n\n#gittype #typing #coding",
-                metrics.ranking_title,
+                metrics.rank_name,
                 metrics.challenge_score,
                 metrics.cpm,
                 metrics.mistakes

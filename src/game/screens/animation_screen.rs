@@ -42,7 +42,7 @@ impl AnimationScreen {
     fn render_typing_animation_ratatui(
         frame: &mut Frame,
         animation: &TypingAnimation,
-        _ranking_title: &str,
+        _rank_name: &str,
     ) {
         let area = frame.size();
 
@@ -149,7 +149,7 @@ impl AnimationScreen {
 
     // Helper function to get tier from ranking title name
     fn get_tier_from_title(title_name: &str) -> crate::models::RankTier {
-        Rank::all_titles()
+        Rank::all_ranks()
             .iter()
             .find(|title| title.name() == title_name)
             .map(|title| title.tier().clone())
@@ -186,17 +186,17 @@ impl AnimationScreen {
         terminal.clear()?;
 
         // Create typing animation for session complete
-        let tier = Self::get_tier_from_title(&session_metrics.ranking_title);
+        let tier = Self::get_tier_from_title(&session_metrics.rank_name);
         let mut typing_animation =
             TypingAnimation::new(tier, terminal.size()?.width, terminal.size()?.height);
-        typing_animation.set_rank_messages(&session_metrics.ranking_title);
+        typing_animation.set_rank_messages(&session_metrics.rank_name);
 
         // Show typing reveal animation with ratatui
         while !typing_animation.is_complete() {
             let updated = typing_animation.update();
 
             if updated {
-                let ranking_title = session_metrics.ranking_title.clone();
+                let ranking_title = session_metrics.rank_name.clone();
                 terminal.draw(|frame| {
                     Self::render_typing_animation_ratatui(frame, &typing_animation, &ranking_title);
                 })?;

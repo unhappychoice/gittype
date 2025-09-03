@@ -80,8 +80,8 @@ impl Rank {
         self.tier.terminal_color()
     }
 
-    /// Get all ranking titles in order from lowest to highest score
-    pub fn all_titles() -> Vec<Rank> {
+    /// Get all ranks in order from lowest to highest score
+    pub fn all_ranks() -> Vec<Rank> {
         vec![
             // Beginner Level (clean boundaries, ~even progression)
             Rank::new("Hello World", RankTier::Beginner, 0, 800),
@@ -157,7 +157,7 @@ impl Rank {
     /// Find the ranking title for a given score
     #[allow(dead_code)]
     pub fn for_score(score: f64) -> Rank {
-        Self::all_titles()
+        Self::all_ranks()
             .into_iter()
             .find(|title| title.contains_score(score))
             .unwrap_or_else(|| {

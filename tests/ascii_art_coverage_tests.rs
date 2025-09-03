@@ -3,7 +3,7 @@ use gittype::models::{RankTier, Rank};
 
 #[test]
 fn test_all_rank_titles_have_ascii_art() {
-    let titles = Rank::all_titles();
+    let titles = Rank::all_ranks();
 
     for title in &titles {
         let ascii_art = get_rank_title_display(title.name());
@@ -37,7 +37,7 @@ fn test_all_rank_titles_have_ascii_art() {
 
 #[test]
 fn test_all_tiers_represented() {
-    let titles = Rank::all_titles();
+    let titles = Rank::all_ranks();
 
     let mut tier_counts = std::collections::HashMap::new();
     for title in &titles {
@@ -74,7 +74,7 @@ fn test_all_tiers_represented() {
 
 #[test]
 fn test_ascii_art_quality() {
-    let titles = Rank::all_titles();
+    let titles = Rank::all_ranks();
 
     for title in titles.iter().take(10) {
         // Test first 10 titles for performance

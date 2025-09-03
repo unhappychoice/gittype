@@ -37,7 +37,7 @@ impl ExitSummaryScreen {
 
         // Create a StageResult from SessionSummary data
         let ranking_title =
-            ScoringEngine::get_ranking_title_for_score(session_summary.session_score)
+            ScoringEngine::get_rank_for_score(session_summary.session_score)
                 .name()
                 .to_string();
         let (tier_name, tier_position, tier_total, overall_position, overall_total) =
@@ -51,7 +51,7 @@ impl ExitSummaryScreen {
             consistency_streaks: vec![], // Not available in session summary
             completion_time: session_summary.total_session_time,
             challenge_score: session_summary.session_score,
-            ranking_title,
+            rank_name: ranking_title,
             rank: tier_name,
             tier_position,
             tier_total,

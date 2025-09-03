@@ -3,7 +3,7 @@ use gittype::models::Rank;
 
 #[test]
 fn test_identify_missing_ascii_art() {
-    let titles = Rank::all_titles();
+    let titles = Rank::all_ranks();
 
     let mut missing_art = Vec::new();
     let mut has_art = Vec::new();

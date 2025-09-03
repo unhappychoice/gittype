@@ -323,7 +323,7 @@ impl SessionSummaryScreen {
         };
 
         // Display ranking title as large ASCII art at the top
-        let rank_title_lines = get_rank_title_display(&session_metrics.ranking_title);
+        let rank_title_lines = get_rank_title_display(&session_metrics.rank_name);
         let rank_title_height = rank_title_lines.len() as u16;
 
         // Calculate total content height and center vertically

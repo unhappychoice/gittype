@@ -169,26 +169,26 @@ impl ScoringEngine {
         all_streaks
     }
 
-    /// Get ranking title for current engine state
-    pub fn get_ranking_title(&self) -> Rank {
+    /// Get rank for current engine state
+    pub fn get_rank(&self) -> Rank {
         let score = self.calculate_challenge_score();
-        Self::get_ranking_title_for_score(score)
+        Self::get_rank_for_score(score)
     }
 
-    /// Legacy method that returns title name as string for backward compatibility
-    pub fn get_ranking_title_string(&self) -> String {
-        self.get_ranking_title().name().to_string()
+    /// Get rank name as string
+    pub fn get_rank_name(&self) -> String {
+        self.get_rank().name().to_string()
     }
 
-    /// Get ranking title for a specific score (pure function for testing)
-    pub fn get_ranking_title_for_score(score: f64) -> Rank {
+    /// Get rank for a specific score (pure function for testing)
+    pub fn get_rank_for_score(score: f64) -> Rank {
         Rank::for_score(score)
     }
 
     /// Calculate tier position and total for a given score
     pub fn calculate_tier_info(score: f64) -> (String, usize, usize, usize, usize) {
-        let all_titles = Rank::all_titles();
-        let current_title = Self::get_ranking_title_for_score(score);
+        let all_titles = Rank::all_ranks();
+        let current_title = Self::get_rank_for_score(score);
 
         // Find titles in the same tier
         let same_tier_titles: Vec<_> = all_titles
@@ -234,8 +234,8 @@ impl ScoringEngine {
         )
     }
 
-    /// Legacy method that returns title name as string for a score for backward compatibility
-    pub fn get_ranking_title_string_for_score(score: f64) -> String {
+    /// Get rank name as string for a specific score
+    pub fn get_rank_name_for_score(score: f64) -> String {
         match score as usize {
             // Beginner Level (clean boundaries, ~even progression)
             0..=800 => "Hello World".to_string(),
@@ -312,9 +312,9 @@ impl ScoringEngine {
         }
     }
 
-    /// Get legacy ranking title name for a specific score (deprecated - use get_ranking_title_for_score instead)
-    pub fn get_ranking_title_legacy_for_score(score: f64) -> String {
-        Self::get_ranking_title_for_score(score).name().to_string()
+    /// Get legacy rank name for a specific score (deprecated - use get_rank_for_score instead)
+    pub fn get_rank_name_legacy_for_score(score: f64) -> String {
+        Self::get_rank_for_score(score).name().to_string()
     }
 
     /// Calculate base score from current metrics
@@ -469,7 +469,7 @@ impl ScoringEngine {
         }
 
         let challenge_score = self.calculate_challenge_score();
-        let ranking_title = Self::get_ranking_title_for_score(challenge_score)
+        let rank_name = Self::get_rank_for_score(challenge_score)
             .name()
             .to_string();
         let (tier_name, tier_position, tier_total, overall_position, overall_total) =
@@ -483,7 +483,7 @@ impl ScoringEngine {
             consistency_streaks: self.all_streaks(),
             completion_time: self.elapsed(),
             challenge_score,
-            ranking_title,
+            rank_name,
             rank: tier_name,
             tier_position,
             tier_total,
@@ -517,7 +517,7 @@ impl ScoringEngine {
         }
 
         let challenge_score = temp_engine.calculate_challenge_score();
-        let ranking_title = Self::get_ranking_title_for_score(challenge_score)
+        let rank_name = Self::get_rank_for_score(challenge_score)
             .name()
             .to_string();
         let (tier_name, tier_position, tier_total, overall_position, overall_total) =
@@ -531,7 +531,7 @@ impl ScoringEngine {
             consistency_streaks: vec![], // Real-time doesn't track actual streaks
             completion_time: temp_engine.elapsed(),
             challenge_score,
-            ranking_title,
+            rank_name,
             rank: tier_name,
             tier_position,
             tier_total,

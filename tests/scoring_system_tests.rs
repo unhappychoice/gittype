@@ -31,7 +31,7 @@ fn test_scoring_with_metrics(target_cpm: f64, accuracy: f64, mistakes: usize) ->
         total_chars,
     );
 
-    let title = ScoringEngine::get_ranking_title_for_score(score)
+    let title = ScoringEngine::get_rank_for_score(score)
         .name()
         .to_string();
 
@@ -230,14 +230,14 @@ mod basic_functionality_tests {
         assert_eq!(engine.total_chars(), 6);
         assert!(metrics.cpm > 0.0);
         assert!(metrics.accuracy > 0.0 && metrics.accuracy <= 100.0);
-        assert!(!metrics.ranking_title.is_empty());
+        assert!(!metrics.rank_name.is_empty());
 
         println!(
             "Lifecycle test: {} correct, {} mistakes, CPM: {:.1}, Title: {}",
             engine.correct_chars(),
             engine.mistakes(),
             metrics.cpm,
-            metrics.ranking_title
+            metrics.rank_name
         );
     }
 
@@ -267,14 +267,14 @@ mod basic_functionality_tests {
         assert_eq!(combined.correct_chars(), 6); // 4 + 2
         assert_eq!(combined.mistakes(), 1);
         assert!(combined_metrics.challenge_score > 0.0);
-        assert!(!combined_metrics.ranking_title.is_empty());
+        assert!(!combined_metrics.rank_name.is_empty());
 
         println!(
             "Combination test: {} total correct, {} total mistakes, Score: {:.0}, Title: {}",
             combined.correct_chars(),
             combined.mistakes(),
             combined_metrics.challenge_score,
-            combined_metrics.ranking_title
+            combined_metrics.rank_name
         );
     }
 }
