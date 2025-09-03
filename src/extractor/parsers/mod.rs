@@ -5,6 +5,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use tree_sitter::{Node, Parser, Query, Tree};
 
+pub mod c;
 pub mod csharp;
 pub mod go;
 pub mod java;
@@ -98,6 +99,10 @@ impl ParserRegistry {
             csharp::CSharpExtractor::create_parser,
             || Box::new(csharp::CSharpExtractor),
         );
+
+        registry.register(Language::C, c::CExtractor::create_parser, || {
+            Box::new(c::CExtractor)
+        });
 
         registry
     }

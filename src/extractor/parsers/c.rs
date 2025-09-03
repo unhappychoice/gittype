@@ -1,0 +1,169 @@
+use crate::extractor::models::{ChunkType, Language};
+use crate::extractor::parsers::LanguageExtractor;
+use crate::Result;
+use tree_sitter::{Node, Parser};
+
+pub struct CExtractor;
+
+impl CExtractor {
+    pub fn create_parser() -> Result<Parser> {
+        let mut parser = Parser::new();
+        let language = tree_sitter_c::language();
+        parser.set_language(language)?;
+        Ok(parser)
+    }
+}
+
+impl LanguageExtractor for CExtractor {
+    fn language(&self) -> Language {
+        Language::C
+    }
+
+    fn file_extensions(&self) -> &[&str] {
+        &["c", "h"]
+    }
+
+    fn tree_sitter_language(&self) -> tree_sitter::Language {
+        tree_sitter_c::language()
+    }
+
+    fn query_patterns(&self) -> &str {
+        r#"
+            ; Function definitions (prioritize full definitions)
+            (function_definition
+                declarator: (function_declarator
+                    declarator: (identifier) @function.name)
+                body: (compound_statement)) @function.definition
+
+            ; Struct definitions with body
+            (struct_specifier
+                name: (type_identifier) @struct.name
+                body: (field_declaration_list)) @struct.definition
+
+            ; Type definitions  
+            (type_definition
+                declarator: (type_identifier) @type.name) @type.definition
+
+            ; Enum definitions
+            (enum_specifier
+                name: (type_identifier) @enum.name) @enum.definition
+
+            ; Global variable declarations (excluding function parameters)
+            (declaration
+                declarator: (init_declarator
+                    declarator: (identifier) @variable.name)) @variable.definition
+
+            ; Macro definitions
+            (preproc_def
+                name: (identifier) @macro.name) @macro.definition
+        "#
+    }
+
+    fn comment_query(&self) -> &str {
+        r#"
+            (comment) @comment
+        "#
+    }
+
+    fn capture_name_to_chunk_type(&self, capture_name: &str) -> Option<ChunkType> {
+        match capture_name {
+            "function.definition" => Some(ChunkType::Function),
+            "struct.definition" => Some(ChunkType::Struct),
+            "variable.definition" => Some(ChunkType::Variable),
+            "type.definition" => Some(ChunkType::Struct),
+            "enum.definition" => Some(ChunkType::Struct),
+            "macro.definition" => Some(ChunkType::Function),
+            _ => None,
+        }
+    }
+
+    fn extract_name(&self, node: Node, source_code: &str, capture_name: &str) -> Option<String> {
+        match capture_name {
+            "function.definition" => {
+                // For function definitions, find the identifier in the function_declarator
+                let mut cursor = node.walk();
+                if cursor.goto_first_child() {
+                    while cursor.node().kind() != "function_declarator" {
+                        if !cursor.goto_next_sibling() {
+                            return None;
+                        }
+                    }
+                    let func_declarator = cursor.node();
+                    let mut decl_cursor = func_declarator.walk();
+                    if decl_cursor.goto_first_child() {
+                        while decl_cursor.node().kind() != "identifier" {
+                            if !decl_cursor.goto_next_sibling() {
+                                return None;
+                            }
+                        }
+                        let name_node = decl_cursor.node();
+                        return name_node
+                            .utf8_text(source_code.as_bytes())
+                            .ok()
+                            .map(|s| s.to_string());
+                    }
+                }
+                None
+            }
+            "struct.definition" | "type.definition" | "enum.definition" => {
+                // Find the type_identifier child
+                let mut cursor = node.walk();
+                if cursor.goto_first_child() {
+                    loop {
+                        if cursor.node().kind() == "type_identifier" {
+                            let text = cursor.node().utf8_text(source_code.as_bytes()).ok()?;
+                            return Some(text.to_string());
+                        }
+                        if !cursor.goto_next_sibling() {
+                            break;
+                        }
+                    }
+                }
+                None
+            }
+            "variable.definition" => {
+                // Find the identifier in init_declarator
+                let mut cursor = node.walk();
+                if cursor.goto_first_child() {
+                    loop {
+                        let child = cursor.node();
+                        if child.kind() == "init_declarator" {
+                            let mut init_cursor = child.walk();
+                            if init_cursor.goto_first_child()
+                                && init_cursor.node().kind() == "identifier"
+                            {
+                                let text =
+                                    init_cursor.node().utf8_text(source_code.as_bytes()).ok()?;
+                                return Some(text.to_string());
+                            }
+                        } else if child.kind() == "identifier" {
+                            let text = child.utf8_text(source_code.as_bytes()).ok()?;
+                            return Some(text.to_string());
+                        }
+                        if !cursor.goto_next_sibling() {
+                            break;
+                        }
+                    }
+                }
+                None
+            }
+            "macro.definition" => {
+                // Find the identifier child
+                let mut cursor = node.walk();
+                if cursor.goto_first_child() {
+                    loop {
+                        if cursor.node().kind() == "identifier" {
+                            let text = cursor.node().utf8_text(source_code.as_bytes()).ok()?;
+                            return Some(text.to_string());
+                        }
+                        if !cursor.goto_next_sibling() {
+                            break;
+                        }
+                    }
+                }
+                None
+            }
+            _ => None,
+        }
+    }
+}
