@@ -18,6 +18,7 @@
 | C | `.c`, `.h` | ✅ Full support | `tree-sitter-c` |
 | C++ | `.cpp`, `.cc`, `.cxx`, `.hpp` | ✅ Full support | `tree-sitter-cpp` |
 | Haskell | `.hs`, `.lhs` | ✅ Full support | `tree-sitter-haskell` |
+| Dart | `.dart` | ✅ Full support | `tree-sitter-dart` |
 
 ## Extraction Features
 
@@ -189,11 +190,25 @@
 - Enum definitions (`enum`, `enum class`)
 - Namespace functions (functions within namespaces)
 
+### Dart
+- Functions (`String greet(String name) { ... }`)
+- Methods (instance and static methods within classes)
+- Classes (`class`) - complete class definitions with constructors, methods, and properties
+- Enums (`enum`) - enum declarations with values and methods
+- Mixins (`mixin`) - mixin declarations with methods and properties
+- Extensions (`extension`) - extension methods on existing types
+- Variables (`final`, `var`, `const`) - global and local variable declarations
+- Constructors (default, named, and factory constructors)
+- Getters and setters (`get`, `set`)
+- Async functions (`Future<T>`, `async`/`await` patterns)
+- Abstract classes and methods
+- Static members (methods and properties)
+- Type definitions (`typedef`)
+
 ## Planned Support
 
 | Language | Priority | Expected | Notes |
 |----------|----------|----------|--------|
-| Dart | Medium | Q4 2025 | Flutter development |
 | Zig | Low | Future | Systems programming |
 
 ## Language-Specific Options
@@ -205,14 +220,14 @@
 gittype --langs rust
 
 # Multiple languages
-gittype --langs rust,typescript,javascript,python,go,ruby,swift,kotlin,java,php,csharp,c,cpp,haskell
+gittype --langs rust,typescript,javascript,python,go,ruby,swift,kotlin,java,php,csharp,c,cpp,haskell,dart
 ```
 
 ### Configuration File
 
 ```toml
 [default]
-langs = ["rust", "typescript", "javascript", "python", "go", "ruby", "swift", "kotlin", "java", "php", "csharp", "c", "cpp", "haskell"]
+langs = ["rust", "typescript", "javascript", "python", "go", "ruby", "swift", "kotlin", "java", "php", "csharp", "c", "cpp", "haskell", "dart"]
 ```
 
 ## Code Extraction Quality
