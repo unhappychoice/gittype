@@ -370,7 +370,7 @@ impl SessionSummaryScreen {
         // Display tier information right after rank title (small gap after rank title)
         let tier_info_row = rank_start_row + rank_title_height + 1;
         let tier_info = format!(
-            "{} tier - rank {}/{} (overall {}/{})",
+            "{} rank - {}/{} (overall {}/{})",
             session_metrics.rank,
             session_metrics.tier_position,
             session_metrics.tier_total,

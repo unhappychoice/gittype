@@ -982,7 +982,7 @@ pub fn get_hacking_messages_for_rank(ranking_title: &str) -> Vec<String> {
     // Default fallback for unknown ranks
     vec![
         "> analyzing performance data...".to_string(),
-        "> calculating skill metrics...".to_string(),
+        "> calculating skill results...".to_string(),
         "> determining rank classification...".to_string(),
         "> rank assignment complete.".to_string(),
     ]
@@ -1028,7 +1028,7 @@ pub fn get_colored_messages_for_rank(ranking_title: &str) -> Vec<ColoredMessage>
             color: Color::White,
         },
         ColoredMessage {
-            text: "> calculating skill metrics...".to_string(),
+            text: "> calculating skill results...".to_string(),
             color: Color::White,
         },
         ColoredMessage {
