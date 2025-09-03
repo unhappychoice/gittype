@@ -1,4 +1,5 @@
-use gittype::extractor::{ChunkType, CodeExtractor, ExtractionOptions};
+use crate::integration::test_extraction_options;
+use gittype::extractor::{ChunkType, CodeExtractor};
 use std::fs;
 use tempfile::TempDir;
 
@@ -23,7 +24,7 @@ def fibonacci(n):
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     assert_eq!(chunks.len(), 3);
@@ -35,7 +36,7 @@ def fibonacci(n):
 
     for chunk in &chunks {
         assert!(matches!(chunk.chunk_type, ChunkType::Function));
-        assert_eq!(chunk.language, gittype::extractor::Language::Python);
+        assert_eq!(chunk.language, "python".to_string());
     }
 }
 
@@ -67,7 +68,7 @@ class Calculator:
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Should find 2 classes + 5 methods
@@ -122,7 +123,7 @@ def process_data(data):
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Should find 2 classes + 6 functions = 8 total minimum

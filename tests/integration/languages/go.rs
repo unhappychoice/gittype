@@ -1,4 +1,5 @@
-use gittype::extractor::{ChunkType, CodeExtractor, ExtractionOptions};
+use crate::integration::test_extraction_options;
+use gittype::extractor::{ChunkType, CodeExtractor};
 use std::fs;
 use tempfile::TempDir;
 
@@ -27,7 +28,7 @@ func multiply(x int, y int) int {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     assert_eq!(chunks.len(), 3);
@@ -39,7 +40,7 @@ func multiply(x int, y int) int {
 
     for chunk in &chunks {
         assert!(matches!(chunk.chunk_type, ChunkType::Function));
-        assert_eq!(chunk.language, gittype::extractor::Language::Go);
+        assert_eq!(chunk.language, "go".to_string());
     }
 }
 
@@ -73,7 +74,7 @@ func (a *Address) GetFullAddress() string {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     assert_eq!(chunks.len(), 4); // 2 structs + 2 methods
@@ -129,7 +130,7 @@ func process(rw ReadWriter) {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     assert_eq!(chunks.len(), 4); // 3 interfaces + 1 function
@@ -196,7 +197,7 @@ func main() {}
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Should find: 2 const blocks + 2 var blocks + 2 type aliases + 1 function + 1 struct = 8 total

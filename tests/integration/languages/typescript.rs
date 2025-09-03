@@ -1,4 +1,5 @@
-use gittype::extractor::{ChunkType, CodeExtractor, ExtractionOptions};
+use crate::integration::test_extraction_options;
+use gittype::extractor::{ChunkType, CodeExtractor};
 use std::fs;
 use tempfile::TempDir;
 
@@ -22,7 +23,7 @@ interface Admin extends User {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     assert_eq!(chunks.len(), 2);
@@ -55,7 +56,7 @@ type ApiResponse<T> = {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     assert_eq!(chunks.len(), 3);
@@ -94,7 +95,7 @@ enum Status {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     assert_eq!(chunks.len(), 2);
@@ -138,7 +139,7 @@ namespace Api {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Should find 2 namespaces + 2 functions + 1 interface = 5 total
@@ -213,7 +214,7 @@ const calculateTotal = (items: number[]): number => {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Should find: 1 interface + 1 type alias + 1 enum + 1 namespace + 1 class + 4 functions = 9 total minimum

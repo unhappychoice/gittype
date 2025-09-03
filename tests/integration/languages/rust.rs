@@ -1,6 +1,8 @@
-use gittype::extractor::{ChunkType, CodeExtractor, ExtractionOptions, RepositoryLoader};
+use gittype::extractor::{ChunkType, CodeExtractor, RepositoryLoader};
 use std::fs;
 use tempfile::{NamedTempFile, TempDir};
+
+use crate::integration::test_extraction_options;
 
 #[test]
 fn test_rust_function_extraction() {
@@ -20,7 +22,7 @@ pub fn add(a: i32, b: i32) -> i32 {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     assert_eq!(chunks.len(), 2);
@@ -49,7 +51,7 @@ pub struct Config {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     assert_eq!(chunks.len(), 2);
@@ -79,7 +81,7 @@ enum Color {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     assert_eq!(chunks.len(), 2);
@@ -117,7 +119,7 @@ trait Clone {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     assert_eq!(chunks.len(), 3); // 2 traits + 1 function from trait
@@ -157,7 +159,7 @@ mod private_utils {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     assert_eq!(chunks.len(), 5); // 2 modules + 1 function + 1 struct + 1 function from private module
@@ -187,7 +189,7 @@ type Point = (f64, f64);
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     assert_eq!(chunks.len(), 3);
@@ -254,7 +256,7 @@ pub fn create_user(name: String) -> User {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     assert_eq!(chunks.len(), 9); // 1 enum + 1 trait + 1 module + 1 type_alias + 1 struct + 1 impl + 2 functions + 1 nested function
@@ -344,7 +346,7 @@ fn test_nested_and_oneline_structures() {
     fs::write(&temp_path, rust_code).expect("Failed to write test file");
 
     let mut loader = RepositoryLoader::new().expect("Failed to create loader");
-    let options = ExtractionOptions::default();
+    let options = test_extraction_options();
 
     let challenges = loader
         .load_challenges_from_repository(&temp_path, Some(options))
@@ -393,7 +395,7 @@ fn calculate_sum(a: i32, b: i32) -> i32 {
     fs::write(&temp_path, rust_code).expect("Failed to write test file");
 
     let mut loader = RepositoryLoader::new().expect("Failed to create loader");
-    let options = ExtractionOptions::default();
+    let options = test_extraction_options();
 
     let challenges = loader
         .load_challenges_from_repository(&temp_path, Some(options))

@@ -1,4 +1,5 @@
-use gittype::extractor::{ChunkType, CodeExtractor, ExtractionOptions};
+use crate::integration::test_extraction_options;
+use gittype::extractor::{ChunkType, CodeExtractor};
 use std::fs;
 use tempfile::TempDir;
 
@@ -48,7 +49,7 @@ class Person {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Should find 2 classes + methods
@@ -65,7 +66,7 @@ class Person {
     assert!(class_names.contains(&&"Person".to_string()));
 
     for chunk in &chunks {
-        assert_eq!(chunk.language, gittype::extractor::Language::Swift);
+        assert_eq!(chunk.language, "swift".to_string());
     }
 }
 
@@ -93,7 +94,7 @@ func processData(items: [String]) {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     assert_eq!(chunks.len(), 3);
@@ -105,7 +106,7 @@ func processData(items: [String]) {
 
     for chunk in &chunks {
         assert!(matches!(chunk.chunk_type, ChunkType::Function));
-        assert_eq!(chunk.language, gittype::extractor::Language::Swift);
+        assert_eq!(chunk.language, "swift".to_string());
     }
 }
 
@@ -128,7 +129,7 @@ protocol Comparable {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Should find 2 protocols
@@ -145,7 +146,7 @@ protocol Comparable {
     assert!(protocol_names.contains(&&"Comparable".to_string()));
 
     for chunk in &chunks {
-        assert_eq!(chunk.language, gittype::extractor::Language::Swift);
+        assert_eq!(chunk.language, "swift".to_string());
     }
 }
 
@@ -177,7 +178,7 @@ struct Rectangle {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Should find 2 structs + methods
@@ -194,7 +195,7 @@ struct Rectangle {
     assert!(struct_names.contains(&&"Rectangle".to_string()));
 
     for chunk in &chunks {
-        assert_eq!(chunk.language, gittype::extractor::Language::Swift);
+        assert_eq!(chunk.language, "swift".to_string());
     }
 }
 
@@ -227,7 +228,7 @@ enum Status {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Should find 2 enums + methods
@@ -244,6 +245,6 @@ enum Status {
     assert!(enum_names.contains(&&"Status".to_string()));
 
     for chunk in &chunks {
-        assert_eq!(chunk.language, gittype::extractor::Language::Swift);
+        assert_eq!(chunk.language, "swift".to_string());
     }
 }

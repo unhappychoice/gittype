@@ -1,4 +1,5 @@
-use gittype::extractor::{ChunkType, CodeExtractor, ExtractionOptions};
+use crate::integration::test_extraction_options;
+use gittype::extractor::{ChunkType, CodeExtractor};
 use std::fs;
 use tempfile::TempDir;
 
@@ -39,7 +40,7 @@ namespace MyApplication.Services
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Should find namespace and class
@@ -91,7 +92,7 @@ namespace MyApplication.Contracts
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     let interface_chunks: Vec<_> = chunks
@@ -150,7 +151,7 @@ namespace MyApplication.Models
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     let struct_chunks: Vec<_> = chunks
@@ -207,7 +208,7 @@ namespace MyApplication.Models
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Should find class and properties
@@ -259,7 +260,7 @@ namespace MyApplication.Core.Models
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     let namespace_chunks: Vec<_> = chunks

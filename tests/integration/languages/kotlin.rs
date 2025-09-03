@@ -1,4 +1,5 @@
-use gittype::extractor::{ChunkType, CodeExtractor, ExtractionOptions};
+use crate::integration::test_extraction_options;
+use gittype::extractor::{ChunkType, CodeExtractor};
 use std::fs;
 use tempfile::TempDir;
 
@@ -24,7 +25,7 @@ fun processData(data: List<String>) {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     assert_eq!(chunks.len(), 3);
@@ -36,7 +37,7 @@ fun processData(data: List<String>) {
 
     for chunk in &chunks {
         assert!(matches!(chunk.chunk_type, ChunkType::Function));
-        assert_eq!(chunk.language, gittype::extractor::Language::Kotlin);
+        assert_eq!(chunk.language, "kotlin".to_string());
     }
 }
 
@@ -68,7 +69,7 @@ data class User(
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Should find 2 classes + 3 functions = 5 total
@@ -124,7 +125,7 @@ object Utils {
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     // Should find 2 objects + 3 functions = 5 total, but sometimes might find 6 due to additional functions
@@ -212,7 +213,7 @@ var globalVar: String = "global var"
 
     let mut extractor = CodeExtractor::new().unwrap();
     let chunks = extractor
-        .extract_chunks(temp_dir.path(), ExtractionOptions::default())
+        .extract_chunks(temp_dir.path(), test_extraction_options())
         .unwrap();
 
     println!("Total chunks found: {}", chunks.len());
