@@ -1,6 +1,6 @@
-use crate::extractor::GitRepositoryInfo;
 use crate::game::screens::{InfoAction, InfoDialog};
 use crate::game::stage_builder::DifficultyLevel;
+use crate::models::GitRepository;
 use crate::Result;
 use crossterm::{
     cursor::MoveTo,
@@ -26,12 +26,12 @@ impl TitleScreen {
     }
 
     pub fn show_with_challenge_counts(challenge_counts: &[usize; 5]) -> Result<TitleAction> {
-        Self::show_with_challenge_counts_and_git_info(challenge_counts, None)
+        Self::show_with_challenge_counts_and_git_repository(challenge_counts, None)
     }
 
-    pub fn show_with_challenge_counts_and_git_info(
+    pub fn show_with_challenge_counts_and_git_repository(
         challenge_counts: &[usize; 5],
-        git_info: Option<&GitRepositoryInfo>,
+        git_repository: Option<&GitRepository>,
     ) -> Result<TitleAction> {
         let mut selected_difficulty = 1; // Start with Normal (index 1)
         let difficulties = [
@@ -50,7 +50,7 @@ impl TitleScreen {
         let center_col = terminal_width / 2;
 
         // Draw static elements once
-        Self::draw_static_elements(&mut stdout, center_row, center_col, git_info)?;
+        Self::draw_static_elements(&mut stdout, center_row, center_col, git_repository)?;
 
         let mut last_difficulty = selected_difficulty;
         // Draw initial difficulty selection
@@ -112,7 +112,7 @@ impl TitleScreen {
                                 &mut stdout,
                                 center_row,
                                 center_col,
-                                git_info,
+                                git_repository,
                             )?;
                             last_difficulty = selected_difficulty + 1; // Force redraw of difficulty selection
                         }
@@ -127,7 +127,7 @@ impl TitleScreen {
         stdout: &mut std::io::Stdout,
         center_row: u16,
         center_col: u16,
-        git_info: Option<&GitRepositoryInfo>,
+        git_repository: Option<&GitRepository>,
     ) -> Result<()> {
         // ASCII logo lines from oh-my-logo "GitType" purple
         let logo_lines = [
@@ -183,7 +183,7 @@ impl TitleScreen {
         execute!(stdout, ResetColor)?;
 
         // Display git info at bottom
-        Self::draw_git_info(stdout, git_info)?;
+        Self::draw_git_repository(stdout, git_repository)?;
 
         Ok(())
     }
@@ -251,11 +251,11 @@ impl TitleScreen {
         Ok(())
     }
 
-    fn draw_git_info(
+    fn draw_git_repository(
         stdout: &mut std::io::Stdout,
-        git_info: Option<&GitRepositoryInfo>,
+        git_repository: Option<&GitRepository>,
     ) -> Result<()> {
-        if let Some(info) = git_info {
+        if let Some(info) = git_repository {
             let (terminal_width, terminal_height) = terminal::size()?;
             let bottom_row = terminal_height - 1;
 

@@ -1,4 +1,4 @@
-use crate::game::{ascii_digits::get_digit_patterns, SessionSummary};
+use crate::game::{ascii_digits::get_digit_patterns, SessionResult};
 use crate::sharing::SharingPlatform;
 use crate::Result;
 use crossterm::{
@@ -19,7 +19,7 @@ pub enum ExitAction {
 pub struct ExitSummaryScreen;
 
 impl ExitSummaryScreen {
-    fn create_session_share_text(session_summary: &SessionSummary) -> String {
+    fn create_session_share_text(session_summary: &SessionResult) -> String {
         format!(
             "Just demolished {} keystrokes in gittype! 🔥 Total Score: {:.0}, CPM: {:.0}, Mistakes: {}, Time: {:.1}min 💪\n\nYour turn to abuse your keyboard! https://github.com/unhappychoice/gittype\n\n#gittype #typing #coding #keyboardwarrior",
             session_summary.total_effort_keystrokes(),
@@ -31,19 +31,18 @@ impl ExitSummaryScreen {
     }
 
     fn session_summary_to_typing_metrics(
-        session_summary: &SessionSummary,
-    ) -> crate::scoring::TypingMetrics {
-        use crate::scoring::{ScoringEngine, TypingMetrics};
+        session_summary: &SessionResult,
+    ) -> crate::scoring::StageResult {
+        use crate::scoring::{ScoringEngine, StageResult};
 
-        // Create a TypingMetrics from SessionSummary data
-        let ranking_title =
-            ScoringEngine::get_ranking_title_for_score(session_summary.session_score)
-                .name()
-                .to_string();
+        // Create a StageResult from SessionResult data
+        let rank_name = ScoringEngine::get_rank_for_score(session_summary.session_score)
+            .name()
+            .to_string();
         let (tier_name, tier_position, tier_total, overall_position, overall_total) =
             ScoringEngine::calculate_tier_info(session_summary.session_score);
 
-        TypingMetrics {
+        StageResult {
             cpm: session_summary.overall_cpm,
             wpm: session_summary.overall_wpm,
             accuracy: session_summary.overall_accuracy,
@@ -51,8 +50,8 @@ impl ExitSummaryScreen {
             consistency_streaks: vec![], // Not available in session summary
             completion_time: session_summary.total_session_time,
             challenge_score: session_summary.session_score,
-            ranking_title,
-            ranking_tier: tier_name,
+            rank_name,
+            tier_name,
             tier_position,
             tier_total,
             overall_position,
@@ -80,7 +79,7 @@ impl ExitSummaryScreen {
         result
     }
 
-    pub fn show(session_summary: &SessionSummary) -> Result<ExitAction> {
+    pub fn show(session_summary: &SessionResult) -> Result<ExitAction> {
         let mut stdout = stdout();
 
         // Comprehensive screen reset
@@ -290,7 +289,7 @@ impl ExitSummaryScreen {
         }
     }
 
-    pub fn show_sharing_menu(session_summary: &SessionSummary) -> Result<()> {
+    pub fn show_sharing_menu(session_summary: &SessionResult) -> Result<()> {
         let _metrics = Self::session_summary_to_typing_metrics(session_summary);
 
         // Raw mode should already be enabled from the parent function
@@ -405,7 +404,7 @@ impl ExitSummaryScreen {
     }
 
     fn share_session_result(
-        session_summary: &SessionSummary,
+        session_summary: &SessionResult,
         platform: SharingPlatform,
     ) -> crate::Result<()> {
         let text = Self::create_session_share_text(session_summary);
@@ -420,7 +419,7 @@ impl ExitSummaryScreen {
     fn generate_session_share_url(
         text: &str,
         platform: &SharingPlatform,
-        session_summary: &SessionSummary,
+        session_summary: &SessionResult,
     ) -> String {
         match platform {
             SharingPlatform::X => {

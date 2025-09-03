@@ -1,6 +1,6 @@
 use crate::extractor::{ExtractionOptions, RepositoryLoader};
 use crate::game::models::loading_steps::{ExecutionContext, StepManager, StepType};
-use crate::game::Challenge;
+use crate::models::Challenge;
 use crate::Result;
 use crossterm::{
     event::{self, Event, KeyCode, KeyModifiers},
@@ -72,7 +72,7 @@ const SPINNER_CHARS: &[char] = &['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦'
 
 pub struct ProcessingResult {
     pub challenges: Vec<Challenge>,
-    pub git_info: Option<crate::extractor::GitRepositoryInfo>,
+    pub git_repository: Option<crate::models::GitRepository>,
 }
 
 impl LoadingScreen {
@@ -199,22 +199,26 @@ impl LoadingScreen {
         Ok(())
     }
 
-    pub fn set_git_info(&self, git_info: &crate::extractor::GitRepositoryInfo) -> Result<()> {
+    pub fn set_git_repository(&self, git_repository: &crate::models::GitRepository) -> Result<()> {
         // Build git info string in same format as title_screen
         let mut parts = vec![format!(
             "📁 {}/{}",
-            git_info.user_name, git_info.repository_name
+            git_repository.user_name, git_repository.repository_name
         )];
 
-        if let Some(ref branch) = git_info.branch {
+        if let Some(ref branch) = git_repository.branch {
             parts.push(format!("🌿 {}", branch));
         }
 
-        if let Some(ref commit) = git_info.commit_hash {
+        if let Some(ref commit) = git_repository.commit_hash {
             parts.push(format!("📝 {}", &commit[..8]));
         }
 
-        let status_symbol = if git_info.is_dirty { "⚠️" } else { "✓" };
+        let status_symbol = if git_repository.is_dirty {
+            "⚠️"
+        } else {
+            "✓"
+        };
         parts.push(status_symbol.to_string());
 
         let git_text = parts.join(" • ");
@@ -281,7 +285,7 @@ impl LoadingScreen {
 
                 Ok(ProcessingResult {
                     challenges,
-                    git_info: loader.get_git_info().clone(),
+                    git_repository: loader.get_git_repository().clone(),
                 })
             }
             Err(e) => {

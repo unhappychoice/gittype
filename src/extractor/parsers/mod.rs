@@ -1,10 +1,8 @@
-use crate::extractor::models::{
-    language::{
-        CSharp, Cpp, Dart, Go, Haskell, Java, JavaScript, Kotlin, Language, Php, Python, Ruby,
-        Rust, Swift, TypeScript, C,
-    },
-    ChunkType,
+use crate::extractor::models::language::{
+    CSharp, Cpp, Dart, Go, Haskell, Java, JavaScript, Kotlin, Language, Php, Python, Ruby, Rust,
+    Swift, TypeScript, C,
 };
+use crate::models::ChunkType;
 use crate::{GitTypeError, Result};
 use once_cell::sync::Lazy;
 use std::cell::RefCell;

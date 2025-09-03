@@ -1,5 +1,6 @@
-use super::{challenge::Challenge, text_processor::TextProcessor};
-use crate::{extractor::GitRepositoryInfo, Result};
+use super::text_processor::TextProcessor;
+use crate::models::Challenge;
+use crate::{models::GitRepository, Result};
 use ratatui::{
     backend::CrosstermBackend,
     layout::{Constraint, Direction, Layout},
@@ -10,13 +11,13 @@ use ratatui::{
 };
 use std::{collections::HashMap, io};
 
-pub struct GameDisplayRatatui {
+pub struct StageRenderer {
     terminal: Terminal<CrosstermBackend<io::Stdout>>,
     chars: Vec<char>,
     last_position: usize,
 }
 
-impl GameDisplayRatatui {
+impl StageRenderer {
     pub fn new(challenge_text: &str) -> Result<Self> {
         let stdout = io::stdout();
         let backend = CrosstermBackend::new(stdout);
@@ -44,7 +45,7 @@ impl GameDisplayRatatui {
         skips_remaining: usize,
         dialog_shown: bool,
         scoring_engine: &crate::scoring::engine::ScoringEngine,
-        repo_info: &Option<GitRepositoryInfo>,
+        repo_info: &Option<GitRepository>,
     ) -> Result<()> {
         // Update character cache if needed
         if self.chars.len() != challenge_text.chars().count() {
@@ -81,7 +82,7 @@ impl GameDisplayRatatui {
             terminal_size.width,
         );
 
-        let metrics = crate::scoring::engine::ScoringEngine::calculate_real_time_metrics(
+        let metrics = crate::scoring::engine::ScoringEngine::calculate_real_time_result(
             current_position,
             mistakes,
             start_time,

@@ -1,12 +1,12 @@
-use gittype::game::ascii_rank_titles_generated::get_rank_title_display;
-use gittype::scoring::{RankingTier, RankingTitle};
+use gittype::game::ascii_rank_titles_generated::get_rank_display;
+use gittype::models::{Rank, RankTier};
 
 #[test]
 fn test_all_rank_titles_have_ascii_art() {
-    let titles = RankingTitle::all_titles();
+    let titles = Rank::all_ranks();
 
     for title in &titles {
-        let ascii_art = get_rank_title_display(title.name());
+        let ascii_art = get_rank_display(title.name());
 
         // Verify ASCII art exists (not empty)
         assert!(
@@ -37,7 +37,7 @@ fn test_all_rank_titles_have_ascii_art() {
 
 #[test]
 fn test_all_tiers_represented() {
-    let titles = RankingTitle::all_titles();
+    let titles = Rank::all_ranks();
 
     let mut tier_counts = std::collections::HashMap::new();
     for title in &titles {
@@ -46,23 +46,23 @@ fn test_all_tiers_represented() {
 
     // Verify all tiers have titles
     assert!(
-        tier_counts.contains_key(&RankingTier::Beginner),
+        tier_counts.contains_key(&RankTier::Beginner),
         "Missing Beginner titles"
     );
     assert!(
-        tier_counts.contains_key(&RankingTier::Intermediate),
+        tier_counts.contains_key(&RankTier::Intermediate),
         "Missing Intermediate titles"
     );
     assert!(
-        tier_counts.contains_key(&RankingTier::Advanced),
+        tier_counts.contains_key(&RankTier::Advanced),
         "Missing Advanced titles"
     );
     assert!(
-        tier_counts.contains_key(&RankingTier::Expert),
+        tier_counts.contains_key(&RankTier::Expert),
         "Missing Expert titles"
     );
     assert!(
-        tier_counts.contains_key(&RankingTier::Legendary),
+        tier_counts.contains_key(&RankTier::Legendary),
         "Missing Legendary titles"
     );
 
@@ -74,11 +74,11 @@ fn test_all_tiers_represented() {
 
 #[test]
 fn test_ascii_art_quality() {
-    let titles = RankingTitle::all_titles();
+    let titles = Rank::all_ranks();
 
     for title in titles.iter().take(10) {
         // Test first 10 titles for performance
-        let ascii_art = get_rank_title_display(title.name());
+        let ascii_art = get_rank_display(title.name());
 
         // Verify minimum quality standards
         assert!(

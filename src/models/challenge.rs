@@ -1,5 +1,5 @@
-use super::stage_builder::DifficultyLevel;
-use crate::extractor::GitRepositoryInfo;
+use super::git_repository::GitRepository;
+use crate::game::stage_builder::DifficultyLevel;
 
 #[derive(Debug, Clone)]
 pub struct Challenge {
@@ -68,7 +68,7 @@ impl Challenge {
         }
     }
 
-    pub fn get_display_title_with_repo(&self, repo_info: &Option<GitRepositoryInfo>) -> String {
+    pub fn get_display_title_with_repo(&self, repo_info: &Option<GitRepository>) -> String {
         if let Some(ref path) = self.source_file_path {
             let relative_path = self.get_relative_path(path);
             let file_info = if let (Some(start), Some(end)) = (self.start_line, self.end_line) {

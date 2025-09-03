@@ -1,4 +1,4 @@
-use super::{RankingTitle, TypingMetrics};
+use crate::models::{Rank, RankTier, StageResult};
 use crate::Result;
 use std::ops::Add;
 use std::time::Instant;
@@ -169,61 +169,61 @@ impl ScoringEngine {
         all_streaks
     }
 
-    /// Get ranking title for current engine state
-    pub fn get_ranking_title(&self) -> RankingTitle {
+    /// Get rank for current engine state
+    pub fn get_rank(&self) -> Rank {
         let score = self.calculate_challenge_score();
-        Self::get_ranking_title_for_score(score)
+        Self::get_rank_for_score(score)
     }
 
-    /// Legacy method that returns title name as string for backward compatibility
-    pub fn get_ranking_title_string(&self) -> String {
-        self.get_ranking_title().name().to_string()
+    /// Get rank name as string
+    pub fn get_rank_name(&self) -> String {
+        self.get_rank().name().to_string()
     }
 
-    /// Get ranking title for a specific score (pure function for testing)
-    pub fn get_ranking_title_for_score(score: f64) -> RankingTitle {
-        RankingTitle::for_score(score)
+    /// Get rank for a specific score (pure function for testing)
+    pub fn get_rank_for_score(score: f64) -> Rank {
+        Rank::for_score(score)
     }
 
     /// Calculate tier position and total for a given score
     pub fn calculate_tier_info(score: f64) -> (String, usize, usize, usize, usize) {
-        let all_titles = RankingTitle::all_titles();
-        let current_title = Self::get_ranking_title_for_score(score);
+        let all_ranks = Rank::all_ranks();
+        let current_rank = Self::get_rank_for_score(score);
 
-        // Find titles in the same tier
-        let same_tier_titles: Vec<_> = all_titles
+        // Find ranks in the same tier
+        let same_tier_ranks: Vec<_> = all_ranks
             .iter()
-            .filter(|title| title.tier() == current_title.tier())
+            .filter(|rank| rank.tier() == current_rank.tier())
             .collect();
 
-        let tier_name = match current_title.tier() {
-            super::RankingTier::Beginner => "Beginner",
-            super::RankingTier::Intermediate => "Intermediate",
-            super::RankingTier::Advanced => "Advanced",
-            super::RankingTier::Expert => "Expert",
-            super::RankingTier::Legendary => "Legendary",
+        let tier_name = match current_rank.tier() {
+            RankTier::Beginner => "Beginner",
+            RankTier::Intermediate => "Intermediate",
+            RankTier::Advanced => "Advanced",
+            RankTier::Expert => "Expert",
+            RankTier::Legendary => "Legendary",
         }
         .to_string();
 
         // Find position within tier (1-based, highest score = rank 1)
-        let tier_position = same_tier_titles
+        let tier_position = same_tier_ranks
             .iter()
             .rev() // Reverse to get highest scores first
-            .position(|title| title.name() == current_title.name())
+            .position(|rank| rank.name() == current_rank.name())
             .map(|pos| pos + 1)
             .unwrap_or(1);
 
-        let tier_total = same_tier_titles.len();
+        let tier_total = same_tier_ranks.len();
 
-        // Find position in all titles (1-based, highest score = rank 1)
-        let overall_position = all_titles
+        // Find position in all ranks (1-based, highest score = rank 1)
+        let overall_position = all_ranks
             .iter()
             .rev() // Reverse to get highest scores first
-            .position(|title| title.name() == current_title.name())
+            .position(|rank| rank.name() == current_rank.name())
             .map(|pos| pos + 1)
             .unwrap_or(1);
 
-        let overall_total = all_titles.len();
+        let overall_total = all_ranks.len();
 
         (
             tier_name,
@@ -234,8 +234,8 @@ impl ScoringEngine {
         )
     }
 
-    /// Legacy method that returns title name as string for a score for backward compatibility
-    pub fn get_ranking_title_string_for_score(score: f64) -> String {
+    /// Get rank name as string for a specific score
+    pub fn get_rank_name_for_score(score: f64) -> String {
         match score as usize {
             // Beginner Level (clean boundaries, ~even progression)
             0..=800 => "Hello World".to_string(),
@@ -312,9 +312,9 @@ impl ScoringEngine {
         }
     }
 
-    /// Get legacy ranking title name for a specific score (deprecated - use get_ranking_title_for_score instead)
-    pub fn get_ranking_title_legacy_for_score(score: f64) -> String {
-        Self::get_ranking_title_for_score(score).name().to_string()
+    /// Get legacy rank name for a specific score (deprecated - use get_rank_for_score instead)
+    pub fn get_rank_name_legacy_for_score(score: f64) -> String {
+        Self::get_rank_for_score(score).name().to_string()
     }
 
     /// Calculate base score from current metrics
@@ -449,19 +449,19 @@ impl ScoringEngine {
         (raw_score * 2.0 + 100.0).max(0.0) // Final scaling + base offset
     }
 
-    pub fn calculate_metrics(&self) -> Result<TypingMetrics> {
-        self.calculate_metrics_with_status(false, false)
+    pub fn calculate_result(&self) -> Result<StageResult> {
+        self.calculate_result_with_status(false, false)
     }
 
-    pub fn calculate_metrics_with_skip_status(&self, was_skipped: bool) -> Result<TypingMetrics> {
-        self.calculate_metrics_with_status(was_skipped, false)
+    pub fn calculate_result_with_skip_status(&self, was_skipped: bool) -> Result<StageResult> {
+        self.calculate_result_with_status(was_skipped, false)
     }
 
-    pub fn calculate_metrics_with_status(
+    pub fn calculate_result_with_status(
         &self,
         was_skipped: bool,
         was_failed: bool,
-    ) -> Result<TypingMetrics> {
+    ) -> Result<StageResult> {
         if self.start_time.is_none() {
             return Err(crate::GitTypeError::TerminalError(
                 "Scoring not started".to_string(),
@@ -469,13 +469,11 @@ impl ScoringEngine {
         }
 
         let challenge_score = self.calculate_challenge_score();
-        let ranking_title = Self::get_ranking_title_for_score(challenge_score)
-            .name()
-            .to_string();
+        let rank_name = Self::get_rank_for_score(challenge_score).name().to_string();
         let (tier_name, tier_position, tier_total, overall_position, overall_total) =
             Self::calculate_tier_info(challenge_score);
 
-        Ok(TypingMetrics {
+        Ok(StageResult {
             cpm: self.cpm(),
             wpm: self.wpm(),
             accuracy: self.accuracy(),
@@ -483,8 +481,8 @@ impl ScoringEngine {
             consistency_streaks: self.all_streaks(),
             completion_time: self.elapsed(),
             challenge_score,
-            ranking_title,
-            ranking_tier: tier_name,
+            rank_name,
+            tier_name,
             tier_position,
             tier_total,
             overall_position,
@@ -496,11 +494,11 @@ impl ScoringEngine {
 
     /// Calculate metrics from current position during real-time typing
     /// This uses the same logic as the full ScoringEngine but works with current state
-    pub fn calculate_real_time_metrics(
+    pub fn calculate_real_time_result(
         current_position: usize,
         mistakes: usize,
         start_time: &std::time::Instant,
-    ) -> TypingMetrics {
+    ) -> StageResult {
         // Create temporary engine with real-time data
         let mut temp_engine = ScoringEngine::new(String::new());
         temp_engine.start_time = Some(*start_time);
@@ -517,13 +515,11 @@ impl ScoringEngine {
         }
 
         let challenge_score = temp_engine.calculate_challenge_score();
-        let ranking_title = Self::get_ranking_title_for_score(challenge_score)
-            .name()
-            .to_string();
+        let rank_name = Self::get_rank_for_score(challenge_score).name().to_string();
         let (tier_name, tier_position, tier_total, overall_position, overall_total) =
             Self::calculate_tier_info(challenge_score);
 
-        TypingMetrics {
+        StageResult {
             cpm: temp_engine.cpm(),
             wpm: temp_engine.wpm(),
             accuracy: temp_engine.accuracy(),
@@ -531,8 +527,8 @@ impl ScoringEngine {
             consistency_streaks: vec![], // Real-time doesn't track actual streaks
             completion_time: temp_engine.elapsed(),
             challenge_score,
-            ranking_title,
-            ranking_tier: tier_name,
+            rank_name,
+            tier_name,
             tier_position,
             tier_total,
             overall_position,

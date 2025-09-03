@@ -55,10 +55,10 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
         .and_then(
             |ProcessingResult {
                  challenges,
-                 git_info,
+                 git_repository,
              }| {
                 let mut stage_manager = StageManager::new(challenges);
-                stage_manager.set_git_info(git_info);
+                stage_manager.set_git_repository(git_repository);
                 stage_manager.run_session()
             },
         );

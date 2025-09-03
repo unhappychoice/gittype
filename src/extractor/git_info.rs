@@ -1,32 +1,24 @@
+use crate::models::GitRepository;
 use crate::Result;
-use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::process::Command;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct GitRepositoryInfo {
-    pub user_name: String,
-    pub repository_name: String,
-    pub remote_url: String,
-    pub branch: Option<String>,
-    pub commit_hash: Option<String>,
-    pub is_dirty: bool,
-}
+// Re-export for backward compatibility - removed duplicate import
 
-pub struct GitInfoExtractor;
+pub struct GitRepositoryExtractor;
 
-impl Default for GitInfoExtractor {
+impl Default for GitRepositoryExtractor {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl GitInfoExtractor {
+impl GitRepositoryExtractor {
     pub fn new() -> Self {
         Self
     }
 
-    pub fn extract_git_info(repo_path: &Path) -> Result<Option<GitRepositoryInfo>> {
+    pub fn extract_git_repository(repo_path: &Path) -> Result<Option<GitRepository>> {
         // Canonicalize the path to handle relative paths like ../../
         let canonical_path = match repo_path.canonicalize() {
             Ok(path) => path,
@@ -48,7 +40,7 @@ impl GitInfoExtractor {
             let commit_hash = Self::get_current_commit_hash(&git_root).ok();
             let is_dirty = Self::is_working_directory_dirty(&git_root).unwrap_or(false);
 
-            Ok(Some(GitRepositoryInfo {
+            Ok(Some(GitRepository {
                 user_name,
                 repository_name,
                 remote_url,

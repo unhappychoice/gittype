@@ -3,7 +3,7 @@ use super::{
     Step, StepResult,
 };
 use crate::game::screens::loading_screen::ProgressReporter;
-use crate::game::Challenge;
+use crate::models::Challenge;
 use crate::Result;
 
 pub struct StepManager {

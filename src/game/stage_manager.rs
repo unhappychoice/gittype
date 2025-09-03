@@ -1,15 +1,15 @@
 use super::{
-    challenge::Challenge,
     screens::{
         exit_summary_screen::ExitAction, session_summary_screen::ResultAction,
-        typing_screen::GameState, CancelScreen, CountdownScreen, ExitSummaryScreen, FailureScreen,
-        SessionSummaryScreen, SharingScreen, TitleAction, TitleScreen, TypingScreen,
+        typing_screen::SessionState, CancelScreen, CountdownScreen, ExitSummaryScreen,
+        FailureScreen, SessionSummaryScreen, SharingScreen, TitleAction, TitleScreen, TypingScreen,
     },
     session_tracker::SessionTracker,
     stage_builder::{DifficultyLevel, GameMode, StageBuilder},
 };
-use crate::extractor::GitRepositoryInfo;
-use crate::scoring::{ScoringEngine, TypingMetrics};
+use crate::models::Challenge;
+use crate::models::GitRepository;
+use crate::scoring::{ScoringEngine, StageResult};
 use crate::Result;
 use crossterm::{
     event::{KeyboardEnhancementFlags, PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags},
@@ -39,7 +39,7 @@ pub struct StageManager {
     stage_engines: Vec<(String, ScoringEngine)>,
     current_game_mode: Option<GameMode>,
     session_tracker: SessionTracker,
-    git_info: Option<GitRepositoryInfo>,
+    git_repository: Option<GitRepository>,
     skips_remaining: usize,
 }
 
@@ -52,13 +52,13 @@ impl StageManager {
             stage_engines: Vec::new(),
             current_game_mode: None,
             session_tracker: SessionTracker::new(),
-            git_info: None,
+            git_repository: None,
             skips_remaining: 3,
         }
     }
 
-    pub fn set_git_info(&mut self, git_info: Option<GitRepositoryInfo>) {
-        self.git_info = git_info;
+    pub fn set_git_repository(&mut self, git_repository: Option<GitRepository>) {
+        self.git_repository = git_repository;
     }
 
     pub fn run_session(&mut self) -> Result<()> {
@@ -98,9 +98,9 @@ impl StageManager {
             // Count challenges by difficulty level
             let challenge_counts = self.count_challenges_by_difficulty();
 
-            match TitleScreen::show_with_challenge_counts_and_git_info(
+            match TitleScreen::show_with_challenge_counts_and_git_repository(
                 &challenge_counts,
-                self.git_info.as_ref(),
+                self.git_repository.as_ref(),
             )? {
                 TitleAction::Start(difficulty) => {
                     // Build stages based on selected difficulty using pre-generated challenges
@@ -172,25 +172,29 @@ impl StageManager {
             // Show countdown before each stage
             if self.current_stage == 0 {
                 // First stage - show initial countdown with challenge info
-                CountdownScreen::show_with_challenge_and_repo(Some(challenge), &self.git_info)?;
+                CountdownScreen::show_with_challenge_and_repo(
+                    Some(challenge),
+                    &self.git_repository,
+                )?;
             } else {
                 // Subsequent stages - show stage transition countdown with challenge info
                 CountdownScreen::show_stage_transition_with_challenge_and_repo(
                     self.current_stage + 1,
                     self.current_challenges.len(),
                     Some(challenge),
-                    &self.git_info,
+                    &self.git_repository,
                 )?;
             }
 
-            let mut screen = TypingScreen::new_with_challenge(challenge, self.git_info.clone())?;
+            let mut screen =
+                TypingScreen::new_with_challenge(challenge, self.git_repository.clone())?;
             screen.set_skips_remaining(self.skips_remaining);
-            let (metrics, final_state) = screen.show_with_state()?;
+            let (stage_result, final_state) = screen.show_with_state()?;
             self.skips_remaining = screen.get_skips_remaining();
 
             // Handle different exit states
             match final_state {
-                GameState::Complete => {
+                SessionState::Complete => {
                     // Normal completion - advance to next stage
                     let stage_name = challenge.get_display_title();
                     let engine = screen.get_scoring_engine().clone();
@@ -201,7 +205,7 @@ impl StageManager {
                     // Track in session tracker
                     self.session_tracker.record_stage_completion(
                         stage_name,
-                        metrics.clone(),
+                        stage_result.clone(),
                         &engine,
                     );
 
@@ -214,7 +218,7 @@ impl StageManager {
                     }
 
                     // Show brief result and auto-advance
-                    if let Some(ResultAction::Quit) = self.show_stage_completion(&metrics)? {
+                    if let Some(ResultAction::Quit) = self.show_stage_completion(&stage_result)? {
                         // Treat as failed - show fail result screen and handle navigation
                         return self.handle_fail_result_navigation();
                     }
@@ -222,11 +226,12 @@ impl StageManager {
                     // Move to next stage
                     self.current_stage += 1;
                 }
-                GameState::Skip => {
+                SessionState::Skip => {
                     // Skipped - record skip and partial effort
                     let engine = screen.get_scoring_engine();
                     self.session_tracker.record_skip();
-                    self.session_tracker.record_partial_effort(engine, &metrics);
+                    self.session_tracker
+                        .record_partial_effort(engine, &stage_result);
 
                     // Update global session tracker
                     {
@@ -236,7 +241,7 @@ impl StageManager {
                         }
                     }
 
-                    if let Some(ResultAction::Quit) = self.show_stage_completion(&metrics)? {
+                    if let Some(ResultAction::Quit) = self.show_stage_completion(&stage_result)? {
                         // Treat as failed - show fail result screen and handle navigation
                         return self.handle_fail_result_navigation();
                     }
@@ -255,7 +260,7 @@ impl StageManager {
                     }
                     // Don't increment current_stage - retry same stage with new challenge
                 }
-                GameState::Failed => {
+                SessionState::Failed => {
                     // Failed - show fail result screen with navigation options
                     let stage_name = challenge.get_display_title();
                     let engine = screen.get_scoring_engine().clone();
@@ -266,7 +271,7 @@ impl StageManager {
                     // Track in session tracker
                     self.session_tracker.record_stage_completion(
                         stage_name,
-                        metrics.clone(),
+                        stage_result.clone(),
                         &engine,
                     );
 
@@ -280,10 +285,11 @@ impl StageManager {
                         return Ok(false);
                     }
                 }
-                GameState::Exit => {
+                SessionState::Exit => {
                     // User wants to exit - record partial effort only
                     let engine = screen.get_scoring_engine();
-                    self.session_tracker.record_partial_effort(engine, &metrics);
+                    self.session_tracker
+                        .record_partial_effort(engine, &stage_result);
 
                     // Update global session tracker with current state
                     {
@@ -303,7 +309,7 @@ impl StageManager {
                         return Ok(false);
                     }
                 }
-                GameState::Continue | GameState::ShowDialog => {
+                SessionState::Continue | SessionState::ShowDialog => {
                     // This shouldn't happen in final state
                     unreachable!("Continue/ShowDialog state should not be final");
                 }
@@ -332,9 +338,11 @@ impl StageManager {
                             .reduce(|acc, engine| acc + engine)
                             .unwrap();
 
-                        if let Ok(session_metrics) = combined_engine.calculate_metrics() {
-                            let _ =
-                                SharingScreen::show_sharing_menu(&session_metrics, &self.git_info);
+                        if let Ok(session_metrics) = combined_engine.calculate_result() {
+                            let _ = SharingScreen::show_sharing_menu(
+                                &session_metrics,
+                                &self.git_repository,
+                            );
                         }
                     }
                     // Continue showing the summary screen after sharing (without animation)
@@ -365,7 +373,7 @@ impl StageManager {
         }
     }
 
-    fn show_stage_completion(&self, metrics: &TypingMetrics) -> Result<Option<ResultAction>> {
+    fn show_stage_completion(&self, stage_result: &StageResult) -> Result<Option<ResultAction>> {
         // Get keystrokes from the latest scoring engine
         let keystrokes = if let Some((_, engine)) = self.stage_engines.last() {
             engine.total_chars()
@@ -374,7 +382,7 @@ impl StageManager {
         };
 
         SessionSummaryScreen::show_stage_completion(
-            metrics,
+            stage_result,
             self.current_stage + 1,
             self.current_challenges.len(),
             self.current_stage < self.current_challenges.len() - 1, // has_next_stage
@@ -396,14 +404,14 @@ impl StageManager {
                 self.current_challenges.len(),
                 self.stage_engines.len(),
                 &self.stage_engines,
-                &self.git_info,
+                &self.git_repository,
             )
         } else {
             SessionSummaryScreen::show_session_summary_with_input_no_animation(
                 self.current_challenges.len(),
                 self.stage_engines.len(),
                 &self.stage_engines,
-                &self.git_info,
+                &self.git_repository,
             )
         }
     }
@@ -424,7 +432,7 @@ impl StageManager {
             self.current_challenges.len(),
             self.stage_engines.len(),
             &self.stage_engines,
-            &self.git_info,
+            &self.git_repository,
         )?;
 
         match action {
@@ -458,7 +466,7 @@ impl StageManager {
             self.current_challenges.len(),
             self.stage_engines.len(),
             &self.stage_engines,
-            &self.git_info,
+            &self.git_repository,
         )?;
 
         match action {

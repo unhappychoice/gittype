@@ -1,5 +1,5 @@
 use crate::extractor::{ExtractionOptions, RepositoryLoader};
-use crate::game::Challenge;
+use crate::models::Challenge;
 use crate::Result;
 use ratatui::style::Color;
 use std::path::PathBuf;

@@ -31,9 +31,7 @@ fn test_scoring_with_metrics(target_cpm: f64, accuracy: f64, mistakes: usize) ->
         total_chars,
     );
 
-    let title = ScoringEngine::get_ranking_title_for_score(score)
-        .name()
-        .to_string();
+    let title = ScoringEngine::get_rank_for_score(score).name().to_string();
 
     ScoringTestResult {
         actual_cpm: target_cpm,
@@ -221,23 +219,21 @@ mod basic_functionality_tests {
         engine.finish();
         assert!(engine.is_finished());
 
-        let metrics = engine
-            .calculate_metrics()
-            .expect("Should calculate metrics");
+        let metrics = engine.calculate_result().expect("Should calculate result");
 
         assert_eq!(engine.correct_chars(), 5);
         assert_eq!(engine.mistakes(), 1);
         assert_eq!(engine.total_chars(), 6);
         assert!(metrics.cpm > 0.0);
         assert!(metrics.accuracy > 0.0 && metrics.accuracy <= 100.0);
-        assert!(!metrics.ranking_title.is_empty());
+        assert!(!metrics.rank_name.is_empty());
 
         println!(
             "Lifecycle test: {} correct, {} mistakes, CPM: {:.1}, Title: {}",
             engine.correct_chars(),
             engine.mistakes(),
             metrics.cpm,
-            metrics.ranking_title
+            metrics.rank_name
         );
     }
 
@@ -261,20 +257,20 @@ mod basic_functionality_tests {
 
         let combined = engine1 + engine2;
         let combined_metrics = combined
-            .calculate_metrics()
-            .expect("Should calculate combined metrics");
+            .calculate_result()
+            .expect("Should calculate combined result");
 
         assert_eq!(combined.correct_chars(), 6); // 4 + 2
         assert_eq!(combined.mistakes(), 1);
         assert!(combined_metrics.challenge_score > 0.0);
-        assert!(!combined_metrics.ranking_title.is_empty());
+        assert!(!combined_metrics.rank_name.is_empty());
 
         println!(
             "Combination test: {} total correct, {} total mistakes, Score: {:.0}, Title: {}",
             combined.correct_chars(),
             combined.mistakes(),
             combined_metrics.challenge_score,
-            combined_metrics.ranking_title
+            combined_metrics.rank_name
         );
     }
 }

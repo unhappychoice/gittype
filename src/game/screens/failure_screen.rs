@@ -1,6 +1,6 @@
 use crate::game::screens::session_summary_screen::ResultAction;
 use crate::scoring::ScoringEngine;
-use crate::{extractor::GitRepositoryInfo, Result};
+use crate::{models::GitRepository, Result};
 use crossterm::{
     cursor::MoveTo,
     event::{self, Event, KeyCode, KeyModifiers},
@@ -17,7 +17,7 @@ impl FailureScreen {
         total_stages: usize,
         completed_stages: usize,
         stage_engines: &[(String, ScoringEngine)],
-        _repo_info: &Option<GitRepositoryInfo>,
+        _repo_info: &Option<GitRepository>,
     ) -> Result<ResultAction> {
         let mut stdout = stdout();
 
@@ -56,7 +56,7 @@ impl FailureScreen {
         if !stage_engines.is_empty() {
             let last_engine = &stage_engines.last().unwrap().1;
             let metrics = last_engine
-                .calculate_metrics_with_status(false, true)
+                .calculate_result_with_status(false, true)
                 .unwrap();
 
             let metrics_text = format!(

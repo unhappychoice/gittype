@@ -1,11 +1,11 @@
 use super::{
-    super::{
-        challenge::Challenge, display_ratatui::GameDisplayRatatui, text_processor::TextProcessor,
-    },
+    super::{stage_renderer::StageRenderer, text_processor::TextProcessor},
     CountdownScreen,
 };
-use crate::scoring::{engine::ScoringEngine, TypingMetrics};
-use crate::{extractor::GitRepositoryInfo, Result};
+use crate::models::Challenge;
+use crate::models::StageResult;
+use crate::scoring::engine::ScoringEngine;
+use crate::{models::GitRepository, Result};
 use crossterm::{
     event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers},
     terminal,
@@ -22,16 +22,16 @@ pub struct TypingScreen {
     comment_ranges: Vec<(usize, usize)>,
     mistake_positions: Vec<usize>,
     current_mistake_position: Option<usize>,
-    display: GameDisplayRatatui,
+    renderer: StageRenderer,
     scoring_engine: ScoringEngine,
     skips_remaining: usize,
     #[allow(dead_code)]
     last_esc_time: Option<std::time::Instant>,
     dialog_shown: bool,
-    repo_info: Option<GitRepositoryInfo>,
+    repo_info: Option<GitRepository>,
 }
 
-pub enum GameState {
+pub enum SessionState {
     Continue,
     Complete,
     Exit,
@@ -41,7 +41,7 @@ pub enum GameState {
 }
 
 impl TypingScreen {
-    pub fn new(challenge_text: String, repo_info: Option<GitRepositoryInfo>) -> Result<Self> {
+    pub fn new(challenge_text: String, repo_info: Option<GitRepository>) -> Result<Self> {
         let processed_text = TextProcessor::process_challenge_text(&challenge_text);
         let challenge_chars: Vec<char> = processed_text.chars().collect();
         let line_starts = TextProcessor::calculate_line_starts(&processed_text);
@@ -51,7 +51,7 @@ impl TypingScreen {
             0,
             &comment_ranges,
         );
-        let display = GameDisplayRatatui::new(&processed_text)?;
+        let renderer = StageRenderer::new(&processed_text)?;
         let mut scoring_engine = ScoringEngine::new(processed_text.clone());
         scoring_engine.start(); // Start timing immediately
 
@@ -66,7 +66,7 @@ impl TypingScreen {
             comment_ranges,
             mistake_positions: Vec::new(),
             current_mistake_position: None,
-            display,
+            renderer,
             scoring_engine,
             skips_remaining: 3,
             last_esc_time: None,
@@ -77,7 +77,7 @@ impl TypingScreen {
 
     pub fn new_with_challenge(
         challenge: &Challenge,
-        repo_info: Option<GitRepositoryInfo>,
+        repo_info: Option<GitRepository>,
     ) -> Result<Self> {
         // Apply basic text processing (remove empty lines, etc.)
         // Indentation normalization is already done in extractor
@@ -94,7 +94,7 @@ impl TypingScreen {
             0,
             &mapped_comment_ranges,
         );
-        let display = GameDisplayRatatui::new(&processed_text)?;
+        let renderer = StageRenderer::new(&processed_text)?;
         let mut scoring_engine = ScoringEngine::new(processed_text.clone());
         scoring_engine.start(); // Start timing immediately
 
@@ -109,7 +109,7 @@ impl TypingScreen {
             comment_ranges: mapped_comment_ranges,
             mistake_positions: Vec::new(),
             current_mistake_position: None,
-            display,
+            renderer,
             scoring_engine,
             skips_remaining: 3,
             last_esc_time: None,
@@ -118,7 +118,7 @@ impl TypingScreen {
         })
     }
 
-    pub fn start_session(&mut self) -> Result<TypingMetrics> {
+    pub fn start_session(&mut self) -> Result<StageResult> {
         match terminal::enable_raw_mode() {
             Ok(_) => {}
             Err(e) => {
@@ -135,7 +135,7 @@ impl TypingScreen {
         // Reset start time after countdown
         self.start_time = std::time::Instant::now();
 
-        self.display.display_challenge_with_info(
+        self.renderer.display_challenge_with_info(
             &self.challenge_text,
             self.current_position,
             self.mistakes,
@@ -154,24 +154,24 @@ impl TypingScreen {
             if event::poll(std::time::Duration::from_millis(100))? {
                 if let Event::Key(key_event) = event::read()? {
                     match self.handle_key(key_event)? {
-                        GameState::Continue => {
+                        SessionState::Continue => {
                             self.update_display()?;
                         }
-                        GameState::Complete => {
+                        SessionState::Complete => {
                             break;
                         }
-                        GameState::Exit => {
+                        SessionState::Exit => {
                             break;
                         }
-                        GameState::Skip => {
+                        SessionState::Skip => {
                             // Mark challenge as skipped and complete
                             break;
                         }
-                        GameState::Failed => {
+                        SessionState::Failed => {
                             // Mark challenge as failed and complete
                             break;
                         }
-                        GameState::ShowDialog => {
+                        SessionState::ShowDialog => {
                             // Dialog was opened, update display to show dialog
                             self.update_display()?;
                         }
@@ -180,18 +180,18 @@ impl TypingScreen {
             }
         }
 
-        self.display.cleanup()?;
+        self.renderer.cleanup()?;
 
         crate::game::stage_manager::cleanup_terminal();
         self.scoring_engine.finish(); // Record final duration
-        Ok(self.calculate_metrics())
+        Ok(self.calculate_result())
     }
 
-    pub fn show(&mut self) -> Result<TypingMetrics> {
+    pub fn show(&mut self) -> Result<StageResult> {
         // For stage manager - assumes raw mode is already enabled
         self.start_time = std::time::Instant::now();
 
-        self.display.display_challenge_with_info(
+        self.renderer.display_challenge_with_info(
             &self.challenge_text,
             self.current_position,
             self.mistakes,
@@ -210,24 +210,24 @@ impl TypingScreen {
             if event::poll(std::time::Duration::from_millis(100))? {
                 if let Event::Key(key_event) = event::read()? {
                     match self.handle_key(key_event)? {
-                        GameState::Continue => {
+                        SessionState::Continue => {
                             self.update_display()?;
                         }
-                        GameState::Complete => {
+                        SessionState::Complete => {
                             break;
                         }
-                        GameState::Exit => {
+                        SessionState::Exit => {
                             break;
                         }
-                        GameState::Skip => {
+                        SessionState::Skip => {
                             // Mark challenge as skipped and complete
                             break;
                         }
-                        GameState::Failed => {
+                        SessionState::Failed => {
                             // Mark challenge as failed and complete
                             break;
                         }
-                        GameState::ShowDialog => {
+                        SessionState::ShowDialog => {
                             // Dialog was opened, update display to show dialog
                             self.update_display()?;
                         }
@@ -237,14 +237,14 @@ impl TypingScreen {
         }
 
         self.scoring_engine.finish(); // Record final duration
-        Ok(self.calculate_metrics())
+        Ok(self.calculate_result())
     }
 
-    pub fn show_with_state(&mut self) -> Result<(TypingMetrics, GameState)> {
+    pub fn show_with_state(&mut self) -> Result<(StageResult, SessionState)> {
         // For stage manager - assumes raw mode is already enabled
         self.start_time = std::time::Instant::now();
 
-        self.display.display_challenge_with_info(
+        self.renderer.display_challenge_with_info(
             &self.challenge_text,
             self.current_position,
             self.mistakes,
@@ -263,16 +263,16 @@ impl TypingScreen {
             if event::poll(std::time::Duration::from_millis(100))? {
                 if let Event::Key(key_event) = event::read()? {
                     match self.handle_key(key_event)? {
-                        GameState::Continue => {
+                        SessionState::Continue => {
                             self.update_display()?;
                         }
-                        GameState::ShowDialog => {
+                        SessionState::ShowDialog => {
                             self.update_display()?;
                         }
-                        state @ (GameState::Complete
-                        | GameState::Exit
-                        | GameState::Skip
-                        | GameState::Failed) => {
+                        state @ (SessionState::Complete
+                        | SessionState::Exit
+                        | SessionState::Skip
+                        | SessionState::Failed) => {
                             break state;
                         }
                     }
@@ -281,13 +281,13 @@ impl TypingScreen {
         };
 
         self.scoring_engine.finish(); // Record final duration
-        Ok((self.calculate_metrics_with_state(&final_state), final_state))
+        Ok((self.calculate_result_with_state(&final_state), final_state))
     }
 
-    fn handle_key(&mut self, key_event: KeyEvent) -> Result<GameState> {
+    fn handle_key(&mut self, key_event: KeyEvent) -> Result<SessionState> {
         // Only process key press events, ignore release/repeat
         if !matches!(key_event.kind, KeyEventKind::Press) {
-            return Ok(GameState::Continue);
+            return Ok(SessionState::Continue);
         }
 
         match key_event.code {
@@ -296,12 +296,12 @@ impl TypingScreen {
                     // Dialog is shown, Esc closes it
                     self.dialog_shown = false;
                     self.scoring_engine.resume();
-                    Ok(GameState::Continue)
+                    Ok(SessionState::Continue)
                 } else {
                     // No dialog, show Skip/Quit dialog
                     self.dialog_shown = true;
                     self.scoring_engine.pause();
-                    Ok(GameState::ShowDialog)
+                    Ok(SessionState::ShowDialog)
                 }
             }
             KeyCode::Char('s') | KeyCode::Char('S') => {
@@ -310,9 +310,9 @@ impl TypingScreen {
                     self.scoring_engine.resume();
                     if self.skips_remaining > 0 {
                         self.skips_remaining -= 1;
-                        Ok(GameState::Skip)
+                        Ok(SessionState::Skip)
                     } else {
-                        Ok(GameState::Continue)
+                        Ok(SessionState::Continue)
                     }
                 } else {
                     // Normal typing - handle as character input with actual character
@@ -328,7 +328,7 @@ impl TypingScreen {
                 if self.dialog_shown {
                     self.dialog_shown = false;
                     self.scoring_engine.resume();
-                    Ok(GameState::Failed)
+                    Ok(SessionState::Failed)
                 } else {
                     // Normal typing - handle as character input with actual character
                     let ch = if key_event.code == KeyCode::Char('Q') {
@@ -341,14 +341,14 @@ impl TypingScreen {
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
                 // Show session summary and exit
-                Ok(GameState::Exit)
+                Ok(SessionState::Exit)
             }
             KeyCode::Char(ch) => {
                 if self.dialog_shown {
                     // Dialog is shown, any other char closes it
                     self.dialog_shown = false;
                     self.scoring_engine.resume();
-                    Ok(GameState::Continue)
+                    Ok(SessionState::Continue)
                 } else {
                     // Normal typing
                     self.handle_character_input(ch, key_event)
@@ -374,7 +374,7 @@ impl TypingScreen {
                         // Skip over any non-typeable characters (comments, whitespace)
                         self.advance_to_next_typeable_character();
                         if self.current_position >= self.challenge_text.len() {
-                            return Ok(GameState::Complete);
+                            return Ok(SessionState::Complete);
                         }
                     } else {
                         self.mistakes += 1;
@@ -382,7 +382,7 @@ impl TypingScreen {
                         self.current_mistake_position = Some(self.current_position);
                     }
                 }
-                Ok(GameState::Continue)
+                Ok(SessionState::Continue)
             }
             KeyCode::Enter => {
                 // Auto-advance when reaching end of line (after last code character)
@@ -399,7 +399,7 @@ impl TypingScreen {
                         self.current_mistake_position = None;
                         self.advance_to_next_line()?;
                         if self.current_position >= self.challenge_text.len() {
-                            return Ok(GameState::Complete);
+                            return Ok(SessionState::Complete);
                         }
                     } else {
                         self.mistakes += 1;
@@ -407,7 +407,7 @@ impl TypingScreen {
                         self.current_mistake_position = Some(self.current_position);
                     }
                 }
-                Ok(GameState::Continue)
+                Ok(SessionState::Continue)
             }
             // Handle any other key
             _ => {
@@ -415,13 +415,13 @@ impl TypingScreen {
                     self.dialog_shown = false;
                     self.scoring_engine.resume();
                 }
-                Ok(GameState::Continue)
+                Ok(SessionState::Continue)
             }
         }
     }
 
     fn update_display(&mut self) -> Result<()> {
-        self.display.display_challenge_with_info(
+        self.renderer.display_challenge_with_info(
             &self.challenge_text,
             self.current_position,
             self.mistakes,
@@ -464,19 +464,19 @@ impl TypingScreen {
         Ok(())
     }
 
-    fn calculate_metrics(&self) -> TypingMetrics {
+    fn calculate_result(&self) -> StageResult {
         let was_skipped = self.was_skipped();
         let was_failed = self.was_failed();
         self.scoring_engine
-            .calculate_metrics_with_status(was_skipped, was_failed)
+            .calculate_result_with_status(was_skipped, was_failed)
             .unwrap()
     }
 
-    pub fn calculate_metrics_with_state(&self, state: &GameState) -> TypingMetrics {
-        let was_skipped = matches!(state, GameState::Skip);
-        let was_failed = matches!(state, GameState::Failed);
+    pub fn calculate_result_with_state(&self, state: &SessionState) -> StageResult {
+        let was_skipped = matches!(state, SessionState::Skip);
+        let was_failed = matches!(state, SessionState::Failed);
         self.scoring_engine
-            .calculate_metrics_with_status(was_skipped, was_failed)
+            .calculate_result_with_status(was_skipped, was_failed)
             .unwrap()
     }
 
@@ -502,7 +502,7 @@ impl TypingScreen {
         false // For now, we'll handle this in stage manager
     }
 
-    fn handle_character_input(&mut self, ch: char, _key_event: KeyEvent) -> Result<GameState> {
+    fn handle_character_input(&mut self, ch: char, _key_event: KeyEvent) -> Result<SessionState> {
         if self.current_position < self.challenge_chars.len() {
             let expected_char = self.challenge_chars[self.current_position];
             let is_correct = ch == expected_char;
@@ -517,7 +517,7 @@ impl TypingScreen {
                 // Skip over any non-typeable characters (comments, whitespace)
                 self.advance_to_next_typeable_character();
                 if self.current_position >= self.challenge_chars.len() {
-                    return Ok(GameState::Complete);
+                    return Ok(SessionState::Complete);
                 }
             } else {
                 self.mistakes += 1;
@@ -525,7 +525,7 @@ impl TypingScreen {
                 self.current_mistake_position = Some(self.current_position);
             }
         }
-        Ok(GameState::Continue)
+        Ok(SessionState::Continue)
     }
 
     fn advance_to_next_typeable_character(&mut self) {

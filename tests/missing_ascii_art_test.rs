@@ -1,15 +1,15 @@
-use gittype::game::ascii_rank_titles_generated::get_rank_title_display;
-use gittype::scoring::RankingTitle;
+use gittype::game::ascii_rank_titles_generated::get_rank_display;
+use gittype::models::Rank;
 
 #[test]
 fn test_identify_missing_ascii_art() {
-    let titles = RankingTitle::all_titles();
+    let titles = Rank::all_ranks();
 
     let mut missing_art = Vec::new();
     let mut has_art = Vec::new();
 
     for title in &titles {
-        let ascii_art = get_rank_title_display(title.name());
+        let ascii_art = get_rank_display(title.name());
 
         if ascii_art.len() == 1 && ascii_art[0] == title.name() {
             // This is fallback behavior - no actual ASCII art

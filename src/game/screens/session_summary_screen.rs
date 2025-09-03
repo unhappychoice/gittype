@@ -1,7 +1,7 @@
 use crate::game::ascii_digits::get_digit_patterns;
-use crate::game::ascii_rank_titles_generated::get_rank_title_display;
-use crate::scoring::{RankingTitle, ScoringEngine, TypingMetrics};
-use crate::{extractor::GitRepositoryInfo, Result};
+use crate::game::ascii_rank_titles_generated::get_rank_display;
+use crate::scoring::{Rank, ScoringEngine, StageResult};
+use crate::{models::GitRepository, Result};
 use crossterm::{
     cursor::MoveTo,
     event::{self, Event, KeyCode, KeyModifiers},
@@ -66,7 +66,7 @@ impl SessionSummaryScreen {
     }
 
     pub fn show_stage_completion(
-        metrics: &TypingMetrics,
+        metrics: &StageResult,
         current_stage: usize,
         total_stages: usize,
         has_next_stage: bool,
@@ -171,9 +171,7 @@ impl SessionSummaryScreen {
             } else {
                 execute!(
                     stdout,
-                    SetForegroundColor(
-                        RankingTitle::for_score(metrics.challenge_score).terminal_color()
-                    )
+                    SetForegroundColor(Rank::for_score(metrics.challenge_score).terminal_color())
                 )?;
             }
             execute!(stdout, Print(line))?;
@@ -286,7 +284,7 @@ impl SessionSummaryScreen {
         _total_stages: usize,
         _completed_stages: usize,
         stage_engines: &[(String, ScoringEngine)],
-        repo_info: &Option<GitRepositoryInfo>,
+        repo_info: &Option<GitRepository>,
     ) -> Result<()> {
         let mut stdout = stdout();
 
@@ -314,7 +312,7 @@ impl SessionSummaryScreen {
             .reduce(|acc, engine| acc + engine)
             .unwrap(); // Safe because we checked is_empty() above
 
-        let session_metrics = match combined_engine.calculate_metrics() {
+        let session_metrics = match combined_engine.calculate_result() {
             Ok(metrics) => metrics,
             Err(_) => {
                 // Fallback if calculation fails
@@ -322,12 +320,12 @@ impl SessionSummaryScreen {
             }
         };
 
-        // Display ranking title as large ASCII art at the top
-        let rank_title_lines = get_rank_title_display(&session_metrics.ranking_title);
-        let rank_title_height = rank_title_lines.len() as u16;
+        // Display rank as large ASCII art at the top
+        let rank_lines = get_rank_display(&session_metrics.rank_name);
+        let rank_height = rank_lines.len() as u16;
 
         // Calculate total content height and center vertically
-        let total_content_height = 4 + rank_title_height + 1 + 3 + 1 + 4 + 2 + 2; // session_title_space + rank + tier + gap_after_tier + label + score + gap + summary
+        let total_content_height = 4 + rank_height + 1 + 3 + 1 + 4 + 2 + 2; // session_title_space + rank + tier + gap_after_tier + label + score + gap + summary
         let rank_start_row = if total_content_height < terminal_height {
             center_row.saturating_sub(total_content_height / 2)
         } else {
@@ -346,7 +344,7 @@ impl SessionSummaryScreen {
         execute!(stdout, Print(session_title))?;
         execute!(stdout, ResetColor)?;
 
-        // Display "you're:" label before rank title (1 line gap from rank title)
+        // Display "you're:" label before rank (1 line gap from rank)
         let youre_label = "YOU'RE:";
         let youre_col = center_col.saturating_sub(youre_label.len() as u16 / 2);
         execute!(stdout, MoveTo(youre_col, rank_start_row.saturating_sub(1)))?;
@@ -358,7 +356,7 @@ impl SessionSummaryScreen {
         execute!(stdout, Print(youre_label))?;
         execute!(stdout, ResetColor)?;
 
-        for (row_index, line) in rank_title_lines.iter().enumerate() {
+        for (row_index, line) in rank_lines.iter().enumerate() {
             // Calculate actual display width without ANSI codes for centering
             let display_width = Self::calculate_display_width(line);
             let line_col = center_col.saturating_sub(display_width / 2);
@@ -367,11 +365,11 @@ impl SessionSummaryScreen {
             execute!(stdout, ResetColor)?;
         }
 
-        // Display tier information right after rank title (small gap after rank title)
-        let tier_info_row = rank_start_row + rank_title_height + 1;
+        // Display tier information right after rank (small gap after rank)
+        let tier_info_row = rank_start_row + rank_height + 1;
         let tier_info = format!(
-            "{} tier - rank {}/{} (overall {}/{})",
-            session_metrics.ranking_tier,
+            "{} tier - {}/{} (overall {}/{})",
+            session_metrics.tier_name,
             session_metrics.tier_position,
             session_metrics.tier_total,
             session_metrics.overall_position,
@@ -382,7 +380,7 @@ impl SessionSummaryScreen {
         execute!(stdout, SetAttribute(Attribute::Bold))?;
 
         // Set color based on tier
-        let tier_color = match session_metrics.ranking_tier.as_str() {
+        let tier_color = match session_metrics.tier_name.as_str() {
             "Beginner" => Color::Blue,
             "Intermediate" => Color::Green,
             "Advanced" => Color::Cyan,
@@ -394,8 +392,8 @@ impl SessionSummaryScreen {
         execute!(stdout, Print(&tier_info))?;
         execute!(stdout, ResetColor)?;
 
-        // Calculate score position based on rank title height and tier info (add extra gap after tier info)
-        let score_label_row = rank_start_row + rank_title_height + 4;
+        // Calculate score position based on rank height and tier info (add extra gap after tier info)
+        let score_label_row = rank_start_row + rank_height + 4;
 
         // Display "SCORE" label in normal text with color
         let score_label = "SESSION SCORE";
@@ -421,7 +419,7 @@ impl SessionSummaryScreen {
                 stdout,
                 SetAttribute(Attribute::Bold),
                 SetForegroundColor(
-                    RankingTitle::for_score(session_metrics.challenge_score).terminal_color()
+                    Rank::for_score(session_metrics.challenge_score).terminal_color()
                 )
             )?;
             execute!(stdout, Print(line))?;
@@ -540,7 +538,7 @@ impl SessionSummaryScreen {
         total_stages: usize,
         completed_stages: usize,
         stage_engines: &[(String, ScoringEngine)],
-        repo_info: &Option<GitRepositoryInfo>,
+        repo_info: &Option<GitRepository>,
     ) -> Result<ResultAction> {
         Self::show_session_summary_with_input_internal(
             total_stages,
@@ -555,7 +553,7 @@ impl SessionSummaryScreen {
         total_stages: usize,
         completed_stages: usize,
         stage_engines: &[(String, ScoringEngine)],
-        repo_info: &Option<GitRepositoryInfo>,
+        repo_info: &Option<GitRepository>,
     ) -> Result<ResultAction> {
         Self::show_session_summary_with_input_internal(
             total_stages,
@@ -570,7 +568,7 @@ impl SessionSummaryScreen {
         total_stages: usize,
         completed_stages: usize,
         stage_engines: &[(String, ScoringEngine)],
-        repo_info: &Option<GitRepositoryInfo>,
+        repo_info: &Option<GitRepository>,
         show_animation: bool,
     ) -> Result<ResultAction> {
         use crate::game::screens::AnimationScreen;

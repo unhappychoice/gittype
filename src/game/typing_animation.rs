@@ -1,4 +1,4 @@
-use crate::scoring::RankingTier;
+use crate::models::RankTier;
 use crossterm::style::Color;
 use std::time::{Duration, Instant};
 
@@ -29,7 +29,7 @@ pub struct TypingAnimation {
 }
 
 impl TypingAnimation {
-    pub fn new(_tier: RankingTier, _terminal_width: u16, _terminal_height: u16) -> Self {
+    pub fn new(_tier: RankTier, _terminal_width: u16, _terminal_height: u16) -> Self {
         Self {
             phase: AnimationPhase::ConcentrationLines,
             phase_start: Instant::now(),
@@ -39,9 +39,9 @@ impl TypingAnimation {
         }
     }
 
-    pub fn set_rank_messages(&mut self, ranking_title: &str) {
+    pub fn set_rank_messages(&mut self, rank_name: &str) {
         use crate::game::rank_messages::get_colored_messages_for_rank;
-        let colored_messages = get_colored_messages_for_rank(ranking_title);
+        let colored_messages = get_colored_messages_for_rank(rank_name);
         self.hacking_lines = colored_messages
             .into_iter()
             .map(|msg| HackingLine {

@@ -1,5 +1,5 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
-use crate::repo_manager::RepoManager;
+use crate::repository_manager::RepositoryManager;
 use crate::Result;
 use ratatui::style::Color;
 
@@ -49,20 +49,21 @@ impl Step for CloningStep {
 
     fn execute(&self, context: &mut ExecutionContext) -> Result<StepResult> {
         if let Some(repo_spec) = context.repo_spec {
-            let repo_info = RepoManager::parse_repo_url(repo_spec)?;
+            let repo_info = RepositoryManager::parse_repo_url(repo_spec)?;
 
             // Clone repository
-            let repo_path = RepoManager::clone_or_update_repo(&repo_info, context.loading_screen)?;
+            let repo_path =
+                RepositoryManager::clone_or_update_repo(&repo_info, context.loading_screen)?;
 
             // Extract actual git info from cloned repository and set it in loading screen
             if let Some(screen) = context.loading_screen {
-                if let Ok(Some(git_info)) =
-                    crate::extractor::GitInfoExtractor::extract_git_info(&repo_path)
+                if let Ok(Some(git_repository)) =
+                    crate::extractor::GitRepositoryExtractor::extract_git_repository(&repo_path)
                 {
-                    let _ = screen.set_git_info(&git_info);
+                    let _ = screen.set_git_repository(&git_repository);
                 } else {
                     // Fallback to basic info from RepoInfo if git extraction fails
-                    let git_info = crate::extractor::GitRepositoryInfo {
+                    let git_repository = crate::models::GitRepository {
                         user_name: repo_info.owner.clone(),
                         repository_name: repo_info.name.clone(),
                         remote_url: format!(
@@ -73,7 +74,7 @@ impl Step for CloningStep {
                         commit_hash: None,
                         is_dirty: false,
                     };
-                    let _ = screen.set_git_info(&git_info);
+                    let _ = screen.set_git_repository(&git_repository);
                 }
             }
 
