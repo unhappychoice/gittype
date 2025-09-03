@@ -4,33 +4,48 @@ use std::path::PathBuf;
 #[derive(Parser)]
 #[command(name = "gittype")]
 #[command(
-    about = "A typing practice tool using your own code repositories - extracts all code chunks (functions, classes, methods, etc.)"
+    about = "A typing practice tool using your own code repositories - extracts all code chunks (functions, classes, methods, etc.)",
+    long_about = "GitType turns your own source code into typing challenges. \
+                  Practice typing by using functions, classes, and methods from your actual projects. \
+                  \n\nExamples:\n  \
+                  gittype                           # Use current directory\n  \
+                  gittype /path/to/repo             # Use specific repository\n  \
+                  gittype --repo owner/repo         # Clone and use GitHub repository\n  \
+                  gittype --langs rust,python       # Filter by languages"
 )]
-#[command(version = "0.1.0")]
+#[command(version = env!("CARGO_PKG_VERSION"))]
 pub struct Cli {
-    /// Repository path to extract code from
-    #[arg(value_name = "REPO_PATH")]
+    /// Repository path to extract code from (defaults to current directory if not specified)
+    #[arg(
+        value_name = "REPO_PATH",
+        help = "Repository path to extract code from"
+    )]
     pub repo_path: Option<PathBuf>,
 
-    /// GitHub repository URL or path to clone and play with (e.g., owner/repo, https://github.com/owner/repo, git@github.com:owner/repo.git)
-    #[arg(long)]
+    /// GitHub repository URL or path to clone and play with
+    #[arg(
+        long,
+        help = "GitHub repository URL or path to clone and play with",
+        long_help = "GitHub repository URL or path to clone and play with. \
+                     Supports formats:\n  \
+                     - owner/repo\n  \
+                     - https://github.com/owner/repo\n  \
+                     - git@github.com:owner/repo.git"
+    )]
     pub repo: Option<String>,
 
-    /// Filter by programming languages
-    #[arg(long, value_delimiter = ',')]
+    /// Filter by programming languages (comma-separated)
+    #[arg(
+        long,
+        value_delimiter = ',',
+        help = "Filter by programming languages (comma-separated)",
+        long_help = "Filter by programming languages (comma-separated). \
+                     Supported languages:\n  \
+                     rust, typescript, javascript, python, ruby, go, swift, \
+                     kotlin, java, php, csharp, c, cpp, haskell, dart\n  \
+                     Example: --langs rust,python,typescript"
+    )]
     pub langs: Option<Vec<String>>,
-
-    /// Number of stages for normal mode
-    #[arg(long, default_value_t = 3)]
-    pub stages: usize,
-
-    /// Glob patterns for files to include
-    #[arg(long)]
-    pub include: Option<Vec<String>>,
-
-    /// Glob patterns for files to exclude
-    #[arg(long)]
-    pub exclude: Option<Vec<String>>,
 
     /// Path to config file
     #[arg(long)]
