@@ -1,4 +1,4 @@
-use gittype::game::ascii_rank_titles_generated::get_rank_title_display;
+use gittype::game::ascii_rank_titles_generated::get_rank_display;
 use gittype::models::{RankTier, Rank};
 
 #[test]
@@ -6,7 +6,7 @@ fn test_all_rank_titles_have_ascii_art() {
     let titles = Rank::all_ranks();
 
     for title in &titles {
-        let ascii_art = get_rank_title_display(title.name());
+        let ascii_art = get_rank_display(title.name());
 
         // Verify ASCII art exists (not empty)
         assert!(
@@ -78,7 +78,7 @@ fn test_ascii_art_quality() {
 
     for title in titles.iter().take(10) {
         // Test first 10 titles for performance
-        let ascii_art = get_rank_title_display(title.name());
+        let ascii_art = get_rank_display(title.name());
 
         // Verify minimum quality standards
         assert!(

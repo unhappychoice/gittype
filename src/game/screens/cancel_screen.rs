@@ -68,7 +68,7 @@ impl CancelScreen {
                         completion_time: std::time::Duration::new(0, 0),
                         challenge_score: 0.0,
                         rank_name: "Unranked".to_string(),
-                        rank: "Beginner".to_string(),
+                        tier_name: "Beginner".to_string(),
                         tier_position: 0,
                         tier_total: 0,
                         overall_position: 0,

@@ -42,7 +42,7 @@ impl RankTier {
 }
 
 impl Rank {
-    /// Create a new ranking title
+    /// Create a new rank
     pub fn new(name: impl Into<String>, tier: RankTier, min_score: u32, max_score: u32) -> Self {
         Self {
             name: name.into(),
@@ -52,7 +52,7 @@ impl Rank {
         }
     }
 
-    /// Get the display name of the ranking title
+    /// Get the display name of the rank
     pub fn name(&self) -> &str {
         &self.name
     }
@@ -63,7 +63,7 @@ impl Rank {
         &self.tier
     }
 
-    /// Check if a score falls within this ranking title's range
+    /// Check if a score falls within this rank's range
     #[allow(dead_code)]
     pub fn contains_score(&self, score: f64) -> bool {
         let score = score as u32;
@@ -75,7 +75,7 @@ impl Rank {
         self.tier.color_palette()
     }
 
-    /// Get the terminal color for this ranking title
+    /// Get the terminal color for this rank
     pub fn terminal_color(&self) -> crossterm::style::Color {
         self.tier.terminal_color()
     }
@@ -154,14 +154,14 @@ impl Rank {
         ]
     }
 
-    /// Find the ranking title for a given score
+    /// Find the rank for a given score
     #[allow(dead_code)]
     pub fn for_score(score: f64) -> Rank {
         Self::all_ranks()
             .into_iter()
-            .find(|title| title.contains_score(score))
+            .find(|rank| rank.contains_score(score))
             .unwrap_or_else(|| {
-                // Fallback to highest title if score exceeds all ranges
+                // Fallback to highest rank if score exceeds all ranges
                 Rank::new("Kernel Panic", RankTier::Legendary, 40001, u32::MAX)
             })
     }

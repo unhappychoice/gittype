@@ -700,10 +700,10 @@ pub fn get_all_rank_patterns() -> HashMap<String, Vec<String>> {
     patterns
 }
 
-pub fn get_rank_title_display(rank_title: &str) -> Vec<String> {
+pub fn get_rank_display(rank_name: &str) -> Vec<String> {
     let patterns = get_all_rank_patterns();
     patterns
-        .get(rank_title)
+        .get(rank_name)
         .cloned()
-        .unwrap_or_else(|| vec![rank_title.to_string()])
+        .unwrap_or_else(|| vec![rank_name.to_string()])
 }

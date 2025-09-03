@@ -52,7 +52,7 @@ impl ExitSummaryScreen {
             completion_time: session_summary.total_session_time,
             challenge_score: session_summary.session_score,
             rank_name: ranking_title,
-            rank: tier_name,
+            tier_name,
             tier_position,
             tier_total,
             overall_position,

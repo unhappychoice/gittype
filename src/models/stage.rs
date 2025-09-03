@@ -17,7 +17,7 @@ pub struct StageResult {
     pub completion_time: Duration,
     pub challenge_score: f64,
     pub rank_name: String,
-    pub rank: String,
+    pub tier_name: String,
     pub tier_position: usize,
     pub tier_total: usize,
     pub overall_position: usize,

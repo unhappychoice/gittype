@@ -1,5 +1,5 @@
 use crate::game::ascii_digits::get_digit_patterns;
-use crate::game::ascii_rank_titles_generated::get_rank_title_display;
+use crate::game::ascii_rank_titles_generated::get_rank_display;
 use crate::scoring::{Rank, ScoringEngine, StageResult};
 use crate::{models::GitRepository, Result};
 use crossterm::{
@@ -323,11 +323,11 @@ impl SessionSummaryScreen {
         };
 
         // Display ranking title as large ASCII art at the top
-        let rank_title_lines = get_rank_title_display(&session_metrics.rank_name);
-        let rank_title_height = rank_title_lines.len() as u16;
+        let rank_lines = get_rank_display(&session_metrics.rank_name);
+        let rank_height = rank_lines.len() as u16;
 
         // Calculate total content height and center vertically
-        let total_content_height = 4 + rank_title_height + 1 + 3 + 1 + 4 + 2 + 2; // session_title_space + rank + tier + gap_after_tier + label + score + gap + summary
+        let total_content_height = 4 + rank_height + 1 + 3 + 1 + 4 + 2 + 2; // session_title_space + rank + tier + gap_after_tier + label + score + gap + summary
         let rank_start_row = if total_content_height < terminal_height {
             center_row.saturating_sub(total_content_height / 2)
         } else {
@@ -358,7 +358,7 @@ impl SessionSummaryScreen {
         execute!(stdout, Print(youre_label))?;
         execute!(stdout, ResetColor)?;
 
-        for (row_index, line) in rank_title_lines.iter().enumerate() {
+        for (row_index, line) in rank_lines.iter().enumerate() {
             // Calculate actual display width without ANSI codes for centering
             let display_width = Self::calculate_display_width(line);
             let line_col = center_col.saturating_sub(display_width / 2);
@@ -368,10 +368,10 @@ impl SessionSummaryScreen {
         }
 
         // Display tier information right after rank title (small gap after rank title)
-        let tier_info_row = rank_start_row + rank_title_height + 1;
+        let tier_info_row = rank_start_row + rank_height + 1;
         let tier_info = format!(
             "{} tier - {}/{} (overall {}/{})",
-            session_metrics.rank,
+            session_metrics.tier_name,
             session_metrics.tier_position,
             session_metrics.tier_total,
             session_metrics.overall_position,
@@ -382,7 +382,7 @@ impl SessionSummaryScreen {
         execute!(stdout, SetAttribute(Attribute::Bold))?;
 
         // Set color based on tier
-        let tier_color = match session_metrics.rank.as_str() {
+        let tier_color = match session_metrics.tier_name.as_str() {
             "Beginner" => Color::Blue,
             "Intermediate" => Color::Green,
             "Advanced" => Color::Cyan,
@@ -395,7 +395,7 @@ impl SessionSummaryScreen {
         execute!(stdout, ResetColor)?;
 
         // Calculate score position based on rank title height and tier info (add extra gap after tier info)
-        let score_label_row = rank_start_row + rank_title_height + 4;
+        let score_label_row = rank_start_row + rank_height + 4;
 
         // Display "SCORE" label in normal text with color
         let score_label = "SESSION SCORE";
