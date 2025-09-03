@@ -1,5 +1,5 @@
 use super::{challenge::Challenge, text_processor::TextProcessor};
-use crate::Result;
+use crate::{extractor::GitRepositoryInfo, Result};
 use ratatui::{
     backend::CrosstermBackend,
     layout::{Constraint, Direction, Layout},
@@ -44,6 +44,7 @@ impl GameDisplayRatatui {
         skips_remaining: usize,
         dialog_shown: bool,
         scoring_engine: &crate::scoring::engine::ScoringEngine,
+        repo_info: &Option<GitRepositoryInfo>,
     ) -> Result<()> {
         // Update character cache if needed
         if self.chars.len() != challenge_text.chars().count() {
@@ -62,7 +63,11 @@ impl GameDisplayRatatui {
                 Some(difficulty) => format!("{:?}", difficulty),
                 None => "Unknown".to_string(),
             };
-            format!("[{}] [{}]", challenge.get_display_title(), difficulty_text)
+            format!(
+                "[{}] [{}]",
+                challenge.get_display_title_with_repo(repo_info),
+                difficulty_text
+            )
         } else {
             "[Challenge]".to_string()
         };

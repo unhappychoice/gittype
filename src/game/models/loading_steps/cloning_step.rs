@@ -50,18 +50,33 @@ impl Step for CloningStep {
     fn execute(&self, context: &mut ExecutionContext) -> Result<StepResult> {
         if let Some(repo_spec) = context.repo_spec {
             let repo_info = RepoManager::parse_repo_url(repo_spec)?;
-            let repo_display = format!(
-                "Repository: {}/{} ({})",
-                repo_info.owner, repo_info.name, repo_info.origin
-            );
-
-            // Set repo info in LoadingScreen
-            if let Some(screen) = context.loading_screen {
-                let _ = screen.set_repo_info(repo_display);
-            }
 
             // Clone repository
             let repo_path = RepoManager::clone_or_update_repo(&repo_info, context.loading_screen)?;
+
+            // Extract actual git info from cloned repository and set it in loading screen
+            if let Some(screen) = context.loading_screen {
+                if let Ok(Some(git_info)) =
+                    crate::extractor::GitInfoExtractor::extract_git_info(&repo_path)
+                {
+                    let _ = screen.set_git_info(&git_info);
+                } else {
+                    // Fallback to basic info from RepoInfo if git extraction fails
+                    let git_info = crate::extractor::GitRepositoryInfo {
+                        user_name: repo_info.owner.clone(),
+                        repository_name: repo_info.name.clone(),
+                        remote_url: format!(
+                            "https://{}/{}/{}",
+                            repo_info.origin, repo_info.owner, repo_info.name
+                        ),
+                        branch: None,
+                        commit_hash: None,
+                        is_dirty: false,
+                    };
+                    let _ = screen.set_git_info(&git_info);
+                }
+            }
+
             Ok(StepResult::RepoPath(repo_path))
         } else {
             // Skip this step if no remote repo specified

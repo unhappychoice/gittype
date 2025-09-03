@@ -1,5 +1,5 @@
 use crate::game::challenge::Challenge;
-use crate::Result;
+use crate::{extractor::GitRepositoryInfo, Result};
 use crossterm::{
     cursor::MoveTo,
     event::{self, Event, KeyCode, KeyModifiers},
@@ -17,49 +17,28 @@ impl CountdownScreen {
     }
 
     pub fn show_with_challenge(challenge: Option<&Challenge>) -> Result<()> {
+        Self::show_with_challenge_and_repo(challenge, &None)
+    }
+
+    pub fn show_with_challenge_and_repo(
+        challenge: Option<&Challenge>,
+        repo_info: &Option<GitRepositoryInfo>,
+    ) -> Result<()> {
         let mut stdout = stdout();
         let (terminal_width, terminal_height) = terminal::size()?;
         let center_row = terminal_height / 2;
         let center_col = terminal_width / 2;
 
-        // Show source info if available
-        if let Some(challenge) = challenge {
-            if let Some(ref path) = challenge.source_file_path {
-                let source_msg =
-                    if let (Some(start), Some(end)) = (challenge.start_line, challenge.end_line) {
-                        format!("Source: {}:{}-{}", path, start, end)
-                    } else {
-                        format!("Source: {}", path)
-                    };
-                let source_col = center_col.saturating_sub(source_msg.len() as u16 / 2);
-                execute!(stdout, MoveTo(source_col, center_row - 4))?;
-                execute!(stdout, SetForegroundColor(Color::Cyan))?;
-                execute!(stdout, Print(&source_msg))?;
-                execute!(stdout, ResetColor)?;
-            }
-        }
+        // Show source and repository info if available
+        Self::draw_source_and_repo_info(&mut stdout, center_row, center_col, challenge, repo_info)?;
 
         // Show "Get Ready!" message
         let ready_msg = "Get Ready!";
         let ready_col = center_col.saturating_sub(ready_msg.len() as u16 / 2);
         execute!(stdout, terminal::Clear(ClearType::All))?;
 
-        // Show source again after clear
-        if let Some(challenge) = challenge {
-            if let Some(ref path) = challenge.source_file_path {
-                let source_msg =
-                    if let (Some(start), Some(end)) = (challenge.start_line, challenge.end_line) {
-                        format!("Source: {}:{}-{}", path, start, end)
-                    } else {
-                        format!("Source: {}", path)
-                    };
-                let source_col = center_col.saturating_sub(source_msg.len() as u16 / 2);
-                execute!(stdout, MoveTo(source_col, center_row - 4))?;
-                execute!(stdout, SetForegroundColor(Color::Cyan))?;
-                execute!(stdout, Print(&source_msg))?;
-                execute!(stdout, ResetColor)?;
-            }
-        }
+        // Show source and repository info again after clear
+        Self::draw_source_and_repo_info(&mut stdout, center_row, center_col, challenge, repo_info)?;
 
         execute!(stdout, MoveTo(ready_col, center_row - 2))?;
         execute!(
@@ -77,23 +56,14 @@ impl CountdownScreen {
         for count in (1..=3).rev() {
             execute!(stdout, terminal::Clear(ClearType::All))?;
 
-            // Show source info if available
-            if let Some(challenge) = challenge {
-                if let Some(ref path) = challenge.source_file_path {
-                    let source_msg = if let (Some(start), Some(end)) =
-                        (challenge.start_line, challenge.end_line)
-                    {
-                        format!("Source: {}:{}-{}", path, start, end)
-                    } else {
-                        format!("Source: {}", path)
-                    };
-                    let source_col = center_col.saturating_sub(source_msg.len() as u16 / 2);
-                    execute!(stdout, MoveTo(source_col, center_row - 4))?;
-                    execute!(stdout, SetForegroundColor(Color::Cyan))?;
-                    execute!(stdout, Print(&source_msg))?;
-                    execute!(stdout, ResetColor)?;
-                }
-            }
+            // Show source and repository info if available
+            Self::draw_source_and_repo_info(
+                &mut stdout,
+                center_row,
+                center_col,
+                challenge,
+                repo_info,
+            )?;
 
             // Show "Get Ready!" message
             execute!(stdout, MoveTo(ready_col, center_row - 2))?;
@@ -128,6 +98,7 @@ impl CountdownScreen {
 
         // Show "GO!" message
         execute!(stdout, terminal::Clear(ClearType::All))?;
+
         let go_msg = "GO!";
         let go_col = center_col.saturating_sub(go_msg.len() as u16 / 2);
         execute!(stdout, MoveTo(go_col, center_row))?;
@@ -154,49 +125,35 @@ impl CountdownScreen {
         total_stages: usize,
         challenge: Option<&Challenge>,
     ) -> Result<()> {
+        Self::show_stage_transition_with_challenge_and_repo(
+            stage_number,
+            total_stages,
+            challenge,
+            &None,
+        )
+    }
+
+    pub fn show_stage_transition_with_challenge_and_repo(
+        stage_number: usize,
+        total_stages: usize,
+        challenge: Option<&Challenge>,
+        repo_info: &Option<GitRepositoryInfo>,
+    ) -> Result<()> {
         let mut stdout = stdout();
         let (terminal_width, terminal_height) = terminal::size()?;
         let center_row = terminal_height / 2;
         let center_col = terminal_width / 2;
 
-        // Show source info if available
-        if let Some(challenge) = challenge {
-            if let Some(ref path) = challenge.source_file_path {
-                let source_msg =
-                    if let (Some(start), Some(end)) = (challenge.start_line, challenge.end_line) {
-                        format!("Source: {}:{}-{}", path, start, end)
-                    } else {
-                        format!("Source: {}", path)
-                    };
-                let source_col = center_col.saturating_sub(source_msg.len() as u16 / 2);
-                execute!(stdout, MoveTo(source_col, center_row - 4))?;
-                execute!(stdout, SetForegroundColor(Color::Cyan))?;
-                execute!(stdout, Print(&source_msg))?;
-                execute!(stdout, ResetColor)?;
-            }
-        }
+        // Show source and repository info if available
+        Self::draw_source_and_repo_info(&mut stdout, center_row, center_col, challenge, repo_info)?;
 
         // Show "Next Stage" message
         let stage_text = format!("Stage {} / {}", stage_number, total_stages);
         let stage_col = center_col.saturating_sub(stage_text.len() as u16 / 2);
         execute!(stdout, terminal::Clear(ClearType::All))?;
 
-        // Show source again after clear
-        if let Some(challenge) = challenge {
-            if let Some(ref path) = challenge.source_file_path {
-                let source_msg =
-                    if let (Some(start), Some(end)) = (challenge.start_line, challenge.end_line) {
-                        format!("Source: {}:{}-{}", path, start, end)
-                    } else {
-                        format!("Source: {}", path)
-                    };
-                let source_col = center_col.saturating_sub(source_msg.len() as u16 / 2);
-                execute!(stdout, MoveTo(source_col, center_row - 4))?;
-                execute!(stdout, SetForegroundColor(Color::Cyan))?;
-                execute!(stdout, Print(&source_msg))?;
-                execute!(stdout, ResetColor)?;
-            }
-        }
+        // Show source and repository info again after clear
+        Self::draw_source_and_repo_info(&mut stdout, center_row, center_col, challenge, repo_info)?;
 
         execute!(stdout, MoveTo(stage_col, center_row - 2))?;
         execute!(
@@ -214,23 +171,14 @@ impl CountdownScreen {
         for count in (1..=3).rev() {
             execute!(stdout, terminal::Clear(ClearType::All))?;
 
-            // Show source info if available
-            if let Some(challenge) = challenge {
-                if let Some(ref path) = challenge.source_file_path {
-                    let source_msg = if let (Some(start), Some(end)) =
-                        (challenge.start_line, challenge.end_line)
-                    {
-                        format!("Source: {}:{}-{}", path, start, end)
-                    } else {
-                        format!("Source: {}", path)
-                    };
-                    let source_col = center_col.saturating_sub(source_msg.len() as u16 / 2);
-                    execute!(stdout, MoveTo(source_col, center_row - 4))?;
-                    execute!(stdout, SetForegroundColor(Color::Cyan))?;
-                    execute!(stdout, Print(&source_msg))?;
-                    execute!(stdout, ResetColor)?;
-                }
-            }
+            // Show source and repository info if available
+            Self::draw_source_and_repo_info(
+                &mut stdout,
+                center_row,
+                center_col,
+                challenge,
+                repo_info,
+            )?;
 
             // Show stage number
             execute!(stdout, MoveTo(stage_col, center_row - 2))?;
@@ -265,6 +213,7 @@ impl CountdownScreen {
 
         // Show "START!" message
         execute!(stdout, terminal::Clear(ClearType::All))?;
+
         let start_msg = "START!";
         let start_col = center_col.saturating_sub(start_msg.len() as u16 / 2);
         execute!(stdout, MoveTo(start_col, center_row))?;
@@ -296,6 +245,47 @@ impl CountdownScreen {
                         std::process::exit(0);
                     }
                 }
+            }
+        }
+        Ok(())
+    }
+
+    fn draw_source_and_repo_info(
+        stdout: &mut std::io::Stdout,
+        center_row: u16,
+        center_col: u16,
+        challenge: Option<&Challenge>,
+        repo_info: &Option<GitRepositoryInfo>,
+    ) -> Result<()> {
+        if let Some(challenge) = challenge {
+            if challenge.source_file_path.is_some() {
+                // Show "Source:" label in Cyan
+                let source_label = "Source:";
+                let source_label_col = center_col.saturating_sub(source_label.len() as u16 / 2);
+                execute!(stdout, MoveTo(source_label_col, center_row - 6))?;
+                execute!(stdout, SetForegroundColor(Color::Cyan))?;
+                execute!(stdout, Print(source_label))?;
+                execute!(stdout, ResetColor)?;
+
+                // Show repository info in brackets if available, in DarkGrey
+                if let Some(repo) = repo_info {
+                    let repo_msg = format!("[{}/{}]", repo.user_name, repo.repository_name);
+                    let repo_col = center_col.saturating_sub(repo_msg.len() as u16 / 2);
+                    execute!(stdout, MoveTo(repo_col, center_row - 5))?;
+                    execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
+                    execute!(stdout, Print(&repo_msg))?;
+                    execute!(stdout, ResetColor)?;
+                }
+
+                // Show source file:line info in DarkGrey
+                let source_file = challenge.get_display_title();
+                let source_col = center_col.saturating_sub(source_file.len() as u16 / 2);
+                execute!(stdout, MoveTo(source_col, center_row - 4))?;
+                execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
+                execute!(stdout, Print(&source_file))?;
+                execute!(stdout, ResetColor)?;
+
+                // Add blank line after source info (center_row - 3 is now blank)
             }
         }
         Ok(())

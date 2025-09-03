@@ -2,7 +2,7 @@ use crate::game::ascii_digits::get_digit_patterns;
 use crate::game::ascii_rank_titles_generated::get_rank_title_display;
 use crate::scoring::{RankingTitle, ScoringEngine, TypingMetrics};
 use crate::sharing::{SharingPlatform, SharingService};
-use crate::Result;
+use crate::{extractor::GitRepositoryInfo, Result};
 use crossterm::{
     cursor::MoveTo,
     event::{self, Event, KeyCode, KeyModifiers},
@@ -279,13 +279,14 @@ impl ResultScreen {
         AnimationScreen::show_session_animation(total_stages, completed_stages, stage_engines)?;
 
         // Then show the original result screen
-        Self::show_session_summary_original(total_stages, completed_stages, stage_engines)
+        Self::show_session_summary_original(total_stages, completed_stages, stage_engines, &None)
     }
 
     pub fn show_session_summary_original(
         _total_stages: usize,
         _completed_stages: usize,
         stage_engines: &[(String, ScoringEngine)],
+        repo_info: &Option<GitRepositoryInfo>,
     ) -> Result<()> {
         let mut stdout = stdout();
 
@@ -335,22 +336,15 @@ impl ResultScreen {
 
         // Display session complete title at the top
         let session_title = "=== SESSION COMPLETE ===";
-        let lines: Vec<&str> = session_title.split('\n').collect();
-
-        for (i, line) in lines.iter().enumerate() {
-            let title_col = center_col.saturating_sub(line.len() as u16 / 2);
-            execute!(
-                stdout,
-                MoveTo(title_col, rank_start_row.saturating_sub(4) + i as u16)
-            )?;
-            execute!(
-                stdout,
-                SetAttribute(Attribute::Bold),
-                SetForegroundColor(Color::Cyan)
-            )?;
-            execute!(stdout, Print(line))?;
-            execute!(stdout, ResetColor)?;
-        }
+        let title_col = center_col.saturating_sub(session_title.len() as u16 / 2);
+        execute!(stdout, MoveTo(title_col, rank_start_row.saturating_sub(4)))?;
+        execute!(
+            stdout,
+            SetAttribute(Attribute::Bold),
+            SetForegroundColor(Color::Cyan)
+        )?;
+        execute!(stdout, Print(session_title))?;
+        execute!(stdout, ResetColor)?;
 
         // Display "you're:" label before rank title (1 line gap from rank title)
         let youre_label = "YOU'RE:";
@@ -469,11 +463,18 @@ impl ResultScreen {
         if !stage_engines.is_empty() {
             let stage_results_start_row = summary_start_row + summary_lines.len() as u16 + 2;
 
-            let stage_label = "Stage Results:";
+            let stage_label = if let Some(repo) = repo_info {
+                format!(
+                    "Stage Results: [{}/{}]",
+                    repo.user_name, repo.repository_name
+                )
+            } else {
+                "Stage Results:".to_string()
+            };
             let stage_label_col = center_col.saturating_sub(stage_label.len() as u16 / 2);
             execute!(stdout, MoveTo(stage_label_col, stage_results_start_row))?;
             execute!(stdout, SetForegroundColor(Color::Cyan))?;
-            execute!(stdout, Print(stage_label))?;
+            execute!(stdout, Print(&stage_label))?;
             execute!(stdout, ResetColor)?;
 
             for (i, (stage_name, engine)) in stage_engines.iter().enumerate().take(5) {
@@ -530,11 +531,13 @@ impl ResultScreen {
         total_stages: usize,
         completed_stages: usize,
         stage_engines: &[(String, ScoringEngine)],
+        repo_info: &Option<GitRepositoryInfo>,
     ) -> Result<ResultAction> {
         Self::show_session_summary_with_input_internal(
             total_stages,
             completed_stages,
             stage_engines,
+            repo_info,
             true,
         )
     }
@@ -543,11 +546,13 @@ impl ResultScreen {
         total_stages: usize,
         completed_stages: usize,
         stage_engines: &[(String, ScoringEngine)],
+        repo_info: &Option<GitRepositoryInfo>,
     ) -> Result<ResultAction> {
         Self::show_session_summary_with_input_internal(
             total_stages,
             completed_stages,
             stage_engines,
+            repo_info,
             false,
         )
     }
@@ -556,6 +561,7 @@ impl ResultScreen {
         total_stages: usize,
         completed_stages: usize,
         stage_engines: &[(String, ScoringEngine)],
+        repo_info: &Option<GitRepositoryInfo>,
         show_animation: bool,
     ) -> Result<ResultAction> {
         use crate::game::screens::AnimationScreen;
@@ -566,7 +572,12 @@ impl ResultScreen {
         }
 
         // Show the result screen
-        Self::show_session_summary_original(total_stages, completed_stages, stage_engines)?;
+        Self::show_session_summary_original(
+            total_stages,
+            completed_stages,
+            stage_engines,
+            repo_info,
+        )?;
 
         // Wait for user input and return action
         loop {
@@ -602,6 +613,7 @@ impl ResultScreen {
         total_stages: usize,
         completed_stages: usize,
         stage_engines: &[(String, ScoringEngine)],
+        _repo_info: &Option<GitRepositoryInfo>,
     ) -> Result<()> {
         let mut stdout = stdout();
 
@@ -619,22 +631,15 @@ impl ResultScreen {
 
         // Header - show FAILED status (centered)
         let header_text = "=== SESSION FAILED ===";
-        let lines: Vec<&str> = header_text.split('\n').collect();
-
-        for (i, line) in lines.iter().enumerate() {
-            let header_x = (terminal_width - line.len() as u16) / 2;
-            execute!(
-                stdout,
-                MoveTo(header_x, center_y.saturating_sub(6) + i as u16)
-            )?;
-            execute!(
-                stdout,
-                SetForegroundColor(Color::Red),
-                SetAttribute(Attribute::Bold)
-            )?;
-            execute!(stdout, Print(line))?;
-            execute!(stdout, ResetColor)?;
-        }
+        let header_x = (terminal_width - header_text.len() as u16) / 2;
+        execute!(stdout, MoveTo(header_x, center_y.saturating_sub(6)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Color::Red),
+            SetAttribute(Attribute::Bold)
+        )?;
+        execute!(stdout, Print(header_text))?;
+        execute!(stdout, ResetColor)?;
 
         // Show stage progress (centered, cyan)
         let stage_text = format!("Stages: {}/{}", completed_stages, total_stages);
@@ -684,7 +689,10 @@ impl ResultScreen {
         Ok(())
     }
 
-    pub fn show_sharing_menu(metrics: &TypingMetrics) -> Result<()> {
+    pub fn show_sharing_menu(
+        metrics: &TypingMetrics,
+        repo_info: &Option<GitRepositoryInfo>,
+    ) -> Result<()> {
         let mut stdout = stdout();
 
         // Comprehensive screen reset
@@ -720,10 +728,22 @@ impl ResultScreen {
         }
 
         // Show preview of what will be shared
-        let preview_text = format!(
-            "\"{}\" - Score: {:.0}, CPM: {:.0}, Mistakes: {}",
-            metrics.ranking_title, metrics.challenge_score, metrics.cpm, metrics.mistakes
-        );
+        let preview_text = if let Some(repo) = repo_info {
+            format!(
+                "\"{}\" with {:.0}pts on [{}/{}] - CPM: {:.0}, Mistakes: {}",
+                metrics.ranking_title,
+                metrics.challenge_score,
+                repo.user_name,
+                repo.repository_name,
+                metrics.cpm,
+                metrics.mistakes
+            )
+        } else {
+            format!(
+                "\"{}\" with {:.0}pts - CPM: {:.0}, Mistakes: {}",
+                metrics.ranking_title, metrics.challenge_score, metrics.cpm, metrics.mistakes
+            )
+        };
         let preview_col = center_col.saturating_sub(preview_text.len() as u16 / 2);
         execute!(stdout, MoveTo(preview_col, center_row.saturating_sub(5)))?;
         execute!(stdout, SetForegroundColor(Color::Cyan))?;
@@ -766,21 +786,35 @@ impl ResultScreen {
                 if let Event::Key(key_event) = event::read()? {
                     match key_event.code {
                         KeyCode::Char('1') => {
-                            let _ = SharingService::share_result(metrics, SharingPlatform::X);
+                            let _ = SharingService::share_result(
+                                metrics,
+                                SharingPlatform::X,
+                                repo_info,
+                            );
                             break;
                         }
                         KeyCode::Char('2') => {
-                            let _ = SharingService::share_result(metrics, SharingPlatform::Reddit);
+                            let _ = SharingService::share_result(
+                                metrics,
+                                SharingPlatform::Reddit,
+                                repo_info,
+                            );
                             break;
                         }
                         KeyCode::Char('3') => {
-                            let _ =
-                                SharingService::share_result(metrics, SharingPlatform::LinkedIn);
+                            let _ = SharingService::share_result(
+                                metrics,
+                                SharingPlatform::LinkedIn,
+                                repo_info,
+                            );
                             break;
                         }
                         KeyCode::Char('4') => {
-                            let _ =
-                                SharingService::share_result(metrics, SharingPlatform::Facebook);
+                            let _ = SharingService::share_result(
+                                metrics,
+                                SharingPlatform::Facebook,
+                                repo_info,
+                            );
                             break;
                         }
                         KeyCode::Esc => break,

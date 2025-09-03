@@ -5,7 +5,7 @@ use super::{
     CountdownScreen,
 };
 use crate::scoring::{engine::ScoringEngine, TypingMetrics};
-use crate::Result;
+use crate::{extractor::GitRepositoryInfo, Result};
 use crossterm::{
     event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers},
     terminal,
@@ -28,6 +28,7 @@ pub struct TypingScreen {
     #[allow(dead_code)]
     last_esc_time: Option<std::time::Instant>,
     dialog_shown: bool,
+    repo_info: Option<GitRepositoryInfo>,
 }
 
 pub enum GameState {
@@ -40,7 +41,7 @@ pub enum GameState {
 }
 
 impl TypingScreen {
-    pub fn new(challenge_text: String) -> Result<Self> {
+    pub fn new(challenge_text: String, repo_info: Option<GitRepositoryInfo>) -> Result<Self> {
         let processed_text = TextProcessor::process_challenge_text(&challenge_text);
         let challenge_chars: Vec<char> = processed_text.chars().collect();
         let line_starts = TextProcessor::calculate_line_starts(&processed_text);
@@ -70,10 +71,14 @@ impl TypingScreen {
             skips_remaining: 3,
             last_esc_time: None,
             dialog_shown: false,
+            repo_info,
         })
     }
 
-    pub fn new_with_challenge(challenge: &Challenge) -> Result<Self> {
+    pub fn new_with_challenge(
+        challenge: &Challenge,
+        repo_info: Option<GitRepositoryInfo>,
+    ) -> Result<Self> {
         // Apply basic text processing (remove empty lines, etc.)
         // Indentation normalization is already done in extractor
         let (processed_text, mapped_comment_ranges) =
@@ -109,6 +114,7 @@ impl TypingScreen {
             skips_remaining: 3,
             last_esc_time: None,
             dialog_shown: false,
+            repo_info,
         })
     }
 
@@ -124,7 +130,7 @@ impl TypingScreen {
         }
 
         // Show countdown with challenge info if available
-        CountdownScreen::show_with_challenge(self.challenge.as_ref())?;
+        CountdownScreen::show_with_challenge_and_repo(self.challenge.as_ref(), &self.repo_info)?;
 
         // Reset start time after countdown
         self.start_time = std::time::Instant::now();
@@ -141,6 +147,7 @@ impl TypingScreen {
             self.skips_remaining,
             self.dialog_shown,
             &self.scoring_engine,
+            &self.repo_info,
         )?;
 
         loop {
@@ -196,6 +203,7 @@ impl TypingScreen {
             self.skips_remaining,
             self.dialog_shown,
             &self.scoring_engine,
+            &self.repo_info,
         )?;
 
         loop {
@@ -248,6 +256,7 @@ impl TypingScreen {
             self.skips_remaining,
             self.dialog_shown,
             &self.scoring_engine,
+            &self.repo_info,
         )?;
 
         let final_state = loop {
@@ -424,6 +433,7 @@ impl TypingScreen {
             self.skips_remaining,
             self.dialog_shown,
             &self.scoring_engine,
+            &self.repo_info,
         )
     }
 
