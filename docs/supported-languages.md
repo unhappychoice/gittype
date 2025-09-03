@@ -17,6 +17,7 @@
 | C# | `.cs`, `.csx` | ✅ Full support | `tree-sitter-c-sharp` |
 | C | `.c`, `.h` | ✅ Full support | `tree-sitter-c` |
 | C++ | `.cpp`, `.cc`, `.cxx`, `.hpp` | ✅ Full support | `tree-sitter-cpp` |
+| Haskell | `.hs`, `.lhs` | ✅ Full support | `tree-sitter-haskell` |
 
 ## Extraction Features
 
@@ -163,6 +164,17 @@
 - Function pointers
 - Union definitions (`union`)
 
+### Haskell
+- Functions (`function_name :: Type -> Type`, `function_name arg = ...`)
+- Type signatures (`function_name :: Integer -> Integer`)
+- Module declarations (`module ModuleName where`)
+- Import declarations (`import Module`)
+- Data type declarations (`data Maybe a = Nothing | Just a`)
+- Type class definitions (`class Eq a where`)
+- Instance declarations (`instance Eq Int where`)
+- Type aliases (`type Name = String`)
+- Pattern matching functions
+
 ### C++
 - Functions (`int main()`, `void function()`)
 - Methods (class and struct member functions)
@@ -193,14 +205,14 @@
 gittype --langs rust
 
 # Multiple languages
-gittype --langs rust,typescript,javascript,python,go,ruby,swift,kotlin,java,php,csharp,c,cpp
+gittype --langs rust,typescript,javascript,python,go,ruby,swift,kotlin,java,php,csharp,c,cpp,haskell
 ```
 
 ### Configuration File
 
 ```toml
 [default]
-langs = ["rust", "typescript", "javascript", "python", "go", "ruby", "swift", "kotlin", "java", "php", "csharp", "c", "cpp"]
+langs = ["rust", "typescript", "javascript", "python", "go", "ruby", "swift", "kotlin", "java", "php", "csharp", "c", "cpp", "haskell"]
 ```
 
 ## Code Extraction Quality
