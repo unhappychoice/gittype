@@ -15,8 +15,17 @@ pub fn run_cli(cli: Cli) -> Result<()> {
 }
 
 pub fn setup_signal_handlers() {
-    std::panic::set_hook(Box::new(|_| {
+    std::panic::set_hook(Box::new(|panic_info| {
+        use std::io::{stderr, Write};
+
+        // Ensure panic message is displayed before terminal cleanup
+        let _ = writeln!(stderr(), "Error: {}", panic_info);
+        let _ = stderr().flush();
+
         cleanup_terminal();
+
+        // Display panic info again after cleanup to ensure visibility
+        eprintln!("Application encountered a panic: {}", panic_info);
     }));
 
     ctrlc::set_handler(move || {
