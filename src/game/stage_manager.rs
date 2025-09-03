@@ -1,8 +1,9 @@
 use super::{
     challenge::Challenge,
     screens::{
-        exit_summary_screen::ExitAction, result_screen::ResultAction, typing_screen::GameState,
-        CountdownScreen, ExitSummaryScreen, ResultScreen, TitleAction, TitleScreen, TypingScreen,
+        exit_summary_screen::ExitAction, session_summary_screen::ResultAction,
+        typing_screen::GameState, CancelScreen, CountdownScreen, ExitSummaryScreen, FailureScreen,
+        SessionSummaryScreen, SharingScreen, TitleAction, TitleScreen, TypingScreen,
     },
     session_tracker::SessionTracker,
     stage_builder::{DifficultyLevel, GameMode, StageBuilder},
@@ -270,7 +271,14 @@ impl StageManager {
                     );
 
                     // Show fail result screen and handle navigation
-                    return self.handle_fail_result_navigation();
+                    let should_retry = self.handle_fail_result_navigation()?;
+                    if should_retry {
+                        // Retry the same stage - don't increment current_stage
+                        continue;
+                    } else {
+                        // Exit to title or quit
+                        return Ok(false);
+                    }
                 }
                 GameState::Exit => {
                     // User wants to exit - record partial effort only
@@ -285,11 +293,15 @@ impl StageManager {
                         }
                     }
 
-                    // Show session summary and exit
-                    let session_summary = self.session_tracker.clone().finalize_and_get_summary();
-                    let _ = ExitSummaryScreen::show(&session_summary)?;
-                    cleanup_terminal();
-                    std::process::exit(0);
+                    // Show cancel result screen and handle navigation
+                    let should_retry = self.handle_cancel_result_navigation()?;
+                    if should_retry {
+                        // Retry the same stage - don't increment current_stage
+                        continue;
+                    } else {
+                        // Exit to title or quit
+                        return Ok(false);
+                    }
                 }
                 GameState::Continue | GameState::ShowDialog => {
                     // This shouldn't happen in final state
@@ -322,7 +334,7 @@ impl StageManager {
 
                         if let Ok(session_metrics) = combined_engine.calculate_metrics() {
                             let _ =
-                                ResultScreen::show_sharing_menu(&session_metrics, &self.git_info);
+                                SharingScreen::show_sharing_menu(&session_metrics, &self.git_info);
                         }
                     }
                     // Continue showing the summary screen after sharing (without animation)
@@ -361,7 +373,7 @@ impl StageManager {
             0
         };
 
-        ResultScreen::show_stage_completion(
+        SessionSummaryScreen::show_stage_completion(
             metrics,
             self.current_stage + 1,
             self.current_challenges.len(),
@@ -380,14 +392,14 @@ impl StageManager {
 
     fn show_session_summary_internal(&self, show_animation: bool) -> Result<ResultAction> {
         if show_animation {
-            ResultScreen::show_session_summary_with_input(
+            SessionSummaryScreen::show_session_summary_with_input(
                 self.current_challenges.len(),
                 self.stage_engines.len(),
                 &self.stage_engines,
                 &self.git_info,
             )
         } else {
-            ResultScreen::show_session_summary_with_input_no_animation(
+            SessionSummaryScreen::show_session_summary_with_input_no_animation(
                 self.current_challenges.len(),
                 self.stage_engines.len(),
                 &self.stage_engines,
@@ -405,44 +417,69 @@ impl StageManager {
     }
 
     fn handle_fail_result_navigation(&self) -> Result<bool> {
-        use crossterm::event::{self, Event, KeyCode};
+        use crate::game::screens::ResultAction;
 
-        // Show fail result screen
-        ResultScreen::show_session_summary_fail_mode(
+        // Show fail result screen and get user action
+        let action = FailureScreen::show_session_summary_fail_mode(
             self.current_challenges.len(),
             self.stage_engines.len(),
             &self.stage_engines,
             &self.git_info,
         )?;
 
-        // Wait for navigation input
-        loop {
-            if event::poll(std::time::Duration::from_millis(100))? {
-                if let Event::Key(key_event) = event::read()? {
-                    match key_event.code {
-                        KeyCode::Char('t') | KeyCode::Char('T') => {
-                            // Back to title screen
-                            return Ok(false);
-                        }
-                        KeyCode::Esc => {
-                            // Show session summary and exit
-                            let session_summary =
-                                self.session_tracker.clone().finalize_and_get_summary();
-                            let _ = ExitSummaryScreen::show(&session_summary)?;
-                            cleanup_terminal();
-                            std::process::exit(0);
-                        }
-                        KeyCode::Char('c')
-                            if key_event
-                                .modifiers
-                                .contains(crossterm::event::KeyModifiers::CONTROL) =>
-                        {
-                            cleanup_terminal();
-                            std::process::exit(0);
-                        }
-                        _ => {}
-                    }
-                }
+        match action {
+            ResultAction::Retry => {
+                // Restart the same challenge
+                Ok(true)// Return true to indicate retry
+            }
+            ResultAction::BackToTitle => {
+                // Back to title screen
+                Ok(false)
+            }
+            ResultAction::Quit => {
+                // Show session summary and exit
+                let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                let _ = ExitSummaryScreen::show(&session_summary)?;
+                cleanup_terminal();
+                std::process::exit(0);
+            }
+            _ => {
+                // For other actions, default to back to title
+                Ok(false)
+            }
+        }
+    }
+
+    fn handle_cancel_result_navigation(&self) -> Result<bool> {
+        use crate::game::screens::ResultAction;
+
+        // Show cancel result screen and get user action
+        let action = CancelScreen::show_session_summary_cancel_mode(
+            self.current_challenges.len(),
+            self.stage_engines.len(),
+            &self.stage_engines,
+            &self.git_info,
+        )?;
+
+        match action {
+            ResultAction::Retry => {
+                // Restart the same challenge
+                Ok(true)// Return true to indicate retry
+            }
+            ResultAction::BackToTitle => {
+                // Back to title screen
+                Ok(false)
+            }
+            ResultAction::Quit => {
+                // Show session summary and exit
+                let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                let _ = ExitSummaryScreen::show(&session_summary)?;
+                cleanup_terminal();
+                std::process::exit(0);
+            }
+            _ => {
+                // For other actions, default to back to title
+                Ok(false)
             }
         }
     }
