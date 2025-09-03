@@ -1,6 +1,6 @@
 use crate::game::ascii_digits::get_digit_patterns;
 use crate::game::ascii_rank_titles_generated::get_rank_title_display;
-use crate::scoring::{ScoringEngine, TypingMetrics};
+use crate::scoring::{RankingTitle, ScoringEngine, TypingMetrics};
 use crate::sharing::{SharingPlatform, SharingService};
 use crate::Result;
 use crossterm::{
@@ -169,7 +169,12 @@ impl ResultScreen {
             } else if metrics.was_skipped {
                 execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
             } else {
-                execute!(stdout, SetForegroundColor(Color::Green))?;
+                execute!(
+                    stdout,
+                    SetForegroundColor(
+                        RankingTitle::for_score(metrics.challenge_score).terminal_color()
+                    )
+                )?;
             }
             execute!(stdout, Print(line))?;
             execute!(stdout, ResetColor)?;
@@ -421,7 +426,9 @@ impl ResultScreen {
             execute!(
                 stdout,
                 SetAttribute(Attribute::Bold),
-                SetForegroundColor(Color::Green)
+                SetForegroundColor(
+                    RankingTitle::for_score(session_metrics.challenge_score).terminal_color()
+                )
             )?;
             execute!(stdout, Print(line))?;
             execute!(stdout, ResetColor)?;

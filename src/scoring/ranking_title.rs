@@ -27,6 +27,18 @@ impl RankingTier {
             RankingTier::Legendary => "fire",
         }
     }
+
+    /// Get the terminal color for this tier
+    pub fn terminal_color(&self) -> crossterm::style::Color {
+        use crossterm::style::Color;
+        match self {
+            RankingTier::Beginner => Color::Cyan,
+            RankingTier::Intermediate => Color::Blue,
+            RankingTier::Advanced => Color::Green,
+            RankingTier::Expert => Color::Yellow,
+            RankingTier::Legendary => Color::Red,
+        }
+    }
 }
 
 impl RankingTitle {
@@ -61,6 +73,11 @@ impl RankingTitle {
     /// Get the color palette name for ASCII art generation
     pub fn color_palette(&self) -> &'static str {
         self.tier.color_palette()
+    }
+
+    /// Get the terminal color for this ranking title
+    pub fn terminal_color(&self) -> crossterm::style::Color {
+        self.tier.terminal_color()
     }
 
     /// Get all ranking titles in order from lowest to highest score (matches engine.rs exactly)
