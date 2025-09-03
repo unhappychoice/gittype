@@ -31,6 +31,10 @@ impl Default for ExtractionOptions {
                 "**/*.csx".to_string(),
                 "**/*.c".to_string(),
                 "**/*.h".to_string(),
+                "**/*.cpp".to_string(),
+                "**/*.cc".to_string(),
+                "**/*.cxx".to_string(),
+                "**/*.hpp".to_string(),
             ],
             exclude_patterns: vec![
                 "**/target/**".to_string(),
