@@ -21,8 +21,8 @@ pub struct TypingCore {
     
     // Mistake tracking
     mistakes: usize,
-    mistake_positions: Vec<usize>,
-    current_mistake_position: Option<usize>,
+    mistake_positions: Vec<usize>, // typing positions for statistics
+    current_mistake_position: Option<usize>, // display position for highlighting
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -452,7 +452,7 @@ impl TypingCore {
     fn record_mistake(&mut self) {
         self.mistakes += 1;
         self.mistake_positions.push(self.current_position_to_type);
-        self.current_mistake_position = Some(self.current_position_to_type);
+        self.current_mistake_position = Some(self.current_position_to_display);
     }
 
     fn clear_mistake_position(&mut self) {
