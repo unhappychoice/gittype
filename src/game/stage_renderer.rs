@@ -80,6 +80,7 @@ impl StageRenderer {
             comment_ranges,
             current_mistake_position,
             terminal_size.width,
+            challenge,
         );
 
         let metrics = crate::scoring::engine::ScoringEngine::calculate_real_time_result(
@@ -99,48 +100,90 @@ impl StageRenderer {
         self.terminal.draw(|f| {
             let chunks = Layout::default()
                 .direction(Direction::Vertical)
+                .margin(1) // Add margin for better spacing
                 .constraints(
                     [
-                        Constraint::Length(4), // Header with metrics
-                        Constraint::Min(1),    // Content
-                        Constraint::Length(1), // Progress bar at bottom
+                        Constraint::Length(3), // Header (more compact - only challenge info)
+                        Constraint::Min(3),    // Content (minimum height)
+                        Constraint::Length(3), // Metrics section (compact)
+                        Constraint::Length(3), // Progress bar (compact)
                     ]
                     .as_ref(),
                 )
                 .split(f.size());
 
-            // Header with consolidated information
-            let header = Paragraph::new(vec![
-                Line::from(header_text.clone()),
-                Line::from(vec![Span::styled(
-                    first_line.clone(),
-                    Style::default().fg(Color::White),
-                )]),
-                Line::from(vec![
-                    Span::styled("[ESC]", Style::default().fg(Color::Cyan)),
-                    Span::styled(" Options", Style::default().fg(Color::White)),
-                ]),
-            ])
-            .block(Block::default().borders(Borders::BOTTOM));
+            // Header with basic info
+            let header = Paragraph::new(vec![Line::from(header_text.clone())]).block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .border_style(Style::default().fg(Color::Cyan))
+                    .title("Challenge")
+                    .title_style(Style::default().fg(Color::Cyan))
+                    .padding(ratatui::widgets::Padding::horizontal(1)),
+            ); // Only horizontal padding
             f.render_widget(header, chunks[0]);
 
-            // Content with syntax highlighting and cursor
-            let scroll_offset = if current_line > chunks[1].height as usize / 2 {
-                (current_line - chunks[1].height as usize / 2) as u16
+            // Content with syntax highlighting and cursor with padding
+            let scroll_offset = if current_line > chunks[1].height.saturating_sub(2) as usize / 2 {
+                (current_line - chunks[1].height.saturating_sub(2) as usize / 2) as u16
             } else {
                 0
             };
 
-            let content =
-                Paragraph::new(Text::from(content_spans.clone())).scroll((scroll_offset, 0));
+            let content = Paragraph::new(Text::from(content_spans.clone()))
+                .scroll((scroll_offset, 0))
+                .block(
+                    Block::default()
+                        .borders(Borders::ALL)
+                        .border_style(Style::default().fg(Color::Blue))
+                        .title("Code")
+                        .title_style(Style::default().fg(Color::LightBlue))
+                        .padding(ratatui::widgets::Padding::uniform(1)),
+                );
             f.render_widget(content, chunks[1]);
 
-            // Progress bar at the bottom, full width
-            let terminal_width = f.size().width as u8;
-            let full_width_progress = Self::create_progress_bar(progress_percent, terminal_width);
-            let progress_widget =
-                Paragraph::new(full_width_progress).style(Style::default().fg(Color::White));
-            f.render_widget(progress_widget, chunks[2]);
+            // Metrics section below the code
+            let metrics_widget = Paragraph::new(vec![Line::from(vec![Span::styled(
+                first_line.clone(),
+                Style::default().fg(Color::White),
+            )])])
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .border_style(Style::default().fg(Color::Yellow))
+                    .title("Metrics")
+                    .title_style(Style::default().fg(Color::Yellow))
+                    .padding(ratatui::widgets::Padding::horizontal(1)),
+            ); // Only horizontal padding
+            f.render_widget(metrics_widget, chunks[2]);
+
+            // Progress bar in its own bordered box with different color
+            let progress_width = chunks[3].width.saturating_sub(4) as u8; // Account for borders and padding
+            let full_width_progress = Self::create_progress_bar(progress_percent, progress_width);
+            let progress_widget = Paragraph::new(full_width_progress)
+                .style(Style::default().fg(Color::Green))
+                .block(
+                    Block::default()
+                        .borders(Borders::ALL)
+                        .border_style(Style::default().fg(Color::Green))
+                        .title("Progress")
+                        .title_style(Style::default().fg(Color::Green)),
+                )
+                .alignment(ratatui::layout::Alignment::Center);
+            f.render_widget(progress_widget, chunks[3]);
+
+            // Render [ESC] Options in bottom left without border
+            let esc_area = ratatui::layout::Rect {
+                x: 1,                                 // Left margin
+                y: f.size().height.saturating_sub(1), // Bottom of screen
+                width: 15,                            // Width for "[ESC] Options"
+                height: 1,
+            };
+            let esc_text = Paragraph::new(vec![Line::from(vec![
+                Span::styled("[ESC]", Style::default().fg(Color::LightBlue)),
+                Span::styled(" Options", Style::default().fg(Color::White)),
+            ])]);
+            f.render_widget(esc_text, esc_area);
 
             // Render dialog if shown
             if dialog_shown {
@@ -159,11 +202,15 @@ impl StageRenderer {
         comment_ranges: &[(usize, usize)],
         current_mistake_position: Option<usize>,
         terminal_width: u16,
+        challenge: Option<&Challenge>,
     ) -> Vec<Line<'static>> {
         let mut lines = Vec::new();
         let mut current_line_spans = Vec::new();
         let mut current_line_width = 0u16;
-        let max_width = terminal_width.saturating_sub(1);
+
+        // Reserve space for line numbers (assume max 4 digits + 2 spaces)
+        let line_number_width = 6u16;
+        let max_width = terminal_width.saturating_sub(line_number_width + 1);
 
         // Pre-calculate all character properties to avoid O(n²) complexity
         let skip_cache = self.create_skip_cache(line_starts, comment_ranges);
@@ -171,8 +218,28 @@ impl StageRenderer {
         let current_line_number = self.find_line_for_position(current_position, line_starts);
 
         let mut line_number = 0;
+        let mut line_start = true;
+
+        // Get the starting line number from challenge, default to 1
+        let start_line_number = challenge.and_then(|c| c.start_line).unwrap_or(1);
 
         for (i, &ch) in self.chars.iter().enumerate() {
+            // Add line number at the start of each line
+            if line_start {
+                let actual_line_number = start_line_number + line_number;
+                let line_num_text = format!("{:>4} │ ", actual_line_number);
+                let line_num_style = if line_number == current_line_number {
+                    Style::default()
+                        .fg(Color::Yellow)
+                        .add_modifier(ratatui::style::Modifier::BOLD)
+                } else {
+                    Style::default().fg(Color::DarkGray)
+                };
+                current_line_spans.push(Span::styled(line_num_text, line_num_style));
+                current_line_width += line_number_width;
+                line_start = false;
+            }
+
             // Handle explicit newlines
             if ch == '\n' {
                 // Use cached properties for newline styling
@@ -198,6 +265,7 @@ impl StageRenderer {
                 current_line_spans = Vec::new();
                 current_line_width = 0;
                 line_number += 1;
+                line_start = true; // Next iteration will be start of new line
                 continue;
             }
 
@@ -234,10 +302,32 @@ impl StageRenderer {
 
         if !current_line_spans.is_empty() {
             lines.push(Line::from(current_line_spans));
+        } else if line_start {
+            // Handle case where file ends without content on last line
+            let actual_line_number = start_line_number + line_number;
+            let line_num_text = format!("{:>4} │ ", actual_line_number);
+            let line_num_style = if line_number == current_line_number {
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(ratatui::style::Modifier::BOLD)
+            } else {
+                Style::default().fg(Color::DarkGray)
+            };
+            lines.push(Line::from(vec![Span::styled(
+                line_num_text,
+                line_num_style,
+            )]));
         }
 
         if lines.is_empty() {
-            lines.push(Line::from(""));
+            let line_num_text = format!("{:>4} │ ", start_line_number);
+            let line_num_style = Style::default()
+                .fg(Color::Yellow)
+                .add_modifier(ratatui::style::Modifier::BOLD);
+            lines.push(Line::from(vec![Span::styled(
+                line_num_text,
+                line_num_style,
+            )]));
         }
 
         lines
@@ -436,7 +526,7 @@ impl StageRenderer {
                     Span::styled(
                         "[S] ",
                         Style::default()
-                            .fg(Color::Yellow)
+                            .fg(Color::Cyan)
                             .add_modifier(Modifier::BOLD),
                     )
                 } else {
@@ -472,7 +562,7 @@ impl StageRenderer {
                 Span::styled(
                     "[ESC] ",
                     Style::default()
-                        .fg(Color::Green)
+                        .fg(Color::LightBlue)
                         .add_modifier(Modifier::BOLD),
                 ),
                 Span::styled("Back to game", Style::default().fg(Color::White)),
@@ -487,10 +577,10 @@ impl StageRenderer {
                     .title("Game Options")
                     .title_style(
                         Style::default()
-                            .fg(Color::Cyan)
+                            .fg(Color::LightBlue)
                             .add_modifier(Modifier::BOLD),
                     )
-                    .border_style(Style::default().fg(Color::Cyan)),
+                    .border_style(Style::default().fg(Color::Blue)),
             )
             .alignment(ratatui::layout::Alignment::Center);
 
