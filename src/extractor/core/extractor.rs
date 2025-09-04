@@ -55,7 +55,7 @@ impl CommonExtractor {
         Self::extract_chunks_from_tree(&tree, &content, file_path, language)
     }
 
-    fn extract_comment_ranges(
+    pub fn extract_comment_ranges(
         tree: &Tree,
         source_code: &str,
         language: &str,
