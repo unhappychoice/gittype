@@ -424,7 +424,7 @@ impl StageManager {
         self.current_challenges.len()
     }
 
-    fn handle_fail_result_navigation(&self) -> Result<bool> {
+    fn handle_fail_result_navigation(&mut self) -> Result<bool> {
         use crate::game::screens::ResultAction;
 
         // Show fail result screen and get user action
@@ -437,6 +437,8 @@ impl StageManager {
 
         match action {
             ResultAction::Retry => {
+                // Reset skips when retrying
+                self.skips_remaining = 3;
                 // Restart the same challenge
                 Ok(true) // Return true to indicate retry
             }
@@ -458,7 +460,7 @@ impl StageManager {
         }
     }
 
-    fn handle_cancel_result_navigation(&self) -> Result<bool> {
+    fn handle_cancel_result_navigation(&mut self) -> Result<bool> {
         use crate::game::screens::ResultAction;
 
         // Show cancel result screen and get user action
@@ -471,6 +473,8 @@ impl StageManager {
 
         match action {
             ResultAction::Retry => {
+                // Reset skips when retrying
+                self.skips_remaining = 3;
                 // Restart the same challenge
                 Ok(true) // Return true to indicate retry
             }
