@@ -15,6 +15,18 @@ impl TextProcessor {
         text: &str,
         comment_ranges: &[(usize, usize)],
     ) -> (String, Vec<(usize, usize)>) {
+        Self::process_challenge_text_with_comment_mapping_preserve_empty(
+            text,
+            comment_ranges,
+            false,
+        )
+    }
+
+    pub fn process_challenge_text_with_comment_mapping_preserve_empty(
+        text: &str,
+        comment_ranges: &[(usize, usize)],
+        preserve_empty_lines: bool,
+    ) -> (String, Vec<(usize, usize)>) {
         // Create character position mapping from original to processed text
         let mut position_mapping = Vec::new();
         let mut original_pos = 0;
@@ -26,8 +38,8 @@ impl TextProcessor {
         for line in &lines {
             let trimmed_line = line.trim_end();
 
-            // Skip empty lines
-            if trimmed_line.trim().is_empty() {
+            // Skip empty lines only if preserve_empty_lines is false
+            if !preserve_empty_lines && trimmed_line.trim().is_empty() {
                 // Record that all characters in this line are skipped
                 for _ in 0..line.len() {
                     position_mapping.push(None); // None means this character was removed
@@ -190,14 +202,13 @@ impl TextProcessor {
             return false;
         }
 
-        // Don't skip newlines - they need to be typeable
+        // Skip newlines only in specific cases, but keep them typeable
         if chars[position] == '\n' {
-            // Only skip newlines that are at the end of comment-only lines or at end of text
-            if Self::is_newline_after_comment_only_line(text, position, comment_ranges)
-                || Self::should_skip_final_newline(text, position)
-            {
+            // Skip newlines only at the very end of text
+            if Self::should_skip_final_newline(text, position) {
                 return true;
             }
+            // Keep newlines typeable by default
             return false;
         }
 
@@ -291,39 +302,42 @@ impl TextProcessor {
         false
     }
 
-    fn is_newline_after_comment_only_line(
+    pub fn is_rest_of_line_comment_only(
         text: &str,
         position: usize,
         comment_ranges: &[(usize, usize)],
     ) -> bool {
         let chars: Vec<char> = text.chars().collect();
-
-        // Check if current character is newline
-        if position >= chars.len() || chars[position] != '\n' {
+        if position >= chars.len() {
             return false;
         }
 
-        // Find the start of current line
-        let mut line_start = position;
-        while line_start > 0 && chars[line_start - 1] != '\n' {
-            line_start = line_start.saturating_sub(1);
+        // Find the next newline or end of text
+        let mut end_pos = position;
+        while end_pos < chars.len() && chars[end_pos] != '\n' {
+            end_pos += 1;
         }
 
-        // Check if everything from line_start to position is whitespace or comment
-        for (i, &ch) in chars.iter().enumerate().take(position).skip(line_start) {
-            if !ch.is_whitespace() {
-                // Found non-whitespace, check if it's part of a comment
-                if !comment_ranges
-                    .iter()
-                    .any(|&(start, end)| i >= start && i < end)
-                {
-                    // Non-whitespace that's not a comment = this is not a comment-only line
-                    return false;
-                }
+        // Check if everything from current position to end of line is comment or whitespace
+        for i in position..end_pos {
+            let ch = chars[i];
+
+            // Skip whitespace
+            if ch.is_whitespace() {
+                continue;
+            }
+
+            // Check if this character is part of a comment
+            let is_in_comment = comment_ranges
+                .iter()
+                .any(|&(start, end)| i >= start && i < end);
+
+            if !is_in_comment {
+                return false; // Found non-comment, non-whitespace content
             }
         }
 
-        // This line contains only whitespace and/or comments
+        // Everything from current position to end of line is comment or whitespace
         true
     }
 }
