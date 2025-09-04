@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.4.0] - 2025-09-04
 
 ### ✨ Features
 
@@ -66,6 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - feat: implement dynamic score color-coding based on ranking tier ([7237046](https://github.com/unhappychoice/gittype/commit/7237046))
 - feat: add terminal color methods to RankingTier and RankingTitle ([615bb2e](https://github.com/unhappychoice/gittype/commit/615bb2e))
 - feat: shorten countdown duration for improved UX ([812c5e7](https://github.com/unhappychoice/gittype/commit/812c5e7))
+- feat: use vendored OpenSSL for all targets to avoid cross-compilation issues ([2bc3269](https://github.com/unhappychoice/gittype/commit/2bc3269))
 
 ### 🐛 Bug Fixes
 
@@ -91,6 +92,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📝 Other Changes
 
+- chore: bump version to v0.4.0 ([e76583d](https://github.com/unhappychoice/gittype/commit/e76583d))
 - chore: Update Cargo.lock ([9e0a8e2](https://github.com/unhappychoice/gittype/commit/9e0a8e2))
 - style: fix cargo fmt formatting issues ([f36dc09](https://github.com/unhappychoice/gittype/commit/f36dc09))
 - chore(deps): bump rusqlite from 0.29.0 to 0.37.0 ([afb84ca](https://github.com/unhappychoice/gittype/commit/afb84ca))
@@ -133,13 +135,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - refactor(main): simplify main.rs using new CLI modules ([238ad8c](https://github.com/unhappychoice/gittype/commit/238ad8c))
 - refactor(cli): move CLI components to separate modules ([3d82e20](https://github.com/unhappychoice/gittype/commit/3d82e20))
 - chore: Update CHANGELOG.md ([32d6d2c](https://github.com/unhappychoice/gittype/commit/32d6d2c))
+- chore: bump version to v0.3.0 ([33f0df0](https://github.com/unhappychoice/gittype/commit/33f0df0))
 
 
 ## [0.3.0] - 2025-09-02
 
 ### ✨ Features
 
-- feat: use vendored OpenSSL for all targets to avoid cross-compilation issues ([2bc3269](https://github.com/unhappychoice/gittype/commit/2bc3269))
+- feat: use vendored OpenSSL for all targets to avoid cross-compilation issues ([420f877](https://github.com/unhappychoice/gittype/commit/420f877))
 - feat: update Homebrew to use prebuilt binaries and add ARM64 support ([96836dd](https://github.com/unhappychoice/gittype/commit/96836dd))
 - feat: add repository management with GitHub support ([d08a93b](https://github.com/unhappychoice/gittype/commit/d08a93b))
 - feat: add GitHub links to commit hashes in changelog ([5881873](https://github.com/unhappychoice/gittype/commit/5881873))
@@ -151,7 +154,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📝 Other Changes
 
-- chore: bump version to v0.3.0 ([33f0df0](https://github.com/unhappychoice/gittype/commit/33f0df0))
+- chore: bump version to v0.3.0 ([806a529](https://github.com/unhappychoice/gittype/commit/806a529))
 - perf(extractor): reuse thread-local tree-sitter parser and precompile glob patterns in scanner ([b5f84e0](https://github.com/unhappychoice/gittype/commit/b5f84e0))
 - perf(extractor): parallelize challenge conversion and zen file processing ([55a2ac0](https://github.com/unhappychoice/gittype/commit/55a2ac0))
 - chore: Fix cargo clippy warnings ([4cfedac](https://github.com/unhappychoice/gittype/commit/4cfedac))
