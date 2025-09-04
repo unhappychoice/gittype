@@ -132,13 +132,13 @@ impl TypingScreen {
     }
 
     fn event_loop(&mut self) -> Result<SessionState> {
+        let mut last_update = std::time::Instant::now();
+
         loop {
-            if event::poll(std::time::Duration::from_millis(100))? {
+            let should_update_display = if event::poll(std::time::Duration::from_millis(50))? {
                 if let Event::Key(key_event) = event::read()? {
                     match self.handle_key(key_event)? {
-                        SessionState::Continue | SessionState::ShowDialog => {
-                            self.update_display()?;
-                        }
+                        SessionState::Continue | SessionState::ShowDialog => true,
                         state @ (SessionState::Complete
                         | SessionState::Exit
                         | SessionState::Skip
@@ -146,9 +146,17 @@ impl TypingScreen {
                             return Ok(state);
                         }
                     }
+                } else {
+                    false
                 }
             } else {
+                // Update display periodically for timer (every 250ms)
+                last_update.elapsed() >= std::time::Duration::from_millis(250)
+            };
+
+            if should_update_display {
                 self.update_display()?;
+                last_update = std::time::Instant::now();
             }
         }
     }
