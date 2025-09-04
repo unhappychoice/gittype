@@ -45,20 +45,13 @@ gittype --repo https://github.com/ratatui-org/ratatui
 gittype --repo git@github.com:dtolnay/anyhow.git
 ```
 
-## Demo 🎮
+## Screenshots 📸
 
-```rust
-[src/main.rs:42-58] (Rust function) 
-// ^ This could be YOUR code!
+![GitType Title Screen](docs/images/title.png)
 
-fn debug_everything(life: &str) -> Result<(), PanicMode> {
-    println!("It works on my machine: {}", life);
-    todo!("fix this before prod")
-}
-> _
-```
+![GitType Gaming](docs/images/gaming.png)
 
-*Type it exactly as shown. Yes, including that `todo!()` you left 6 months ago.*
+![GitType Result](docs/images/result.png)
 
 ## Why GitType? 🤔
 
