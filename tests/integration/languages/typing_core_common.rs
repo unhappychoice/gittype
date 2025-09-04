@@ -34,7 +34,7 @@ pub fn verify_typing_simulation(core: &mut TypingCore) {
     let mut chars_typed = Vec::new();
 
     while let Some(current_char_type) = core.current_char_to_type() {
-        let current_char_display = core.current_char_to_display();
+        let current_char_display = core.text_to_display().chars().nth(core.current_position_to_display());
 
         // Test display position mapping
         let display_pos = core.current_position_to_display();
@@ -77,9 +77,9 @@ pub fn verify_typing_simulation(core: &mut TypingCore) {
 }
 
 /// Create a snapshot for typing core test
-pub fn create_typing_snapshot(core: &TypingCore) -> TypingSnapshot {
+pub fn create_typing_snapshot(core: &TypingCore, original_text: &str) -> TypingSnapshot {
     TypingSnapshot {
-        text_original: core.text_original().to_string(),
+        text_original: original_text.to_string(),
         text_to_type: core.text_to_type().to_string(),
         text_to_display: core.text_to_display().to_string(),
     }
@@ -93,7 +93,7 @@ pub fn run_typing_core_test(test_case: TypingCoreTestCase) {
     // Verify typing simulation works correctly
     verify_typing_simulation(&mut core);
 
-    let snapshot = create_typing_snapshot(&core);
+    let snapshot = create_typing_snapshot(&core, test_case.code);
     assert_snapshot!(test_case.name, snapshot);
 }
 
