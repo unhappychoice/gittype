@@ -18,7 +18,10 @@ impl CodeContext {
     }
 }
 
-pub fn load_context_for_challenge(challenge: &Challenge, context_lines: usize) -> Result<CodeContext> {
+pub fn load_context_for_challenge(
+    challenge: &Challenge,
+    context_lines: usize,
+) -> Result<CodeContext> {
     let Some(source_path) = &challenge.source_file_path else {
         return Ok(CodeContext::empty());
     };
@@ -50,7 +53,7 @@ pub fn load_context_lines(
     // Calculate context ranges (1-indexed to 0-indexed)
     let pre_start = start_line.saturating_sub(context_lines + 1);
     let pre_end = (start_line - 1).min(lines.len());
-    
+
     let post_start = end_line.min(lines.len());
     let post_end = (end_line + context_lines).min(lines.len());
 
@@ -88,7 +91,8 @@ mod tests {
 
     #[test]
     fn test_load_context_lines() {
-        let content = "line1\nline2\nline3\nTARGET_START\nTARGET_CONTENT\nTARGET_END\nline7\nline8\nline9";
+        let content =
+            "line1\nline2\nline3\nTARGET_START\nTARGET_CONTENT\nTARGET_END\nline7\nline8\nline9";
         let mut temp_file = NamedTempFile::new().unwrap();
         fs::write(&temp_file, content).unwrap();
 

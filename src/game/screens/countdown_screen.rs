@@ -116,7 +116,7 @@ impl CountdownScreen {
             "  / ___|/ _ \\ ",
             " | |  _| | | |",
             " | |_| | |_| |",
-            "  \\____|\\___/ "
+            "  \\____|\\___/ ",
         ];
 
         execute!(stdout, SetAttribute(Attribute::Bold))?;
@@ -254,7 +254,7 @@ impl CountdownScreen {
             "  / ___|/ _ \\ ",
             " | |  _| | | |",
             " | |_| | |_| |",
-            "  \\____|\\___/ "
+            "  \\____|\\___/ ",
         ];
 
         execute!(stdout, SetAttribute(Attribute::Bold))?;

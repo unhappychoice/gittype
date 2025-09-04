@@ -221,19 +221,22 @@ impl StageRenderer {
 
         // Add pre-context lines (read-only, dimmed)
         for (ctx_idx, pre_line) in code_context.pre_context.iter().enumerate() {
-            let ctx_line_number = start_line_number.saturating_sub(code_context.pre_context.len() - ctx_idx);
+            let ctx_line_number =
+                start_line_number.saturating_sub(code_context.pre_context.len() - ctx_idx);
             let line_num_text = format!("{:>4} │ ", ctx_line_number);
             let mut line_spans = vec![Span::styled(
                 line_num_text,
                 Style::default().fg(Color::DarkGray),
             )];
-            
+
             // Add the context line content with dimmed style
             line_spans.push(Span::styled(
                 pre_line.clone(),
-                Style::default().fg(Color::DarkGray).add_modifier(Modifier::DIM),
+                Style::default()
+                    .fg(Color::DarkGray)
+                    .add_modifier(Modifier::DIM),
             ));
-            
+
             lines.push(Line::from(line_spans));
         }
 
@@ -272,7 +275,9 @@ impl StageRenderer {
             // Determine character style
             let style = if is_in_comment {
                 // Comments use same color as context lines
-                Style::default().fg(Color::DarkGray).add_modifier(Modifier::DIM)
+                Style::default()
+                    .fg(Color::DarkGray)
+                    .add_modifier(Modifier::DIM)
             } else if i < current_display_position {
                 // Already typed - light blue dimmed for non-comments
                 Style::default()
@@ -318,7 +323,9 @@ impl StageRenderer {
         }
 
         // Add post-context lines (read-only, dimmed)
-        let end_line_number = challenge.and_then(|c| c.end_line).unwrap_or(start_line_number);
+        let end_line_number = challenge
+            .and_then(|c| c.end_line)
+            .unwrap_or(start_line_number);
         for (ctx_idx, post_line) in code_context.post_context.iter().enumerate() {
             let ctx_line_number = end_line_number + ctx_idx + 1;
             let line_num_text = format!("{:>4} │ ", ctx_line_number);
@@ -326,13 +333,15 @@ impl StageRenderer {
                 line_num_text,
                 Style::default().fg(Color::DarkGray),
             )];
-            
+
             // Add the context line content with dimmed style
             line_spans.push(Span::styled(
                 post_line.clone(),
-                Style::default().fg(Color::DarkGray).add_modifier(Modifier::DIM),
+                Style::default()
+                    .fg(Color::DarkGray)
+                    .add_modifier(Modifier::DIM),
             ));
-            
+
             lines.push(Line::from(line_spans));
         }
 
@@ -368,7 +377,6 @@ impl StageRenderer {
 
         Ok(())
     }
-
 
     fn render_dialog(f: &mut ratatui::Frame, skips_remaining: usize) {
         use ratatui::widgets::Clear;
