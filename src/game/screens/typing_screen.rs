@@ -177,6 +177,9 @@ impl TypingScreen {
                         }
                     }
                 }
+            } else {
+                // No keyboard event, but update display periodically for real-time metrics
+                self.update_display()?;
             }
         }
 
@@ -233,6 +236,9 @@ impl TypingScreen {
                         }
                     }
                 }
+            } else {
+                // No keyboard event, but update display periodically for real-time metrics
+                self.update_display()?;
             }
         }
 
@@ -277,6 +283,9 @@ impl TypingScreen {
                         }
                     }
                 }
+            } else {
+                // No keyboard event, but update display periodically for real-time metrics
+                self.update_display()?;
             }
         };
 
