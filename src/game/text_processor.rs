@@ -319,9 +319,7 @@ impl TextProcessor {
         }
 
         // Check if everything from current position to end of line is comment or whitespace
-        for i in position..end_pos {
-            let ch = chars[i];
-
+        for (i, &ch) in chars.iter().enumerate().take(end_pos).skip(position) {
             // Skip whitespace
             if ch.is_whitespace() {
                 continue;
