@@ -1,3 +1,4 @@
+use crate::game::context_loader::CodeContext;
 use crate::models::Challenge;
 use crate::{models::GitRepository, Result};
 use ratatui::{
@@ -44,6 +45,7 @@ impl StageRenderer {
         scoring_engine: &crate::scoring::engine::ScoringEngine,
         repo_info: &Option<GitRepository>,
         display_comment_ranges: &[(usize, usize)],
+        code_context: &CodeContext,
     ) -> Result<()> {
         // Update character cache if needed
         if self.chars.len() != challenge_text.chars().count() {
@@ -79,6 +81,7 @@ impl StageRenderer {
             terminal_size.width,
             challenge,
             display_comment_ranges,
+            code_context,
         );
 
         let elapsed_time = scoring_engine.get_elapsed_time();
@@ -201,6 +204,7 @@ impl StageRenderer {
         terminal_width: u16,
         challenge: Option<&Challenge>,
         display_comment_ranges: &[(usize, usize)],
+        code_context: &CodeContext,
     ) -> Vec<Line<'static>> {
         let mut lines = Vec::new();
         let mut current_line_spans = Vec::new();
@@ -214,6 +218,24 @@ impl StageRenderer {
 
         // Get the starting line number from challenge
         let start_line_number = challenge.and_then(|c| c.start_line).unwrap_or(1);
+
+        // Add pre-context lines (read-only, dimmed)
+        for (ctx_idx, pre_line) in code_context.pre_context.iter().enumerate() {
+            let ctx_line_number = start_line_number.saturating_sub(code_context.pre_context.len() - ctx_idx);
+            let line_num_text = format!("{:>4} │ ", ctx_line_number);
+            let mut line_spans = vec![Span::styled(
+                line_num_text,
+                Style::default().fg(Color::DarkGray),
+            )];
+            
+            // Add the context line content with dimmed style
+            line_spans.push(Span::styled(
+                pre_line.clone(),
+                Style::default().fg(Color::DarkGray).add_modifier(Modifier::DIM),
+            ));
+            
+            lines.push(Line::from(line_spans));
+        }
 
         for (i, &ch) in self.chars.iter().enumerate() {
             // Add line number at the start of each line
@@ -249,8 +271,8 @@ impl StageRenderer {
 
             // Determine character style
             let style = if is_in_comment {
-                // Comments are always blue and dim, regardless of typing state
-                Style::default().fg(Color::Blue).add_modifier(Modifier::DIM)
+                // Comments use same color as context lines
+                Style::default().fg(Color::DarkGray).add_modifier(Modifier::DIM)
             } else if i < current_display_position {
                 // Already typed - light blue dimmed for non-comments
                 Style::default()
@@ -293,6 +315,25 @@ impl StageRenderer {
 
         if !current_line_spans.is_empty() {
             lines.push(Line::from(current_line_spans));
+        }
+
+        // Add post-context lines (read-only, dimmed)
+        let end_line_number = challenge.and_then(|c| c.end_line).unwrap_or(start_line_number);
+        for (ctx_idx, post_line) in code_context.post_context.iter().enumerate() {
+            let ctx_line_number = end_line_number + ctx_idx + 1;
+            let line_num_text = format!("{:>4} │ ", ctx_line_number);
+            let mut line_spans = vec![Span::styled(
+                line_num_text,
+                Style::default().fg(Color::DarkGray),
+            )];
+            
+            // Add the context line content with dimmed style
+            line_spans.push(Span::styled(
+                post_line.clone(),
+                Style::default().fg(Color::DarkGray).add_modifier(Modifier::DIM),
+            ));
+            
+            lines.push(Line::from(line_spans));
         }
 
         if lines.is_empty() {

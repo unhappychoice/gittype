@@ -1,5 +1,6 @@
 use super::{
     super::{
+        context_loader::{self, CodeContext},
         stage_renderer::StageRenderer,
         typing_core::{InputResult, ProcessingOptions, TypingCore},
     },
@@ -23,6 +24,7 @@ pub struct TypingScreen {
     skips_remaining: usize,
     dialog_shown: bool,
     repo_info: Option<GitRepository>,
+    code_context: CodeContext,
 }
 
 pub enum SessionState {
@@ -70,6 +72,13 @@ impl TypingScreen {
         let mut scoring_engine = ScoringEngine::new(typing_core.text_to_type().to_string());
         scoring_engine.start();
 
+        // Load context lines if challenge has source file info
+        let code_context = if let Some(ref challenge) = challenge {
+            context_loader::load_context_for_challenge(challenge, 4)?
+        } else {
+            CodeContext::empty()
+        };
+
         Ok(Self {
             challenge,
             typing_core,
@@ -79,6 +88,7 @@ impl TypingScreen {
             skips_remaining: 3,
             dialog_shown: false,
             repo_info,
+            code_context,
         })
     }
 
@@ -273,6 +283,7 @@ impl TypingScreen {
             &self.scoring_engine,
             &self.repo_info,
             &display_comment_ranges,
+            &self.code_context,
         )
     }
 
