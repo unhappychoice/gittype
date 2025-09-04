@@ -37,7 +37,6 @@ impl StageRenderer {
         challenge_text: &str,
         current_position: usize,
         mistakes: usize,
-        start_time: &std::time::Instant,
         line_starts: &[usize],
         comment_ranges: &[(usize, usize)],
         challenge: Option<&Challenge>,
@@ -83,13 +82,14 @@ impl StageRenderer {
             challenge,
         );
 
+        let elapsed_time = scoring_engine.get_elapsed_time();
         let metrics = crate::scoring::engine::ScoringEngine::calculate_real_time_result(
             current_position,
             mistakes,
-            start_time,
+            elapsed_time,
         );
         let current_line = self.find_line_for_position(current_position, line_starts);
-        let elapsed_secs = scoring_engine.get_elapsed_time().as_secs();
+        let elapsed_secs = elapsed_time.as_secs();
 
         let streak = scoring_engine.get_current_streak();
         let first_line = format!(
