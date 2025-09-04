@@ -12,14 +12,14 @@ fn setup_git_repo(dir_path: &std::path::Path) {
         .current_dir(dir_path)
         .output()
         .expect("Failed to init git repo");
-    
+
     // Set up basic git config
     std::process::Command::new("git")
         .args(&["config", "user.name", "Test User"])
         .current_dir(dir_path)
         .output()
         .expect("Failed to set git user.name");
-    
+
     std::process::Command::new("git")
         .args(&["config", "user.email", "test@example.com"])
         .current_dir(dir_path)
@@ -28,7 +28,12 @@ fn setup_git_repo(dir_path: &std::path::Path) {
 
     // Add a remote URL to avoid "Failed to get remote URL" error
     std::process::Command::new("git")
-        .args(&["remote", "add", "origin", "https://github.com/test/test.git"])
+        .args(&[
+            "remote",
+            "add",
+            "origin",
+            "https://github.com/test/test.git",
+        ])
         .current_dir(dir_path)
         .output()
         .expect("Failed to add remote");
@@ -374,7 +379,7 @@ fn test_nested_and_oneline_structures() {
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let file_path = temp_dir.path().join("test.rs");
     fs::write(&file_path, rust_code).expect("Failed to write test file");
-    
+
     // Setup git repository
     setup_git_repo(temp_dir.path());
 
@@ -407,7 +412,6 @@ fn test_nested_and_oneline_structures() {
 
         println!("Comment ranges: {:?}", mapped_ranges);
     }
-
 }
 
 #[test]
@@ -425,7 +429,7 @@ fn calculate_sum(a: i32, b: i32) -> i32 {
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let file_path = temp_dir.path().join("test.rs");
     fs::write(&file_path, rust_code).expect("Failed to write test file");
-    
+
     // Setup git repository
     setup_git_repo(temp_dir.path());
 
