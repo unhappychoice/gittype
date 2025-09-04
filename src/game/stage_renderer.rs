@@ -5,7 +5,7 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
     text::{Line, Span, Text},
-    widgets::{Block, Borders, Paragraph},
+    widgets::{Block, Borders, Gauge, Paragraph},
     Terminal,
 };
 use std::io;
@@ -141,34 +141,33 @@ impl StageRenderer {
                 );
             f.render_widget(content, chunks[1]);
 
-            // Metrics section below the code
+            // Metrics section below the code - less prominent
             let metrics_widget = Paragraph::new(vec![Line::from(vec![Span::styled(
                 first_line.clone(),
-                Style::default().fg(Color::White),
+                Style::default().fg(Color::DarkGray),
             )])])
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Yellow))
+                    .border_style(Style::default().fg(Color::DarkGray))
                     .title("Metrics")
-                    .title_style(Style::default().fg(Color::Yellow))
+                    .title_style(Style::default().fg(Color::DarkGray))
                     .padding(ratatui::widgets::Padding::horizontal(1)),
             ); // Only horizontal padding
             f.render_widget(metrics_widget, chunks[2]);
 
-            // Progress bar in its own bordered box with different color
-            let progress_width = chunks[3].width.saturating_sub(4) as u8; // Account for borders and padding
-            let full_width_progress = Self::create_progress_bar(progress_percent, progress_width);
-            let progress_widget = Paragraph::new(full_width_progress)
-                .style(Style::default().fg(Color::Green))
+            // Progress bar using ratatui's Gauge widget
+            let progress_widget = Gauge::default()
                 .block(
                     Block::default()
                         .borders(Borders::ALL)
-                        .border_style(Style::default().fg(Color::Green))
+                        .border_style(Style::default().fg(Color::DarkGray))
                         .title("Progress")
-                        .title_style(Style::default().fg(Color::Green)),
+                        .title_style(Style::default().fg(Color::DarkGray)),
                 )
-                .alignment(ratatui::layout::Alignment::Center);
+                .gauge_style(Style::default().fg(Color::Cyan))
+                .percent(progress_percent as u16)
+                .label(format!("{}%", progress_percent));
             f.render_widget(progress_widget, chunks[3]);
 
             // Render [ESC] Options in bottom left without border
@@ -253,20 +252,20 @@ impl StageRenderer {
                 // Comments are always blue and dim, regardless of typing state
                 Style::default().fg(Color::Blue).add_modifier(Modifier::DIM)
             } else if i < current_display_position {
-                // Already typed - bold white for non-comments
+                // Already typed - light blue dimmed for non-comments
                 Style::default()
-                    .fg(Color::White)
-                    .add_modifier(Modifier::BOLD)
+                    .fg(Color::LightBlue)
+                    .add_modifier(Modifier::DIM)
             } else if i == current_display_position {
                 // Current cursor position - highlighted
                 if let Some(mistake_pos) = current_mistake_position {
                     if i == mistake_pos {
                         Style::default().fg(Color::White).bg(Color::Red)
                     } else {
-                        Style::default().fg(Color::Black).bg(Color::Gray)
+                        Style::default().fg(Color::White).bg(Color::DarkGray)
                     }
                 } else {
-                    Style::default().fg(Color::Black).bg(Color::Gray)
+                    Style::default().fg(Color::White).bg(Color::DarkGray)
                 }
             } else {
                 // Not yet typed - dim white for non-comments
@@ -329,16 +328,6 @@ impl StageRenderer {
         Ok(())
     }
 
-    fn create_progress_bar(progress_percent: u8, width: u8) -> String {
-        let filled_width = (progress_percent as f32 / 100.0 * width as f32) as u8;
-        let empty_width = width - filled_width;
-
-        format!(
-            "{}{}",
-            "█".repeat(filled_width as usize),
-            "░".repeat(empty_width as usize)
-        )
-    }
 
     fn render_dialog(f: &mut ratatui::Frame, skips_remaining: usize) {
         use ratatui::widgets::Clear;
