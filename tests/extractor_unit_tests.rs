@@ -182,27 +182,27 @@ struct Person {
 
     // Initialize git repository in temp directory
     std::process::Command::new("git")
-        .args(&["init"])
+        .args(["init"])
         .current_dir(temp_dir.path())
         .output()
         .expect("Failed to init git repo");
 
     // Set up basic git config
     std::process::Command::new("git")
-        .args(&["config", "user.name", "Test User"])
+        .args(["config", "user.name", "Test User"])
         .current_dir(temp_dir.path())
         .output()
         .expect("Failed to set git user.name");
 
     std::process::Command::new("git")
-        .args(&["config", "user.email", "test@example.com"])
+        .args(["config", "user.email", "test@example.com"])
         .current_dir(temp_dir.path())
         .output()
         .expect("Failed to set git user.email");
 
     // Add a remote URL to avoid "Failed to get remote URL" error
     std::process::Command::new("git")
-        .args(&[
+        .args([
             "remote",
             "add",
             "origin",
