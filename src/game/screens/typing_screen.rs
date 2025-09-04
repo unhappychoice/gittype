@@ -307,9 +307,8 @@ impl TypingScreen {
 
     fn calculate_result(&self) -> StageResult {
         let was_skipped = !self.typing_core.is_completed();
-        let was_failed = false; // Handled in stage manager
         self.scoring_engine
-            .calculate_result_with_status(was_skipped, was_failed)
+            .calculate_result_with_status(was_skipped, false)
             .unwrap()
     }
 
@@ -336,9 +335,5 @@ impl TypingScreen {
 
     pub fn was_skipped(&self) -> bool {
         !self.typing_core.is_completed()
-    }
-
-    pub fn was_failed(&self) -> bool {
-        false // Handled in stage manager
     }
 }
