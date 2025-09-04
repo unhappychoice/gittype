@@ -397,4 +397,34 @@ impl TypingCore {
             .unwrap_or(0);
         self.update_display_position();
     }
+
+    // Helper methods for typing logic
+    pub fn is_completed(&self) -> bool {
+        self.current_position_to_type >= self.text_to_type.len()
+    }
+
+    pub fn can_accept_input(&self) -> bool {
+        self.current_position_to_type < self.text_to_type.len()
+    }
+
+    pub fn check_character_match(&self, input_char: char) -> bool {
+        if let Some(expected_char) = self.current_char_to_type() {
+            input_char == expected_char
+        } else {
+            false
+        }
+    }
+
+    pub fn is_at_line_end_for_enter(&self) -> bool {
+        self.is_position_at_line_end(self.current_position_to_type)
+    }
+
+    pub fn handle_newline_advance(&mut self) {
+        // Skip current position if it's a newline
+        if let Some(ch) = self.current_char_to_type() {
+            if ch == '\n' {
+                self.advance_to_next_character();
+            }
+        }
+    }
 }
