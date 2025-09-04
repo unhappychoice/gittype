@@ -1,0 +1,65 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+enum color {
+    RED,   // Red color
+    GREEN, // Green color
+    BLUE   // Blue color
+};
+
+void print_color(enum color c) {
+    switch (c) {
+        case RED:
+            printf("Red\n");   // Print red
+            break;
+        case GREEN:
+            printf("Green\n"); // Print green
+            break;
+        case BLUE:
+            printf("Blue\n");  // Print blue
+            break;
+    }
+}
+
+# text_to_type
+enum color {
+RED,
+GREEN,
+BLUE
+};
+void print_color(enum color c) {
+switch (c) {
+case RED:
+printf("Red\n");
+break;
+case GREEN:
+printf("Green\n");
+break;
+case BLUE:
+printf("Blue\n");
+break;
+}
+}
+
+# text_to_display
+enum color {↵
+    RED,↵   // Red color
+    GREEN,↵ // Green color
+    BLUE↵   // Blue color
+};↵
+
+void print_color(enum color c) {↵
+    switch (c) {↵
+        case RED:↵
+            printf("Red\n");↵   // Print red
+            break;↵
+        case GREEN:↵
+            printf("Green\n");↵ // Print green
+            break;↵
+        case BLUE:↵
+            printf("Blue\n");↵  // Print blue
+            break;↵
+    }↵
+}↵

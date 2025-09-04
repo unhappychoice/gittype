@@ -1,0 +1,18 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+public void greet(String name) {
+    System.out.println("Hello " + name); // Print greeting
+}
+
+# text_to_type
+public void greet(String name) {
+System.out.println("Hello " + name);
+}
+
+# text_to_display
+public void greet(String name) {↵
+    System.out.println("Hello " + name);↵ // Print greeting
+}↵

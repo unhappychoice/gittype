@@ -1,0 +1,50 @@
+---
+source: tests/integration/languages/typing_core_java.rs
+expression: snapshot
+---
+# text_original
+/**
+ * A simple calculator class.
+ * @author Developer
+ */
+public class Calculator {
+    private int value; // Current value
+    
+    public Calculator() {
+        this.value = 0; // Initialize to zero
+    }
+    
+    /* Add method implementation */
+    public void add(int n) {
+        this.value += n;
+    }
+}
+
+# text_to_type
+public class Calculator {
+private int value;
+public Calculator() {
+this.value = 0;
+}
+public void add(int n) {
+this.value += n;
+}
+}
+
+# text_to_display
+/**
+ * A simple calculator class.
+ * @author Developer
+ */
+public class Calculator {↵
+    private int value; // Current value↵
+    
+    public Calculator() {↵
+        this.value = 0; // Initialize to zero↵
+    }↵
+    
+    /* Add method implementation */
+    public void add(int n) {↵
+        this.value += n;↵
+    }↵
+}

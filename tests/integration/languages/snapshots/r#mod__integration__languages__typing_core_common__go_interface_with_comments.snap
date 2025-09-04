@@ -1,0 +1,25 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+type Shape interface {
+    // Get the area
+    Area() float64
+    // Get the perimeter
+    Perimeter() float64
+}
+
+# text_to_type
+type Shape interface {
+Area() float64
+Perimeter() float64
+}
+
+# text_to_display
+type Shape interface {↵
+    // Get the area
+    Area() float64↵
+    // Get the perimeter
+    Perimeter() float64↵
+}↵

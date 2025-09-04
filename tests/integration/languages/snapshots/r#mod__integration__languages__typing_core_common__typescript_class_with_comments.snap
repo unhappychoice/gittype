@@ -1,0 +1,43 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+class Calculator {
+    private result: number = 0; // Store result
+    
+    public add(value: number): Calculator { // Add method
+        this.result += value;
+        return this;
+    }
+    
+    public getResult(): number {
+        return this.result; // Return current result
+    }
+}
+
+# text_to_type
+class Calculator {
+private result: number = 0;
+public add(value: number): Calculator {
+this.result += value;
+return this;
+}
+public getResult(): number {
+return this.result;
+}
+}
+
+# text_to_display
+class Calculator {↵
+    private result: number = 0;↵ // Store result
+    
+    public add(value: number): Calculator {↵ // Add method
+        this.result += value;↵
+        return this;↵
+    }↵
+    
+    public getResult(): number {↵
+        return this.result;↵ // Return current result
+    }↵
+}↵

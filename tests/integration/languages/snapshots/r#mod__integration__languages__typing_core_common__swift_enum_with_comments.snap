@@ -1,0 +1,49 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+enum Result<T, E> {
+    case success(T) // Success case
+    case failure(E) // Failure case
+    
+    /* Check if result is successful */
+    var isSuccess: Bool {
+        switch self {
+        case .success:
+            return true
+        case .failure:
+            return false
+        }
+    }
+}
+
+# text_to_type
+enum Result<T, E> {
+case success(T)
+case failure(E)
+var isSuccess: Bool {
+switch self {
+case .success:
+return true
+case .failure:
+return false
+}
+}
+}
+
+# text_to_display
+enum Result<T, E> {↵
+    case success(T)↵ // Success case
+    case failure(E)↵ // Failure case
+    
+    /* Check if result is successful */
+    var isSuccess: Bool {↵
+        switch self {↵
+        case .success:↵
+            return true↵
+        case .failure:↵
+            return false↵
+        }↵
+    }↵
+}↵

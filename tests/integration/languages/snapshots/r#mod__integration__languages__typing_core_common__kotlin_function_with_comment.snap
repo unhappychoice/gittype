@@ -1,0 +1,18 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+fun add(a: Int, b: Int): Int {
+    return a + b // Return sum
+}
+
+# text_to_type
+fun add(a: Int, b: Int): Int {
+return a + b
+}
+
+# text_to_display
+fun add(a: Int, b: Int): Int {↵
+    return a + b↵ // Return sum
+}↵

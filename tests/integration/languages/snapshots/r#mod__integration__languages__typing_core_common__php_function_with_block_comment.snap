@@ -1,0 +1,34 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+<?php
+function factorial($n) {
+    /* Calculate factorial
+       using recursion */
+    if ($n <= 1) {
+        return 1;
+    }
+    return $n * factorial($n - 1);
+}
+
+# text_to_type
+<?php
+function factorial($n) {
+if ($n <= 1) {
+return 1;
+}
+return $n * factorial($n - 1);
+}
+
+# text_to_display
+<?php↵
+function factorial($n) {↵
+    /* Calculate factorial
+       using recursion */
+    if ($n <= 1) {↵
+        return 1;↵
+    }↵
+    return $n * factorial($n - 1);↵
+}↵

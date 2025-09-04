@@ -1,0 +1,36 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+async function fetchUser(id: number): Promise<User | null> {
+    try {
+        const response = await fetch(`/api/users/${id}`); // Fetch user
+        return await response.json();
+    } catch (error) {
+        console.error(error); // Log error
+        return null;
+    }
+}
+
+# text_to_type
+async function fetchUser(id: number): Promise<User | null> {
+try {
+const response = await fetch(`/api/users/${id}`);
+return await response.json();
+} catch (error) {
+console.error(error);
+return null;
+}
+}
+
+# text_to_display
+async function fetchUser(id: number): Promise<User | null> {↵
+    try {↵
+        const response = await fetch(`/api/users/${id}`);↵ // Fetch user
+        return await response.json();↵
+    } catch (error) {↵
+        console.error(error);↵ // Log error
+        return null;↵
+    }↵
+}↵

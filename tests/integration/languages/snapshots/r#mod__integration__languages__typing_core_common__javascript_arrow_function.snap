@@ -1,0 +1,20 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+const multiply = (a, b) => {
+    // Simple multiplication
+    return a * b;
+};
+
+# text_to_type
+const multiply = (a, b) => {
+return a * b;
+};
+
+# text_to_display
+const multiply = (a, b) => {↵
+    // Simple multiplication
+    return a * b;↵
+};↵

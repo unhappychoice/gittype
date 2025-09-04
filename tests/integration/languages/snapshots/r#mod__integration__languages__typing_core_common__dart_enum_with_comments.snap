@@ -1,0 +1,62 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+enum Status {
+  loading,  // Loading state
+  success,  // Success state
+  error,    // Error state
+}
+
+extension StatusExtension on Status {
+  String get message {
+    switch (this) {
+      case Status.loading:
+        return 'Loading...';      // Loading message
+      case Status.success:
+        return 'Success!';        // Success message
+      case Status.error:
+        return 'Error occurred';  // Error message
+    }
+  }
+}
+
+# text_to_type
+enum Status {
+loading,
+success,
+error,
+}
+extension StatusExtension on Status {
+String get message {
+switch (this) {
+case Status.loading:
+return 'Loading...';
+case Status.success:
+return 'Success!';
+case Status.error:
+return 'Error occurred';
+}
+}
+}
+
+# text_to_display
+enum Status {↵
+  loading,↵  // Loading state
+  success,↵  // Success state
+  error,↵    // Error state
+}↵
+
+extension StatusExtension on Status {↵
+  String get message {↵
+    switch (this) {↵
+      case Status.loading:↵
+        return 'Loading...';↵      // Loading message
+      case Status.success:↵
+        return 'Success!';↵        // Success message
+      case Status.error:↵
+        return 'Error occurred';↵  // Error message
+    }↵
+  }↵
+}↵

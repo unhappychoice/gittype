@@ -1,0 +1,25 @@
+---
+source: tests/integration/languages/typing_core_javascript.rs
+expression: snapshot
+---
+# text_original
+const multiply = (a, b) => a * b; // Arrow function
+
+const greet = name => {
+    // Template literal usage
+    return `Hello, ${name}!`;
+};
+
+# text_to_type
+const multiply = (a, b) => a * b;
+const greet = name => {
+return `Hello, ${name}!`;
+};
+
+# text_to_display
+const multiply = (a, b) => a * b; // Arrow function↵
+
+const greet = name => {↵
+    // Template literal usage
+    return `Hello, ${name}!`;↵
+};

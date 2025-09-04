@@ -1,0 +1,29 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+class Calculator:
+    def __init__(self):
+        self.result = 0  # Initialize result
+    
+    def add(self, value):  # Add method
+        self.result += value
+        return self
+
+# text_to_type
+class Calculator:
+def __init__(self):
+self.result = 0
+def add(self, value):
+self.result += value
+return self
+
+# text_to_display
+class Calculator:↵
+    def __init__(self):↵
+        self.result = 0↵  # Initialize result
+    
+    def add(self, value):↵  # Add method
+        self.result += value↵
+        return self↵

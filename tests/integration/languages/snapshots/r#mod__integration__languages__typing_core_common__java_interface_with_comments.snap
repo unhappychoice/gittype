@@ -1,0 +1,27 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+public interface Drawable {
+    // Draw the object
+    void draw();
+    
+    // Get the area
+    double getArea();
+}
+
+# text_to_type
+public interface Drawable {
+void draw();
+double getArea();
+}
+
+# text_to_display
+public interface Drawable {↵
+    // Draw the object
+    void draw();↵
+    
+    // Get the area
+    double getArea();↵
+}↵

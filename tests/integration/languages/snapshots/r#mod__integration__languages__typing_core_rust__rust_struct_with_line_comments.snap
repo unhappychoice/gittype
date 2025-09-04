@@ -1,0 +1,21 @@
+---
+source: tests/integration/languages/typing_core_rust.rs
+expression: snapshot
+---
+# text_original
+struct Person {
+    name: String, // Person's name
+    age: u32,     // Person's age in years
+}
+
+# text_to_type
+struct Person {
+name: String,
+age: u32,
+}
+
+# text_to_display
+struct Person {↵
+    name: String,↵ // Person's name
+    age: u32,↵     // Person's age in years
+}↵

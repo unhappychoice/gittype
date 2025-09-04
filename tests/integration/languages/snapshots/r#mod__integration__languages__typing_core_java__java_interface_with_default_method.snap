@@ -1,0 +1,33 @@
+---
+source: tests/integration/languages/typing_core_java.rs
+expression: snapshot
+---
+# text_original
+public interface Drawable {
+    // Abstract method
+    void draw();
+    
+    // Default method with implementation
+    default void display() {
+        System.out.println("Displaying..."); // Print message
+    }
+}
+
+# text_to_type
+public interface Drawable {
+void draw();
+default void display() {
+System.out.println("Displaying...");
+}
+}
+
+# text_to_display
+public interface Drawable {↵
+    // Abstract method
+    void draw();↵
+    
+    // Default method with implementation
+    default void display() {↵
+        System.out.println("Displaying..."); // Print message↵
+    }↵
+}

@@ -1,0 +1,36 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+namespace math {
+    // Constants
+    const double PI = 3.14159;
+    const double E = 2.71828;
+    
+    // Calculate circle area
+    double circleArea(double radius) {
+        return PI * radius * radius;
+    }
+}
+
+# text_to_type
+namespace math {
+const double PI = 3.14159;
+const double E = 2.71828;
+double circleArea(double radius) {
+return PI * radius * radius;
+}
+}
+
+# text_to_display
+namespace math {↵
+    // Constants
+    const double PI = 3.14159;↵
+    const double E = 2.71828;↵
+    
+    // Calculate circle area
+    double circleArea(double radius) {↵
+        return PI * radius * radius;↵
+    }↵
+}↵

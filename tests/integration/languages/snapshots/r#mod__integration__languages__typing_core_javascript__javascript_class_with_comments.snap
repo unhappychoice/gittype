@@ -1,0 +1,39 @@
+---
+source: tests/integration/languages/typing_core_javascript.rs
+expression: snapshot
+---
+# text_original
+class Calculator {
+    constructor() {
+        this.value = 0; // Initialize value
+    }
+    
+    /* Multi-line comment
+       for add method */
+    add(n) {
+        this.value += n;
+    }
+}
+
+# text_to_type
+class Calculator {
+constructor() {
+this.value = 0;
+}
+add(n) {
+this.value += n;
+}
+}
+
+# text_to_display
+class Calculator {↵
+    constructor() {↵
+        this.value = 0; // Initialize value↵
+    }↵
+    
+    /* Multi-line comment
+       for add method */
+    add(n) {↵
+        this.value += n;↵
+    }↵
+}

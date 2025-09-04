@@ -1,0 +1,33 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+async function fetchData(url) {
+    try {
+        const response = await fetch(url); // Fetch data
+        return response.json();
+    } catch (error) {
+        console.error(error); // Log error
+    }
+}
+
+# text_to_type
+async function fetchData(url) {
+try {
+const response = await fetch(url);
+return response.json();
+} catch (error) {
+console.error(error);
+}
+}
+
+# text_to_display
+async function fetchData(url) {↵
+    try {↵
+        const response = await fetch(url);↵ // Fetch data
+        return response.json();↵
+    } catch (error) {↵
+        console.error(error);↵ // Log error
+    }↵
+}↵

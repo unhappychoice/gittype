@@ -1,0 +1,26 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+def process_numbers(numbers)
+  # Filter and map in chain
+  numbers.select { |n| n.even? }    # Keep only even numbers
+         .map { |n| n * 2 }          # Double each number
+         .reduce(0) { |sum, n| sum + n } # Sum all numbers
+end
+
+# text_to_type
+def process_numbers(numbers)
+numbers.select { |n| n.even? }
+.map { |n| n * 2 }
+.reduce(0) { |sum, n| sum + n }
+end
+
+# text_to_display
+def process_numbers(numbers)↵
+  # Filter and map in chain
+  numbers.select { |n| n.even? }↵    # Keep only even numbers
+         .map { |n| n * 2 }↵          # Double each number
+         .reduce(0) { |sum, n| sum + n }↵ # Sum all numbers
+end↵

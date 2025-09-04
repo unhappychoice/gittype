@@ -1,0 +1,32 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+type Person struct {
+    Name string // Person's name
+    Age  int    // Person's age
+}
+
+func (p *Person) Greet() {
+    fmt.Printf("Hello, I'm %s", p.Name) // Print greeting
+}
+
+# text_to_type
+type Person struct {
+Name string
+Age  int
+}
+func (p *Person) Greet() {
+fmt.Printf("Hello, I'm %s", p.Name)
+}
+
+# text_to_display
+type Person struct {↵
+    Name string↵ // Person's name
+    Age  int↵    // Person's age
+}↵
+
+func (p *Person) Greet() {↵
+    fmt.Printf("Hello, I'm %s", p.Name)↵ // Print greeting
+}↵

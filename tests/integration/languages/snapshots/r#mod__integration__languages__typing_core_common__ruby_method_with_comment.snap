@@ -1,0 +1,18 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+def add(a, b)
+  a + b # Return sum
+end
+
+# text_to_type
+def add(a, b)
+a + b
+end
+
+# text_to_display
+def add(a, b)↵
+  a + b↵ # Return sum
+end↵

@@ -1,0 +1,43 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+class Calculator {
+  int _result = 0; // Store result
+  
+  Calculator add(int value) { // Add method
+    _result += value;
+    return this;
+  }
+  
+  int get result {
+    return _result; // Return current result
+  }
+}
+
+# text_to_type
+class Calculator {
+int _result = 0;
+Calculator add(int value) {
+_result += value;
+return this;
+}
+int get result {
+return _result;
+}
+}
+
+# text_to_display
+class Calculator {↵
+  int _result = 0;↵ // Store result
+  
+  Calculator add(int value) {↵ // Add method
+    _result += value;↵
+    return this;↵
+  }↵
+  
+  int get result {↵
+    return _result;↵ // Return current result
+  }↵
+}↵
