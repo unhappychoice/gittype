@@ -180,6 +180,33 @@ struct Person {
 "#;
     fs::write(&file_path, rust_code).unwrap();
 
+    // Initialize git repository in temp directory
+    std::process::Command::new("git")
+        .args(&["init"])
+        .current_dir(temp_dir.path())
+        .output()
+        .expect("Failed to init git repo");
+    
+    // Set up basic git config
+    std::process::Command::new("git")
+        .args(&["config", "user.name", "Test User"])
+        .current_dir(temp_dir.path())
+        .output()
+        .expect("Failed to set git user.name");
+    
+    std::process::Command::new("git")
+        .args(&["config", "user.email", "test@example.com"])
+        .current_dir(temp_dir.path())
+        .output()
+        .expect("Failed to set git user.email");
+
+    // Add a remote URL to avoid "Failed to get remote URL" error
+    std::process::Command::new("git")
+        .args(&["remote", "add", "origin", "https://github.com/test/test.git"])
+        .current_dir(temp_dir.path())
+        .output()
+        .expect("Failed to add remote");
+
     let mut loader = RepositoryLoader::new().unwrap();
     let mut options = ExtractionOptions::default();
     // Remove tmp/** pattern for this test since we're using a temp directory
