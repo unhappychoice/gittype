@@ -17,10 +17,7 @@ use crossterm::{
 pub struct TypingScreen {
     challenge: Option<Challenge>,
     typing_core: TypingCore,
-    mistakes: usize,
     start_time: std::time::Instant,
-    mistake_positions: Vec<usize>,
-    current_mistake_position: Option<usize>,
     renderer: StageRenderer,
     scoring_engine: ScoringEngine,
     skips_remaining: usize,
@@ -76,10 +73,7 @@ impl TypingScreen {
         Ok(Self {
             challenge,
             typing_core,
-            mistakes: 0,
             start_time: std::time::Instant::now(),
-            mistake_positions: Vec::new(),
-            current_mistake_position: None,
             renderer,
             scoring_engine,
             skips_remaining: 3,
@@ -237,26 +231,11 @@ impl TypingScreen {
 
     fn handle_input_result(&mut self, result: InputResult) -> Result<SessionState> {
         match result {
-            InputResult::Correct => {
-                self.current_mistake_position = None;
-                Ok(SessionState::Continue)
-            }
-            InputResult::Incorrect => {
-                self.record_mistake();
-                Ok(SessionState::Continue)
-            }
-            InputResult::Completed => {
-                self.current_mistake_position = None;
-                Ok(SessionState::Complete)
-            }
+            InputResult::Correct => Ok(SessionState::Continue),
+            InputResult::Incorrect => Ok(SessionState::Continue),
+            InputResult::Completed => Ok(SessionState::Complete),
             InputResult::NoAction => Ok(SessionState::Continue),
         }
-    }
-
-    fn record_mistake(&mut self) {
-        self.mistakes += 1;
-        self.mistake_positions.push(self.typing_core.current_position_to_type());
-        self.current_mistake_position = Some(self.typing_core.current_position_to_type());
     }
 
     fn open_dialog(&mut self) {
@@ -275,9 +254,9 @@ impl TypingScreen {
             self.typing_core.text_to_display(),
             self.typing_core.current_position_to_display(),
             self.typing_core.current_line_to_display(),
-            self.mistakes,
+            self.typing_core.mistakes(),
             self.challenge.as_ref(),
-            self.current_mistake_position,
+            self.typing_core.current_mistake_position(),
             self.skips_remaining,
             self.dialog_shown,
             &self.scoring_engine,

@@ -18,6 +18,11 @@ pub struct TypingCore {
     // Metadata
     comment_ranges: Vec<(usize, usize)>,
     line_starts: Vec<usize>,
+    
+    // Mistake tracking
+    mistakes: usize,
+    mistake_positions: Vec<usize>,
+    current_mistake_position: Option<usize>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -80,6 +85,9 @@ impl TypingCore {
             mapping_to_display: text_mapping_to_display,
             comment_ranges: comment_ranges.to_vec(),
             line_starts,
+            mistakes: 0,
+            mistake_positions: Vec::new(),
+            current_mistake_position: None,
         }
     }
 
@@ -133,6 +141,19 @@ impl TypingCore {
     // Others
     pub fn line_starts(&self) -> &[usize] {
         &self.line_starts
+    }
+
+    // Mistake tracking
+    pub fn mistakes(&self) -> usize {
+        self.mistakes
+    }
+
+    pub fn mistake_positions(&self) -> &[usize] {
+        &self.mistake_positions
+    }
+
+    pub fn current_mistake_position(&self) -> Option<usize> {
+        self.current_mistake_position
     }
 
     pub fn display_comment_ranges(&self) -> Vec<(usize, usize)> {
@@ -428,6 +449,16 @@ impl TypingCore {
         }
     }
 
+    fn record_mistake(&mut self) {
+        self.mistakes += 1;
+        self.mistake_positions.push(self.current_position_to_type);
+        self.current_mistake_position = Some(self.current_position_to_type);
+    }
+
+    fn clear_mistake_position(&mut self) {
+        self.current_mistake_position = None;
+    }
+
     // High-level input processing methods
     pub fn process_character_input(&mut self, input_char: char) -> InputResult {
         if !self.can_accept_input() {
@@ -435,6 +466,7 @@ impl TypingCore {
         }
 
         if self.check_character_match(input_char) {
+            self.clear_mistake_position();
             self.advance_to_next_character();
             if self.is_completed() {
                 InputResult::Completed
@@ -442,6 +474,7 @@ impl TypingCore {
                 InputResult::Correct
             }
         } else {
+            self.record_mistake();
             InputResult::Incorrect
         }
     }
@@ -452,6 +485,7 @@ impl TypingCore {
         }
 
         if self.is_at_line_end_for_enter() {
+            self.clear_mistake_position();
             self.handle_newline_advance();
             if self.is_completed() {
                 InputResult::Completed
@@ -459,6 +493,7 @@ impl TypingCore {
                 InputResult::Correct
             }
         } else {
+            self.record_mistake();
             InputResult::Incorrect
         }
     }
@@ -469,6 +504,7 @@ impl TypingCore {
         }
 
         if self.check_character_match('\t') {
+            self.clear_mistake_position();
             self.advance_to_next_character();
             if self.is_completed() {
                 InputResult::Completed
@@ -476,6 +512,7 @@ impl TypingCore {
                 InputResult::Correct
             }
         } else {
+            self.record_mistake();
             InputResult::Incorrect
         }
     }
