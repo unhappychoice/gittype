@@ -706,6 +706,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "indexmap"
+version = "2.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f2481980430f9f78649238835720ddccc57e52df14ffce1c6f37391d61b563e9"
+dependencies = [
+ "equivalent",
+ "hashbrown 0.15.5",
+]
+
+[[package]]
 name = "insta"
 version = "1.43.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1273,6 +1283,7 @@ version = "1.0.143"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d401abef1d108fbd9cbaebc3e46611f4b1021f714a0597a71f41ee463f5f4a5a"
 dependencies = [
+ "indexmap",
  "itoa",
  "memchr",
  "ryu",
@@ -1450,13 +1461,14 @@ dependencies = [
 
 [[package]]
 name = "tree-sitter"
-version = "0.24.7"
+version = "0.25.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a5387dffa7ffc7d2dae12b50c6f7aab8ff79d6210147c6613561fc3d474c6f75"
+checksum = "6d7b8994f367f16e6fa14b5aebbcb350de5d7cbea82dc5b00ae997dd71680dd2"
 dependencies = [
  "cc",
  "regex",
  "regex-syntax",
+ "serde_json",
  "streaming-iterator",
  "tree-sitter-language",
 ]
