@@ -2,9 +2,6 @@ use crate::models::Challenge;
 
 #[derive(Debug, Clone)]
 pub struct TypingCore {
-    // Original source code with comments and formatting
-    text_original: String,
-
     // Text for typing logic (comments and empty lines removed)
     text_to_type: String,
     current_position_to_type: usize,
@@ -17,11 +14,9 @@ pub struct TypingCore {
 
     // Metadata
     comment_ranges: Vec<(usize, usize)>,
-    line_starts: Vec<usize>,
     
     // Mistake tracking
     mistakes: usize,
-    mistake_positions: Vec<usize>, // typing positions for statistics
     current_mistake_position: Option<usize>, // display position for highlighting
 }
 
@@ -44,6 +39,14 @@ impl Default for ProcessingOptions {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum InputResult {
+    Correct,      // Input was correct, continue
+    Incorrect,    // Input was incorrect (mistake)
+    Completed,    // Input was correct and typing is complete
+    NoAction,     // No input accepted (already completed)
+}
+
 impl TypingCore {
     pub fn new(
         original_text: &str,
@@ -55,8 +58,6 @@ impl TypingCore {
 
         let (text_to_display, text_mapping_to_display) =
             Self::create_display_text(original_text, comment_ranges, &options);
-
-        let line_starts = Self::calculate_line_starts(&text_to_display);
 
         let initial_position_to_type = text_to_type
             .char_indices()
@@ -76,7 +77,6 @@ impl TypingCore {
         };
 
         Self {
-            text_original: original_text.to_string(),
             text_to_type,
             current_position_to_type: initial_position_to_type,
             mapping_to_type: text_mapping_to_type,
@@ -84,9 +84,7 @@ impl TypingCore {
             current_position_to_display: initial_position_to_display,
             mapping_to_display: text_mapping_to_display,
             comment_ranges: comment_ranges.to_vec(),
-            line_starts,
             mistakes: 0,
-            mistake_positions: Vec::new(),
             current_mistake_position: None,
         }
     }
@@ -94,11 +92,6 @@ impl TypingCore {
     pub fn from_challenge(challenge: &Challenge, options: Option<ProcessingOptions>) -> Self {
         let options = options.unwrap_or_default();
         Self::new(&challenge.code_content, &challenge.comment_ranges, options)
-    }
-
-    // Getters for the three text representations
-    pub fn text_original(&self) -> &str {
-        &self.text_original
     }
 
     // text_to_type
@@ -123,12 +116,6 @@ impl TypingCore {
         self.current_position_to_display
     }
 
-    pub fn current_char_to_display(&self) -> Option<char> {
-        self.text_to_display
-            .chars()
-            .nth(self.current_position_to_display)
-    }
-
     pub fn current_line_to_display(&self) -> usize {
         // Count newlines up to current position to determine line number
         self.text_to_display
@@ -138,18 +125,9 @@ impl TypingCore {
             .count()
     }
 
-    // Others
-    pub fn line_starts(&self) -> &[usize] {
-        &self.line_starts
-    }
-
     // Mistake tracking
     pub fn mistakes(&self) -> usize {
         self.mistakes
-    }
-
-    pub fn mistake_positions(&self) -> &[usize] {
-        &self.mistake_positions
     }
 
     pub fn current_mistake_position(&self) -> Option<usize> {
@@ -349,16 +327,6 @@ impl TypingCore {
         (display_text, position_mapping)
     }
 
-    fn calculate_line_starts(text: &str) -> Vec<usize> {
-        let mut line_starts = vec![0];
-        for (i, ch) in text.chars().enumerate() {
-            if ch == '\n' && i + 1 < text.len() {
-                line_starts.push(i + 1);
-            }
-        }
-        line_starts
-    }
-
     fn update_display_position(&mut self) {
         // Use the mapping arrays to find the correct display position
         if self.current_position_to_type < self.mapping_to_type.len() {
@@ -409,16 +377,6 @@ impl TypingCore {
         self.update_display_position();
     }
 
-    pub fn reset_position(&mut self) {
-        self.current_position_to_type = self
-            .text_to_type
-            .char_indices()
-            .find(|(_, ch)| !ch.is_whitespace() || *ch == '\n')
-            .map(|(pos, _)| pos)
-            .unwrap_or(0);
-        self.update_display_position();
-    }
-
     // Helper methods for typing logic
     pub fn is_completed(&self) -> bool {
         self.current_position_to_type >= self.text_to_type.len()
@@ -451,7 +409,6 @@ impl TypingCore {
 
     fn record_mistake(&mut self) {
         self.mistakes += 1;
-        self.mistake_positions.push(self.current_position_to_type);
         self.current_mistake_position = Some(self.current_position_to_display);
     }
 
@@ -516,12 +473,4 @@ impl TypingCore {
             InputResult::Incorrect
         }
     }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum InputResult {
-    Correct,      // Input was correct, continue
-    Incorrect,    // Input was incorrect (mistake)
-    Completed,    // Input was correct and typing is complete
-    NoAction,     // No input accepted (already completed)
 }
