@@ -34,7 +34,10 @@ pub fn verify_typing_simulation(core: &mut TypingCore) {
     let mut chars_typed = Vec::new();
 
     while let Some(current_char_type) = core.current_char_to_type() {
-        let current_char_display = core.text_to_display().chars().nth(core.current_position_to_display());
+        let current_char_display = core
+            .text_to_display()
+            .chars()
+            .nth(core.current_position_to_display());
 
         // Test display position mapping
         let display_pos = core.current_position_to_display();

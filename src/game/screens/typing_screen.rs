@@ -91,10 +91,10 @@ impl TypingScreen {
         self.start_time = std::time::Instant::now();
 
         let result = self.run_session_loop()?;
-        
+
         self.renderer.cleanup()?;
         crate::game::stage_manager::cleanup_terminal();
-        
+
         Ok(result)
     }
 
@@ -105,12 +105,12 @@ impl TypingScreen {
 
     pub fn show_with_state(&mut self) -> Result<(StageResult, SessionState)> {
         self.start_time = std::time::Instant::now();
-        
+
         self.update_display()?;
-        
+
         let final_state = self.event_loop()?;
         self.scoring_engine.finish();
-        
+
         Ok((self.calculate_result_with_state(&final_state), final_state))
     }
 
@@ -187,7 +187,11 @@ impl TypingScreen {
                 Ok(SessionState::Continue)
             }
         } else {
-            let ch = if key_event.code == KeyCode::Char('S') { 'S' } else { 's' };
+            let ch = if key_event.code == KeyCode::Char('S') {
+                'S'
+            } else {
+                's'
+            };
             self.handle_character_input(ch)
         }
     }
@@ -197,7 +201,11 @@ impl TypingScreen {
             self.close_dialog();
             Ok(SessionState::Failed)
         } else {
-            let ch = if key_event.code == KeyCode::Char('Q') { 'Q' } else { 'q' };
+            let ch = if key_event.code == KeyCode::Char('Q') {
+                'Q'
+            } else {
+                'q'
+            };
             self.handle_character_input(ch)
         }
     }
@@ -212,19 +220,22 @@ impl TypingScreen {
     }
 
     fn handle_tab_key(&mut self) -> Result<SessionState> {
-        self.scoring_engine.record_keystroke('\t', self.typing_core.current_position_to_type());
+        self.scoring_engine
+            .record_keystroke('\t', self.typing_core.current_position_to_type());
         let result = self.typing_core.process_tab_input();
         self.handle_input_result(result)
     }
 
     fn handle_enter_key(&mut self) -> Result<SessionState> {
-        self.scoring_engine.record_keystroke('\n', self.typing_core.current_position_to_type());
+        self.scoring_engine
+            .record_keystroke('\n', self.typing_core.current_position_to_type());
         let result = self.typing_core.process_enter_input();
         self.handle_input_result(result)
     }
 
     fn handle_character_input(&mut self, ch: char) -> Result<SessionState> {
-        self.scoring_engine.record_keystroke(ch, self.typing_core.current_position_to_type());
+        self.scoring_engine
+            .record_keystroke(ch, self.typing_core.current_position_to_type());
         let result = self.typing_core.process_character_input(ch);
         self.handle_input_result(result)
     }
