@@ -40,12 +40,6 @@ jobs:
       - name: Install cargo-edit
         run: cargo install cargo-edit
 
-      # Generate CHANGELOG.md
-      - name: Generate Changelog
-        run: |
-          chmod +x generate_changelog.sh
-          ./generate_changelog.sh
-
       # Bump version in Cargo.toml
       - name: Bump version
         id: version
@@ -59,14 +53,27 @@ jobs:
       - name: Run tests
         run: cargo test
 
-      # Commit version bump and changelog
-      - name: Commit version bump and changelog
+      # Create temporary tag for changelog generation
+      - name: Create temporary tag
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add Cargo.toml Cargo.lock CHANGELOG.md
+          git add Cargo.toml Cargo.lock
           git commit -m "chore: bump version to ${{ steps.version.outputs.new_version }}"
           git tag ${{ steps.version.outputs.new_version }}
+
+      # Generate CHANGELOG.md (now with the new tag available)
+      - name: Generate Changelog
+        run: |
+          chmod +x generate_changelog.sh
+          ./generate_changelog.sh
+
+      # Commit changelog and push everything
+      - name: Commit changelog and push
+        run: |
+          git add CHANGELOG.md
+          git commit --amend --no-edit
+          git tag -f ${{ steps.version.outputs.new_version }}
           git push origin main
           git push origin ${{ steps.version.outputs.new_version }}
 
