@@ -212,20 +212,20 @@ impl TypingScreen {
     }
 
     fn handle_tab_key(&mut self) -> Result<SessionState> {
-        let result = self.typing_core.process_tab_input();
         self.scoring_engine.record_keystroke('\t', self.typing_core.current_position_to_type());
+        let result = self.typing_core.process_tab_input();
         self.handle_input_result(result)
     }
 
     fn handle_enter_key(&mut self) -> Result<SessionState> {
-        let result = self.typing_core.process_enter_input();
         self.scoring_engine.record_keystroke('\n', self.typing_core.current_position_to_type());
+        let result = self.typing_core.process_enter_input();
         self.handle_input_result(result)
     }
 
     fn handle_character_input(&mut self, ch: char) -> Result<SessionState> {
-        let result = self.typing_core.process_character_input(ch);
         self.scoring_engine.record_keystroke(ch, self.typing_core.current_position_to_type());
+        let result = self.typing_core.process_character_input(ch);
         self.handle_input_result(result)
     }
 
