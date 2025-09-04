@@ -371,11 +371,11 @@ impl TypingCore {
         }
 
         // Check if rest of line contains only whitespace
-        for i in type_pos..chars.len() {
-            if chars[i] == '\n' {
+        for &ch in chars.iter().skip(type_pos) {
+            if ch == '\n' {
                 return true;
             }
-            if !chars[i].is_whitespace() {
+            if !ch.is_whitespace() {
                 return false;
             }
         }

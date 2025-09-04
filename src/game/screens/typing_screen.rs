@@ -68,8 +68,10 @@ impl TypingScreen {
         challenge: &Challenge,
         repo_info: Option<GitRepository>,
     ) -> Result<Self> {
-        let mut options = ProcessingOptions::default();
-        options.preserve_empty_lines = true; // Always preserve empty lines for challenges
+        let options = ProcessingOptions {
+            preserve_empty_lines: true, // Always preserve empty lines for challenges
+            ..Default::default()
+        };
 
         let typing_core =
             TypingCore::new(&challenge.code_content, &challenge.comment_ranges, options);
