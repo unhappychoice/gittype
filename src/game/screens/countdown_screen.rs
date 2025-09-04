@@ -83,11 +83,11 @@ impl CountdownScreen {
             let digit_patterns = ascii_digits::get_digit_patterns();
             let pattern = &digit_patterns[count];
 
-            // Different colors for each number
+            // Different colors for each number - warm to cool progression
             let color = match count {
-                3 => Color::Red,
-                2 => Color::Yellow,
-                1 => Color::Green,
+                3 => Color::Magenta,
+                2 => Color::Cyan,
+                1 => Color::Yellow,
                 _ => Color::White,
             };
 
@@ -108,18 +108,27 @@ impl CountdownScreen {
             Self::clear_input_buffer_and_wait(600)?;
         }
 
-        // Show "GO!" message
+        // Show "GO!" message as ASCII art
         execute!(stdout, terminal::Clear(ClearType::All))?;
 
-        let go_msg = "GO!";
-        let go_col = center_col.saturating_sub(go_msg.len() as u16 / 2);
-        execute!(stdout, MoveTo(go_col, center_row))?;
-        execute!(
-            stdout,
-            SetAttribute(Attribute::Bold),
-            SetForegroundColor(Color::Green)
-        )?;
-        execute!(stdout, Print(go_msg))?;
+        let go_art = [
+            "   ____  ___  ",
+            "  / ___|/ _ \\ ",
+            " | |  _| | | |",
+            " | |_| | |_| |",
+            "  \\____|\\___/ ",
+        ];
+
+        execute!(stdout, SetAttribute(Attribute::Bold))?;
+        execute!(stdout, SetForegroundColor(Color::Green))?;
+
+        // Display each line of the GO ASCII art
+        for (i, line) in go_art.iter().enumerate() {
+            let line_col = center_col.saturating_sub(line.len() as u16 / 2);
+            execute!(stdout, MoveTo(line_col, center_row - 2 + i as u16))?;
+            execute!(stdout, Print(line))?;
+        }
+
         execute!(stdout, ResetColor)?;
         stdout.flush()?;
 
@@ -212,11 +221,11 @@ impl CountdownScreen {
             let digit_patterns = ascii_digits::get_digit_patterns();
             let pattern = &digit_patterns[count];
 
-            // Different colors for each number
+            // Different colors for each number - warm to cool progression
             let color = match count {
-                3 => Color::Red,
-                2 => Color::Yellow,
-                1 => Color::Green,
+                3 => Color::Magenta,
+                2 => Color::Cyan,
+                1 => Color::Yellow,
                 _ => Color::White,
             };
 
@@ -237,18 +246,27 @@ impl CountdownScreen {
             Self::clear_input_buffer_and_wait(600)?;
         }
 
-        // Show "START!" message
+        // Show "GO!" message as ASCII art
         execute!(stdout, terminal::Clear(ClearType::All))?;
 
-        let start_msg = "START!";
-        let start_col = center_col.saturating_sub(start_msg.len() as u16 / 2);
-        execute!(stdout, MoveTo(start_col, center_row))?;
-        execute!(
-            stdout,
-            SetAttribute(Attribute::Bold),
-            SetForegroundColor(Color::Green)
-        )?;
-        execute!(stdout, Print(start_msg))?;
+        let go_art = [
+            "   ____  ___  ",
+            "  / ___|/ _ \\ ",
+            " | |  _| | | |",
+            " | |_| | |_| |",
+            "  \\____|\\___/ ",
+        ];
+
+        execute!(stdout, SetAttribute(Attribute::Bold))?;
+        execute!(stdout, SetForegroundColor(Color::Green))?;
+
+        // Display each line of the GO ASCII art
+        for (i, line) in go_art.iter().enumerate() {
+            let line_col = center_col.saturating_sub(line.len() as u16 / 2);
+            execute!(stdout, MoveTo(line_col, center_row - 2 + i as u16))?;
+            execute!(stdout, Print(line))?;
+        }
+
         execute!(stdout, ResetColor)?;
         stdout.flush()?;
 

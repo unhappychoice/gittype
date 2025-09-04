@@ -1,3 +1,4 @@
+use crate::game::context_loader::CodeContext;
 use crate::models::Challenge;
 use crate::{models::GitRepository, Result};
 use ratatui::{
@@ -5,10 +6,20 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
     text::{Line, Span, Text},
-    widgets::{Block, Borders, Paragraph},
+    widgets::{Block, Borders, Gauge, Paragraph},
     Terminal,
 };
 use std::io;
+
+struct ContentRenderParams<'a> {
+    current_display_position: usize,
+    current_line_number: usize,
+    current_mistake_position: Option<usize>,
+    terminal_width: u16,
+    challenge: Option<&'a Challenge>,
+    display_comment_ranges: &'a [(usize, usize)],
+    code_context: &'a CodeContext,
+}
 
 pub struct StageRenderer {
     terminal: Terminal<CrosstermBackend<io::Stdout>>,
@@ -44,6 +55,7 @@ impl StageRenderer {
         scoring_engine: &crate::scoring::engine::ScoringEngine,
         repo_info: &Option<GitRepository>,
         display_comment_ranges: &[(usize, usize)],
+        code_context: &CodeContext,
     ) -> Result<()> {
         // Update character cache if needed
         if self.chars.len() != challenge_text.chars().count() {
@@ -72,14 +84,16 @@ impl StageRenderer {
         };
 
         let terminal_size = self.terminal.size()?;
-        let content_spans = self.create_content_spans(
+        let render_params = ContentRenderParams {
             current_display_position,
-            current_line,
+            current_line_number: current_line,
             current_mistake_position,
-            terminal_size.width,
+            terminal_width: terminal_size.width,
             challenge,
             display_comment_ranges,
-        );
+            code_context,
+        };
+        let content_spans = self.create_content_spans(render_params);
 
         let elapsed_time = scoring_engine.get_elapsed_time();
         let metrics = crate::scoring::engine::ScoringEngine::calculate_real_time_result(
@@ -141,34 +155,33 @@ impl StageRenderer {
                 );
             f.render_widget(content, chunks[1]);
 
-            // Metrics section below the code
+            // Metrics section below the code - less prominent
             let metrics_widget = Paragraph::new(vec![Line::from(vec![Span::styled(
                 first_line.clone(),
-                Style::default().fg(Color::White),
+                Style::default().fg(Color::DarkGray),
             )])])
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Yellow))
+                    .border_style(Style::default().fg(Color::DarkGray))
                     .title("Metrics")
-                    .title_style(Style::default().fg(Color::Yellow))
+                    .title_style(Style::default().fg(Color::DarkGray))
                     .padding(ratatui::widgets::Padding::horizontal(1)),
             ); // Only horizontal padding
             f.render_widget(metrics_widget, chunks[2]);
 
-            // Progress bar in its own bordered box with different color
-            let progress_width = chunks[3].width.saturating_sub(4) as u8; // Account for borders and padding
-            let full_width_progress = Self::create_progress_bar(progress_percent, progress_width);
-            let progress_widget = Paragraph::new(full_width_progress)
-                .style(Style::default().fg(Color::Green))
+            // Progress bar using ratatui's Gauge widget
+            let progress_widget = Gauge::default()
                 .block(
                     Block::default()
                         .borders(Borders::ALL)
-                        .border_style(Style::default().fg(Color::Green))
+                        .border_style(Style::default().fg(Color::DarkGray))
                         .title("Progress")
-                        .title_style(Style::default().fg(Color::Green)),
+                        .title_style(Style::default().fg(Color::DarkGray)),
                 )
-                .alignment(ratatui::layout::Alignment::Center);
+                .gauge_style(Style::default().fg(Color::Cyan))
+                .percent(progress_percent as u16)
+                .label(format!("{}%", progress_percent));
             f.render_widget(progress_widget, chunks[3]);
 
             // Render [ESC] Options in bottom left without border
@@ -194,15 +207,7 @@ impl StageRenderer {
         Ok(())
     }
 
-    fn create_content_spans(
-        &self,
-        current_display_position: usize,
-        current_line_number: usize,
-        current_mistake_position: Option<usize>,
-        terminal_width: u16,
-        challenge: Option<&Challenge>,
-        display_comment_ranges: &[(usize, usize)],
-    ) -> Vec<Line<'static>> {
+    fn create_content_spans(&self, params: ContentRenderParams) -> Vec<Line<'static>> {
         let mut lines = Vec::new();
         let mut current_line_spans = Vec::new();
         let mut current_line_width = 0u16;
@@ -211,17 +216,38 @@ impl StageRenderer {
 
         // Reserve space for line numbers
         let line_number_width = 6u16;
-        let max_width = terminal_width.saturating_sub(line_number_width + 1);
+        let max_width = params.terminal_width.saturating_sub(line_number_width + 1);
 
         // Get the starting line number from challenge
-        let start_line_number = challenge.and_then(|c| c.start_line).unwrap_or(1);
+        let start_line_number = params.challenge.and_then(|c| c.start_line).unwrap_or(1);
+
+        // Add pre-context lines (read-only, dimmed)
+        for (ctx_idx, pre_line) in params.code_context.pre_context.iter().enumerate() {
+            let ctx_line_number =
+                start_line_number.saturating_sub(params.code_context.pre_context.len() - ctx_idx);
+            let line_num_text = format!("{:>4} │ ", ctx_line_number);
+            let mut line_spans = vec![Span::styled(
+                line_num_text,
+                Style::default().fg(Color::DarkGray),
+            )];
+
+            // Add the context line content with dimmed style
+            line_spans.push(Span::styled(
+                pre_line.clone(),
+                Style::default()
+                    .fg(Color::DarkGray)
+                    .add_modifier(Modifier::DIM),
+            ));
+
+            lines.push(Line::from(line_spans));
+        }
 
         for (i, &ch) in self.chars.iter().enumerate() {
             // Add line number at the start of each line
             if line_start {
                 let actual_line_number = start_line_number + line_number;
                 let line_num_text = format!("{:>4} │ ", actual_line_number);
-                let line_num_style = if line_number == current_line_number {
+                let line_num_style = if line_number == params.current_line_number {
                     Style::default()
                         .fg(Color::Yellow)
                         .add_modifier(ratatui::style::Modifier::BOLD)
@@ -244,29 +270,32 @@ impl StageRenderer {
             }
 
             // Check if this character is in a comment
-            let is_in_comment = display_comment_ranges
+            let is_in_comment = params
+                .display_comment_ranges
                 .iter()
                 .any(|&(start, end)| i >= start && i < end);
 
             // Determine character style
             let style = if is_in_comment {
-                // Comments are always blue and dim, regardless of typing state
-                Style::default().fg(Color::Blue).add_modifier(Modifier::DIM)
-            } else if i < current_display_position {
-                // Already typed - bold white for non-comments
+                // Comments use same color as context lines
                 Style::default()
-                    .fg(Color::White)
-                    .add_modifier(Modifier::BOLD)
-            } else if i == current_display_position {
+                    .fg(Color::DarkGray)
+                    .add_modifier(Modifier::DIM)
+            } else if i < params.current_display_position {
+                // Already typed - light blue dimmed for non-comments
+                Style::default()
+                    .fg(Color::LightBlue)
+                    .add_modifier(Modifier::DIM)
+            } else if i == params.current_display_position {
                 // Current cursor position - highlighted
-                if let Some(mistake_pos) = current_mistake_position {
+                if let Some(mistake_pos) = params.current_mistake_position {
                     if i == mistake_pos {
                         Style::default().fg(Color::White).bg(Color::Red)
                     } else {
-                        Style::default().fg(Color::Black).bg(Color::Gray)
+                        Style::default().fg(Color::White).bg(Color::DarkGray)
                     }
                 } else {
-                    Style::default().fg(Color::Black).bg(Color::Gray)
+                    Style::default().fg(Color::White).bg(Color::DarkGray)
                 }
             } else {
                 // Not yet typed - dim white for non-comments
@@ -294,6 +323,30 @@ impl StageRenderer {
 
         if !current_line_spans.is_empty() {
             lines.push(Line::from(current_line_spans));
+        }
+
+        // Add post-context lines (read-only, dimmed)
+        let end_line_number = params
+            .challenge
+            .and_then(|c| c.end_line)
+            .unwrap_or(start_line_number);
+        for (ctx_idx, post_line) in params.code_context.post_context.iter().enumerate() {
+            let ctx_line_number = end_line_number + ctx_idx + 1;
+            let line_num_text = format!("{:>4} │ ", ctx_line_number);
+            let mut line_spans = vec![Span::styled(
+                line_num_text,
+                Style::default().fg(Color::DarkGray),
+            )];
+
+            // Add the context line content with dimmed style
+            line_spans.push(Span::styled(
+                post_line.clone(),
+                Style::default()
+                    .fg(Color::DarkGray)
+                    .add_modifier(Modifier::DIM),
+            ));
+
+            lines.push(Line::from(line_spans));
         }
 
         if lines.is_empty() {
@@ -327,17 +380,6 @@ impl StageRenderer {
         stdout.flush()?;
 
         Ok(())
-    }
-
-    fn create_progress_bar(progress_percent: u8, width: u8) -> String {
-        let filled_width = (progress_percent as f32 / 100.0 * width as f32) as u8;
-        let empty_width = width - filled_width;
-
-        format!(
-            "{}{}",
-            "█".repeat(filled_width as usize),
-            "░".repeat(empty_width as usize)
-        )
     }
 
     fn render_dialog(f: &mut ratatui::Frame, skips_remaining: usize) {
