@@ -427,4 +427,64 @@ impl TypingCore {
             }
         }
     }
+
+    // High-level input processing methods
+    pub fn process_character_input(&mut self, input_char: char) -> InputResult {
+        if !self.can_accept_input() {
+            return InputResult::NoAction;
+        }
+
+        if self.check_character_match(input_char) {
+            self.advance_to_next_character();
+            if self.is_completed() {
+                InputResult::Completed
+            } else {
+                InputResult::Correct
+            }
+        } else {
+            InputResult::Incorrect
+        }
+    }
+
+    pub fn process_enter_input(&mut self) -> InputResult {
+        if !self.can_accept_input() {
+            return InputResult::NoAction;
+        }
+
+        if self.is_at_line_end_for_enter() {
+            self.handle_newline_advance();
+            if self.is_completed() {
+                InputResult::Completed
+            } else {
+                InputResult::Correct
+            }
+        } else {
+            InputResult::Incorrect
+        }
+    }
+
+    pub fn process_tab_input(&mut self) -> InputResult {
+        if !self.can_accept_input() {
+            return InputResult::NoAction;
+        }
+
+        if self.check_character_match('\t') {
+            self.advance_to_next_character();
+            if self.is_completed() {
+                InputResult::Completed
+            } else {
+                InputResult::Correct
+            }
+        } else {
+            InputResult::Incorrect
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum InputResult {
+    Correct,      // Input was correct, continue
+    Incorrect,    // Input was incorrect (mistake)
+    Completed,    // Input was correct and typing is complete
+    NoAction,     // No input accepted (already completed)
 }

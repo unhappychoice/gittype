@@ -1,7 +1,7 @@
 use super::{
     super::{
         stage_renderer::StageRenderer,
-        typing_core::{ProcessingOptions, TypingCore},
+        typing_core::{InputResult, ProcessingOptions, TypingCore},
     },
     CountdownScreen,
 };
@@ -218,58 +218,39 @@ impl TypingScreen {
     }
 
     fn handle_tab_key(&mut self) -> Result<SessionState> {
-        if !self.typing_core.can_accept_input() {
-            return Ok(SessionState::Continue);
-        }
-
-        let is_correct = self.typing_core.check_character_match('\t');
-        self.process_keystroke('\t', is_correct)
+        let result = self.typing_core.process_tab_input();
+        self.scoring_engine.record_keystroke('\t', self.typing_core.current_position_to_type());
+        self.handle_input_result(result)
     }
 
     fn handle_enter_key(&mut self) -> Result<SessionState> {
-        if !self.typing_core.can_accept_input() {
-            return Ok(SessionState::Continue);
-        }
-
-        let is_correct = self.typing_core.is_at_line_end_for_enter();
+        let result = self.typing_core.process_enter_input();
         self.scoring_engine.record_keystroke('\n', self.typing_core.current_position_to_type());
-
-        if is_correct {
-            self.current_mistake_position = None;
-            self.typing_core.handle_newline_advance();
-            if self.typing_core.is_completed() {
-                return Ok(SessionState::Complete);
-            }
-        } else {
-            self.record_mistake();
-        }
-
-        Ok(SessionState::Continue)
+        self.handle_input_result(result)
     }
 
     fn handle_character_input(&mut self, ch: char) -> Result<SessionState> {
-        if !self.typing_core.can_accept_input() {
-            return Ok(SessionState::Continue);
-        }
-
-        let is_correct = self.typing_core.check_character_match(ch);
-        self.process_keystroke(ch, is_correct)
+        let result = self.typing_core.process_character_input(ch);
+        self.scoring_engine.record_keystroke(ch, self.typing_core.current_position_to_type());
+        self.handle_input_result(result)
     }
 
-    fn process_keystroke(&mut self, ch: char, is_correct: bool) -> Result<SessionState> {
-        self.scoring_engine.record_keystroke(ch, self.typing_core.current_position_to_type());
-
-        if is_correct {
-            self.current_mistake_position = None;
-            self.typing_core.advance_to_next_character();
-            if self.typing_core.is_completed() {
-                return Ok(SessionState::Complete);
+    fn handle_input_result(&mut self, result: InputResult) -> Result<SessionState> {
+        match result {
+            InputResult::Correct => {
+                self.current_mistake_position = None;
+                Ok(SessionState::Continue)
             }
-        } else {
-            self.record_mistake();
+            InputResult::Incorrect => {
+                self.record_mistake();
+                Ok(SessionState::Continue)
+            }
+            InputResult::Completed => {
+                self.current_mistake_position = None;
+                Ok(SessionState::Complete)
+            }
+            InputResult::NoAction => Ok(SessionState::Continue),
         }
-
-        Ok(SessionState::Continue)
     }
 
     fn record_mistake(&mut self) {
