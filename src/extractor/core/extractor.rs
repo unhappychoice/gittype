@@ -121,6 +121,17 @@ impl CommonExtractor {
         let end_line = node.end_position().row + 1;
         let original_indentation = node.start_position().column;
 
+        // Extract actual indentation characters from source
+        let original_indent_chars = if original_indentation > 0 {
+            Self::extract_line_indent_chars(
+                source_code,
+                node.start_position().row,
+                original_indentation,
+            )
+        } else {
+            String::new()
+        };
+
         let registry = get_parser_registry();
         let extractor = registry.get_extractor(language).ok()?;
 
@@ -142,8 +153,12 @@ impl CommonExtractor {
             })
             .collect();
 
-        let (normalized_content, normalized_comment_ranges) =
-            Self::normalize_indentation(content, original_indentation, &chunk_comment_ranges);
+        let (normalized_content, normalized_comment_ranges) = Self::normalize_indentation(
+            content,
+            original_indentation,
+            &original_indent_chars,
+            &chunk_comment_ranges,
+        );
 
         Some(CodeChunk {
             content: normalized_content,
@@ -197,6 +212,7 @@ impl CommonExtractor {
     fn normalize_indentation(
         content: &str,
         original_indentation: usize,
+        original_indent_chars: &str,
         comment_ranges: &[(usize, usize)],
     ) -> (String, Vec<(usize, usize)>) {
         let lines: Vec<&str> = content.lines().collect();
@@ -213,12 +229,20 @@ impl CommonExtractor {
             let line_chars: Vec<char> = line.chars().collect();
 
             if line_idx == 0 {
+                // First line: add original indentation characters from source
+                let normalized_line = format!("{}{}", original_indent_chars, line);
+
+                // Map positions: indent chars are not mapped to original content, original content is mapped
+                for _ in original_indent_chars.chars() {
+                    position_map.push(Some(normalized_pos));
+                    normalized_pos += 1;
+                }
                 for _ in &line_chars {
                     position_map.push(Some(normalized_pos));
                     normalized_pos += 1;
                     _original_pos += 1;
                 }
-                normalized_lines.push(line.to_string());
+                normalized_lines.push(normalized_line);
             } else if line.trim().is_empty() {
                 for _ in &line_chars {
                     position_map.push(None);
@@ -279,5 +303,19 @@ impl CommonExtractor {
         }
 
         (normalized_text, final_ranges)
+    }
+
+    fn extract_line_indent_chars(
+        source_code: &str,
+        line_row: usize,
+        indent_length: usize,
+    ) -> String {
+        let lines: Vec<&str> = source_code.lines().collect();
+        if line_row < lines.len() {
+            let line = lines[line_row];
+            line.chars().take(indent_length).collect()
+        } else {
+            String::new()
+        }
     }
 }
