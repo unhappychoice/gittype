@@ -8,6 +8,7 @@ pub mod stage_builder;
 pub mod stage_manager;
 pub mod stage_renderer;
 pub mod text_processor;
+pub mod total_tracker;
 pub mod typing_animation;
 pub mod typing_core;
 
@@ -17,3 +18,4 @@ pub use screens::TypingScreen;
 pub use session_tracker::SessionTracker;
 pub use stage_builder::{DifficultyLevel, GameMode, StageBuilder, StageConfig};
 pub use stage_manager::StageManager;
+pub use total_tracker::TotalTracker;
