@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2025-09-04
+
+### 🐛 Bug Fixes
+
+- fix(ci): correct workflow order for CHANGELOG generation ([2c7e02b](https://github.com/unhappychoice/gittype/commit/2c7e02b))
+
+### 📝 Other Changes
+
+- chore: bump version to v0.4.1 ([dad8bba](https://github.com/unhappychoice/gittype/commit/dad8bba))
+- Revert "Merge pull request #156 from unhappychoice/dependabot/cargo/git2-0.20.2" ([b2c6eb7](https://github.com/unhappychoice/gittype/commit/b2c6eb7))
+- perf: optimize typing screen display updates to improve performance ([39f9aa9](https://github.com/unhappychoice/gittype/commit/39f9aa9))
+- chore(deps): bump tree-sitter-go from 0.23.4 to 0.25.0 ([13c0186](https://github.com/unhappychoice/gittype/commit/13c0186))
+- chore(deps): bump dirs from 5.0.1 to 6.0.0 ([b8ca782](https://github.com/unhappychoice/gittype/commit/b8ca782))
+- docs: convert demo.mov to mp4 format without audio ([23e69b8](https://github.com/unhappychoice/gittype/commit/23e69b8))
+- docs: add screenshots to README ([3955bed](https://github.com/unhappychoice/gittype/commit/3955bed))
+- chore: Update CHANGELOG.md ([fba7238](https://github.com/unhappychoice/gittype/commit/fba7238))
+- chore(deps): bump tree-sitter-javascript from 0.23.1 to 0.25.0 ([8d7449d](https://github.com/unhappychoice/gittype/commit/8d7449d))
+- chore(deps): bump tree-sitter-rust from 0.23.3 to 0.24.0 ([73dfea7](https://github.com/unhappychoice/gittype/commit/73dfea7))
+- chore(deps): bump tree-sitter-swift from 0.6.0 to 0.7.1 ([2d0ec3e](https://github.com/unhappychoice/gittype/commit/2d0ec3e))
+- chore(deps): bump tree-sitter-c from 0.23.4 to 0.24.1 ([c01a66b](https://github.com/unhappychoice/gittype/commit/c01a66b))
+- chore(deps): bump git2 from 0.18.3 to 0.20.2 ([43d8db9](https://github.com/unhappychoice/gittype/commit/43d8db9))
+- chore(deps): bump tree-sitter-php from 0.23.11 to 0.24.2 ([e162b5e](https://github.com/unhappychoice/gittype/commit/e162b5e))
+
+
 ## [0.4.0] - 2025-09-04
 
 ### ✨ Features
@@ -66,7 +90,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - feat: implement dynamic score color-coding based on ranking tier ([7237046](https://github.com/unhappychoice/gittype/commit/7237046))
 - feat: add terminal color methods to RankingTier and RankingTitle ([615bb2e](https://github.com/unhappychoice/gittype/commit/615bb2e))
 - feat: shorten countdown duration for improved UX ([812c5e7](https://github.com/unhappychoice/gittype/commit/812c5e7))
-- feat: use vendored OpenSSL for all targets to avoid cross-compilation issues ([2bc3269](https://github.com/unhappychoice/gittype/commit/2bc3269))
 
 ### 🐛 Bug Fixes
 
@@ -135,14 +158,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - refactor(main): simplify main.rs using new CLI modules ([238ad8c](https://github.com/unhappychoice/gittype/commit/238ad8c))
 - refactor(cli): move CLI components to separate modules ([3d82e20](https://github.com/unhappychoice/gittype/commit/3d82e20))
 - chore: Update CHANGELOG.md ([32d6d2c](https://github.com/unhappychoice/gittype/commit/32d6d2c))
-- chore: bump version to v0.3.0 ([33f0df0](https://github.com/unhappychoice/gittype/commit/33f0df0))
 
 
 ## [0.3.0] - 2025-09-02
 
 ### ✨ Features
 
-- feat: use vendored OpenSSL for all targets to avoid cross-compilation issues ([420f877](https://github.com/unhappychoice/gittype/commit/420f877))
+- feat: use vendored OpenSSL for all targets to avoid cross-compilation issues ([2bc3269](https://github.com/unhappychoice/gittype/commit/2bc3269))
 - feat: update Homebrew to use prebuilt binaries and add ARM64 support ([96836dd](https://github.com/unhappychoice/gittype/commit/96836dd))
 - feat: add repository management with GitHub support ([d08a93b](https://github.com/unhappychoice/gittype/commit/d08a93b))
 - feat: add GitHub links to commit hashes in changelog ([5881873](https://github.com/unhappychoice/gittype/commit/5881873))
@@ -154,7 +176,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📝 Other Changes
 
-- chore: bump version to v0.3.0 ([806a529](https://github.com/unhappychoice/gittype/commit/806a529))
+- chore: bump version to v0.3.0 ([33f0df0](https://github.com/unhappychoice/gittype/commit/33f0df0))
 - perf(extractor): reuse thread-local tree-sitter parser and precompile glob patterns in scanner ([b5f84e0](https://github.com/unhappychoice/gittype/commit/b5f84e0))
 - perf(extractor): parallelize challenge conversion and zen file processing ([55a2ac0](https://github.com/unhappychoice/gittype/commit/55a2ac0))
 - chore: Fix cargo clippy warnings ([4cfedac](https://github.com/unhappychoice/gittype/commit/4cfedac))
