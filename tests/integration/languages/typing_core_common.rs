@@ -115,7 +115,7 @@ macro_rules! typing_core_test_with_parser {
     ($test_name:ident, $lang:expr, $code:expr) => {
         #[test]
         fn $test_name() {
-            use crate::integration::languages::typing_core_common::*;
+            use $crate::integration::languages::typing_core_common::*;
 
             let comment_ranges = find_comment_ranges_with_parser($code, $lang);
             let test_case = TypingCoreTestCase {
@@ -132,7 +132,7 @@ macro_rules! typing_core_test_with_parser {
     ($test_name:ident, $lang:expr, $code:expr, $options:expr) => {
         #[test]
         fn $test_name() {
-            use crate::integration::languages::typing_core_common::*;
+            use $crate::integration::languages::typing_core_common::*;
 
             let comment_ranges = find_comment_ranges_with_parser($code, $lang);
             let test_case = TypingCoreTestCase {
