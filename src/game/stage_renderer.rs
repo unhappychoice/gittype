@@ -1,4 +1,3 @@
-use super::text_processor::TextProcessor;
 use crate::models::Challenge;
 use crate::{models::GitRepository, Result};
 use ratatui::{
@@ -9,7 +8,7 @@ use ratatui::{
     widgets::{Block, Borders, Paragraph},
     Terminal,
 };
-use std::{collections::HashMap, io};
+use std::io;
 
 pub struct StageRenderer {
     terminal: Terminal<CrosstermBackend<io::Stdout>>,
@@ -35,16 +34,16 @@ impl StageRenderer {
     pub fn display_challenge_with_info(
         &mut self,
         challenge_text: &str,
-        current_position: usize,
+        current_display_position: usize,
+        current_line: usize,
         mistakes: usize,
-        line_starts: &[usize],
-        comment_ranges: &[(usize, usize)],
         challenge: Option<&Challenge>,
         current_mistake_position: Option<usize>,
         skips_remaining: usize,
         dialog_shown: bool,
         scoring_engine: &crate::scoring::engine::ScoringEngine,
         repo_info: &Option<GitRepository>,
+        display_comment_ranges: &[(usize, usize)],
     ) -> Result<()> {
         // Update character cache if needed
         if self.chars.len() != challenge_text.chars().count() {
@@ -53,7 +52,7 @@ impl StageRenderer {
 
         // Pre-calculate progress percentage for progress bar
         let progress_percent = if !self.chars.is_empty() {
-            (current_position as f32 / self.chars.len() as f32 * 100.0) as u8
+            (current_display_position as f32 / self.chars.len() as f32 * 100.0) as u8
         } else {
             0
         };
@@ -74,21 +73,21 @@ impl StageRenderer {
 
         let terminal_size = self.terminal.size()?;
         let content_spans = self.create_content_spans(
-            current_position,
-            line_starts,
-            comment_ranges,
+            current_display_position,
+            current_line,
             current_mistake_position,
             terminal_size.width,
             challenge,
+            display_comment_ranges,
         );
 
         let elapsed_time = scoring_engine.get_elapsed_time();
         let metrics = crate::scoring::engine::ScoringEngine::calculate_real_time_result(
-            current_position,
+            current_display_position,
             mistakes,
             elapsed_time,
         );
-        let current_line = self.find_line_for_position(current_position, line_starts);
+        let current_line = 0; // Simplified - no line tracking needed
         let elapsed_secs = elapsed_time.as_secs();
 
         let streak = scoring_engine.get_current_streak();
@@ -191,37 +190,30 @@ impl StageRenderer {
             }
         })?;
 
-        self.last_position = current_position;
+        self.last_position = current_display_position;
         Ok(())
     }
 
     fn create_content_spans(
         &self,
-        current_position: usize,
-        line_starts: &[usize],
-        comment_ranges: &[(usize, usize)],
+        current_display_position: usize,
+        current_line_number: usize,
         current_mistake_position: Option<usize>,
         terminal_width: u16,
         challenge: Option<&Challenge>,
+        display_comment_ranges: &[(usize, usize)],
     ) -> Vec<Line<'static>> {
         let mut lines = Vec::new();
         let mut current_line_spans = Vec::new();
         let mut current_line_width = 0u16;
+        let mut line_number = 0;
+        let mut line_start = true;
 
-        // Reserve space for line numbers (assume max 4 digits + 2 spaces)
+        // Reserve space for line numbers
         let line_number_width = 6u16;
         let max_width = terminal_width.saturating_sub(line_number_width + 1);
 
-        // Pre-calculate all character properties to avoid O(n²) complexity
-        let skip_cache = self.create_skip_cache(line_starts, comment_ranges);
-        let comment_cache = self.create_comment_cache(comment_ranges);
-        let current_line_number = self.find_line_for_position(current_position, line_starts);
-
-        let mut line_number = 0;
-        let mut line_start = true;
-        let mut newline_added_for_current_line = false;
-
-        // Get the starting line number from challenge, default to 1
+        // Get the starting line number from challenge
         let start_line_number = challenge.and_then(|c| c.start_line).unwrap_or(1);
 
         for (i, &ch) in self.chars.iter().enumerate() {
@@ -241,46 +233,47 @@ impl StageRenderer {
                 line_start = false;
             }
 
-            // Handle explicit newlines - don't display them, but they are typeable
+            // Handle newlines
             if ch == '\n' {
-                // Skip displaying the newline character itself (it's invisible)
-                let should_skip = skip_cache.get(&i).copied().unwrap_or(false);
-                if should_skip {
-                    // If this newline should be skipped entirely, break the line
-                    lines.push(Line::from(current_line_spans));
-                    current_line_spans = Vec::new();
-                    current_line_width = 0;
-                    line_number += 1;
-                    line_start = true;
-                    newline_added_for_current_line = false; // Reset flag for new line
-                } else {
-                    // Newline is typeable but invisible - don't add to spans
-                    // Line break will happen when we encounter the next character or end of text
-                    if i + 1 >= self.chars.len() || self.chars[i + 1] != '\n' {
-                        lines.push(Line::from(current_line_spans));
-                        current_line_spans = Vec::new();
-                        current_line_width = 0;
-                        line_number += 1;
-                        line_start = true;
-                        newline_added_for_current_line = false; // Reset flag for new line
-                    }
-                }
+                lines.push(Line::from(current_line_spans));
+                current_line_spans = Vec::new();
+                current_line_width = 0;
+                line_number += 1;
+                line_start = true;
                 continue;
             }
 
-            // Use cached properties - O(1) lookup instead of O(n) calculation
-            let should_skip = skip_cache.get(&i).copied().unwrap_or(false);
-            let is_comment = comment_cache.get(&i).copied().unwrap_or(false);
-            let is_current_line = line_number == current_line_number;
+            // Check if this character is in a comment
+            let is_in_comment = display_comment_ranges
+                .iter()
+                .any(|&(start, end)| i >= start && i < end);
 
-            let style = self.get_char_style_with_highlight(
-                i,
-                current_position,
-                should_skip,
-                is_comment,
-                current_mistake_position,
-                is_current_line,
-            );
+            // Determine character style
+            let style = if is_in_comment {
+                // Comments are always blue and dim, regardless of typing state
+                Style::default().fg(Color::Blue).add_modifier(Modifier::DIM)
+            } else if i < current_display_position {
+                // Already typed - bold white for non-comments
+                Style::default()
+                    .fg(Color::White)
+                    .add_modifier(Modifier::BOLD)
+            } else if i == current_display_position {
+                // Current cursor position - highlighted
+                if let Some(mistake_pos) = current_mistake_position {
+                    if i == mistake_pos {
+                        Style::default().fg(Color::White).bg(Color::Red)
+                    } else {
+                        Style::default().fg(Color::Black).bg(Color::Gray)
+                    }
+                } else {
+                    Style::default().fg(Color::Black).bg(Color::Gray)
+                }
+            } else {
+                // Not yet typed - dim white for non-comments
+                Style::default()
+                    .fg(Color::White)
+                    .add_modifier(Modifier::DIM)
+            };
 
             let (display_char, char_width) = match ch {
                 '\t' => ("    ".to_string(), 4),
@@ -297,90 +290,15 @@ impl StageRenderer {
 
             current_line_spans.push(Span::styled(display_char, style));
             current_line_width += char_width;
-
-            // Show newline symbol after non-comment, non-skipped characters at end of content
-            if !should_skip && !is_comment {
-                let next_pos = i + 1;
-                let text: String = self.chars.iter().collect();
-
-                // Check if this is the last non-comment char on the line
-                let is_end_of_line_content = next_pos >= text.len()
-                    || text.chars().nth(next_pos) == Some('\n')
-                    || crate::game::text_processor::TextProcessor::is_rest_of_line_comment_only(
-                        &text,
-                        next_pos,
-                        comment_ranges,
-                    );
-
-                // Don't show newline on empty lines
-                if is_end_of_line_content {
-                    let line_start_pos = self.find_line_start(i);
-                    let has_content_on_line = (line_start_pos..=i).any(|pos| {
-                        if let Some(c) = text.chars().nth(pos) {
-                            !c.is_whitespace()
-                                && !comment_ranges
-                                    .iter()
-                                    .any(|&(start, end)| pos >= start && pos < end)
-                        } else {
-                            false
-                        }
-                    });
-
-                    if has_content_on_line && !newline_added_for_current_line {
-                        // Find the actual newline character position for styling
-                        let newline_pos =
-                            if next_pos < text.len() && text.chars().nth(next_pos) == Some('\n') {
-                                next_pos // Next character is the newline
-                            } else {
-                                // Look for the newline at the end of this line
-                                text.chars()
-                                    .enumerate()
-                                    .skip(next_pos)
-                                    .find(|(_, c)| *c == '\n')
-                                    .map(|(pos, _)| pos)
-                                    .unwrap_or(i) // Fallback to current position
-                            };
-
-                        let newline_style = self.get_char_style_with_highlight(
-                            newline_pos, // Use actual newline position for styling
-                            current_position,
-                            false,
-                            false,
-                            current_mistake_position,
-                            is_current_line,
-                        );
-                        current_line_spans.push(Span::styled("↵".to_string(), newline_style));
-                        current_line_width += 1;
-                        newline_added_for_current_line = true; // Mark that we added newline symbol
-                    }
-                }
-            }
         }
 
         if !current_line_spans.is_empty() {
             lines.push(Line::from(current_line_spans));
-        } else if line_start {
-            // Handle case where file ends without content on last line
-            let actual_line_number = start_line_number + line_number;
-            let line_num_text = format!("{:>4} │ ", actual_line_number);
-            let line_num_style = if line_number == current_line_number {
-                Style::default()
-                    .fg(Color::Yellow)
-                    .add_modifier(ratatui::style::Modifier::BOLD)
-            } else {
-                Style::default().fg(Color::DarkGray)
-            };
-            lines.push(Line::from(vec![Span::styled(
-                line_num_text,
-                line_num_style,
-            )]));
         }
 
         if lines.is_empty() {
             let line_num_text = format!("{:>4} │ ", start_line_number);
-            let line_num_style = Style::default()
-                .fg(Color::Yellow)
-                .add_modifier(ratatui::style::Modifier::BOLD);
+            let line_num_style = Style::default().fg(Color::DarkGray);
             lines.push(Line::from(vec![Span::styled(
                 line_num_text,
                 line_num_style,
@@ -388,138 +306,6 @@ impl StageRenderer {
         }
 
         lines
-    }
-
-    fn find_line_start(&self, position: usize) -> usize {
-        let text: String = self.chars.iter().collect();
-        let chars: Vec<char> = text.chars().collect();
-        let mut pos = position;
-        while pos > 0 && chars[pos - 1] != '\n' {
-            pos -= 1;
-        }
-        pos
-    }
-
-    fn create_skip_cache(
-        &self,
-        line_starts: &[usize],
-        comment_ranges: &[(usize, usize)],
-    ) -> HashMap<usize, bool> {
-        let mut cache = HashMap::new();
-        let text_str = self.chars.iter().collect::<String>();
-
-        // Calculate line starts lookup for O(1) access
-        let mut line_lookup = HashMap::new();
-        for (line_num, &start) in line_starts.iter().enumerate() {
-            line_lookup.insert(start, line_num);
-        }
-
-        // Pre-calculate first non-whitespace for each line
-        let mut first_non_ws_cache = HashMap::new();
-        for &line_start in line_starts {
-            let first_non_ws = TextProcessor::find_first_non_whitespace(&text_str, line_start);
-            first_non_ws_cache.insert(line_start, first_non_ws);
-        }
-
-        for i in 0..self.chars.len() {
-            cache.insert(
-                i,
-                self.calculate_should_skip(i, line_starts, comment_ranges, &first_non_ws_cache),
-            );
-        }
-
-        cache
-    }
-
-    fn create_comment_cache(&self, comment_ranges: &[(usize, usize)]) -> HashMap<usize, bool> {
-        let mut cache = HashMap::new();
-
-        for i in 0..self.chars.len() {
-            cache.insert(i, Self::is_position_in_comment(i, comment_ranges));
-        }
-
-        cache
-    }
-
-    fn calculate_should_skip(
-        &self,
-        position: usize,
-        line_starts: &[usize],
-        comment_ranges: &[(usize, usize)],
-        first_non_ws_cache: &HashMap<usize, usize>,
-    ) -> bool {
-        if position >= self.chars.len() {
-            return false;
-        }
-
-        let ch = self.chars[position];
-
-        // Handle newlines separately
-        if ch == '\n' {
-            return false; // Simplified for now
-        }
-
-        // Check if this position is before the first non-whitespace character of a line
-        // Find which line this position belongs to - O(log n) instead of O(n)
-        if let Some(line_start) = line_starts.iter().rev().find(|&&start| position >= start) {
-            if let Some(&first_non_ws) = first_non_ws_cache.get(line_start) {
-                if position < first_non_ws {
-                    return true;
-                }
-            }
-        }
-
-        // Check if this position is within a comment
-        Self::is_position_in_comment(position, comment_ranges)
-    }
-
-    fn get_char_style_with_highlight(
-        &self,
-        i: usize,
-        current_position: usize,
-        should_skip: bool,
-        is_comment: bool,
-        current_mistake_position: Option<usize>,
-        _is_current_line: bool,
-    ) -> Style {
-        if i < current_position || should_skip {
-            if is_comment {
-                Style::default().fg(Color::LightBlue)
-            } else if should_skip {
-                Style::default()
-                    .fg(Color::DarkGray)
-                    .add_modifier(Modifier::DIM)
-            } else {
-                Style::default()
-                    .fg(Color::White)
-                    .add_modifier(Modifier::BOLD)
-            }
-        } else if i == current_position {
-            if let Some(mistake_pos) = current_mistake_position {
-                if i == mistake_pos {
-                    Style::default().fg(Color::White).bg(Color::Red)
-                } else {
-                    Style::default().fg(Color::Black).bg(Color::Gray)
-                }
-            } else {
-                Style::default().fg(Color::Black).bg(Color::Gray)
-            }
-        } else if is_comment {
-            Style::default().fg(Color::LightBlue)
-        } else {
-            Style::default()
-                .fg(Color::White)
-                .add_modifier(Modifier::DIM)
-        }
-    }
-
-    fn find_line_for_position(&self, position: usize, line_starts: &[usize]) -> usize {
-        for (line_num, &line_start) in line_starts.iter().enumerate() {
-            if position < line_start {
-                return line_num.saturating_sub(1);
-            }
-        }
-        line_starts.len().saturating_sub(1)
     }
 
     pub fn cleanup(&mut self) -> Result<()> {
@@ -541,12 +327,6 @@ impl StageRenderer {
         stdout.flush()?;
 
         Ok(())
-    }
-
-    fn is_position_in_comment(position: usize, comment_ranges: &[(usize, usize)]) -> bool {
-        comment_ranges
-            .iter()
-            .any(|&(start, end)| position >= start && position < end)
     }
 
     fn create_progress_bar(progress_percent: u8, width: u8) -> String {

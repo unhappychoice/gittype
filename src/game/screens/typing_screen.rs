@@ -1,5 +1,8 @@
 use super::{
-    super::{stage_renderer::StageRenderer, text_processor::TextProcessor},
+    super::{
+        stage_renderer::StageRenderer,
+        typing_core::{ProcessingOptions, TypingCore},
+    },
     CountdownScreen,
 };
 use crate::models::Challenge;
@@ -13,13 +16,9 @@ use crossterm::{
 
 pub struct TypingScreen {
     challenge: Option<Challenge>,
-    challenge_text: String,
-    challenge_chars: Vec<char>,
-    current_position: usize,
+    typing_core: TypingCore,
     mistakes: usize,
     start_time: std::time::Instant,
-    line_starts: Vec<usize>,
-    comment_ranges: Vec<(usize, usize)>,
     mistake_positions: Vec<usize>,
     current_mistake_position: Option<usize>,
     renderer: StageRenderer,
@@ -42,28 +41,18 @@ pub enum SessionState {
 
 impl TypingScreen {
     pub fn new(challenge_text: String, repo_info: Option<GitRepository>) -> Result<Self> {
-        let processed_text = TextProcessor::process_challenge_text(&challenge_text);
-        let challenge_chars: Vec<char> = processed_text.chars().collect();
-        let line_starts = TextProcessor::calculate_line_starts(&processed_text);
         let comment_ranges = vec![]; // No comment info available without Challenge
-        let initial_position = TextProcessor::find_first_non_whitespace_or_comment(
-            &processed_text,
-            0,
-            &comment_ranges,
-        );
-        let renderer = StageRenderer::new(&processed_text)?;
-        let mut scoring_engine = ScoringEngine::new(processed_text.clone());
+        let options = ProcessingOptions::default();
+        let typing_core = TypingCore::new(&challenge_text, &comment_ranges, options);
+        let renderer = StageRenderer::new(typing_core.text_to_display())?;
+        let mut scoring_engine = ScoringEngine::new(typing_core.text_to_type().to_string());
         scoring_engine.start(); // Start timing immediately
 
         Ok(Self {
             challenge: None,
-            challenge_text: processed_text,
-            challenge_chars,
-            current_position: initial_position,
+            typing_core,
             mistakes: 0,
             start_time: std::time::Instant::now(),
-            line_starts,
-            comment_ranges,
             mistake_positions: Vec::new(),
             current_mistake_position: None,
             renderer,
@@ -79,35 +68,20 @@ impl TypingScreen {
         challenge: &Challenge,
         repo_info: Option<GitRepository>,
     ) -> Result<Self> {
-        // Apply basic text processing but preserve empty lines to maintain code structure
-        // Indentation normalization is already done in extractor
-        let (processed_text, mapped_comment_ranges) =
-            TextProcessor::process_challenge_text_with_comment_mapping_preserve_empty(
-                &challenge.code_content,
-                &challenge.comment_ranges,
-                true, // Always preserve empty lines
-            );
+        let mut options = ProcessingOptions::default();
+        options.preserve_empty_lines = true; // Always preserve empty lines for challenges
 
-        let challenge_chars: Vec<char> = processed_text.chars().collect();
-        let line_starts = TextProcessor::calculate_line_starts(&processed_text);
-        let initial_position = TextProcessor::find_first_non_whitespace_or_comment(
-            &processed_text,
-            0,
-            &mapped_comment_ranges,
-        );
-        let renderer = StageRenderer::new(&processed_text)?;
-        let mut scoring_engine = ScoringEngine::new(processed_text.clone());
+        let typing_core =
+            TypingCore::new(&challenge.code_content, &challenge.comment_ranges, options);
+        let renderer = StageRenderer::new(typing_core.text_to_display())?;
+        let mut scoring_engine = ScoringEngine::new(typing_core.text_to_type().to_string());
         scoring_engine.start(); // Start timing immediately
 
         Ok(Self {
             challenge: Some(challenge.clone()),
-            challenge_text: processed_text,
-            challenge_chars,
-            current_position: initial_position,
+            typing_core,
             mistakes: 0,
             start_time: std::time::Instant::now(),
-            line_starts,
-            comment_ranges: mapped_comment_ranges,
             mistake_positions: Vec::new(),
             current_mistake_position: None,
             renderer,
@@ -136,18 +110,19 @@ impl TypingScreen {
         // Reset start time after countdown
         self.start_time = std::time::Instant::now();
 
+        let display_comment_ranges = self.typing_core.display_comment_ranges();
         self.renderer.display_challenge_with_info(
-            &self.challenge_text,
-            self.current_position,
+            self.typing_core.text_to_display(),
+            self.typing_core.current_position_to_display(),
+            self.typing_core.current_line_to_display(),
             self.mistakes,
-            &self.line_starts,
-            &self.comment_ranges,
             self.challenge.as_ref(),
             self.current_mistake_position,
             self.skips_remaining,
             self.dialog_shown,
             &self.scoring_engine,
             &self.repo_info,
+            &display_comment_ranges,
         )?;
 
         loop {
@@ -194,18 +169,19 @@ impl TypingScreen {
         // For stage manager - assumes raw mode is already enabled
         self.start_time = std::time::Instant::now();
 
+        let display_comment_ranges = self.typing_core.display_comment_ranges();
         self.renderer.display_challenge_with_info(
-            &self.challenge_text,
-            self.current_position,
+            self.typing_core.text_to_display(),
+            self.typing_core.current_position_to_display(),
+            self.typing_core.current_line_to_display(),
             self.mistakes,
-            &self.line_starts,
-            &self.comment_ranges,
             self.challenge.as_ref(),
             self.current_mistake_position,
             self.skips_remaining,
             self.dialog_shown,
             &self.scoring_engine,
             &self.repo_info,
+            &display_comment_ranges,
         )?;
 
         loop {
@@ -249,18 +225,19 @@ impl TypingScreen {
         // For stage manager - assumes raw mode is already enabled
         self.start_time = std::time::Instant::now();
 
+        let display_comment_ranges = self.typing_core.display_comment_ranges();
         self.renderer.display_challenge_with_info(
-            &self.challenge_text,
-            self.current_position,
+            self.typing_core.text_to_display(),
+            self.typing_core.current_position_to_display(),
+            self.typing_core.current_line_to_display(),
             self.mistakes,
-            &self.line_starts,
-            &self.comment_ranges,
             self.challenge.as_ref(),
             self.current_mistake_position,
             self.skips_remaining,
             self.dialog_shown,
             &self.scoring_engine,
             &self.repo_info,
+            &display_comment_ranges,
         )?;
 
         let final_state = loop {
@@ -363,55 +340,61 @@ impl TypingScreen {
             }
             KeyCode::Tab => {
                 // Handle tab character
-                if self.current_position < self.challenge_text.len() {
-                    let expected_char = self
-                        .challenge_text
-                        .chars()
-                        .nth(self.current_position)
-                        .unwrap();
+                if self.typing_core.current_position_to_type()
+                    < self.typing_core.text_to_type().len()
+                {
+                    let expected_char = self.typing_core.current_char_to_type().unwrap();
                     let is_correct = expected_char == '\t';
 
                     // Record keystroke in scoring engine
                     self.scoring_engine
-                        .record_keystroke('\t', self.current_position);
+                        .record_keystroke('\t', self.typing_core.current_position_to_type());
 
                     if is_correct {
                         self.current_mistake_position = None;
-                        self.current_position += 1;
-                        // Skip over any non-typeable characters (comments, whitespace)
-                        self.advance_to_next_typeable_character();
-                        if self.current_position >= self.challenge_text.len() {
+                        self.typing_core.advance_to_next_character();
+                        if self.typing_core.current_position_to_type()
+                            >= self.typing_core.text_to_type().len()
+                        {
                             return Ok(SessionState::Complete);
                         }
                     } else {
                         self.mistakes += 1;
-                        self.mistake_positions.push(self.current_position);
-                        self.current_mistake_position = Some(self.current_position);
+                        self.mistake_positions
+                            .push(self.typing_core.current_position_to_type());
+                        self.current_mistake_position =
+                            Some(self.typing_core.current_position_to_type());
                     }
                 }
                 Ok(SessionState::Continue)
             }
             KeyCode::Enter => {
                 // Auto-advance when reaching end of line (after last code character)
-                if self.current_position < self.challenge_text.len() {
+                if self.typing_core.current_position_to_type()
+                    < self.typing_core.text_to_type().len()
+                {
                     let is_correct = self.is_at_end_of_line_content();
 
                     // Record keystroke in scoring engine
                     self.scoring_engine
-                        .record_keystroke('\n', self.current_position);
+                        .record_keystroke('\n', self.typing_core.current_position_to_type());
 
                     // Check if we're at a newline or at the end of code content on a line
                     if is_correct {
                         // Skip over the newline and any following whitespace/comments to next typeable character
                         self.current_mistake_position = None;
                         self.advance_to_next_line()?;
-                        if self.current_position >= self.challenge_text.len() {
+                        if self.typing_core.current_position_to_type()
+                            >= self.typing_core.text_to_type().len()
+                        {
                             return Ok(SessionState::Complete);
                         }
                     } else {
                         self.mistakes += 1;
-                        self.mistake_positions.push(self.current_position);
-                        self.current_mistake_position = Some(self.current_position);
+                        self.mistake_positions
+                            .push(self.typing_core.current_position_to_type());
+                        self.current_mistake_position =
+                            Some(self.typing_core.current_position_to_type());
                     }
                 }
                 Ok(SessionState::Continue)
@@ -428,44 +411,34 @@ impl TypingScreen {
     }
 
     fn update_display(&mut self) -> Result<()> {
+        let display_comment_ranges = self.typing_core.display_comment_ranges();
         self.renderer.display_challenge_with_info(
-            &self.challenge_text,
-            self.current_position,
+            self.typing_core.text_to_display(),
+            self.typing_core.current_position_to_display(),
+            self.typing_core.current_line_to_display(),
             self.mistakes,
-            &self.line_starts,
-            &self.comment_ranges,
             self.challenge.as_ref(),
             self.current_mistake_position,
             self.skips_remaining,
             self.dialog_shown,
             &self.scoring_engine,
             &self.repo_info,
+            &display_comment_ranges,
         )
     }
 
     fn is_at_end_of_line_content(&self) -> bool {
-        TextProcessor::is_at_end_of_line_content(
-            &self.challenge_text,
-            self.current_position,
-            &self.line_starts,
-            &self.comment_ranges,
-        )
+        self.typing_core
+            .is_position_at_line_end(self.typing_core.current_position_to_type())
     }
 
     fn advance_to_next_line(&mut self) -> Result<()> {
-        let chars: Vec<char> = self.challenge_text.chars().collect();
-
         // Skip current position if it's a newline
-        if self.current_position < chars.len() && chars[self.current_position] == '\n' {
-            self.current_position += 1;
+        if let Some(ch) = self.typing_core.current_char_to_type() {
+            if ch == '\n' {
+                self.typing_core.advance_to_next_character();
+            }
         }
-
-        // Skip to next typeable character
-        self.current_position = TextProcessor::find_first_non_whitespace_or_comment(
-            &self.challenge_text,
-            self.current_position,
-            &self.comment_ranges,
-        );
 
         Ok(())
     }
@@ -500,7 +473,7 @@ impl TypingScreen {
 
     pub fn was_skipped(&self) -> bool {
         // Check if we completed due to a skip (not normal completion)
-        self.current_position < self.challenge_chars.len()
+        self.typing_core.current_position_to_type() < self.typing_core.text_to_type().len()
     }
 
     pub fn was_failed(&self) -> bool {
@@ -509,45 +482,29 @@ impl TypingScreen {
     }
 
     fn handle_character_input(&mut self, ch: char, _key_event: KeyEvent) -> Result<SessionState> {
-        if self.current_position < self.challenge_chars.len() {
-            let expected_char = self.challenge_chars[self.current_position];
+        if self.typing_core.current_position_to_type() < self.typing_core.text_to_type().len() {
+            let expected_char = self.typing_core.current_char_to_type().unwrap();
             let is_correct = ch == expected_char;
 
             // Record keystroke in scoring engine
             self.scoring_engine
-                .record_keystroke(ch, self.current_position);
+                .record_keystroke(ch, self.typing_core.current_position_to_type());
 
             if is_correct {
                 self.current_mistake_position = None;
-                self.current_position += 1;
-                // Skip over any non-typeable characters (comments, whitespace)
-                self.advance_to_next_typeable_character();
-                if self.current_position >= self.challenge_chars.len() {
+                self.typing_core.advance_to_next_character();
+                if self.typing_core.current_position_to_type()
+                    >= self.typing_core.text_to_type().len()
+                {
                     return Ok(SessionState::Complete);
                 }
             } else {
                 self.mistakes += 1;
-                self.mistake_positions.push(self.current_position);
-                self.current_mistake_position = Some(self.current_position);
+                self.mistake_positions
+                    .push(self.typing_core.current_position_to_type());
+                self.current_mistake_position = Some(self.typing_core.current_position_to_type());
             }
         }
         Ok(SessionState::Continue)
-    }
-
-    fn advance_to_next_typeable_character(&mut self) {
-        while self.current_position < self.challenge_chars.len() {
-            // Check if current position should be skipped (comment, whitespace, etc.)
-            if TextProcessor::should_skip_character(
-                &self.challenge_text,
-                self.current_position,
-                &self.line_starts,
-                &self.comment_ranges,
-            ) {
-                self.current_position += 1;
-            } else {
-                // Found a typeable character
-                break;
-            }
-        }
     }
 }
