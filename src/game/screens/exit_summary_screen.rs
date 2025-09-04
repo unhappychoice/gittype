@@ -1,4 +1,5 @@
-use crate::game::{ascii_digits::get_digit_patterns, SessionResult};
+use crate::game::ascii_digits::get_digit_patterns;
+use crate::models::TotalResult;
 use crate::sharing::SharingPlatform;
 use crate::Result;
 use crossterm::{
@@ -19,37 +20,36 @@ pub enum ExitAction {
 pub struct ExitSummaryScreen;
 
 impl ExitSummaryScreen {
-    fn create_session_share_text(session_summary: &SessionResult) -> String {
+    fn create_total_share_text(total_summary: &TotalResult) -> String {
         format!(
-            "Just demolished {} keystrokes in gittype! 🔥 Total Score: {:.0}, CPM: {:.0}, Mistakes: {}, Time: {:.1}min 💪\n\nYour turn to abuse your keyboard! https://github.com/unhappychoice/gittype\n\n#gittype #typing #coding #keyboardwarrior",
-            session_summary.total_effort_keystrokes(),
-            session_summary.session_score,
-            session_summary.overall_cpm,
-            session_summary.total_effort_mistakes(),
-            session_summary.total_session_time.as_secs_f64() / 60.0
+            "Just demolished {} keystrokes total in gittype! 🔥 Total Score: {:.0}, CPM: {:.0}, Sessions: {}/{}, Time: {:.1}min 💪\n\nYour turn to abuse your keyboard! https://github.com/unhappychoice/gittype\n\n#gittype #typing #coding #keyboardwarrior",
+            total_summary.total_keystrokes,
+            total_summary.total_score,
+            total_summary.overall_cpm,
+            total_summary.total_sessions_completed,
+            total_summary.total_sessions_attempted,
+            total_summary.total_duration.as_secs_f64() / 60.0
         )
     }
 
-    fn session_summary_to_typing_metrics(
-        session_summary: &SessionResult,
-    ) -> crate::scoring::StageResult {
+    fn total_summary_to_typing_metrics(total_summary: &TotalResult) -> crate::scoring::StageResult {
         use crate::scoring::{ScoringEngine, StageResult};
 
-        // Create a StageResult from SessionResult data
-        let rank_name = ScoringEngine::get_rank_for_score(session_summary.session_score)
+        // Create a StageResult from Total TotalResult data
+        let rank_name = ScoringEngine::get_rank_for_score(total_summary.total_score)
             .name()
             .to_string();
         let (tier_name, tier_position, tier_total, overall_position, overall_total) =
-            ScoringEngine::calculate_tier_info(session_summary.session_score);
+            ScoringEngine::calculate_tier_info(total_summary.total_score);
 
         StageResult {
-            cpm: session_summary.overall_cpm,
-            wpm: session_summary.overall_wpm,
-            accuracy: session_summary.overall_accuracy,
-            mistakes: session_summary.total_effort_mistakes(),
-            consistency_streaks: vec![], // Not available in session summary
-            completion_time: session_summary.total_session_time,
-            challenge_score: session_summary.session_score,
+            cpm: total_summary.overall_cpm,
+            wpm: total_summary.overall_wpm,
+            accuracy: total_summary.overall_accuracy,
+            mistakes: total_summary.total_mistakes,
+            consistency_streaks: vec![], // Not available in total summary
+            completion_time: total_summary.total_duration,
+            challenge_score: total_summary.total_score,
             rank_name,
             tier_name,
             tier_position,
@@ -79,7 +79,7 @@ impl ExitSummaryScreen {
         result
     }
 
-    pub fn show(session_summary: &SessionResult) -> Result<ExitAction> {
+    pub fn show(total_summary: &TotalResult) -> Result<ExitAction> {
         let mut stdout = stdout();
 
         // Comprehensive screen reset
@@ -95,7 +95,7 @@ impl ExitSummaryScreen {
         let center_row = terminal_height / 2;
         let center_col = terminal_width / 2;
 
-        let title = "=== SESSION SUMMARY ===";
+        let title = "=== TOTAL SUMMARY ===";
         let lines: Vec<&str> = title.split('\n').collect();
 
         for (i, line) in lines.iter().enumerate() {
@@ -113,10 +113,10 @@ impl ExitSummaryScreen {
             execute!(stdout, ResetColor)?;
         }
 
-        // Show session duration
+        // Show total duration
         let duration_text = format!(
-            "Session Duration: {:.1} minutes",
-            session_summary.total_session_time.as_secs_f64() / 60.0
+            "Total Duration: {:.1} minutes",
+            total_summary.total_duration.as_secs_f64() / 60.0
         );
         let duration_col = center_col.saturating_sub(duration_text.len() as u16 / 2);
         execute!(stdout, MoveTo(duration_col, center_row.saturating_sub(10)))?;
@@ -125,7 +125,7 @@ impl ExitSummaryScreen {
         execute!(stdout, ResetColor)?;
 
         // Show completion status
-        let completion_status = session_summary.get_session_completion_status();
+        let completion_status = total_summary.get_completion_status();
         let status_col = center_col.saturating_sub(completion_status.len() as u16 / 2);
         execute!(stdout, MoveTo(status_col, center_row.saturating_sub(9)))?;
         execute!(stdout, SetForegroundColor(Color::Green))?;
@@ -147,7 +147,7 @@ impl ExitSummaryScreen {
         execute!(stdout, Print(score_label))?;
         execute!(stdout, ResetColor)?;
 
-        let score_value = format!("{:.0}", session_summary.session_score);
+        let score_value = format!("{:.0}", total_summary.total_score);
         let ascii_numbers = Self::create_ascii_numbers(&score_value);
         let score_start_row = center_row.saturating_sub(6);
 
@@ -163,27 +163,30 @@ impl ExitSummaryScreen {
             execute!(stdout, ResetColor)?;
         }
 
-        // Show session statistics
+        // Show total statistics
         let stats_start_row = center_row.saturating_sub(1);
 
         let mut stats_lines = vec![
             format!(
                 "Overall CPM: {:.1} | WPM: {:.1} | Accuracy: {:.1}%",
-                session_summary.overall_cpm,
-                session_summary.overall_wpm,
-                session_summary.overall_accuracy
+                total_summary.overall_cpm,
+                total_summary.overall_wpm,
+                total_summary.overall_accuracy
             ),
             format!(
-                "Total Keystrokes: {} | Mistakes: {} | Challenges: {}/{}",
-                session_summary.total_effort_keystrokes(),
-                session_summary.total_effort_mistakes(),
-                session_summary.total_challenges_completed,
-                session_summary.total_challenges_attempted
+                "Total Keystrokes: {} | Mistakes: {} | Stages: {}/{}",
+                total_summary.total_keystrokes,
+                total_summary.total_mistakes,
+                total_summary.total_stages_completed,
+                total_summary.total_stages_attempted
             ),
         ];
 
-        if session_summary.total_skips_used > 0 {
-            stats_lines.push(format!("Skips Used: {}", session_summary.total_skips_used));
+        if total_summary.total_stages_skipped > 0 {
+            stats_lines.push(format!(
+                "Stages Skipped: {}",
+                total_summary.total_stages_skipped
+            ));
         }
 
         for (i, line) in stats_lines.iter().enumerate() {
@@ -194,36 +197,30 @@ impl ExitSummaryScreen {
             execute!(stdout, ResetColor)?;
         }
 
-        // Show best/worst performance if we have completed challenges
-        if session_summary.total_challenges_completed > 0 {
-            let performance_start_row = stats_start_row + stats_lines.len() as u16 + 1;
+        // Show best/worst performance (always show, even if zero)
+        let performance_start_row = stats_start_row + stats_lines.len() as u16 + 1;
 
-            let performance_lines = [
-                format!(
-                    "Best Stage: {:.1} WPM, {:.1}% accuracy",
-                    session_summary.best_stage_wpm, session_summary.best_stage_accuracy
-                ),
-                format!(
-                    "Worst Stage: {:.1} WPM, {:.1}% accuracy",
-                    session_summary.worst_stage_wpm, session_summary.worst_stage_accuracy
-                ),
-            ];
+        let performance_lines = [
+            format!(
+                "Best Session: {:.1} WPM, {:.1}% accuracy",
+                total_summary.best_session_wpm, total_summary.best_session_accuracy
+            ),
+            format!(
+                "Worst Session: {:.1} WPM, {:.1}% accuracy",
+                total_summary.worst_session_wpm, total_summary.worst_session_accuracy
+            ),
+        ];
 
-            for (i, line) in performance_lines.iter().enumerate() {
-                let line_col = center_col.saturating_sub(line.len() as u16 / 2);
-                execute!(stdout, MoveTo(line_col, performance_start_row + i as u16))?;
-                execute!(stdout, SetForegroundColor(Color::Grey))?;
-                execute!(stdout, Print(line))?;
-                execute!(stdout, ResetColor)?;
-            }
+        for (i, line) in performance_lines.iter().enumerate() {
+            let line_col = center_col.saturating_sub(line.len() as u16 / 2);
+            execute!(stdout, MoveTo(line_col, performance_start_row + i as u16))?;
+            execute!(stdout, SetForegroundColor(Color::Grey))?;
+            execute!(stdout, Print(line))?;
+            execute!(stdout, ResetColor)?;
         }
 
         // Show exit options
-        let options_start = if session_summary.total_challenges_completed > 0 {
-            stats_start_row + stats_lines.len() as u16 + 4
-        } else {
-            stats_start_row + stats_lines.len() as u16 + 2
-        };
+        let options_start = stats_start_row + stats_lines.len() as u16 + 4;
         // Show thanks message
         let thanks_message = "Thanks for playing GitType!";
         let thanks_col = center_col.saturating_sub(thanks_message.len() as u16 / 2);
@@ -268,9 +265,9 @@ impl ExitSummaryScreen {
                 if let Event::Key(key_event) = event::read()? {
                     match key_event.code {
                         KeyCode::Char('s') | KeyCode::Char('S') => {
-                            let _ = Self::show_sharing_menu(session_summary);
+                            let _ = Self::show_sharing_menu_total(total_summary);
                             // Redraw exit screen after sharing
-                            return Self::show(session_summary);
+                            return Self::show(total_summary);
                         }
                         KeyCode::Esc => {
                             return Ok(ExitAction::Exit);
@@ -289,8 +286,8 @@ impl ExitSummaryScreen {
         }
     }
 
-    pub fn show_sharing_menu(session_summary: &SessionResult) -> Result<()> {
-        let _metrics = Self::session_summary_to_typing_metrics(session_summary);
+    pub fn show_sharing_menu_total(total_summary: &TotalResult) -> Result<()> {
+        let _metrics = Self::total_summary_to_typing_metrics(total_summary);
 
         // Raw mode should already be enabled from the parent function
 
@@ -302,7 +299,7 @@ impl ExitSummaryScreen {
         let center_col = terminal_width / 2;
 
         // Title
-        let title = "Share Your Session Result";
+        let title = "Share Your Total Results";
         let title_col = center_col.saturating_sub(title.len() as u16 / 2);
         execute!(stdout, MoveTo(title_col, center_row.saturating_sub(8)))?;
         execute!(
@@ -315,12 +312,13 @@ impl ExitSummaryScreen {
 
         // Show preview of what will be shared
         let preview_text = format!(
-            "Score: {:.0}, CPM: {:.0}, Keystrokes: {}, Mistakes: {}, Time: {:.1}min",
-            session_summary.session_score,
-            session_summary.overall_cpm,
-            session_summary.total_effort_keystrokes(),
-            session_summary.total_effort_mistakes(),
-            session_summary.total_session_time.as_secs_f64() / 60.0
+            "Score: {:.0}, CPM: {:.0}, Keystrokes: {}, Sessions: {}/{}, Time: {:.1}min",
+            total_summary.total_score,
+            total_summary.overall_cpm,
+            total_summary.total_keystrokes,
+            total_summary.total_sessions_completed,
+            total_summary.total_sessions_attempted,
+            total_summary.total_duration.as_secs_f64() / 60.0
         );
         let preview_col = center_col.saturating_sub(preview_text.len() as u16 / 2);
         execute!(stdout, MoveTo(preview_col, center_row.saturating_sub(5)))?;
@@ -364,28 +362,22 @@ impl ExitSummaryScreen {
                 if let Event::Key(key_event) = event::read()? {
                     match key_event.code {
                         KeyCode::Char('1') => {
-                            let _ = Self::share_session_result(session_summary, SharingPlatform::X);
+                            let _ = Self::share_total_result(total_summary, SharingPlatform::X);
                             break;
                         }
                         KeyCode::Char('2') => {
-                            let _ = Self::share_session_result(
-                                session_summary,
-                                SharingPlatform::Reddit,
-                            );
+                            let _ =
+                                Self::share_total_result(total_summary, SharingPlatform::Reddit);
                             break;
                         }
                         KeyCode::Char('3') => {
-                            let _ = Self::share_session_result(
-                                session_summary,
-                                SharingPlatform::LinkedIn,
-                            );
+                            let _ =
+                                Self::share_total_result(total_summary, SharingPlatform::LinkedIn);
                             break;
                         }
                         KeyCode::Char('4') => {
-                            let _ = Self::share_session_result(
-                                session_summary,
-                                SharingPlatform::Facebook,
-                            );
+                            let _ =
+                                Self::share_total_result(total_summary, SharingPlatform::Facebook);
                             break;
                         }
                         KeyCode::Esc => break,
@@ -403,12 +395,12 @@ impl ExitSummaryScreen {
         Ok(())
     }
 
-    fn share_session_result(
-        session_summary: &SessionResult,
+    fn share_total_result(
+        total_summary: &TotalResult,
         platform: SharingPlatform,
     ) -> crate::Result<()> {
-        let text = Self::create_session_share_text(session_summary);
-        let url = Self::generate_session_share_url(&text, &platform, session_summary);
+        let text = Self::create_total_share_text(total_summary);
+        let url = Self::generate_total_share_url(&text, &platform, total_summary);
 
         match Self::open_browser(&url) {
             Ok(()) => Ok(()),
@@ -416,10 +408,10 @@ impl ExitSummaryScreen {
         }
     }
 
-    fn generate_session_share_url(
+    fn generate_total_share_url(
         text: &str,
         platform: &SharingPlatform,
-        session_summary: &SessionResult,
+        total_summary: &TotalResult,
     ) -> String {
         match platform {
             SharingPlatform::X => {
@@ -430,10 +422,10 @@ impl ExitSummaryScreen {
             }
             SharingPlatform::Reddit => {
                 let title = format!(
-                    "Just demolished {} keystrokes in gittype! Score: {:.0}, CPM: {:.0}",
-                    session_summary.total_effort_keystrokes(),
-                    session_summary.session_score,
-                    session_summary.overall_cpm
+                    "Just demolished {} keystrokes total in gittype! Score: {:.0}, CPM: {:.0}",
+                    total_summary.total_keystrokes,
+                    total_summary.total_score,
+                    total_summary.overall_cpm
                 );
                 format!(
                     "https://www.reddit.com/submit?title={}&selftext=true&text={}",
@@ -541,5 +533,121 @@ impl ExitSummaryScreen {
         }
 
         Ok(())
+    }
+
+    pub fn show_total(total_summary: &TotalResult) -> Result<ExitAction> {
+        let mut stdout = stdout();
+
+        // Comprehensive screen reset
+        execute!(stdout, terminal::Clear(ClearType::All))?;
+        execute!(stdout, MoveTo(0, 0))?;
+        execute!(stdout, ResetColor)?;
+        stdout.flush()?;
+
+        // Short delay to ensure terminal state is reset
+        std::thread::sleep(std::time::Duration::from_millis(10));
+
+        let (terminal_width, terminal_height) = terminal::size()?;
+        let center_row = terminal_height / 2;
+        let center_col = terminal_width / 2;
+
+        let title = "=== TOTAL SUMMARY ===";
+        let title_col = center_col.saturating_sub(title.len() as u16 / 2);
+        execute!(stdout, MoveTo(title_col, center_row.saturating_sub(8)))?;
+        execute!(
+            stdout,
+            SetAttribute(Attribute::Bold),
+            SetForegroundColor(Color::Cyan)
+        )?;
+        execute!(stdout, Print(title))?;
+        execute!(stdout, ResetColor)?;
+
+        // Show total score
+        let score_value = format!("{:.0}", total_summary.total_score);
+        let ascii_numbers = Self::create_ascii_numbers(&score_value);
+        let score_start_row = center_row.saturating_sub(6);
+
+        for (row_index, line) in ascii_numbers.iter().enumerate() {
+            let line_col = center_col.saturating_sub(line.len() as u16 / 2);
+            execute!(stdout, MoveTo(line_col, score_start_row + row_index as u16))?;
+            execute!(
+                stdout,
+                SetAttribute(Attribute::Bold),
+                SetForegroundColor(Color::Green)
+            )?;
+            execute!(stdout, Print(line))?;
+            execute!(stdout, ResetColor)?;
+        }
+
+        // Show total statistics
+        let stats_start_row = center_row.saturating_sub(1);
+
+        let mut stats_lines = vec![
+            format!(
+                "Overall CPM: {:.1} | WPM: {:.1} | Accuracy: {:.1}%",
+                total_summary.overall_cpm,
+                total_summary.overall_wpm,
+                total_summary.overall_accuracy
+            ),
+            format!(
+                "Total Sessions: {} | Completed: {} | Stages: {}/{}",
+                total_summary.total_sessions_attempted,
+                total_summary.total_sessions_completed,
+                total_summary.total_stages_completed,
+                total_summary.total_stages_attempted
+            ),
+            format!(
+                "Total Keystrokes: {} | Mistakes: {} | Skipped: {}",
+                total_summary.total_keystrokes,
+                total_summary.total_mistakes,
+                total_summary.total_stages_skipped
+            ),
+        ];
+
+        stats_lines.push(format!(
+            "Best Session: {:.1} WPM, {:.1}% | Worst: {:.1} WPM, {:.1}%",
+            total_summary.best_session_wpm,
+            total_summary.best_session_accuracy,
+            total_summary.worst_session_wpm,
+            total_summary.worst_session_accuracy
+        ));
+
+        for (i, line) in stats_lines.iter().enumerate() {
+            let line_col = center_col.saturating_sub(line.len() as u16 / 2);
+            execute!(stdout, MoveTo(line_col, stats_start_row + i as u16))?;
+            execute!(stdout, SetForegroundColor(Color::White))?;
+            execute!(stdout, Print(line))?;
+            execute!(stdout, ResetColor)?;
+        }
+
+        // Navigation instructions
+        let nav_start_row = stats_start_row + stats_lines.len() as u16 + 2;
+        let nav_text = "[ESC] Exit";
+        let nav_col = center_col.saturating_sub(nav_text.len() as u16 / 2);
+        execute!(stdout, MoveTo(nav_col, nav_start_row))?;
+        execute!(stdout, SetForegroundColor(Color::Red))?;
+        execute!(stdout, Print(nav_text))?;
+        execute!(stdout, ResetColor)?;
+
+        stdout.flush()?;
+
+        // Wait for user input
+        loop {
+            if event::poll(std::time::Duration::from_millis(100))? {
+                if let Event::Key(key_event) = event::read()? {
+                    match key_event.code {
+                        KeyCode::Esc => {
+                            return Ok(ExitAction::Exit);
+                        }
+                        KeyCode::Char('c')
+                            if key_event.modifiers.contains(KeyModifiers::CONTROL) =>
+                        {
+                            return Ok(ExitAction::Exit);
+                        }
+                        _ => continue,
+                    }
+                }
+            }
+        }
     }
 }
