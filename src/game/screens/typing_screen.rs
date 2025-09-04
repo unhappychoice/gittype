@@ -79,12 +79,13 @@ impl TypingScreen {
         challenge: &Challenge,
         repo_info: Option<GitRepository>,
     ) -> Result<Self> {
-        // Apply basic text processing (remove empty lines, etc.)
+        // Apply basic text processing but preserve empty lines to maintain code structure
         // Indentation normalization is already done in extractor
         let (processed_text, mapped_comment_ranges) =
-            TextProcessor::process_challenge_text_with_comment_mapping(
+            TextProcessor::process_challenge_text_with_comment_mapping_preserve_empty(
                 &challenge.code_content,
                 &challenge.comment_ranges,
+                true, // Always preserve empty lines
             );
 
         let challenge_chars: Vec<char> = processed_text.chars().collect();

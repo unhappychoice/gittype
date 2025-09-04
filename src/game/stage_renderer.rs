@@ -219,6 +219,7 @@ impl StageRenderer {
 
         let mut line_number = 0;
         let mut line_start = true;
+        let mut newline_added_for_current_line = false;
 
         // Get the starting line number from challenge, default to 1
         let start_line_number = challenge.and_then(|c| c.start_line).unwrap_or(1);
@@ -240,32 +241,30 @@ impl StageRenderer {
                 line_start = false;
             }
 
-            // Handle explicit newlines
+            // Handle explicit newlines - don't display them, but they are typeable
             if ch == '\n' {
-                // Use cached properties for newline styling
+                // Skip displaying the newline character itself (it's invisible)
                 let should_skip = skip_cache.get(&i).copied().unwrap_or(false);
-                let is_comment = comment_cache.get(&i).copied().unwrap_or(false);
-                let is_current_line = line_number == current_line_number;
-
-                if !should_skip {
-                    let style = self.get_char_style_with_highlight(
-                        i,
-                        current_position,
-                        should_skip,
-                        is_comment,
-                        current_mistake_position,
-                        is_current_line,
-                    );
-
-                    // Show newline as enter symbol
-                    current_line_spans.push(Span::styled("↵".to_string(), style));
+                if should_skip {
+                    // If this newline should be skipped entirely, break the line
+                    lines.push(Line::from(current_line_spans));
+                    current_line_spans = Vec::new();
+                    current_line_width = 0;
+                    line_number += 1;
+                    line_start = true;
+                    newline_added_for_current_line = false; // Reset flag for new line
+                } else {
+                    // Newline is typeable but invisible - don't add to spans
+                    // Line break will happen when we encounter the next character or end of text
+                    if i + 1 >= self.chars.len() || self.chars[i + 1] != '\n' {
+                        lines.push(Line::from(current_line_spans));
+                        current_line_spans = Vec::new();
+                        current_line_width = 0;
+                        line_number += 1;
+                        line_start = true;
+                        newline_added_for_current_line = false; // Reset flag for new line
+                    }
                 }
-
-                lines.push(Line::from(current_line_spans));
-                current_line_spans = Vec::new();
-                current_line_width = 0;
-                line_number += 1;
-                line_start = true; // Next iteration will be start of new line
                 continue;
             }
 
@@ -298,6 +297,64 @@ impl StageRenderer {
 
             current_line_spans.push(Span::styled(display_char, style));
             current_line_width += char_width;
+
+            // Show newline symbol after non-comment, non-skipped characters at end of content
+            if !should_skip && !is_comment {
+                let next_pos = i + 1;
+                let text: String = self.chars.iter().collect();
+
+                // Check if this is the last non-comment char on the line
+                let is_end_of_line_content = next_pos >= text.len()
+                    || text.chars().nth(next_pos) == Some('\n')
+                    || crate::game::text_processor::TextProcessor::is_rest_of_line_comment_only(
+                        &text,
+                        next_pos,
+                        comment_ranges,
+                    );
+
+                // Don't show newline on empty lines
+                if is_end_of_line_content {
+                    let line_start_pos = self.find_line_start(i);
+                    let has_content_on_line = (line_start_pos..=i).any(|pos| {
+                        if let Some(c) = text.chars().nth(pos) {
+                            !c.is_whitespace()
+                                && !comment_ranges
+                                    .iter()
+                                    .any(|&(start, end)| pos >= start && pos < end)
+                        } else {
+                            false
+                        }
+                    });
+
+                    if has_content_on_line && !newline_added_for_current_line {
+                        // Find the actual newline character position for styling
+                        let newline_pos =
+                            if next_pos < text.len() && text.chars().nth(next_pos) == Some('\n') {
+                                next_pos // Next character is the newline
+                            } else {
+                                // Look for the newline at the end of this line
+                                text.chars()
+                                    .enumerate()
+                                    .skip(next_pos)
+                                    .find(|(_, c)| *c == '\n')
+                                    .map(|(pos, _)| pos)
+                                    .unwrap_or(i) // Fallback to current position
+                            };
+
+                        let newline_style = self.get_char_style_with_highlight(
+                            newline_pos, // Use actual newline position for styling
+                            current_position,
+                            false,
+                            false,
+                            current_mistake_position,
+                            is_current_line,
+                        );
+                        current_line_spans.push(Span::styled("↵".to_string(), newline_style));
+                        current_line_width += 1;
+                        newline_added_for_current_line = true; // Mark that we added newline symbol
+                    }
+                }
+            }
         }
 
         if !current_line_spans.is_empty() {
@@ -331,6 +388,16 @@ impl StageRenderer {
         }
 
         lines
+    }
+
+    fn find_line_start(&self, position: usize) -> usize {
+        let text: String = self.chars.iter().collect();
+        let chars: Vec<char> = text.chars().collect();
+        let mut pos = position;
+        while pos > 0 && chars[pos - 1] != '\n' {
+            pos -= 1;
+        }
+        pos
     }
 
     fn create_skip_cache(
