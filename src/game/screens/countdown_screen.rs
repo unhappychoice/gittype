@@ -111,7 +111,7 @@ impl CountdownScreen {
         // Show "GO!" message as ASCII art
         execute!(stdout, terminal::Clear(ClearType::All))?;
 
-        let go_art = vec![
+        let go_art = [
             "   ____  ___  ",
             "  / ___|/ _ \\ ",
             " | |  _| | | |",
@@ -249,7 +249,7 @@ impl CountdownScreen {
         // Show "GO!" message as ASCII art
         execute!(stdout, terminal::Clear(ClearType::All))?;
 
-        let go_art = vec![
+        let go_art = [
             "   ____  ___  ",
             "  / ___|/ _ \\ ",
             " | |  _| | | |",

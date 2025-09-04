@@ -11,6 +11,16 @@ use ratatui::{
 };
 use std::io;
 
+struct ContentRenderParams<'a> {
+    current_display_position: usize,
+    current_line_number: usize,
+    current_mistake_position: Option<usize>,
+    terminal_width: u16,
+    challenge: Option<&'a Challenge>,
+    display_comment_ranges: &'a [(usize, usize)],
+    code_context: &'a CodeContext,
+}
+
 pub struct StageRenderer {
     terminal: Terminal<CrosstermBackend<io::Stdout>>,
     chars: Vec<char>,
@@ -74,15 +84,16 @@ impl StageRenderer {
         };
 
         let terminal_size = self.terminal.size()?;
-        let content_spans = self.create_content_spans(
+        let render_params = ContentRenderParams {
             current_display_position,
-            current_line,
+            current_line_number: current_line,
             current_mistake_position,
-            terminal_size.width,
+            terminal_width: terminal_size.width,
             challenge,
             display_comment_ranges,
             code_context,
-        );
+        };
+        let content_spans = self.create_content_spans(render_params);
 
         let elapsed_time = scoring_engine.get_elapsed_time();
         let metrics = crate::scoring::engine::ScoringEngine::calculate_real_time_result(
@@ -196,16 +207,7 @@ impl StageRenderer {
         Ok(())
     }
 
-    fn create_content_spans(
-        &self,
-        current_display_position: usize,
-        current_line_number: usize,
-        current_mistake_position: Option<usize>,
-        terminal_width: u16,
-        challenge: Option<&Challenge>,
-        display_comment_ranges: &[(usize, usize)],
-        code_context: &CodeContext,
-    ) -> Vec<Line<'static>> {
+    fn create_content_spans(&self, params: ContentRenderParams) -> Vec<Line<'static>> {
         let mut lines = Vec::new();
         let mut current_line_spans = Vec::new();
         let mut current_line_width = 0u16;
@@ -214,15 +216,15 @@ impl StageRenderer {
 
         // Reserve space for line numbers
         let line_number_width = 6u16;
-        let max_width = terminal_width.saturating_sub(line_number_width + 1);
+        let max_width = params.terminal_width.saturating_sub(line_number_width + 1);
 
         // Get the starting line number from challenge
-        let start_line_number = challenge.and_then(|c| c.start_line).unwrap_or(1);
+        let start_line_number = params.challenge.and_then(|c| c.start_line).unwrap_or(1);
 
         // Add pre-context lines (read-only, dimmed)
-        for (ctx_idx, pre_line) in code_context.pre_context.iter().enumerate() {
+        for (ctx_idx, pre_line) in params.code_context.pre_context.iter().enumerate() {
             let ctx_line_number =
-                start_line_number.saturating_sub(code_context.pre_context.len() - ctx_idx);
+                start_line_number.saturating_sub(params.code_context.pre_context.len() - ctx_idx);
             let line_num_text = format!("{:>4} │ ", ctx_line_number);
             let mut line_spans = vec![Span::styled(
                 line_num_text,
@@ -245,7 +247,7 @@ impl StageRenderer {
             if line_start {
                 let actual_line_number = start_line_number + line_number;
                 let line_num_text = format!("{:>4} │ ", actual_line_number);
-                let line_num_style = if line_number == current_line_number {
+                let line_num_style = if line_number == params.current_line_number {
                     Style::default()
                         .fg(Color::Yellow)
                         .add_modifier(ratatui::style::Modifier::BOLD)
@@ -268,7 +270,7 @@ impl StageRenderer {
             }
 
             // Check if this character is in a comment
-            let is_in_comment = display_comment_ranges
+            let is_in_comment = params.display_comment_ranges
                 .iter()
                 .any(|&(start, end)| i >= start && i < end);
 
@@ -278,14 +280,14 @@ impl StageRenderer {
                 Style::default()
                     .fg(Color::DarkGray)
                     .add_modifier(Modifier::DIM)
-            } else if i < current_display_position {
+            } else if i < params.current_display_position {
                 // Already typed - light blue dimmed for non-comments
                 Style::default()
                     .fg(Color::LightBlue)
                     .add_modifier(Modifier::DIM)
-            } else if i == current_display_position {
+            } else if i == params.current_display_position {
                 // Current cursor position - highlighted
-                if let Some(mistake_pos) = current_mistake_position {
+                if let Some(mistake_pos) = params.current_mistake_position {
                     if i == mistake_pos {
                         Style::default().fg(Color::White).bg(Color::Red)
                     } else {
@@ -323,10 +325,10 @@ impl StageRenderer {
         }
 
         // Add post-context lines (read-only, dimmed)
-        let end_line_number = challenge
+        let end_line_number = params.challenge
             .and_then(|c| c.end_line)
             .unwrap_or(start_line_number);
-        for (ctx_idx, post_line) in code_context.post_context.iter().enumerate() {
+        for (ctx_idx, post_line) in params.code_context.post_context.iter().enumerate() {
             let ctx_line_number = end_line_number + ctx_idx + 1;
             let line_num_text = format!("{:>4} │ ", ctx_line_number);
             let mut line_spans = vec![Span::styled(
