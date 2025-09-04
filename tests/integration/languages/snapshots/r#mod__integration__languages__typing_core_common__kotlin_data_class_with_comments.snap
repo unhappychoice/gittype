@@ -1,0 +1,33 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+data class Person(
+    val name: String, // Person's name
+    val age: Int      // Person's age
+) {
+    fun greet() {
+        println("Hello, I'm $name") // Print greeting
+    }
+}
+
+# text_to_type
+data class Person(
+val name: String,
+val age: Int
+) {
+fun greet() {
+println("Hello, I'm $name")
+}
+}
+
+# text_to_display
+data class Person(↵
+    val name: String,↵ // Person's name
+    val age: Int↵      // Person's age
+) {↵
+    fun greet() {↵
+        println("Hello, I'm $name")↵ // Print greeting
+    }↵
+}↵

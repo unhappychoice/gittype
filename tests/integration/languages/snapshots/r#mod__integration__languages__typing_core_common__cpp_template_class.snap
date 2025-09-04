@@ -1,0 +1,49 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+template<typename T>
+class Container {
+private:
+    T data; // The data
+    
+public:
+    void set(const T& value) {
+        data = value; // Store value
+    }
+    
+    T get() const {
+        return data; // Return data
+    }
+};
+
+# text_to_type
+template<typename T>
+class Container {
+private:
+T data;
+public:
+void set(const T& value) {
+data = value;
+}
+T get() const {
+return data;
+}
+};
+
+# text_to_display
+template<typename T>↵
+class Container {↵
+private:↵
+    T data;↵ // The data
+    
+public:↵
+    void set(const T& value) {↵
+        data = value;↵ // Store value
+    }↵
+    
+    T get() const {↵
+        return data;↵ // Return data
+    }↵
+};↵

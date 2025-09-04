@@ -1,0 +1,25 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+def process_numbers(numbers):
+    # Filter even numbers
+    evens = [n for n in numbers if n % 2 == 0]
+    # Square them
+    squared = [n ** 2 for n in evens]
+    return squared
+
+# text_to_type
+def process_numbers(numbers):
+evens = [n for n in numbers if n % 2 == 0]
+squared = [n ** 2 for n in evens]
+return squared
+
+# text_to_display
+def process_numbers(numbers):↵
+    # Filter even numbers
+    evens = [n for n in numbers if n % 2 == 0]↵
+    # Square them
+    squared = [n ** 2 for n in evens]↵
+    return squared↵

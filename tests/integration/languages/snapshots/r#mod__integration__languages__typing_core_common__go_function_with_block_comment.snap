@@ -1,0 +1,31 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+func factorial(n int) int {
+    /* Calculate factorial
+       using recursion */
+    if n <= 1 {
+        return 1
+    }
+    return n * factorial(n-1)
+}
+
+# text_to_type
+func factorial(n int) int {
+if n <= 1 {
+return 1
+}
+return n * factorial(n-1)
+}
+
+# text_to_display
+func factorial(n int) int {↵
+    /* Calculate factorial
+       using recursion */
+    if n <= 1 {↵
+        return 1↵
+    }↵
+    return n * factorial(n-1)↵
+}↵

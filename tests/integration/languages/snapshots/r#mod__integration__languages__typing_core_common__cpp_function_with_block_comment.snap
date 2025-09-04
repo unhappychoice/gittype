@@ -1,0 +1,25 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+int factorial(int n) {
+    /* Calculate factorial
+       recursively */
+    if (n <= 1) return 1;
+    return n * factorial(n - 1);
+}
+
+# text_to_type
+int factorial(int n) {
+if (n <= 1) return 1;
+return n * factorial(n - 1);
+}
+
+# text_to_display
+int factorial(int n) {↵
+    /* Calculate factorial
+       recursively */
+    if (n <= 1) return 1;↵
+    return n * factorial(n - 1);↵
+}↵

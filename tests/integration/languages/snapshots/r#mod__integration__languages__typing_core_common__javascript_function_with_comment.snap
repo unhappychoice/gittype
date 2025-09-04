@@ -1,0 +1,21 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+function greet(name) {
+    console.log("Hello " + name); // Print greeting
+    return name;
+}
+
+# text_to_type
+function greet(name) {
+console.log("Hello " + name);
+return name;
+}
+
+# text_to_display
+function greet(name) {↵
+    console.log("Hello " + name);↵ // Print greeting
+    return name;↵
+}↵

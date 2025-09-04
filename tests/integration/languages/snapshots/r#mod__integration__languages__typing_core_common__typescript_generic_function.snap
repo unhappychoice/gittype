@@ -1,0 +1,22 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+function identity<T>(arg: T): T {
+    /* Generic identity function
+       returns the same type as input */
+    return arg;
+}
+
+# text_to_type
+function identity<T>(arg: T): T {
+return arg;
+}
+
+# text_to_display
+function identity<T>(arg: T): T {↵
+    /* Generic identity function
+       returns the same type as input */
+    return arg;↵
+}↵

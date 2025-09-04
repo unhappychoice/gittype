@@ -1,0 +1,52 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+<?php
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class User extends Model {
+    // Table name
+    protected $table = 'users';
+    
+    // Fillable fields
+    protected $fillable = [
+        'name',
+        'email',
+        'password'
+    ];
+}
+
+# text_to_type
+<?php
+namespace App\Models;
+use Illuminate\Database\Eloquent\Model;
+class User extends Model {
+protected $table = 'users';
+protected $fillable = [
+'name',
+'email',
+'password'
+];
+}
+
+# text_to_display
+<?php↵
+namespace App\Models;↵
+
+use Illuminate\Database\Eloquent\Model;↵
+
+class User extends Model {↵
+    // Table name
+    protected $table = 'users';↵
+    
+    // Fillable fields
+    protected $fillable = [↵
+        'name',↵
+        'email',↵
+        'password'↵
+    ];↵
+}↵

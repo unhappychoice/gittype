@@ -1,0 +1,37 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+Future<String> fetchData(String url) async {
+  /* Fetch data from URL
+     and return response */
+  try {
+    final response = await http.get(Uri.parse(url));
+    return response.body; // Return response body
+  } catch (e) {
+    return 'Error: $e'; // Return error message
+  }
+}
+
+# text_to_type
+Future<String> fetchData(String url) async {
+try {
+final response = await http.get(Uri.parse(url));
+return response.body;
+} catch (e) {
+return 'Error: $e';
+}
+}
+
+# text_to_display
+Future<String> fetchData(String url) async {↵
+  /* Fetch data from URL
+     and return response */
+  try {↵
+    final response = await http.get(Uri.parse(url));↵
+    return response.body;↵ // Return response body
+  } catch (e) {↵
+    return 'Error: $e';↵ // Return error message
+  }↵
+}↵

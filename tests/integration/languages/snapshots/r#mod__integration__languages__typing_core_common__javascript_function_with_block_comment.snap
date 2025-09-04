@@ -1,0 +1,22 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+function calculate(x, y) {
+    /* This calculates the sum
+       of two numbers */
+    return x + y;
+}
+
+# text_to_type
+function calculate(x, y) {
+return x + y;
+}
+
+# text_to_display
+function calculate(x, y) {↵
+    /* This calculates the sum
+       of two numbers */
+    return x + y;↵
+}↵

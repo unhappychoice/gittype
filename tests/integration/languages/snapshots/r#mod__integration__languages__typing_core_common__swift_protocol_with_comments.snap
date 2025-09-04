@@ -1,0 +1,46 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+protocol Drawable {
+    // Draw the object
+    func draw()
+    
+    // Get the area
+    var area: Double { get }
+}
+
+extension Drawable {
+    // Default implementation
+    func description() -> String {
+        return "A drawable object with area \(area)"
+    }
+}
+
+# text_to_type
+protocol Drawable {
+func draw()
+var area: Double { get }
+}
+extension Drawable {
+func description() -> String {
+return "A drawable object with area \(area)"
+}
+}
+
+# text_to_display
+protocol Drawable {↵
+    // Draw the object
+    func draw()↵
+    
+    // Get the area
+    var area: Double { get }↵
+}↵
+
+extension Drawable {↵
+    // Default implementation
+    func description() -> String {↵
+        return "A drawable object with area \(area)"↵
+    }↵
+}↵

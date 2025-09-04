@@ -1,0 +1,50 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+func processData(data []int, ch chan int) {
+    result := 0
+    for _, v := range data {
+        result += v // Add each value
+    }
+    ch <- result // Send result
+}
+
+func main() {
+    ch := make(chan int)
+    go processData([]int{1, 2, 3}, ch) // Start goroutine
+    result := <-ch // Receive result
+    fmt.Println(result)
+}
+
+# text_to_type
+func processData(data []int, ch chan int) {
+result := 0
+for _, v := range data {
+result += v
+}
+ch <- result
+}
+func main() {
+ch := make(chan int)
+go processData([]int{1, 2, 3}, ch)
+result := <-ch
+fmt.Println(result)
+}
+
+# text_to_display
+func processData(data []int, ch chan int) {↵
+    result := 0↵
+    for _, v := range data {↵
+        result += v↵ // Add each value
+    }↵
+    ch <- result↵ // Send result
+}↵
+
+func main() {↵
+    ch := make(chan int)↵
+    go processData([]int{1, 2, 3}, ch)↵ // Start goroutine
+    result := <-ch↵ // Receive result
+    fmt.Println(result)↵
+}↵

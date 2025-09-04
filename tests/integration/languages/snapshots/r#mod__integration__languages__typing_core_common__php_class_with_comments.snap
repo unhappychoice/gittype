@@ -1,0 +1,46 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+<?php
+class Calculator {
+    private $result = 0; // Store result
+    
+    public function add($value) { // Add method
+        $this->result += $value;
+        return $this;
+    }
+    
+    public function getResult() {
+        return $this->result; # Return current result
+    }
+}
+
+# text_to_type
+<?php
+class Calculator {
+private $result = 0;
+public function add($value) {
+$this->result += $value;
+return $this;
+}
+public function getResult() {
+return $this->result;
+}
+}
+
+# text_to_display
+<?php↵
+class Calculator {↵
+    private $result = 0;↵ // Store result
+    
+    public function add($value) {↵ // Add method
+        $this->result += $value;↵
+        return $this;↵
+    }↵
+    
+    public function getResult() {↵
+        return $this->result;↵ # Return current result
+    }↵
+}↵

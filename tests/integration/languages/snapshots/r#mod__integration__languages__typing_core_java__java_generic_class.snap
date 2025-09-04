@@ -1,0 +1,42 @@
+---
+source: tests/integration/languages/typing_core_java.rs
+expression: snapshot
+---
+# text_original
+public class Container<T> {
+    private T item; // Generic item
+    
+    public Container(T item) {
+        this.item = item; // Store the item
+    }
+    
+    // Generic getter method
+    public T getItem() {
+        return item;
+    }
+}
+
+# text_to_type
+public class Container<T> {
+private T item;
+public Container(T item) {
+this.item = item;
+}
+public T getItem() {
+return item;
+}
+}
+
+# text_to_display
+public class Container<T> {↵
+    private T item; // Generic item↵
+    
+    public Container(T item) {↵
+        this.item = item; // Store the item↵
+    }↵
+    
+    // Generic getter method
+    public T getItem() {↵
+        return item;↵
+    }↵
+}

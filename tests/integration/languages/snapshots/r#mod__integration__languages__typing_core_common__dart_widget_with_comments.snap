@@ -1,0 +1,58 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+class MyWidget extends StatelessWidget {
+  final String title; // Widget title
+  
+  const MyWidget({Key? key, required this.title}) : super(key: key);
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title), // Set app bar title
+      ),
+      body: Center(
+        child: Text('Hello, World!'), // Main content
+      ),
+    );
+  }
+}
+
+# text_to_type
+class MyWidget extends StatelessWidget {
+final String title;
+const MyWidget({Key? key, required this.title}) : super(key: key);
+@override
+Widget build(BuildContext context) {
+return Scaffold(
+appBar: AppBar(
+title: Text(title),
+),
+body: Center(
+child: Text('Hello, World!'),
+),
+);
+}
+}
+
+# text_to_display
+class MyWidget extends StatelessWidget {↵
+  final String title;↵ // Widget title
+  
+  const MyWidget({Key? key, required this.title}) : super(key: key);↵
+  
+  @override↵
+  Widget build(BuildContext context) {↵
+    return Scaffold(↵
+      appBar: AppBar(↵
+        title: Text(title),↵ // Set app bar title
+      ),↵
+      body: Center(↵
+        child: Text('Hello, World!'),↵ // Main content
+      ),↵
+    );↵
+  }↵
+}↵

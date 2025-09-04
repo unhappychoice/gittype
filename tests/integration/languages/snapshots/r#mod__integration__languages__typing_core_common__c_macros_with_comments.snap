@@ -1,0 +1,40 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+#define MAX_SIZE 100    // Maximum array size
+#define PI 3.14159         // Pi constant
+
+int main() {
+    int array[MAX_SIZE];   // Declare array
+    double radius = 5.0;   // Circle radius
+    double area = PI * radius * radius; // Calculate area
+    
+    printf("Area: %.2f\n", area); // Print result
+    return 0;
+}
+
+# text_to_type
+#define MAX_SIZE 100    // Maximum array size
+#define PI 3.14159         // Pi constant
+int main() {
+int array[MAX_SIZE];
+double radius = 5.0;
+double area = PI * radius * radius;
+printf("Area: %.2f\n", area);
+return 0;
+}
+
+# text_to_display
+#define MAX_SIZE 100    // Maximum array size↵
+#define PI 3.14159         // Pi constant↵
+
+int main() {↵
+    int array[MAX_SIZE];↵   // Declare array
+    double radius = 5.0;↵   // Circle radius
+    double area = PI * radius * radius;↵ // Calculate area
+    
+    printf("Area: %.2f\n", area);↵ // Print result
+    return 0;↵
+}↵

@@ -1,0 +1,28 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+fn main() {
+    let x = 1;
+
+    let y = 2;
+    
+    println!("{} {}", x, y);
+}
+
+# text_to_type
+fn main() {
+let x = 1;
+let y = 2;
+println!("{} {}", x, y);
+}
+
+# text_to_display
+fn main() {↵
+    let x = 1;↵
+
+    let y = 2;↵
+    
+    println!("{} {}", x, y);↵
+}↵

@@ -1,0 +1,49 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+class Person
+  attr_reader :name   # Read-only name
+  attr_writer :age    # Write-only age
+  attr_accessor :email # Read-write email
+  
+  def initialize(name)
+    @name = name # Set name
+    @age = 0     # Default age
+  end
+  
+  def greet
+    puts "Hello, I'm #{@name}" # Print greeting
+  end
+end
+
+# text_to_type
+class Person
+attr_reader :name
+attr_writer :age
+attr_accessor :email
+def initialize(name)
+@name = name
+@age = 0
+end
+def greet
+puts "Hello, I'm #{@name}"
+end
+end
+
+# text_to_display
+class Person↵
+  attr_reader :name↵   # Read-only name
+  attr_writer :age↵    # Write-only age
+  attr_accessor :email↵ # Read-write email
+  
+  def initialize(name)↵
+    @name = name↵ # Set name
+    @age = 0↵     # Default age
+  end↵
+  
+  def greet↵
+    puts "Hello, I'm #{@name}"↵ # Print greeting
+  end↵
+end↵

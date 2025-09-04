@@ -1,0 +1,52 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+module MathUtils
+  # Mathematical constants
+  PI = 3.14159
+  E = 2.71828
+  
+  # Calculate circle area
+  def self.circle_area(radius)
+    PI * radius * radius
+  end
+  
+  # Calculate factorial
+  def self.factorial(n)
+    return 1 if n <= 1
+    n * factorial(n - 1) # Recursive call
+  end
+end
+
+# text_to_type
+module MathUtils
+PI = 3.14159
+E = 2.71828
+def self.circle_area(radius)
+PI * radius * radius
+end
+def self.factorial(n)
+return 1 if n <= 1
+n * factorial(n - 1)
+end
+end
+
+# text_to_display
+module MathUtils↵
+  # Mathematical constants
+  PI = 3.14159↵
+  E = 2.71828↵
+  
+  # Calculate circle area
+  def self.circle_area(radius)↵
+    PI * radius * radius↵
+  end↵
+  
+  # Calculate factorial
+  def self.factorial(n)↵
+    return 1 if n <= 1↵
+    n * factorial(n - 1)↵ # Recursive call
+  end↵
+end↵
