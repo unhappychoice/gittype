@@ -493,16 +493,16 @@ impl ScoringEngine {
     }
 
     /// Calculate metrics from current position during real-time typing
-    /// This uses the same logic as the full ScoringEngine but works with current state
+    /// This version correctly handles paused time by using the actual elapsed time
     pub fn calculate_real_time_result(
         current_position: usize,
         mistakes: usize,
-        start_time: &std::time::Instant,
+        elapsed_time: std::time::Duration,
     ) -> StageResult {
-        // Create temporary engine with real-time data
+        // Create temporary engine with real-time data using correct elapsed time
         let mut temp_engine = ScoringEngine::new(String::new());
-        temp_engine.start_time = Some(*start_time);
-        temp_engine.recorded_duration = Some(start_time.elapsed());
+        temp_engine.start_time = Some(std::time::Instant::now() - elapsed_time);
+        temp_engine.recorded_duration = Some(elapsed_time);
 
         // Simulate keystrokes for calculations
         for i in 0..current_position {
@@ -510,7 +510,7 @@ impl ScoringEngine {
                 character: 'x', // Placeholder
                 position: i,
                 is_correct: i < current_position.saturating_sub(mistakes),
-                timestamp: *start_time,
+                timestamp: temp_engine.start_time.unwrap(),
             });
         }
 

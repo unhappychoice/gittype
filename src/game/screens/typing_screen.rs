@@ -139,7 +139,6 @@ impl TypingScreen {
             &self.challenge_text,
             self.current_position,
             self.mistakes,
-            &self.start_time,
             &self.line_starts,
             &self.comment_ranges,
             self.challenge.as_ref(),
@@ -177,6 +176,9 @@ impl TypingScreen {
                         }
                     }
                 }
+            } else {
+                // No keyboard event, but update display periodically for real-time metrics
+                self.update_display()?;
             }
         }
 
@@ -195,7 +197,6 @@ impl TypingScreen {
             &self.challenge_text,
             self.current_position,
             self.mistakes,
-            &self.start_time,
             &self.line_starts,
             &self.comment_ranges,
             self.challenge.as_ref(),
@@ -233,6 +234,9 @@ impl TypingScreen {
                         }
                     }
                 }
+            } else {
+                // No keyboard event, but update display periodically for real-time metrics
+                self.update_display()?;
             }
         }
 
@@ -248,7 +252,6 @@ impl TypingScreen {
             &self.challenge_text,
             self.current_position,
             self.mistakes,
-            &self.start_time,
             &self.line_starts,
             &self.comment_ranges,
             self.challenge.as_ref(),
@@ -277,6 +280,9 @@ impl TypingScreen {
                         }
                     }
                 }
+            } else {
+                // No keyboard event, but update display periodically for real-time metrics
+                self.update_display()?;
             }
         };
 
@@ -425,7 +431,6 @@ impl TypingScreen {
             &self.challenge_text,
             self.current_position,
             self.mistakes,
-            &self.start_time,
             &self.line_starts,
             &self.comment_ranges,
             self.challenge.as_ref(),
