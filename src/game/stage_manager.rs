@@ -6,6 +6,7 @@ use super::{
     },
     session_tracker::SessionTracker,
     stage_builder::{DifficultyLevel, GameMode, StageBuilder},
+    total_tracker::TotalTracker,
 };
 use crate::models::Challenge;
 use crate::models::GitRepository;
@@ -32,6 +33,10 @@ impl Drop for RawModeGuard {
 static GLOBAL_SESSION_TRACKER: Lazy<Arc<Mutex<Option<SessionTracker>>>> =
     Lazy::new(|| Arc::new(Mutex::new(None)));
 
+// Global total tracker for game-wide statistics
+static GLOBAL_TOTAL_TRACKER: Lazy<Arc<Mutex<Option<TotalTracker>>>> =
+    Lazy::new(|| Arc::new(Mutex::new(None)));
+
 pub struct StageManager {
     available_challenges: Vec<Challenge>,
     current_challenges: Vec<Challenge>,
@@ -39,6 +44,7 @@ pub struct StageManager {
     stage_engines: Vec<(String, ScoringEngine)>,
     current_game_mode: Option<GameMode>,
     session_tracker: SessionTracker,
+    total_tracker: TotalTracker,
     git_repository: Option<GitRepository>,
     skips_remaining: usize,
 }
@@ -52,6 +58,7 @@ impl StageManager {
             stage_engines: Vec::new(),
             current_game_mode: None,
             session_tracker: SessionTracker::new(),
+            total_tracker: TotalTracker::new(),
             git_repository: None,
             skips_remaining: 3,
         }
@@ -62,10 +69,14 @@ impl StageManager {
     }
 
     pub fn run_session(&mut self) -> Result<()> {
-        // Set global session tracker for Ctrl+C handler
+        // Set global trackers for Ctrl+C handler
         {
             let mut global_tracker = GLOBAL_SESSION_TRACKER.lock().unwrap();
             *global_tracker = Some(self.session_tracker.clone());
+        }
+        {
+            let mut global_total_tracker = GLOBAL_TOTAL_TRACKER.lock().unwrap();
+            *global_total_tracker = Some(self.total_tracker.clone());
         }
 
         // Enable raw mode for entire application session
@@ -121,14 +132,15 @@ impl StageManager {
                             break; // Go back to title screen
                         }
 
-                        // Reset session metrics
-                        self.current_stage = 0;
-                        self.stage_engines.clear();
-                        self.skips_remaining = 3;
+                        // Reset session state for new session
+                        self.reset_session_state();
 
                         match self.run_stages() {
                             Ok(session_complete) => {
                                 if !session_complete {
+                                    // Session was incomplete (user quit or back to title)
+                                    // The session should have been recorded already in handle_*_result_navigation
+                                    // or other failure points, so just break
                                     break; // User chose to quit or back to title
                                 }
                                 // If session_complete is true, retry with same settings
@@ -141,9 +153,9 @@ impl StageManager {
                     }
                 }
                 TitleAction::Quit => {
-                    // Show session summary before exiting
-                    let session_summary = self.session_tracker.clone().finalize_and_get_summary();
-                    let _ = ExitSummaryScreen::show(&session_summary)?;
+                    // Show total summary before exiting
+                    let total_summary = self.total_tracker.clone().finalize_and_get_total();
+                    let _ = ExitSummaryScreen::show_total(&total_summary)?;
                     cleanup_terminal();
                     std::process::exit(0);
                 }
@@ -327,7 +339,23 @@ impl StageManager {
             };
 
             match action {
-                ResultAction::Retry => return Ok(true), // Return true to indicate retry requested
+                ResultAction::Retry => {
+                    // Record session attempt in total tracker before retry
+                    let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                    self.total_tracker.record_session_attempt(&session_summary);
+
+                    // Update global total tracker
+                    {
+                        let mut global_total_tracker = GLOBAL_TOTAL_TRACKER.lock().unwrap();
+                        if let Some(ref mut tracker) = *global_total_tracker {
+                            *tracker = self.total_tracker.clone();
+                        }
+                    }
+
+                    // Reset session state for session retry
+                    self.reset_session_state();
+                    return Ok(true); // Return true to indicate retry requested
+                }
                 ResultAction::Share => {
                     // Show sharing menu with combined engine metrics (same as result screen)
                     if !self.stage_engines.is_empty() {
@@ -352,8 +380,21 @@ impl StageManager {
                     // Show session summary before exiting
                     let session_summary = self.session_tracker.clone().finalize_and_get_summary();
 
+                    // Record completed session in total tracker
+                    self.total_tracker
+                        .record_session_completion(&session_summary);
+
+                    // Update global total tracker
+                    {
+                        let mut global_total_tracker = GLOBAL_TOTAL_TRACKER.lock().unwrap();
+                        if let Some(ref mut tracker) = *global_total_tracker {
+                            *tracker = self.total_tracker.clone();
+                        }
+                    }
+
                     loop {
-                        let exit_action = ExitSummaryScreen::show(&session_summary)?;
+                        let total_summary = self.total_tracker.clone().finalize_and_get_total();
+                        let exit_action = ExitSummaryScreen::show(&total_summary)?;
 
                         match exit_action {
                             ExitAction::Exit => {
@@ -361,7 +402,7 @@ impl StageManager {
                                 std::process::exit(0);
                             }
                             ExitAction::Share => {
-                                let _ = ExitSummaryScreen::show_sharing_menu(&session_summary);
+                                // Sharing menu disabled for now
                                 // Continue showing exit screen after sharing
                                 continue;
                             }
@@ -424,6 +465,15 @@ impl StageManager {
         self.current_challenges.len()
     }
 
+    /// Reset session state for session retry (keeps available challenges and total stats intact)
+    fn reset_session_state(&mut self) {
+        self.current_stage = 0;
+        self.stage_engines.clear();
+        self.skips_remaining = 3;
+        self.session_tracker = SessionTracker::new(); // Reset session tracking data only
+                                                      // Note: total_tracker is NOT reset, as retry doesn't affect total game statistics
+    }
+
     fn handle_fail_result_navigation(&mut self) -> Result<bool> {
         use crate::game::screens::ResultAction;
 
@@ -437,23 +487,40 @@ impl StageManager {
 
         match action {
             ResultAction::Retry => {
-                // Reset skips when retrying
-                self.skips_remaining = 3;
+                // Record session attempt in total tracker before retry
+                let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                self.total_tracker.record_session_attempt(&session_summary);
+
+                // Reset session state when retrying
+                self.reset_session_state();
                 // Restart the same challenge
                 Ok(true) // Return true to indicate retry
             }
             ResultAction::BackToTitle => {
+                // Record attempted session before going back to title
+                let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                self.total_tracker.record_session_attempt(&session_summary);
+
                 // Back to title screen
                 Ok(false)
             }
             ResultAction::Quit => {
                 // Show session summary and exit
                 let session_summary = self.session_tracker.clone().finalize_and_get_summary();
-                let _ = ExitSummaryScreen::show(&session_summary)?;
+
+                // Record attempted session in total tracker (failed session)
+                self.total_tracker.record_session_attempt(&session_summary);
+
+                let total_summary = self.total_tracker.clone().finalize_and_get_total();
+                let _ = ExitSummaryScreen::show(&total_summary)?;
                 cleanup_terminal();
                 std::process::exit(0);
             }
             _ => {
+                // Record attempted session for unknown actions, default to back to title
+                let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                self.total_tracker.record_session_attempt(&session_summary);
+
                 // For other actions, default to back to title
                 Ok(false)
             }
@@ -473,23 +540,40 @@ impl StageManager {
 
         match action {
             ResultAction::Retry => {
-                // Reset skips when retrying
-                self.skips_remaining = 3;
+                // Record session attempt in total tracker before retry
+                let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                self.total_tracker.record_session_attempt(&session_summary);
+
+                // Reset session state when retrying
+                self.reset_session_state();
                 // Restart the same challenge
                 Ok(true) // Return true to indicate retry
             }
             ResultAction::BackToTitle => {
+                // Record attempted session before going back to title
+                let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                self.total_tracker.record_session_attempt(&session_summary);
+
                 // Back to title screen
                 Ok(false)
             }
             ResultAction::Quit => {
                 // Show session summary and exit
                 let session_summary = self.session_tracker.clone().finalize_and_get_summary();
-                let _ = ExitSummaryScreen::show(&session_summary)?;
+
+                // Record attempted session in total tracker (failed session)
+                self.total_tracker.record_session_attempt(&session_summary);
+
+                let total_summary = self.total_tracker.clone().finalize_and_get_total();
+                let _ = ExitSummaryScreen::show(&total_summary)?;
                 cleanup_terminal();
                 std::process::exit(0);
             }
             _ => {
+                // Record attempted session for unknown actions, default to back to title
+                let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                self.total_tracker.record_session_attempt(&session_summary);
+
                 // For other actions, default to back to title
                 Ok(false)
             }
@@ -549,11 +633,17 @@ pub fn show_session_summary_on_interrupt() {
     // Keep raw mode enabled since ExitSummaryScreen needs it for input handling
 
     let global_tracker = GLOBAL_SESSION_TRACKER.lock().unwrap();
-    if let Some(ref tracker) = *global_tracker {
-        let session_summary = tracker.clone().finalize_and_get_summary();
-
-        // Show session summary with raw mode enabled
-        let _ = ExitSummaryScreen::show(&session_summary);
+    if let Some(ref _tracker) = *global_tracker {
+        // Show total summary with raw mode enabled
+        // Try to get total summary from global tracker
+        let global_total_tracker = GLOBAL_TOTAL_TRACKER.lock().unwrap();
+        if let Some(ref tracker) = *global_total_tracker {
+            let total_summary = tracker.clone().finalize_and_get_total();
+            let _ = ExitSummaryScreen::show(&total_summary);
+        } else {
+            // Fallback to show_total method for single session
+            let _ = ExitSummaryScreen::show_total(&Default::default());
+        }
         // Complete terminal cleanup after ExitSummaryScreen completes
         cleanup_terminal();
     } else {
