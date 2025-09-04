@@ -270,7 +270,8 @@ impl StageRenderer {
             }
 
             // Check if this character is in a comment
-            let is_in_comment = params.display_comment_ranges
+            let is_in_comment = params
+                .display_comment_ranges
                 .iter()
                 .any(|&(start, end)| i >= start && i < end);
 
@@ -325,7 +326,8 @@ impl StageRenderer {
         }
 
         // Add post-context lines (read-only, dimmed)
-        let end_line_number = params.challenge
+        let end_line_number = params
+            .challenge
             .and_then(|c| c.end_line)
             .unwrap_or(start_line_number);
         for (ctx_idx, post_line) in params.code_context.post_context.iter().enumerate() {
