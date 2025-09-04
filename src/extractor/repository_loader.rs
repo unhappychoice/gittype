@@ -118,41 +118,69 @@ impl RepositoryLoader {
     }
 
     fn collect_source_files(&self, repo_path: &Path) -> Result<Vec<std::path::PathBuf>> {
-        use std::fs;
+        use super::models::language::LanguageRegistry;
+        use super::models::ExtractionOptions;
+        use ignore::WalkBuilder;
+
+        let options = ExtractionOptions::default();
+
+        // Compile glob patterns once for faster matching
+        let include_patterns: Vec<glob::Pattern> = options
+            .include_patterns
+            .iter()
+            .filter_map(|p| glob::Pattern::new(p).ok())
+            .collect();
+        let exclude_patterns: Vec<glob::Pattern> = options
+            .exclude_patterns
+            .iter()
+            .filter_map(|p| glob::Pattern::new(p).ok())
+            .collect();
+
+        let walker = WalkBuilder::new(repo_path)
+            .hidden(false) // Include hidden files
+            .git_ignore(true) // Respect .gitignore
+            .git_global(true) // Respect global gitignore
+            .git_exclude(true) // Respect .git/info/exclude
+            .build();
 
         let mut files = Vec::new();
-        let extensions = vec!["rs", "ts", "tsx", "py", "js", "jsx"];
 
-        fn collect_recursive(
-            dir: &Path,
-            extensions: &[&str],
-            files: &mut Vec<std::path::PathBuf>,
-        ) -> std::io::Result<()> {
-            if dir.is_dir() {
-                for entry in fs::read_dir(dir)? {
-                    let entry = entry?;
-                    let path = entry.path();
+        for entry in walker {
+            let entry =
+                entry.map_err(|e| GitTypeError::ExtractionFailed(format!("Walk error: {}", e)))?;
+            let path = entry.path();
 
-                    if path.is_dir() {
-                        if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                            if !name.starts_with('.') && name != "target" && name != "node_modules"
-                            {
-                                collect_recursive(&path, extensions, files)?;
-                            }
-                        }
-                    } else if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
-                        if extensions.contains(&ext) {
-                            files.push(path);
-                        }
-                    }
+            if !path.is_file() {
+                continue;
+            }
+
+            if let Some(extension) = path.extension().and_then(|e| e.to_str()) {
+                if LanguageRegistry::from_extension(extension).is_some()
+                    && Self::should_process_file_compiled(
+                        path,
+                        &include_patterns,
+                        &exclude_patterns,
+                    )
+                {
+                    files.push(path.to_path_buf());
                 }
             }
-            Ok(())
         }
 
-        collect_recursive(repo_path, &extensions, &mut files).map_err(GitTypeError::IoError)?;
-
         Ok(files)
+    }
+
+    fn should_process_file_compiled(
+        path: &Path,
+        include_patterns: &[glob::Pattern],
+        exclude_patterns: &[glob::Pattern],
+    ) -> bool {
+        let path_str = path.to_string_lossy();
+
+        if exclude_patterns.iter().any(|p| p.matches(&path_str)) {
+            return false;
+        }
+        include_patterns.iter().any(|p| p.matches(&path_str))
     }
 
     pub fn load_all_files_as_zen_challenges(&mut self, repo_path: &Path) -> Result<Vec<Challenge>> {

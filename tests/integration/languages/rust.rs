@@ -1,9 +1,43 @@
 use gittype::extractor::{CodeExtractor, RepositoryLoader};
 use gittype::models::ChunkType;
 use std::fs;
-use tempfile::{NamedTempFile, TempDir};
+use tempfile::TempDir;
 
 use crate::integration::test_extraction_options;
+
+fn setup_git_repo(dir_path: &std::path::Path) {
+    // Initialize git repository
+    std::process::Command::new("git")
+        .args(["init"])
+        .current_dir(dir_path)
+        .output()
+        .expect("Failed to init git repo");
+
+    // Set up basic git config
+    std::process::Command::new("git")
+        .args(["config", "user.name", "Test User"])
+        .current_dir(dir_path)
+        .output()
+        .expect("Failed to set git user.name");
+
+    std::process::Command::new("git")
+        .args(["config", "user.email", "test@example.com"])
+        .current_dir(dir_path)
+        .output()
+        .expect("Failed to set git user.email");
+
+    // Add a remote URL to avoid "Failed to get remote URL" error
+    std::process::Command::new("git")
+        .args([
+            "remote",
+            "add",
+            "origin",
+            "https://github.com/test/test.git",
+        ])
+        .current_dir(dir_path)
+        .output()
+        .expect("Failed to add remote");
+}
 
 #[test]
 fn test_rust_function_extraction() {
@@ -342,15 +376,18 @@ fn test_nested_and_oneline_structures() {
 }
 "#;
 
-    let temp_file = NamedTempFile::new().expect("Failed to create temp file");
-    let temp_path = temp_file.path().with_extension("rs");
-    fs::write(&temp_path, rust_code).expect("Failed to write test file");
+    let temp_dir = TempDir::new().expect("Failed to create temp dir");
+    let file_path = temp_dir.path().join("test.rs");
+    fs::write(&file_path, rust_code).expect("Failed to write test file");
+
+    // Setup git repository
+    setup_git_repo(temp_dir.path());
 
     let mut loader = RepositoryLoader::new().expect("Failed to create loader");
     let options = test_extraction_options();
 
     let challenges = loader
-        .load_challenges_from_repository(&temp_path, Some(options))
+        .load_challenges_from_repository(temp_dir.path(), Some(options))
         .expect("Failed to load challenges");
 
     println!("Found {} challenges", challenges.len());
@@ -375,8 +412,6 @@ fn test_nested_and_oneline_structures() {
 
         println!("Comment ranges: {:?}", mapped_ranges);
     }
-
-    let _ = fs::remove_file(&temp_path);
 }
 
 #[test]
@@ -391,15 +426,18 @@ fn calculate_sum(a: i32, b: i32) -> i32 {
 }
 "#;
 
-    let temp_file = NamedTempFile::new().expect("Failed to create temp file");
-    let temp_path = temp_file.path().with_extension("rs");
-    fs::write(&temp_path, rust_code).expect("Failed to write test file");
+    let temp_dir = TempDir::new().expect("Failed to create temp dir");
+    let file_path = temp_dir.path().join("test.rs");
+    fs::write(&file_path, rust_code).expect("Failed to write test file");
+
+    // Setup git repository
+    setup_git_repo(temp_dir.path());
 
     let mut loader = RepositoryLoader::new().expect("Failed to create loader");
     let options = test_extraction_options();
 
     let challenges = loader
-        .load_challenges_from_repository(&temp_path, Some(options))
+        .load_challenges_from_repository(temp_dir.path(), Some(options))
         .expect("Failed to load challenges");
 
     println!("Found {} challenges for comment test", challenges.len());
@@ -443,6 +481,4 @@ fn calculate_sum(a: i32, b: i32) -> i32 {
             );
         }
     }
-
-    let _ = fs::remove_file(&temp_path);
 }
