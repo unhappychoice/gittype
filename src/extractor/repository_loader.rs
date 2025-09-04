@@ -60,9 +60,14 @@ impl RepositoryLoader {
 
         progress.set_step(crate::game::models::loading_steps::StepType::Generating);
         // Expand chunks into multiple challenges across difficulties
-        let challenges = self
+        let mut challenges = self
             .converter
             .convert_chunks_to_challenges_with_progress(chunks, progress);
+
+        // Also add Zen challenges (entire files)
+        let file_paths = self.collect_source_files(repo_path)?;
+        let zen_challenges = self.converter.convert_whole_files_to_challenges(file_paths);
+        challenges.extend(zen_challenges);
 
         progress.set_step(crate::game::models::loading_steps::StepType::Finalizing);
         Ok(challenges)
