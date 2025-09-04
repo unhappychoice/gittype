@@ -118,12 +118,12 @@ impl RepositoryLoader {
     }
 
     fn collect_source_files(&self, repo_path: &Path) -> Result<Vec<std::path::PathBuf>> {
-        use super::models::ExtractionOptions;
         use super::models::language::LanguageRegistry;
+        use super::models::ExtractionOptions;
         use ignore::WalkBuilder;
 
         let options = ExtractionOptions::default();
-        
+
         // Compile glob patterns once for faster matching
         let include_patterns: Vec<glob::Pattern> = options
             .include_patterns
@@ -146,7 +146,8 @@ impl RepositoryLoader {
         let mut files = Vec::new();
 
         for entry in walker {
-            let entry = entry.map_err(|e| GitTypeError::ExtractionFailed(format!("Walk error: {}", e)))?;
+            let entry =
+                entry.map_err(|e| GitTypeError::ExtractionFailed(format!("Walk error: {}", e)))?;
             let path = entry.path();
 
             if !path.is_file() {
@@ -154,14 +155,14 @@ impl RepositoryLoader {
             }
 
             if let Some(extension) = path.extension().and_then(|e| e.to_str()) {
-                if LanguageRegistry::from_extension(extension).is_some() {
-                    if Self::should_process_file_compiled(
+                if LanguageRegistry::from_extension(extension).is_some()
+                    && Self::should_process_file_compiled(
                         path,
                         &include_patterns,
                         &exclude_patterns,
-                    ) {
-                        files.push(path.to_path_buf());
-                    }
+                    )
+                {
+                    files.push(path.to_path_buf());
                 }
             }
         }
