@@ -46,9 +46,22 @@ pub fn setup_logging() -> Result<()> {
     Ok(())
 }
 
-/// Get the log directory path (project/logs/ in dev, ~/.gittype/logs/ in release)
+/// Get the log directory path (temp in tests, project/logs/ in dev, ~/.gittype/logs/ in release)
 fn get_log_directory() -> Result<PathBuf> {
-    if cfg!(debug_assertions) {
+    if cfg!(test) {
+        // Test: use temporary directory (each test gets its own)
+        use tempfile::TempDir;
+        let temp_dir = TempDir::new().map_err(|e| {
+            GitTypeError::ExtractionFailed(format!("Failed to create temp log directory: {}", e))
+        })?;
+        let path = temp_dir.path().join("logs");
+        std::fs::create_dir_all(&path).map_err(|e| {
+            GitTypeError::ExtractionFailed(format!("Failed to create test log directory: {}", e))
+        })?;
+        // Keep the temp dir alive for the test duration
+        std::mem::forget(temp_dir);
+        Ok(path)
+    } else if cfg!(debug_assertions) {
         // Development: use project directory
         let current_dir = std::env::current_dir().map_err(|e| {
             GitTypeError::ExtractionFailed(format!("Could not get current directory: {}", e))

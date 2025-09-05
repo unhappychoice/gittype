@@ -2,19 +2,12 @@ use super::{Database, SessionRepository};
 use crate::logging::setup_console_logging;
 use crate::models::{Challenge, GitRepository, SessionResult};
 use crate::scoring::ScoringEngine;
-use std::env;
-use tempfile::TempDir;
 
 /// Integration test to verify the full session recording pipeline
 pub fn test_session_recording_integration() -> crate::Result<()> {
     // Setup logging for testing
     setup_console_logging();
     log::info!("Starting session recording integration test");
-
-    // Create temporary home directory for test
-    let temp_dir = TempDir::new()?;
-    let old_home = env::var("HOME").ok();
-    env::set_var("HOME", temp_dir.path());
 
     // Create test data
     let git_repo = GitRepository {
@@ -50,11 +43,11 @@ pub fn test_session_recording_integration() -> crate::Result<()> {
             .with_difficulty_level(crate::game::stage_builder::DifficultyLevel::Normal),
     ];
 
-    // Initialize database first
-    let database = Database::new()?;
+    // Create test database and repository
+    let database = Database::new_test()?;
     database.init()?;
 
-    // Then initialize repository
+    // Create repository with test database
     let repository = SessionRepository::new()?;
     log::info!("Database and SessionRepository initialized successfully");
 
@@ -101,12 +94,6 @@ pub fn test_session_recording_integration() -> crate::Result<()> {
         stored_session.difficulty_level
     );
 
-    // Restore original HOME
-    match old_home {
-        Some(home) => env::set_var("HOME", home),
-        None => env::remove_var("HOME"),
-    }
-
     log::info!("Session recording integration test completed successfully");
     Ok(())
 }
@@ -129,6 +116,7 @@ fn create_mock_engine(total_chars: usize, _wpm: f64) -> ScoringEngine {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::env;
 
     #[test]
     fn test_integration() {

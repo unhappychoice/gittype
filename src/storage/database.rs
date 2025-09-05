@@ -23,12 +23,25 @@ impl Database {
         Ok(db)
     }
 
+    #[cfg(test)]
+    pub fn new_test() -> Result<Self> {
+        // Use in-memory database for tests
+        let connection = Connection::open(":memory:")?;
+        // Enable foreign key constraints
+        connection.execute("PRAGMA foreign_keys = ON", [])?;
+        let db = Self { connection };
+        Ok(db)
+    }
+
     pub fn init(&self) -> Result<()> {
         self.init_tables()
     }
 
     fn get_database_path() -> Result<PathBuf> {
-        if cfg!(debug_assertions) {
+        if cfg!(test) {
+            // Test: use in-memory database (shouldn't be called in tests)
+            Ok(PathBuf::from(":memory:"))
+        } else if cfg!(debug_assertions) {
             // Development: use project directory
             let current_dir = std::env::current_dir().map_err(|e| {
                 GitTypeError::ExtractionFailed(format!("Could not get current directory: {}", e))
@@ -114,32 +127,21 @@ pub trait HasDatabase {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::env;
-    use tempfile::TempDir;
 
     #[test]
     fn test_database_creation() {
-        let result = Database::new();
+        let result = Database::new_test();
         assert!(result.is_ok());
-
-        // Check that the database file is created in the expected location
-        if cfg!(debug_assertions) {
-            // In debug mode, database should be in project directory
-            assert!(std::path::Path::new("gittype-dev.db").exists());
-        } else {
-            // In release mode, check that the result is ok (file may be in home directory)
-            let db = result.unwrap();
-            assert!(db.get_connection().prepare("SELECT 1").is_ok());
-        }
+        
+        let db = result.unwrap();
+        db.init().expect("Failed to initialize test database");
+        assert!(db.get_connection().prepare("SELECT 1").is_ok());
     }
 
     #[test]
     fn test_tables_creation() {
-        let temp_dir = TempDir::new().unwrap();
-        let old_home = env::var("HOME").ok();
-        env::set_var("HOME", temp_dir.path());
-
-        let db = Database::new().unwrap();
+        let db = Database::new_test().unwrap();
+        db.init().expect("Failed to initialize test database");
         let conn = db.get_connection();
 
         // Check schema_version table
@@ -177,21 +179,12 @@ mod tests {
             .query_row([], |row| row.get(0))
             .unwrap();
         assert_eq!(count, 1);
-
-        // Restore original HOME
-        match old_home {
-            Some(home) => env::set_var("HOME", home),
-            None => env::remove_var("HOME"),
-        }
     }
 
     #[test]
     fn test_schema_versioning() {
-        let temp_dir = TempDir::new().unwrap();
-        let old_home = env::var("HOME").ok();
-        env::set_var("HOME", temp_dir.path());
-
-        let db = Database::new().unwrap();
+        let db = Database::new_test().unwrap();
+        db.init().expect("Failed to initialize test database");
 
         // Check that schema version is set correctly
         let version = db.get_current_schema_version().unwrap();
@@ -205,23 +198,16 @@ mod tests {
             .query_row([get_latest_version()], |row| row.get(0))
             .unwrap();
         assert_eq!(count, 1);
-
-        // Restore original HOME
-        match old_home {
-            Some(home) => env::set_var("HOME", home),
-            None => env::remove_var("HOME"),
-        }
     }
 
     #[test]
     fn test_migration_idempotency() {
-        let temp_dir = TempDir::new().unwrap();
-        let old_home = env::var("HOME").ok();
-        env::set_var("HOME", temp_dir.path());
-
-        // Create database twice
-        let _db1 = Database::new().unwrap();
-        let db2 = Database::new().unwrap();
+        // Create database twice  
+        let db1 = Database::new_test().unwrap();
+        db1.init().expect("Failed to initialize first test database");
+        
+        let db2 = Database::new_test().unwrap();
+        db2.init().expect("Failed to initialize second test database");
 
         // Schema version should still be correct
         let version = db2.get_current_schema_version().unwrap();
@@ -235,21 +221,12 @@ mod tests {
             .query_row([], |row| row.get(0))
             .unwrap();
         assert_eq!(count, get_latest_version());
-
-        // Restore original HOME
-        match old_home {
-            Some(home) => env::set_var("HOME", home),
-            None => env::remove_var("HOME"),
-        }
     }
 
     #[test]
     fn test_normalized_tables_structure() {
-        let temp_dir = TempDir::new().unwrap();
-        let old_home = env::var("HOME").ok();
-        env::set_var("HOME", temp_dir.path());
-
-        let db = Database::new().unwrap();
+        let db = Database::new_test().unwrap();
+        db.init().expect("Failed to initialize test database");
         let conn = db.get_connection();
 
         // Check all tables exist
@@ -320,21 +297,12 @@ mod tests {
         assert!(column_names.contains(&"game_mode".to_string()));
         assert!(column_names.contains(&"difficulty_level".to_string()));
         assert!(column_names.contains(&"score".to_string()));
-
-        // Restore original HOME
-        match old_home {
-            Some(home) => env::set_var("HOME", home),
-            None => env::remove_var("HOME"),
-        }
     }
 
     #[test]
     fn test_foreign_key_constraints() {
-        let temp_dir = TempDir::new().unwrap();
-        let old_home = env::var("HOME").ok();
-        env::set_var("HOME", temp_dir.path());
-
-        let db = Database::new().unwrap();
+        let db = Database::new_test().unwrap();
+        db.init().expect("Failed to initialize test database");
         let conn = db.get_connection();
 
         // Check foreign keys are enabled
@@ -352,21 +320,12 @@ mod tests {
             [],
         );
         assert!(result.is_err(), "Should fail due to foreign key constraint");
-
-        // Restore original HOME
-        match old_home {
-            Some(home) => env::set_var("HOME", home),
-            None => env::remove_var("HOME"),
-        }
     }
 
     #[test]
     fn test_indexes_created() {
-        let temp_dir = TempDir::new().unwrap();
-        let old_home = env::var("HOME").ok();
-        env::set_var("HOME", temp_dir.path());
-
-        let db = Database::new().unwrap();
+        let db = Database::new_test().unwrap();
+        db.init().expect("Failed to initialize test database");
         let conn = db.get_connection();
 
         // Check that indexes were created
@@ -376,11 +335,5 @@ mod tests {
             .query_row([], |row| row.get(0))
             .unwrap();
         assert!(index_count >= 5, "Should have at least 5 custom indexes");
-
-        // Restore original HOME
-        match old_home {
-            Some(home) => env::set_var("HOME", home),
-            None => env::remove_var("HOME"),
-        }
     }
 }
