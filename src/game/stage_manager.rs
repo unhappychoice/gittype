@@ -9,8 +9,9 @@ use super::{
     total_tracker::TotalTracker,
 };
 use crate::models::Challenge;
-use crate::models::GitRepository;
+use crate::models::{GitRepository, SessionResult};
 use crate::scoring::{ScoringEngine, StageResult};
+use crate::storage::SessionRepository;
 use crate::Result;
 use crossterm::{
     event::{KeyboardEnhancementFlags, PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags},
@@ -342,6 +343,10 @@ impl StageManager {
                 ResultAction::Retry => {
                     // Record session attempt in total tracker before retry
                     let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+
+                    // Record session to database
+                    self.record_session_to_database(&session_summary);
+
                     self.total_tracker.record_session_attempt(&session_summary);
 
                     // Update global total tracker
@@ -379,6 +384,9 @@ impl StageManager {
                 ResultAction::Quit => {
                     // Show session summary before exiting
                     let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+
+                    // Record session to database
+                    self.record_session_to_database(&session_summary);
 
                     // Record completed session in total tracker
                     self.total_tracker
@@ -489,6 +497,10 @@ impl StageManager {
             ResultAction::Retry => {
                 // Record session attempt in total tracker before retry
                 let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+
+                // Record session to database
+                self.record_session_to_database(&session_summary);
+
                 self.total_tracker.record_session_attempt(&session_summary);
 
                 // Reset session state when retrying
@@ -499,6 +511,10 @@ impl StageManager {
             ResultAction::BackToTitle => {
                 // Record attempted session before going back to title
                 let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+
+                // Record session to database
+                self.record_session_to_database(&session_summary);
+
                 self.total_tracker.record_session_attempt(&session_summary);
 
                 // Back to title screen
@@ -507,6 +523,9 @@ impl StageManager {
             ResultAction::Quit => {
                 // Show session summary and exit
                 let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+
+                // Record session to database
+                self.record_session_to_database(&session_summary);
 
                 // Record attempted session in total tracker (failed session)
                 self.total_tracker.record_session_attempt(&session_summary);
@@ -519,6 +538,10 @@ impl StageManager {
             _ => {
                 // Record attempted session for unknown actions, default to back to title
                 let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+
+                // Record session to database
+                self.record_session_to_database(&session_summary);
+
                 self.total_tracker.record_session_attempt(&session_summary);
 
                 // For other actions, default to back to title
@@ -542,6 +565,10 @@ impl StageManager {
             ResultAction::Retry => {
                 // Record session attempt in total tracker before retry
                 let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+
+                // Record session to database
+                self.record_session_to_database(&session_summary);
+
                 self.total_tracker.record_session_attempt(&session_summary);
 
                 // Reset session state when retrying
@@ -552,6 +579,10 @@ impl StageManager {
             ResultAction::BackToTitle => {
                 // Record attempted session before going back to title
                 let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+
+                // Record session to database
+                self.record_session_to_database(&session_summary);
+
                 self.total_tracker.record_session_attempt(&session_summary);
 
                 // Back to title screen
@@ -560,6 +591,9 @@ impl StageManager {
             ResultAction::Quit => {
                 // Show session summary and exit
                 let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+
+                // Record session to database
+                self.record_session_to_database(&session_summary);
 
                 // Record attempted session in total tracker (failed session)
                 self.total_tracker.record_session_attempt(&session_summary);
@@ -572,6 +606,10 @@ impl StageManager {
             _ => {
                 // Record attempted session for unknown actions, default to back to title
                 let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+
+                // Record session to database
+                self.record_session_to_database(&session_summary);
+
                 self.total_tracker.record_session_attempt(&session_summary);
 
                 // For other actions, default to back to title
@@ -596,6 +634,46 @@ impl StageManager {
         }
 
         counts
+    }
+
+    /// Record a session to the database
+    fn record_session_to_database(&self, session_result: &SessionResult) {
+        log::debug!(
+            "Recording session to database with {} stages completed",
+            session_result.stages_completed
+        );
+
+        if let Err(e) = self.try_record_session_to_database(session_result) {
+            log::warn!("Failed to record session to database: {}", e);
+            // Continue execution - database errors should not interrupt the game
+        } else {
+            log::debug!("Successfully recorded session to database");
+        }
+    }
+
+    /// Try to record a session to the database, returning any errors
+    fn try_record_session_to_database(&self, session_result: &SessionResult) -> Result<()> {
+        let game_mode = self
+            .current_game_mode
+            .as_ref()
+            .map(|mode| format!("{:?}", mode))
+            .unwrap_or_else(|| "Unknown".to_string());
+
+        let difficulty_level = self.current_game_mode.as_ref().and_then(|mode| match mode {
+            GameMode::Custom { difficulty, .. } => Some(format!("{:?}", difficulty)),
+            _ => None,
+        });
+
+        SessionRepository::record_session_global(
+            session_result,
+            self.git_repository.as_ref(),
+            &game_mode,
+            difficulty_level.as_deref(),
+            &self.stage_engines,
+            &self.current_challenges,
+        )?;
+
+        Ok(())
     }
 }
 

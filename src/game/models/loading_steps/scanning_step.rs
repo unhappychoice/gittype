@@ -10,7 +10,7 @@ impl Step for ScanningStep {
         StepType::Scanning
     }
     fn step_number(&self) -> usize {
-        2
+        3
     }
     fn description(&self) -> &str {
         "Scanning repository files"

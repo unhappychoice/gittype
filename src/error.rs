@@ -39,4 +39,13 @@ pub enum GitTypeError {
     TreeSitterLanguageError(#[from] tree_sitter::LanguageError),
 }
 
+impl GitTypeError {
+    /// Create a custom database error from a string message
+    pub fn database_error(msg: String) -> Self {
+        Self::DatabaseError(rusqlite::Error::ToSqlConversionFailure(Box::new(
+            std::io::Error::other(msg),
+        )))
+    }
+}
+
 pub type Result<T> = std::result::Result<T, GitTypeError>;

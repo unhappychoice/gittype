@@ -1,6 +1,6 @@
 use super::{
-    CloningStep, ExecutionContext, ExtractingStep, FinalizingStep, GeneratingStep, ScanningStep,
-    Step, StepResult,
+    CloningStep, DatabaseInitStep, ExecutionContext, ExtractingStep, FinalizingStep,
+    GeneratingStep, ScanningStep, Step, StepResult,
 };
 use crate::game::screens::loading_screen::ProgressReporter;
 use crate::models::Challenge;
@@ -20,6 +20,7 @@ impl StepManager {
     pub fn new() -> Self {
         Self {
             steps: vec![
+                Box::new(DatabaseInitStep),
                 Box::new(CloningStep),
                 Box::new(ScanningStep),
                 Box::new(ExtractingStep),

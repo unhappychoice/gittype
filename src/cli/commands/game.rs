@@ -6,6 +6,10 @@ use crate::{GitTypeError, Result};
 use std::path::PathBuf;
 
 pub fn run_game_session(cli: Cli) -> Result<()> {
+    log::info!("Starting GitType game session");
+
+    // Session repository will be initialized in DatabaseInitStep during loading screen
+
     let mut options = ExtractionOptions::default();
 
     if let Some(langs) = cli.langs {
@@ -41,12 +45,32 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
 
     let session_result = LoadingScreen::new()
         .and_then(|mut loading_screen| {
+            log::info!(
+                "Processing repository with repo_spec: {:?}, repo_path: {:?}",
+                repo_spec,
+                initial_repo_path
+            );
             let result = loading_screen.process_repository(repo_spec, initial_repo_path, &options);
             let _ = loading_screen.cleanup();
             result
         })
         .and_then(|result| {
+            log::info!("Found {} challenges", result.challenges.len());
+            if let Some(ref git_repo) = result.git_repository {
+                log::info!(
+                    "Repository: {}/{} (branch: {:?}, commit: {:?}, dirty: {})",
+                    git_repo.user_name,
+                    git_repo.repository_name,
+                    git_repo.branch,
+                    git_repo.commit_hash,
+                    git_repo.is_dirty
+                );
+            } else {
+                log::info!("No git repository context available");
+            }
+
             if result.challenges.is_empty() {
+                log::warn!("No supported files found in repository");
                 Err(GitTypeError::NoSupportedFiles)
             } else {
                 Ok(result)
@@ -57,6 +81,7 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
                  challenges,
                  git_repository,
              }| {
+                log::info!("Starting game session with {} challenges", challenges.len());
                 let mut stage_manager = StageManager::new(challenges);
                 stage_manager.set_git_repository(git_repository);
                 stage_manager.run_session()
@@ -64,8 +89,13 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
         );
 
     match session_result {
-        Ok(_) => {}
-        Err(e) => handle_game_error(e)?,
+        Ok(_) => {
+            log::info!("Game session completed successfully");
+        }
+        Err(e) => {
+            log::error!("Game session failed with error: {}", e);
+            handle_game_error(e)?;
+        }
     }
 
     Ok(())
