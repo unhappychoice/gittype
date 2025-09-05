@@ -2,7 +2,7 @@ use super::super::Database;
 use crate::models::{Challenge, GitRepository, SessionResult, StageResult};
 use crate::{error::GitTypeError, Result};
 use chrono::{DateTime, Utc};
-use rusqlite::{params, Transaction};
+use rusqlite::{params, OptionalExtension, Transaction};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct SaveStageParams<'a> {
@@ -81,6 +81,7 @@ impl<'a> SessionDao<'a> {
         session_id: i64,
         repository_id: Option<i64>,
         session_result: &SessionResult,
+        _stage_engines: &[(String, crate::scoring::StageTracker)],
         game_mode: &str,
         difficulty_level: Option<&str>,
     ) -> Result<()> {
@@ -95,8 +96,8 @@ impl<'a> SessionDao<'a> {
             params![
                 session_id,
                 repository_id.unwrap_or(0), // repository_id is NOT NULL, use 0 as default
-                session_result.total_keystrokes as i64,
-                session_result.total_mistakes as i64,
+                session_result.valid_keystrokes as i64,
+                session_result.valid_mistakes as i64,
                 session_result.session_duration.as_millis() as i64,
                 session_result.overall_wpm,
                 session_result.overall_cpm,
@@ -104,8 +105,8 @@ impl<'a> SessionDao<'a> {
                 session_result.stages_completed as i64,
                 session_result.stages_attempted as i64,
                 session_result.stages_skipped as i64,
-                session_result.total_partial_effort_keystrokes as i64,
-                session_result.total_partial_effort_mistakes as i64,
+                session_result.invalid_keystrokes as i64,
+                session_result.invalid_mistakes as i64,
                 session_result.best_stage_wpm,
                 session_result.worst_stage_wpm,
                 session_result.best_stage_accuracy,
@@ -228,10 +229,197 @@ impl<'a> SessionDao<'a> {
         datetime.format("%Y-%m-%d %H:%M:%S").to_string()
     }
 
+    /// Get best session record from today
+    pub fn get_todays_best_session(&self) -> Result<Option<StoredSession>> {
+        let conn = self.db.get_connection();
+        let today = chrono::Utc::now().date_naive().format("%Y-%m-%d");
+
+        let mut stmt = conn.prepare(
+            "SELECT s.id, s.repository_id, s.started_at, s.completed_at, s.branch, s.commit_hash,
+                    s.is_dirty, s.game_mode, s.difficulty_level, s.max_stages, s.time_limit_seconds
+             FROM sessions s 
+             JOIN session_results sr ON s.id = sr.session_id
+             WHERE DATE(s.started_at) = ?
+             ORDER BY sr.score DESC
+             LIMIT 1",
+        )?;
+
+        let session = stmt
+            .query_row(params![today.to_string()], |row| {
+                let started_at_str: String = row.get(2)?;
+                let started_at = Self::parse_sqlite_timestamp(&started_at_str)
+                    .map_err(|e| rusqlite::Error::ToSqlConversionFailure(Box::new(e)))?;
+
+                let completed_at = row
+                    .get::<_, Option<String>>(3)?
+                    .map(|s| {
+                        Self::parse_sqlite_timestamp(&s)
+                            .map_err(|e| rusqlite::Error::ToSqlConversionFailure(Box::new(e)))
+                    })
+                    .transpose()?;
+
+                Ok(StoredSession {
+                    id: row.get(0)?,
+                    repository_id: row.get(1)?,
+                    started_at,
+                    completed_at,
+                    branch: row.get(4)?,
+                    commit_hash: row.get(5)?,
+                    is_dirty: row.get(6)?,
+                    game_mode: row.get(7)?,
+                    difficulty_level: row.get(8)?,
+                    max_stages: row.get(9)?,
+                    time_limit_seconds: row.get(10)?,
+                })
+            })
+            .optional()?;
+
+        Ok(session)
+    }
+
+    /// Get best session record from past 7 days
+    pub fn get_weekly_best_session(&self) -> Result<Option<StoredSession>> {
+        let conn = self.db.get_connection();
+        let week_ago = chrono::Utc::now().date_naive() - chrono::Duration::days(7);
+
+        let mut stmt = conn.prepare(
+            "SELECT s.id, s.repository_id, s.started_at, s.completed_at, s.branch, s.commit_hash,
+                    s.is_dirty, s.game_mode, s.difficulty_level, s.max_stages, s.time_limit_seconds
+             FROM sessions s 
+             JOIN session_results sr ON s.id = sr.session_id
+             WHERE DATE(s.started_at) >= ?
+             ORDER BY sr.score DESC
+             LIMIT 1",
+        )?;
+
+        let session = stmt
+            .query_row(params![week_ago.format("%Y-%m-%d").to_string()], |row| {
+                let started_at_str: String = row.get(2)?;
+                let started_at = Self::parse_sqlite_timestamp(&started_at_str)
+                    .map_err(|e| rusqlite::Error::ToSqlConversionFailure(Box::new(e)))?;
+
+                let completed_at = row
+                    .get::<_, Option<String>>(3)?
+                    .map(|s| {
+                        Self::parse_sqlite_timestamp(&s)
+                            .map_err(|e| rusqlite::Error::ToSqlConversionFailure(Box::new(e)))
+                    })
+                    .transpose()?;
+
+                Ok(StoredSession {
+                    id: row.get(0)?,
+                    repository_id: row.get(1)?,
+                    started_at,
+                    completed_at,
+                    branch: row.get(4)?,
+                    commit_hash: row.get(5)?,
+                    is_dirty: row.get(6)?,
+                    game_mode: row.get(7)?,
+                    difficulty_level: row.get(8)?,
+                    max_stages: row.get(9)?,
+                    time_limit_seconds: row.get(10)?,
+                })
+            })
+            .optional()?;
+
+        Ok(session)
+    }
+
+    /// Get all-time best session record
+    pub fn get_all_time_best_session(&self) -> Result<Option<StoredSession>> {
+        let conn = self.db.get_connection();
+
+        let mut stmt = conn.prepare(
+            "SELECT s.id, s.repository_id, s.started_at, s.completed_at, s.branch, s.commit_hash,
+                    s.is_dirty, s.game_mode, s.difficulty_level, s.max_stages, s.time_limit_seconds
+             FROM sessions s 
+             JOIN session_results sr ON s.id = sr.session_id
+             ORDER BY sr.score DESC
+             LIMIT 1",
+        )?;
+
+        let session = stmt
+            .query_row([], |row| {
+                let started_at_str: String = row.get(2)?;
+                let started_at = Self::parse_sqlite_timestamp(&started_at_str)
+                    .map_err(|e| rusqlite::Error::ToSqlConversionFailure(Box::new(e)))?;
+
+                let completed_at = row
+                    .get::<_, Option<String>>(3)?
+                    .map(|s| {
+                        Self::parse_sqlite_timestamp(&s)
+                            .map_err(|e| rusqlite::Error::ToSqlConversionFailure(Box::new(e)))
+                    })
+                    .transpose()?;
+
+                Ok(StoredSession {
+                    id: row.get(0)?,
+                    repository_id: row.get(1)?,
+                    started_at,
+                    completed_at,
+                    branch: row.get(4)?,
+                    commit_hash: row.get(5)?,
+                    is_dirty: row.get(6)?,
+                    game_mode: row.get(7)?,
+                    difficulty_level: row.get(8)?,
+                    max_stages: row.get(9)?,
+                    time_limit_seconds: row.get(10)?,
+                })
+            })
+            .optional()?;
+
+        Ok(session)
+    }
+
+    /// Get session result data for a specific session ID
+    pub fn get_session_result(&self, session_id: i64) -> Result<Option<SessionResultData>> {
+        let conn = self.db.get_connection();
+
+        let mut stmt = conn.prepare(
+            "SELECT keystrokes, mistakes, duration_ms, wpm, cpm, accuracy, 
+                    stages_completed, stages_attempted, stages_skipped, score
+             FROM session_results 
+             WHERE session_id = ?",
+        )?;
+
+        let result = stmt
+            .query_row(params![session_id], |row| {
+                Ok(SessionResultData {
+                    keystrokes: row.get::<_, i64>(0)? as usize,
+                    mistakes: row.get::<_, i64>(1)? as usize,
+                    duration_ms: row.get::<_, i64>(2)? as u64,
+                    wpm: row.get(3)?,
+                    cpm: row.get(4)?,
+                    accuracy: row.get(5)?,
+                    stages_completed: row.get::<_, i64>(6)? as usize,
+                    stages_attempted: row.get::<_, i64>(7)? as usize,
+                    stages_skipped: row.get::<_, i64>(8)? as usize,
+                    score: row.get(9)?,
+                })
+            })
+            .optional()?;
+
+        Ok(result)
+    }
+
     /// Parse SQLite timestamp string to DateTime<Utc>
     fn parse_sqlite_timestamp(s: &str) -> Result<DateTime<Utc>> {
         DateTime::parse_from_str(&format!("{} +0000", s), "%Y-%m-%d %H:%M:%S %z")
             .map(|dt| dt.with_timezone(&Utc))
             .map_err(|e| GitTypeError::database_error(format!("Failed to parse timestamp: {}", e)))
     }
+}
+
+#[derive(Debug, Clone)]
+pub struct SessionResultData {
+    pub keystrokes: usize,
+    pub mistakes: usize,
+    pub duration_ms: u64,
+    pub wpm: f64,
+    pub cpm: f64,
+    pub accuracy: f64,
+    pub stages_completed: usize,
+    pub stages_attempted: usize,
+    pub stages_skipped: usize,
+    pub score: f64,
 }

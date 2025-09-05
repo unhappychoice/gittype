@@ -5,7 +5,8 @@ use super::super::{
     Database, HasDatabase,
 };
 use crate::models::{Challenge, GitRepository, SessionResult};
-use crate::scoring::{ScoringEngine, StageResult};
+use crate::scoring::{StageResult, StageTracker};
+use crate::storage::daos::session_dao::SessionResultData;
 use crate::{error::GitTypeError, Result};
 use std::sync::{Arc, Mutex};
 
@@ -31,7 +32,7 @@ impl SessionRepository {
         git_repository: Option<&GitRepository>,
         game_mode: &str,
         difficulty_level: Option<&str>,
-        stage_engines: &[(String, ScoringEngine)],
+        stage_engines: &[(String, StageTracker)],
         challenges: &[Challenge],
     ) -> Result<i64> {
         let db = self.db_with_lock()?;
@@ -68,6 +69,7 @@ impl SessionRepository {
             session_id,
             repository_id,
             session_result,
+            stage_engines,
             game_mode,
             difficulty_level,
         )?;
@@ -77,8 +79,8 @@ impl SessionRepository {
             .iter()
             .enumerate()
             .map(|(index, (name, engine))| {
-                let stage_result = engine.calculate_result()?;
-                let keystrokes = engine.total_chars();
+                let stage_result = crate::scoring::StageCalculator::calculate(engine, false, false);
+                let keystrokes = engine.get_data().keystrokes.len();
                 let challenge = challenges.get(index).cloned();
                 Ok((name.clone(), stage_result, keystrokes, challenge))
             })
@@ -156,7 +158,7 @@ impl SessionRepository {
         git_repository: Option<&GitRepository>,
         game_mode: &str,
         difficulty_level: Option<&str>,
-        stage_engines: &[(String, ScoringEngine)],
+        stage_engines: &[(String, StageTracker)],
         challenges: &[Challenge],
     ) -> Result<()> {
         let global = Self::global();
@@ -187,6 +189,61 @@ impl SessionRepository {
 
         Ok(())
     }
+
+    /// Get best records for comparison display
+    pub fn get_best_records(&self) -> Result<BestRecords> {
+        let db = self.db_with_lock()?;
+        let dao = SessionDao::new(&db);
+
+        let todays_best = dao.get_todays_best_session()?;
+        let weekly_best = dao.get_weekly_best_session()?;
+        let all_time_best = dao.get_all_time_best_session()?;
+
+        let todays_best_data = if let Some(ref session) = todays_best {
+            dao.get_session_result(session.id)?
+        } else {
+            None
+        };
+
+        let weekly_best_data = if let Some(ref session) = weekly_best {
+            dao.get_session_result(session.id)?
+        } else {
+            None
+        };
+
+        let all_time_best_data = if let Some(ref session) = all_time_best {
+            dao.get_session_result(session.id)?
+        } else {
+            None
+        };
+
+        Ok(BestRecords {
+            todays_best: todays_best_data,
+            weekly_best: weekly_best_data,
+            all_time_best: all_time_best_data,
+        })
+    }
+
+    /// Get best records using the global instance
+    pub fn get_best_records_global() -> Result<Option<BestRecords>> {
+        let global = Self::global();
+        let guard = global
+            .lock()
+            .map_err(|e| GitTypeError::database_error(format!("Failed to acquire lock: {}", e)))?;
+
+        if let Some(service) = guard.as_ref() {
+            service.get_best_records().map(Some)
+        } else {
+            Ok(None)
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct BestRecords {
+    pub todays_best: Option<SessionResultData>,
+    pub weekly_best: Option<SessionResultData>,
+    pub all_time_best: Option<SessionResultData>,
 }
 
 impl HasDatabase for SessionRepository {

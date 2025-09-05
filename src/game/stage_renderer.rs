@@ -52,7 +52,7 @@ impl StageRenderer {
         current_mistake_position: Option<usize>,
         skips_remaining: usize,
         dialog_shown: bool,
-        scoring_engine: &crate::scoring::engine::ScoringEngine,
+        scoring_engine: &crate::scoring::StageTracker,
         repo_info: &Option<GitRepository>,
         display_comment_ranges: &[(usize, usize)],
         code_context: &CodeContext,
@@ -95,8 +95,8 @@ impl StageRenderer {
         };
         let content_spans = self.create_content_spans(render_params);
 
-        let elapsed_time = scoring_engine.get_elapsed_time();
-        let metrics = crate::scoring::engine::ScoringEngine::calculate_real_time_result(
+        let elapsed_time = scoring_engine.get_data().elapsed_time;
+        let metrics = crate::scoring::RealTimeCalculator::calculate(
             current_display_position,
             mistakes,
             elapsed_time,
@@ -104,7 +104,7 @@ impl StageRenderer {
         let current_line = 0; // Simplified - no line tracking needed
         let elapsed_secs = elapsed_time.as_secs();
 
-        let streak = scoring_engine.get_current_streak();
+        let streak = scoring_engine.get_data().current_streak;
         let first_line = format!(
             "WPM: {:.0} | CPM: {:.0} | Accuracy: {:.0}% | Mistakes: {} | Streak: {} | Time: {}s | Skips: {}",
             metrics.wpm, metrics.cpm, metrics.accuracy, metrics.mistakes, streak, elapsed_secs, skips_remaining
