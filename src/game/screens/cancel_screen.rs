@@ -1,5 +1,5 @@
 use crate::game::screens::session_summary_screen::ResultAction;
-use crate::scoring::{ScoringEngine, StageResult};
+use crate::scoring::StageTracker;
 use crate::{models::GitRepository, Result};
 use crossterm::{
     cursor::MoveTo,
@@ -16,7 +16,7 @@ impl CancelScreen {
     pub fn show_session_summary_cancel_mode(
         total_stages: usize,
         completed_stages: usize,
-        stage_engines: &[(String, ScoringEngine)],
+        stage_engines: &[(String, StageTracker)],
         _repo_info: &Option<GitRepository>,
     ) -> Result<ResultAction> {
         let mut stdout = stdout();
@@ -54,29 +54,8 @@ impl CancelScreen {
 
         // Show basic metrics if available (centered, white)
         if !stage_engines.is_empty() {
-            let last_engine = &stage_engines.last().unwrap().1;
-            let metrics = last_engine
-                .calculate_result_with_status(false, false)
-                .unwrap_or_else(|_| {
-                    // Create basic metrics if calculation fails
-                    StageResult {
-                        cpm: last_engine.cpm(),
-                        wpm: last_engine.wpm(),
-                        accuracy: last_engine.accuracy(),
-                        mistakes: last_engine.mistakes(),
-                        consistency_streaks: vec![],
-                        completion_time: std::time::Duration::new(0, 0),
-                        challenge_score: 0.0,
-                        rank_name: "Unranked".to_string(),
-                        tier_name: "Beginner".to_string(),
-                        tier_position: 0,
-                        tier_total: 0,
-                        overall_position: 0,
-                        overall_total: 0,
-                        was_skipped: false,
-                        was_failed: false,
-                    }
-                });
+            let (_last_stage_name, last_engine) = stage_engines.last().unwrap();
+            let metrics = crate::scoring::StageCalculator::calculate(last_engine, false, false);
 
             let metrics_text = format!(
                 "CPM: {:.0} | WPM: {:.0} | Accuracy: {:.0}%",

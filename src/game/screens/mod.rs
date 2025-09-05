@@ -1,6 +1,7 @@
 pub mod animation_screen;
 pub mod cancel_screen;
 pub mod countdown_screen;
+pub mod details_dialog;
 pub mod exit_summary_screen;
 pub mod failure_screen;
 pub mod info_dialog;
@@ -13,6 +14,7 @@ pub mod typing_screen;
 pub use animation_screen::AnimationScreen;
 pub use cancel_screen::CancelScreen;
 pub use countdown_screen::CountdownScreen;
+pub use details_dialog::DetailsDialog;
 pub use exit_summary_screen::{ExitAction, ExitSummaryScreen};
 pub use failure_screen::FailureScreen;
 pub use info_dialog::{InfoAction, InfoDialog};

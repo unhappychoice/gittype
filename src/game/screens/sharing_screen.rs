@@ -1,4 +1,3 @@
-use crate::scoring::StageResult;
 use crate::sharing::{SharingPlatform, SharingService};
 use crate::{models::GitRepository, Result};
 use crossterm::{
@@ -14,7 +13,7 @@ pub struct SharingScreen;
 
 impl SharingScreen {
     pub fn show_sharing_menu(
-        metrics: &StageResult,
+        metrics: &crate::models::SessionResult,
         repo_info: &Option<GitRepository>,
     ) -> Result<()> {
         let mut stdout = stdout();
@@ -52,20 +51,24 @@ impl SharingScreen {
         }
 
         // Show preview of what will be shared
+        let best_rank = crate::scoring::Rank::for_score(metrics.session_score);
         let preview_text = if let Some(repo) = repo_info {
             format!(
                 "\"{}\" with {:.0}pts on [{}/{}] - CPM: {:.0}, Mistakes: {}",
-                metrics.rank_name,
-                metrics.challenge_score,
+                best_rank.name(),
+                metrics.session_score,
                 repo.user_name,
                 repo.repository_name,
-                metrics.cpm,
-                metrics.mistakes
+                metrics.overall_cpm,
+                metrics.valid_mistakes + metrics.invalid_mistakes
             )
         } else {
             format!(
                 "\"{}\" with {:.0}pts - CPM: {:.0}, Mistakes: {}",
-                metrics.rank_name, metrics.challenge_score, metrics.cpm, metrics.mistakes
+                best_rank.name(),
+                metrics.session_score,
+                metrics.overall_cpm,
+                metrics.valid_mistakes + metrics.invalid_mistakes
             )
         };
         let preview_col = center_col.saturating_sub(preview_text.len() as u16 / 2);
