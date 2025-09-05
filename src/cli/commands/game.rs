@@ -2,19 +2,10 @@ use crate::cli::args::Cli;
 use crate::extractor::ExtractionOptions;
 use crate::game::screens::loading_screen::{LoadingScreen, ProcessingResult};
 use crate::game::StageManager;
-use crate::logging::{setup_console_logging, setup_logging};
 use crate::{GitTypeError, Result};
 use std::path::PathBuf;
 
 pub fn run_game_session(cli: Cli) -> Result<()> {
-    // Initialize logging first
-    if let Err(e) = setup_logging() {
-        // Fallback to console-only logging if file logging fails
-        setup_console_logging();
-        eprintln!("⚠️ Warning: Failed to setup file logging: {}", e);
-        eprintln!("   Logs will only be shown in console.");
-    }
-
     log::info!("Starting GitType game session");
 
     // Session repository will be initialized in DatabaseInitStep during loading screen
