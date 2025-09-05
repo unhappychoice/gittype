@@ -132,7 +132,7 @@ mod tests {
     fn test_database_creation() {
         let result = Database::new_test();
         assert!(result.is_ok());
-        
+
         let db = result.unwrap();
         db.init().expect("Failed to initialize test database");
         assert!(db.get_connection().prepare("SELECT 1").is_ok());
@@ -202,12 +202,14 @@ mod tests {
 
     #[test]
     fn test_migration_idempotency() {
-        // Create database twice  
+        // Create database twice
         let db1 = Database::new_test().unwrap();
-        db1.init().expect("Failed to initialize first test database");
-        
+        db1.init()
+            .expect("Failed to initialize first test database");
+
         let db2 = Database::new_test().unwrap();
-        db2.init().expect("Failed to initialize second test database");
+        db2.init()
+            .expect("Failed to initialize second test database");
 
         // Schema version should still be correct
         let version = db2.get_current_schema_version().unwrap();
