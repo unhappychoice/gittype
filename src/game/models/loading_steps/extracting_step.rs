@@ -11,7 +11,7 @@ impl Step for ExtractingStep {
         StepType::Extracting
     }
     fn step_number(&self) -> usize {
-        3
+        4
     }
     fn description(&self) -> &str {
         "Extracting functions, classes, and code blocks"

@@ -5,6 +5,7 @@ use ratatui::style::Color;
 use std::path::PathBuf;
 
 pub mod cloning_step;
+pub mod database_init_step;
 pub mod extracting_step;
 pub mod finalizing_step;
 pub mod generating_step;
@@ -12,6 +13,7 @@ pub mod scanning_step;
 pub mod step_manager;
 
 pub use cloning_step::CloningStep;
+pub use database_init_step::DatabaseInitStep;
 pub use extracting_step::ExtractingStep;
 pub use finalizing_step::FinalizingStep;
 pub use generating_step::GeneratingStep;
@@ -20,6 +22,7 @@ pub use step_manager::StepManager;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum StepType {
+    DatabaseInit,
     Cloning,
     Scanning,
     Extracting,

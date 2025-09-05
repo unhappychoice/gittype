@@ -10,8 +10,8 @@ impl Step for GeneratingStep {
         StepType::Generating
     }
     fn step_number(&self) -> usize {
-        5
-    } // Skip step 4 (Parsing AST) as it's combined with step 3
+        6
+    }
     fn description(&self) -> &str {
         "Generating challenges across difficulty levels"
     }

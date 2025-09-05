@@ -11,7 +11,7 @@ impl Step for CloningStep {
         StepType::Cloning
     }
     fn step_number(&self) -> usize {
-        1
+        2
     }
     fn description(&self) -> &str {
         "Cloning repository from remote source"

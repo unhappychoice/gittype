@@ -10,7 +10,7 @@ impl Step for FinalizingStep {
         StepType::Finalizing
     }
     fn step_number(&self) -> usize {
-        6
+        7
     }
     fn description(&self) -> &str {
         "Preparing content for optimal typing practice"
