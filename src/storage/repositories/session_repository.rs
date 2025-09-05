@@ -1,11 +1,15 @@
 use super::super::{
-    daos::{ChallengeDao, RepositoryDao, SessionDao, StoredRepository, StoredSession},
+    daos::{
+        ChallengeDao, RepositoryDao, SaveStageParams, SessionDao, StoredRepository, StoredSession,
+    },
     Database, HasDatabase,
 };
 use crate::models::{Challenge, GitRepository, SessionResult};
 use crate::scoring::{ScoringEngine, StageResult};
 use crate::{error::GitTypeError, Result};
 use std::sync::{Arc, Mutex};
+
+type StageResultTuple = (String, StageResult, usize, Option<Challenge>);
 
 /// Repository for session business logic
 pub struct SessionRepository {
@@ -37,9 +41,9 @@ impl SessionRepository {
         let tx = conn.unchecked_transaction()?;
 
         // Create DAOs
-        let repository_dao = RepositoryDao::new(&*db);
-        let session_dao = SessionDao::new(&*db);
-        let challenge_dao = ChallengeDao::new(&*db);
+        let repository_dao = RepositoryDao::new(&db);
+        let session_dao = SessionDao::new(&db);
+        let challenge_dao = ChallengeDao::new(&db);
 
         // 1. Get or create repository
         let repository_id = if let Some(repo) = git_repository {
@@ -69,17 +73,16 @@ impl SessionRepository {
         )?;
 
         // 4. Convert stage engines to stage results
-        let stage_results: Result<Vec<(String, StageResult, usize, Option<Challenge>)>> =
-            stage_engines
-                .iter()
-                .enumerate()
-                .map(|(index, (name, engine))| {
-                    let stage_result = engine.calculate_result()?;
-                    let keystrokes = engine.total_chars();
-                    let challenge = challenges.get(index).cloned();
-                    Ok((name.clone(), stage_result, keystrokes, challenge))
-                })
-                .collect();
+        let stage_results: Result<Vec<StageResultTuple>> = stage_engines
+            .iter()
+            .enumerate()
+            .map(|(index, (name, engine))| {
+                let stage_result = engine.calculate_result()?;
+                let keystrokes = engine.total_chars();
+                let challenge = challenges.get(index).cloned();
+                Ok((name.clone(), stage_result, keystrokes, challenge))
+            })
+            .collect();
         let stage_results = stage_results?;
 
         // 5. Save stage results
@@ -95,13 +98,15 @@ impl SessionRepository {
 
             session_dao.save_stage_result_in_transaction(
                 &tx,
-                session_id,
-                repository_id,
-                stage_index,
-                &stage_name,
-                &stage_result,
-                keystrokes,
-                challenge.as_ref(),
+                SaveStageParams {
+                    session_id,
+                    repository_id,
+                    stage_index,
+                    stage_name: &stage_name,
+                    stage_result: &stage_result,
+                    keystrokes,
+                    challenge: challenge.as_ref(),
+                },
             )?;
         }
 
@@ -114,7 +119,7 @@ impl SessionRepository {
     pub fn get_repository_history(&self, repository_id: i64) -> Result<Vec<StoredSession>> {
         let db = self.db_with_lock()?;
 
-        let dao = SessionDao::new(&*db);
+        let dao = SessionDao::new(&db);
         dao.get_repository_sessions(repository_id)
     }
 
@@ -122,7 +127,7 @@ impl SessionRepository {
     pub fn get_all_repositories(&self) -> Result<Vec<StoredRepository>> {
         let db = self.db_with_lock()?;
 
-        let dao = RepositoryDao::new(&*db);
+        let dao = RepositoryDao::new(&db);
         dao.get_all_repositories()
     }
 

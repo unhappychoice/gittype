@@ -42,7 +42,7 @@ impl<'a> RepositoryDao<'a> {
             )?
             .query_row(
                 params![git_repo.user_name, git_repo.repository_name, git_repo.remote_url],
-                |row| Ok(row.get::<_, i64>(0)?),
+                |row| row.get::<_, i64>(0),
             );
 
         match existing {

@@ -43,7 +43,7 @@ impl GitTypeError {
     /// Create a custom database error from a string message
     pub fn database_error(msg: String) -> Self {
         Self::DatabaseError(rusqlite::Error::ToSqlConversionFailure(Box::new(
-            std::io::Error::new(std::io::ErrorKind::Other, msg),
+            std::io::Error::other(msg),
         )))
     }
 }

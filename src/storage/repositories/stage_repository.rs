@@ -25,7 +25,7 @@ impl StageRepository {
     ) -> Result<Vec<StoredStageResult>> {
         let db = self.db_with_lock()?;
 
-        let dao = StageDao::new(&*db);
+        let dao = StageDao::new(&db);
         dao.get_completed_stages(repository_id)
     }
 
@@ -37,7 +37,7 @@ impl StageRepository {
     ) -> Result<Vec<StoredStageResult>> {
         let db = self.db_with_lock()?;
 
-        let dao = StageDao::new(&*db);
+        let dao = StageDao::new(&db);
         dao.get_completed_stages_by_language(language, repository_id)
     }
 
@@ -49,7 +49,7 @@ impl StageRepository {
     ) -> Result<Vec<StoredStageResult>> {
         let db = self.db_with_lock()?;
 
-        let dao = StageDao::new(&*db);
+        let dao = StageDao::new(&db);
         dao.get_completed_stages_by_difficulty(difficulty, repository_id)
     }
 
@@ -57,7 +57,7 @@ impl StageRepository {
     pub fn get_stage_statistics(&self, repository_id: Option<i64>) -> Result<StageStatistics> {
         let db = self.db_with_lock()?;
 
-        let dao = StageDao::new(&*db);
+        let dao = StageDao::new(&db);
         dao.get_stage_statistics(repository_id)
     }
 
@@ -65,7 +65,7 @@ impl StageRepository {
     pub fn get_language_breakdown(&self, repository_id: Option<i64>) -> Result<Vec<LanguageStats>> {
         let db = self.db_with_lock()?;
 
-        let dao = StageDao::new(&*db);
+        let dao = StageDao::new(&db);
         dao.get_language_breakdown(repository_id)
     }
 
@@ -76,7 +76,7 @@ impl StageRepository {
     ) -> Result<Vec<DifficultyStats>> {
         let db = self.db_with_lock()?;
 
-        let dao = StageDao::new(&*db);
+        let dao = StageDao::new(&db);
         dao.get_difficulty_breakdown(repository_id)
     }
 }

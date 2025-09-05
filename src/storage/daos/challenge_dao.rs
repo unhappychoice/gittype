@@ -23,7 +23,7 @@ impl<'a> ChallengeDao<'a> {
         // Try to find existing challenge
         let existing = tx
             .prepare("SELECT rowid FROM challenges WHERE id = ?")?
-            .query_row(params![challenge.id], |row| Ok(row.get::<_, i64>(0)?));
+            .query_row(params![challenge.id], |row| row.get::<_, i64>(0));
 
         match existing {
             Ok(rowid) => Ok(rowid),

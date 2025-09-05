@@ -5,6 +5,16 @@ use chrono::{DateTime, Utc};
 use rusqlite::{params, Transaction};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+pub struct SaveStageParams<'a> {
+    pub session_id: i64,
+    pub repository_id: Option<i64>,
+    pub stage_index: usize,
+    pub stage_name: &'a str,
+    pub stage_result: &'a StageResult,
+    pub keystrokes: usize,
+    pub challenge: Option<&'a Challenge>,
+}
+
 pub struct SessionDao<'a> {
     db: &'a Database,
 }
@@ -112,22 +122,16 @@ impl<'a> SessionDao<'a> {
     pub fn save_stage_result_in_transaction(
         &self,
         tx: &Transaction,
-        session_id: i64,
-        repository_id: Option<i64>,
-        stage_index: usize,
-        _stage_name: &str,
-        stage_result: &StageResult,
-        keystrokes: usize,
-        challenge: Option<&Challenge>,
+        params: SaveStageParams,
     ) -> Result<()> {
         // Create a dummy stage record first
         tx.execute(
             "INSERT INTO stages (session_id, challenge_id, stage_number, started_at, completed_at)
              VALUES (?, ?, ?, ?, ?)",
-            params![
-                session_id,
-                challenge.map(|c| c.id.as_str()).unwrap_or("dummy"), // challenge_id is TEXT and NOT NULL
-                (stage_index + 1) as i64,                            // stage_number - 1-based index
+            rusqlite::params![
+                params.session_id,
+                params.challenge.map(|c| c.id.as_str()).unwrap_or("dummy"), // challenge_id is TEXT and NOT NULL
+                (params.stage_index + 1) as i64, // stage_number - 1-based index
                 Self::system_time_to_sqlite_timestamp(SystemTime::now()),
                 Self::system_time_to_sqlite_timestamp(SystemTime::now())
             ],
@@ -142,29 +146,31 @@ impl<'a> SessionDao<'a> {
                 rank_position, rank_total, position, total,
                 was_skipped, was_failed, completed_at, language, difficulty_level
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            params![
+            rusqlite::params![
                 stage_id,
-                session_id,
-                repository_id.unwrap_or(0), // repository_id is NOT NULL in schema
-                keystrokes as i64,
-                stage_result.mistakes as i64,
-                stage_result.completion_time.as_millis() as i64,
-                stage_result.wpm,
-                stage_result.cpm,
-                stage_result.accuracy,
-                serde_json::to_string(&stage_result.consistency_streaks).unwrap_or_default(),
-                stage_result.challenge_score,
-                stage_result.rank_name,
-                stage_result.tier_name,
-                stage_result.tier_position as i64,
-                stage_result.tier_total as i64,
-                stage_result.overall_position as i64,
-                stage_result.overall_total as i64,
-                stage_result.was_skipped,
-                stage_result.was_failed,
+                params.session_id,
+                params.repository_id.unwrap_or(0), // repository_id is NOT NULL in schema
+                params.keystrokes as i64,
+                params.stage_result.mistakes as i64,
+                params.stage_result.completion_time.as_millis() as i64,
+                params.stage_result.wpm,
+                params.stage_result.cpm,
+                params.stage_result.accuracy,
+                serde_json::to_string(&params.stage_result.consistency_streaks).unwrap_or_default(),
+                params.stage_result.challenge_score,
+                params.stage_result.rank_name,
+                params.stage_result.tier_name,
+                params.stage_result.tier_position as i64,
+                params.stage_result.tier_total as i64,
+                params.stage_result.overall_position as i64,
+                params.stage_result.overall_total as i64,
+                params.stage_result.was_skipped,
+                params.stage_result.was_failed,
                 Self::system_time_to_sqlite_timestamp(SystemTime::now()),
-                challenge.and_then(|c| c.language.as_ref().map(|s| s.clone())),
-                challenge.and_then(|c| c.difficulty_level.as_ref().map(|d| format!("{:?}", d)))
+                params.challenge.and_then(|c| c.language.clone()),
+                params
+                    .challenge
+                    .and_then(|c| c.difficulty_level.as_ref().map(|d| format!("{:?}", d)))
             ],
         )?;
 

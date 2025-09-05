@@ -23,7 +23,7 @@ impl RepositoryRepository {
     pub fn ensure_repository(&self, git_repo: &GitRepository) -> Result<i64> {
         let db = self.db_with_lock()?;
 
-        let dao = RepositoryDao::new(&*db);
+        let dao = RepositoryDao::new(&db);
         dao.ensure_repository(git_repo)
     }
 
@@ -31,7 +31,7 @@ impl RepositoryRepository {
     pub fn get_all_repositories(&self) -> Result<Vec<StoredRepository>> {
         let db = self.db_with_lock()?;
 
-        let dao = RepositoryDao::new(&*db);
+        let dao = RepositoryDao::new(&db);
         dao.get_all_repositories()
     }
 
@@ -39,7 +39,7 @@ impl RepositoryRepository {
     pub fn get_repository_by_id(&self, repository_id: i64) -> Result<Option<StoredRepository>> {
         let db = self.db_with_lock()?;
 
-        let dao = RepositoryDao::new(&*db);
+        let dao = RepositoryDao::new(&db);
         dao.get_repository_by_id(repository_id)
     }
 
@@ -51,7 +51,7 @@ impl RepositoryRepository {
     ) -> Result<Option<StoredRepository>> {
         let db = self.db_with_lock()?;
 
-        let dao = RepositoryDao::new(&*db);
+        let dao = RepositoryDao::new(&db);
         dao.find_repository(user_name, repository_name)
     }
 

@@ -99,7 +99,7 @@ mod tests {
     #[test]
     fn test_get_log_directory() {
         let log_dir = get_log_directory().unwrap();
-        
+
         if cfg!(debug_assertions) {
             // In debug mode, should be project directory
             assert!(log_dir.ends_with("logs"));
