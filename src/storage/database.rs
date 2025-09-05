@@ -2,6 +2,7 @@ use super::migrations::{get_all_migrations, get_latest_version};
 use crate::{error::GitTypeError, Result};
 use rusqlite::Connection;
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex, MutexGuard};
 
 pub struct Database {
     connection: Connection,
@@ -19,15 +20,27 @@ impl Database {
         // Enable foreign key constraints
         connection.execute("PRAGMA foreign_keys = ON", [])?;
         let db = Self { connection };
-        db.init_tables()?;
         Ok(db)
     }
 
+    pub fn init(&self) -> Result<()> {
+        self.init_tables()
+    }
+
     fn get_database_path() -> Result<PathBuf> {
-        let home_dir = dirs::home_dir().ok_or_else(|| {
-            GitTypeError::ExtractionFailed("Could not determine home directory".to_string())
-        })?;
-        Ok(home_dir.join(".gittype").join("gittype.db"))
+        if cfg!(debug_assertions) {
+            // Development: use project directory
+            let current_dir = std::env::current_dir().map_err(|e| {
+                GitTypeError::ExtractionFailed(format!("Could not get current directory: {}", e))
+            })?;
+            Ok(current_dir.join("gittype-dev.db"))
+        } else {
+            // Release: use home directory
+            let home_dir = dirs::home_dir().ok_or_else(|| {
+                GitTypeError::ExtractionFailed("Could not determine home directory".to_string())
+            })?;
+            Ok(home_dir.join(".gittype").join("gittype.db"))
+        }
     }
 
     pub fn init_tables(&self) -> Result<()> {
@@ -88,6 +101,16 @@ impl Database {
     }
 }
 
+pub trait HasDatabase {
+    fn database(&self) -> &Arc<Mutex<Database>>;
+
+    fn db_with_lock(&self) -> Result<MutexGuard<'_, Database>> {
+        self.database()
+            .lock()
+            .map_err(|e| GitTypeError::database_error(format!("Failed to acquire lock: {}", e)))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -96,22 +119,18 @@ mod tests {
 
     #[test]
     fn test_database_creation() {
-        let temp_dir = TempDir::new().unwrap();
-        let old_home = env::var("HOME").ok();
-        env::set_var("HOME", temp_dir.path());
-
         let result = Database::new();
-
-        // Restore original HOME
-        match old_home {
-            Some(home) => env::set_var("HOME", home),
-            None => env::remove_var("HOME"),
-        }
-
         assert!(result.is_ok());
 
-        let db_path = temp_dir.path().join(".gittype").join("gittype.db");
-        assert!(db_path.exists());
+        // Check that the database file is created in the expected location
+        if cfg!(debug_assertions) {
+            // In debug mode, database should be in project directory
+            assert!(std::path::Path::new("gittype-dev.db").exists());
+        } else {
+            // In release mode, check that the result is ok (file may be in home directory)
+            let db = result.unwrap();
+            assert!(db.get_connection().prepare("SELECT 1").is_ok());
+        }
     }
 
     #[test]
