@@ -75,6 +75,7 @@ impl<'a> SessionDao<'a> {
     }
 
     /// Save session result within an existing transaction
+    #[allow(clippy::too_many_arguments)]
     pub fn save_session_result_in_transaction(
         &self,
         tx: &Transaction,
