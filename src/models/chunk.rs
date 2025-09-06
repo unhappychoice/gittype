@@ -27,5 +27,5 @@ pub struct CodeChunk {
     pub chunk_type: ChunkType,
     pub name: String,
     pub comment_ranges: Vec<(usize, usize)>, // Character-based ranges for comments relative to content
-    pub original_indentation: usize,         // Column position of the first character in source
+    pub original_indentation: usize, // Indentation width in characters (Extractor-normalized)
 }

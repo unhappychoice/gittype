@@ -242,6 +242,8 @@ impl StageRenderer {
             lines.push(Line::from(line_spans));
         }
 
+        let mut byte_position = 0; // Track byte position as we iterate
+
         for (i, &ch) in self.chars.iter().enumerate() {
             // Add line number at the start of each line
             if line_start {
@@ -266,14 +268,15 @@ impl StageRenderer {
                 current_line_width = 0;
                 line_number += 1;
                 line_start = true;
+                byte_position += ch.len_utf8(); // Update byte position
                 continue;
             }
 
-            // Check if this character is in a comment
+            // Check if this character is in a comment using byte position
             let is_in_comment = params
                 .display_comment_ranges
                 .iter()
-                .any(|&(start, end)| i >= start && i < end);
+                .any(|&(start, end)| byte_position >= start && byte_position < end);
 
             // Determine character style
             let style = if is_in_comment {
@@ -319,6 +322,9 @@ impl StageRenderer {
 
             current_line_spans.push(Span::styled(display_char, style));
             current_line_width += char_width;
+
+            // Update byte position for next iteration
+            byte_position += ch.len_utf8();
         }
 
         if !current_line_spans.is_empty() {

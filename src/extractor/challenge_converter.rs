@@ -190,7 +190,7 @@ impl ChallengeConverter {
                 // Check if truncated content meets minimum requirements
                 let adjusted_comment_ranges = self.adjust_comment_ranges_for_truncation(
                     &chunk.comment_ranges,
-                    truncated_content.len(),
+                    truncated_content.chars().count(),
                 );
                 let truncated_code_chars =
                     self.count_code_characters(truncated_content, &adjusted_comment_ranges);

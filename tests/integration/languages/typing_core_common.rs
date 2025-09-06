@@ -55,6 +55,9 @@ pub fn verify_typing_simulation(core: &mut TypingCore) {
                 if current_char_type == '\n' && display_char == '↵' {
                     // This is expected: newlines in type text map to ↵ symbols in display text
                     println!("  -> Newline mapping OK: '\\n' -> '↵'");
+                } else if current_char_type == '\t' && display_char == '→' {
+                    // This is expected: tabs in type text map to → symbols in display text
+                    println!("  -> Tab mapping OK: '\\t' -> '→'");
                 } else if current_char_type != display_char {
                     panic!(
                         "Mismatch at position {}: type_char='{}' != display_char='{}'",

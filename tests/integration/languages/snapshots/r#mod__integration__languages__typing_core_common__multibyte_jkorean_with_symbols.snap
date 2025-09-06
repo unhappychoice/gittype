@@ -1,0 +1,30 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+// 한국어 테스트 함수
+fn 테스트_함수() -> String {
+    // 다양한 유니코드 문자들: ★☆♥♦♣♠
+    let 메시지 = "안녕하세요! 👋";
+    // ↵ 기호와 함께 ↵
+    format!("결과: {}", 메시지)
+}
+
+# text_to_type
+테스트 함수
+fn 테스트
+// 다양한 유니코드 문♥♦♣♠
+let 메시지 = "안녕하세요! 👋";
+// ↵ 기호와 함께 ↵
+format!("결과: {}", 메시지)
+}
+
+# text_to_display
+// 한국어 테스트 함수↵
+fn 테스트↵_함수() -> String {
+    // 다양한 유니코드 문자들: ★☆♥♦♣♠↵
+    let 메시지 = "안녕하세요! 👋";↵
+    // ↵ 기호와 함께 ↵↵
+    format!("결과: {}", 메시지)↵
+}↵

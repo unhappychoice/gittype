@@ -1,0 +1,53 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+// ユーザー管理システム
+function ユーザー作成(名前, 年齢) {
+    // エラーチェック処理 
+    if (!名前 || 年齢 < 0) {
+        // 無効なパラメータエラー
+        throw new Error("無効なパラメータ");
+    }
+    
+    // 正常処理: ユーザーオブジェクト作成
+    return {
+        名前: 名前,
+        年齢: 年齢,
+        作成日時: new Date()
+    };
+}
+
+# text_to_type
+管理システム
+function ユ成(名前, 年齢) {
+// エラク処理
+if (!名前 || 年齢 < 0) {
+/タエラー
+throw new Error("無効なパラメータ");
+}
+// 正常処理: ユーザーオブジェクト作成
+return {
+名前: 名前,
+年齢: 年齢,
+作成日時: new Date()
+};
+}
+
+# text_to_display
+// ユーザー管理システム↵
+function ユーザー作成(名前, 年齢) {↵
+    // エラーチェック処理↵ 
+    if (!名前 || 年齢 < 0) {↵
+        // 無効なパラメータエラー↵
+        throw new Error("無効なパラメータ");↵
+    }↵
+    
+    // 正常処理: ユーザーオブジェクト作成↵
+    return {↵
+        名前: 名前,↵
+        年齢: 年齢,↵
+        作成日時: new Date()↵
+    };↵
+}↵

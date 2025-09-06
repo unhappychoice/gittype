@@ -1,0 +1,30 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+fn zero_width_test() {
+    // Comment with zero-width joiner: ‍ and non-joiner: ‌
+    // Soft hyphen test: test­ing (invisible hyphen)
+    let text = "normal text";
+    // Combining characters: a̍b̊c̃ in comment
+    return text;
+}
+
+# text_to_type
+fn zero_width_test() {
+‌
+phen)
+let text = "normal text";
+comment
+return text;
+}
+
+# text_to_display
+fn zero_width_test() {↵
+    // Comment with zero-width joiner: ‍ and non-joiner: ‌↵
+    // Soft hyphen test: test­ing (invisible hyphen)↵
+    let text = "normal text";↵
+    // Combining characters: a̍b̊c̃ in comment↵
+    return text;↵
+}↵

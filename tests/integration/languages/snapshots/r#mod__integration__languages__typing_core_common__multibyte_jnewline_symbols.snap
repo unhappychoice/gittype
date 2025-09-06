@@ -1,0 +1,29 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+// Unicode comments with ↵ symbols
+fn test() {
+    // これは日本語のコメント↵です
+    println!("Hello");
+    // More text with 中文 characters ↵
+    let value = 123;
+}
+
+# text_to_type
+ls
+fn test() {
+本語のコメント↵です
+More text with 中文 characters ↵
+let value = 123;
+}
+
+# text_to_display
+// Unicode comments with ↵ symbols↵
+fn test() {↵
+    // これは日本語のコメント↵です↵
+    println!("Hello");
+    // More text with 中文 characters ↵↵
+    let value = 123;↵
+}↵

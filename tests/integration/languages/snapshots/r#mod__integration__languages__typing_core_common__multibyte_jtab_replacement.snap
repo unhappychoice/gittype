@@ -1,0 +1,27 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+fn tab_test() {
+	// タブ文字を含む日本語コメント
+	let 変数 = "値";
+	// 	インデントされた中文注释
+	return 変数;
+}
+
+# text_to_type
+fn tab_test() {
+含む日本語コ
+変数 = "値";
+// 	インデントされた中文注释
+return 変数;
+}
+
+# text_to_display
+fn tab_test() {↵
+→   // タブ文字を含む日本語コ↵メント
+→   let 変数 = "値";↵
+→   // →   インデントされた中文注释↵
+→   return 変数;↵
+}↵
