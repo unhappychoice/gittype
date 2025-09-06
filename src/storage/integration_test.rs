@@ -1,7 +1,7 @@
 use super::{Database, SessionRepository};
 use crate::logging::setup_console_logging;
 use crate::models::{Challenge, GitRepository, SessionResult};
-use crate::scoring::ScoringEngine;
+use crate::scoring::tracker::{StageInput, StageTracker};
 
 /// Integration test to verify the full session recording pipeline
 pub fn test_session_recording_integration() -> crate::Result<()> {
@@ -22,10 +22,9 @@ pub fn test_session_recording_integration() -> crate::Result<()> {
     let mut session_result = SessionResult::new();
     session_result.stages_completed = 2;
     session_result.stages_attempted = 2;
-    session_result.total_keystrokes = 250;
-    session_result.total_mistakes = 5;
-    session_result.session_score = 85.5;
-    session_result.finalize_session();
+    session_result.valid_keystrokes = 250;
+    session_result.valid_mistakes = 5;
+    // session_score is now calculated dynamically, no need to set manually
 
     // Create mock stage engines
     let stage_engines = vec![
@@ -99,15 +98,18 @@ pub fn test_session_recording_integration() -> crate::Result<()> {
 }
 
 /// Create a mock scoring engine for testing
-fn create_mock_engine(total_chars: usize, _wpm: f64) -> ScoringEngine {
-    let mut engine = ScoringEngine::new("test content".to_string());
+fn create_mock_engine(total_chars: usize, _wpm: f64) -> StageTracker {
+    let mut engine = StageTracker::new("test content".to_string());
 
     // Start scoring to initialize the engine
-    engine.start();
+    engine.record(StageInput::Start);
 
     // Simulate typing the content
     for i in 0..total_chars {
-        engine.record_keystroke('a', i);
+        engine.record(StageInput::Keystroke {
+            ch: 'a',
+            position: i,
+        });
     }
 
     engine

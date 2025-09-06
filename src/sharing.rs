@@ -1,5 +1,4 @@
 use crate::models::GitRepository;
-use crate::scoring::StageResult;
 use anyhow::Result;
 use crossterm::event::KeyCode;
 
@@ -30,7 +29,7 @@ pub struct SharingService;
 
 impl SharingService {
     pub fn share_result(
-        metrics: &StageResult,
+        metrics: &crate::models::SessionResult,
         platform: SharingPlatform,
         repo_info: &Option<GitRepository>,
     ) -> Result<()> {
@@ -49,7 +48,7 @@ impl SharingService {
     }
 
     fn generate_share_url(
-        metrics: &StageResult,
+        metrics: &crate::models::SessionResult,
         platform: &SharingPlatform,
         repo_info: &Option<GitRepository>,
     ) -> String {
@@ -63,9 +62,11 @@ impl SharingService {
                 )
             }
             SharingPlatform::Reddit => {
+                let best_rank = crate::scoring::Rank::for_score(metrics.session_score);
                 let title = format!(
                     "Achieved {} rank with {:.0} points in gittype!",
-                    metrics.rank_name, metrics.challenge_score
+                    best_rank.name(),
+                    metrics.session_score
                 );
                 format!(
                     "https://www.reddit.com/submit?title={}&selftext=true&text={}",
@@ -90,24 +91,28 @@ impl SharingService {
         }
     }
 
-    fn create_share_text(metrics: &StageResult, repo_info: &Option<GitRepository>) -> String {
+    fn create_share_text(
+        metrics: &crate::models::SessionResult,
+        repo_info: &Option<GitRepository>,
+    ) -> String {
+        let best_rank = crate::scoring::Rank::for_score(metrics.session_score);
         if let Some(repo) = repo_info {
             format!(
                 "Achieved \"{}\" with {:.0}pts on [{}/{}] in gittype! CPM: {:.0}, Mistakes: {} 🚀\n\nType your own code! https://github.com/unhappychoice/gittype\n\n#gittype #typing #coding",
-                metrics.rank_name,
-                metrics.challenge_score,
+                best_rank.name(),
+                metrics.session_score,
                 repo.user_name,
                 repo.repository_name,
-                metrics.cpm,
-                metrics.mistakes
+                metrics.overall_cpm,
+                metrics.valid_mistakes + metrics.invalid_mistakes
             )
         } else {
             format!(
                 "Achieved \"{}\" with {:.0}pts in gittype! CPM: {:.0}, Mistakes: {} 🚀\n\nType your own code! https://github.com/unhappychoice/gittype\n\n#gittype #typing #coding",
-                metrics.rank_name,
-                metrics.challenge_score,
-                metrics.cpm,
-                metrics.mistakes
+                best_rank.name(),
+                metrics.session_score,
+                metrics.overall_cpm,
+                metrics.valid_mistakes + metrics.invalid_mistakes
             )
         }
     }

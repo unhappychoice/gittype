@@ -1,5 +1,5 @@
 use crate::game::typing_animation::{AnimationPhase, TypingAnimation};
-use crate::scoring::{Rank, ScoringEngine};
+use crate::scoring::Rank;
 use crate::Result;
 use crossterm::event::{self, Event, KeyCode};
 use ratatui::{
@@ -156,29 +156,8 @@ impl AnimationScreen {
             .unwrap_or(crate::models::RankTier::Beginner)
     }
 
-    pub fn show_session_animation(
-        _total_stages: usize,
-        _completed_stages: usize,
-        stage_engines: &[(String, ScoringEngine)],
-    ) -> Result<()> {
-        // Calculate aggregated session metrics by combining ScoringEngines with + operator
-        if stage_engines.is_empty() {
-            return Ok(());
-        }
-
-        let combined_engine = stage_engines
-            .iter()
-            .map(|(_, engine)| engine.clone())
-            .reduce(|acc, engine| acc + engine)
-            .unwrap(); // Safe because we checked is_empty() above
-
-        let session_metrics = match combined_engine.calculate_result() {
-            Ok(metrics) => metrics,
-            Err(_) => {
-                // Fallback if calculation fails
-                return Ok(());
-            }
-        };
+    pub fn show_session_animation(session_result: &crate::models::SessionResult) -> Result<()> {
+        // Use the provided SessionResult directly
 
         // Set up ratatui terminal
         let backend = CrosstermBackend::new(io::stdout());
@@ -186,19 +165,20 @@ impl AnimationScreen {
         terminal.clear()?;
 
         // Create typing animation for session complete
-        let tier = Self::get_tier_from_rank_name(&session_metrics.rank_name);
+        let best_rank = crate::scoring::Rank::for_score(session_result.session_score);
+        let tier = Self::get_tier_from_rank_name(best_rank.name());
         let mut typing_animation =
             TypingAnimation::new(tier, terminal.size()?.width, terminal.size()?.height);
-        typing_animation.set_rank_messages(&session_metrics.rank_name);
+        typing_animation.set_rank_messages(best_rank.name());
 
         // Show typing reveal animation with ratatui
         while !typing_animation.is_complete() {
             let updated = typing_animation.update();
 
             if updated {
-                let rank_name = session_metrics.rank_name.clone();
+                let rank_name = best_rank.name();
                 terminal.draw(|frame| {
-                    Self::render_typing_animation_ratatui(frame, &typing_animation, &rank_name);
+                    Self::render_typing_animation_ratatui(frame, &typing_animation, rank_name);
                 })?;
             }
 

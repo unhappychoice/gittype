@@ -33,19 +33,60 @@ impl ExitSummaryScreen {
     }
 
     fn total_summary_to_typing_metrics(total_summary: &TotalResult) -> crate::scoring::StageResult {
-        use crate::scoring::{ScoringEngine, StageResult};
+        use crate::scoring::StageResult;
 
         // Create a StageResult from Total TotalResult data
-        let rank_name = ScoringEngine::get_rank_for_score(total_summary.total_score)
+        let rank_name = crate::scoring::Rank::for_score(total_summary.total_score)
             .name()
             .to_string();
-        let (tier_name, tier_position, tier_total, overall_position, overall_total) =
-            ScoringEngine::calculate_tier_info(total_summary.total_score);
+
+        // Calculate tier info manually
+        let all_ranks = crate::scoring::Rank::all_ranks();
+        let current_rank = crate::scoring::Rank::for_score(total_summary.total_score);
+        let same_tier_ranks: Vec<_> = all_ranks
+            .iter()
+            .filter(|rank| rank.tier() == current_rank.tier())
+            .collect();
+
+        let tier_name = match current_rank.tier() {
+            crate::scoring::RankTier::Beginner => "Beginner",
+            crate::scoring::RankTier::Intermediate => "Intermediate",
+            crate::scoring::RankTier::Advanced => "Advanced",
+            crate::scoring::RankTier::Expert => "Expert",
+            crate::scoring::RankTier::Legendary => "Legendary",
+        }
+        .to_string();
+
+        let tier_position = same_tier_ranks
+            .iter()
+            .rev()
+            .position(|rank| rank.name() == current_rank.name())
+            .map(|pos| pos + 1)
+            .unwrap_or(1);
+
+        let tier_total = same_tier_ranks.len();
+
+        let overall_position = all_ranks
+            .iter()
+            .rev()
+            .position(|rank| rank.name() == current_rank.name())
+            .map(|pos| pos + 1)
+            .unwrap_or(1);
+
+        let overall_total = all_ranks.len();
+        let (tier_name, tier_position, tier_total, overall_position, overall_total) = (
+            tier_name,
+            tier_position,
+            tier_total,
+            overall_position,
+            overall_total,
+        );
 
         StageResult {
             cpm: total_summary.overall_cpm,
             wpm: total_summary.overall_wpm,
             accuracy: total_summary.overall_accuracy,
+            keystrokes: total_summary.total_keystrokes,
             mistakes: total_summary.total_mistakes,
             consistency_streaks: vec![], // Not available in total summary
             completion_time: total_summary.total_duration,
@@ -58,6 +99,7 @@ impl ExitSummaryScreen {
             overall_total,
             was_skipped: false,
             was_failed: false,
+            challenge_path: String::new(),
         }
     }
 

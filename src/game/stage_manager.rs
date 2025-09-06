@@ -4,13 +4,15 @@ use super::{
         typing_screen::SessionState, CancelScreen, CountdownScreen, ExitSummaryScreen,
         FailureScreen, SessionSummaryScreen, SharingScreen, TitleAction, TitleScreen, TypingScreen,
     },
-    session_tracker::SessionTracker,
     stage_builder::{DifficultyLevel, GameMode, StageBuilder},
-    total_tracker::TotalTracker,
 };
 use crate::models::Challenge;
 use crate::models::{GitRepository, SessionResult};
-use crate::scoring::{ScoringEngine, StageResult};
+use crate::scoring::{
+    calculator::TotalCalculator,
+    tracker::{SessionTracker, TotalTracker},
+    SessionCalculator, StageResult, StageTracker,
+};
 use crate::storage::SessionRepository;
 use crate::Result;
 use crossterm::{
@@ -42,7 +44,7 @@ pub struct StageManager {
     available_challenges: Vec<Challenge>,
     current_challenges: Vec<Challenge>,
     current_stage: usize,
-    stage_engines: Vec<(String, ScoringEngine)>,
+    stage_engines: Vec<(String, StageTracker)>,
     current_game_mode: Option<GameMode>,
     session_tracker: SessionTracker,
     total_tracker: TotalTracker,
@@ -77,6 +79,10 @@ impl StageManager {
         }
         {
             let mut global_total_tracker = GLOBAL_TOTAL_TRACKER.lock().unwrap();
+            if let Some(existing_tracker) = global_total_tracker.take() {
+                // Use existing global tracker to maintain cumulative data
+                self.total_tracker = existing_tracker;
+            }
             *global_total_tracker = Some(self.total_tracker.clone());
         }
 
@@ -155,27 +161,13 @@ impl StageManager {
                 }
                 TitleAction::Quit => {
                     // Show total summary before exiting
-                    let total_summary = self.total_tracker.clone().finalize_and_get_total();
+                    let total_summary = TotalCalculator::calculate(&self.total_tracker);
                     let _ = ExitSummaryScreen::show_total(&total_summary)?;
                     cleanup_terminal();
                     std::process::exit(0);
                 }
             }
         }
-
-        #[allow(unreachable_code)]
-        {
-            // Clear global session tracker
-            let mut global_tracker = GLOBAL_SESSION_TRACKER.lock().unwrap();
-            *global_tracker = None;
-        }
-
-        // Disable keyboard enhancement flags
-        let mut stdout_handle = stdout();
-        execute!(stdout_handle, PopKeyboardEnhancementFlags).ok();
-
-        cleanup_terminal();
-        Ok(())
     }
 
     fn run_stages(&mut self) -> Result<bool> {
@@ -216,11 +208,7 @@ impl StageManager {
                         .push((stage_name.clone(), engine.clone()));
 
                     // Track in session tracker
-                    self.session_tracker.record_stage_completion(
-                        stage_name,
-                        stage_result.clone(),
-                        &engine,
-                    );
+                    self.session_tracker.record(stage_result.clone());
 
                     // Update global session tracker
                     {
@@ -240,11 +228,9 @@ impl StageManager {
                     self.current_stage += 1;
                 }
                 SessionState::Skip => {
-                    // Skipped - record skip and partial effort
-                    let engine = screen.get_scoring_engine();
-                    self.session_tracker.record_skip();
-                    self.session_tracker
-                        .record_partial_effort(engine, &stage_result);
+                    // Skipped - record stage result with was_skipped=true
+                    let _engine = screen.get_scoring_engine();
+                    self.session_tracker.record(stage_result.clone());
 
                     // Update global session tracker
                     {
@@ -282,11 +268,7 @@ impl StageManager {
                         .push((stage_name.clone(), engine.clone()));
 
                     // Track in session tracker
-                    self.session_tracker.record_stage_completion(
-                        stage_name,
-                        stage_result.clone(),
-                        &engine,
-                    );
+                    self.session_tracker.record(stage_result.clone());
 
                     // Show fail result screen and handle navigation
                     let should_retry = self.handle_fail_result_navigation()?;
@@ -299,10 +281,9 @@ impl StageManager {
                     }
                 }
                 SessionState::Exit => {
-                    // User wants to exit - record partial effort only
-                    let engine = screen.get_scoring_engine();
-                    self.session_tracker
-                        .record_partial_effort(engine, &stage_result);
+                    // User wants to exit - record as failed stage
+                    let _engine = screen.get_scoring_engine();
+                    self.session_tracker.record(stage_result.clone());
 
                     // Update global session tracker with current state
                     {
@@ -342,12 +323,12 @@ impl StageManager {
             match action {
                 ResultAction::Retry => {
                     // Record session attempt in total tracker before retry
-                    let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                    let session_summary = self.create_session_result();
 
                     // Record session to database
                     self.record_session_to_database(&session_summary);
 
-                    self.total_tracker.record_session_attempt(&session_summary);
+                    self.total_tracker.record(session_summary.clone());
 
                     // Update global total tracker
                     {
@@ -362,35 +343,24 @@ impl StageManager {
                     return Ok(true); // Return true to indicate retry requested
                 }
                 ResultAction::Share => {
-                    // Show sharing menu with combined engine metrics (same as result screen)
+                    // Show sharing menu with session result
                     if !self.stage_engines.is_empty() {
-                        let combined_engine = self
-                            .stage_engines
-                            .iter()
-                            .map(|(_, engine)| engine.clone())
-                            .reduce(|acc, engine| acc + engine)
-                            .unwrap();
-
-                        if let Ok(session_metrics) = combined_engine.calculate_result() {
-                            let _ = SharingScreen::show_sharing_menu(
-                                &session_metrics,
-                                &self.git_repository,
-                            );
-                        }
+                        let session_result = self.create_session_result();
+                        let _ =
+                            SharingScreen::show_sharing_menu(&session_result, &self.git_repository);
                     }
                     // Continue showing the summary screen after sharing (without animation)
                     continue;
                 }
                 ResultAction::Quit => {
                     // Show session summary before exiting
-                    let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                    let session_summary = self.create_session_result();
 
                     // Record session to database
                     self.record_session_to_database(&session_summary);
 
                     // Record completed session in total tracker
-                    self.total_tracker
-                        .record_session_completion(&session_summary);
+                    self.total_tracker.record(session_summary.clone());
 
                     // Update global total tracker
                     {
@@ -401,7 +371,7 @@ impl StageManager {
                     }
 
                     loop {
-                        let total_summary = self.total_tracker.clone().finalize_and_get_total();
+                        let total_summary = TotalCalculator::calculate(&self.total_tracker);
                         let exit_action = ExitSummaryScreen::show(&total_summary)?;
 
                         match exit_action {
@@ -425,7 +395,7 @@ impl StageManager {
     fn show_stage_completion(&self, stage_result: &StageResult) -> Result<Option<ResultAction>> {
         // Get keystrokes from the latest scoring engine
         let keystrokes = if let Some((_, engine)) = self.stage_engines.last() {
-            engine.total_chars()
+            engine.get_data().keystrokes.len()
         } else {
             0
         };
@@ -448,18 +418,16 @@ impl StageManager {
     }
 
     fn show_session_summary_internal(&self, show_animation: bool) -> Result<ResultAction> {
+        let session_result = self.create_session_result();
+
         if show_animation {
             SessionSummaryScreen::show_session_summary_with_input(
-                self.current_challenges.len(),
-                self.stage_engines.len(),
-                &self.stage_engines,
+                &session_result,
                 &self.git_repository,
             )
         } else {
             SessionSummaryScreen::show_session_summary_with_input_no_animation(
-                self.current_challenges.len(),
-                self.stage_engines.len(),
-                &self.stage_engines,
+                &session_result,
                 &self.git_repository,
             )
         }
@@ -496,12 +464,12 @@ impl StageManager {
         match action {
             ResultAction::Retry => {
                 // Record session attempt in total tracker before retry
-                let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                let session_summary = self.create_session_result();
 
                 // Record session to database
                 self.record_session_to_database(&session_summary);
 
-                self.total_tracker.record_session_attempt(&session_summary);
+                self.total_tracker.record(session_summary.clone());
 
                 // Reset session state when retrying
                 self.reset_session_state();
@@ -509,40 +477,40 @@ impl StageManager {
                 Ok(true) // Return true to indicate retry
             }
             ResultAction::BackToTitle => {
-                // Record attempted session before going back to title
-                let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                // Record session before going back to title
+                let session_summary = self.create_session_result();
 
                 // Record session to database
                 self.record_session_to_database(&session_summary);
 
-                self.total_tracker.record_session_attempt(&session_summary);
+                self.total_tracker.record(session_summary.clone());
 
                 // Back to title screen
                 Ok(false)
             }
             ResultAction::Quit => {
                 // Show session summary and exit
-                let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                let session_summary = self.create_session_result();
 
                 // Record session to database
                 self.record_session_to_database(&session_summary);
 
                 // Record attempted session in total tracker (failed session)
-                self.total_tracker.record_session_attempt(&session_summary);
+                self.total_tracker.record(session_summary.clone());
 
-                let total_summary = self.total_tracker.clone().finalize_and_get_total();
+                let total_summary = TotalCalculator::calculate(&self.total_tracker);
                 let _ = ExitSummaryScreen::show(&total_summary)?;
                 cleanup_terminal();
                 std::process::exit(0);
             }
             _ => {
                 // Record attempted session for unknown actions, default to back to title
-                let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                let session_summary = self.create_session_result();
 
                 // Record session to database
                 self.record_session_to_database(&session_summary);
 
-                self.total_tracker.record_session_attempt(&session_summary);
+                self.total_tracker.record(session_summary.clone());
 
                 // For other actions, default to back to title
                 Ok(false)
@@ -564,12 +532,12 @@ impl StageManager {
         match action {
             ResultAction::Retry => {
                 // Record session attempt in total tracker before retry
-                let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                let session_summary = self.create_session_result();
 
                 // Record session to database
                 self.record_session_to_database(&session_summary);
 
-                self.total_tracker.record_session_attempt(&session_summary);
+                self.total_tracker.record(session_summary.clone());
 
                 // Reset session state when retrying
                 self.reset_session_state();
@@ -577,40 +545,40 @@ impl StageManager {
                 Ok(true) // Return true to indicate retry
             }
             ResultAction::BackToTitle => {
-                // Record attempted session before going back to title
-                let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                // Record session before going back to title
+                let session_summary = self.create_session_result();
 
                 // Record session to database
                 self.record_session_to_database(&session_summary);
 
-                self.total_tracker.record_session_attempt(&session_summary);
+                self.total_tracker.record(session_summary.clone());
 
                 // Back to title screen
                 Ok(false)
             }
             ResultAction::Quit => {
                 // Show session summary and exit
-                let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                let session_summary = self.create_session_result();
 
                 // Record session to database
                 self.record_session_to_database(&session_summary);
 
                 // Record attempted session in total tracker (failed session)
-                self.total_tracker.record_session_attempt(&session_summary);
+                self.total_tracker.record(session_summary.clone());
 
-                let total_summary = self.total_tracker.clone().finalize_and_get_total();
+                let total_summary = TotalCalculator::calculate(&self.total_tracker);
                 let _ = ExitSummaryScreen::show(&total_summary)?;
                 cleanup_terminal();
                 std::process::exit(0);
             }
             _ => {
                 // Record attempted session for unknown actions, default to back to title
-                let session_summary = self.session_tracker.clone().finalize_and_get_summary();
+                let session_summary = self.create_session_result();
 
                 // Record session to database
                 self.record_session_to_database(&session_summary);
 
-                self.total_tracker.record_session_attempt(&session_summary);
+                self.total_tracker.record(session_summary.clone());
 
                 // For other actions, default to back to title
                 Ok(false)
@@ -651,6 +619,11 @@ impl StageManager {
         }
     }
 
+    /// Create a SessionResult from tracker data only
+    fn create_session_result(&self) -> SessionResult {
+        SessionCalculator::calculate(&self.session_tracker)
+    }
+
     /// Try to record a session to the database, returning any errors
     fn try_record_session_to_database(&self, session_result: &SessionResult) -> Result<()> {
         let game_mode = self
@@ -679,7 +652,7 @@ impl StageManager {
 
 // Comprehensive terminal cleanup function
 pub fn cleanup_terminal() {
-    use crossterm::{event::PopKeyboardEnhancementFlags, execute, terminal};
+    use crossterm::{execute, terminal};
     use std::io::{stdout, Write};
 
     // Disable raw mode first
@@ -716,7 +689,7 @@ pub fn show_session_summary_on_interrupt() {
         // Try to get total summary from global tracker
         let global_total_tracker = GLOBAL_TOTAL_TRACKER.lock().unwrap();
         if let Some(ref tracker) = *global_total_tracker {
-            let total_summary = tracker.clone().finalize_and_get_total();
+            let total_summary = TotalCalculator::calculate(tracker);
             let _ = ExitSummaryScreen::show(&total_summary);
         } else {
             // Fallback to show_total method for single session
