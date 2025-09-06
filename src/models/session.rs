@@ -68,7 +68,6 @@ impl SessionResult {
         }
     }
 
-
     pub fn get_session_completion_status(&self) -> String {
         match (self.stages_completed, self.stages_skipped) {
             (0, 0) => "No challenges attempted".to_string(),
