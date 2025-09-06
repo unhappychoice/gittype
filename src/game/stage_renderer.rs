@@ -136,11 +136,24 @@ impl StageRenderer {
             f.render_widget(header, chunks[0]);
 
             // Content with syntax highlighting and cursor with padding
-            let scroll_offset = if current_line > chunks[1].height.saturating_sub(2) as usize / 2 {
-                (current_line - chunks[1].height.saturating_sub(2) as usize / 2) as u16
+            // Keep the current line roughly centered within the viewport.
+            let view_height = chunks[1].height.saturating_sub(2); // account for borders/padding
+            let total_lines = content_spans.len() as u16;
+            let pre_context_lines = code_context.pre_context.len() as u16;
+            // Index of the current code line within the full rendered lines (including contexts)
+            let absolute_line_index = pre_context_lines.saturating_add(current_line as u16);
+
+            let desired_center = view_height / 2;
+            let mut scroll_offset = if total_lines > view_height {
+                absolute_line_index.saturating_sub(desired_center)
             } else {
                 0
             };
+            // Clamp so we don't scroll past the end
+            let max_scroll = total_lines.saturating_sub(view_height);
+            if scroll_offset > max_scroll {
+                scroll_offset = max_scroll;
+            }
 
             let content = Paragraph::new(Text::from(content_spans.clone()))
                 .scroll((scroll_offset, 0))
