@@ -101,7 +101,6 @@ impl StageRenderer {
             mistakes,
             elapsed_time,
         );
-        let current_line = 0; // Simplified - no line tracking needed
         let elapsed_secs = elapsed_time.as_secs();
 
         let streak = scoring_engine.get_data().current_streak;
