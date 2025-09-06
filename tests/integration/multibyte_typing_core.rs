@@ -1,3 +1,5 @@
+#![allow(clippy::invisible_characters)]
+
 use crate::integration::languages::typing_core_common::*;
 use crate::typing_core_test_with_parser;
 use gittype::game::typing_core::ProcessingOptions;
@@ -165,9 +167,10 @@ typing_core_test_with_parser!(
 typing_core_test_with_parser!(
     multibyte_jzero_width_characters,
     "rust",
+    // Note: This test intentionally uses invisible characters to test multibyte handling
     r#"fn zero_width_test() {
     // Comment with zero-width joiner: ‍ and non-joiner: ‌
-    // Soft hyphen test: test\u{AD}ing (invisible hyphen)
+    // Soft hyphen test: test­ing (invisible hyphen)
     let text = "normal text";
     // Combining characters: a̍b̊c̃ in comment
     return text;
