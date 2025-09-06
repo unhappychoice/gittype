@@ -16,7 +16,7 @@ impl CancelScreen {
     pub fn show_session_summary_cancel_mode(
         total_stages: usize,
         completed_stages: usize,
-        stage_engines: &[(String, StageTracker)],
+        stage_trackers: &[(String, StageTracker)],
         _repo_info: &Option<GitRepository>,
     ) -> Result<ResultAction> {
         let mut stdout = stdout();
@@ -53,9 +53,9 @@ impl CancelScreen {
         execute!(stdout, Print(stage_text))?;
 
         // Show basic metrics if available (centered, white)
-        if !stage_engines.is_empty() {
-            let (_last_stage_name, last_engine) = stage_engines.last().unwrap();
-            let metrics = crate::scoring::StageCalculator::calculate(last_engine, false, false);
+        if !stage_trackers.is_empty() {
+            let (_last_stage_name, last_tracker) = stage_trackers.last().unwrap();
+            let metrics = crate::scoring::StageCalculator::calculate(last_tracker);
 
             let metrics_text = format!(
                 "CPM: {:.0} | WPM: {:.0} | Accuracy: {:.0}%",

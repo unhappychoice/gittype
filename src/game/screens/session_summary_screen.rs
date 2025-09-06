@@ -1,6 +1,5 @@
 use crate::game::ascii_digits::get_digit_patterns;
 use crate::game::ascii_rank_titles_generated::get_rank_display;
-use crate::scoring::{Rank, StageResult};
 use crate::storage::repositories::SessionRepository;
 use crate::{models::GitRepository, Result};
 use crossterm::{
@@ -66,215 +65,7 @@ impl SessionSummaryScreen {
         result
     }
 
-    pub fn show_stage_completion(
-        metrics: &StageResult,
-        current_stage: usize,
-        total_stages: usize,
-        has_next_stage: bool,
-        keystrokes: usize,
-    ) -> Result<Option<ResultAction>> {
-        let mut stdout = stdout();
-
-        // Comprehensive screen reset
-        execute!(stdout, terminal::Clear(ClearType::All))?;
-        execute!(stdout, MoveTo(0, 0))?;
-        execute!(stdout, ResetColor)?;
-        stdout.flush()?;
-
-        // Short delay to ensure terminal state is reset
-        std::thread::sleep(std::time::Duration::from_millis(10));
-
-        let (terminal_width, terminal_height) = terminal::size()?;
-        let center_row = terminal_height / 2;
-        let center_col = terminal_width / 2;
-
-        // Display stage title at the center
-        let stage_title = if metrics.was_failed {
-            format!("=== STAGE {} FAILED ===", current_stage)
-        } else if metrics.was_skipped {
-            format!("=== STAGE {} SKIPPED ===", current_stage)
-        } else {
-            format!("=== STAGE {} COMPLETE ===", current_stage)
-        };
-
-        // Use simple character count for more reliable centering
-        let title_col = center_col.saturating_sub(stage_title.len() as u16 / 2);
-
-        execute!(stdout, MoveTo(title_col, center_row.saturating_sub(6)))?;
-        execute!(stdout, SetAttribute(Attribute::Bold))?;
-        if metrics.was_failed {
-            execute!(stdout, SetForegroundColor(Color::Red))?;
-        } else if metrics.was_skipped {
-            execute!(stdout, SetForegroundColor(Color::Magenta))?;
-        } else {
-            execute!(stdout, SetForegroundColor(Color::Cyan))?;
-        }
-        execute!(stdout, Print(&stage_title))?;
-        execute!(stdout, ResetColor)?;
-
-        // Position score label below title
-        let score_label_row = center_row.saturating_sub(3);
-
-        // Display different label and score for skipped/failed challenges
-        if metrics.was_failed {
-            let fail_message = "Challenge failed - no score";
-            let fail_col = center_col.saturating_sub(fail_message.len() as u16 / 2);
-            execute!(stdout, MoveTo(fail_col, score_label_row))?;
-            execute!(
-                stdout,
-                SetAttribute(Attribute::Bold),
-                SetForegroundColor(Color::Red)
-            )?;
-            execute!(stdout, Print(fail_message))?;
-            execute!(stdout, ResetColor)?;
-        } else if metrics.was_skipped {
-            let skip_message = "Challenge skipped - no score";
-            let skip_col = center_col.saturating_sub(skip_message.len() as u16 / 2);
-            execute!(stdout, MoveTo(skip_col, score_label_row))?;
-            execute!(
-                stdout,
-                SetAttribute(Attribute::Bold),
-                SetForegroundColor(Color::DarkGrey)
-            )?;
-            execute!(stdout, Print(skip_message))?;
-            execute!(stdout, ResetColor)?;
-        } else {
-            // Display "SCORE" label
-            let score_label = "SCORE";
-            let score_label_col = center_col.saturating_sub(score_label.len() as u16 / 2);
-            execute!(stdout, MoveTo(score_label_col, score_label_row))?;
-            execute!(
-                stdout,
-                SetAttribute(Attribute::Bold),
-                SetForegroundColor(Color::Cyan)
-            )?;
-            execute!(stdout, Print(score_label))?;
-            execute!(stdout, ResetColor)?;
-        }
-
-        // Display large ASCII art numbers
-        let score_value = if metrics.was_failed || metrics.was_skipped {
-            "---".to_string()
-        } else {
-            format!("{:.0}", metrics.challenge_score)
-        };
-        let ascii_numbers = Self::create_ascii_numbers(&score_value);
-        let score_start_row = score_label_row + 1;
-
-        for (row_index, line) in ascii_numbers.iter().enumerate() {
-            let line_col = center_col.saturating_sub(line.len() as u16 / 2);
-            execute!(stdout, MoveTo(line_col, score_start_row + row_index as u16))?;
-            execute!(stdout, SetAttribute(Attribute::Bold))?;
-            if metrics.was_failed {
-                execute!(stdout, SetForegroundColor(Color::Red))?;
-            } else if metrics.was_skipped {
-                execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
-            } else {
-                execute!(
-                    stdout,
-                    SetForegroundColor(Rank::for_score(metrics.challenge_score).terminal_color())
-                )?;
-            }
-            execute!(stdout, Print(line))?;
-            execute!(stdout, ResetColor)?;
-        }
-
-        // Calculate dynamic positioning for metrics in stage completion (add gap after score)
-        let ascii_height = ascii_numbers.len() as u16;
-        let stage_metrics_row = score_start_row + ascii_height + 2;
-
-        // Display compact metrics below the score
-        let metrics_lines = [
-            format!(
-                "CPM: {:.0} | WPM: {:.0} | Time: {:.1}s",
-                metrics.cpm,
-                metrics.wpm,
-                metrics.completion_time.as_secs_f64()
-            ),
-            format!(
-                "Keystrokes: {} | Accuracy: {:.1}% | Mistakes: {}",
-                keystrokes, metrics.accuracy, metrics.mistakes
-            ),
-        ];
-
-        for (i, line) in metrics_lines.iter().enumerate() {
-            let line_col = center_col.saturating_sub(line.len() as u16 / 2);
-            execute!(stdout, MoveTo(line_col, stage_metrics_row + i as u16))?;
-            execute!(stdout, SetForegroundColor(Color::White))?;
-            execute!(stdout, Print(line))?;
-            execute!(stdout, ResetColor)?;
-        }
-
-        // Calculate dynamic positioning for progress and continue text
-        let progress_start_row = stage_metrics_row + metrics_lines.len() as u16 + 2;
-
-        // Show progress and next action
-        if has_next_stage {
-            let progress_text = format!("Progress: {} / {}", current_stage, total_stages);
-            let progress_col = center_col.saturating_sub(progress_text.len() as u16 / 2);
-            execute!(stdout, MoveTo(progress_col, progress_start_row))?;
-            execute!(stdout, SetForegroundColor(Color::Cyan))?;
-            execute!(stdout, Print(&progress_text))?;
-            execute!(stdout, ResetColor)?;
-
-            let next_text = "Next stage starting...";
-            let next_col = center_col.saturating_sub(next_text.len() as u16 / 2);
-            execute!(stdout, MoveTo(next_col, progress_start_row + 1))?;
-            execute!(stdout, SetForegroundColor(Color::Yellow))?;
-            execute!(stdout, Print(next_text))?;
-            execute!(stdout, ResetColor)?;
-        }
-
-        stdout.flush()?;
-
-        // Show stage completion options with color coding
-        let options_row = if has_next_stage {
-            progress_start_row + 3
-        } else {
-            progress_start_row
-        };
-
-        // Calculate position for centered text
-        let total_text_length = "[SPACE] Continue  [ESC] Quit".len();
-        let start_col = center_col.saturating_sub(total_text_length as u16 / 2);
-
-        execute!(stdout, MoveTo(start_col, options_row))?;
-        execute!(stdout, SetForegroundColor(Color::Green))?;
-        execute!(stdout, Print("[SPACE]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
-        execute!(stdout, Print(" Continue  "))?;
-        execute!(stdout, SetForegroundColor(Color::Red))?;
-        execute!(stdout, Print("[ESC]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
-        execute!(stdout, Print(" Quit"))?;
-        execute!(stdout, ResetColor)?;
-        stdout.flush()?;
-
-        // Wait for user input
-        loop {
-            if event::poll(std::time::Duration::from_millis(100))? {
-                if let Event::Key(key_event) = event::read()? {
-                    match key_event.code {
-                        KeyCode::Char(' ') => break, // Continue
-                        KeyCode::Esc => {
-                            return Ok(Some(ResultAction::Quit));
-                        }
-                        _ => {}
-                    }
-                }
-            }
-        }
-        Ok(None)
-    }
-
     pub fn show_session_summary(
-        session_result: &crate::models::SessionResult,
-        repo_info: &Option<GitRepository>,
-    ) -> Result<()> {
-        Self::show_session_summary_original(session_result, repo_info)
-    }
-
-    fn show_session_summary_original(
         session_result: &crate::models::SessionResult,
         _repo_info: &Option<GitRepository>,
     ) -> Result<()> {
@@ -299,7 +90,7 @@ impl SessionSummaryScreen {
 
         // Calculate tier info for display
         let tier_info_values =
-            crate::scoring::StageCalculator::calculate_tier_info(session_result.session_score);
+            crate::scoring::RankCalculator::calculate_tier_info(session_result.session_score);
 
         // Display rank as large ASCII art at the top
         let rank_lines = get_rank_display(best_rank.name());
@@ -493,10 +284,10 @@ impl SessionSummaryScreen {
                 session_result.session_duration.as_secs_f64()
             ),
             format!(
-                "Keystrokes: {} | Accuracy: {:.1}% | Mistakes: {}",
+                "Keystrokes: {} | Mistakes: {} | Accuracy: {:.1}%",
                 session_result.valid_keystrokes + session_result.invalid_keystrokes,
-                session_result.overall_accuracy,
-                session_result.valid_mistakes + session_result.invalid_mistakes
+                session_result.valid_mistakes + session_result.invalid_mistakes,
+                session_result.overall_accuracy
             ),
         ];
 
@@ -580,20 +371,6 @@ impl SessionSummaryScreen {
     pub fn show_session_summary_with_input(
         session_result: &crate::models::SessionResult,
         repo_info: &Option<GitRepository>,
-    ) -> Result<ResultAction> {
-        Self::show_session_summary_with_input_internal(session_result, repo_info, true)
-    }
-
-    pub fn show_session_summary_with_input_no_animation(
-        session_result: &crate::models::SessionResult,
-        repo_info: &Option<GitRepository>,
-    ) -> Result<ResultAction> {
-        Self::show_session_summary_with_input_internal(session_result, repo_info, false)
-    }
-
-    fn show_session_summary_with_input_internal(
-        session_result: &crate::models::SessionResult,
-        repo_info: &Option<GitRepository>,
         show_animation: bool,
     ) -> Result<ResultAction> {
         use crate::game::screens::AnimationScreen;
@@ -604,7 +381,7 @@ impl SessionSummaryScreen {
         }
 
         // Show the result screen
-        Self::show_session_summary_original(session_result, repo_info)?;
+        Self::show_session_summary(session_result, repo_info)?;
 
         // Wait for user input and return action
         loop {
@@ -618,7 +395,7 @@ impl SessionSummaryScreen {
                                 repo_info,
                             );
                             // Redraw the screen after dialog closes
-                            Self::show_session_summary_original(session_result, repo_info)?;
+                            Self::show_session_summary(session_result, repo_info)?;
                         }
                         KeyCode::Char('r') | KeyCode::Char('R') => {
                             return Ok(ResultAction::Retry);

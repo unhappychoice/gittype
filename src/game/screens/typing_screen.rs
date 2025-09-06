@@ -20,7 +20,7 @@ pub struct TypingScreen {
     typing_core: TypingCore,
     start_time: std::time::Instant,
     renderer: StageRenderer,
-    scoring_engine: StageTracker,
+    stage_tracker: StageTracker,
     skips_remaining: usize,
     dialog_shown: bool,
     repo_info: Option<GitRepository>,
@@ -73,9 +73,9 @@ impl TypingScreen {
             .as_ref()
             .and_then(|c| c.source_file_path.clone())
             .unwrap_or_default();
-        let mut scoring_engine =
+        let mut stage_tracker =
             StageTracker::new_with_path(typing_core.text_to_type().to_string(), challenge_path);
-        scoring_engine.record(StageInput::Start);
+        stage_tracker.record(StageInput::Start);
 
         // Load context lines if challenge has source file info
         let code_context = if let Some(ref challenge) = challenge {
@@ -89,7 +89,7 @@ impl TypingScreen {
             typing_core,
             start_time: std::time::Instant::now(),
             renderer,
-            scoring_engine,
+            stage_tracker,
             skips_remaining: 3,
             dialog_shown: false,
             repo_info,
@@ -124,7 +124,7 @@ impl TypingScreen {
         self.update_display()?;
 
         let final_state = self.event_loop()?;
-        self.scoring_engine.record(StageInput::Finish);
+        self.stage_tracker.record(StageInput::Finish);
 
         Ok((self.calculate_result_with_state(&final_state), final_state))
     }
@@ -132,7 +132,7 @@ impl TypingScreen {
     fn run_session_loop(&mut self) -> Result<StageResult> {
         self.update_display()?;
         self.event_loop()?;
-        self.scoring_engine.record(StageInput::Finish);
+        self.stage_tracker.record(StageInput::Finish);
         Ok(self.calculate_result())
     }
 
@@ -243,7 +243,7 @@ impl TypingScreen {
     }
 
     fn handle_tab_key(&mut self) -> Result<SessionState> {
-        self.scoring_engine.record(StageInput::Keystroke {
+        self.stage_tracker.record(StageInput::Keystroke {
             ch: '\t',
             position: self.typing_core.current_position_to_type(),
         });
@@ -252,7 +252,7 @@ impl TypingScreen {
     }
 
     fn handle_enter_key(&mut self) -> Result<SessionState> {
-        self.scoring_engine.record(StageInput::Keystroke {
+        self.stage_tracker.record(StageInput::Keystroke {
             ch: '\n',
             position: self.typing_core.current_position_to_type(),
         });
@@ -261,7 +261,7 @@ impl TypingScreen {
     }
 
     fn handle_character_input(&mut self, ch: char) -> Result<SessionState> {
-        self.scoring_engine.record(StageInput::Keystroke {
+        self.stage_tracker.record(StageInput::Keystroke {
             ch,
             position: self.typing_core.current_position_to_type(),
         });
@@ -280,12 +280,12 @@ impl TypingScreen {
 
     fn open_dialog(&mut self) {
         self.dialog_shown = true;
-        self.scoring_engine.record(StageInput::Pause);
+        self.stage_tracker.record(StageInput::Pause);
     }
 
     fn close_dialog(&mut self) {
         self.dialog_shown = false;
-        self.scoring_engine.record(StageInput::Resume);
+        self.stage_tracker.record(StageInput::Resume);
     }
 
     fn update_display(&mut self) -> Result<()> {
@@ -299,7 +299,7 @@ impl TypingScreen {
             self.typing_core.current_mistake_position(),
             self.skips_remaining,
             self.dialog_shown,
-            &self.scoring_engine,
+            &self.stage_tracker,
             &self.repo_info,
             &display_comment_ranges,
             &self.code_context,
@@ -307,19 +307,16 @@ impl TypingScreen {
     }
 
     fn calculate_result(&self) -> StageResult {
-        let was_skipped = !self.typing_core.is_completed();
-        crate::scoring::StageCalculator::calculate(&self.scoring_engine, was_skipped, false)
+        crate::scoring::StageCalculator::calculate(&self.stage_tracker)
     }
 
-    pub fn calculate_result_with_state(&self, state: &SessionState) -> StageResult {
-        let was_skipped = matches!(state, SessionState::Skip);
-        let was_failed = matches!(state, SessionState::Failed);
-        crate::scoring::StageCalculator::calculate(&self.scoring_engine, was_skipped, was_failed)
+    pub fn calculate_result_with_state(&self, _state: &SessionState) -> StageResult {
+        crate::scoring::StageCalculator::calculate(&self.stage_tracker)
     }
 
     // Public getters for external use
-    pub fn get_scoring_engine(&self) -> &StageTracker {
-        &self.scoring_engine
+    pub fn get_stage_tracker(&self) -> &StageTracker {
+        &self.stage_tracker
     }
 
     pub fn get_skips_remaining(&self) -> usize {

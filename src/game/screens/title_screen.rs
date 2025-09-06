@@ -13,6 +13,7 @@ use std::io::{stdout, Write};
 
 pub enum TitleAction {
     Start(DifficultyLevel),
+    History,
     Quit,
 }
 
@@ -116,6 +117,9 @@ impl TitleScreen {
                             )?;
                             last_difficulty = selected_difficulty + 1; // Force redraw of difficulty selection
                         }
+                        KeyCode::Char('r') | KeyCode::Char('R') => {
+                            return Ok(TitleAction::History);
+                        }
                         _ => {}
                     }
                 }
@@ -160,18 +164,22 @@ impl TitleScreen {
 
         // Display instructions with color coding (keys only)
         let total_instructions_len =
-            "[←→/HL] Change Difficulty  [SPACE] Start  [I/?] Info  [ESC] Quit".len();
+            "[←→/HL] Change  [SPACE] Start  [R] History  [I/?] Info  [ESC] Quit".len();
         let instructions_col = center_col.saturating_sub(total_instructions_len as u16 / 2);
 
         execute!(stdout, MoveTo(instructions_col, center_row + 6))?;
         execute!(stdout, SetForegroundColor(Color::Blue))?;
         execute!(stdout, Print("[←→/HL]"))?;
         execute!(stdout, SetForegroundColor(Color::White))?;
-        execute!(stdout, Print(" Change Difficulty  "))?;
+        execute!(stdout, Print(" Change  "))?;
         execute!(stdout, SetForegroundColor(Color::Green))?;
         execute!(stdout, Print("[SPACE]"))?;
         execute!(stdout, SetForegroundColor(Color::White))?;
         execute!(stdout, Print(" Start  "))?;
+        execute!(stdout, SetForegroundColor(Color::Magenta))?;
+        execute!(stdout, Print("[R]"))?;
+        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, Print(" History  "))?;
         execute!(stdout, SetForegroundColor(Color::Cyan))?;
         execute!(stdout, Print("[I/?]"))?;
         execute!(stdout, SetForegroundColor(Color::White))?;

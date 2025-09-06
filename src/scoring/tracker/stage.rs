@@ -20,6 +20,8 @@ pub struct StageTracker {
     paused_time: Option<Instant>,
     total_paused_duration: std::time::Duration,
     challenge_path: String,
+    was_skipped: bool,
+    was_failed: bool,
 }
 
 impl StageTracker {
@@ -34,6 +36,8 @@ impl StageTracker {
             paused_time: None,
             total_paused_duration: std::time::Duration::ZERO,
             challenge_path: String::new(),
+            was_skipped: false,
+            was_failed: false,
         }
     }
 
@@ -48,6 +52,8 @@ impl StageTracker {
             paused_time: None,
             total_paused_duration: std::time::Duration::ZERO,
             challenge_path,
+            was_skipped: false,
+            was_failed: false,
         }
     }
 
@@ -103,6 +109,26 @@ impl StageTracker {
                     self.paused_time = None;
                 }
             }
+            StageInput::Skip => {
+                self.was_skipped = true;
+                if let Some(paused_time) = self.paused_time {
+                    self.total_paused_duration += paused_time.elapsed();
+                    self.paused_time = None;
+                }
+                if let Some(start) = self.start_time {
+                    self.recorded_duration = Some(start.elapsed() - self.total_paused_duration);
+                }
+            }
+            StageInput::Fail => {
+                self.was_failed = true;
+                if let Some(paused_time) = self.paused_time {
+                    self.total_paused_duration += paused_time.elapsed();
+                    self.paused_time = None;
+                }
+                if let Some(start) = self.start_time {
+                    self.recorded_duration = Some(start.elapsed() - self.total_paused_duration);
+                }
+            }
         }
     }
 
@@ -130,6 +156,8 @@ impl StageTracker {
             current_streak: self.current_streak,
             target_text: self.target_text.clone(),
             challenge_path: self.challenge_path.clone(),
+            was_skipped: self.was_skipped,
+            was_failed: self.was_failed,
         }
     }
 }
@@ -141,6 +169,8 @@ pub enum StageInput {
     Finish,
     Pause,
     Resume,
+    Skip,
+    Fail,
 }
 
 #[derive(Debug, Clone)]
@@ -153,4 +183,6 @@ pub struct StageTrackerData {
     pub current_streak: usize,
     pub target_text: String,
     pub challenge_path: String,
+    pub was_skipped: bool,
+    pub was_failed: bool,
 }
