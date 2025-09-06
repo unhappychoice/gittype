@@ -1,0 +1,542 @@
+use super::session_detail_screen::{SessionDetailScreen, SessionDisplayData};
+use crate::storage::{
+    daos::{session_dao::SessionResultData, StoredRepository},
+    repositories::SessionRepository,
+    HasDatabase,
+};
+use crate::Result;
+use chrono::{DateTime, Local};
+use crossterm::{
+    event::{self, Event, KeyCode, KeyModifiers},
+    terminal::{EnterAlternateScreen, LeaveAlternateScreen},
+    ExecutableCommand,
+};
+use ratatui::{
+    backend::CrosstermBackend,
+    layout::{Alignment, Constraint, Direction, Layout, Margin},
+    style::{Color, Modifier, Style},
+    text::{Line, Span},
+    widgets::{
+        Block, Borders, List, ListItem, ListState, Paragraph, Scrollbar, ScrollbarOrientation,
+        ScrollbarState,
+    },
+    Frame, Terminal,
+};
+use std::io::stdout;
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum SortBy {
+    Date,
+    Performance,
+    Repository,
+    Duration,
+}
+
+impl SortBy {
+    pub fn display_name(&self) -> &str {
+        match self {
+            SortBy::Date => "Date",
+            SortBy::Performance => "Score",
+            SortBy::Repository => "Repository",
+            SortBy::Duration => "Duration",
+        }
+    }
+
+    pub fn to_string(&self) -> &str {
+        match self {
+            SortBy::Date => "date",
+            SortBy::Performance => "score",
+            SortBy::Repository => "repository",
+            SortBy::Duration => "duration",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum DateFilter {
+    All,
+    Last7Days,
+    Last30Days,
+    Last90Days,
+}
+
+impl DateFilter {
+    pub fn display_name(&self) -> &str {
+        match self {
+            DateFilter::All => "All Time",
+            DateFilter::Last7Days => "Last 7 days",
+            DateFilter::Last30Days => "Last 30 days",
+            DateFilter::Last90Days => "Last 90 days",
+        }
+    }
+
+    pub fn to_days(&self) -> Option<i64> {
+        match self {
+            DateFilter::All => None,
+            DateFilter::Last7Days => Some(7),
+            DateFilter::Last30Days => Some(30),
+            DateFilter::Last90Days => Some(90),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct FilterState {
+    pub repository_filter: Option<i64>,
+    pub date_filter: DateFilter,
+    pub sort_by: SortBy,
+    pub sort_descending: bool,
+}
+
+impl Default for FilterState {
+    fn default() -> Self {
+        Self {
+            repository_filter: None,
+            date_filter: DateFilter::Last30Days,
+            sort_by: SortBy::Date,
+            sort_descending: true,
+        }
+    }
+}
+
+pub enum HistoryAction {
+    Return,
+    ViewDetails(i64),
+}
+
+pub struct HistoryScreen {
+    sessions: Vec<SessionDisplayData>,
+    repositories: Vec<StoredRepository>,
+    filter_state: FilterState,
+    list_state: ListState,
+    scroll_state: ScrollbarState,
+}
+
+impl HistoryScreen {
+    pub fn show() -> Result<HistoryAction> {
+        let mut screen = Self::new()?;
+        screen.run()
+    }
+
+    fn new() -> Result<Self> {
+        let session_repo = SessionRepository::new()?;
+        let repositories = session_repo.get_all_repositories()?;
+        let sessions = Vec::new();
+
+        let mut list_state = ListState::default();
+        list_state.select(Some(0));
+
+        let mut screen = Self {
+            sessions,
+            repositories,
+            filter_state: FilterState::default(),
+            list_state,
+            scroll_state: ScrollbarState::default(),
+        };
+
+        screen.refresh_sessions()?;
+        Ok(screen)
+    }
+
+    fn run(&mut self) -> Result<HistoryAction> {
+        // Setup terminal - raw mode is already enabled by StageManager
+        let mut stdout = stdout();
+        stdout.execute(EnterAlternateScreen)?;
+
+        let backend = CrosstermBackend::new(stdout);
+        let mut terminal = Terminal::new(backend)?;
+
+        let result = self.run_app(&mut terminal);
+
+        // Cleanup - don't disable raw_mode as StageManager manages it
+        terminal.backend_mut().execute(LeaveAlternateScreen)?;
+
+        result
+    }
+
+    fn run_app(
+        &mut self,
+        terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
+    ) -> Result<HistoryAction> {
+        loop {
+            terminal.draw(|f| self.ui(f))?;
+
+            if let Event::Key(key) = event::read()? {
+                match key.code {
+                    KeyCode::Esc => return Ok(HistoryAction::Return),
+                    KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        return Ok(HistoryAction::Return);
+                    }
+                    KeyCode::Char(' ') => {
+                        if !self.sessions.is_empty() {
+                            if let Some(selected) = self.list_state.selected() {
+                                let selected_session = &self.sessions[selected];
+                                // Show session detail screen
+                                SessionDetailScreen::show(selected_session.clone())?;
+                                // Force a full redraw when returning
+                                terminal.clear()?;
+                            }
+                        }
+                    }
+                    KeyCode::Up | KeyCode::Char('k') => {
+                        self.previous();
+                    }
+                    KeyCode::Down | KeyCode::Char('j') => {
+                        self.next();
+                    }
+                    KeyCode::Char('r') => {
+                        self.refresh_sessions()?;
+                    }
+                    KeyCode::Char('s') => {
+                        self.cycle_sort();
+                        self.refresh_sessions()?;
+                    }
+                    KeyCode::Char('f') => {
+                        self.cycle_date_filter();
+                        self.refresh_sessions()?;
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
+    fn next(&mut self) {
+        let i = match self.list_state.selected() {
+            Some(i) => {
+                if i >= self.sessions.len() - 1 {
+                    0
+                } else {
+                    i + 1
+                }
+            }
+            None => 0,
+        };
+        self.list_state.select(Some(i));
+        self.scroll_state = self.scroll_state.position(i);
+    }
+
+    fn previous(&mut self) {
+        let i = match self.list_state.selected() {
+            Some(i) => {
+                if i == 0 {
+                    self.sessions.len() - 1
+                } else {
+                    i - 1
+                }
+            }
+            None => 0,
+        };
+        self.list_state.select(Some(i));
+        self.scroll_state = self.scroll_state.position(i);
+    }
+
+    fn ui(&mut self, f: &mut Frame) {
+        self.render_session_list(f);
+    }
+
+    fn render_session_list(&mut self, f: &mut Frame) {
+        // Add horizontal padding
+        let outer_chunks = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([
+                Constraint::Length(2), // Left padding
+                Constraint::Min(1),    // Main content
+                Constraint::Length(2), // Right padding
+            ])
+            .split(f.size());
+
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Length(4), // Header (title + filter info)
+                Constraint::Min(1),    // Session list
+                Constraint::Length(1), // Controls at bottom
+            ])
+            .split(outer_chunks[1]);
+
+        // Header block containing title and filter info
+        let header_lines = vec![
+            Line::from(vec![
+                Span::raw("  "), // Left padding
+                Span::styled(
+                    "History - Typing Session Records",
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD),
+                ),
+            ]),
+            Line::from(vec![
+                Span::raw("  "), // Left padding
+                Span::styled(
+                    format!(
+                        "Filter: {} | Sort: {} {} | Sessions: {}",
+                        self.filter_state.date_filter.display_name(),
+                        self.filter_state.sort_by.display_name(),
+                        if self.filter_state.sort_descending {
+                            "↓"
+                        } else {
+                            "↑"
+                        },
+                        self.sessions.len()
+                    ),
+                    Style::default().fg(Color::Yellow),
+                ),
+            ]),
+        ];
+
+        let header = Paragraph::new(header_lines).block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_style(Style::default().fg(Color::Blue))
+                .title("Session History"),
+        );
+        f.render_widget(header, chunks[0]);
+
+        // Session list
+        if self.sessions.is_empty() {
+            let empty_msg = vec![
+                Line::from("No typing sessions found for the selected time period."),
+                Line::from("Start typing to build your history!"),
+            ];
+            let empty_paragraph = Paragraph::new(empty_msg)
+                .style(Style::default().fg(Color::DarkGray))
+                .alignment(Alignment::Center)
+                .block(
+                    Block::default()
+                        .borders(Borders::ALL)
+                        .border_style(Style::default().fg(Color::Blue))
+                        .title("Sessions"),
+                );
+            f.render_widget(empty_paragraph, chunks[1]);
+        } else {
+            // Update scroll state first
+            self.scroll_state = self.scroll_state.content_length(self.sessions.len());
+
+            // Create list items
+            let items: Vec<ListItem> = self
+                .sessions
+                .iter()
+                .map(|session_data| {
+                    let line = format_session_line_ratatui_static(session_data);
+                    ListItem::new(line)
+                })
+                .collect();
+
+            let list = List::new(items)
+                .block(
+                    Block::default()
+                        .borders(Borders::ALL)
+                        .border_style(Style::default().fg(Color::Blue))
+                        .title("Sessions")
+                        .title_style(
+                            Style::default()
+                                .fg(Color::White)
+                                .add_modifier(Modifier::BOLD),
+                        ),
+                )
+                .style(Style::default().fg(Color::White))
+                .highlight_style(
+                    Style::default()
+                        .bg(Color::DarkGray)
+                        .add_modifier(Modifier::BOLD),
+                )
+                .highlight_symbol("► ");
+
+            f.render_stateful_widget(list, chunks[1], &mut self.list_state);
+
+            // Render scrollbar
+            let scrollbar = Scrollbar::default()
+                .orientation(ScrollbarOrientation::VerticalRight)
+                .begin_symbol(Some("↑"))
+                .end_symbol(Some("↓"));
+            f.render_stateful_widget(
+                scrollbar,
+                chunks[1].inner(&Margin {
+                    vertical: 1,
+                    horizontal: 2,
+                }),
+                &mut self.scroll_state,
+            );
+        }
+
+        // Controls at the bottom row - matching title screen colors
+        let controls_line = Line::from(vec![
+            Span::styled("[↑↓/JK] Navigate  ", Style::default().fg(Color::White)),
+            Span::styled("[SPACE]", Style::default().fg(Color::Green)),
+            Span::styled(" Details  ", Style::default().fg(Color::White)),
+            Span::styled("[F]", Style::default().fg(Color::Blue)),
+            Span::styled(" Filter  ", Style::default().fg(Color::White)),
+            Span::styled("[S]", Style::default().fg(Color::Cyan)),
+            Span::styled(" Sort  ", Style::default().fg(Color::White)),
+            Span::styled("[R]", Style::default().fg(Color::Magenta)),
+            Span::styled(" Refresh  ", Style::default().fg(Color::White)),
+            Span::styled("[ESC]", Style::default().fg(Color::Red)),
+            Span::styled(" Back", Style::default().fg(Color::White)),
+        ]);
+
+        let controls = Paragraph::new(controls_line).alignment(Alignment::Center);
+        f.render_widget(controls, chunks[2]);
+    }
+
+    fn refresh_sessions(&mut self) -> Result<()> {
+        let session_repo = SessionRepository::new()?;
+
+        // Use the improved database filtering method
+        let sessions = session_repo.get_sessions_filtered(
+            self.filter_state.repository_filter,
+            self.filter_state.date_filter.to_days(),
+            self.filter_state.sort_by.to_string(),
+            self.filter_state.sort_descending,
+        )?;
+
+        // Convert to SessionDisplayData with session results and repository info
+        let mut session_display_data = Vec::new();
+        let repository_map: std::collections::HashMap<i64, StoredRepository> = self
+            .repositories
+            .iter()
+            .map(|repo| (repo.id, repo.clone()))
+            .collect();
+
+        for session in sessions {
+            let session_result = {
+                let db = session_repo.db_with_lock()?;
+                db.get_session_result(session.id).unwrap_or(None)
+            };
+
+            let repository = session
+                .repository_id
+                .and_then(|id| repository_map.get(&id).cloned());
+
+            session_display_data.push(SessionDisplayData {
+                session,
+                repository,
+                session_result,
+            });
+        }
+
+        self.sessions = session_display_data;
+
+        // Reset selection if needed
+        if self.sessions.is_empty() {
+            self.list_state.select(None);
+        } else {
+            self.list_state.select(Some(0));
+        }
+
+        self.scroll_state = self.scroll_state.content_length(self.sessions.len());
+
+        Ok(())
+    }
+
+    fn cycle_sort(&mut self) {
+        use SortBy::*;
+        self.filter_state.sort_by = match self.filter_state.sort_by {
+            Date => Performance,
+            Performance => Repository,
+            Repository => Duration,
+            Duration => Date,
+        };
+        // Toggle sort direction when cycling back to Date
+        if self.filter_state.sort_by == Date {
+            self.filter_state.sort_descending = !self.filter_state.sort_descending;
+        }
+    }
+
+    fn cycle_date_filter(&mut self) {
+        use DateFilter::*;
+        self.filter_state.date_filter = match self.filter_state.date_filter {
+            All => Last7Days,
+            Last7Days => Last30Days,
+            Last30Days => Last90Days,
+            Last90Days => All,
+        };
+
+        // Reset selection
+        if !self.sessions.is_empty() {
+            self.list_state.select(Some(0));
+        }
+    }
+}
+
+fn format_session_line_ratatui_static<'a>(session_data: &'a SessionDisplayData) -> Line<'a> {
+    let local_time: DateTime<Local> = session_data.session.started_at.into();
+    let date_str = local_time.format("%Y-%m-%d %H:%M").to_string();
+
+    let repo_str = if let Some(ref repo) = session_data.repository {
+        format!("{}/{}", repo.user_name, repo.repository_name)
+    } else {
+        "Unknown".to_string()
+    };
+
+    let (cpm_str, acc_str, score_str, stages_str, duration_str) =
+        if let Some(ref result) = session_data.session_result {
+            (
+                format!("{:.1}", result.cpm),
+                format!("{:.1}%", result.accuracy),
+                format!("{:.0}", result.score),
+                format!("{}/{}", result.stages_completed, result.stages_attempted),
+                format!(
+                    "{}m{}s",
+                    result.duration_ms / 60000,
+                    (result.duration_ms % 60000) / 1000
+                ),
+            )
+        } else {
+            (
+                "--".to_string(),
+                "--".to_string(),
+                "--".to_string(),
+                "--".to_string(),
+                "--".to_string(),
+            )
+        };
+
+    // Truncate repository name if too long
+    let repo_display = if repo_str.len() > 24 {
+        format!("{}...", &repo_str[..21])
+    } else {
+        format!("{:<24}", repo_str)
+    };
+
+    Line::from(vec![
+        Span::styled(
+            format!("{:<17}", date_str),
+            Style::default().fg(Color::White),
+        ),
+        Span::styled(
+            format!("{:<26}", repo_display),
+            Style::default().fg(Color::Cyan),
+        ),
+        Span::styled(
+            format!("{:>6}", score_str),
+            Style::default().fg(Color::Magenta),
+        ),
+        Span::styled(format!("{:>6}", cpm_str), Style::default().fg(Color::Green)),
+        Span::styled(
+            format!("{:>6}", acc_str),
+            Style::default().fg(Color::Yellow),
+        ),
+        Span::styled(
+            format!("{:>5}", stages_str),
+            Style::default().fg(Color::Blue),
+        ),
+        Span::styled(
+            format!("{:>10}", duration_str),
+            Style::default().fg(Color::Gray),
+        ),
+    ])
+}
+
+// Extension trait for getting session result data
+trait SessionResultExt {
+    fn get_session_result(&self, session_id: i64) -> Result<Option<SessionResultData>>;
+}
+
+impl SessionResultExt for crate::storage::Database {
+    fn get_session_result(&self, session_id: i64) -> Result<Option<SessionResultData>> {
+        use crate::storage::daos::SessionDao;
+        let dao = SessionDao::new(self);
+        dao.get_session_result(session_id)
+    }
+}

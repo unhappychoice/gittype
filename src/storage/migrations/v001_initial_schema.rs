@@ -84,6 +84,12 @@ impl InitialSchema {
                 best_stage_accuracy REAL,
                 worst_stage_accuracy REAL,
                 score REAL,
+                rank_name TEXT,
+                tier_name TEXT,
+                rank_position INTEGER,
+                rank_total INTEGER,
+                position INTEGER,
+                total INTEGER,
                 game_mode TEXT,                       -- Denormalized from sessions.game_mode
                 difficulty_level TEXT,                -- Denormalized from sessions.difficulty_level  
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

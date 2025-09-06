@@ -6,7 +6,7 @@ use super::super::{
 };
 use crate::models::{Challenge, GitRepository, SessionResult};
 use crate::scoring::{StageResult, StageTracker};
-use crate::storage::daos::session_dao::SessionResultData;
+use crate::storage::daos::session_dao::{SessionResultData, SessionStageResult};
 use crate::{error::GitTypeError, Result};
 use std::sync::{Arc, Mutex};
 
@@ -32,14 +32,16 @@ impl SessionRepository {
         git_repository: Option<&GitRepository>,
         game_mode: &str,
         difficulty_level: Option<&str>,
-        stage_engines: &[(String, StageTracker)],
+        stage_trackers: &[(String, StageTracker)],
         challenges: &[Challenge],
     ) -> Result<i64> {
+        log::debug!("Starting session recording...");
         let db = self.db_with_lock()?;
 
         // Repository manages the transaction boundary
         let conn = db.get_connection();
         let tx = conn.unchecked_transaction()?;
+        log::debug!("Database transaction started");
 
         // Create DAOs
         let repository_dao = RepositoryDao::new(&db);
@@ -48,10 +50,17 @@ impl SessionRepository {
 
         // 1. Get or create repository
         let repository_id = if let Some(repo) = git_repository {
+            log::debug!(
+                "Recording session for repository: {}/{}",
+                repo.user_name,
+                repo.repository_name
+            );
             Some(repository_dao.ensure_repository_in_transaction(&tx, repo)?)
         } else {
+            log::debug!("Recording session without repository");
             None
         };
+        log::debug!("Repository ID: {:?}", repository_id);
 
         // 2. Create session record
         let session_id = session_dao.create_session_in_transaction(
@@ -69,18 +78,18 @@ impl SessionRepository {
             session_id,
             repository_id,
             session_result,
-            stage_engines,
+            stage_trackers,
             game_mode,
             difficulty_level,
         )?;
 
-        // 4. Convert stage engines to stage results
-        let stage_results: Result<Vec<StageResultTuple>> = stage_engines
+        // 4. Convert stage trackers to stage results
+        let stage_results: Result<Vec<StageResultTuple>> = stage_trackers
             .iter()
             .enumerate()
-            .map(|(index, (name, engine))| {
-                let stage_result = crate::scoring::StageCalculator::calculate(engine, false, false);
-                let keystrokes = engine.get_data().keystrokes.len();
+            .map(|(index, (name, tracker))| {
+                let stage_result = crate::scoring::StageCalculator::calculate(tracker);
+                let keystrokes = tracker.get_data().keystrokes.len();
                 let challenge = challenges.get(index).cloned();
                 Ok((name.clone(), stage_result, keystrokes, challenge))
             })
@@ -113,7 +122,9 @@ impl SessionRepository {
         }
 
         // Repository commits the transaction
+        log::debug!("Committing transaction for session ID: {}", session_id);
         tx.commit()?;
+        log::debug!("Transaction committed successfully");
         Ok(session_id)
     }
 
@@ -131,6 +142,31 @@ impl SessionRepository {
 
         let dao = RepositoryDao::new(&db);
         dao.get_all_repositories()
+    }
+
+    /// Get filtered and sorted sessions for history display
+    pub fn get_sessions_filtered(
+        &self,
+        repository_filter: Option<i64>,
+        date_filter_days: Option<i64>,
+        sort_by: &str,
+        sort_descending: bool,
+    ) -> Result<Vec<StoredSession>> {
+        let db = self.db_with_lock()?;
+        let dao = SessionDao::new(&db);
+        dao.get_sessions_filtered(
+            repository_filter,
+            date_filter_days,
+            sort_by,
+            sort_descending,
+        )
+    }
+
+    /// Get stage results for a specific session
+    pub fn get_session_stage_results(&self, session_id: i64) -> Result<Vec<SessionStageResult>> {
+        let db = self.db_with_lock()?;
+        let dao = SessionDao::new(&db);
+        dao.get_session_stage_results(session_id)
     }
 
     /// Create a global singleton instance
@@ -158,7 +194,7 @@ impl SessionRepository {
         git_repository: Option<&GitRepository>,
         game_mode: &str,
         difficulty_level: Option<&str>,
-        stage_engines: &[(String, StageTracker)],
+        stage_trackers: &[(String, StageTracker)],
         challenges: &[Challenge],
     ) -> Result<()> {
         let global = Self::global();
@@ -172,19 +208,19 @@ impl SessionRepository {
                 git_repository,
                 game_mode,
                 difficulty_level,
-                stage_engines,
+                stage_trackers,
                 challenges,
             ) {
                 Ok(session_id) => {
-                    log::debug!("Successfully recorded session with ID: {}", session_id);
+                    log::info!("Successfully recorded session with ID: {}", session_id);
                 }
                 Err(e) => {
-                    log::warn!("Failed to record session to database: {}", e);
+                    log::error!("Failed to record session to database: {}", e);
                     return Err(e);
                 }
             }
         } else {
-            log::debug!("Session service not initialized, skipping database recording");
+            log::warn!("Session service not initialized, skipping database recording");
         }
 
         Ok(())
