@@ -101,7 +101,6 @@ impl StageRenderer {
             mistakes,
             elapsed_time,
         );
-        let current_line = 0; // Simplified - no line tracking needed
         let elapsed_secs = elapsed_time.as_secs();
 
         let streak = scoring_engine.get_data().current_streak;
@@ -137,11 +136,24 @@ impl StageRenderer {
             f.render_widget(header, chunks[0]);
 
             // Content with syntax highlighting and cursor with padding
-            let scroll_offset = if current_line > chunks[1].height.saturating_sub(2) as usize / 2 {
-                (current_line - chunks[1].height.saturating_sub(2) as usize / 2) as u16
+            // Keep the current line roughly centered within the viewport.
+            let view_height = chunks[1].height.saturating_sub(2); // account for borders/padding
+            let total_lines = content_spans.len() as u16;
+            let pre_context_lines = code_context.pre_context.len() as u16;
+            // Index of the current code line within the full rendered lines (including contexts)
+            let absolute_line_index = pre_context_lines.saturating_add(current_line as u16);
+
+            let desired_center = view_height / 2;
+            let mut scroll_offset = if total_lines > view_height {
+                absolute_line_index.saturating_sub(desired_center)
             } else {
                 0
             };
+            // Clamp so we don't scroll past the end
+            let max_scroll = total_lines.saturating_sub(view_height);
+            if scroll_offset > max_scroll {
+                scroll_offset = max_scroll;
+            }
 
             let content = Paragraph::new(Text::from(content_spans.clone()))
                 .scroll((scroll_offset, 0))
@@ -242,6 +254,8 @@ impl StageRenderer {
             lines.push(Line::from(line_spans));
         }
 
+        let mut byte_position = 0; // Track byte position as we iterate
+
         for (i, &ch) in self.chars.iter().enumerate() {
             // Add line number at the start of each line
             if line_start {
@@ -266,14 +280,15 @@ impl StageRenderer {
                 current_line_width = 0;
                 line_number += 1;
                 line_start = true;
+                byte_position += ch.len_utf8(); // Update byte position
                 continue;
             }
 
-            // Check if this character is in a comment
+            // Check if this character is in a comment using byte position
             let is_in_comment = params
                 .display_comment_ranges
                 .iter()
-                .any(|&(start, end)| i >= start && i < end);
+                .any(|&(start, end)| byte_position >= start && byte_position < end);
 
             // Determine character style
             let style = if is_in_comment {
@@ -319,6 +334,9 @@ impl StageRenderer {
 
             current_line_spans.push(Span::styled(display_char, style));
             current_line_width += char_width;
+
+            // Update byte position for next iteration
+            byte_position += ch.len_utf8();
         }
 
         if !current_line_spans.is_empty() {

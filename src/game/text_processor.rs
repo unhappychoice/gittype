@@ -91,11 +91,10 @@ impl TextProcessor {
                 };
 
                 let mapped_end = if end <= position_mapping.len() {
-                    // Find the last non-None position before end
                     (0..end)
                         .rev()
                         .find_map(|i| position_mapping.get(i).and_then(|&pos| pos))
-                        .map(|pos| pos + 1) // +1 because end is exclusive
+                        .map(|pos| pos + 1)
                 } else {
                     None
                 };

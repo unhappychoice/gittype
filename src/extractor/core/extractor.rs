@@ -70,17 +70,27 @@ impl CommonExtractor {
         while let Some(m) = matches.next() {
             for capture in m.captures {
                 let node = capture.node;
-                let start = node.start_byte();
-                let end = node.end_byte();
+                let start_byte = node.start_byte();
+                let end_byte = node.end_byte();
 
                 if Self::is_valid_comment_node(node, language) {
-                    comment_ranges.push((start, end));
+                    // Convert byte positions to character positions
+                    let start_char = Self::byte_to_char_position(source_code, start_byte);
+                    let end_char = Self::byte_to_char_position(source_code, end_byte);
+                    comment_ranges.push((start_char, end_char));
                 }
             }
         }
 
         comment_ranges.sort_by_key(|&(start, _)| start);
         Ok(comment_ranges)
+    }
+
+    /// Convert byte position to character position in the given string
+    fn byte_to_char_position(source_code: &str, byte_pos: usize) -> usize {
+        source_code[..byte_pos.min(source_code.len())]
+            .chars()
+            .count()
     }
 
     fn is_valid_comment_node(node: Node, language: &str) -> bool {
@@ -111,22 +121,27 @@ impl CommonExtractor {
         file_path: &Path,
         language: &str,
         capture_name: &str,
-        file_comment_ranges: &[(usize, usize)],
+        file_comment_ranges: &[(usize, usize)], // Already in character positions
     ) -> Option<CodeChunk> {
         let start_byte = node.start_byte();
         let end_byte = node.end_byte();
         let content = &source_code[start_byte..end_byte];
 
+        // Convert byte positions to character positions to match file_comment_ranges
+        let start_char = Self::byte_to_char_position(source_code, start_byte);
+        let end_char = Self::byte_to_char_position(source_code, end_byte);
+
         let start_line = node.start_position().row + 1;
         let end_line = node.end_position().row + 1;
-        let original_indentation = node.start_position().column;
+        let original_indentation_bytes = node.start_position().column;
 
         // Extract actual indentation characters from source
-        let original_indent_chars = if original_indentation > 0 {
-            Self::extract_line_indent_chars(
+        // Note: original_indentation is in byte units from TreeSitter, but we need char units
+        let original_indent_chars = if original_indentation_bytes > 0 {
+            Self::extract_line_indent_chars_corrected(
                 source_code,
                 node.start_position().row,
-                original_indentation,
+                original_indentation_bytes,
             )
         } else {
             String::new()
@@ -142,23 +157,41 @@ impl CommonExtractor {
             .or_else(|| Self::extract_name(node, source_code))
             .unwrap_or_else(|| "unknown".to_string());
 
+        let normalized_content =
+            Self::normalize_first_line_indentation(content, &original_indent_chars);
+
+        // Simple position calculation:
+        // code_start_pos = start_char (TreeSitter chunk の行頭)
+        // chunk_start_pos = original_indentation (node.start_position().column)
+        // comment_start_pos = comment生pos - code_start_pos
+
+        // Adjust comment ranges to be relative to the normalized content.
+        // Note:
+        // - file_comment_ranges are character-based positions for the whole file
+        // - We first convert them to chunk-relative character positions
+        // - Then we add the first-line indentation characters we injected at the very
+        //   beginning of the normalized content, so display-time positions match
+        let indent_offset_chars = original_indent_chars.chars().count();
+
         let chunk_comment_ranges: Vec<(usize, usize)> = file_comment_ranges
             .iter()
-            .filter_map(|&(comment_start, comment_end)| {
-                if comment_start >= start_byte && comment_end <= end_byte {
-                    Some((comment_start - start_byte, comment_end - start_byte))
+            .filter_map(|&(comment_raw_pos_start, comment_raw_pos_end)| {
+                // Check if comment is within this chunk's boundaries
+                if comment_raw_pos_start >= start_char && comment_raw_pos_end <= end_char {
+                    // Convert to chunk-relative positions
+                    let comment_start_pos = comment_raw_pos_start - start_char;
+                    let comment_end_pos = comment_raw_pos_end - start_char;
+
+                    // Account for added indentation at the very start of normalized content
+                    let adjusted_start = comment_start_pos + indent_offset_chars;
+                    let adjusted_end = comment_end_pos + indent_offset_chars;
+
+                    Some((adjusted_start, adjusted_end))
                 } else {
                     None
                 }
             })
             .collect();
-
-        let (normalized_content, normalized_comment_ranges) = Self::normalize_indentation(
-            content,
-            original_indentation,
-            &original_indent_chars,
-            &chunk_comment_ranges,
-        );
 
         Some(CodeChunk {
             content: normalized_content,
@@ -168,8 +201,9 @@ impl CommonExtractor {
             language: language.to_string(),
             chunk_type,
             name,
-            comment_ranges: normalized_comment_ranges,
-            original_indentation,
+            comment_ranges: chunk_comment_ranges,
+            // Store indentation as character count to keep extractor outputs character-based
+            original_indentation: indent_offset_chars,
         })
     }
 
@@ -209,111 +243,43 @@ impl CommonExtractor {
         None
     }
 
-    fn normalize_indentation(
-        content: &str,
-        original_indentation: usize,
-        original_indent_chars: &str,
-        comment_ranges: &[(usize, usize)],
-    ) -> (String, Vec<(usize, usize)>) {
+    fn normalize_first_line_indentation(content: &str, original_indent_chars: &str) -> String {
         let lines: Vec<&str> = content.lines().collect();
         if lines.is_empty() {
-            return (content.to_string(), comment_ranges.to_vec());
+            return content.to_string();
         }
 
-        let mut position_map = Vec::new();
-        let mut normalized_lines = Vec::new();
-        let mut _original_pos = 0;
-        let mut normalized_pos = 0;
+        let mut result_lines = Vec::new();
 
         for (line_idx, line) in lines.iter().enumerate() {
-            let line_chars: Vec<char> = line.chars().collect();
-
             if line_idx == 0 {
                 // First line: add original indentation characters from source
-                let normalized_line = format!("{}{}", original_indent_chars, line);
-
-                // Map positions: indent chars are not mapped to original content, original content is mapped
-                for _ in original_indent_chars.chars() {
-                    position_map.push(Some(normalized_pos));
-                    normalized_pos += 1;
-                }
-                for _ in &line_chars {
-                    position_map.push(Some(normalized_pos));
-                    normalized_pos += 1;
-                    _original_pos += 1;
-                }
-                normalized_lines.push(normalized_line);
-            } else if line.trim().is_empty() {
-                for _ in &line_chars {
-                    position_map.push(None);
-                    _original_pos += 1;
-                }
-                normalized_lines.push(String::new());
+                result_lines.push(format!("{}{}", original_indent_chars, line));
             } else {
-                let current_indent = line.len() - line.trim_start().len();
-                if current_indent >= original_indentation {
-                    for i in 0..line_chars.len() {
-                        if i < original_indentation {
-                            position_map.push(None);
-                        } else {
-                            position_map.push(Some(normalized_pos));
-                            normalized_pos += 1;
-                        }
-                        _original_pos += 1;
-                    }
-                    normalized_lines.push(line[original_indentation..].to_string());
-                } else {
-                    for _ in &line_chars {
-                        position_map.push(Some(normalized_pos));
-                        normalized_pos += 1;
-                        _original_pos += 1;
-                    }
-                    normalized_lines.push(line.to_string());
-                }
-            }
-
-            if line_idx < lines.len() - 1 {
-                position_map.push(Some(normalized_pos));
-                normalized_pos += 1;
-                _original_pos += 1;
+                // Other lines: keep as is
+                result_lines.push(line.to_string());
             }
         }
 
-        let normalized_text = normalized_lines.join("\n");
-        let mut final_ranges = Vec::new();
-
-        for &(orig_start, orig_end) in comment_ranges {
-            if orig_start < position_map.len() && orig_end <= position_map.len() {
-                let norm_start = position_map.get(orig_start).and_then(|&pos| pos);
-                let norm_end = if orig_end > 0 && orig_end <= position_map.len() {
-                    (0..orig_end)
-                        .rev()
-                        .find_map(|i| position_map.get(i).and_then(|&pos| pos))
-                        .map(|pos| pos + 1)
-                } else {
-                    None
-                };
-
-                if let (Some(start), Some(end)) = (norm_start, norm_end) {
-                    if start < end && end <= normalized_text.len() {
-                        final_ranges.push((start, end));
-                    }
-                }
-            }
-        }
-
-        (normalized_text, final_ranges)
+        result_lines.join("\n")
     }
 
-    fn extract_line_indent_chars(
+    pub fn extract_line_indent_chars_corrected(
         source_code: &str,
         line_row: usize,
-        indent_length: usize,
+        indent_byte_length: usize,
     ) -> String {
         let lines: Vec<&str> = source_code.lines().collect();
         if line_row < lines.len() {
             let line = lines[line_row];
-            line.chars().take(indent_length).collect()
+            // Convert byte position to character position first
+            if indent_byte_length <= line.len() {
+                let indent_char_count = line[..indent_byte_length].chars().count();
+                line.chars().take(indent_char_count).collect()
+            } else {
+                // If byte length exceeds line length, take all characters
+                line.to_string()
+            }
         } else {
             String::new()
         }

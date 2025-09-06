@@ -1,4 +1,5 @@
 pub mod languages;
+pub mod multibyte_typing_core;
 
 use gittype::extractor::ExtractionOptions;
 
