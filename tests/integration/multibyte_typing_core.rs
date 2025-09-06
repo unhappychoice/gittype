@@ -167,7 +167,7 @@ typing_core_test_with_parser!(
     "rust",
     r#"fn zero_width_test() {
     // Comment with zero-width joiner: ‍ and non-joiner: ‌
-    // Soft hyphen test: test­ing (invisible hyphen)
+    // Soft hyphen test: test\u{AD}ing (invisible hyphen)
     let text = "normal text";
     // Combining characters: a̍b̊c̃ in comment
     return text;

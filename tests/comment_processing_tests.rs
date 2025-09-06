@@ -51,7 +51,7 @@ mod comment_processing_tests {
 
             // Now test the fixed version
             let fixed_indent_chars = CommonExtractor::extract_line_indent_chars_corrected(
-                &first_line,
+                first_line,
                 0,
                 comment_start_byte,
             );
@@ -233,7 +233,7 @@ mod comment_processing_tests {
                         // Find which display positions map to the chunk position 333 (where Java) starts)
                         println!("=== Reverse mapping for chunk Java) position ===");
                         for (display_pos, &orig_pos) in mapping.iter().enumerate() {
-                            if orig_pos >= 333 && orig_pos <= 337 {
+                            if (333..=337).contains(&orig_pos) {
                                 // Around Java) position
                                 println!("display[{}] -> original[{}]", display_pos, orig_pos);
                             }

@@ -199,9 +199,8 @@ impl TypingCore {
             // Extract the comment text from original
             if original_end <= original_text.chars().count() {
                 let original_chars: Vec<char> = original_text.chars().collect();
-                let original_comment_chars: Vec<char> = original_chars
-                    [original_start..original_end]
-                    .to_vec();
+                let original_comment_chars: Vec<char> =
+                    original_chars[original_start..original_end].to_vec();
 
                 // Transform original comment to match display text (tabs → arrows)
                 let mut comment_chars = Vec::new();
@@ -240,59 +239,55 @@ impl TypingCore {
                     }
 
                     let mut search_start_char = 0;
-                    loop {
-                        if let Some(relative_pos_char) = display_chars[search_start_char..]
-                            .windows(pattern_chars.len())
-                            .position(|window| window == pattern_chars.as_slice())
-                        {
-                            let display_start_char = search_start_char + relative_pos_char;
-                            let display_end_char = display_start_char + pattern_chars.len();
+                    while let Some(relative_pos_char) = display_chars[search_start_char..]
+                        .windows(pattern_chars.len())
+                        .position(|window| window == pattern_chars.as_slice())
+                    {
+                        let display_start_char = search_start_char + relative_pos_char;
+                        let display_end_char = display_start_char + pattern_chars.len();
 
-                            // Additional validation for proper comment boundaries
-                            let is_valid_comment_start = if display_start_char == 0 {
-                                true // Start of text
-                            } else {
-                                let prev_char = display_chars[display_start_char - 1];
-                                prev_char.is_whitespace() || prev_char == '\n' || prev_char == '↵'
-                            };
-
-                            if !is_valid_comment_start {
-                                search_start_char = display_start_char + 1;
-                                continue;
-                            }
-
-                            // Convert character positions to byte positions
-                            let display_start_byte = display_text
-                                .char_indices()
-                                .nth(display_start_char)
-                                .map(|(byte_pos, _)| byte_pos)
-                                .unwrap_or(display_text.len());
-
-                            let display_end_byte = if display_end_char < display_chars.len() {
-                                display_text
-                                    .char_indices()
-                                    .nth(display_end_char)
-                                    .map(|(byte_pos, _)| byte_pos)
-                                    .unwrap_or(display_text.len())
-                            } else {
-                                display_text.len()
-                            };
-
-                            // Check if this range has already been used
-                            let overlaps_existing = display_ranges.iter().any(|&(start, end)| {
-                                !(display_end_byte <= start || display_start_byte >= end)
-                            });
-
-                            if !overlaps_existing {
-                                display_ranges.push((display_start_byte, display_end_byte));
-                                found_match = true;
-                                break; // Found a valid match for this comment
-                            }
-
-                            search_start_char = display_start_char + 1;
+                        // Additional validation for proper comment boundaries
+                        let is_valid_comment_start = if display_start_char == 0 {
+                            true // Start of text
                         } else {
-                            break; // No more matches for this pattern
+                            let prev_char = display_chars[display_start_char - 1];
+                            prev_char.is_whitespace() || prev_char == '\n' || prev_char == '↵'
+                        };
+
+                        if !is_valid_comment_start {
+                            search_start_char = display_start_char + 1;
+                            continue;
                         }
+
+                        // Convert character positions to byte positions
+                        let display_start_byte = display_text
+                            .char_indices()
+                            .nth(display_start_char)
+                            .map(|(byte_pos, _)| byte_pos)
+                            .unwrap_or(display_text.len());
+
+                        let display_end_byte = if display_end_char < display_chars.len() {
+                            display_text
+                                .char_indices()
+                                .nth(display_end_char)
+                                .map(|(byte_pos, _)| byte_pos)
+                                .unwrap_or(display_text.len())
+                        } else {
+                            display_text.len()
+                        };
+
+                        // Check if this range has already been used
+                        let overlaps_existing = display_ranges.iter().any(|&(start, end)| {
+                            !(display_end_byte <= start || display_start_byte >= end)
+                        });
+
+                        if !overlaps_existing {
+                            display_ranges.push((display_start_byte, display_end_byte));
+                            found_match = true;
+                            break; // Found a valid match for this comment
+                        }
+
+                        search_start_char = display_start_char + 1;
                     }
                 }
             }
