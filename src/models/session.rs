@@ -1,5 +1,4 @@
 use super::stage::{Stage, StageResult};
-use crate::scoring::StageTracker;
 use std::time::{Duration, Instant};
 
 #[derive(Debug, Clone)]
@@ -69,74 +68,6 @@ impl SessionResult {
         }
     }
 
-    pub fn add_stage_result(
-        &mut self,
-        _stage_name: String,
-        stage_result: StageResult,
-        engine: &StageTracker,
-    ) {
-        self.stages_completed += 1;
-        self.valid_keystrokes += engine.get_data().keystrokes.len();
-        self.valid_mistakes += stage_result.mistakes;
-        self.session_score += stage_result.challenge_score;
-
-        // Track best/worst performance
-        if stage_result.wpm > self.best_stage_wpm {
-            self.best_stage_wpm = stage_result.wpm;
-        }
-        if stage_result.wpm < self.worst_stage_wpm {
-            self.worst_stage_wpm = stage_result.wpm;
-        }
-        if stage_result.accuracy > self.best_stage_accuracy {
-            self.best_stage_accuracy = stage_result.accuracy;
-        }
-        if stage_result.accuracy < self.worst_stage_accuracy {
-            self.worst_stage_accuracy = stage_result.accuracy;
-        }
-    }
-
-    pub fn add_skip(&mut self) {
-        self.stages_skipped += 1;
-        self.stages_attempted += 1;
-    }
-
-    pub fn add_partial_effort(&mut self, keystrokes: usize, mistakes: usize) {
-        self.invalid_keystrokes += keystrokes;
-        self.invalid_mistakes += mistakes;
-    }
-
-    // Calculate total effort including both completed and partial
-    pub fn total_effort_keystrokes(&self) -> usize {
-        self.valid_keystrokes + self.invalid_keystrokes
-    }
-
-    pub fn total_effort_mistakes(&self) -> usize {
-        self.valid_mistakes + self.invalid_mistakes
-    }
-
-    pub fn finalize_session(&mut self) {
-        self.session_duration = self.session_start_time.elapsed();
-        self.stages_attempted = self.stages_completed + self.stages_skipped;
-
-        // Calculate overall metrics
-        if self.session_duration.as_secs() > 0 && self.valid_keystrokes > 0 {
-            self.overall_cpm =
-                (self.valid_keystrokes as f64 / self.session_duration.as_secs_f64()) * 60.0;
-            self.overall_wpm = self.overall_cpm / 5.0;
-            self.overall_accuracy = ((self.valid_keystrokes.saturating_sub(self.valid_mistakes))
-                as f64
-                / self.valid_keystrokes as f64)
-                * 100.0;
-        }
-
-        // Handle edge cases for worst performance
-        if self.worst_stage_wpm == f64::MAX {
-            self.worst_stage_wpm = 0.0;
-        }
-        if self.worst_stage_accuracy == f64::MAX {
-            self.worst_stage_accuracy = 0.0;
-        }
-    }
 
     pub fn get_session_completion_status(&self) -> String {
         match (self.stages_completed, self.stages_skipped) {

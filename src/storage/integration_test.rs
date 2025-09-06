@@ -25,7 +25,6 @@ pub fn test_session_recording_integration() -> crate::Result<()> {
     session_result.valid_keystrokes = 250;
     session_result.valid_mistakes = 5;
     // session_score is now calculated dynamically, no need to set manually
-    session_result.finalize_session();
 
     // Create mock stage engines
     let stage_engines = vec![
