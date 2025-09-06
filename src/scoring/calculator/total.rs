@@ -100,7 +100,7 @@ impl TotalCalculator {
             overall_wpm,
             overall_cpm,
             best_session_wpm,
-            worst_session_wpm: worst_session_wpm,
+            worst_session_wpm,
             best_session_accuracy,
             worst_session_accuracy,
             total_score,

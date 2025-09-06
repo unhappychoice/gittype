@@ -166,10 +166,10 @@ impl AnimationScreen {
 
         // Create typing animation for session complete
         let best_rank = crate::scoring::Rank::for_score(session_result.session_score);
-        let tier = Self::get_tier_from_rank_name(&best_rank.name());
+        let tier = Self::get_tier_from_rank_name(best_rank.name());
         let mut typing_animation =
             TypingAnimation::new(tier, terminal.size()?.width, terminal.size()?.height);
-        typing_animation.set_rank_messages(&best_rank.name());
+        typing_animation.set_rank_messages(best_rank.name());
 
         // Show typing reveal animation with ratatui
         while !typing_animation.is_complete() {
@@ -178,7 +178,7 @@ impl AnimationScreen {
             if updated {
                 let rank_name = best_rank.name();
                 terminal.draw(|frame| {
-                    Self::render_typing_animation_ratatui(frame, &typing_animation, &rank_name);
+                    Self::render_typing_animation_ratatui(frame, &typing_animation, rank_name);
                 })?;
             }
 

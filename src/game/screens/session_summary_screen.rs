@@ -302,7 +302,7 @@ impl SessionSummaryScreen {
             crate::scoring::StageCalculator::calculate_tier_info(session_result.session_score);
 
         // Display rank as large ASCII art at the top
-        let rank_lines = get_rank_display(&best_rank.name());
+        let rank_lines = get_rank_display(best_rank.name());
         let rank_height = rank_lines.len() as u16;
 
         // Calculate total content height and center vertically
