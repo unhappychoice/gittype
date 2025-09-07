@@ -37,6 +37,9 @@ pub enum GitTypeError {
 
     #[error("Tree-sitter language error: {0}")]
     TreeSitterLanguageError(#[from] tree_sitter::LanguageError),
+
+    #[error("User quit")]
+    UserQuit,
 }
 
 impl GitTypeError {
