@@ -212,35 +212,57 @@ impl ExitSummaryScreen {
         // Line 1: Overall CPM, WPM, Accuracy with colors
         let line1_text = format!(
             "Overall CPM: {:.1} | WPM: {:.1} | Accuracy: {:.1}%",
-            total_summary.overall_cpm,
-            total_summary.overall_wpm,
-            total_summary.overall_accuracy
+            total_summary.overall_cpm, total_summary.overall_wpm, total_summary.overall_accuracy
         );
         let line1_col = center_col.saturating_sub(line1_text.len() as u16 / 2);
         execute!(stdout, MoveTo(line1_col, stats_start_row))?;
-        
+
         // Overall label
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print("Overall "))?;
         // CPM label and value
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+        )?;
         execute!(stdout, Print("CPM: "))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print(format!("{:.1}", total_summary.overall_cpm)))?;
         execute!(stdout, Print(" | "))?;
-        
+
         // WPM label and value
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+        )?;
         execute!(stdout, Print("WPM: "))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print(format!("{:.1}", total_summary.overall_wpm)))?;
         execute!(stdout, Print(" | "))?;
-        
+
         // Accuracy label and value
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY))
+        )?;
         execute!(stdout, Print("Accuracy: "))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
-        execute!(stdout, Print(format!("{:.1}%", total_summary.overall_accuracy)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
+        execute!(
+            stdout,
+            Print(format!("{:.1}%", total_summary.overall_accuracy))
+        )?;
         execute!(stdout, ResetColor)?;
 
         // Line 2: Total Keystrokes, Mistakes, Stages with colors
@@ -253,28 +275,55 @@ impl ExitSummaryScreen {
         );
         let line2_col = center_col.saturating_sub(line2_text.len() as u16 / 2);
         execute!(stdout, MoveTo(line2_col, stats_start_row + 1))?;
-        
+
         // Total Keystrokes
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print("Total "))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::STAGE_INFO)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::STAGE_INFO))
+        )?;
         execute!(stdout, Print("Keystrokes: "))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print(format!("{}", total_summary.total_keystrokes)))?;
         execute!(stdout, Print(" | "))?;
-        
+
         // Mistakes
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::ERROR)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::ERROR))
+        )?;
         execute!(stdout, Print("Mistakes: "))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print(format!("{}", total_summary.total_mistakes)))?;
         execute!(stdout, Print(" | "))?;
-        
+
         // Stages
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::STAGE_INFO)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::STAGE_INFO))
+        )?;
         execute!(stdout, Print("Stages: "))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
-        execute!(stdout, Print(format!("{}/{}", total_summary.total_stages_completed, total_summary.total_stages_attempted)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
+        execute!(
+            stdout,
+            Print(format!(
+                "{}/{}",
+                total_summary.total_stages_completed, total_summary.total_stages_attempted
+            ))
+        )?;
         execute!(stdout, ResetColor)?;
 
         // Line 3: Skipped stages if any
@@ -283,10 +332,19 @@ impl ExitSummaryScreen {
             let skip_text = format!("Stages Skipped: {}", total_summary.total_stages_skipped);
             let skip_col = center_col.saturating_sub(skip_text.len() as u16 / 2);
             execute!(stdout, MoveTo(skip_col, stats_start_row + 2))?;
-            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::WARNING)))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::WARNING))
+            )?;
             execute!(stdout, Print("Stages Skipped: "))?;
-            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
-            execute!(stdout, Print(format!("{}", total_summary.total_stages_skipped)))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            )?;
+            execute!(
+                stdout,
+                Print(format!("{}", total_summary.total_stages_skipped))
+            )?;
             execute!(stdout, ResetColor)?;
             next_line = 3;
         }
@@ -301,14 +359,35 @@ impl ExitSummaryScreen {
         );
         let best_col = center_col.saturating_sub(best_line.len() as u16 / 2);
         execute!(stdout, MoveTo(best_col, performance_start_row))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print("Best Session: "))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM)))?;
-        execute!(stdout, Print(format!("{:.1} WPM", total_summary.best_session_wpm)))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+        )?;
+        execute!(
+            stdout,
+            Print(format!("{:.1} WPM", total_summary.best_session_wpm))
+        )?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print(", "))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY)))?;
-        execute!(stdout, Print(format!("{:.1}% accuracy", total_summary.best_session_accuracy)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY))
+        )?;
+        execute!(
+            stdout,
+            Print(format!(
+                "{:.1}% accuracy",
+                total_summary.best_session_accuracy
+            ))
+        )?;
         execute!(stdout, ResetColor)?;
 
         // Worst Session line with colors
@@ -318,17 +397,38 @@ impl ExitSummaryScreen {
         );
         let worst_col = center_col.saturating_sub(worst_line.len() as u16 / 2);
         execute!(stdout, MoveTo(worst_col, performance_start_row + 1))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print("Worst Session: "))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM)))?;
-        execute!(stdout, Print(format!("{:.1} WPM", total_summary.worst_session_wpm)))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+        )?;
+        execute!(
+            stdout,
+            Print(format!("{:.1} WPM", total_summary.worst_session_wpm))
+        )?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print(", "))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY)))?;
-        execute!(stdout, Print(format!("{:.1}% accuracy", total_summary.worst_session_accuracy)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY))
+        )?;
+        execute!(
+            stdout,
+            Print(format!(
+                "{:.1}% accuracy",
+                total_summary.worst_session_accuracy
+            ))
+        )?;
         execute!(stdout, ResetColor)?;
 
-        // Show exit options  
+        // Show exit options
         // Calculate total lines shown: 2 base stats lines + optional skip line + 2 performance lines + gaps
         let total_stats_lines = next_line + 1 + 2; // 2 performance lines
         let options_start = stats_start_row + total_stats_lines + 4;
@@ -348,7 +448,10 @@ impl ExitSummaryScreen {
         let github_message = "⭐ Star us on GitHub: https://github.com/unhappychoice/gittype";
         let github_col = center_col.saturating_sub(github_message.len() as u16 / 2);
         execute!(stdout, MoveTo(github_col, options_start + 1))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::WARNING)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::WARNING))
+        )?;
         execute!(stdout, Print(github_message))?;
         execute!(stdout, ResetColor)?;
 

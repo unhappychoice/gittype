@@ -92,48 +92,81 @@ impl DetailsDialog {
                     execute!(stdout, MoveTo(line_col, current_row))?;
 
                     if is_new_pb {
-                        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::WARNING)))?;
+                        execute!(
+                            stdout,
+                            SetForegroundColor(Colors::to_crossterm(Colors::WARNING))
+                        )?;
                         execute!(stdout, Print("*** NEW PB! "))?;
-                        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+                        execute!(
+                            stdout,
+                            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+                        )?;
                         execute!(
                             stdout,
                             Print(&format!("{:>width$}: ", label, width = max_label_width))
                         )?;
                     } else {
-                        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+                        execute!(
+                            stdout,
+                            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+                        )?;
                         execute!(
                             stdout,
                             Print(&format!("{:>width$}: ", label, width = max_label_width))
                         )?;
                     }
-                    
+
                     // Score with color
-                    execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::SCORE)))?;
+                    execute!(
+                        stdout,
+                        SetForegroundColor(Colors::to_crossterm(Colors::SCORE))
+                    )?;
                     execute!(stdout, Print("Score "))?;
-                    execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+                    execute!(
+                        stdout,
+                        SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+                    )?;
                     execute!(stdout, Print(format!("{:.0}", record.score)))?;
                     execute!(stdout, Print(" | "))?;
-                    
+
                     // CPM with color
-                    execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM)))?;
+                    execute!(
+                        stdout,
+                        SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+                    )?;
                     execute!(stdout, Print("CPM "))?;
-                    execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+                    execute!(
+                        stdout,
+                        SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+                    )?;
                     execute!(stdout, Print(format!("{:.0}", record.cpm)))?;
                     execute!(stdout, Print(" | "))?;
-                    
+
                     // Accuracy with color
-                    execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY)))?;
+                    execute!(
+                        stdout,
+                        SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY))
+                    )?;
                     execute!(stdout, Print("Acc "))?;
-                    execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+                    execute!(
+                        stdout,
+                        SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+                    )?;
                     execute!(stdout, Print(format!("{:.1}%", record.accuracy)))?;
 
                     // Always show score difference
                     let diff = session_result.session_score - record.score;
                     if diff > 0.0 {
-                        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS)))?;
+                        execute!(
+                            stdout,
+                            SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS))
+                        )?;
                         execute!(stdout, Print(&format!(" (+{:.0})", diff)))?;
                     } else if diff < 0.0 {
-                        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::ERROR)))?;
+                        execute!(
+                            stdout,
+                            SetForegroundColor(Colors::to_crossterm(Colors::ERROR))
+                        )?;
                         execute!(stdout, Print(&format!(" ({:.0})", diff)))?; // diff is already negative
                     }
 
@@ -211,7 +244,10 @@ impl DetailsDialog {
                 );
                 let result_col = center_col.saturating_sub(result_line.len() as u16 / 2);
                 execute!(stdout, MoveTo(result_col, current_row))?;
-                execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+                execute!(
+                    stdout,
+                    SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+                )?;
                 execute!(
                     stdout,
                     Print(&format!(
@@ -220,25 +256,46 @@ impl DetailsDialog {
                         width = max_stage_name_width
                     ))
                 )?;
-                
+
                 // Score with color
-                execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::SCORE)))?;
+                execute!(
+                    stdout,
+                    SetForegroundColor(Colors::to_crossterm(Colors::SCORE))
+                )?;
                 execute!(stdout, Print("Score "))?;
-                execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
-                execute!(stdout, Print(format!("{:.0}", stage_result.challenge_score)))?;
+                execute!(
+                    stdout,
+                    SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+                )?;
+                execute!(
+                    stdout,
+                    Print(format!("{:.0}", stage_result.challenge_score))
+                )?;
                 execute!(stdout, Print(" | "))?;
-                
+
                 // CPM with color
-                execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM)))?;
+                execute!(
+                    stdout,
+                    SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+                )?;
                 execute!(stdout, Print("CPM "))?;
-                execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+                execute!(
+                    stdout,
+                    SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+                )?;
                 execute!(stdout, Print(format!("{:.0}", stage_result.cpm)))?;
                 execute!(stdout, Print(" | "))?;
-                
+
                 // Accuracy with color
-                execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY)))?;
+                execute!(
+                    stdout,
+                    SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY))
+                )?;
                 execute!(stdout, Print("Acc "))?;
-                execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+                execute!(
+                    stdout,
+                    SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+                )?;
                 execute!(stdout, Print(format!("{:.1}%", stage_result.accuracy)))?;
                 execute!(stdout, ResetColor)?;
                 current_row += 1;

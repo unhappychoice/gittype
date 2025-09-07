@@ -74,37 +74,79 @@ impl SharingScreen {
         };
         let preview_col = center_col.saturating_sub(preview_text.len() as u16 / 2);
         execute!(stdout, MoveTo(preview_col, center_row.saturating_sub(5)))?;
-        
+
         // Display with individual colors
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print("\""))?;
         execute!(stdout, SetForegroundColor(best_rank.terminal_color()))?;
         execute!(stdout, Print(best_rank.name()))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print("\" with "))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::SCORE)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::SCORE))
+        )?;
         execute!(stdout, Print(format!("{:.0}pts", metrics.session_score)))?;
-        
+
         if let Some(repo) = repo_info {
-            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            )?;
             execute!(stdout, Print(" on ["))?;
-            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::INFO)))?;
-            execute!(stdout, Print(format!("{}/{}", repo.user_name, repo.repository_name)))?;
-            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::INFO))
+            )?;
+            execute!(
+                stdout,
+                Print(format!("{}/{}", repo.user_name, repo.repository_name))
+            )?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            )?;
             execute!(stdout, Print("]"))?;
         }
-        
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print(" - "))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+        )?;
         execute!(stdout, Print("CPM: "))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print(format!("{:.0}", metrics.overall_cpm)))?;
         execute!(stdout, Print(", "))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::ERROR)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::ERROR))
+        )?;
         execute!(stdout, Print("Mistakes: "))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
-        execute!(stdout, Print(format!("{}", metrics.valid_mistakes + metrics.invalid_mistakes)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
+        execute!(
+            stdout,
+            Print(format!(
+                "{}",
+                metrics.valid_mistakes + metrics.invalid_mistakes
+            ))
+        )?;
         execute!(stdout, ResetColor)?;
 
         // Platform options
@@ -115,7 +157,10 @@ impl SharingScreen {
             let option_text = format!("[{}] {}", i + 1, platform.name());
             let option_col = center_col.saturating_sub(option_text.len() as u16 / 2);
             execute!(stdout, MoveTo(option_col, start_row + i as u16))?;
-            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            )?;
             execute!(stdout, Print(&option_text))?;
             execute!(stdout, ResetColor)?;
         }
@@ -129,9 +174,15 @@ impl SharingScreen {
             stdout,
             MoveTo(back_col, start_row + platforms.len() as u16 + 2)
         )?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS))
+        )?;
         execute!(stdout, Print(back_key))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print(back_label))?;
         execute!(stdout, ResetColor)?;
 

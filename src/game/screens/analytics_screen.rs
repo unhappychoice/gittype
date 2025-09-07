@@ -1109,7 +1109,10 @@ impl AnalyticsScreen {
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Average Accuracy: ", Style::default().fg(Colors::ACCURACY)),
+                        Span::styled(
+                            "• Average Accuracy: ",
+                            Style::default().fg(Colors::ACCURACY),
+                        ),
                         Span::styled(
                             format!("{:.1}%", stats.avg_accuracy),
                             Style::default().fg(Colors::TEXT),
@@ -1143,7 +1146,10 @@ impl AnalyticsScreen {
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Total Sessions: ", Style::default().fg(Colors::STAGE_INFO)),
+                        Span::styled(
+                            "• Total Sessions: ",
+                            Style::default().fg(Colors::STAGE_INFO),
+                        ),
                         Span::styled(
                             format!("{}", stats.total_sessions),
                             Style::default().fg(Colors::TEXT),
@@ -1151,7 +1157,10 @@ impl AnalyticsScreen {
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Total Keystrokes: ", Style::default().fg(Colors::STAGE_INFO)),
+                        Span::styled(
+                            "• Total Keystrokes: ",
+                            Style::default().fg(Colors::STAGE_INFO),
+                        ),
                         Span::styled(
                             format!("{}", stats.total_keystrokes),
                             Style::default().fg(Colors::TEXT),
@@ -1248,10 +1257,7 @@ impl AnalyticsScreen {
                 Line::from(""),
                 Line::from(vec![
                     Span::raw("  "),
-                    Span::styled(
-                        "No Repository Selected",
-                        Style::default().fg(Colors::MUTED),
-                    ),
+                    Span::styled("No Repository Selected", Style::default().fg(Colors::MUTED)),
                 ]),
                 Line::from(""),
                 Line::from(vec![
@@ -1421,7 +1427,10 @@ impl AnalyticsScreen {
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Average Accuracy: ", Style::default().fg(Colors::ACCURACY)),
+                        Span::styled(
+                            "• Average Accuracy: ",
+                            Style::default().fg(Colors::ACCURACY),
+                        ),
                         Span::styled(
                             format!("{:.1}%", stats.avg_accuracy),
                             Style::default().fg(Colors::TEXT),
@@ -1455,7 +1464,10 @@ impl AnalyticsScreen {
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Total Sessions: ", Style::default().fg(Colors::STAGE_INFO)),
+                        Span::styled(
+                            "• Total Sessions: ",
+                            Style::default().fg(Colors::STAGE_INFO),
+                        ),
                         Span::styled(
                             format!("{}", stats.total_sessions),
                             Style::default().fg(Colors::TEXT),
@@ -1463,7 +1475,10 @@ impl AnalyticsScreen {
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Total Keystrokes: ", Style::default().fg(Colors::STAGE_INFO)),
+                        Span::styled(
+                            "• Total Keystrokes: ",
+                            Style::default().fg(Colors::STAGE_INFO),
+                        ),
                         Span::styled(
                             format!("{}", stats.total_keystrokes),
                             Style::default().fg(Colors::TEXT),
@@ -1555,10 +1570,7 @@ impl AnalyticsScreen {
                     Span::raw("  "),
                     Span::styled("Use ", Style::default().fg(Colors::MUTED)),
                     Span::styled("↑↓ / JK", Style::default().fg(Colors::ACCURACY)),
-                    Span::styled(
-                        " to navigate languages",
-                        Style::default().fg(Colors::MUTED),
-                    ),
+                    Span::styled(" to navigate languages", Style::default().fg(Colors::MUTED)),
                 ]),
             ]);
 

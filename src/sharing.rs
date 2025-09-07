@@ -158,7 +158,10 @@ impl SharingService {
             stdout,
             MoveTo(instruction_col, center_row.saturating_sub(4))
         )?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print(instruction))?;
         execute!(stdout, ResetColor)?;
 
@@ -177,7 +180,10 @@ impl SharingService {
         let info = "💡 Tip: Select and copy the URL with your mouse or keyboard";
         let info_col = center_col.saturating_sub(info.len() as u16 / 2);
         execute!(stdout, MoveTo(info_col, center_row + 4))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::MUTED)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::MUTED))
+        )?;
         execute!(stdout, Print(info))?;
         execute!(stdout, ResetColor)?;
 
@@ -185,7 +191,10 @@ impl SharingService {
         let continue_text = "[ESC] Back";
         let continue_col = center_col.saturating_sub(continue_text.len() as u16 / 2);
         execute!(stdout, MoveTo(continue_col, center_row + 6))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS))
+        )?;
         execute!(stdout, Print(continue_text))?;
         execute!(stdout, ResetColor)?;
 

@@ -175,9 +175,15 @@ impl TitleScreen {
         let change_display_width = 26u16; // "[←→/HL] Change Difficulty"
         let change_col = center_col.saturating_sub(change_display_width / 2) + 2;
         execute!(stdout, MoveTo(change_col, instructions_start_row))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::BORDER)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::BORDER))
+        )?;
         execute!(stdout, Print("[←→/HL]"))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print(" Change Difficulty"))?;
         execute!(stdout, ResetColor)?;
 
@@ -185,17 +191,35 @@ impl TitleScreen {
         let secondary_display_width = 38u16; // "[R] history  [A] analytics  [I/?] info"
         let secondary_col = center_col.saturating_sub(secondary_display_width / 2) + 2;
         execute!(stdout, MoveTo(secondary_col, instructions_start_row + 1))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::INFO)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::INFO))
+        )?;
         execute!(stdout, Print("[R]"))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print(" History  "))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::INFO)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::INFO))
+        )?;
         execute!(stdout, Print("[A]"))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print(" Analytics  "))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::INFO)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::INFO))
+        )?;
         execute!(stdout, Print("[I/?]"))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print(" Info"))?;
         execute!(stdout, ResetColor)?;
 
@@ -203,13 +227,25 @@ impl TitleScreen {
         let primary_display_width = 22u16; // "[SPACE] Start  [ESC] Quit"
         let primary_col = center_col.saturating_sub(primary_display_width / 2) + 2;
         execute!(stdout, MoveTo(primary_col, instructions_start_row + 2))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS))
+        )?;
         execute!(stdout, Print("[SPACE]"))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print(" Start  "))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::ERROR)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::ERROR))
+        )?;
         execute!(stdout, Print("[ESC]"))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print(" Quit"))?;
         execute!(stdout, ResetColor)?;
 
@@ -242,9 +278,15 @@ impl TitleScreen {
         let difficulty_col = center_col.saturating_sub(difficulty_text.chars().count() as u16 / 2);
 
         execute!(stdout, MoveTo(difficulty_col, start_row))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print("Difficulty: "))?;
-        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY)))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY))
+        )?;
         execute!(stdout, Print("← "))?;
         execute!(
             stdout,
@@ -252,7 +294,11 @@ impl TitleScreen {
             SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
         )?;
         execute!(stdout, Print(name))?;
-        execute!(stdout, ResetColor, SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY)))?;
+        execute!(
+            stdout,
+            ResetColor,
+            SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY))
+        )?;
         execute!(stdout, Print(" →"))?;
         execute!(stdout, ResetColor)?;
 

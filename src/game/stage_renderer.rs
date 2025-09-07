@@ -426,9 +426,13 @@ impl StageRenderer {
                 // Current cursor position - highlighted
                 if let Some(mistake_pos) = params.current_mistake_position {
                     if i == mistake_pos {
-                        Style::default().fg(Colors::CURRENT_CURSOR).bg(Colors::MISTAKE_BG)
+                        Style::default()
+                            .fg(Colors::CURRENT_CURSOR)
+                            .bg(Colors::MISTAKE_BG)
                     } else {
-                        Style::default().fg(Colors::CURRENT_CURSOR).bg(Colors::CURSOR_BG)
+                        Style::default()
+                            .fg(Colors::CURRENT_CURSOR)
+                            .bg(Colors::CURSOR_BG)
                     }
                 } else {
                     Style::default().fg(Color::White).bg(Color::DarkGray)
@@ -582,7 +586,9 @@ impl StageRenderer {
             Line::from(vec![
                 Span::styled(
                     "[Q] ",
-                    Style::default().fg(Colors::ERROR).add_modifier(Modifier::BOLD),
+                    Style::default()
+                        .fg(Colors::ERROR)
+                        .add_modifier(Modifier::BOLD),
                 ),
                 Span::styled("Quit (fail)", Style::default().fg(Colors::TEXT)),
             ]),

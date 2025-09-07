@@ -513,7 +513,10 @@ fn format_session_line_ratatui_static<'a>(session_data: &'a SessionDisplayData) 
             format!("{:>6}", score_str),
             Style::default().fg(Color::Magenta),
         ),
-        Span::styled(format!("{:>6}", cpm_str), Style::default().fg(Colors::SUCCESS)),
+        Span::styled(
+            format!("{:>6}", cpm_str),
+            Style::default().fg(Colors::SUCCESS),
+        ),
         Span::styled(
             format!("{:>6}", acc_str),
             Style::default().fg(Colors::ACCURACY),
