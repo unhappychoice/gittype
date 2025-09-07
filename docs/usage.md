@@ -17,6 +17,11 @@
    gittype /path/to/another/repo
    ```
 
+4. **Or clone and use a GitHub repository:**
+   ```bash
+   gittype --repo unhappychoice/gittype
+   ```
+
 ## Command Line Options
 
 ```bash
@@ -28,22 +33,16 @@ gittype [OPTIONS] [REPO_PATH] [COMMAND]
 ### Basic Options
 
 | Option | Description | Default |
-|--------|-------------|---------|
+|---|---|---|
+| `--repo` | GitHub repository URL or path to clone and use | None |
 | `--langs` | Filter by programming languages (comma-separated) | All supported |
-| `--include` | Glob patterns for files to include | All files |
-| `--exclude` | Glob patterns for files to exclude | None |
+| `--config` | Path to a custom configuration file | None |
 
 ### Examples
 
 ```bash
 # Practice with Rust and TypeScript files only
 gittype --langs rust,typescript
-
-# Include only source files, exclude tests
-gittype --include "src/**" --exclude "**/tests/**"
-
-# Exclude multiple patterns
-gittype --exclude "**/tests/**" --exclude "**/node_modules/**"
 ```
 
 ## Commands
@@ -60,7 +59,19 @@ gittype stats
 
 ### Export Session Data
 ```bash
-gittype export
+gittype export [OPTIONS]
+```
+Exports session data to a specified format.
+
+| Option | Description | Default |
+|---|---|---|
+| `--format` | Export format (e.g., `json`) | `json` |
+| `--output` | Output file path | stdout |
+
+**Example:**
+```bash
+# Export history to a JSON file
+gittype export --output history.json
 ```
 
 ## Game Interface

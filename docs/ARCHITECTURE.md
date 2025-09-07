@@ -7,11 +7,8 @@ This document describes the overall architecture and design decisions of GitType
 - [Overview](#overview)
 - [Architecture Patterns](#architecture-patterns)
 - [Core Modules](#core-modules)
-- [Data Flow](#data-flow)
-- [Key Components](#key-components)
 - [External Dependencies](#external-dependencies)
 - [Design Decisions](#design-decisions)
-- [Performance Considerations](#performance-considerations)
 
 ---
 
@@ -25,7 +22,7 @@ GitType follows a modular architecture with clear separation of concerns:
 ├─────────────────────────────────────────────────────────────────┤
 │                         Game Engine                             │
 ├─────────────────────────────────────────────────────────────────┤
-│     Extractor    │    Scoring     │   Storage   │   Sharing    │
+│ Models │ Extractor │ Scoring │ Storage │ Sharing │
 ├─────────────────────────────────────────────────────────────────┤
 │              External Dependencies (tree-sitter, etc.)         │
 └─────────────────────────────────────────────────────────────────┘
@@ -45,223 +42,44 @@ GitType follows a modular architecture with clear separation of concerns:
 
 ### Module Pattern
 Each major feature area is organized as a separate module with clear public APIs:
-- `extractor`: Code extraction and parsing
-- `game`: Game mechanics and UI
-- `scoring`: Performance metrics and calculation
-- `storage`: Data persistence and history
-- `cli`: Command-line interface and configuration
+- `cli`: Command-line interface and configuration.
+- `models`: Core data structures for the application (Challenge, Session, etc.).
+- `extractor`: Code extraction and parsing from repositories.
+- `game`: Game mechanics, state management, and UI rendering.
+- `scoring`: Performance metrics calculation and tracking.
+- `storage`: Data persistence, session history, and database management.
+- `sharing`: Exporting and sharing session data.
 
 ### Repository Pattern
-The `RepositoryLoader` abstracts file system access, making it easy to:
-- Test with mock data
-- Support different source types (local files, git repos)
-- Add filtering and preprocessing
+The storage layer uses a repository pattern to abstract database access, making it easier to manage data entities and test business logic.
 
 ### Strategy Pattern
-Language-specific extraction is handled through the `Language` enum and associated parsing strategies, allowing easy extension for new programming languages.
+Language-specific extraction is handled through a strategy pattern, allowing easy extension for new programming languages using tree-sitter.
 
 ---
 
 ## Core Modules
 
 ### 1. CLI Module (`src/cli/`)
+**Purpose**: Handles command-line argument parsing, configuration, and dispatching commands. It serves as the main entry point for user interaction.
 
-**Purpose**: Command-line interface and configuration management
+### 2. Models Module (`src/models/`)
+**Purpose**: Defines the core data structures used throughout the application, such as `Challenge`, `Chunk`, `Session`, and `Stage`. This module ensures a consistent data model across different parts of the system.
 
-```rust
-pub struct Config {
-    pub repo_path: PathBuf,
-    pub languages: Vec<Language>,
-    pub stages: usize,
-    // ...
-}
-```
+### 3. Extractor Module (`src/extractor/`)
+**Purpose**: Responsible for finding and parsing source code files from a given repository. It uses `tree-sitter` to analyze the code and extract meaningful chunks (like functions and classes) that can be converted into typing challenges.
 
-**Key Components**:
-- `config.rs`: Configuration parsing and validation
-- Command-line argument parsing with `clap`
-- Configuration file support
+### 4. Game Module (`src/game/`)
+**Purpose**: Manages the entire game lifecycle, including the title screen, loading, countdown, the typing challenge itself, and results screens. It handles user input, manages game state, and renders the UI to the terminal.
 
-### 2. Extractor Module (`src/extractor/`)
+### 5. Scoring Module (`src/scoring/`)
+**Purpose**: Calculates and tracks user performance. It is divided into sub-modules for real-time scoring during a typing session (`calculator`) and for tracking statistics across stages and sessions (`tracker`).
 
-**Purpose**: Extract code chunks from source repositories
+### 6. Storage Module (`src/storage/`)
+**Purpose**: Manages data persistence using SQLite. It uses a repository pattern (`repositories`) and DAOs (`daos`) to handle the storage and retrieval of session history, user statistics, and repository metadata. It also includes database migrations.
 
-**Architecture**:
-```
-RepositoryLoader -> Parser -> CodeChunk -> ChallengeConverter
-```
-
-**Key Components**:
-- `repository_loader.rs`: File discovery and filtering
-- `parser.rs`: Tree-sitter based code parsing
-- `chunk.rs`: Code chunk representation and metadata
-- `language.rs`: Language detection and configuration
-- `challenge_converter.rs`: Convert chunks to typing challenges
-
-**Data Flow**:
-1. `RepositoryLoader` discovers and filters files
-2. `CodeExtractor` parses files using tree-sitter
-3. `CodeChunk` objects are created with metadata
-4. `ChallengeConverter` transforms chunks into typing challenges
-
-### 3. Game Module (`src/game/`)
-
-**Purpose**: Game mechanics, UI, and user interaction
-
-**Architecture**:
-```
-StageManager -> Screen -> Display -> User Input
-     ↓
-SessionTracker -> Scoring -> Storage
-```
-
-**Key Components**:
-- `stage_manager.rs`: Orchestrates game flow and state
-- `screens/`: Different UI screens (title, typing, results, etc.)
-- `display.rs`: Terminal UI rendering with ratatui
-- `challenge.rs`: Individual typing challenge logic
-- `session_tracker.rs`: Track user progress through sessions
-
-**Screen Flow**:
-```
-TitleScreen -> LoadingScreen -> CountdownScreen -> TypingScreen -> ResultScreen
-                                        ↑__________________|
-```
-
-### 4. Scoring Module (`src/scoring/`)
-
-**Purpose**: Calculate performance metrics
-
-```rust
-pub struct TypingMetrics {
-    pub accuracy: f64,
-    pub words_per_minute: f64,
-    pub characters_per_minute: f64,
-    pub mistakes: usize,
-    pub total_time: Duration,
-}
-```
-
-**Key Components**:
-- `engine.rs`: Real-time scoring calculation
-- `metrics.rs`: Performance metric definitions
-- `ranking_title.rs`: Rank calculation and titles
-
-### 5. Storage Module (`src/storage/`)
-
-**Purpose**: Data persistence and session history
-
-**Components**:
-- `database.rs`: SQLite database management
-- `history.rs`: Session history and statistics
-- Local storage for user progress and analytics
-
-### 6. Sharing Module (`src/sharing.rs`)
-
-**Purpose**: Share results and statistics
-
-**Features**:
-- Export session data
-- Generate shareable statistics
-- Integration with external services (planned)
-
----
-
-## Data Flow
-
-### 1. Initialization Flow
-
-```
-CLI Args -> Config -> RepositoryLoader -> CodeExtractor
-                ↓
-            FileDiscovery -> TreeSitter -> CodeChunks
-                ↓
-            ChallengeConverter -> GameChallenges
-```
-
-### 2. Game Loop Flow
-
-```
-User Input -> TypingScreen -> ScoringEngine -> RealTimeMetrics
-     ↓              ↓              ↓
-StageManager -> SessionTracker -> Database
-     ↓
-ResultScreen -> NextChallenge/GameEnd
-```
-
-### 3. Storage Flow
-
-```
-SessionData -> Database -> History -> Analytics
-                ↓
-            Export -> JSON/CSV
-```
-
----
-
-## Key Components
-
-### CodeChunk
-
-Represents a piece of extracted code with metadata:
-
-```rust
-pub struct CodeChunk {
-    pub content: String,
-    pub chunk_type: ChunkType,
-    pub file_path: PathBuf,
-    pub start_line: usize,
-    pub end_line: usize,
-    pub language: Language,
-}
-
-pub enum ChunkType {
-    Function,
-    Class,
-    Method,
-    Struct,
-    Enum,
-    Trait,
-    TypeAlias,
-    Interface,
-    Module,
-    Const,      // Constant declarations (Go const blocks, etc.)
-    Variable,   // Variable declarations (Go var blocks, etc.)
-}
-```
-
-### Challenge
-
-Represents a typing challenge created from a code chunk:
-
-```rust
-pub struct Challenge {
-    pub id: String,
-    pub content: String,
-    pub source_info: SourceInfo,
-    pub difficulty: DifficultyLevel,
-}
-```
-
-### StageManager
-
-Orchestrates the game flow and manages state transitions:
-
-```rust
-pub struct StageManager {
-    pub current_stage: usize,
-    pub challenges: Vec<Challenge>,
-    pub session_tracker: SessionTracker,
-    pub stage_config: StageConfig,
-}
-```
-
-### Display System
-
-Multi-layered rendering system:
-- `display.rs`: Abstract display interface
-- `display_ratatui.rs`: Terminal UI implementation
-- `display_optimized.rs`: Performance-optimized rendering
+### 7. Sharing Module (`src/sharing.rs`)
+**Purpose**: Provides functionality to share or export user results and session data.
 
 ---
 
