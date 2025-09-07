@@ -124,6 +124,21 @@ cargo test test_name
 cargo test --test integration_tests
 ```
 
+### Generating Test Coverage
+
+To generate a test coverage report, you'll need `cargo-llvm-cov`.
+
+1. **Install `cargo-llvm-cov`:**
+   ```bash
+   cargo install cargo-llvm-cov
+   ```
+
+2. **Generate the report:**
+   ```bash
+   cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+   ```
+   This will create an `lcov.info` file which can be used by coverage visualization tools.
+
 ### Test Coverage
 
 - Unit tests for core logic components
@@ -174,11 +189,11 @@ mod tests {
    git rebase main
    ```
 
-2. **Run the full test suite:**
+2. **Run the full test suite and checks:**
    ```bash
    cargo test
-   cargo clippy -- -D warnings
-   cargo fmt -- --check
+   cargo clippy --all-targets --all-features -- -D warnings
+   cargo fmt --all -- --check
    ```
 
 3. **Commit your changes:**
