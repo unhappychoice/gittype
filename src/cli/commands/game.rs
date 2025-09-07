@@ -174,9 +174,5 @@ fn handle_game_error(e: GitTypeError) -> Result<()> {
             eprintln!("💡 This might be caused by unsupported language features");
             std::process::exit(1);
         }
-        GitTypeError::UserQuit => {
-            eprintln!("👋 Thanks for playing!");
-            std::process::exit(0);
-        }
     }
 }
