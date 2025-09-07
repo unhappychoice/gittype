@@ -268,7 +268,9 @@ impl AnalyticsScreen {
             // Then, collect all repository information
             for session in &sessions {
                 if let Some(repo_id) = session.repository_id {
-                    if let std::collections::hash_map::Entry::Vacant(e) = repositories_map.entry(repo_id) {
+                    if let std::collections::hash_map::Entry::Vacant(e) =
+                        repositories_map.entry(repo_id)
+                    {
                         if let Ok(Some(repo)) = db.get_repository(repo_id) {
                             e.insert(repo);
                         }
