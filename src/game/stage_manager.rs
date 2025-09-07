@@ -2,8 +2,8 @@ use super::{
     screens::{
         exit_summary_screen::ExitAction, session_summary_screen::ResultAction,
         typing_screen::SessionState, AnalyticsAction, AnalyticsScreen, CancelScreen,
-        CountdownScreen, ExitSummaryScreen, FailureScreen, HistoryAction, HistoryScreen,
-        SessionSummaryScreen, SharingScreen, TitleAction, TitleScreen, TypingScreen,
+        ExitSummaryScreen, FailureScreen, HistoryAction, HistoryScreen, SessionSummaryScreen,
+        SharingScreen, TitleAction, TitleScreen, TypingScreen,
     },
     stage_builder::{DifficultyLevel, GameMode, StageBuilder},
 };
@@ -195,22 +195,7 @@ impl StageManager {
         while self.current_stage < self.current_challenges.len() {
             let challenge = &self.current_challenges[self.current_stage];
 
-            // Show countdown before each stage
-            if self.current_stage == 0 {
-                // First stage - show initial countdown with challenge info
-                CountdownScreen::show_with_challenge_and_repo(
-                    Some(challenge),
-                    &self.git_repository,
-                )?;
-            } else {
-                // Subsequent stages - show stage transition countdown with challenge info
-                CountdownScreen::show_stage_transition_with_challenge_and_repo(
-                    self.current_stage + 1,
-                    self.current_challenges.len(),
-                    Some(challenge),
-                    &self.git_repository,
-                )?;
-            }
+            // Countdown is now handled internally by TypingScreen
 
             let mut screen =
                 TypingScreen::new_with_challenge(challenge, self.git_repository.clone())?;
@@ -347,9 +332,14 @@ impl StageManager {
                         return Ok(false);
                     }
                 }
-                SessionState::Continue | SessionState::ShowDialog => {
+                SessionState::Continue
+                | SessionState::ShowDialog
+                | SessionState::WaitingToStart
+                | SessionState::Countdown => {
                     // This shouldn't happen in final state
-                    unreachable!("Continue/ShowDialog state should not be final");
+                    unreachable!(
+                        "Continue/ShowDialog/WaitingToStart/Countdown state should not be final"
+                    );
                 }
             }
         }
