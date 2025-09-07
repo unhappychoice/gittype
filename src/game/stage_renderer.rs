@@ -56,6 +56,8 @@ impl StageRenderer {
         repo_info: &Option<GitRepository>,
         display_comment_ranges: &[(usize, usize)],
         code_context: &CodeContext,
+        waiting_to_start: bool,
+        countdown_number: Option<u8>,
     ) -> Result<()> {
         // Update character cache if needed
         if self.chars.len() != challenge_text.chars().count() {
@@ -63,7 +65,9 @@ impl StageRenderer {
         }
 
         // Pre-calculate progress percentage for progress bar
-        let progress_percent = if !self.chars.is_empty() {
+        let progress_percent = if waiting_to_start || countdown_number.is_some() {
+            0 // Show 0% during waiting and countdown
+        } else if !self.chars.is_empty() {
             (current_display_position as f32 / self.chars.len() as f32 * 100.0) as u8
         } else {
             0
@@ -95,19 +99,29 @@ impl StageRenderer {
         };
         let content_spans = self.create_content_spans(render_params);
 
-        let elapsed_time = scoring_engine.get_data().elapsed_time;
-        let metrics = crate::scoring::RealTimeCalculator::calculate(
-            current_display_position,
-            mistakes,
-            elapsed_time,
-        );
-        let elapsed_secs = elapsed_time.as_secs();
+        let (metrics_line, _elapsed_secs) = if waiting_to_start || countdown_number.is_some() {
+            // Show zeros during waiting and countdown
+            let first_line = format!(
+                "WPM: 0 | CPM: 0 | Accuracy: 0% | Mistakes: 0 | Streak: 0 | Time: 0s | Skips: {}",
+                skips_remaining
+            );
+            (first_line, 0)
+        } else {
+            let elapsed_time = scoring_engine.get_data().elapsed_time;
+            let metrics = crate::scoring::RealTimeCalculator::calculate(
+                current_display_position,
+                mistakes,
+                elapsed_time,
+            );
+            let elapsed_secs = elapsed_time.as_secs();
 
-        let streak = scoring_engine.get_data().current_streak;
-        let first_line = format!(
-            "WPM: {:.0} | CPM: {:.0} | Accuracy: {:.0}% | Mistakes: {} | Streak: {} | Time: {}s | Skips: {}",
-            metrics.wpm, metrics.cpm, metrics.accuracy, metrics.mistakes, streak, elapsed_secs, skips_remaining
-        );
+            let streak = scoring_engine.get_data().current_streak;
+            let first_line = format!(
+                "WPM: {:.0} | CPM: {:.0} | Accuracy: {:.0}% | Mistakes: {} | Streak: {} | Time: {}s | Skips: {}",
+                metrics.wpm, metrics.cpm, metrics.accuracy, metrics.mistakes, streak, elapsed_secs, skips_remaining
+            );
+            (first_line, elapsed_secs)
+        };
 
         self.terminal.draw(|f| {
             let chunks = Layout::default()
@@ -136,28 +150,9 @@ impl StageRenderer {
             f.render_widget(header, chunks[0]);
 
             // Content with syntax highlighting and cursor with padding
-            // Keep the current line roughly centered within the viewport.
-            let view_height = chunks[1].height.saturating_sub(2); // account for borders/padding
-            let total_lines = content_spans.len() as u16;
-            let pre_context_lines = code_context.pre_context.len() as u16;
-            // Index of the current code line within the full rendered lines (including contexts)
-            let absolute_line_index = pre_context_lines.saturating_add(current_line as u16);
-
-            let desired_center = view_height / 2;
-            let mut scroll_offset = if total_lines > view_height {
-                absolute_line_index.saturating_sub(desired_center)
-            } else {
-                0
-            };
-            // Clamp so we don't scroll past the end
-            let max_scroll = total_lines.saturating_sub(view_height);
-            if scroll_offset > max_scroll {
-                scroll_offset = max_scroll;
-            }
-
-            let content = Paragraph::new(Text::from(content_spans.clone()))
-                .scroll((scroll_offset, 0))
-                .block(
+            if waiting_to_start || countdown_number.is_some() {
+                // Hide code during waiting and countdown, show empty block
+                let empty_content = Paragraph::new(Text::from(vec![])).block(
                     Block::default()
                         .borders(Borders::ALL)
                         .border_style(Style::default().fg(Color::Blue))
@@ -165,11 +160,44 @@ impl StageRenderer {
                         .title_style(Style::default().fg(Color::LightBlue))
                         .padding(ratatui::widgets::Padding::uniform(1)),
                 );
-            f.render_widget(content, chunks[1]);
+                f.render_widget(empty_content, chunks[1]);
+            } else {
+                // Show code normally
+                // Keep the current line roughly centered within the viewport.
+                let view_height = chunks[1].height.saturating_sub(2); // account for borders/padding
+                let total_lines = content_spans.len() as u16;
+                let pre_context_lines = code_context.pre_context.len() as u16;
+                // Index of the current code line within the full rendered lines (including contexts)
+                let absolute_line_index = pre_context_lines.saturating_add(current_line as u16);
+
+                let desired_center = view_height / 2;
+                let mut scroll_offset = if total_lines > view_height {
+                    absolute_line_index.saturating_sub(desired_center)
+                } else {
+                    0
+                };
+                // Clamp so we don't scroll past the end
+                let max_scroll = total_lines.saturating_sub(view_height);
+                if scroll_offset > max_scroll {
+                    scroll_offset = max_scroll;
+                }
+
+                let content = Paragraph::new(Text::from(content_spans.clone()))
+                    .scroll((scroll_offset, 0))
+                    .block(
+                        Block::default()
+                            .borders(Borders::ALL)
+                            .border_style(Style::default().fg(Color::Blue))
+                            .title("Code")
+                            .title_style(Style::default().fg(Color::LightBlue))
+                            .padding(ratatui::widgets::Padding::uniform(1)),
+                    );
+                f.render_widget(content, chunks[1]);
+            }
 
             // Metrics section below the code - less prominent
             let metrics_widget = Paragraph::new(vec![Line::from(vec![Span::styled(
-                first_line.clone(),
+                metrics_line.clone(),
                 Style::default().fg(Color::DarkGray),
             )])])
             .block(
@@ -208,6 +236,98 @@ impl StageRenderer {
                 Span::styled(" Options", Style::default().fg(Color::White)),
             ])]);
             f.render_widget(esc_text, esc_area);
+
+            // Render "Press SPACE to start" message when waiting or countdown when active
+            let center_x = f.area().width / 2;
+            let center_y = f.area().height / 2;
+
+            if waiting_to_start {
+                let start_line = vec![
+                    Span::styled("Press ", Style::default().fg(Color::White)),
+                    Span::styled(
+                        "[SPACE]",
+                        Style::default()
+                            .fg(Color::Green)
+                            .add_modifier(Modifier::BOLD),
+                    ),
+                    Span::styled(" to start", Style::default().fg(Color::White)),
+                ];
+
+                let total_width = "Press [SPACE] to start".len() as u16;
+                let start_area = ratatui::layout::Rect {
+                    x: center_x.saturating_sub(total_width / 2),
+                    y: center_y,
+                    width: total_width,
+                    height: 1,
+                };
+                let start_text = Paragraph::new(vec![Line::from(start_line)]);
+                f.render_widget(start_text, start_area);
+            } else if let Some(count) = countdown_number {
+                let color = match count {
+                    3 => Color::Magenta,
+                    2 => Color::Cyan,
+                    1 => Color::Yellow,
+                    0 => Color::Green,
+                    _ => Color::White,
+                };
+
+                if count > 0 && count <= 3 {
+                    // Use ASCII art for numbers 1, 2, 3
+                    let digit_patterns = crate::game::ascii_digits::get_digit_patterns();
+                    let pattern = &digit_patterns[count as usize];
+
+                    let ascii_start_y = center_y.saturating_sub(2); // Center the 4-line ASCII art
+
+                    let mut lines = Vec::new();
+                    for line in pattern {
+                        lines.push(Line::from(vec![Span::styled(
+                            *line,
+                            Style::default().fg(color).add_modifier(Modifier::BOLD),
+                        )]));
+                    }
+
+                    let max_width = pattern.iter().map(|line| line.len()).max().unwrap_or(0) as u16;
+                    let countdown_area = ratatui::layout::Rect {
+                        x: center_x.saturating_sub(max_width / 2),
+                        y: ascii_start_y,
+                        width: max_width,
+                        height: pattern.len() as u16,
+                    };
+
+                    let countdown_text = Paragraph::new(Text::from(lines));
+                    f.render_widget(countdown_text, countdown_area);
+                } else if count == 0 {
+                    // Use ASCII art for "GO!"
+                    let go_art = [
+                        "   ____  ___  ",
+                        "  / ___|/ _ \\ ",
+                        " | |  _| | | |",
+                        " | |_| | |_| |",
+                        "  \\____|\\___/ ",
+                    ];
+
+                    let ascii_start_y = center_y.saturating_sub(2); // Center the 5-line ASCII art
+
+                    let mut lines = Vec::new();
+                    for line in &go_art {
+                        lines.push(Line::from(vec![Span::styled(
+                            *line,
+                            Style::default().fg(color).add_modifier(Modifier::BOLD),
+                        )]));
+                    }
+
+                    let max_width = go_art.iter().map(|line| line.len()).max().unwrap_or(0) as u16;
+                    let countdown_area = ratatui::layout::Rect {
+                        x: center_x.saturating_sub(max_width / 2),
+                        y: ascii_start_y,
+                        width: max_width,
+                        height: go_art.len() as u16,
+                    };
+
+                    let countdown_text = Paragraph::new(Text::from(lines));
+                    f.render_widget(countdown_text, countdown_area);
+                }
+            }
 
             // Render dialog if shown
             if dialog_shown {
