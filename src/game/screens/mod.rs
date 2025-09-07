@@ -1,3 +1,4 @@
+pub mod analytics_screen;
 pub mod animation_screen;
 pub mod cancel_screen;
 pub mod countdown_screen;
@@ -14,6 +15,7 @@ pub mod stage_summary_screen;
 pub mod title_screen;
 pub mod typing_screen;
 
+pub use analytics_screen::{AnalyticsAction, AnalyticsScreen};
 pub use animation_screen::AnimationScreen;
 pub use cancel_screen::CancelScreen;
 pub use countdown_screen::CountdownScreen;

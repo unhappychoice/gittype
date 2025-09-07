@@ -144,6 +144,37 @@ impl SessionRepository {
         dao.get_all_repositories()
     }
 
+    /// Get language performance statistics
+    pub fn get_language_stats(&self, _days: Option<i64>) -> Result<Vec<(String, f64, usize)>> {
+        let db = self.db_with_lock()?;
+        let conn = db.get_connection();
+        
+        // Query with proper time filtering for last 30 days
+        let query = "SELECT language, AVG(cpm) as avg_cpm, COUNT(*) as session_count
+                     FROM stage_results 
+                     WHERE language IS NOT NULL 
+                     AND language != ''
+                     AND cpm > 0
+                     AND completed_at >= datetime('now', '-7 days')
+                     GROUP BY language 
+                     ORDER BY avg_cpm DESC";
+
+        let mut stmt = conn.prepare(query)?;
+        let rows = stmt.query_map([], |row| {
+            let language: String = row.get(0)?;
+            let avg_cpm: f64 = row.get(1)?;
+            let session_count: i64 = row.get(2)?;
+            Ok((language, avg_cpm, session_count as usize))
+        })?;
+        
+        let mut results = Vec::new();
+        for row_result in rows {
+            results.push(row_result?);
+        }
+        
+        Ok(results)
+    }
+
     /// Get filtered and sorted sessions for history display
     pub fn get_sessions_filtered(
         &self,

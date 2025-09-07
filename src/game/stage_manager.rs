@@ -1,7 +1,7 @@
 use super::{
     screens::{
         exit_summary_screen::ExitAction, session_summary_screen::ResultAction,
-        typing_screen::SessionState, CancelScreen, CountdownScreen, ExitSummaryScreen,
+        typing_screen::SessionState, AnalyticsAction, AnalyticsScreen, CancelScreen, CountdownScreen, ExitSummaryScreen,
         FailureScreen, HistoryAction, HistoryScreen, SessionSummaryScreen, SharingScreen,
         TitleAction, TitleScreen, TypingScreen,
     },
@@ -168,6 +168,14 @@ impl StageManager {
                         }
                         HistoryAction::ViewDetails(_session_id) => {
                             // This shouldn't happen as details are handled internally
+                            continue;
+                        }
+                    }
+                }
+                TitleAction::Analytics => {
+                    match AnalyticsScreen::show()? {
+                        AnalyticsAction::Return => {
+                            // Return to title screen
                             continue;
                         }
                     }
