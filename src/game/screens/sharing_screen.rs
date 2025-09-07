@@ -1,10 +1,11 @@
+use crate::game::utils::TerminalUtils;
 use crate::sharing::{SharingPlatform, SharingService};
 use crate::{models::GitRepository, Result};
 use crossterm::{
     cursor::MoveTo,
     event::{self, Event, KeyCode, KeyModifiers},
     execute,
-    style::{Attribute, Color, Print, ResetColor, SetAttribute, SetForegroundColor},
+    style::{Color, Print, ResetColor, SetForegroundColor},
     terminal::{self, ClearType},
 };
 use std::io::{stdout, Write};
@@ -32,23 +33,12 @@ impl SharingScreen {
         let center_col = terminal_width / 2;
 
         // Title
-        let title = "=== SHARE YOUR RESULT ===";
-        let lines: Vec<&str> = title.split('\n').collect();
-
-        for (i, line) in lines.iter().enumerate() {
-            let title_col = center_col.saturating_sub(line.len() as u16 / 2);
-            execute!(
-                stdout,
-                MoveTo(title_col, center_row.saturating_sub(10) + i as u16)
-            )?;
-            execute!(
-                stdout,
-                SetAttribute(Attribute::Bold),
-                SetForegroundColor(Color::Cyan)
-            )?;
-            execute!(stdout, Print(line))?;
-            execute!(stdout, ResetColor)?;
-        }
+        TerminalUtils::display_header(
+            &mut stdout,
+            "=== SHARE YOUR RESULT ===",
+            Color::Cyan,
+            center_row.saturating_sub(10),
+        )?;
 
         // Show preview of what will be shared
         let best_rank = crate::scoring::Rank::for_score(metrics.session_score);

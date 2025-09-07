@@ -1,8 +1,4 @@
 use super::session_detail_screen::{SessionDetailScreen, SessionDisplayData};
-use crate::game::utils::LayoutHelpers;
-use crate::game::widgets::{
-    ContentPanelWidget, ControlBarWidget, HeaderWidget, ScrollableListWidget,
-};
 use crate::storage::{
     daos::{session_dao::SessionResultData, StoredRepository},
     repositories::SessionRepository,
@@ -17,10 +13,13 @@ use crossterm::{
 };
 use ratatui::{
     backend::CrosstermBackend,
-    layout::Alignment,
-    style::{Color, Style},
+    layout::{Alignment, Constraint, Direction, Layout, Margin},
+    style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{ListItem, ListState, Paragraph, ScrollbarState},
+    widgets::{
+        Block, Borders, List, ListItem, ListState, Paragraph, Scrollbar, ScrollbarOrientation,
+        ScrollbarState,
+    },
     Frame, Terminal,
 };
 use std::io::stdout;
@@ -237,27 +236,62 @@ impl HistoryScreen {
     }
 
     fn render_session_list(&mut self, f: &mut Frame) {
-        let [_left, content, _right] = LayoutHelpers::minimal_padding(f.area());
-        let [header_area, list_area, controls_area] =
-            LayoutHelpers::header_content_footer(content, 4, 1);
+        // Add horizontal padding
+        let outer_chunks = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([
+                Constraint::Length(2), // Left padding
+                Constraint::Min(1),    // Main content
+                Constraint::Length(2), // Right padding
+            ])
+            .split(f.area());
 
-        // Header with title and subtitle showing filter info
-        let subtitle = format!(
-            "Filter: {} | Sort: {} {} | Sessions: {}",
-            self.filter_state.date_filter.display_name(),
-            self.filter_state.sort_by.display_name(),
-            if self.filter_state.sort_descending {
-                "↓"
-            } else {
-                "↑"
-            },
-            self.sessions.len()
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Length(4), // Header (title + filter info)
+                Constraint::Min(1),    // Session list
+                Constraint::Length(1), // Controls at bottom
+            ])
+            .split(outer_chunks[1]);
+
+        // Header block containing title and filter info
+        let header_lines = vec![
+            Line::from(vec![
+                Span::raw("  "), // Left padding
+                Span::styled(
+                    "History - Typing Session Records",
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD),
+                ),
+            ]),
+            Line::from(vec![
+                Span::raw("  "), // Left padding
+                Span::styled(
+                    format!(
+                        "Filter: {} | Sort: {} {} | Sessions: {}",
+                        self.filter_state.date_filter.display_name(),
+                        self.filter_state.sort_by.display_name(),
+                        if self.filter_state.sort_descending {
+                            "↓"
+                        } else {
+                            "↑"
+                        },
+                        self.sessions.len()
+                    ),
+                    Style::default().fg(Color::Yellow),
+                ),
+            ]),
+        ];
+
+        let header = Paragraph::new(header_lines).block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_style(Style::default().fg(Color::Blue))
+                .title("Session History"),
         );
-
-        let header = HeaderWidget::new("History - Typing Session Records")
-            .subtitle(&subtitle)
-            .subtitle_color(Color::Yellow);
-        f.render_widget(header, header_area);
+        f.render_widget(header, chunks[0]);
 
         // Session list
         if self.sessions.is_empty() {
@@ -268,8 +302,13 @@ impl HistoryScreen {
             let empty_paragraph = Paragraph::new(empty_msg)
                 .style(Style::default().fg(Color::DarkGray))
                 .alignment(Alignment::Center)
-                .block(ContentPanelWidget::new("Sessions").block());
-            f.render_widget(empty_paragraph, list_area);
+                .block(
+                    Block::default()
+                        .borders(Borders::ALL)
+                        .border_style(Style::default().fg(Color::Blue))
+                        .title("Sessions"),
+                );
+            f.render_widget(empty_paragraph, chunks[1]);
         } else {
             // Update scroll state first
             self.scroll_state = self.scroll_state.content_length(self.sessions.len());
@@ -284,24 +323,60 @@ impl HistoryScreen {
                 })
                 .collect();
 
-            let scrollable_list = ScrollableListWidget::new("Sessions", items);
-            scrollable_list.render_stateful(
-                list_area,
-                f.buffer_mut(),
-                &mut self.list_state,
+            let list = List::new(items)
+                .block(
+                    Block::default()
+                        .borders(Borders::ALL)
+                        .border_style(Style::default().fg(Color::Blue))
+                        .title("Sessions")
+                        .title_style(
+                            Style::default()
+                                .fg(Color::White)
+                                .add_modifier(Modifier::BOLD),
+                        ),
+                )
+                .style(Style::default().fg(Color::White))
+                .highlight_style(
+                    Style::default()
+                        .bg(Color::DarkGray)
+                        .add_modifier(Modifier::BOLD),
+                )
+                .highlight_symbol("► ");
+
+            f.render_stateful_widget(list, chunks[1], &mut self.list_state);
+
+            // Render scrollbar
+            let scrollbar = Scrollbar::default()
+                .orientation(ScrollbarOrientation::VerticalRight)
+                .begin_symbol(Some("↑"))
+                .end_symbol(Some("↓"));
+            f.render_stateful_widget(
+                scrollbar,
+                chunks[1].inner(Margin {
+                    vertical: 1,
+                    horizontal: 2,
+                }),
                 &mut self.scroll_state,
             );
         }
 
-        // Controls bar
-        let controls = ControlBarWidget::new()
-            .control("[↑↓/JK]", " Navigate  ", Color::Blue)
-            .control("[SPACE]", " Details  ", Color::Green)
-            .control("[F]", " Filter  ", Color::Blue)
-            .control("[S]", " Sort  ", Color::Cyan)
-            .control("[R]", " Refresh  ", Color::Magenta)
-            .control("[ESC]", " Back", Color::Red);
-        f.render_widget(controls, controls_area);
+        // Controls at the bottom row - matching title screen colors
+        let controls_line = Line::from(vec![
+            Span::styled("[↑↓/JK] Navigate  ", Style::default().fg(Color::White)),
+            Span::styled("[SPACE]", Style::default().fg(Color::Green)),
+            Span::styled(" Details  ", Style::default().fg(Color::White)),
+            Span::styled("[F]", Style::default().fg(Color::Blue)),
+            Span::styled(" Filter  ", Style::default().fg(Color::White)),
+            Span::styled("[S]", Style::default().fg(Color::Cyan)),
+            Span::styled(" Sort  ", Style::default().fg(Color::White)),
+            Span::styled("[R]", Style::default().fg(Color::Magenta)),
+            Span::styled(" Refresh  ", Style::default().fg(Color::White)),
+            Span::styled("[ESC]", Style::default().fg(Color::Red)),
+            Span::styled(" Back", Style::default().fg(Color::White)),
+        ]);
+
+        let controls = Paragraph::new(controls_line).alignment(Alignment::Center);
+        f.render_widget(controls, chunks[2]);
     }
 
     fn refresh_sessions(&mut self) -> Result<()> {

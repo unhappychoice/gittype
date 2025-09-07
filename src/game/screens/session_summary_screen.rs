@@ -1,5 +1,5 @@
 use crate::game::ascii_rank_titles_generated::get_rank_display;
-use crate::game::utils::AsciiNumbersWidget;
+use crate::game::utils::{AsciiNumbersWidget, TerminalUtils};
 use crate::storage::repositories::SessionRepository;
 use crate::{models::GitRepository, Result};
 use crossterm::{
@@ -89,16 +89,12 @@ impl SessionSummaryScreen {
         };
 
         // Display session complete title at the top
-        let session_title = "=== SESSION COMPLETE ===";
-        let title_col = center_col.saturating_sub(session_title.len() as u16 / 2);
-        execute!(stdout, MoveTo(title_col, rank_start_row.saturating_sub(4)))?;
-        execute!(
-            stdout,
-            SetAttribute(Attribute::Bold),
-            SetForegroundColor(Color::Cyan)
+        TerminalUtils::display_header(
+            &mut stdout,
+            "=== SESSION COMPLETE ===",
+            Color::Cyan,
+            rank_start_row.saturating_sub(4),
         )?;
-        execute!(stdout, Print(session_title))?;
-        execute!(stdout, ResetColor)?;
 
         // Display "you're:" label before rank (1 line gap from rank)
         let youre_label = "YOU'RE:";

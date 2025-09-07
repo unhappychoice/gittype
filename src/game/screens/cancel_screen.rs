@@ -6,7 +6,7 @@ use crossterm::{
     cursor::MoveTo,
     event::{self, Event, KeyCode, KeyModifiers},
     execute,
-    style::{Attribute, Color, Print, ResetColor, SetAttribute, SetForegroundColor},
+    style::{Color, Print, ResetColor, SetForegroundColor},
 };
 use std::io::{stdout, Write};
 
@@ -31,16 +31,12 @@ impl CancelScreen {
         let center_y = terminal_height / 2;
 
         // Header - show CANCELLED status (centered)
-        let header_text = "=== SESSION CANCELLED ===";
-        let header_x = (terminal_width - header_text.len() as u16) / 2;
-        execute!(stdout, MoveTo(header_x, center_y.saturating_sub(6)))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Color::Yellow),
-            SetAttribute(Attribute::Bold)
+        TerminalUtils::display_header(
+            &mut stdout,
+            "=== SESSION CANCELLED ===",
+            Color::Yellow,
+            center_y.saturating_sub(6),
         )?;
-        execute!(stdout, Print(header_text))?;
-        execute!(stdout, ResetColor)?;
 
         // Show stage progress (centered, cyan)
         let stage_text = format!("Stages: {}/{}", completed_stages, total_stages);
@@ -72,21 +68,12 @@ impl CancelScreen {
         execute!(stdout, Print(cancel_text))?;
 
         // Navigation instructions with color coding
-        let full_text_len = "[R] Retry | [T] Back to Title | [ESC] Session Summary & Exit".len();
-        let nav_x = (terminal_width - full_text_len as u16) / 2;
-        execute!(stdout, MoveTo(nav_x, center_y + 4))?;
-        execute!(stdout, SetForegroundColor(Color::Green))?;
-        execute!(stdout, Print("[R]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
-        execute!(stdout, Print(" Retry | "))?;
-        execute!(stdout, SetForegroundColor(Color::Green))?;
-        execute!(stdout, Print("[T]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
-        execute!(stdout, Print(" Back to Title | "))?;
-        execute!(stdout, SetForegroundColor(Color::Red))?;
-        execute!(stdout, Print("[ESC]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
-        execute!(stdout, Print(" Session Summary & Exit"))?;
+        let controls = [
+            ("[R]", " Retry", Color::Green),
+            ("[T]", " Back to Title", Color::Green),
+            ("[ESC]", " Session Summary & Exit", Color::Red),
+        ];
+        TerminalUtils::display_controls(&mut stdout, &controls, center_y + 4)?;
 
         execute!(stdout, ResetColor)?;
         stdout.flush()?;

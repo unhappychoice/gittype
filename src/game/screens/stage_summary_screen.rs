@@ -34,28 +34,20 @@ impl StageSummaryScreen {
         let center_col = terminal_width / 2;
 
         // Display stage title at the center
-        let stage_title = if metrics.was_failed {
-            format!("=== STAGE {} FAILED ===", current_stage)
+        let (stage_title, color) = if metrics.was_failed {
+            (format!("=== STAGE {} FAILED ===", current_stage), Color::Red)
         } else if metrics.was_skipped {
-            format!("=== STAGE {} SKIPPED ===", current_stage)
+            (format!("=== STAGE {} SKIPPED ===", current_stage), Color::Magenta)
         } else {
-            format!("=== STAGE {} COMPLETE ===", current_stage)
+            (format!("=== STAGE {} COMPLETE ===", current_stage), Color::Cyan)
         };
 
-        // Use simple character count for more reliable centering
-        let title_col = center_col.saturating_sub(stage_title.len() as u16 / 2);
-
-        execute!(stdout, MoveTo(title_col, center_row.saturating_sub(6)))?;
-        execute!(stdout, SetAttribute(Attribute::Bold))?;
-        if metrics.was_failed {
-            execute!(stdout, SetForegroundColor(Color::Red))?;
-        } else if metrics.was_skipped {
-            execute!(stdout, SetForegroundColor(Color::Magenta))?;
-        } else {
-            execute!(stdout, SetForegroundColor(Color::Cyan))?;
-        }
-        execute!(stdout, Print(&stage_title))?;
-        execute!(stdout, ResetColor)?;
+        TerminalUtils::display_header(
+            &mut stdout,
+            &stage_title,
+            color,
+            center_row.saturating_sub(6),
+        )?;
 
         // Position score label below title
         let score_label_row = center_row.saturating_sub(3);

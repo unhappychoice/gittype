@@ -1,3 +1,4 @@
+use crate::game::utils::TerminalUtils;
 use crate::storage::repositories::session_repository::SessionRepository;
 use crate::{models::GitRepository, Result};
 use crossterm::{
@@ -28,16 +29,12 @@ impl DetailsDialog {
         let mut current_row = 3u16;
 
         // Dialog title
-        let title = "=== SESSION DETAILS ===";
-        let title_col = center_col.saturating_sub(title.len() as u16 / 2);
-        execute!(stdout, MoveTo(title_col, current_row))?;
-        execute!(
-            stdout,
-            SetAttribute(Attribute::Bold),
-            SetForegroundColor(Color::Cyan)
+        TerminalUtils::display_header(
+            &mut stdout,
+            "=== SESSION DETAILS ===",
+            Color::Cyan,
+            current_row,
         )?;
-        execute!(stdout, Print(title))?;
-        execute!(stdout, ResetColor)?;
         current_row += 3;
 
         // Best Records Section

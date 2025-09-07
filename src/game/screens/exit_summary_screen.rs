@@ -1,4 +1,4 @@
-use crate::game::utils::AsciiNumbersWidget;
+use crate::game::utils::{AsciiNumbersWidget, TerminalUtils};
 use crate::models::TotalResult;
 use crate::sharing::SharingPlatform;
 use crate::Result;
@@ -121,23 +121,12 @@ impl ExitSummaryScreen {
         let center_row = terminal_height / 2;
         let center_col = terminal_width / 2;
 
-        let title = "=== TOTAL SUMMARY ===";
-        let lines: Vec<&str> = title.split('\n').collect();
-
-        for (i, line) in lines.iter().enumerate() {
-            let title_col = center_col.saturating_sub(line.len() as u16 / 2);
-            execute!(
-                stdout,
-                MoveTo(title_col, center_row.saturating_sub(14) + i as u16)
-            )?;
-            execute!(
-                stdout,
-                SetAttribute(Attribute::Bold),
-                SetForegroundColor(Color::Cyan)
-            )?;
-            execute!(stdout, Print(line))?;
-            execute!(stdout, ResetColor)?;
-        }
+        TerminalUtils::display_header(
+            &mut stdout,
+            "=== TOTAL SUMMARY ===",
+            Color::Cyan,
+            center_row.saturating_sub(14),
+        )?;
 
         // Show total duration
         let duration_text = format!(
@@ -577,16 +566,12 @@ impl ExitSummaryScreen {
         let center_row = terminal_height / 2;
         let center_col = terminal_width / 2;
 
-        let title = "=== TOTAL SUMMARY ===";
-        let title_col = center_col.saturating_sub(title.len() as u16 / 2);
-        execute!(stdout, MoveTo(title_col, center_row.saturating_sub(8)))?;
-        execute!(
-            stdout,
-            SetAttribute(Attribute::Bold),
-            SetForegroundColor(Color::Cyan)
+        TerminalUtils::display_header(
+            &mut stdout,
+            "=== TOTAL SUMMARY ===",
+            Color::Cyan,
+            center_row.saturating_sub(8),
         )?;
-        execute!(stdout, Print(title))?;
-        execute!(stdout, ResetColor)?;
 
         // Show total score
         let score_value = format!("{:.0}", total_summary.total_score);
