@@ -333,7 +333,7 @@ impl TypingScreen {
         if self.dialog_shown {
             return false;
         }
-        
+
         if let (Some(start_time), Some(current_num)) =
             (self.countdown_start_time, self.countdown_number)
         {
@@ -480,7 +480,7 @@ impl TypingScreen {
     fn open_dialog(&mut self) {
         self.dialog_shown = true;
         self.stage_tracker.record(StageInput::Pause);
-        
+
         // Pause countdown timer if active
         if self.countdown_active && self.countdown_pause_time.is_none() {
             self.countdown_pause_time = Some(std::time::Instant::now());
@@ -490,7 +490,7 @@ impl TypingScreen {
     fn close_dialog(&mut self) {
         self.dialog_shown = false;
         self.stage_tracker.record(StageInput::Resume);
-        
+
         // Resume countdown timer if paused
         if let Some(pause_time) = self.countdown_pause_time.take() {
             self.countdown_total_paused += pause_time.elapsed();
