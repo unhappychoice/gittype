@@ -359,10 +359,14 @@ impl TypingScreen {
                     // Move to next countdown number
                     self.countdown_number = Some(current_num - 1);
                     self.countdown_start_time = Some(std::time::Instant::now());
+                    self.countdown_pause_time = None;
+                    self.countdown_total_paused = std::time::Duration::ZERO;
                 } else if current_num == 1 {
                     // Show "GO!" for a brief moment
                     self.countdown_number = Some(0); // 0 represents "GO!"
                     self.countdown_start_time = Some(std::time::Instant::now());
+                    self.countdown_pause_time = None;
+                    self.countdown_total_paused = std::time::Duration::ZERO;
                 } else {
                     // Countdown finished, start typing
                     self.countdown_active = false;
