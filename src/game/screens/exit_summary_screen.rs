@@ -1,4 +1,4 @@
-use crate::game::ascii_digits::get_digit_patterns;
+use crate::game::utils::AsciiNumbersWidget;
 use crate::models::TotalResult;
 use crate::sharing::SharingPlatform;
 use crate::Result;
@@ -103,23 +103,7 @@ impl ExitSummaryScreen {
         }
     }
 
-    fn create_ascii_numbers(score: &str) -> Vec<String> {
-        let digit_patterns = get_digit_patterns();
-        let max_height = 4;
-        let mut result = vec![String::new(); max_height];
-
-        for ch in score.chars() {
-            if let Some(digit) = ch.to_digit(10) {
-                let pattern = &digit_patterns[digit as usize];
-                for (i, line) in pattern.iter().enumerate() {
-                    result[i].push_str(line);
-                    result[i].push(' ');
-                }
-            }
-        }
-
-        result
-    }
+    // Removed: Now using AsciiNumbersWidget::create_ascii_numbers
 
     pub fn show(total_summary: &TotalResult) -> Result<ExitAction> {
         let mut stdout = stdout();
@@ -190,7 +174,7 @@ impl ExitSummaryScreen {
         execute!(stdout, ResetColor)?;
 
         let score_value = format!("{:.0}", total_summary.total_score);
-        let ascii_numbers = Self::create_ascii_numbers(&score_value);
+        let ascii_numbers = AsciiNumbersWidget::create_ascii_numbers(&score_value);
         let score_start_row = center_row.saturating_sub(6);
 
         for (row_index, line) in ascii_numbers.iter().enumerate() {
@@ -606,7 +590,7 @@ impl ExitSummaryScreen {
 
         // Show total score
         let score_value = format!("{:.0}", total_summary.total_score);
-        let ascii_numbers = Self::create_ascii_numbers(&score_value);
+        let ascii_numbers = AsciiNumbersWidget::create_ascii_numbers(&score_value);
         let score_start_row = center_row.saturating_sub(6);
 
         for (row_index, line) in ascii_numbers.iter().enumerate() {

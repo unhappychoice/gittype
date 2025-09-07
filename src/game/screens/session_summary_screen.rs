@@ -1,5 +1,5 @@
-use crate::game::ascii_digits::get_digit_patterns;
 use crate::game::ascii_rank_titles_generated::get_rank_display;
+use crate::game::utils::AsciiNumbersWidget;
 use crate::storage::repositories::SessionRepository;
 use crate::{models::GitRepository, Result};
 use crossterm::{
@@ -47,23 +47,7 @@ impl SessionSummaryScreen {
         width as u16
     }
 
-    pub fn create_ascii_numbers(score: &str) -> Vec<String> {
-        let digit_patterns = get_digit_patterns();
-        let max_height = 4;
-        let mut result = vec![String::new(); max_height];
-
-        for ch in score.chars() {
-            if let Some(digit) = ch.to_digit(10) {
-                let pattern = &digit_patterns[digit as usize];
-                for (i, line) in pattern.iter().enumerate() {
-                    result[i].push_str(line);
-                    result[i].push(' ');
-                }
-            }
-        }
-
-        result
-    }
+    // Removed: Now using AsciiNumbersWidget::create_ascii_numbers
 
     pub fn show_session_summary(
         session_result: &crate::models::SessionResult,
@@ -226,7 +210,7 @@ impl SessionSummaryScreen {
 
         // Display large ASCII art session score with single bold color
         let score_value = format!("{:.0}", session_result.session_score);
-        let ascii_numbers = Self::create_ascii_numbers(&score_value);
+        let ascii_numbers = AsciiNumbersWidget::create_ascii_numbers(&score_value);
         let score_start_row = if updated_best_type.is_some() {
             score_label_row + 2 // SESSION SCORE + *** BEST *** + ASCII
         } else {

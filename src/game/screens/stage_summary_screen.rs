@@ -1,5 +1,5 @@
-use crate::game::ascii_digits::get_digit_patterns;
 use crate::game::screens::ResultAction;
+use crate::game::utils::{AsciiNumbersWidget, TerminalUtils};
 use crate::scoring::StageResult;
 use crate::Result;
 use crossterm::{
@@ -7,30 +7,13 @@ use crossterm::{
     event::{self, Event, KeyCode},
     execute,
     style::{Attribute, Color, Print, ResetColor, SetAttribute, SetForegroundColor},
-    terminal::{self, ClearType},
 };
 use std::io::{stdout, Write};
 
 pub struct StageSummaryScreen;
 
 impl StageSummaryScreen {
-    fn create_ascii_numbers(score: &str) -> Vec<String> {
-        let digit_patterns = get_digit_patterns();
-        let max_height = 4;
-        let mut result = vec![String::new(); max_height];
-
-        for ch in score.chars() {
-            if let Some(digit) = ch.to_digit(10) {
-                let pattern = &digit_patterns[digit as usize];
-                for (i, line) in pattern.iter().enumerate() {
-                    result[i].push_str(line);
-                    result[i].push(' ');
-                }
-            }
-        }
-
-        result
-    }
+    // Removed: Now using AsciiNumbersWidget::create_ascii_numbers
     pub fn show_stage_completion(
         metrics: &StageResult,
         current_stage: usize,
@@ -41,15 +24,12 @@ impl StageSummaryScreen {
         let mut stdout = stdout();
 
         // Comprehensive screen reset
-        execute!(stdout, terminal::Clear(ClearType::All))?;
-        execute!(stdout, MoveTo(0, 0))?;
-        execute!(stdout, ResetColor)?;
-        stdout.flush()?;
+        TerminalUtils::clear_screen(&mut stdout)?;
 
         // Short delay to ensure terminal state is reset
         std::thread::sleep(std::time::Duration::from_millis(10));
 
-        let (terminal_width, terminal_height) = terminal::size()?;
+        let (terminal_width, terminal_height) = TerminalUtils::size()?;
         let center_row = terminal_height / 2;
         let center_col = terminal_width / 2;
 
@@ -111,7 +91,7 @@ impl StageSummaryScreen {
             format!("{:.0}", metrics.challenge_score)
         };
 
-        let ascii_numbers = Self::create_ascii_numbers(&score_value);
+        let ascii_numbers = AsciiNumbersWidget::create_ascii_numbers(&score_value);
         let score_start_row = score_label_row + 1;
 
         for (row_index, line) in ascii_numbers.iter().enumerate() {
