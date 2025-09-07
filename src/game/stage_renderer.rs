@@ -142,9 +142,9 @@ impl StageRenderer {
             let header = Paragraph::new(vec![Line::from(header_text.clone())]).block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Cyan))
+                    .border_style(Style::default().fg(Color::Blue))
                     .title("Challenge")
-                    .title_style(Style::default().fg(Color::Cyan))
+                    .title_style(Style::default().fg(Color::Blue))
                     .padding(ratatui::widgets::Padding::horizontal(1)),
             ); // Only horizontal padding
             f.render_widget(header, chunks[0]);
