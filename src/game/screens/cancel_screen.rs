@@ -1,4 +1,5 @@
 use crate::game::screens::session_summary_screen::ResultAction;
+use crate::game::utils::TerminalUtils;
 use crate::scoring::StageTracker;
 use crate::{models::GitRepository, Result};
 use crossterm::{
@@ -6,7 +7,6 @@ use crossterm::{
     event::{self, Event, KeyCode, KeyModifiers},
     execute,
     style::{Attribute, Color, Print, ResetColor, SetAttribute, SetForegroundColor},
-    terminal::{self, ClearType},
 };
 use std::io::{stdout, Write};
 
@@ -22,15 +22,12 @@ impl CancelScreen {
         let mut stdout = stdout();
 
         // Comprehensive screen reset
-        execute!(stdout, terminal::Clear(ClearType::All))?;
-        execute!(stdout, MoveTo(0, 0))?;
-        execute!(stdout, ResetColor)?;
-        stdout.flush()?;
+        TerminalUtils::clear_screen(&mut stdout)?;
 
         // Short delay to ensure terminal state is reset
         std::thread::sleep(std::time::Duration::from_millis(10));
 
-        let (terminal_width, terminal_height) = terminal::size()?;
+        let (terminal_width, terminal_height) = TerminalUtils::size()?;
         let center_y = terminal_height / 2;
 
         // Header - show CANCELLED status (centered)

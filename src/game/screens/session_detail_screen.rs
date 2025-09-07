@@ -1,3 +1,4 @@
+use crate::game::widgets::{default_block, minimal_padding_layout};
 use crate::storage::{
     daos::{
         session_dao::{SessionResultData, SessionStageResult},
@@ -13,7 +14,7 @@ use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, Paragraph, Wrap},
+    widgets::{Paragraph, Wrap},
     Frame, Terminal,
 };
 use std::io::stdout;
@@ -109,15 +110,7 @@ impl SessionDetailScreen {
     }
 
     fn ui(&mut self, f: &mut Frame) {
-        // Add horizontal padding
-        let outer_chunks = Layout::default()
-            .direction(Direction::Horizontal)
-            .constraints([
-                Constraint::Length(2),
-                Constraint::Min(1),
-                Constraint::Length(2),
-            ])
-            .split(f.area());
+        let outer_chunks = minimal_padding_layout(f.area());
 
         let main_chunks = Layout::default()
             .direction(Direction::Vertical)
@@ -205,12 +198,7 @@ impl SessionDetailScreen {
         }
 
         let session_info = Paragraph::new(info_lines)
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
-                    .title("Session"),
-            )
+            .block(default_block("Session"))
             .wrap(Wrap { trim: false });
 
         f.render_widget(session_info, area);
@@ -313,12 +301,7 @@ impl SessionDetailScreen {
         }
 
         let performance = Paragraph::new(metrics_lines)
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
-                    .title("Performance"),
-            )
+            .block(default_block("Performance"))
             .wrap(Wrap { trim: false });
 
         f.render_widget(performance, area);
@@ -329,12 +312,7 @@ impl SessionDetailScreen {
             let empty_msg = Paragraph::new("No stage data available")
                 .style(Style::default().fg(Color::DarkGray))
                 .alignment(Alignment::Center)
-                .block(
-                    Block::default()
-                        .borders(Borders::ALL)
-                        .border_style(Style::default().fg(Color::Blue))
-                        .title("Stage Details"),
-                );
+                .block(default_block("Stage Details"));
             f.render_widget(empty_msg, area);
             return;
         }
@@ -453,18 +431,9 @@ impl SessionDetailScreen {
             format!(" ({} stages)", self.stage_results.len())
         };
 
+        let stage_title = format!("Stage Details{}", scroll_info);
         let stage_paragraph = Paragraph::new(stage_text_lines)
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
-                    .title(format!("Stage Details{}", scroll_info))
-                    .title_style(
-                        Style::default()
-                            .fg(Color::White)
-                            .add_modifier(Modifier::BOLD),
-                    ),
-            )
+            .block(default_block(&stage_title))
             .wrap(Wrap { trim: false });
 
         f.render_widget(stage_paragraph, area);

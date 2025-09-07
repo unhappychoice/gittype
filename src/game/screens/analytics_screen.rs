@@ -1,3 +1,7 @@
+use crate::game::widgets::{
+    default_block, default_list, default_scrollbar, main_screen_layout, scrollbar_inner_area,
+    standard_padding_layout,
+};
 use crate::storage::{repositories::SessionRepository, HasDatabase};
 use crate::Result;
 use crossterm::{
@@ -7,12 +11,11 @@ use crossterm::{
 };
 use ratatui::{
     backend::CrosstermBackend,
-    layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},
+    layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
     widgets::{
-        Axis, BarChart, Block, Borders, Chart, Dataset, GraphType, List, ListItem, ListState,
-        Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState,
+        Axis, BarChart, Chart, Dataset, GraphType, ListItem, ListState, Paragraph, ScrollbarState,
     },
     Frame, Terminal,
 };
@@ -573,26 +576,8 @@ impl AnalyticsScreen {
     }
 
     fn ui(&mut self, f: &mut Frame) {
-        // Add horizontal padding
-        let outer_chunks = Layout::default()
-            .direction(Direction::Horizontal)
-            .constraints([
-                Constraint::Length(4), // Left padding
-                Constraint::Min(1),    // Main content
-                Constraint::Length(4), // Right padding
-            ])
-            .split(f.area());
-
-        let chunks = Layout::default()
-            .direction(Direction::Vertical)
-            .margin(1)
-            .constraints([
-                Constraint::Length(3), // Header
-                Constraint::Length(3), // View tabs
-                Constraint::Min(1),    // Content
-                Constraint::Length(1), // Controls
-            ])
-            .split(outer_chunks[1]);
+        let outer_chunks = standard_padding_layout(f.area());
+        let chunks = main_screen_layout(outer_chunks[1]);
 
         self.render_header(f, chunks[0]);
         self.render_view_tabs(f, chunks[1]);
@@ -611,12 +596,7 @@ impl AnalyticsScreen {
             ),
         ])])
         .alignment(Alignment::Left)
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .border_style(Style::default().fg(Color::Blue))
-                .title("GitType Analytics"),
-        );
+        .block(default_block("GitType Analytics"));
         f.render_widget(header, area);
     }
 
@@ -649,12 +629,7 @@ impl AnalyticsScreen {
 
         let tabs = Paragraph::new(vec![Line::from(tab_spans)])
             .alignment(Alignment::Left)
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
-                    .title("Navigation"),
-            );
+            .block(default_block("Navigation"));
 
         f.render_widget(tabs, area);
     }
@@ -670,7 +645,7 @@ impl AnalyticsScreen {
         } else {
             let loading = Paragraph::new("Loading analytics data...")
                 .alignment(Alignment::Center)
-                .block(Block::default().borders(Borders::ALL));
+                .block(default_block(""));
             f.render_widget(loading, area);
         }
     }
@@ -736,12 +711,7 @@ impl AnalyticsScreen {
 
         let overview = Paragraph::new(overview_text)
             .alignment(Alignment::Center)
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
-                    .title("Overview (Last 7 days)"),
-            );
+            .block(default_block("Overview (Last 7 days)"));
         f.render_widget(overview, chunks[0]);
 
         // Simple text-based chart
@@ -776,12 +746,7 @@ impl AnalyticsScreen {
                 ]),
             ])
             .alignment(Alignment::Left)
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
-                    .title("CPM Trend"),
-            );
+            .block(default_block("CPM Trend"));
             f.render_widget(empty_msg, area);
             return;
         }
@@ -824,12 +789,7 @@ impl AnalyticsScreen {
             .collect();
 
         let chart = Chart::new(datasets)
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
-                    .title("CPM Performance Trend"),
-            )
+            .block(default_block("CPM Performance Trend"))
             .x_axis(
                 Axis::default()
                     .title("Date")
@@ -865,12 +825,7 @@ impl AnalyticsScreen {
                 ]),
             ])
             .alignment(Alignment::Left)
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
-                    .title("Accuracy Trend"),
-            );
+            .block(default_block("Accuracy Trend"));
             f.render_widget(empty_msg, area);
             return;
         }
@@ -913,12 +868,7 @@ impl AnalyticsScreen {
             .collect();
 
         let chart = Chart::new(datasets)
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
-                    .title("Accuracy Performance Trend"),
-            )
+            .block(default_block("Accuracy Performance Trend"))
             .x_axis(
                 Axis::default()
                     .title("Date")
@@ -991,20 +941,7 @@ impl AnalyticsScreen {
             }
         }
 
-        let list = List::new(items)
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
-                    .title("Repositories"),
-            )
-            .style(Style::default().fg(Color::White))
-            .highlight_style(
-                Style::default()
-                    .bg(Color::DarkGray)
-                    .add_modifier(Modifier::BOLD),
-            )
-            .highlight_symbol("► ");
+        let list = default_list(items, "Repositories");
 
         // Update scrollbar content length
         self.repository_scroll_state = self
@@ -1014,16 +951,10 @@ impl AnalyticsScreen {
         f.render_stateful_widget(list, chunks[0], &mut self.repository_list_state);
 
         // Render scrollbar for repository list
-        let scrollbar = Scrollbar::default()
-            .orientation(ScrollbarOrientation::VerticalRight)
-            .begin_symbol(Some("↑"))
-            .end_symbol(Some("↓"));
+        let scrollbar = default_scrollbar();
         f.render_stateful_widget(
             scrollbar,
-            chunks[0].inner(Margin {
-                vertical: 1,
-                horizontal: 1,
-            }),
+            scrollbar_inner_area(chunks[0]),
             &mut self.repository_scroll_state,
         );
 
@@ -1256,12 +1187,7 @@ impl AnalyticsScreen {
 
         let details = Paragraph::new(detail_lines)
             .alignment(Alignment::Left)
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
-                    .title("Repository Details (Last 90 Days)"),
-            );
+            .block(default_block("Repository Details (Last 90 Days)"));
         f.render_widget(details, area);
     }
 
@@ -1303,20 +1229,7 @@ impl AnalyticsScreen {
             }
         }
 
-        let list = List::new(items)
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
-                    .title("Languages"),
-            )
-            .style(Style::default().fg(Color::White))
-            .highlight_style(
-                Style::default()
-                    .bg(Color::DarkGray)
-                    .add_modifier(Modifier::BOLD),
-            )
-            .highlight_symbol("► ");
+        let list = default_list(items, "Languages");
 
         // Update scrollbar content length
         self.language_scroll_state = self
@@ -1326,16 +1239,10 @@ impl AnalyticsScreen {
         f.render_stateful_widget(list, chunks[0], &mut self.language_list_state);
 
         // Render scrollbar for language list
-        let scrollbar = Scrollbar::default()
-            .orientation(ScrollbarOrientation::VerticalRight)
-            .begin_symbol(Some("↑"))
-            .end_symbol(Some("↓"));
+        let scrollbar = default_scrollbar();
         f.render_stateful_widget(
             scrollbar,
-            chunks[0].inner(Margin {
-                vertical: 1,
-                horizontal: 1,
-            }),
+            scrollbar_inner_area(chunks[0]),
             &mut self.language_scroll_state,
         );
 
@@ -1573,12 +1480,7 @@ impl AnalyticsScreen {
 
         let details = Paragraph::new(detail_lines)
             .alignment(Alignment::Left)
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
-                    .title("Language Details (Last 90 Days)"),
-            );
+            .block(default_block("Language Details (Last 90 Days)"));
         f.render_widget(details, area);
     }
 
@@ -1592,12 +1494,7 @@ impl AnalyticsScreen {
                 ]),
             ])
             .alignment(Alignment::Left)
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
-                    .title("Recent Activity"),
-            );
+            .block(default_block("Recent Activity"));
             f.render_widget(empty_msg, area);
             return;
         }
@@ -1638,18 +1535,14 @@ impl AnalyticsScreen {
         let max_value = data.daily_sessions.values().max().copied().unwrap_or(0) as u64;
         let total_sessions: usize = data.daily_sessions.values().sum();
 
+        let title = format!(
+            "Recent Activity - {} Days | {} Total Sessions | Max: {}/Day",
+            continuous_data.len(),
+            total_sessions,
+            max_value
+        );
         let chart = BarChart::default()
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
-                    .title(format!(
-                        "Recent Activity - {} Days | {} Total Sessions | Max: {}/Day",
-                        continuous_data.len(),
-                        total_sessions,
-                        max_value
-                    )),
-            )
+            .block(default_block(&title))
             .data(&bars)
             .bar_width(bar_width)
             .bar_gap(1) // Small gap for better readability
@@ -1711,12 +1604,8 @@ impl AnalyticsScreen {
             }
         }
 
-        let repositories = Paragraph::new(repo_lines).block(
-            Block::default()
-                .borders(Borders::ALL)
-                .border_style(Style::default().fg(Color::Blue))
-                .title("Top Repositories (Last 90 Days)"),
-        );
+        let repositories =
+            Paragraph::new(repo_lines).block(default_block("Top Repositories (Last 90 Days)"));
         f.render_widget(repositories, chunks[0]);
 
         // Top Languages (Last 90 days)
@@ -1756,12 +1645,8 @@ impl AnalyticsScreen {
             }
         }
 
-        let languages = Paragraph::new(lang_lines).block(
-            Block::default()
-                .borders(Borders::ALL)
-                .border_style(Style::default().fg(Color::Blue))
-                .title("Top Languages (Last 90 Days)"),
-        );
+        let languages =
+            Paragraph::new(lang_lines).block(default_block("Top Languages (Last 90 Days)"));
         f.render_widget(languages, chunks[1]);
     }
 
