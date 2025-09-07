@@ -148,7 +148,7 @@ impl SessionRepository {
     pub fn get_language_stats(&self, _days: Option<i64>) -> Result<Vec<(String, f64, usize)>> {
         let db = self.db_with_lock()?;
         let conn = db.get_connection();
-        
+
         // Query with proper time filtering for last 30 days
         let query = "SELECT language, AVG(cpm) as avg_cpm, COUNT(*) as session_count
                      FROM stage_results 
@@ -166,12 +166,12 @@ impl SessionRepository {
             let session_count: i64 = row.get(2)?;
             Ok((language, avg_cpm, session_count as usize))
         })?;
-        
+
         let mut results = Vec::new();
         for row_result in rows {
             results.push(row_result?);
         }
-        
+
         Ok(results)
     }
 

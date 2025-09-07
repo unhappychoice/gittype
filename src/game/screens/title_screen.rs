@@ -168,7 +168,7 @@ impl TitleScreen {
 
         // Display instructions in organized sections
         let instructions_start_row = center_row + 6;
-        
+
         // Navigation section
         let nav_text = "[←→/HL] Change  [SPACE] Start";
         let nav_col = center_col.saturating_sub(nav_text.len() as u16 / 2);
@@ -263,7 +263,11 @@ impl TitleScreen {
         let count_col = center_col.saturating_sub(count_text.chars().count() as u16 / 2);
 
         execute!(stdout, MoveTo(count_col, start_row + 1))?;
-        execute!(stdout, SetForegroundColor(Color::Cyan), SetAttribute(Attribute::Dim))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Color::Cyan),
+            SetAttribute(Attribute::Dim)
+        )?;
         execute!(stdout, Print(count_text))?;
         execute!(stdout, ResetColor)?;
 
@@ -272,7 +276,11 @@ impl TitleScreen {
         for (i, description) in descriptions.iter().enumerate() {
             let desc_col = center_col.saturating_sub(description.chars().count() as u16 / 2);
             execute!(stdout, MoveTo(desc_col, start_row + 2 + i as u16))?;
-            execute!(stdout, SetForegroundColor(Color::White), SetAttribute(Attribute::Dim))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Color::White),
+                SetAttribute(Attribute::Dim)
+            )?;
             execute!(stdout, Print(description))?;
             execute!(stdout, ResetColor)?;
         }

@@ -1,9 +1,9 @@
 use super::{
     screens::{
         exit_summary_screen::ExitAction, session_summary_screen::ResultAction,
-        typing_screen::SessionState, AnalyticsAction, AnalyticsScreen, CancelScreen, CountdownScreen, ExitSummaryScreen,
-        FailureScreen, HistoryAction, HistoryScreen, SessionSummaryScreen, SharingScreen,
-        TitleAction, TitleScreen, TypingScreen,
+        typing_screen::SessionState, AnalyticsAction, AnalyticsScreen, CancelScreen,
+        CountdownScreen, ExitSummaryScreen, FailureScreen, HistoryAction, HistoryScreen,
+        SessionSummaryScreen, SharingScreen, TitleAction, TitleScreen, TypingScreen,
     },
     stage_builder::{DifficultyLevel, GameMode, StageBuilder},
 };

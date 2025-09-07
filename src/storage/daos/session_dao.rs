@@ -475,10 +475,7 @@ impl<'a> SessionDao<'a> {
         };
 
         let sort_direction = if sort_descending { "DESC" } else { "ASC" };
-        query.push_str(&format!(
-            " ORDER BY {} {}",
-            sort_column, sort_direction
-        ));
+        query.push_str(&format!(" ORDER BY {} {}", sort_column, sort_direction));
 
         let mut stmt = conn.prepare(&query)?;
 
