@@ -26,6 +26,8 @@ pub struct TypingScreen {
     countdown_active: bool,
     countdown_number: Option<u8>,
     countdown_start_time: Option<std::time::Instant>,
+    countdown_pause_time: Option<std::time::Instant>,
+    countdown_total_paused: std::time::Duration,
 }
 
 pub enum SessionState {
@@ -101,6 +103,8 @@ impl TypingScreen {
             countdown_active: false,
             countdown_number: None,
             countdown_start_time: None,
+            countdown_pause_time: None,
+            countdown_total_paused: std::time::Duration::ZERO,
         })
     }
 
@@ -278,6 +282,8 @@ impl TypingScreen {
                 self.countdown_active = true;
                 self.countdown_number = Some(3);
                 self.countdown_start_time = Some(std::time::Instant::now());
+                self.countdown_pause_time = None;
+                self.countdown_total_paused = std::time::Duration::ZERO;
                 Ok(SessionState::Countdown)
             }
             KeyCode::Esc => {
@@ -323,10 +329,22 @@ impl TypingScreen {
     }
 
     fn update_countdown(&mut self) -> bool {
+        // Don't update countdown if dialog is shown (paused)
+        if self.dialog_shown {
+            return false;
+        }
+        
         if let (Some(start_time), Some(current_num)) =
             (self.countdown_start_time, self.countdown_number)
         {
-            let elapsed = start_time.elapsed();
+            // Calculate elapsed time excluding paused duration
+            let total_elapsed = start_time.elapsed();
+            let current_paused = if let Some(pause_time) = self.countdown_pause_time {
+                self.countdown_total_paused + pause_time.elapsed()
+            } else {
+                self.countdown_total_paused
+            };
+            let elapsed = total_elapsed.saturating_sub(current_paused);
 
             let required_duration = if current_num == 0 {
                 // GO! shows for 400ms (shorter duration)
@@ -350,6 +368,8 @@ impl TypingScreen {
                     self.countdown_active = false;
                     self.countdown_number = None;
                     self.countdown_start_time = None;
+                    self.countdown_pause_time = None;
+                    self.countdown_total_paused = std::time::Duration::ZERO;
 
                     // Use the same timestamp for both to ensure accuracy
                     let now = std::time::Instant::now();
@@ -456,11 +476,21 @@ impl TypingScreen {
     fn open_dialog(&mut self) {
         self.dialog_shown = true;
         self.stage_tracker.record(StageInput::Pause);
+        
+        // Pause countdown timer if active
+        if self.countdown_active && self.countdown_pause_time.is_none() {
+            self.countdown_pause_time = Some(std::time::Instant::now());
+        }
     }
 
     fn close_dialog(&mut self) {
         self.dialog_shown = false;
         self.stage_tracker.record(StageInput::Resume);
+        
+        // Resume countdown timer if paused
+        if let Some(pause_time) = self.countdown_pause_time.take() {
+            self.countdown_total_paused += pause_time.elapsed();
+        }
     }
 
     fn update_display(&mut self) -> Result<()> {
