@@ -187,10 +187,10 @@ impl DatabaseSeeder {
 
                 // Generate realistic stage result data
                 use rand::Rng;
-                let mut rng = rand::thread_rng();
-                let keystrokes = rng.gen_range(20..200);
-                let mistakes = rng.gen_range(0..10);
-                let duration_ms = rng.gen_range(5000..60000);
+                let mut rng = rand::rng();
+                let keystrokes = rng.random_range(20..200);
+                let mistakes = rng.random_range(0..10);
+                let duration_ms = rng.random_range(5000..60000);
                 let wpm = (keystrokes as f64 * 60000.0 / duration_ms as f64) / 5.0; // 5 chars per word
                 let cpm = keystrokes as f64 * 60000.0 / duration_ms as f64;
                 let accuracy = if keystrokes > 0 {
@@ -201,9 +201,9 @@ impl DatabaseSeeder {
                 let score = wpm * accuracy / 10.0;
 
                 // Generate ranking data
-                let rank_position = rng.gen_range(1..=100);
+                let rank_position = rng.random_range(1..=100);
                 let rank_total = 100;
-                let position = rng.gen_range(1..=500);
+                let position = rng.random_range(1..=500);
                 let total = 500;
 
                 // Generate rank and tier names

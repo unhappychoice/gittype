@@ -185,7 +185,7 @@ impl StageBuilder {
     fn create_rng(&self) -> StdRng {
         match self.config.seed {
             Some(seed) => StdRng::seed_from_u64(seed),
-            None => StdRng::from_entropy(),
+            None => StdRng::from_os_rng(),
         }
     }
 

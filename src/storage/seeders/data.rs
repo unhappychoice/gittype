@@ -88,7 +88,7 @@ impl SeedData {
     }
 
     pub fn generate_seed_data(repo_count: usize, session_count: usize, stage_count: usize) -> Self {
-        let mut rng = thread_rng();
+        let mut rng = rand::rng();
 
         let now = Utc::now();
 
@@ -143,7 +143,7 @@ impl SeedData {
                 let lang = languages.choose(rng).unwrap();
                 let project_type = project_types.choose(rng).unwrap();
                 let org = org_names.choose(rng).unwrap();
-                let created_days_ago = rng.gen_range(1..=365);
+                let created_days_ago = rng.random_range(1..=365);
 
                 SeedRepository {
                     id: i as i64,
@@ -152,14 +152,14 @@ impl SeedData {
                         "{}-{}-{}",
                         lang,
                         project_type,
-                        rng.gen_range(1..=999)
+                        rng.random_range(1..=999)
                     ),
                     remote_url: format!(
                         "https://github.com/{}/{}-{}-{}",
                         org,
                         lang,
                         project_type,
-                        rng.gen_range(1..=999)
+                        rng.random_range(1..=999)
                     ),
                     created_at: now - chrono::Duration::days(created_days_ago),
                 }
@@ -202,15 +202,15 @@ impl SeedData {
 
         for i in 1..=session_count {
             let repo = repositories.choose(rng).unwrap();
-            let started_days_ago = rng.gen_range(0..=30);
+            let started_days_ago = rng.random_range(0..=30);
             let started_at = now
                 - chrono::Duration::days(started_days_ago)
-                - chrono::Duration::hours(rng.gen_range(0..=23))
-                - chrono::Duration::minutes(rng.gen_range(0..=59));
+                - chrono::Duration::hours(rng.random_range(0..=23))
+                - chrono::Duration::minutes(rng.random_range(0..=59));
 
-            let is_completed = rng.gen_bool(0.85); // 85% completed sessions
+            let is_completed = rng.random_bool(0.85); // 85% completed sessions
             let completed_at = if is_completed {
-                Some(started_at + chrono::Duration::minutes(rng.gen_range(5..=45)))
+                Some(started_at + chrono::Duration::minutes(rng.random_range(5..=45)))
             } else {
                 None
             };
@@ -219,12 +219,12 @@ impl SeedData {
             let difficulty = difficulty_levels.choose(rng).unwrap().to_string();
 
             let session_result = if is_completed {
-                let stages_attempted = rng.gen_range(5..=20);
-                let stages_completed = rng.gen_range(3..=stages_attempted);
+                let stages_attempted = rng.random_range(5..=20);
+                let stages_completed = rng.random_range(3..=stages_attempted);
                 let stages_skipped = stages_attempted - stages_completed;
-                let keystrokes = rng.gen_range(800..=2500);
-                let mistakes = rng.gen_range(10..=keystrokes / 15);
-                let duration_ms = rng.gen_range(300000..=2700000); // 5-45 minutes
+                let keystrokes = rng.random_range(800..=2500);
+                let mistakes = rng.random_range(10..=keystrokes / 15);
+                let duration_ms = rng.random_range(300000..=2700000); // 5-45 minutes
                 let accuracy = (keystrokes - mistakes) as f64 / keystrokes as f64 * 100.0;
                 let wpm = (keystrokes as f64 / 5.0) / (duration_ms as f64 / 60000.0);
                 let cpm = keystrokes as f64 / (duration_ms as f64 / 60000.0);
@@ -239,18 +239,18 @@ impl SeedData {
                     stages_completed,
                     stages_attempted,
                     stages_skipped,
-                    partial_effort_keystrokes: rng.gen_range(0..=100),
-                    partial_effort_mistakes: rng.gen_range(0..=10),
-                    best_stage_wpm: Some(wpm * rng.gen_range(1.1..=1.4)),
-                    worst_stage_wpm: Some(wpm * rng.gen_range(0.6..=0.9)),
-                    best_stage_accuracy: Some(accuracy * rng.gen_range(1.01..=1.05)),
-                    worst_stage_accuracy: Some(accuracy * rng.gen_range(0.85..=0.95)),
+                    partial_effort_keystrokes: rng.random_range(0..=100),
+                    partial_effort_mistakes: rng.random_range(0..=10),
+                    best_stage_wpm: Some(wpm * rng.random_range(1.1..=1.4)),
+                    worst_stage_wpm: Some(wpm * rng.random_range(0.6..=0.9)),
+                    best_stage_accuracy: Some(accuracy * rng.random_range(1.01..=1.05)),
+                    worst_stage_accuracy: Some(accuracy * rng.random_range(0.85..=0.95)),
                     score: wpm * accuracy / 10.0 + stages_completed as f64 * 50.0,
                     rank_name: Some(Self::get_rank_name(wpm)),
                     tier_name: Some(Self::get_tier_name(accuracy)),
-                    rank_position: Some(rng.gen_range(1..=100)),
+                    rank_position: Some(rng.random_range(1..=100)),
                     rank_total: Some(100),
-                    position: Some(rng.gen_range(1..=500)),
+                    position: Some(rng.random_range(1..=500)),
                     total: Some(500),
                 })
             } else {
@@ -258,7 +258,7 @@ impl SeedData {
             };
 
             // Generate 2-5 challenges per session
-            let challenge_count = rng.gen_range(2..=5);
+            let challenge_count = rng.random_range(2..=5);
             for _j in 0..challenge_count {
                 let lang = languages.choose(rng).unwrap();
                 let file_extensions = match *lang {
@@ -286,13 +286,13 @@ impl SeedData {
                 challenges.push(SeedChallenge {
                     id: format!("challenge_{}", challenge_id_counter),
                     file_path,
-                    start_line: rng.gen_range(1..=50),
-                    end_line: rng.gen_range(51..=200),
+                    start_line: rng.random_range(1..=50),
+                    end_line: rng.random_range(51..=200),
                     language: lang.to_string(),
                     code_content: Self::generate_code_content(lang, rng),
                     comment_ranges: "[]".to_string(),
                     difficulty_level: difficulty_levels.choose(rng).unwrap().to_string(),
-                    created_at: started_at - chrono::Duration::minutes(rng.gen_range(1..=30)),
+                    created_at: started_at - chrono::Duration::minutes(rng.random_range(1..=30)),
                 });
                 challenge_id_counter += 1;
             }
@@ -304,7 +304,7 @@ impl SeedData {
                 completed_at,
                 branch: branch_names.choose(rng).unwrap().to_string(),
                 commit_hash: Self::generate_commit_hash(rng),
-                is_dirty: rng.gen_bool(0.3), // 30% dirty
+                is_dirty: rng.random_bool(0.3), // 30% dirty
                 game_mode,
                 difficulty_level: difficulty,
                 session_result,
@@ -328,18 +328,18 @@ impl SeedData {
 
         for session in sessions {
             let session_stages = if session.session_result.is_some() {
-                rng.gen_range(stages_per_session.saturating_sub(2)..=stages_per_session + 2)
+                rng.random_range(stages_per_session.saturating_sub(2)..=stages_per_session + 2)
             } else {
-                rng.gen_range(1..=3) // Incomplete sessions have fewer stages
+                rng.random_range(1..=3) // Incomplete sessions have fewer stages
             };
 
             for stage_num in 1..=session_stages {
                 let challenge = challenges.choose(rng).unwrap();
-                let stage_duration_mins = rng.gen_range(1..=8);
+                let stage_duration_mins = rng.random_range(1..=8);
 
                 let started_at = session.started_at
                     + chrono::Duration::minutes((stage_num - 1) as i64 * stage_duration_mins);
-                let completed_at = if session.session_result.is_some() && rng.gen_bool(0.9) {
+                let completed_at = if session.session_result.is_some() && rng.random_bool(0.9) {
                     Some(started_at + chrono::Duration::minutes(stage_duration_mins))
                 } else {
                     None
@@ -451,7 +451,7 @@ impl SeedData {
         const CHARS: &[u8] = b"0123456789abcdef";
         (0..12)
             .map(|_| {
-                let idx = rng.gen_range(0..CHARS.len());
+                let idx = rng.random_range(0..CHARS.len());
                 CHARS[idx] as char
             })
             .collect()
