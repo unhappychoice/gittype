@@ -138,29 +138,57 @@ impl StageSummaryScreen {
             let ascii_height = ascii_numbers.len() as u16;
             let metrics_row = score_start_row + ascii_height + 1;
 
-            // Line 1: CPM, WPM, Time
+            // Line 1: CPM, WPM, Time with colors
             let time_secs = metrics.completion_time.as_secs_f64();
-            let line1_text = format!(
-                "CPM: {:.0} | WPM: {:.0} | Time: {:.1}s",
-                metrics.cpm, metrics.wpm, time_secs
-            );
+            let line1_text = format!("CPM: {:.0} | WPM: {:.0} | Time: {:.1}s", metrics.cpm, metrics.wpm, time_secs);
             let line1_col = center_col.saturating_sub(line1_text.len() as u16 / 2);
-
             execute!(stdout, MoveTo(line1_col, metrics_row))?;
+            
+            // CPM label and value
+            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM)))?;
+            execute!(stdout, Print("CPM: "))?;
             execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
-            execute!(stdout, Print(&line1_text))?;
+            execute!(stdout, Print(format!("{:.0}", metrics.cpm)))?;
+            execute!(stdout, Print(" | "))?;
+            
+            // WPM label and value
+            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM)))?;
+            execute!(stdout, Print("WPM: "))?;
+            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+            execute!(stdout, Print(format!("{:.0}", metrics.wpm)))?;
+            execute!(stdout, Print(" | "))?;
+            
+            // Time label and value
+            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::DURATION)))?;
+            execute!(stdout, Print("Time: "))?;
+            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+            execute!(stdout, Print(format!("{:.1}s", time_secs)))?;
             execute!(stdout, ResetColor)?;
 
-            // Line 2: Keystrokes, Mistakes, Accuracy
-            let line2_text = format!(
-                "Keystrokes: {} | Mistakes: {} | Accuracy: {:.1}%",
-                keystrokes, metrics.mistakes, metrics.accuracy
-            );
+            // Line 2: Keystrokes, Mistakes, Accuracy with colors
+            let line2_text = format!("Keystrokes: {} | Mistakes: {} | Accuracy: {:.1}%", keystrokes, metrics.mistakes, metrics.accuracy);
             let line2_col = center_col.saturating_sub(line2_text.len() as u16 / 2);
-
             execute!(stdout, MoveTo(line2_col, metrics_row + 1))?;
+            
+            // Keystrokes label and value
+            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::STAGE_INFO)))?;
+            execute!(stdout, Print("Keystrokes: "))?;
             execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
-            execute!(stdout, Print(&line2_text))?;
+            execute!(stdout, Print(format!("{}", keystrokes)))?;
+            execute!(stdout, Print(" | "))?;
+            
+            // Mistakes label and value
+            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::ERROR)))?;
+            execute!(stdout, Print("Mistakes: "))?;
+            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+            execute!(stdout, Print(format!("{}", metrics.mistakes)))?;
+            execute!(stdout, Print(" | "))?;
+            
+            // Accuracy label and value
+            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY)))?;
+            execute!(stdout, Print("Accuracy: "))?;
+            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+            execute!(stdout, Print(format!("{:.1}%", metrics.accuracy)))?;
             execute!(stdout, ResetColor)?;
         }
 

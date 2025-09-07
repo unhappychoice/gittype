@@ -1,5 +1,6 @@
 use crate::game::screens::session_summary_screen::ResultAction;
 use crate::scoring::StageTracker;
+use crate::ui::Colors;
 use crate::{models::GitRepository, Result};
 use crossterm::{
     cursor::MoveTo,
@@ -66,8 +67,26 @@ impl FailureScreen {
             );
             let metrics_x = (terminal_width - metrics_text.len() as u16) / 2;
             execute!(stdout, MoveTo(metrics_x, center_y))?;
-            execute!(stdout, SetForegroundColor(Color::White))?;
-            execute!(stdout, Print(metrics_text))?;
+            
+            // CPM label and value
+            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM)))?;
+            execute!(stdout, Print("CPM: "))?;
+            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+            execute!(stdout, Print(format!("{:.0}", metrics.cpm)))?;
+            execute!(stdout, Print(" | "))?;
+            
+            // WPM label and value
+            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM)))?;
+            execute!(stdout, Print("WPM: "))?;
+            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+            execute!(stdout, Print(format!("{:.0}", metrics.wpm)))?;
+            execute!(stdout, Print(" | "))?;
+            
+            // Accuracy label and value
+            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY)))?;
+            execute!(stdout, Print("Accuracy: "))?;
+            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
+            execute!(stdout, Print(format!("{:.0}%", metrics.accuracy)))?;
         }
 
         // Failure message (centered)
