@@ -168,17 +168,32 @@ impl InfoDialog {
         let total_instructions_len = "[↑↓/JK] Navigate [SPACE] Select [ESC] Close".len();
         let instructions_col = center_col.saturating_sub(total_instructions_len as u16 / 2);
         execute!(stdout, MoveTo(instructions_col, start_row + 7))?;
-        execute!(stdout, SetForegroundColor(Color::Cyan))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Color::Cyan),
+            SetAttribute(Attribute::Dim)
+        )?;
         execute!(stdout, Print("[↑↓/JK]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, SetAttribute(Attribute::Reset))?;
+        execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
         execute!(stdout, Print(" Navigate "))?;
-        execute!(stdout, SetForegroundColor(Color::Green))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Color::Green),
+            SetAttribute(Attribute::Dim)
+        )?;
         execute!(stdout, Print("[SPACE]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, SetAttribute(Attribute::Reset))?;
+        execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
         execute!(stdout, Print(" Select "))?;
-        execute!(stdout, SetForegroundColor(Color::Red))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Color::Red),
+            SetAttribute(Attribute::Dim)
+        )?;
         execute!(stdout, Print("[ESC]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, SetAttribute(Attribute::Reset))?;
+        execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
         execute!(stdout, Print(" Close"))?;
         execute!(stdout, ResetColor)?;
 
@@ -297,9 +312,14 @@ impl InfoDialog {
         let total_back_len = back_key.len() + back_label.len();
         let instructions_col = center_col.saturating_sub(total_back_len as u16 / 2);
         execute!(stdout, MoveTo(instructions_col, start_row + 6))?;
-        execute!(stdout, SetForegroundColor(Color::Green))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Color::Green),
+            SetAttribute(Attribute::Dim)
+        )?;
         execute!(stdout, Print(back_key))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, SetAttribute(Attribute::Reset))?;
+        execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
         execute!(stdout, Print(back_label))?;
         execute!(stdout, ResetColor)?;
 

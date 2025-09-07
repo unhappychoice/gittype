@@ -362,17 +362,40 @@ impl HistoryScreen {
 
         // Controls at the bottom row - matching title screen colors
         let controls_line = Line::from(vec![
-            Span::styled("[↑↓/JK] Navigate  ", Style::default().fg(Color::White)),
-            Span::styled("[SPACE]", Style::default().fg(Color::Green)),
-            Span::styled(" Details  ", Style::default().fg(Color::White)),
-            Span::styled("[F]", Style::default().fg(Color::Blue)),
-            Span::styled(" Filter  ", Style::default().fg(Color::White)),
-            Span::styled("[S]", Style::default().fg(Color::Cyan)),
-            Span::styled(" Sort  ", Style::default().fg(Color::White)),
-            Span::styled("[R]", Style::default().fg(Color::Magenta)),
-            Span::styled(" Refresh  ", Style::default().fg(Color::White)),
-            Span::styled("[ESC]", Style::default().fg(Color::Red)),
-            Span::styled(" Back", Style::default().fg(Color::White)),
+            Span::styled(
+                "[↑↓/JK]",
+                Style::default().fg(Color::Cyan).add_modifier(Modifier::DIM),
+            ),
+            Span::styled(" Navigate  ", Style::default().fg(Color::DarkGray)),
+            Span::styled(
+                "[SPACE]",
+                Style::default()
+                    .fg(Color::Green)
+                    .add_modifier(Modifier::DIM),
+            ),
+            Span::styled(" Details  ", Style::default().fg(Color::DarkGray)),
+            Span::styled(
+                "[F]",
+                Style::default().fg(Color::Blue).add_modifier(Modifier::DIM),
+            ),
+            Span::styled(" Filter  ", Style::default().fg(Color::DarkGray)),
+            Span::styled(
+                "[S]",
+                Style::default().fg(Color::Cyan).add_modifier(Modifier::DIM),
+            ),
+            Span::styled(" Sort  ", Style::default().fg(Color::DarkGray)),
+            Span::styled(
+                "[R]",
+                Style::default()
+                    .fg(Color::Magenta)
+                    .add_modifier(Modifier::DIM),
+            ),
+            Span::styled(" Refresh  ", Style::default().fg(Color::DarkGray)),
+            Span::styled(
+                "[ESC]",
+                Style::default().fg(Color::Red).add_modifier(Modifier::DIM),
+            ),
+            Span::styled(" Back", Style::default().fg(Color::DarkGray)),
         ]);
 
         let controls = Paragraph::new(controls_line).alignment(Alignment::Center);

@@ -158,9 +158,16 @@ impl SessionDetailScreen {
 
         // Controls at the bottom
         let controls_line = Line::from(vec![
-            Span::styled("[↑↓/JK] Scroll Stages  ", Style::default().fg(Color::White)),
-            Span::styled("[ESC]", Style::default().fg(Color::Red)),
-            Span::styled(" Back", Style::default().fg(Color::White)),
+            Span::styled(
+                "[↑↓/JK]",
+                Style::default().fg(Color::Cyan).add_modifier(Modifier::DIM),
+            ),
+            Span::styled(" Scroll Stages  ", Style::default().fg(Color::DarkGray)),
+            Span::styled(
+                "[ESC]",
+                Style::default().fg(Color::Red).add_modifier(Modifier::DIM),
+            ),
+            Span::styled(" Back", Style::default().fg(Color::DarkGray)),
         ]);
 
         let controls = Paragraph::new(controls_line).alignment(Alignment::Center);

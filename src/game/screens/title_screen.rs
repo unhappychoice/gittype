@@ -174,9 +174,14 @@ impl TitleScreen {
         let change_display_width = 26u16; // "[←→/HL] Change Difficulty"
         let change_col = center_col.saturating_sub(change_display_width / 2) + 2;
         execute!(stdout, MoveTo(change_col, instructions_start_row))?;
-        execute!(stdout, SetForegroundColor(Color::Blue))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Color::Blue),
+            SetAttribute(Attribute::Dim)
+        )?;
         execute!(stdout, Print("[←→/HL]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, SetAttribute(Attribute::Reset))?;
+        execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
         execute!(stdout, Print(" Change Difficulty"))?;
         execute!(stdout, ResetColor)?;
 
@@ -184,17 +189,32 @@ impl TitleScreen {
         let secondary_display_width = 38u16; // "[R] history  [A] analytics  [I/?] info"
         let secondary_col = center_col.saturating_sub(secondary_display_width / 2) + 2;
         execute!(stdout, MoveTo(secondary_col, instructions_start_row + 1))?;
-        execute!(stdout, SetForegroundColor(Color::Cyan))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Color::Cyan),
+            SetAttribute(Attribute::Dim)
+        )?;
         execute!(stdout, Print("[R]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, SetAttribute(Attribute::Reset))?;
+        execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
         execute!(stdout, Print(" History  "))?;
-        execute!(stdout, SetForegroundColor(Color::Cyan))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Color::Cyan),
+            SetAttribute(Attribute::Dim)
+        )?;
         execute!(stdout, Print("[A]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, SetAttribute(Attribute::Reset))?;
+        execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
         execute!(stdout, Print(" Analytics  "))?;
-        execute!(stdout, SetForegroundColor(Color::Cyan))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Color::Cyan),
+            SetAttribute(Attribute::Dim)
+        )?;
         execute!(stdout, Print("[I/?]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, SetAttribute(Attribute::Reset))?;
+        execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
         execute!(stdout, Print(" Info"))?;
         execute!(stdout, ResetColor)?;
 
@@ -202,13 +222,23 @@ impl TitleScreen {
         let primary_display_width = 22u16; // "[SPACE] Start  [ESC] Quit"
         let primary_col = center_col.saturating_sub(primary_display_width / 2) + 2;
         execute!(stdout, MoveTo(primary_col, instructions_start_row + 2))?;
-        execute!(stdout, SetForegroundColor(Color::Green))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Color::Green),
+            SetAttribute(Attribute::Dim)
+        )?;
         execute!(stdout, Print("[SPACE]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, SetAttribute(Attribute::Reset))?;
+        execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
         execute!(stdout, Print(" Start  "))?;
-        execute!(stdout, SetForegroundColor(Color::Red))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Color::Red),
+            SetAttribute(Attribute::Dim)
+        )?;
         execute!(stdout, Print("[ESC]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, SetAttribute(Attribute::Reset))?;
+        execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
         execute!(stdout, Print(" Quit"))?;
         execute!(stdout, ResetColor)?;
 

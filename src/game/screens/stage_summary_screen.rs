@@ -207,13 +207,23 @@ impl StageSummaryScreen {
         let start_col = center_col.saturating_sub(total_text_length as u16 / 2);
 
         execute!(stdout, MoveTo(start_col, options_row))?;
-        execute!(stdout, SetForegroundColor(Color::Green))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Color::Green),
+            SetAttribute(Attribute::Dim)
+        )?;
         execute!(stdout, Print("[SPACE]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, SetAttribute(Attribute::Reset))?;
+        execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
         execute!(stdout, Print(" Continue  "))?;
-        execute!(stdout, SetForegroundColor(Color::Red))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Color::Red),
+            SetAttribute(Attribute::Dim)
+        )?;
         execute!(stdout, Print("[ESC]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, SetAttribute(Attribute::Reset))?;
+        execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
         execute!(stdout, Print(" Quit"))?;
         execute!(stdout, ResetColor)?;
         stdout.flush()?;

@@ -332,9 +332,14 @@ impl SessionSummaryScreen {
                 execute!(stdout, Print("  "))?;
                 _pos += 2;
             }
-            execute!(stdout, SetForegroundColor(*key_color))?;
+            execute!(
+                stdout,
+                SetForegroundColor(*key_color),
+                SetAttribute(Attribute::Dim)
+            )?;
             execute!(stdout, Print(key))?;
-            execute!(stdout, SetForegroundColor(Color::White))?;
+            execute!(stdout, SetAttribute(Attribute::Reset))?;
+            execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
             execute!(stdout, Print(label))?;
             _pos += key.len() + label.len();
         }
@@ -356,9 +361,14 @@ impl SessionSummaryScreen {
             if i > 0 {
                 execute!(stdout, Print("  "))?;
             }
-            execute!(stdout, SetForegroundColor(*key_color))?;
+            execute!(
+                stdout,
+                SetForegroundColor(*key_color),
+                SetAttribute(Attribute::Dim)
+            )?;
             execute!(stdout, Print(key))?;
-            execute!(stdout, SetForegroundColor(Color::White))?;
+            execute!(stdout, SetAttribute(Attribute::Reset))?;
+            execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
             execute!(stdout, Print(label))?;
             execute!(stdout, ResetColor)?;
         }

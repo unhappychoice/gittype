@@ -222,9 +222,14 @@ impl DetailsDialog {
         let instruction = "[ESC] Return";
         let instruction_col = center_col.saturating_sub(instruction.len() as u16 / 2);
         execute!(stdout, MoveTo(instruction_col, current_row))?;
-        execute!(stdout, SetForegroundColor(Color::Red))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Color::Red),
+            SetAttribute(Attribute::Dim)
+        )?;
         execute!(stdout, Print("[ESC]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, SetAttribute(Attribute::Reset))?;
+        execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
         execute!(stdout, Print(" Return"))?;
         execute!(stdout, ResetColor)?;
 

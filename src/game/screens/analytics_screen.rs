@@ -1767,12 +1767,23 @@ impl AnalyticsScreen {
 
     fn render_controls(&self, f: &mut Frame, area: Rect) {
         let controls_line = Line::from(vec![
-            Span::styled("[←→/HL]", Style::default().fg(Color::Blue)),
-            Span::styled(" Switch View  ", Style::default().fg(Color::White)),
-            Span::styled("[R]", Style::default().fg(Color::Magenta)),
-            Span::styled(" Refresh  ", Style::default().fg(Color::White)),
-            Span::styled("[ESC]", Style::default().fg(Color::Red)),
-            Span::styled(" Back", Style::default().fg(Color::White)),
+            Span::styled(
+                "[←→/HL]",
+                Style::default().fg(Color::Blue).add_modifier(Modifier::DIM),
+            ),
+            Span::styled(" Switch View  ", Style::default().fg(Color::DarkGray)),
+            Span::styled(
+                "[R]",
+                Style::default()
+                    .fg(Color::Magenta)
+                    .add_modifier(Modifier::DIM),
+            ),
+            Span::styled(" Refresh  ", Style::default().fg(Color::DarkGray)),
+            Span::styled(
+                "[ESC]",
+                Style::default().fg(Color::Red).add_modifier(Modifier::DIM),
+            ),
+            Span::styled(" Back", Style::default().fg(Color::DarkGray)),
         ]);
 
         let controls = Paragraph::new(controls_line).alignment(Alignment::Center);
