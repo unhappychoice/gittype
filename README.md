@@ -18,11 +18,13 @@
 ## Installation 📦
 
 ### Quick Install (Recommended)
+#### One-liner installation (Linux/macOS/Windows)
 ```bash
-# One-liner installation (Linux/macOS/Windows)
 curl -sSL https://raw.githubusercontent.com/unhappychoice/gittype/main/install.sh | bash
+```
 
-# Or with specific version
+#### Or with specific version
+```bash
 curl -sSL https://raw.githubusercontent.com/unhappychoice/gittype/main/install.sh | bash -s -- --version v0.5.0
 ```
 
