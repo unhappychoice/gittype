@@ -44,7 +44,7 @@ impl AnimationScreen {
         animation: &TypingAnimation,
         _rank_name: &str,
     ) {
-        let area = frame.size();
+        let area = frame.area();
 
         // Create vertical layout for centering
         let chunks = Layout::default()

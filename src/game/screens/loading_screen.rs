@@ -296,7 +296,7 @@ impl LoadingScreen {
     }
 
     fn draw_ui_static(frame: &mut Frame, state: &LoadingScreenState) {
-        let size = frame.size();
+        let size = frame.area();
 
         // Get repo info for bottom display
         let repo_info = state
