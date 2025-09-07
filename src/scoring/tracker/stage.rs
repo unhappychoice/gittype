@@ -57,10 +57,18 @@ impl StageTracker {
         }
     }
 
+    /// Set the start time manually for precise timing control
+    pub fn set_start_time(&mut self, start_time: Instant) {
+        self.start_time = Some(start_time);
+    }
+
     pub fn record(&mut self, input: StageInput) {
         match input {
             StageInput::Start => {
-                self.start_time = Some(Instant::now());
+                // Only set start_time if not already set (to preserve manually set time)
+                if self.start_time.is_none() {
+                    self.start_time = Some(Instant::now());
+                }
             }
             StageInput::Keystroke { ch, position } => {
                 if self.recorded_duration.is_some() {
@@ -95,7 +103,8 @@ impl StageTracker {
                     self.paused_time = None;
                 }
                 if let Some(start) = self.start_time {
-                    self.recorded_duration = Some(start.elapsed() - self.total_paused_duration);
+                    self.recorded_duration =
+                        Some(start.elapsed().saturating_sub(self.total_paused_duration));
                 }
             }
             StageInput::Pause => {
@@ -116,7 +125,8 @@ impl StageTracker {
                     self.paused_time = None;
                 }
                 if let Some(start) = self.start_time {
-                    self.recorded_duration = Some(start.elapsed() - self.total_paused_duration);
+                    self.recorded_duration =
+                        Some(start.elapsed().saturating_sub(self.total_paused_duration));
                 }
             }
             StageInput::Fail => {
@@ -126,7 +136,8 @@ impl StageTracker {
                     self.paused_time = None;
                 }
                 if let Some(start) = self.start_time {
-                    self.recorded_duration = Some(start.elapsed() - self.total_paused_duration);
+                    self.recorded_duration =
+                        Some(start.elapsed().saturating_sub(self.total_paused_duration));
                 }
             }
         }
@@ -142,7 +153,7 @@ impl StageTracker {
             } else {
                 self.total_paused_duration
             };
-            total_elapsed - paused_duration
+            total_elapsed.saturating_sub(paused_duration)
         } else {
             std::time::Duration::ZERO
         };
