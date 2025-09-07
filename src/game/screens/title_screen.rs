@@ -3,7 +3,7 @@ use crate::game::stage_builder::DifficultyLevel;
 use crate::models::GitRepository;
 use crate::Result;
 use crossterm::{
-    cursor::MoveTo,
+    cursor::{Hide, MoveTo},
     event::{self, Event, KeyCode, KeyModifiers},
     execute,
     style::{Attribute, Color, Print, ResetColor, SetAttribute, SetForegroundColor},
@@ -137,6 +137,7 @@ impl TitleScreen {
         center_col: u16,
         git_repository: Option<&GitRepository>,
     ) -> Result<()> {
+        execute!(stdout, Hide)?;
         // ASCII logo lines from oh-my-logo "GitType" purple
         let logo_lines = [
             "\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m_\x1b[39m\x1b[38;5;104m_\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m_\x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m",
@@ -166,27 +167,23 @@ impl TitleScreen {
         execute!(stdout, Print(subtitle))?;
         execute!(stdout, ResetColor)?;
 
-        // Display instructions in organized sections
+        // Display instructions in organized 3-tier structure
         let instructions_start_row = center_row + 6;
 
-        // Navigation section
-        let nav_text = "[←→/HL] Change  [SPACE] Start";
-        let nav_col = center_col.saturating_sub(nav_text.len() as u16 / 2);
-        execute!(stdout, MoveTo(nav_col, instructions_start_row))?;
+        // Tier 1: Change Difficulty (Difficulty selection controls)
+        let change_display_width = 26u16; // "[←→/HL] Change Difficulty"
+        let change_col = center_col.saturating_sub(change_display_width / 2) + 2;
+        execute!(stdout, MoveTo(change_col, instructions_start_row))?;
         execute!(stdout, SetForegroundColor(Color::Blue))?;
         execute!(stdout, Print("[←→/HL]"))?;
         execute!(stdout, SetForegroundColor(Color::White))?;
-        execute!(stdout, Print(" Change  "))?;
-        execute!(stdout, SetForegroundColor(Color::Green))?;
-        execute!(stdout, Print("[SPACE]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
-        execute!(stdout, Print(" Start"))?;
+        execute!(stdout, Print(" Change Difficulty"))?;
         execute!(stdout, ResetColor)?;
 
-        // Actions section
-        let actions_text = "[R] History  [A] Analytics  [I/?] Info";
-        let actions_col = center_col.saturating_sub(actions_text.len() as u16 / 2);
-        execute!(stdout, MoveTo(actions_col, instructions_start_row + 1))?;
+        // Tier 2: Secondary actions (history analytics info)
+        let secondary_display_width = 38u16; // "[R] history  [A] analytics  [I/?] info"
+        let secondary_col = center_col.saturating_sub(secondary_display_width / 2) + 2;
+        execute!(stdout, MoveTo(secondary_col, instructions_start_row + 1))?;
         execute!(stdout, SetForegroundColor(Color::Cyan))?;
         execute!(stdout, Print("[R]"))?;
         execute!(stdout, SetForegroundColor(Color::White))?;
@@ -201,10 +198,14 @@ impl TitleScreen {
         execute!(stdout, Print(" Info"))?;
         execute!(stdout, ResetColor)?;
 
-        // Exit section
-        let exit_text = "[ESC] Quit";
-        let exit_col = center_col.saturating_sub(exit_text.len() as u16 / 2);
-        execute!(stdout, MoveTo(exit_col, instructions_start_row + 2))?;
+        // Tier 3: Primary actions (Start Quit)
+        let primary_display_width = 22u16; // "[SPACE] Start  [ESC] Quit"
+        let primary_col = center_col.saturating_sub(primary_display_width / 2) + 2;
+        execute!(stdout, MoveTo(primary_col, instructions_start_row + 2))?;
+        execute!(stdout, SetForegroundColor(Color::Green))?;
+        execute!(stdout, Print("[SPACE]"))?;
+        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, Print(" Start  "))?;
         execute!(stdout, SetForegroundColor(Color::Red))?;
         execute!(stdout, Print("[ESC]"))?;
         execute!(stdout, SetForegroundColor(Color::White))?;
