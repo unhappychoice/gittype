@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 
 # Default values
 VERSION="latest"
-INSTALL_DIR="$HOME/.local/bin"
+INSTALL_DIR="/usr/local/bin"
 
 # Help function
 show_help() {
@@ -25,13 +25,13 @@ Usage: $0 [options]
 
 Options:
     -v, --version VERSION    Install specific version (default: latest)
-    -d, --dir DIRECTORY      Install directory (default: ~/.local/bin)
+    -d, --dir DIRECTORY      Install directory (default: /usr/local/bin)
     -h, --help              Show this help message
 
 Examples:
-    $0                      # Install latest version to ~/.local/bin
+    $0                      # Install latest version to /usr/local/bin
     $0 -v v0.5.0           # Install specific version
-    $0 -d /usr/local/bin   # Install to system directory (may require sudo)
+    $0 -d ~/.local/bin     # Install to user directory (no sudo required)
 
 One-liner installation:
     curl -sSL https://raw.githubusercontent.com/unhappychoice/gittype/main/install.sh | bash
@@ -105,6 +105,24 @@ get_latest_version() {
         cut -d'"' -f4
 }
 
+# Check if sudo is needed for installation directory
+check_sudo_needed() {
+    local install_dir="$1"
+    
+    # If directory doesn't exist, check parent directory
+    local check_dir="$install_dir"
+    while [[ ! -d "$check_dir" && "$check_dir" != "/" ]]; do
+        check_dir="$(dirname "$check_dir")"
+    done
+    
+    # Test if we can write to the directory
+    if [[ -w "$check_dir" ]]; then
+        return 1  # No sudo needed
+    else
+        return 0  # Sudo needed
+    fi
+}
+
 # Download and install gittype
 install_gittype() {
     local platform
@@ -149,14 +167,40 @@ install_gittype() {
         tar -xzf gittype-archive
     fi
     
+    # Check if sudo is needed
+    local use_sudo=""
+    if check_sudo_needed "$INSTALL_DIR"; then
+        echo -e "${YELLOW}⚠️  Installing to ${INSTALL_DIR} requires sudo privileges${NC}"
+        
+        # Check if sudo is available
+        if ! command -v sudo >/dev/null 2>&1; then
+            echo -e "${RED}Error: sudo is required but not available${NC}" >&2
+            echo -e "${BLUE}💡 Try installing to a user directory instead:${NC}"
+            echo -e "${BLUE}   $0 -d \$HOME/.local/bin${NC}"
+            exit 1
+        fi
+        
+        echo -e "${BLUE}You may be prompted for your password...${NC}"
+        use_sudo="sudo"
+    fi
+    
     # Create install directory if it doesn't exist
-    mkdir -p "$INSTALL_DIR"
+    if [[ -n "$use_sudo" ]]; then
+        sudo mkdir -p "$INSTALL_DIR"
+    else
+        mkdir -p "$INSTALL_DIR"
+    fi
     
     # Install binary
     echo -e "${BLUE}Installing to ${INSTALL_DIR}...${NC}"
     if [[ -f "$binary_name" ]]; then
-        cp "$binary_name" "$INSTALL_DIR/"
-        chmod +x "$INSTALL_DIR/$binary_name"
+        if [[ -n "$use_sudo" ]]; then
+            sudo cp "$binary_name" "$INSTALL_DIR/"
+            sudo chmod +x "$INSTALL_DIR/$binary_name"
+        else
+            cp "$binary_name" "$INSTALL_DIR/"
+            chmod +x "$INSTALL_DIR/$binary_name"
+        fi
     else
         echo -e "${RED}Binary not found in archive${NC}" >&2
         exit 1
