@@ -17,15 +17,35 @@
 
 ## Installation 📦
 
+### Quick Install (Recommended)
+```bash
+# One-liner installation (Linux/macOS/Windows)
+curl -sSL https://raw.githubusercontent.com/unhappychoice/gittype/main/install.sh | bash
+
+# Or with specific version
+curl -sSL https://raw.githubusercontent.com/unhappychoice/gittype/main/install.sh | bash -s -- --version v0.5.0
+```
+
 ### Homebrew (macOS/Linux)
 ```bash
 brew install unhappychoice/tap/gittype
 ```
 
+
 ### Cargo (Universal)
 ```bash
 cargo install gittype
 ```
+
+### Binary Downloads
+Get pre-compiled binaries for your platform from our [releases page](https://github.com/unhappychoice/gittype/releases/latest).
+
+Available platforms:
+- `x86_64-apple-darwin` (Intel Mac)
+- `aarch64-apple-darwin` (Apple Silicon Mac)
+- `x86_64-unknown-linux-gnu` (Linux x64)
+- `aarch64-unknown-linux-gnu` (Linux ARM64)
+- `x86_64-pc-windows-msvc` (Windows)
 
 ## Quick Start 🚀
 

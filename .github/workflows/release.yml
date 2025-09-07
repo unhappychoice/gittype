@@ -212,22 +212,18 @@ jobs:
       
       - name: Update Homebrew formula
         run: |
-          # Calculate SHA256 for each binary release
           VERSION=${{ needs.release.outputs.new_version }}
           
-          # macOS Intel
+          # Calculate SHA256 for each binary release
           MACOS_INTEL_URL="https://github.com/unhappychoice/gittype/releases/download/$VERSION/gittype-$VERSION-x86_64-apple-darwin.tar.gz"
           MACOS_INTEL_SHA=$(curl -sL "$MACOS_INTEL_URL" | sha256sum | cut -d' ' -f1)
           
-          # macOS ARM
           MACOS_ARM_URL="https://github.com/unhappychoice/gittype/releases/download/$VERSION/gittype-$VERSION-aarch64-apple-darwin.tar.gz"
           MACOS_ARM_SHA=$(curl -sL "$MACOS_ARM_URL" | sha256sum | cut -d' ' -f1)
           
-          # Linux Intel
           LINUX_INTEL_URL="https://github.com/unhappychoice/gittype/releases/download/$VERSION/gittype-$VERSION-x86_64-unknown-linux-gnu.tar.gz"
           LINUX_INTEL_SHA=$(curl -sL "$LINUX_INTEL_URL" | sha256sum | cut -d' ' -f1)
           
-          # Linux ARM64
           LINUX_ARM_URL="https://github.com/unhappychoice/gittype/releases/download/$VERSION/gittype-$VERSION-aarch64-unknown-linux-gnu.tar.gz"
           LINUX_ARM_SHA=$(curl -sL "$LINUX_ARM_URL" | sha256sum | cut -d' ' -f1)
           
@@ -237,10 +233,9 @@ jobs:
           echo "Linux Intel: $LINUX_INTEL_SHA"
           echo "Linux ARM: $LINUX_ARM_SHA"
           
-          # Update the formula with new URLs and SHA256s
           cd homebrew-tap
           
-          # Use awk to update the formula more reliably
+          # Use awk to update the formula
           awk -v version="$VERSION" \
               -v macos_intel_url="$MACOS_INTEL_URL" \
               -v macos_intel_sha="$MACOS_INTEL_SHA" \
@@ -274,10 +269,6 @@ jobs:
           }
           { print }
           ' Formula/gittype.rb > Formula/gittype.rb.tmp && mv Formula/gittype.rb.tmp Formula/gittype.rb
-          
-          # Verify the changes
-          echo "Updated formula content:"
-          cat Formula/gittype.rb
           
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
