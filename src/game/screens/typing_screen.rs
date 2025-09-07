@@ -207,14 +207,48 @@ impl TypingScreen {
             return self.handle_waiting_key(key_event);
         }
 
-        // During countdown, only allow ESC and Ctrl+C
+        // During countdown, allow ESC for dialog and Ctrl+C for exit
         if self.countdown_active {
             match key_event.code {
-                KeyCode::Esc => Ok(SessionState::Exit),
+                KeyCode::Esc => {
+                    if self.dialog_shown {
+                        self.close_dialog();
+                        Ok(SessionState::Countdown)
+                    } else {
+                        self.open_dialog();
+                        Ok(SessionState::ShowDialog)
+                    }
+                }
+                KeyCode::Char('s' | 'S') => {
+                    if self.dialog_shown {
+                        self.close_dialog();
+                        if self.skips_remaining > 0 {
+                            self.skips_remaining -= 1;
+                            Ok(SessionState::Skip)
+                        } else {
+                            Ok(SessionState::Countdown)
+                        }
+                    } else {
+                        Ok(SessionState::Countdown)
+                    }
+                }
+                KeyCode::Char('q' | 'Q') => {
+                    if self.dialog_shown {
+                        self.close_dialog();
+                        Ok(SessionState::Failed)
+                    } else {
+                        Ok(SessionState::Countdown)
+                    }
+                }
                 KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
                     Ok(SessionState::Exit)
                 }
-                _ => Ok(SessionState::Countdown),
+                _ => {
+                    if self.dialog_shown {
+                        self.close_dialog();
+                    }
+                    Ok(SessionState::Countdown)
+                }
             }
         } else {
             match key_event.code {
