@@ -7,7 +7,7 @@ pub struct Stage {
     pub stage_number: usize,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct StageResult {
     pub cpm: f64,
     pub wpm: f64,
