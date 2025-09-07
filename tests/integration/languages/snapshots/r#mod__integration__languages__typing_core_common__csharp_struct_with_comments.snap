@@ -1,0 +1,24 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+public struct Point
+{
+    public int X; // X-coordinate
+    public int Y; // Y-coordinate
+}
+
+# text_to_type
+public struct Point
+{
+public int X;
+public int Y;
+}
+
+# text_to_display
+public struct Point↵
+{↵
+    public int X;↵ // X-coordinate
+    public int Y;↵ // Y-coordinate
+}↵

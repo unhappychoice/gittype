@@ -1,0 +1,33 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+/// <summary>
+/// Adds two integers.
+/// </summary>
+/// <param name="a">The first integer.</param>
+/// <param name="b">The second integer.</param>
+/// <returns>The sum of the two integers.</returns>
+public int Add(int a, int b)
+{
+    return a + b;
+}
+
+# text_to_type
+public int Add(int a, int b)
+{
+return a + b;
+}
+
+# text_to_display
+/// <summary>
+/// Adds two integers.
+/// </summary>
+/// <param name="a">The first integer.</param>
+/// <param name="b">The second integer.</param>
+/// <returns>The sum of the two integers.</returns>
+public int Add(int a, int b)↵
+{↵
+    return a + b;↵
+}↵

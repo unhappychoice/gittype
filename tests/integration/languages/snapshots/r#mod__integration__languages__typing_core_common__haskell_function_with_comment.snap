@@ -1,0 +1,17 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+-- Function to add two numbers
+add :: Int -> Int -> Int
+add x y = x + y -- Returns the sum
+
+# text_to_type
+add :: Int -> Int -> Int
+add x y = x + y
+
+# text_to_display
+-- Function to add two numbers
+add :: Int -> Int -> Int↵
+add x y = x + y↵ -- Returns the sum

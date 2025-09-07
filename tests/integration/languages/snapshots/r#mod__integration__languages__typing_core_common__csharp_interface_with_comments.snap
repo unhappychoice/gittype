@@ -1,0 +1,24 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+public interface ILogger
+{
+    void Log(string message); // Log a message
+    void LogError(string message); // Log an error
+}
+
+# text_to_type
+public interface ILogger
+{
+void Log(string message);
+void LogError(string message);
+}
+
+# text_to_display
+public interface ILogger↵
+{↵
+    void Log(string message);↵ // Log a message
+    void LogError(string message);↵ // Log an error
+}↵
