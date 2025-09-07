@@ -445,8 +445,8 @@ impl<'a> SessionDao<'a> {
             "SELECT s.id, s.repository_id, s.started_at, s.completed_at, s.branch, s.commit_hash,
                     s.is_dirty, s.game_mode, s.difficulty_level, s.max_stages, s.time_limit_seconds
              FROM sessions s 
-             LEFT JOIN session_results sr ON s.id = sr.session_id
-             WHERE 1=1",
+             INNER JOIN session_results sr ON s.id = sr.session_id
+             WHERE s.completed_at IS NOT NULL",
         );
 
         let mut params = Vec::new();
@@ -475,10 +475,7 @@ impl<'a> SessionDao<'a> {
         };
 
         let sort_direction = if sort_descending { "DESC" } else { "ASC" };
-        query.push_str(&format!(
-            " ORDER BY {} {} LIMIT 1000",
-            sort_column, sort_direction
-        ));
+        query.push_str(&format!(" ORDER BY {} {}", sort_column, sort_direction));
 
         let mut stmt = conn.prepare(&query)?;
 
