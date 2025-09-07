@@ -7,7 +7,7 @@ pub struct Session {
     pub session_start_time: Instant,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct SessionResult {
     pub session_start_time: Instant,
     pub session_duration: Duration, // Total duration (valid + invalid) for backward compatibility
