@@ -1,0 +1,17 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+-- A typeclass for things that can be greeted
+class Greetable a where
+  greet :: a -> String -- The greeting function
+
+# text_to_type
+class Greetable a where
+greet :: a -> String
+
+# text_to_display
+-- A typeclass for things that can be greeted
+class Greetable a where↵
+  greet :: a -> String↵ -- The greeting function

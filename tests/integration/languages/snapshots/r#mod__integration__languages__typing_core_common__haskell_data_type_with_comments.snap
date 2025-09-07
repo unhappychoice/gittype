@@ -1,0 +1,23 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+-- Represents a person with a name and age
+data Person = Person
+  { name :: String  -- The person's name
+  , age  :: Int     -- The person's age
+  } deriving (Show)
+
+# text_to_type
+data Person = Person
+{ name :: String
+, age  :: Int
+} deriving (Show)
+
+# text_to_display
+-- Represents a person with a name and age
+data Person = Person↵
+  { name :: String↵  -- The person's name
+  , age  :: Int↵     -- The person's age
+  } deriving (Show)↵
