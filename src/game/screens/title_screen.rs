@@ -14,6 +14,7 @@ use std::io::{stdout, Write};
 pub enum TitleAction {
     Start(DifficultyLevel),
     History,
+    Analytics,
     Quit,
 }
 
@@ -120,6 +121,9 @@ impl TitleScreen {
                         KeyCode::Char('r') | KeyCode::Char('R') => {
                             return Ok(TitleAction::History);
                         }
+                        KeyCode::Char('a') | KeyCode::Char('A') => {
+                            return Ok(TitleAction::Analytics);
+                        }
                         _ => {}
                     }
                 }
@@ -162,12 +166,13 @@ impl TitleScreen {
         execute!(stdout, Print(subtitle))?;
         execute!(stdout, ResetColor)?;
 
-        // Display instructions with color coding (keys only)
-        let total_instructions_len =
-            "[←→/HL] Change  [SPACE] Start  [R] History  [I/?] Info  [ESC] Quit".len();
-        let instructions_col = center_col.saturating_sub(total_instructions_len as u16 / 2);
-
-        execute!(stdout, MoveTo(instructions_col, center_row + 6))?;
+        // Display instructions in organized sections
+        let instructions_start_row = center_row + 6;
+        
+        // Navigation section
+        let nav_text = "[←→/HL] Change  [SPACE] Start";
+        let nav_col = center_col.saturating_sub(nav_text.len() as u16 / 2);
+        execute!(stdout, MoveTo(nav_col, instructions_start_row))?;
         execute!(stdout, SetForegroundColor(Color::Blue))?;
         execute!(stdout, Print("[←→/HL]"))?;
         execute!(stdout, SetForegroundColor(Color::White))?;
@@ -175,15 +180,31 @@ impl TitleScreen {
         execute!(stdout, SetForegroundColor(Color::Green))?;
         execute!(stdout, Print("[SPACE]"))?;
         execute!(stdout, SetForegroundColor(Color::White))?;
-        execute!(stdout, Print(" Start  "))?;
-        execute!(stdout, SetForegroundColor(Color::Magenta))?;
+        execute!(stdout, Print(" Start"))?;
+        execute!(stdout, ResetColor)?;
+
+        // Actions section
+        let actions_text = "[R] History  [A] Analytics  [I/?] Info";
+        let actions_col = center_col.saturating_sub(actions_text.len() as u16 / 2);
+        execute!(stdout, MoveTo(actions_col, instructions_start_row + 1))?;
+        execute!(stdout, SetForegroundColor(Color::Cyan))?;
         execute!(stdout, Print("[R]"))?;
         execute!(stdout, SetForegroundColor(Color::White))?;
         execute!(stdout, Print(" History  "))?;
         execute!(stdout, SetForegroundColor(Color::Cyan))?;
+        execute!(stdout, Print("[A]"))?;
+        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, Print(" Analytics  "))?;
+        execute!(stdout, SetForegroundColor(Color::Cyan))?;
         execute!(stdout, Print("[I/?]"))?;
         execute!(stdout, SetForegroundColor(Color::White))?;
-        execute!(stdout, Print(" Info  "))?;
+        execute!(stdout, Print(" Info"))?;
+        execute!(stdout, ResetColor)?;
+
+        // Exit section
+        let exit_text = "[ESC] Quit";
+        let exit_col = center_col.saturating_sub(exit_text.len() as u16 / 2);
+        execute!(stdout, MoveTo(exit_col, instructions_start_row + 2))?;
         execute!(stdout, SetForegroundColor(Color::Red))?;
         execute!(stdout, Print("[ESC]"))?;
         execute!(stdout, SetForegroundColor(Color::White))?;
@@ -242,7 +263,7 @@ impl TitleScreen {
         let count_col = center_col.saturating_sub(count_text.chars().count() as u16 / 2);
 
         execute!(stdout, MoveTo(count_col, start_row + 1))?;
-        execute!(stdout, SetForegroundColor(Color::Cyan))?;
+        execute!(stdout, SetForegroundColor(Color::Cyan), SetAttribute(Attribute::Dim))?;
         execute!(stdout, Print(count_text))?;
         execute!(stdout, ResetColor)?;
 
@@ -251,7 +272,7 @@ impl TitleScreen {
         for (i, description) in descriptions.iter().enumerate() {
             let desc_col = center_col.saturating_sub(description.chars().count() as u16 / 2);
             execute!(stdout, MoveTo(desc_col, start_row + 2 + i as u16))?;
-            execute!(stdout, SetForegroundColor(Color::Grey))?;
+            execute!(stdout, SetForegroundColor(Color::White), SetAttribute(Attribute::Dim))?;
             execute!(stdout, Print(description))?;
             execute!(stdout, ResetColor)?;
         }
