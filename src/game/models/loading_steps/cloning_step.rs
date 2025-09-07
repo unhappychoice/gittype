@@ -1,5 +1,6 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
 use crate::repository_manager::RepositoryManager;
+use crate::ui::Colors;
 use crate::Result;
 use ratatui::style::Color;
 
@@ -22,11 +23,11 @@ impl Step for CloningStep {
 
     fn icon(&self, is_current: bool, is_completed: bool) -> (&str, Color) {
         if is_completed {
-            ("✓", Color::Green)
+            ("✓", Colors::SUCCESS)
         } else if is_current {
-            ("⚡", Color::Yellow)
+            ("⚡", Colors::WARNING)
         } else {
-            ("◦", Color::DarkGray)
+            ("◦", Colors::MUTED)
         }
     }
 

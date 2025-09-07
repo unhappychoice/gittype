@@ -1,6 +1,7 @@
 use crate::game::ascii_digits::get_digit_patterns;
 use crate::game::screens::ResultAction;
 use crate::scoring::StageResult;
+use crate::ui::Colors;
 use crate::Result;
 use crossterm::{
     cursor::MoveTo,
@@ -68,11 +69,20 @@ impl StageSummaryScreen {
         execute!(stdout, MoveTo(title_col, center_row.saturating_sub(6)))?;
         execute!(stdout, SetAttribute(Attribute::Bold))?;
         if metrics.was_failed {
-            execute!(stdout, SetForegroundColor(Color::Red))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::FAILED))
+            )?;
         } else if metrics.was_skipped {
-            execute!(stdout, SetForegroundColor(Color::Magenta))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::SKIPPED))
+            )?;
         } else {
-            execute!(stdout, SetForegroundColor(Color::Cyan))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::COMPLETED))
+            )?;
         }
         execute!(stdout, Print(&stage_title))?;
         execute!(stdout, ResetColor)?;
@@ -93,11 +103,20 @@ impl StageSummaryScreen {
         execute!(stdout, MoveTo(score_label_col, score_label_row))?;
         execute!(stdout, SetAttribute(Attribute::Bold))?;
         if metrics.was_failed {
-            execute!(stdout, SetForegroundColor(Color::Red))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::FAILED))
+            )?;
         } else if metrics.was_skipped {
-            execute!(stdout, SetForegroundColor(Color::Magenta))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::SKIPPED))
+            )?;
         } else {
-            execute!(stdout, SetForegroundColor(Color::Cyan))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::COMPLETED))
+            )?;
         }
         execute!(stdout, Print(score_label))?;
         execute!(stdout, ResetColor)?;
@@ -137,29 +156,99 @@ impl StageSummaryScreen {
             let ascii_height = ascii_numbers.len() as u16;
             let metrics_row = score_start_row + ascii_height + 1;
 
-            // Line 1: CPM, WPM, Time
+            // Line 1: CPM, WPM, Time with colors
             let time_secs = metrics.completion_time.as_secs_f64();
             let line1_text = format!(
                 "CPM: {:.0} | WPM: {:.0} | Time: {:.1}s",
                 metrics.cpm, metrics.wpm, time_secs
             );
             let line1_col = center_col.saturating_sub(line1_text.len() as u16 / 2);
-
             execute!(stdout, MoveTo(line1_col, metrics_row))?;
-            execute!(stdout, SetForegroundColor(Color::White))?;
-            execute!(stdout, Print(&line1_text))?;
+
+            // CPM label and value
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+            )?;
+            execute!(stdout, Print("CPM: "))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            )?;
+            execute!(stdout, Print(format!("{:.0}", metrics.cpm)))?;
+            execute!(stdout, Print(" | "))?;
+
+            // WPM label and value
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+            )?;
+            execute!(stdout, Print("WPM: "))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            )?;
+            execute!(stdout, Print(format!("{:.0}", metrics.wpm)))?;
+            execute!(stdout, Print(" | "))?;
+
+            // Time label and value
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::DURATION))
+            )?;
+            execute!(stdout, Print("Time: "))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            )?;
+            execute!(stdout, Print(format!("{:.1}s", time_secs)))?;
             execute!(stdout, ResetColor)?;
 
-            // Line 2: Keystrokes, Mistakes, Accuracy
+            // Line 2: Keystrokes, Mistakes, Accuracy with colors
             let line2_text = format!(
                 "Keystrokes: {} | Mistakes: {} | Accuracy: {:.1}%",
                 keystrokes, metrics.mistakes, metrics.accuracy
             );
             let line2_col = center_col.saturating_sub(line2_text.len() as u16 / 2);
-
             execute!(stdout, MoveTo(line2_col, metrics_row + 1))?;
-            execute!(stdout, SetForegroundColor(Color::White))?;
-            execute!(stdout, Print(&line2_text))?;
+
+            // Keystrokes label and value
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::STAGE_INFO))
+            )?;
+            execute!(stdout, Print("Keystrokes: "))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            )?;
+            execute!(stdout, Print(format!("{}", keystrokes)))?;
+            execute!(stdout, Print(" | "))?;
+
+            // Mistakes label and value
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::ERROR))
+            )?;
+            execute!(stdout, Print("Mistakes: "))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            )?;
+            execute!(stdout, Print(format!("{}", metrics.mistakes)))?;
+            execute!(stdout, Print(" | "))?;
+
+            // Accuracy label and value
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY))
+            )?;
+            execute!(stdout, Print("Accuracy: "))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            )?;
+            execute!(stdout, Print(format!("{:.1}%", metrics.accuracy)))?;
             execute!(stdout, ResetColor)?;
         }
 
@@ -188,7 +277,10 @@ impl StageSummaryScreen {
             let next_text = "Next stage starting...";
             let next_col = center_col.saturating_sub(next_text.len() as u16 / 2);
             execute!(stdout, MoveTo(next_col, progress_start_row + 2))?;
-            execute!(stdout, SetForegroundColor(Color::Yellow))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::WARNING))
+            )?;
             execute!(stdout, Print(next_text))?;
             execute!(stdout, ResetColor)?;
         }
@@ -207,13 +299,25 @@ impl StageSummaryScreen {
         let start_col = center_col.saturating_sub(total_text_length as u16 / 2);
 
         execute!(stdout, MoveTo(start_col, options_row))?;
-        execute!(stdout, SetForegroundColor(Color::Green))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS))
+        )?;
         execute!(stdout, Print("[SPACE]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print(" Continue  "))?;
-        execute!(stdout, SetForegroundColor(Color::Red))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::ERROR))
+        )?;
         execute!(stdout, Print("[ESC]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print(" Quit"))?;
         execute!(stdout, ResetColor)?;
         stdout.flush()?;

@@ -1,6 +1,7 @@
 use crate::game::ascii_digits::get_digit_patterns;
 use crate::game::ascii_rank_titles_generated::get_rank_display;
 use crate::storage::repositories::SessionRepository;
+use crate::ui::Colors;
 use crate::{models::GitRepository, Result};
 use crossterm::{
     cursor::{Hide, MoveTo},
@@ -275,32 +276,128 @@ impl SessionSummaryScreen {
         let ascii_height = ascii_numbers.len() as u16;
         let summary_start_row = score_start_row + ascii_height + 3; // ASCII + line spacing + diff + gap
 
-        // Display session summary with compact format like other screens
-        let summary_lines = [
-            format!(
-                "CPM: {:.0} | WPM: {:.0} | Time: {:.1}s",
-                session_result.overall_cpm,
-                session_result.overall_wpm,
+        // Display session summary with colors like session_detail_screen
+        // Line 1: CPM, WPM, Time with colors
+        let line1_text = format!(
+            "CPM: {:.0} | WPM: {:.0} | Time: {:.1}s",
+            session_result.overall_cpm,
+            session_result.overall_wpm,
+            session_result.session_duration.as_secs_f64()
+        );
+        let line1_col = center_col.saturating_sub(line1_text.len() as u16 / 2);
+        execute!(stdout, MoveTo(line1_col, summary_start_row))?;
+
+        // CPM label and value
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+        )?;
+        execute!(stdout, Print("CPM: "))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
+        execute!(stdout, Print(format!("{:.0}", session_result.overall_cpm)))?;
+        execute!(stdout, Print(" | "))?;
+
+        // WPM label and value
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+        )?;
+        execute!(stdout, Print("WPM: "))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
+        execute!(stdout, Print(format!("{:.0}", session_result.overall_wpm)))?;
+        execute!(stdout, Print(" | "))?;
+
+        // Time label and value
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::DURATION))
+        )?;
+        execute!(stdout, Print("Time: "))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
+        execute!(
+            stdout,
+            Print(format!(
+                "{:.1}s",
                 session_result.session_duration.as_secs_f64()
-            ),
-            format!(
-                "Keystrokes: {} | Mistakes: {} | Accuracy: {:.1}%",
-                session_result.valid_keystrokes + session_result.invalid_keystrokes,
-                session_result.valid_mistakes + session_result.invalid_mistakes,
-                session_result.overall_accuracy
-            ),
-        ];
+            ))
+        )?;
+        execute!(stdout, ResetColor)?;
 
-        for (i, line) in summary_lines.iter().enumerate() {
-            let line_col = center_col.saturating_sub(line.len() as u16 / 2);
-            execute!(stdout, MoveTo(line_col, summary_start_row + i as u16))?;
-            execute!(stdout, SetForegroundColor(Color::White))?;
-            execute!(stdout, Print(line))?;
-            execute!(stdout, ResetColor)?;
-        }
+        // Line 2: Keystrokes, Mistakes, Accuracy with colors
+        let line2_text = format!(
+            "Keystrokes: {} | Mistakes: {} | Accuracy: {:.1}%",
+            session_result.valid_keystrokes + session_result.invalid_keystrokes,
+            session_result.valid_mistakes + session_result.invalid_mistakes,
+            session_result.overall_accuracy
+        );
+        let line2_col = center_col.saturating_sub(line2_text.len() as u16 / 2);
+        execute!(stdout, MoveTo(line2_col, summary_start_row + 1))?;
 
-        // Calculate options start position based on summary display
-        let options_start = summary_start_row + summary_lines.len() as u16 + 2;
+        // Keystrokes label and value
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::STAGE_INFO))
+        )?;
+        execute!(stdout, Print("Keystrokes: "))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
+        execute!(
+            stdout,
+            Print(format!(
+                "{}",
+                session_result.valid_keystrokes + session_result.invalid_keystrokes
+            ))
+        )?;
+        execute!(stdout, Print(" | "))?;
+
+        // Mistakes label and value
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::ERROR))
+        )?;
+        execute!(stdout, Print("Mistakes: "))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
+        execute!(
+            stdout,
+            Print(format!(
+                "{}",
+                session_result.valid_mistakes + session_result.invalid_mistakes
+            ))
+        )?;
+        execute!(stdout, Print(" | "))?;
+
+        // Accuracy label and value
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY))
+        )?;
+        execute!(stdout, Print("Accuracy: "))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
+        execute!(
+            stdout,
+            Print(format!("{:.1}%", session_result.overall_accuracy))
+        )?;
+        execute!(stdout, ResetColor)?;
+
+        // Calculate options start position based on summary display (2 lines)
+        let options_start = summary_start_row + 2 + 2;
 
         // Display options in two rows with color coding
         let row1_options = [

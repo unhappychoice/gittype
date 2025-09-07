@@ -1,5 +1,6 @@
 use crate::game::screens::session_summary_screen::ResultAction;
 use crate::scoring::StageTracker;
+use crate::ui::Colors;
 use crate::{models::GitRepository, Result};
 use crossterm::{
     cursor::MoveTo,
@@ -39,7 +40,7 @@ impl CancelScreen {
         execute!(stdout, MoveTo(header_x, center_y.saturating_sub(6)))?;
         execute!(
             stdout,
-            SetForegroundColor(Color::Yellow),
+            SetForegroundColor(Colors::to_crossterm(Colors::WARNING)),
             SetAttribute(Attribute::Bold)
         )?;
         execute!(stdout, Print(header_text))?;
@@ -49,7 +50,10 @@ impl CancelScreen {
         let stage_text = format!("Stages: {}/{}", completed_stages, total_stages);
         let stage_x = (terminal_width - stage_text.len() as u16) / 2;
         execute!(stdout, MoveTo(stage_x, center_y.saturating_sub(2)))?;
-        execute!(stdout, SetForegroundColor(Color::Cyan))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::INFO))
+        )?;
         execute!(stdout, Print(stage_text))?;
 
         // Show basic metrics if available (centered, white)
@@ -63,30 +67,78 @@ impl CancelScreen {
             );
             let metrics_x = (terminal_width - metrics_text.len() as u16) / 2;
             execute!(stdout, MoveTo(metrics_x, center_y))?;
-            execute!(stdout, SetForegroundColor(Color::White))?;
-            execute!(stdout, Print(metrics_text))?;
+
+            // CPM label and value
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+            )?;
+            execute!(stdout, Print("CPM: "))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            )?;
+            execute!(stdout, Print(format!("{:.0}", metrics.cpm)))?;
+            execute!(stdout, Print(" | "))?;
+
+            // WPM label and value
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+            )?;
+            execute!(stdout, Print("WPM: "))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            )?;
+            execute!(stdout, Print(format!("{:.0}", metrics.wpm)))?;
+            execute!(stdout, Print(" | "))?;
+
+            // Accuracy label and value
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY))
+            )?;
+            execute!(stdout, Print("Accuracy: "))?;
+            execute!(
+                stdout,
+                SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            )?;
+            execute!(stdout, Print(format!("{:.0}%", metrics.accuracy)))?;
         }
 
         // Cancellation message (centered)
         let cancel_text = "Challenge cancelled. You can retry or go back to title.";
         let cancel_x = (terminal_width - cancel_text.len() as u16) / 2;
         execute!(stdout, MoveTo(cancel_x, center_y + 2))?;
-        execute!(stdout, SetForegroundColor(Color::Yellow))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::WARNING))
+        )?;
         execute!(stdout, Print(cancel_text))?;
 
         // Navigation instructions with color coding
         let full_text_len = "[R] Retry | [T] Back to Title | [ESC] Session Summary & Exit".len();
         let nav_x = (terminal_width - full_text_len as u16) / 2;
         execute!(stdout, MoveTo(nav_x, center_y + 4))?;
-        execute!(stdout, SetForegroundColor(Color::Green))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS))
+        )?;
         execute!(stdout, Print("[R]"))?;
         execute!(stdout, SetForegroundColor(Color::White))?;
         execute!(stdout, Print(" Retry | "))?;
-        execute!(stdout, SetForegroundColor(Color::Green))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS))
+        )?;
         execute!(stdout, Print("[T]"))?;
         execute!(stdout, SetForegroundColor(Color::White))?;
         execute!(stdout, Print(" Back to Title | "))?;
-        execute!(stdout, SetForegroundColor(Color::Red))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::ERROR))
+        )?;
         execute!(stdout, Print("[ESC]"))?;
         execute!(stdout, SetForegroundColor(Color::White))?;
         execute!(stdout, Print(" Session Summary & Exit"))?;

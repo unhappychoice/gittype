@@ -5,13 +5,14 @@ use crate::storage::{
     },
     repositories::SessionRepository,
 };
+use crate::ui::Colors;
 use crate::Result;
 use chrono::{DateTime, Local};
 use crossterm::event::{self, Event, KeyCode, KeyModifiers};
 use ratatui::{
     backend::CrosstermBackend,
     layout::{Alignment, Constraint, Direction, Layout},
-    style::{Color, Modifier, Style},
+    style::{Modifier, Style},
     text::{Line, Span},
     widgets::{Block, Borders, Paragraph, Wrap},
     Frame, Terminal,
@@ -131,7 +132,7 @@ impl SessionDetailScreen {
         let title = Paragraph::new("Session Details")
             .style(
                 Style::default()
-                    .fg(Color::Cyan)
+                    .fg(Colors::INFO)
                     .add_modifier(Modifier::BOLD),
             )
             .alignment(Alignment::Left);
@@ -158,9 +159,9 @@ impl SessionDetailScreen {
 
         // Controls at the bottom
         let controls_line = Line::from(vec![
-            Span::styled("[↑↓/JK] Scroll Stages  ", Style::default().fg(Color::White)),
-            Span::styled("[ESC]", Style::default().fg(Color::Red)),
-            Span::styled(" Back", Style::default().fg(Color::White)),
+            Span::styled("[↑↓/JK] Scroll Stages  ", Style::default().fg(Colors::TEXT)),
+            Span::styled("[ESC]", Style::default().fg(Colors::ERROR)),
+            Span::styled(" Back", Style::default().fg(Colors::TEXT)),
         ]);
 
         let controls = Paragraph::new(controls_line).alignment(Alignment::Center);
@@ -175,7 +176,7 @@ impl SessionDetailScreen {
         if let Some(ref repo) = self.session_data.repository {
             info_lines.push(Line::from(vec![
                 Span::raw("  "),
-                Span::styled("Repository: ", Style::default().fg(Color::Yellow)),
+                Span::styled("Repository: ", Style::default().fg(Colors::ACCURACY)),
                 Span::raw(format!("{}/{}", repo.user_name, repo.repository_name)),
             ]));
         }
@@ -184,14 +185,14 @@ impl SessionDetailScreen {
         let local_time: DateTime<Local> = self.session_data.session.started_at.into();
         info_lines.push(Line::from(vec![
             Span::raw("  "),
-            Span::styled("Started: ", Style::default().fg(Color::Yellow)),
+            Span::styled("Started: ", Style::default().fg(Colors::ACCURACY)),
             Span::raw(local_time.format("%Y-%m-%d %H:%M:%S").to_string()),
         ]));
 
         if let Some(ref branch) = self.session_data.session.branch {
             info_lines.push(Line::from(vec![
                 Span::raw("  "),
-                Span::styled("Branch: ", Style::default().fg(Color::Yellow)),
+                Span::styled("Branch: ", Style::default().fg(Colors::ACCURACY)),
                 Span::raw(branch.clone()),
             ]));
         }
@@ -199,7 +200,7 @@ impl SessionDetailScreen {
         if let Some(ref commit) = self.session_data.session.commit_hash {
             info_lines.push(Line::from(vec![
                 Span::raw("  "),
-                Span::styled("Commit: ", Style::default().fg(Color::Yellow)),
+                Span::styled("Commit: ", Style::default().fg(Colors::ACCURACY)),
                 Span::raw(commit[..std::cmp::min(commit.len(), 12)].to_string()),
             ]));
         }
@@ -208,7 +209,7 @@ impl SessionDetailScreen {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
+                    .border_style(Style::default().fg(Colors::BORDER))
                     .title("Session"),
             )
             .wrap(Wrap { trim: false });
@@ -224,87 +225,87 @@ impl SessionDetailScreen {
         if let Some(ref result) = self.session_data.session_result {
             metrics_lines.push(Line::from(vec![
                 Span::raw("  "),
-                Span::styled("Tier/Rank: ", Style::default().fg(Color::Blue)),
+                Span::styled("Tier/Rank: ", Style::default().fg(Colors::STAGE_INFO)),
                 Span::styled(
                     format!(
                         "{}/{}",
                         result.tier_name.clone().unwrap_or("unknown".to_string()),
                         result.rank_name.clone().unwrap_or("unknown".to_string())
                     ),
-                    Style::default().fg(Color::White),
+                    Style::default().fg(Colors::TEXT),
                 ),
             ]));
 
             metrics_lines.push(Line::from(vec![
                 Span::raw("  "),
-                Span::styled("Score: ", Style::default().fg(Color::Magenta)),
+                Span::styled("Score: ", Style::default().fg(Colors::SCORE)),
                 Span::styled(
                     format!("{:.1}", result.score),
-                    Style::default().fg(Color::White),
+                    Style::default().fg(Colors::TEXT),
                 ),
             ]));
 
             metrics_lines.push(Line::from(vec![
                 Span::raw("  "),
-                Span::styled("CPM: ", Style::default().fg(Color::Green)),
+                Span::styled("CPM: ", Style::default().fg(Colors::CPM_WPM)),
                 Span::styled(
                     format!("{:.1}", result.cpm),
-                    Style::default().fg(Color::White),
+                    Style::default().fg(Colors::TEXT),
                 ),
             ]));
 
             metrics_lines.push(Line::from(vec![
                 Span::raw("  "),
-                Span::styled("WPM: ", Style::default().fg(Color::Green)),
+                Span::styled("WPM: ", Style::default().fg(Colors::CPM_WPM)),
                 Span::styled(
                     format!("{:.1}", result.wpm),
-                    Style::default().fg(Color::White),
+                    Style::default().fg(Colors::TEXT),
                 ),
             ]));
 
             metrics_lines.push(Line::from(vec![
                 Span::raw("  "),
-                Span::styled("Accuracy: ", Style::default().fg(Color::Yellow)),
+                Span::styled("Accuracy: ", Style::default().fg(Colors::ACCURACY)),
                 Span::styled(
                     format!("{:.1}%", result.accuracy),
-                    Style::default().fg(Color::White),
+                    Style::default().fg(Colors::TEXT),
                 ),
             ]));
 
             metrics_lines.push(Line::from(vec![
                 Span::raw("  "),
-                Span::styled("Duration: ", Style::default().fg(Color::Cyan)),
+                Span::styled("Duration: ", Style::default().fg(Colors::DURATION)),
                 Span::styled(
                     format!(
                         "{}m {}s",
                         result.duration_ms / 60000,
                         (result.duration_ms % 60000) / 1000
                     ),
-                    Style::default().fg(Color::White),
+                    Style::default().fg(Colors::TEXT),
                 ),
             ]));
 
             metrics_lines.push(Line::from(vec![
                 Span::raw("  "),
-                Span::styled("Completed Stage: ", Style::default().fg(Color::Blue)),
+                Span::styled("Completed Stage: ", Style::default().fg(Colors::STAGE_INFO)),
                 Span::styled(
                     result.stages_completed.to_string(),
-                    Style::default().fg(Color::White),
+                    Style::default().fg(Colors::TEXT),
                 ),
                 Span::raw("/"),
                 Span::styled(
                     result.stages_attempted.to_string(),
-                    Style::default().fg(Color::White),
+                    Style::default().fg(Colors::TEXT),
                 ),
             ]));
 
             if result.stages_skipped > 0 {
                 metrics_lines.push(Line::from(vec![
                     Span::raw("  "),
-                    Span::styled("Skipped: ", Style::default().fg(Color::Red)),
+                    Span::styled("Skipped: ", Style::default().fg(Colors::ERROR)),
                     Span::styled(
                         result.stages_skipped.to_string(),
-                        Style::default().fg(Color::White),
+                        Style::default().fg(Colors::TEXT),
                     ),
                 ]));
             }
@@ -316,7 +317,7 @@ impl SessionDetailScreen {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
+                    .border_style(Style::default().fg(Colors::BORDER))
                     .title("Performance"),
             )
             .wrap(Wrap { trim: false });
@@ -327,12 +328,12 @@ impl SessionDetailScreen {
     fn render_stage_details(&mut self, f: &mut Frame, area: ratatui::prelude::Rect) {
         if self.stage_results.is_empty() {
             let empty_msg = Paragraph::new("No stage data available")
-                .style(Style::default().fg(Color::DarkGray))
+                .style(Style::default().fg(Colors::MUTED))
                 .alignment(Alignment::Center)
                 .block(
                     Block::default()
                         .borders(Borders::ALL)
-                        .border_style(Style::default().fg(Color::Blue))
+                        .border_style(Style::default().fg(Colors::BORDER))
                         .title("Stage Details"),
                 );
             f.render_widget(empty_msg, area);
@@ -361,11 +362,11 @@ impl SessionDetailScreen {
             };
 
             let status_color = if stage.was_failed {
-                Color::Red
+                Colors::FAILED
             } else if stage.was_skipped {
-                Color::Yellow
+                Colors::SKIPPED
             } else {
-                Color::Green
+                Colors::COMPLETED
             };
 
             stage_text_lines.push(Line::from(vec![
@@ -373,7 +374,7 @@ impl SessionDetailScreen {
                 Span::styled(
                     format!("Stage #{} ", stage.stage_number),
                     Style::default()
-                        .fg(Color::Cyan)
+                        .fg(Colors::INFO)
                         .add_modifier(Modifier::BOLD),
                 ),
                 Span::styled(format!("[{}]", status), Style::default().fg(status_color)),
@@ -384,56 +385,56 @@ impl SessionDetailScreen {
             {
                 stage_text_lines.push(Line::from(vec![
                     Span::raw("    "),
-                    Span::styled("File: ", Style::default().fg(Color::Blue)),
+                    Span::styled("File: ", Style::default().fg(Colors::STAGE_INFO)),
                     Span::raw(format!("{}:{}-{}", file_path, start, end)),
                 ]));
             }
 
             stage_text_lines.push(Line::from(vec![
                 Span::raw("    "),
-                Span::styled("Score: ", Style::default().fg(Color::Magenta)),
+                Span::styled("Score: ", Style::default().fg(Colors::SCORE)),
                 Span::styled(
                     format!("{:.1}", stage.score),
-                    Style::default().fg(Color::White),
+                    Style::default().fg(Colors::TEXT),
                 ),
                 Span::raw("  "),
-                Span::styled("CPM: ", Style::default().fg(Color::Green)),
+                Span::styled("CPM: ", Style::default().fg(Colors::CPM_WPM)),
                 Span::styled(
                     format!("{:.1}", stage.cpm),
-                    Style::default().fg(Color::White),
+                    Style::default().fg(Colors::TEXT),
                 ),
                 Span::raw("    "),
-                Span::styled("WPM: ", Style::default().fg(Color::Green)),
+                Span::styled("WPM: ", Style::default().fg(Colors::CPM_WPM)),
                 Span::styled(
                     format!("{:.1}", stage.wpm),
-                    Style::default().fg(Color::White),
+                    Style::default().fg(Colors::TEXT),
                 ),
             ]));
 
             stage_text_lines.push(Line::from(vec![
                 Span::raw("    "),
-                Span::styled("Keystrokes: ", Style::default().fg(Color::Blue)),
+                Span::styled("Keystrokes: ", Style::default().fg(Colors::STAGE_INFO)),
                 Span::styled(
                     format!("{}", stage.keystrokes),
-                    Style::default().fg(Color::White),
+                    Style::default().fg(Colors::TEXT),
                 ),
                 Span::raw("  "),
-                Span::styled("Mistakes: ", Style::default().fg(Color::Red)),
+                Span::styled("Mistakes: ", Style::default().fg(Colors::ERROR)),
                 Span::styled(
                     format!("{}", stage.mistakes),
-                    Style::default().fg(Color::White),
+                    Style::default().fg(Colors::TEXT),
                 ),
                 Span::raw("  "),
-                Span::styled("Accuracy: ", Style::default().fg(Color::Yellow)),
+                Span::styled("Accuracy: ", Style::default().fg(Colors::ACCURACY)),
                 Span::styled(
                     format!("{:.1}%", stage.accuracy),
-                    Style::default().fg(Color::White),
+                    Style::default().fg(Colors::TEXT),
                 ),
                 Span::raw("  "),
-                Span::styled("Duration: ", Style::default().fg(Color::Cyan)),
+                Span::styled("Duration: ", Style::default().fg(Colors::DURATION)),
                 Span::styled(
                     format!("{}ms", stage.duration_ms),
-                    Style::default().fg(Color::White),
+                    Style::default().fg(Colors::TEXT),
                 ),
             ]));
 
@@ -457,11 +458,11 @@ impl SessionDetailScreen {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
+                    .border_style(Style::default().fg(Colors::BORDER))
                     .title(format!("Stage Details{}", scroll_info))
                     .title_style(
                         Style::default()
-                            .fg(Color::White)
+                            .fg(Colors::TEXT)
                             .add_modifier(Modifier::BOLD),
                     ),
             )

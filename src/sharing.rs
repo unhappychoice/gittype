@@ -1,4 +1,5 @@
 use crate::models::GitRepository;
+use crate::ui::Colors;
 use anyhow::Result;
 use crossterm::event::KeyCode;
 
@@ -126,7 +127,7 @@ impl SharingService {
             cursor::MoveTo,
             event::{self, Event},
             execute,
-            style::{Attribute, Color, Print, ResetColor, SetAttribute, SetForegroundColor},
+            style::{Attribute, Print, ResetColor, SetAttribute, SetForegroundColor},
             terminal::{self, ClearType},
         };
         use std::io::{stdout, Write};
@@ -145,7 +146,7 @@ impl SharingService {
         execute!(
             stdout,
             SetAttribute(Attribute::Bold),
-            SetForegroundColor(Color::Yellow)
+            SetForegroundColor(Colors::to_crossterm(Colors::WARNING))
         )?;
         execute!(stdout, Print(&title))?;
         execute!(stdout, ResetColor)?;
@@ -157,7 +158,10 @@ impl SharingService {
             stdout,
             MoveTo(instruction_col, center_row.saturating_sub(4))
         )?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        )?;
         execute!(stdout, Print(instruction))?;
         execute!(stdout, ResetColor)?;
 
@@ -167,7 +171,7 @@ impl SharingService {
         execute!(
             stdout,
             SetAttribute(Attribute::Bold),
-            SetForegroundColor(Color::Cyan)
+            SetForegroundColor(Colors::to_crossterm(Colors::INFO))
         )?;
         execute!(stdout, Print(&url_display))?;
         execute!(stdout, ResetColor)?;
@@ -176,7 +180,10 @@ impl SharingService {
         let info = "💡 Tip: Select and copy the URL with your mouse or keyboard";
         let info_col = center_col.saturating_sub(info.len() as u16 / 2);
         execute!(stdout, MoveTo(info_col, center_row + 4))?;
-        execute!(stdout, SetForegroundColor(Color::Grey))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::MUTED))
+        )?;
         execute!(stdout, Print(info))?;
         execute!(stdout, ResetColor)?;
 
@@ -184,7 +191,10 @@ impl SharingService {
         let continue_text = "[ESC] Back";
         let continue_col = center_col.saturating_sub(continue_text.len() as u16 / 2);
         execute!(stdout, MoveTo(continue_col, center_row + 6))?;
-        execute!(stdout, SetForegroundColor(Color::Green))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS))
+        )?;
         execute!(stdout, Print(continue_text))?;
         execute!(stdout, ResetColor)?;
 
