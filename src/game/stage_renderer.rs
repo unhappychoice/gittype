@@ -122,7 +122,7 @@ impl StageRenderer {
                     ]
                     .as_ref(),
                 )
-                .split(f.size());
+                .split(f.area());
 
             // Header with basic info
             let header = Paragraph::new(vec![Line::from(header_text.clone())]).block(
@@ -199,7 +199,7 @@ impl StageRenderer {
             // Render [ESC] Options in bottom left without border
             let esc_area = ratatui::layout::Rect {
                 x: 1,                                 // Left margin
-                y: f.size().height.saturating_sub(1), // Bottom of screen
+                y: f.area().height.saturating_sub(1), // Bottom of screen
                 width: 15,                            // Width for "[ESC] Options"
                 height: 1,
             };
@@ -404,7 +404,7 @@ impl StageRenderer {
         use ratatui::widgets::Clear;
 
         // Calculate dialog size and position
-        let area = f.size();
+        let area = f.area();
         let dialog_width = 50.min(area.width - 4);
         let dialog_height = 9; // Increased to accommodate all options
 

@@ -244,7 +244,7 @@ impl HistoryScreen {
                 Constraint::Min(1),    // Main content
                 Constraint::Length(2), // Right padding
             ])
-            .split(f.size());
+            .split(f.area());
 
         let chunks = Layout::default()
             .direction(Direction::Vertical)
@@ -352,7 +352,7 @@ impl HistoryScreen {
                 .end_symbol(Some("↓"));
             f.render_stateful_widget(
                 scrollbar,
-                chunks[1].inner(&Margin {
+                chunks[1].inner(Margin {
                     vertical: 1,
                     horizontal: 2,
                 }),

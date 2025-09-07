@@ -117,7 +117,7 @@ impl SessionDetailScreen {
                 Constraint::Min(1),
                 Constraint::Length(2),
             ])
-            .split(f.size());
+            .split(f.area());
 
         let main_chunks = Layout::default()
             .direction(Direction::Vertical)
