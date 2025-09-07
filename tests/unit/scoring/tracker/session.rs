@@ -1,5 +1,5 @@
-use gittype::scoring::tracker::SessionTracker;
 use gittype::models::StageResult;
+use gittype::scoring::tracker::SessionTracker;
 
 #[test]
 fn test_new_session_tracker() {

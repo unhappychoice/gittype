@@ -1,5 +1,5 @@
-use gittype::scoring::tracker::{StageInput, StageTracker};
 use gittype::scoring::calculator::StageCalculator;
+use gittype::scoring::tracker::{StageInput, StageTracker};
 use std::time::Duration;
 
 const EPSILON: f64 = 0.001;
@@ -22,11 +22,26 @@ fn test_calculate_basic_correct() {
     let mut tracker = StageTracker::new("hello".to_string());
     tracker.record(StageInput::Start);
     std::thread::sleep(Duration::from_secs(5));
-    tracker.record(StageInput::Keystroke { ch: 'h', position: 0 });
-    tracker.record(StageInput::Keystroke { ch: 'e', position: 1 });
-    tracker.record(StageInput::Keystroke { ch: 'l', position: 2 });
-    tracker.record(StageInput::Keystroke { ch: 'l', position: 3 });
-    tracker.record(StageInput::Keystroke { ch: 'o', position: 4 });
+    tracker.record(StageInput::Keystroke {
+        ch: 'h',
+        position: 0,
+    });
+    tracker.record(StageInput::Keystroke {
+        ch: 'e',
+        position: 1,
+    });
+    tracker.record(StageInput::Keystroke {
+        ch: 'l',
+        position: 2,
+    });
+    tracker.record(StageInput::Keystroke {
+        ch: 'l',
+        position: 3,
+    });
+    tracker.record(StageInput::Keystroke {
+        ch: 'o',
+        position: 4,
+    });
     tracker.record(StageInput::Finish);
     let result = StageCalculator::calculate(&tracker);
 
@@ -44,15 +59,24 @@ fn test_calculate_with_mistakes() {
     let mut tracker = StageTracker::new("hello".to_string());
     tracker.record(StageInput::Start);
     std::thread::sleep(Duration::from_millis(100));
-    tracker.record(StageInput::Keystroke { ch: 'h', position: 0 });
-    tracker.record(StageInput::Keystroke { ch: 'x', position: 1 }); // Mistake
-    tracker.record(StageInput::Keystroke { ch: 'l', position: 2 });
+    tracker.record(StageInput::Keystroke {
+        ch: 'h',
+        position: 0,
+    });
+    tracker.record(StageInput::Keystroke {
+        ch: 'x',
+        position: 1,
+    }); // Mistake
+    tracker.record(StageInput::Keystroke {
+        ch: 'l',
+        position: 2,
+    });
     tracker.record(StageInput::Finish);
     let result = StageCalculator::calculate(&tracker);
 
     assert!(result.cpm > 0.0);
     assert!(result.wpm > 0.0);
-    assert!((result.accuracy - (2.0/3.0)*100.0).abs() < EPSILON); // 2 correct out of 3 keystrokes
+    assert!((result.accuracy - (2.0 / 3.0) * 100.0).abs() < EPSILON); // 2 correct out of 3 keystrokes
     assert_eq!(result.keystrokes, 3);
     assert_eq!(result.mistakes, 1);
     assert!(result.challenge_score > 0.0);

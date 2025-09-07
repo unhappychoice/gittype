@@ -1,5 +1,5 @@
-use gittype::scoring::tracker::TotalTracker;
 use gittype::models::SessionResult;
+use gittype::scoring::tracker::TotalTracker;
 
 #[test]
 fn test_new_total_tracker() {

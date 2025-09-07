@@ -1,6 +1,6 @@
-use gittype::scoring::tracker::TotalTracker;
-use gittype::scoring::calculator::TotalCalculator;
 use gittype::models::SessionResult;
+use gittype::scoring::calculator::TotalCalculator;
+use gittype::scoring::tracker::TotalTracker;
 use std::time::Duration;
 
 const EPSILON: f64 = 0.001;

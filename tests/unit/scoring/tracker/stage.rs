@@ -20,7 +20,10 @@ fn test_record_keystroke_correct() {
     let mut tracker = StageTracker::new("hello".to_string());
     tracker.record(StageInput::Start);
     std::thread::sleep(Duration::from_millis(10)); // Simulate time passing
-    tracker.record(StageInput::Keystroke { ch: 'h', position: 0 });
+    tracker.record(StageInput::Keystroke {
+        ch: 'h',
+        position: 0,
+    });
     let data = tracker.get_data();
     assert_eq!(data.keystrokes.len(), 1);
     assert!(data.keystrokes[0].is_correct);
@@ -33,7 +36,10 @@ fn test_record_keystroke_incorrect() {
     let mut tracker = StageTracker::new("hello".to_string());
     tracker.record(StageInput::Start);
     std::thread::sleep(Duration::from_millis(10));
-    tracker.record(StageInput::Keystroke { ch: 'x', position: 0 });
+    tracker.record(StageInput::Keystroke {
+        ch: 'x',
+        position: 0,
+    });
     let data = tracker.get_data();
     assert_eq!(data.keystrokes.len(), 1);
     assert!(!data.keystrokes[0].is_correct);
@@ -45,10 +51,22 @@ fn test_record_keystroke_incorrect() {
 fn test_streaks() {
     let mut tracker = StageTracker::new("abc".to_string());
     tracker.record(StageInput::Start);
-    tracker.record(StageInput::Keystroke { ch: 'a', position: 0 }); // Correct
-    tracker.record(StageInput::Keystroke { ch: 'b', position: 1 }); // Correct
-    tracker.record(StageInput::Keystroke { ch: 'x', position: 2 }); // Incorrect
-    tracker.record(StageInput::Keystroke { ch: 'c', position: 2 }); // Correct (after mistake)
+    tracker.record(StageInput::Keystroke {
+        ch: 'a',
+        position: 0,
+    }); // Correct
+    tracker.record(StageInput::Keystroke {
+        ch: 'b',
+        position: 1,
+    }); // Correct
+    tracker.record(StageInput::Keystroke {
+        ch: 'x',
+        position: 2,
+    }); // Incorrect
+    tracker.record(StageInput::Keystroke {
+        ch: 'c',
+        position: 2,
+    }); // Correct (after mistake)
     let data = tracker.get_data();
     assert_eq!(data.streaks, vec![2]);
     assert_eq!(data.current_streak, 1);
@@ -109,7 +127,10 @@ fn test_keystrokes_after_finish_ignored() {
     let mut tracker = StageTracker::new("test".to_string());
     tracker.record(StageInput::Start);
     tracker.record(StageInput::Finish);
-    tracker.record(StageInput::Keystroke { ch: 'a', position: 0 });
+    tracker.record(StageInput::Keystroke {
+        ch: 'a',
+        position: 0,
+    });
     let data = tracker.get_data();
     assert_eq!(data.keystrokes.len(), 0);
 }
@@ -125,7 +146,10 @@ fn test_new_with_path() {
 fn test_empty_target_text() {
     let mut tracker = StageTracker::new("".to_string());
     tracker.record(StageInput::Start);
-    tracker.record(StageInput::Keystroke { ch: 'a', position: 0 });
+    tracker.record(StageInput::Keystroke {
+        ch: 'a',
+        position: 0,
+    });
     let data = tracker.get_data();
     assert_eq!(data.keystrokes.len(), 1);
     assert!(!data.keystrokes[0].is_correct);
@@ -135,7 +159,10 @@ fn test_empty_target_text() {
 fn test_position_out_of_bounds() {
     let mut tracker = StageTracker::new("a".to_string());
     tracker.record(StageInput::Start);
-    tracker.record(StageInput::Keystroke { ch: 'a', position: 1 }); // Position out of bounds
+    tracker.record(StageInput::Keystroke {
+        ch: 'a',
+        position: 1,
+    }); // Position out of bounds
     let data = tracker.get_data();
     assert_eq!(data.keystrokes.len(), 1);
     assert!(!data.keystrokes[0].is_correct);

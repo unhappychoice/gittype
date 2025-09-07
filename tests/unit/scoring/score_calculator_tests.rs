@@ -1,5 +1,4 @@
-use gittype::scoring::{ScoreCalculator};
-
+use gittype::scoring::ScoreCalculator;
 
 const EPSILON: f64 = 0.001;
 
