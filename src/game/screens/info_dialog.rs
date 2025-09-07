@@ -1,13 +1,10 @@
+use crate::game::utils::{MenuSelector, TerminalUtils};
+use crate::game::widgets::DialogWidget;
 use crate::Result;
-use crossterm::{
-    cursor::MoveTo,
-    event::{self, Event, KeyCode},
-    execute,
-    style::{Attribute, Color, Print, ResetColor, SetAttribute, SetForegroundColor},
-    terminal::{self, ClearType},
-};
-use std::io::{stdout, Write};
+use crossterm::event::{self, Event, KeyCode};
+use std::io::stdout;
 
+#[derive(Debug, Clone)]
 pub enum InfoAction {
     OpenGithub,
     OpenX,
@@ -18,171 +15,51 @@ pub struct InfoDialog;
 
 impl InfoDialog {
     pub fn show() -> Result<InfoAction> {
-        let mut selected_option = 0;
         let options = [
             ("GitHub Repository", InfoAction::OpenGithub),
             ("X #gittype", InfoAction::OpenX),
             ("Close", InfoAction::Close),
         ];
 
+        let mut selector = MenuSelector::new(options.len());
         let mut stdout = stdout();
-        let (terminal_width, terminal_height) = terminal::size()?;
-        let center_row = terminal_height / 2;
-        let center_col = terminal_width / 2;
 
-        // Draw dialog box
-        Self::draw_dialog_box(&mut stdout, center_row, center_col)?;
-        Self::draw_dialog_content(
-            &mut stdout,
-            center_row,
-            center_col,
-            &options,
-            selected_option,
-        )?;
-        stdout.flush()?;
+        // Clear screen
+        TerminalUtils::clear_screen(&mut stdout)?;
 
+        // Create dialog widget
+        let dialog = DialogWidget::new("GitType Information", &options)
+            .width(50)
+            .height(10);
+
+        // Draw initial dialog
+        dialog.draw_border(&mut stdout)?;
+        dialog.draw_content(&mut stdout, &selector)?;
+        dialog.draw_controls(&mut stdout)?;
+
+        // Main event loop
         loop {
-            if let Ok(true) = event::poll(std::time::Duration::from_millis(50)) {
-                if let Ok(Event::Key(key_event)) = event::read() {
-                    match key_event.code {
-                        KeyCode::Char(' ') => {
-                            return Ok(match selected_option {
-                                0 => InfoAction::OpenGithub,
-                                1 => InfoAction::OpenX,
-                                _ => InfoAction::Close,
-                            });
+            if let Event::Key(key) = event::read()? {
+                match key.code {
+                    KeyCode::Char(' ') => {
+                        if let Some(action) = dialog.get_selected_action(&selector) {
+                            return Ok(action);
                         }
-                        KeyCode::Up | KeyCode::Char('k') => {
-                            selected_option = if selected_option == 0 {
-                                options.len() - 1
-                            } else {
-                                selected_option - 1
-                            };
-                            Self::draw_dialog_content(
-                                &mut stdout,
-                                center_row,
-                                center_col,
-                                &options,
-                                selected_option,
-                            )?;
-                            stdout.flush()?;
+                    }
+                    KeyCode::Esc | KeyCode::Char('q') => return Ok(InfoAction::Close),
+                    KeyCode::Char('g') => return Ok(InfoAction::OpenGithub),
+                    KeyCode::Char('x') => return Ok(InfoAction::OpenX),
+                    _ => {
+                        // Handle navigation
+                        if selector.handle_key(key.code) {
+                            // Redraw content if selection changed
+                            dialog.draw_content(&mut stdout, &selector)?;
+                            dialog.draw_controls(&mut stdout)?;
                         }
-                        KeyCode::Down | KeyCode::Char('j') => {
-                            selected_option = (selected_option + 1) % options.len();
-                            Self::draw_dialog_content(
-                                &mut stdout,
-                                center_row,
-                                center_col,
-                                &options,
-                                selected_option,
-                            )?;
-                            stdout.flush()?;
-                        }
-                        KeyCode::Esc | KeyCode::Char('q') => return Ok(InfoAction::Close),
-                        KeyCode::Char('g') => return Ok(InfoAction::OpenGithub),
-                        KeyCode::Char('x') => return Ok(InfoAction::OpenX),
-                        _ => {}
                     }
                 }
             }
         }
-    }
-
-    fn draw_dialog_box(
-        stdout: &mut std::io::Stdout,
-        center_row: u16,
-        center_col: u16,
-    ) -> Result<()> {
-        let dialog_width = 50;
-        let dialog_height = 10;
-        let start_col = center_col.saturating_sub(dialog_width / 2);
-        let start_row = center_row.saturating_sub(dialog_height / 2);
-
-        // Draw dialog background
-        for i in 0..dialog_height {
-            execute!(stdout, MoveTo(start_col, start_row + i))?;
-            execute!(stdout, SetForegroundColor(Color::White))?;
-            if i == 0 {
-                execute!(stdout, Print("┌"))?;
-                execute!(stdout, Print("─".repeat((dialog_width - 2) as usize)))?;
-                execute!(stdout, Print("┐"))?;
-            } else if i == dialog_height - 1 {
-                execute!(stdout, Print("└"))?;
-                execute!(stdout, Print("─".repeat((dialog_width - 2) as usize)))?;
-                execute!(stdout, Print("┘"))?;
-            } else {
-                execute!(stdout, Print("│"))?;
-                execute!(stdout, Print(" ".repeat((dialog_width - 2) as usize)))?;
-                execute!(stdout, Print("│"))?;
-            }
-            execute!(stdout, ResetColor)?;
-        }
-
-        Ok(())
-    }
-
-    fn draw_dialog_content(
-        stdout: &mut std::io::Stdout,
-        center_row: u16,
-        center_col: u16,
-        options: &[(&str, InfoAction); 3],
-        selected_option: usize,
-    ) -> Result<()> {
-        let start_row = center_row.saturating_sub(4);
-
-        // Title
-        let title = "Information & Links";
-        let title_col = center_col.saturating_sub(title.len() as u16 / 2);
-        execute!(stdout, MoveTo(title_col, start_row + 1))?;
-        execute!(
-            stdout,
-            SetAttribute(Attribute::Bold),
-            SetForegroundColor(Color::Cyan)
-        )?;
-        execute!(stdout, Print(title))?;
-        execute!(stdout, ResetColor)?;
-
-        // Options
-        for (i, (label, _)) in options.iter().enumerate() {
-            let option_col = center_col.saturating_sub(label.len() as u16 / 2 + 2);
-            execute!(stdout, MoveTo(option_col, start_row + 3 + i as u16))?;
-
-            if i == selected_option {
-                execute!(
-                    stdout,
-                    SetAttribute(Attribute::Bold),
-                    SetForegroundColor(Color::Yellow)
-                )?;
-                execute!(stdout, Print("> "))?;
-                execute!(stdout, SetForegroundColor(Color::White))?;
-                execute!(stdout, Print(label))?;
-            } else {
-                execute!(stdout, SetForegroundColor(Color::Grey))?;
-                execute!(stdout, Print("  "))?;
-                execute!(stdout, Print(label))?;
-            }
-            execute!(stdout, ResetColor)?;
-        }
-
-        // Instructions with color coding
-        let total_instructions_len = "[↑↓/JK] Navigate [SPACE] Select [ESC] Close".len();
-        let instructions_col = center_col.saturating_sub(total_instructions_len as u16 / 2);
-        execute!(stdout, MoveTo(instructions_col, start_row + 7))?;
-        execute!(stdout, SetForegroundColor(Color::Cyan))?;
-        execute!(stdout, Print("[↑↓/JK]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
-        execute!(stdout, Print(" Navigate "))?;
-        execute!(stdout, SetForegroundColor(Color::Green))?;
-        execute!(stdout, Print("[SPACE]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
-        execute!(stdout, Print(" Select "))?;
-        execute!(stdout, SetForegroundColor(Color::Red))?;
-        execute!(stdout, Print("[ESC]"))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
-        execute!(stdout, Print(" Close"))?;
-        execute!(stdout, ResetColor)?;
-
-        Ok(())
     }
 
     pub fn open_github() -> Result<()> {
@@ -202,6 +79,12 @@ impl InfoDialog {
     }
 
     fn show_url_fallback(title: &str, url: &str) -> Result<()> {
+        use crossterm::{
+            execute,
+            terminal::{self, ClearType},
+        };
+        use std::io::{stdout, Write};
+
         let mut stdout = stdout();
         let (terminal_width, terminal_height) = terminal::size()?;
         let center_row = terminal_height / 2;
@@ -235,6 +118,12 @@ impl InfoDialog {
         title: &str,
         url: &str,
     ) -> Result<()> {
+        use crossterm::{
+            cursor::MoveTo,
+            execute,
+            style::{Attribute, Color, Print, ResetColor, SetAttribute, SetForegroundColor},
+        };
+
         let dialog_width = std::cmp::max(60, url.len() + 4) as u16;
         let dialog_height = 8;
         let start_col = center_col.saturating_sub(dialog_width / 2);
