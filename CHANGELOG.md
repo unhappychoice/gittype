@@ -5,6 +5,95 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2025-09-07
+
+### ✨ Features
+
+- feat: standardize color patterns across all result screens ([648a930](https://github.com/unhappychoice/gittype/commit/648a930))
+- feat: Add centralized UI color definitions ([6377c97](https://github.com/unhappychoice/gittype/commit/6377c97))
+- feat: Add unit tests for scoring module ([cf0550d](https://github.com/unhappychoice/gittype/commit/cf0550d))
+- feat: reorganize title screen key layout into 3-tier structure and hide cursor ([488c73f](https://github.com/unhappychoice/gittype/commit/488c73f))
+- feat: implement 'Press SPACE to start' prompt with integrated countdown ([b95f9b0](https://github.com/unhappychoice/gittype/commit/b95f9b0))
+- feat: add UserQuit error type and graceful exit handling ([02d409f](https://github.com/unhappychoice/gittype/commit/02d409f))
+- feat: Organize test files into unit and integration directories ([ac12b54](https://github.com/unhappychoice/gittype/commit/ac12b54))
+- feat(ui): improve title screen key organization and styling ([127dd77](https://github.com/unhappychoice/gittype/commit/127dd77))
+- feat: implement analytics screen with repository and language stats ([973b48d](https://github.com/unhappychoice/gittype/commit/973b48d))
+- feat: Add typing core tests for C# and Haskell ([ca1b2ca](https://github.com/unhappychoice/gittype/commit/ca1b2ca))
+- feat: add History screen with session detail viewing ([23c7362](https://github.com/unhappychoice/gittype/commit/23c7362))
+- feat: add comprehensive seed data system for development ([113d637](https://github.com/unhappychoice/gittype/commit/113d637))
+- feat: add 1000 record limit to session queries for performance ([5cba280](https://github.com/unhappychoice/gittype/commit/5cba280))
+- feat: integrate logging into CLI error handling and panic hooks ([8638cfd](https://github.com/unhappychoice/gittype/commit/8638cfd))
+- feat: add comprehensive panic and error logging system ([3e847dd](https://github.com/unhappychoice/gittype/commit/3e847dd))
+- feat: enhance session summary with personal best tracking ([dd2ff09](https://github.com/unhappychoice/gittype/commit/dd2ff09))
+- feat: implement new details dialog for session results ([66ac30c](https://github.com/unhappychoice/gittype/commit/66ac30c))
+- feat: add challenge_path to StageResult for proper stage name display ([ce8ce79](https://github.com/unhappychoice/gittype/commit/ce8ce79))
+- feat: integrate session recording into game flow ([e292934](https://github.com/unhappychoice/gittype/commit/e292934))
+- feat: add database initialization and development environment setup ([8969268](https://github.com/unhappychoice/gittype/commit/8969268))
+- feat: implement session recording to database (DAO/Repository pattern) ([460bb0e](https://github.com/unhappychoice/gittype/commit/460bb0e))
+- feat: export migrations module in storage ([dcae523](https://github.com/unhappychoice/gittype/commit/dcae523))
+- feat: implement SQLite database with migration support ([0a15588](https://github.com/unhappychoice/gittype/commit/0a15588))
+- feat: add database migration system infrastructure ([6d0690f](https://github.com/unhappychoice/gittype/commit/6d0690f))
+- feat(extractor): preserve original indentation characters for first line ([999f3db](https://github.com/unhappychoice/gittype/commit/999f3db))
+
+### 🐛 Bug Fixes
+
+- fix: correct ranking position calculation to show higher scores first ([b7d1226](https://github.com/unhappychoice/gittype/commit/b7d1226))
+- fix: reset pause timer between countdown stages ([f274c48](https://github.com/unhappychoice/gittype/commit/f274c48))
+- fix: implement proper countdown pause during dialog ([b94d1e2](https://github.com/unhappychoice/gittype/commit/b94d1e2))
+- fix: allow dialog during countdown instead of immediate exit ([c1a136c](https://github.com/unhappychoice/gittype/commit/c1a136c))
+- fix: prevent duration overflow panics with saturating_sub ([bf33e4d](https://github.com/unhappychoice/gittype/commit/bf33e4d))
+- fix: apply additional cargo fmt formatting ([4f27716](https://github.com/unhappychoice/gittype/commit/4f27716))
+- fix: apply automatic code formatting ([4a7a9de](https://github.com/unhappychoice/gittype/commit/4a7a9de))
+- fix: resolve clippy warnings in analytics screen ([8e79df9](https://github.com/unhappychoice/gittype/commit/8e79df9))
+- fix: update ratatui 0.29.0 compatibility ([00ca7be](https://github.com/unhappychoice/gittype/commit/00ca7be))
+- fix: update seeders for rand 0.9.2 compatibility ([cdbf247](https://github.com/unhappychoice/gittype/commit/cdbf247))
+- fix: update rand usage for 0.9.2 compatibility ([c0aa6b6](https://github.com/unhappychoice/gittype/commit/c0aa6b6))
+- fix: allow invisible characters in multibyte test file ([62ed39e](https://github.com/unhappychoice/gittype/commit/62ed39e))
+- fix: resolve clippy warnings ([9c976b0](https://github.com/unhappychoice/gittype/commit/9c976b0))
+- fix(ui): center typing cursor in viewport and clamp scroll to content ([87e82c6](https://github.com/unhappychoice/gittype/commit/87e82c6))
+- fix(ui): restore typing view scrolling by using actual current line for Paragraph::scroll ([1be66fa](https://github.com/unhappychoice/gittype/commit/1be66fa))
+- fix(extractor,typing): align comment positions to char-based indices and fix display offset after indent normalization ([df16f30](https://github.com/unhappychoice/gittype/commit/df16f30))
+- fix: suppress clippy too_many_arguments warning ([30b4999](https://github.com/unhappychoice/gittype/commit/30b4999))
+- fix: resolve clippy warnings ([cfd25ed](https://github.com/unhappychoice/gittype/commit/cfd25ed))
+- fix: resolve CI failures - add tempfile dependency and fix formatting ([4495575](https://github.com/unhappychoice/gittype/commit/4495575))
+- fix: apply clippy needless_borrows suggestions in rust integration tests ([1dc68d8](https://github.com/unhappychoice/gittype/commit/1dc68d8))
+- fix: apply clippy needless_borrows suggestions in extractor unit tests ([05a2e5a](https://github.com/unhappychoice/gittype/commit/05a2e5a))
+- fix: use consistent file filtering logic for zen challenge generation ([fb95b63](https://github.com/unhappychoice/gittype/commit/fb95b63))
+
+### 📝 Other Changes
+
+- chore: bump version to v0.5.0 ([37d5b6e](https://github.com/unhappychoice/gittype/commit/37d5b6e))
+- style: apply cargo fmt formatting ([afe7aca](https://github.com/unhappychoice/gittype/commit/afe7aca))
+- style: Change typing screen header border to dark blue ([85639eb](https://github.com/unhappychoice/gittype/commit/85639eb))
+- style: Format code with cargo fmt ([31c5517](https://github.com/unhappychoice/gittype/commit/31c5517))
+- test: Add comprehensive unit tests for scoring modules and mirror src structure ([010ef93](https://github.com/unhappychoice/gittype/commit/010ef93))
+- style: apply cargo fmt formatting ([883eabb](https://github.com/unhappychoice/gittype/commit/883eabb))
+- refactor: remove unused CountdownScreen module ([5f8654b](https://github.com/unhappychoice/gittype/commit/5f8654b))
+- refactor: remove unused UserQuit error variant ([b84dec0](https://github.com/unhappychoice/gittype/commit/b84dec0))
+- Fix: Resolve cargo fmt and clippy issues. Fixed formatting and module_inception clippy lints. Ensured clippy passes with -D warnings. ([c375471](https://github.com/unhappychoice/gittype/commit/c375471))
+- style: rustfmt ([c2fee8f](https://github.com/unhappychoice/gittype/commit/c2fee8f))
+- test: Add more test cases for C# and Haskell ([a4d4abc](https://github.com/unhappychoice/gittype/commit/a4d4abc))
+- chore(deps): bump ratatui from 0.26.3 to 0.29.0 ([b2cf114](https://github.com/unhappychoice/gittype/commit/b2cf114))
+- docs: Align documentation with current source code ([f489063](https://github.com/unhappychoice/gittype/commit/f489063))
+- trigger CI rerun ([bcbfdb9](https://github.com/unhappychoice/gittype/commit/bcbfdb9))
+- chore(deps): bump rand from 0.8.5 to 0.9.2 ([bfef016](https://github.com/unhappychoice/gittype/commit/bfef016))
+- docs: Add documentation for local data storage ([136e53c](https://github.com/unhappychoice/gittype/commit/136e53c))
+- refactor: remove unnecessary indentation normalization ([5b4aa22](https://github.com/unhappychoice/gittype/commit/5b4aa22))
+- refactor: update scoring system and integrate history feature ([37472c3](https://github.com/unhappychoice/gittype/commit/37472c3))
+- style: apply cargo fmt formatting ([b41fc25](https://github.com/unhappychoice/gittype/commit/b41fc25))
+- refactor: remove SessionResult mutation methods ([421c84c](https://github.com/unhappychoice/gittype/commit/421c84c))
+- refactor: update game logic and storage for new scoring system ([d7d9db6](https://github.com/unhappychoice/gittype/commit/d7d9db6))
+- refactor: split scoring system into calculator/tracker pattern ([42adc73](https://github.com/unhappychoice/gittype/commit/42adc73))
+- refactor: move logging setup to application initialization ([f64a1af](https://github.com/unhappychoice/gittype/commit/f64a1af))
+- test: isolate database and logging for tests ([e7e4028](https://github.com/unhappychoice/gittype/commit/e7e4028))
+- refactor: fix clippy warnings and apply code formatting ([ccc0aed](https://github.com/unhappychoice/gittype/commit/ccc0aed))
+- chore: update project configuration and loading steps ([6309ef2](https://github.com/unhappychoice/gittype/commit/6309ef2))
+- chore(deps): bump insta from 1.43.1 to 1.43.2 ([876ce47](https://github.com/unhappychoice/gittype/commit/876ce47))
+- style: apply cargo fmt to test files ([586541d](https://github.com/unhappychoice/gittype/commit/586541d))
+- test: fix failing repository loader tests by adding git initialization ([96feec3](https://github.com/unhappychoice/gittype/commit/96feec3))
+- refactor: improve conditional nesting in collect_source_files ([d0ecf76](https://github.com/unhappychoice/gittype/commit/d0ecf76))
+
+
 ## [0.4.1] - 2025-09-04
 
 ### 🐛 Bug Fixes
@@ -13,7 +102,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📝 Other Changes
 
-- chore: bump version to v0.4.1 ([dad8bba](https://github.com/unhappychoice/gittype/commit/dad8bba))
+- chore: bump version to v0.4.1 ([f69a76d](https://github.com/unhappychoice/gittype/commit/f69a76d))
 - Revert "Merge pull request #156 from unhappychoice/dependabot/cargo/git2-0.20.2" ([b2c6eb7](https://github.com/unhappychoice/gittype/commit/b2c6eb7))
 - perf: optimize typing screen display updates to improve performance ([39f9aa9](https://github.com/unhappychoice/gittype/commit/39f9aa9))
 - chore(deps): bump tree-sitter-go from 0.23.4 to 0.25.0 ([13c0186](https://github.com/unhappychoice/gittype/commit/13c0186))
