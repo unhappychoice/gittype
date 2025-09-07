@@ -115,8 +115,10 @@ check_sudo_needed() {
         check_dir="$(dirname "$check_dir")"
     done
     
-    # Test if we can write to the directory
-    if [[ -w "$check_dir" ]]; then
+    # Test if we can actually write to the directory by creating a test file
+    local test_file="$check_dir/.gittype_install_test_$$"
+    if touch "$test_file" 2>/dev/null; then
+        rm -f "$test_file" 2>/dev/null
         return 1  # No sudo needed
     else
         return 0  # Sudo needed
@@ -176,7 +178,12 @@ install_gittype() {
         if ! command -v sudo >/dev/null 2>&1; then
             echo -e "${RED}Error: sudo is required but not available${NC}" >&2
             echo -e "${BLUE}💡 Try installing to a user directory instead:${NC}"
-            echo -e "${BLUE}   $0 -d \$HOME/.local/bin${NC}"
+            if [[ "$(uname -s)" == "Darwin" ]]; then
+                echo -e "${BLUE}   $0 -d \$HOME/.local/bin${NC}"
+                echo -e "${BLUE}   $0 -d /opt/homebrew/bin  # if using Homebrew${NC}"
+            else
+                echo -e "${BLUE}   $0 -d \$HOME/.local/bin${NC}"
+            fi
             exit 1
         fi
         
