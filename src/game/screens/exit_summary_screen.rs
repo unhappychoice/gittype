@@ -292,9 +292,14 @@ impl ExitSummaryScreen {
             let full_text_len = key.len() + label.len();
             let option_col = center_col.saturating_sub(full_text_len as u16 / 2);
             execute!(stdout, MoveTo(option_col, options_start + 3 + i as u16))?;
-            execute!(stdout, SetForegroundColor(*key_color))?;
+            execute!(
+                stdout,
+                SetForegroundColor(*key_color),
+                SetAttribute(Attribute::Dim)
+            )?;
             execute!(stdout, Print(key))?;
-            execute!(stdout, SetForegroundColor(Color::White))?;
+            execute!(stdout, SetAttribute(Attribute::Reset))?;
+            execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
             execute!(stdout, Print(label))?;
             execute!(stdout, ResetColor)?;
         }
@@ -390,9 +395,14 @@ impl ExitSummaryScreen {
             stdout,
             MoveTo(back_col, start_row + platforms.len() as u16 + 2)
         )?;
-        execute!(stdout, SetForegroundColor(Color::Green))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Color::Green),
+            SetAttribute(Attribute::Dim)
+        )?;
         execute!(stdout, Print(back_key))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, SetAttribute(Attribute::Reset))?;
+        execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
         execute!(stdout, Print(back_label))?;
         execute!(stdout, ResetColor)?;
 
@@ -555,9 +565,14 @@ impl ExitSummaryScreen {
         let total_exit_len = exit_key.len() + exit_label.len();
         let continue_col = center_col.saturating_sub(total_exit_len as u16 / 2);
         execute!(stdout, MoveTo(continue_col, center_row + 4))?;
-        execute!(stdout, SetForegroundColor(Color::Red))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Color::Red),
+            SetAttribute(Attribute::Dim)
+        )?;
         execute!(stdout, Print(exit_key))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, SetAttribute(Attribute::Reset))?;
+        execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
         execute!(stdout, Print(exit_label))?;
         execute!(stdout, ResetColor)?;
 

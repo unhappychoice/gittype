@@ -99,9 +99,14 @@ impl SharingScreen {
             stdout,
             MoveTo(back_col, start_row + platforms.len() as u16 + 2)
         )?;
-        execute!(stdout, SetForegroundColor(Color::Green))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Color::Green),
+            SetAttribute(Attribute::Dim)
+        )?;
         execute!(stdout, Print(back_key))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, SetAttribute(Attribute::Reset))?;
+        execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
         execute!(stdout, Print(back_label))?;
         execute!(stdout, ResetColor)?;
 
