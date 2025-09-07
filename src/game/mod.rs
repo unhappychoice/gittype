@@ -10,6 +10,8 @@ pub mod stage_renderer;
 pub mod text_processor;
 pub mod typing_animation;
 pub mod typing_core;
+pub mod utils;
+pub mod widgets;
 
 pub use crate::models::Challenge;
 pub use crate::models::SessionResult;
