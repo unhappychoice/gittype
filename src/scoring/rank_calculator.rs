@@ -24,19 +24,19 @@ impl RankCalculator {
         }
         .to_string();
 
-        let tier_position = same_tier_ranks
-            .iter()
-            .position(|rank| rank.name() == current_rank.name())
-            .unwrap_or(0)
-            + 1;
+        let tier_position = same_tier_ranks.len()
+            - same_tier_ranks
+                .iter()
+                .position(|rank| rank.name() == current_rank.name())
+                .unwrap_or(0);
 
         let tier_total = same_tier_ranks.len();
 
-        let overall_position = all_ranks
-            .iter()
-            .position(|rank| rank.name() == current_rank.name())
-            .unwrap_or(0)
-            + 1;
+        let overall_position = all_ranks.len()
+            - all_ranks
+                .iter()
+                .position(|rank| rank.name() == current_rank.name())
+                .unwrap_or(0);
 
         let overall_total = all_ranks.len();
 
