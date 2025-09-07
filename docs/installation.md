@@ -29,6 +29,15 @@ cargo install gittype
 gittype --version
 ```
 
+## Local Data Storage
+
+`gittype` stores its data, including the local database and log files, in the `~/.gittype/` directory.
+
+- **Database**: `~/.gittype/gittype.db` - Contains your typing history, scores, and other session data.
+- **Logs**: `~/.gittype/gittype.log` - Used for debugging and monitoring.
+
+You can safely remove this directory if you want to reset all your data.
+
 ## Troubleshooting
 
 ### Common Issues
