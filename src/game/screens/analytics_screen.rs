@@ -10,7 +10,10 @@ use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Axis, BarChart, Block, Borders, Chart, Dataset, GraphType, List, ListItem, ListState, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState},
+    widgets::{
+        Axis, BarChart, Block, Borders, Chart, Dataset, GraphType, List, ListItem, ListState,
+        Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState,
+    },
     Frame, Terminal,
 };
 use std::collections::HashMap;
@@ -29,7 +32,7 @@ impl ViewMode {
         match self {
             ViewMode::Overview => "Overview",
             ViewMode::Trends => "Trends",
-            ViewMode::Repositories => "Repositories", 
+            ViewMode::Repositories => "Repositories",
             ViewMode::Languages => "Languages",
         }
     }
@@ -131,7 +134,7 @@ impl AnalyticsScreen {
         repository_list_state.select(Some(0));
         let mut language_list_state = ListState::default();
         language_list_state.select(Some(0));
-        
+
         Ok(Self {
             view_mode: ViewMode::Overview,
             data: None,
@@ -195,20 +198,16 @@ impl AnalyticsScreen {
                     KeyCode::Right | KeyCode::Char('l') => {
                         self.view_mode = self.view_mode.next();
                     }
-                    KeyCode::Up | KeyCode::Char('k') => {
-                        match self.view_mode {
-                            ViewMode::Repositories => self.previous_repository(),
-                            ViewMode::Languages => self.previous_language(),
-                            _ => {}
-                        }
-                    }
-                    KeyCode::Down | KeyCode::Char('j') => {
-                        match self.view_mode {
-                            ViewMode::Repositories => self.next_repository(),
-                            ViewMode::Languages => self.next_language(),
-                            _ => {}
-                        }
-                    }
+                    KeyCode::Up | KeyCode::Char('k') => match self.view_mode {
+                        ViewMode::Repositories => self.previous_repository(),
+                        ViewMode::Languages => self.previous_language(),
+                        _ => {}
+                    },
+                    KeyCode::Down | KeyCode::Char('j') => match self.view_mode {
+                        ViewMode::Repositories => self.next_repository(),
+                        ViewMode::Languages => self.next_language(),
+                        _ => {}
+                    },
                     KeyCode::Char('r') => {
                         if let Err(e) = self.load_data() {
                             eprintln!("Error loading data: {}", e);
@@ -269,9 +268,9 @@ impl AnalyticsScreen {
             // Then, collect all repository information
             for session in &sessions {
                 if let Some(repo_id) = session.repository_id {
-                    if !repositories_map.contains_key(&repo_id) {
+                    if let std::collections::hash_map::Entry::Vacant(e) = repositories_map.entry(repo_id) {
                         if let Ok(Some(repo)) = db.get_repository(repo_id) {
-                            repositories_map.insert(repo_id, repo);
+                            e.insert(repo);
                         }
                     }
                 }
@@ -283,18 +282,25 @@ impl AnalyticsScreen {
             total_cpm += result.cpm;
             total_accuracy += result.accuracy;
             total_duration_ms += result.duration_ms;
-            
+
             if result.cpm > best_cpm {
                 best_cpm = result.cpm;
             }
-            
-            let estimated_mistakes = ((100.0 - result.accuracy) / 100.0 * result.stages_attempted as f64) as usize;
+
+            let estimated_mistakes =
+                ((100.0 - result.accuracy) / 100.0 * result.stages_attempted as f64) as usize;
             total_mistakes += estimated_mistakes;
 
             let date_key = session.started_at.format("%m-%d").to_string();
             *daily_counts.entry(date_key.clone()).or_insert(0) += 1;
-            cpm_by_day.entry(date_key.clone()).or_default().push(result.cpm);
-            accuracy_by_day.entry(date_key).or_default().push(result.accuracy);
+            cpm_by_day
+                .entry(date_key.clone())
+                .or_default()
+                .push(result.cpm);
+            accuracy_by_day
+                .entry(date_key)
+                .or_default()
+                .push(result.accuracy);
 
             if let Some(repo_id) = session.repository_id {
                 if let Some(repo) = repositories_map.get(&repo_id) {
@@ -307,8 +313,16 @@ impl AnalyticsScreen {
         }
 
         let session_count = sessions.len();
-        let avg_cpm = if session_count > 0 { total_cpm / session_count as f64 } else { 0.0 };
-        let avg_accuracy = if session_count > 0 { total_accuracy / session_count as f64 } else { 0.0 };
+        let avg_cpm = if session_count > 0 {
+            total_cpm / session_count as f64
+        } else {
+            0.0
+        };
+        let avg_accuracy = if session_count > 0 {
+            total_accuracy / session_count as f64
+        } else {
+            0.0
+        };
         let total_time_hours = total_duration_ms as f64 / (1000.0 * 60.0 * 60.0);
 
         let mut cpm_trend: Vec<(String, f64)> = cpm_by_day
@@ -336,7 +350,9 @@ impl AnalyticsScreen {
         top_repositories.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
         // Display all repositories - no limit
 
-        let top_languages = session_repo.get_language_stats(Some(90)).unwrap_or_else(|_| Vec::new());
+        let top_languages = session_repo
+            .get_language_stats(Some(90))
+            .unwrap_or_else(|_| Vec::new());
 
         let avg_session_duration = if session_count > 0 {
             total_duration_ms as f64 / session_count as f64 / (1000.0 * 60.0)
@@ -347,11 +363,17 @@ impl AnalyticsScreen {
         // Calculate detailed repository and language statistics
         let mut repository_stats = HashMap::new();
         let mut language_stats = HashMap::new();
-        
+
         // Get all repositories for mapping repo_id to repo_name
         let all_repositories = session_repo.get_all_repositories()?;
-        let repo_map: HashMap<i64, String> = all_repositories.iter()
-            .map(|repo| (repo.id, format!("{}/{}", repo.user_name, repo.repository_name)))
+        let repo_map: HashMap<i64, String> = all_repositories
+            .iter()
+            .map(|repo| {
+                (
+                    repo.id,
+                    format!("{}/{}", repo.user_name, repo.repository_name),
+                )
+            })
             .collect();
 
         // Process each session for detailed stats
@@ -365,21 +387,24 @@ impl AnalyticsScreen {
                 // Repository stats
                 if let Some(repo_id) = session.repository_id {
                     if let Some(repo_name) = repo_map.get(&repo_id) {
-                        let repo_stats = repository_stats.entry(repo_name.clone()).or_insert_with(|| RepoStats {
-                            avg_cpm: 0.0,
-                            avg_wpm: 0.0,
-                            avg_accuracy: 0.0,
-                            total_sessions: 0,
-                            total_keystrokes: 0,
-                            total_mistakes: 0,
-                            total_duration_ms: 0,
-                            avg_score: 0.0,
-                            best_cpm: 0.0,
-                            best_accuracy: 0.0,
-                            stages_completed: 0,
-                            stages_attempted: 0,
-                            stages_skipped: 0,
-                        });
+                        let repo_stats =
+                            repository_stats
+                                .entry(repo_name.clone())
+                                .or_insert_with(|| RepoStats {
+                                    avg_cpm: 0.0,
+                                    avg_wpm: 0.0,
+                                    avg_accuracy: 0.0,
+                                    total_sessions: 0,
+                                    total_keystrokes: 0,
+                                    total_mistakes: 0,
+                                    total_duration_ms: 0,
+                                    avg_score: 0.0,
+                                    best_cpm: 0.0,
+                                    best_accuracy: 0.0,
+                                    stages_completed: 0,
+                                    stages_attempted: 0,
+                                    stages_skipped: 0,
+                                });
 
                         repo_stats.total_sessions += 1;
                         repo_stats.total_keystrokes += result.keystrokes;
@@ -394,30 +419,35 @@ impl AnalyticsScreen {
                 }
 
                 // Language stats (get from stage results)
-                let stage_results = session_repo.get_session_stage_results(session.id).unwrap_or_default();
+                let stage_results = session_repo
+                    .get_session_stage_results(session.id)
+                    .unwrap_or_default();
                 for stage in stage_results {
                     if let Some(language) = stage.language {
-                        let lang_stats = language_stats.entry(language.clone()).or_insert_with(|| LangStats {
-                            avg_cpm: 0.0,
-                            avg_wpm: 0.0,
-                            avg_accuracy: 0.0,
-                            total_sessions: 0,
-                            total_keystrokes: 0,
-                            total_mistakes: 0,
-                            total_duration_ms: 0,
-                            avg_score: 0.0,
-                            best_cpm: 0.0,
-                            best_accuracy: 0.0,
-                            stages_completed: 0,
-                            stages_attempted: 0,
-                            stages_skipped: 0,
-                        });
+                        let lang_stats =
+                            language_stats
+                                .entry(language.clone())
+                                .or_insert_with(|| LangStats {
+                                    avg_cpm: 0.0,
+                                    avg_wpm: 0.0,
+                                    avg_accuracy: 0.0,
+                                    total_sessions: 0,
+                                    total_keystrokes: 0,
+                                    total_mistakes: 0,
+                                    total_duration_ms: 0,
+                                    avg_score: 0.0,
+                                    best_cpm: 0.0,
+                                    best_accuracy: 0.0,
+                                    stages_completed: 0,
+                                    stages_attempted: 0,
+                                    stages_skipped: 0,
+                                });
 
                         lang_stats.total_sessions += 1;
                         lang_stats.total_keystrokes += stage.keystrokes;
                         lang_stats.total_mistakes += stage.mistakes;
                         lang_stats.total_duration_ms += stage.duration_ms;
-                        lang_stats.stages_completed += 1;  // Each stage record represents a completed stage
+                        lang_stats.stages_completed += 1; // Each stage record represents a completed stage
                         lang_stats.best_cpm = lang_stats.best_cpm.max(stage.cpm);
                         lang_stats.best_accuracy = lang_stats.best_accuracy.max(stage.accuracy);
                     }
@@ -428,20 +458,26 @@ impl AnalyticsScreen {
         // Calculate averages for repository stats
         for stats in repository_stats.values_mut() {
             if stats.total_sessions > 0 {
-                stats.avg_cpm = stats.total_keystrokes as f64 / (stats.total_duration_ms as f64 / 60000.0);
+                stats.avg_cpm =
+                    stats.total_keystrokes as f64 / (stats.total_duration_ms as f64 / 60000.0);
                 stats.avg_wpm = stats.avg_cpm / 5.0;
-                stats.avg_accuracy = ((stats.total_keystrokes - stats.total_mistakes) as f64 / stats.total_keystrokes as f64) * 100.0;
-                stats.avg_score = (stats.avg_cpm * stats.avg_accuracy / 100.0) as f64;
+                stats.avg_accuracy = ((stats.total_keystrokes - stats.total_mistakes) as f64
+                    / stats.total_keystrokes as f64)
+                    * 100.0;
+                stats.avg_score = stats.avg_cpm * stats.avg_accuracy / 100.0;
             }
         }
 
         // Calculate averages for language stats
         for stats in language_stats.values_mut() {
             if stats.total_sessions > 0 {
-                stats.avg_cpm = stats.total_keystrokes as f64 / (stats.total_duration_ms as f64 / 60000.0);
+                stats.avg_cpm =
+                    stats.total_keystrokes as f64 / (stats.total_duration_ms as f64 / 60000.0);
                 stats.avg_wpm = stats.avg_cpm / 5.0;
-                stats.avg_accuracy = ((stats.total_keystrokes - stats.total_mistakes) as f64 / stats.total_keystrokes as f64) * 100.0;
-                stats.avg_score = (stats.avg_cpm * stats.avg_accuracy / 100.0) as f64;
+                stats.avg_accuracy = ((stats.total_keystrokes - stats.total_mistakes) as f64
+                    / stats.total_keystrokes as f64)
+                    * 100.0;
+                stats.avg_score = stats.avg_cpm * stats.avg_accuracy / 100.0;
             }
         }
 
@@ -462,7 +498,7 @@ impl AnalyticsScreen {
             repository_stats,
             language_stats,
         });
-        
+
         Ok(())
     }
 
@@ -583,39 +619,41 @@ impl AnalyticsScreen {
     }
 
     fn render_view_tabs(&self, f: &mut Frame, area: Rect) {
-        let all_views = [ViewMode::Overview, ViewMode::Trends, ViewMode::Repositories, ViewMode::Languages];
-        
+        let all_views = [
+            ViewMode::Overview,
+            ViewMode::Trends,
+            ViewMode::Repositories,
+            ViewMode::Languages,
+        ];
+
         let mut tab_spans = Vec::new();
         tab_spans.push(Span::raw("  ")); // Left padding
-        
+
         for (i, view) in all_views.iter().enumerate() {
             if i > 0 {
                 tab_spans.push(Span::styled(" | ", Style::default().fg(Color::White)));
             }
-            
+
             let style = if *view == self.view_mode {
                 Style::default()
                     .fg(Color::White)
                     .add_modifier(Modifier::BOLD)
             } else {
-                Style::default()
-                    .fg(Color::DarkGray)
+                Style::default().fg(Color::DarkGray)
             };
-            
+
             tab_spans.push(Span::styled(view.display_name(), style));
         }
-        
-        let tabs = Paragraph::new(vec![
-            Line::from(tab_spans),
-        ])
-        .alignment(Alignment::Left)
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .border_style(Style::default().fg(Color::Blue))
-                .title("Navigation"),
-        );
-        
+
+        let tabs = Paragraph::new(vec![Line::from(tab_spans)])
+            .alignment(Alignment::Left)
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .border_style(Style::default().fg(Color::Blue))
+                    .title("Navigation"),
+            );
+
         f.render_widget(tabs, area);
     }
 
@@ -706,7 +744,7 @@ impl AnalyticsScreen {
 
         // Simple text-based chart
         self.render_simple_chart(f, chunks[1], data);
-        
+
         // Bottom section with top repositories and languages
         self.render_bottom_stats(f, chunks[2], data);
     }
@@ -730,7 +768,9 @@ impl AnalyticsScreen {
                 Line::from(""),
                 Line::from(vec![
                     Span::raw("  "),
-                    Span::raw("No trend data available - keep typing to build your performance history!"),
+                    Span::raw(
+                        "No trend data available - keep typing to build your performance history!",
+                    ),
                 ]),
             ])
             .alignment(Alignment::Left)
@@ -751,21 +791,28 @@ impl AnalyticsScreen {
         }
 
         // Calculate bounds
-        let max_cpm = data.cpm_trend.iter().map(|(_, cpm)| *cpm).fold(0.0, f64::max);
-        let min_cpm = data.cpm_trend.iter().map(|(_, cpm)| *cpm).fold(max_cpm, f64::min);
+        let max_cpm = data
+            .cpm_trend
+            .iter()
+            .map(|(_, cpm)| *cpm)
+            .fold(0.0, f64::max);
+        let min_cpm = data
+            .cpm_trend
+            .iter()
+            .map(|(_, cpm)| *cpm)
+            .fold(max_cpm, f64::min);
         let cpm_range = (max_cpm - min_cpm).max(10.0); // Minimum range of 10
-        
-        let datasets = vec![
-            Dataset::default()
-                .name("CPM")
-                .marker(ratatui::symbols::Marker::Braille)
-                .style(Style::default().fg(Color::LightGreen))
-                .graph_type(GraphType::Line)
-                .data(&chart_data),
-        ];
+
+        let datasets = vec![Dataset::default()
+            .name("CPM")
+            .marker(ratatui::symbols::Marker::Braille)
+            .style(Style::default().fg(Color::LightGreen))
+            .graph_type(GraphType::Line)
+            .data(&chart_data)];
 
         // Create x-axis labels from dates
-        let x_labels: Vec<Span> = data.cpm_trend
+        let x_labels: Vec<Span> = data
+            .cpm_trend
             .iter()
             .step_by((data.cpm_trend.len().max(1) / 8).max(1)) // Show ~8 labels max
             .map(|(date, _)| {
@@ -795,7 +842,10 @@ impl AnalyticsScreen {
                     .bounds([min_cpm - cpm_range * 0.1, max_cpm + cpm_range * 0.1])
                     .labels(vec![
                         Span::styled(format!("{:.0}", min_cpm), Style::default().fg(Color::White)),
-                        Span::styled(format!("{:.0}", (min_cpm + max_cpm) / 2.0), Style::default().fg(Color::White)),
+                        Span::styled(
+                            format!("{:.0}", (min_cpm + max_cpm) / 2.0),
+                            Style::default().fg(Color::White),
+                        ),
                         Span::styled(format!("{:.0}", max_cpm), Style::default().fg(Color::White)),
                     ]),
             );
@@ -830,21 +880,28 @@ impl AnalyticsScreen {
         }
 
         // Calculate bounds for accuracy (should be between 0-100)
-        let max_accuracy = data.accuracy_trend.iter().map(|(_, acc)| *acc).fold(0.0, f64::max);
-        let min_accuracy = data.accuracy_trend.iter().map(|(_, acc)| *acc).fold(max_accuracy, f64::min);
+        let max_accuracy = data
+            .accuracy_trend
+            .iter()
+            .map(|(_, acc)| *acc)
+            .fold(0.0, f64::max);
+        let min_accuracy = data
+            .accuracy_trend
+            .iter()
+            .map(|(_, acc)| *acc)
+            .fold(max_accuracy, f64::min);
         let accuracy_range = (max_accuracy - min_accuracy).max(10.0);
-        
-        let datasets = vec![
-            Dataset::default()
-                .name("Accuracy")
-                .marker(ratatui::symbols::Marker::Braille)
-                .style(Style::default().fg(Color::Yellow))
-                .graph_type(GraphType::Line)
-                .data(&chart_data),
-        ];
+
+        let datasets = vec![Dataset::default()
+            .name("Accuracy")
+            .marker(ratatui::symbols::Marker::Braille)
+            .style(Style::default().fg(Color::Yellow))
+            .graph_type(GraphType::Line)
+            .data(&chart_data)];
 
         // Create x-axis labels from dates
-        let x_labels: Vec<Span> = data.accuracy_trend
+        let x_labels: Vec<Span> = data
+            .accuracy_trend
             .iter()
             .step_by((data.accuracy_trend.len().max(1) / 8).max(1))
             .map(|(date, _)| {
@@ -871,11 +928,23 @@ impl AnalyticsScreen {
                 Axis::default()
                     .title("Accuracy (%)")
                     .style(Style::default().fg(Color::Gray))
-                    .bounds([min_accuracy - accuracy_range * 0.1, max_accuracy + accuracy_range * 0.1])
+                    .bounds([
+                        min_accuracy - accuracy_range * 0.1,
+                        max_accuracy + accuracy_range * 0.1,
+                    ])
                     .labels(vec![
-                        Span::styled(format!("{:.1}%", min_accuracy), Style::default().fg(Color::White)),
-                        Span::styled(format!("{:.1}%", (min_accuracy + max_accuracy) / 2.0), Style::default().fg(Color::White)),
-                        Span::styled(format!("{:.1}%", max_accuracy), Style::default().fg(Color::White)),
+                        Span::styled(
+                            format!("{:.1}%", min_accuracy),
+                            Style::default().fg(Color::White),
+                        ),
+                        Span::styled(
+                            format!("{:.1}%", (min_accuracy + max_accuracy) / 2.0),
+                            Style::default().fg(Color::White),
+                        ),
+                        Span::styled(
+                            format!("{:.1}%", max_accuracy),
+                            Style::default().fg(Color::White),
+                        ),
                     ]),
             );
 
@@ -890,10 +959,10 @@ impl AnalyticsScreen {
                 Constraint::Percentage(60), // Repository details
             ])
             .split(area);
-        
+
         // Left side: Repository list
         let mut items: Vec<ListItem> = Vec::new();
-        
+
         if data.top_repositories.is_empty() {
             items.push(ListItem::new("No repositories available"));
         } else {
@@ -901,7 +970,7 @@ impl AnalyticsScreen {
             let available_width = chunks[0].width.saturating_sub(4) as usize; // Account for borders
             let cpm_text_width = 10; // "123.4 CPM" max width
             let name_width = available_width.saturating_sub(cpm_text_width);
-            
+
             for (repo_name, avg_cpm) in data.top_repositories.iter() {
                 // Truncate name to fit available space
                 let display_name = if repo_name.len() > name_width {
@@ -909,15 +978,13 @@ impl AnalyticsScreen {
                 } else {
                     repo_name.clone()
                 };
-                
+
                 let cpm_text = format!("{:.1} CPM", avg_cpm);
-                let spaces_needed = available_width.saturating_sub(display_name.len() + cpm_text.len());
-                
-                let item_text = format!("{}{}{}", 
-                    display_name, 
-                    " ".repeat(spaces_needed),
-                    cpm_text
-                );
+                let spaces_needed =
+                    available_width.saturating_sub(display_name.len() + cpm_text.len());
+
+                let item_text =
+                    format!("{}{}{}", display_name, " ".repeat(spaces_needed), cpm_text);
                 items.push(ListItem::new(item_text));
             }
         }
@@ -936,12 +1003,14 @@ impl AnalyticsScreen {
                     .add_modifier(Modifier::BOLD),
             )
             .highlight_symbol("► ");
-            
+
         // Update scrollbar content length
-        self.repository_scroll_state = self.repository_scroll_state.content_length(data.top_repositories.len());
-        
+        self.repository_scroll_state = self
+            .repository_scroll_state
+            .content_length(data.top_repositories.len());
+
         f.render_stateful_widget(list, chunks[0], &mut self.repository_list_state);
-        
+
         // Render scrollbar for repository list
         let scrollbar = Scrollbar::default()
             .orientation(ScrollbarOrientation::VerticalRight)
@@ -955,102 +1024,170 @@ impl AnalyticsScreen {
             }),
             &mut self.repository_scroll_state,
         );
-        
+
         // Right side: Repository details
         self.render_repository_details(f, chunks[1], data);
     }
 
     fn render_repository_details(&self, f: &mut Frame, area: Rect, data: &AnalyticsData) {
         let selected_index = self.repository_list_state.selected();
-        
-        let detail_lines = if let (Some(_), Some(repo_data)) = (selected_index, data.top_repositories.get(selected_index.unwrap_or(0))) {
+
+        let detail_lines = if let (Some(_), Some(repo_data)) = (
+            selected_index,
+            data.top_repositories.get(selected_index.unwrap_or(0)),
+        ) {
             let repo_name = &repo_data.0;
             let detailed_stats = data.repository_stats.get(repo_name);
-            
+
             let mut lines = vec![
                 Line::from(vec![
                     Span::raw("  "),
                     Span::styled("Repository: ", Style::default().fg(Color::White)),
-                    Span::styled(&repo_data.0, Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+                    Span::styled(
+                        &repo_data.0,
+                        Style::default()
+                            .fg(Color::Cyan)
+                            .add_modifier(Modifier::BOLD),
+                    ),
                 ]),
                 Line::from(""),
             ];
-            
+
             if let Some(stats) = detailed_stats {
                 lines.extend_from_slice(&[
                     Line::from(vec![
                         Span::raw("  "),
-                        Span::styled("📈 Speed Metrics:", Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
+                        Span::styled(
+                            "📈 Speed Metrics:",
+                            Style::default()
+                                .fg(Color::White)
+                                .add_modifier(Modifier::BOLD),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Average CPM: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{:.1}", stats.avg_cpm), Style::default().fg(Color::LightGreen)),
+                        Span::styled(
+                            format!("{:.1}", stats.avg_cpm),
+                            Style::default().fg(Color::LightGreen),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Average WPM: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{:.1}", stats.avg_wpm), Style::default().fg(Color::LightBlue)),
+                        Span::styled(
+                            format!("{:.1}", stats.avg_wpm),
+                            Style::default().fg(Color::LightBlue),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Best CPM: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{:.1}", stats.best_cpm), Style::default().fg(Color::Green)),
+                        Span::styled(
+                            format!("{:.1}", stats.best_cpm),
+                            Style::default().fg(Color::Green),
+                        ),
                     ]),
                     Line::from(""),
                     Line::from(vec![
                         Span::raw("  "),
-                        Span::styled("🎯 Accuracy & Quality:", Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
+                        Span::styled(
+                            "🎯 Accuracy & Quality:",
+                            Style::default()
+                                .fg(Color::White)
+                                .add_modifier(Modifier::BOLD),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Average Accuracy: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{:.1}%", stats.avg_accuracy), Style::default().fg(Color::Yellow)),
+                        Span::styled(
+                            format!("{:.1}%", stats.avg_accuracy),
+                            Style::default().fg(Color::Yellow),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Best Accuracy: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{:.1}%", stats.best_accuracy), Style::default().fg(Color::LightYellow)),
+                        Span::styled(
+                            format!("{:.1}%", stats.best_accuracy),
+                            Style::default().fg(Color::LightYellow),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Total Mistakes: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{}", stats.total_mistakes), Style::default().fg(Color::Red)),
+                        Span::styled(
+                            format!("{}", stats.total_mistakes),
+                            Style::default().fg(Color::Red),
+                        ),
                     ]),
                     Line::from(""),
                     Line::from(vec![
                         Span::raw("  "),
-                        Span::styled("📊 Volume & Activity:", Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
+                        Span::styled(
+                            "📊 Volume & Activity:",
+                            Style::default()
+                                .fg(Color::White)
+                                .add_modifier(Modifier::BOLD),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Total Sessions: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{}", stats.total_sessions), Style::default().fg(Color::Cyan)),
+                        Span::styled(
+                            format!("{}", stats.total_sessions),
+                            Style::default().fg(Color::Cyan),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Total Keystrokes: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{}", stats.total_keystrokes), Style::default().fg(Color::Magenta)),
+                        Span::styled(
+                            format!("{}", stats.total_keystrokes),
+                            Style::default().fg(Color::Magenta),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Total Time: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{}h {}m", stats.total_duration_ms / 3600000, (stats.total_duration_ms % 3600000) / 60000), Style::default().fg(Color::Gray)),
+                        Span::styled(
+                            format!(
+                                "{}h {}m",
+                                stats.total_duration_ms / 3600000,
+                                (stats.total_duration_ms % 3600000) / 60000
+                            ),
+                            Style::default().fg(Color::Gray),
+                        ),
                     ]),
                     Line::from(""),
                     Line::from(vec![
                         Span::raw("  "),
-                        Span::styled("🏆 Progress:", Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
+                        Span::styled(
+                            "🏆 Progress:",
+                            Style::default()
+                                .fg(Color::White)
+                                .add_modifier(Modifier::BOLD),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Average Score: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{:.0}", stats.avg_score), Style::default().fg(Color::LightMagenta)),
+                        Span::styled(
+                            format!("{:.0}", stats.avg_score),
+                            Style::default().fg(Color::LightMagenta),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Total Stages: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{}/{} completed", stats.stages_completed, stats.stages_attempted), Style::default().fg(Color::Blue)),
+                        Span::styled(
+                            format!(
+                                "{}/{} completed",
+                                stats.stages_completed, stats.stages_attempted
+                            ),
+                            Style::default().fg(Color::Blue),
+                        ),
                     ]),
                 ]);
             } else {
@@ -1058,37 +1195,54 @@ impl AnalyticsScreen {
                     Line::from(vec![
                         Span::raw("  "),
                         Span::styled("• Average CPM: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{:.1}", repo_data.1), Style::default().fg(Color::LightGreen)),
+                        Span::styled(
+                            format!("{:.1}", repo_data.1),
+                            Style::default().fg(Color::LightGreen),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("  "),
                         Span::styled("• WPM Equivalent: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{:.1}", repo_data.1 / 5.0), Style::default().fg(Color::LightBlue)),
+                        Span::styled(
+                            format!("{:.1}", repo_data.1 / 5.0),
+                            Style::default().fg(Color::LightBlue),
+                        ),
                     ]),
                 ]);
             }
-            
+
             lines.extend_from_slice(&[
                 Line::from(""),
                 Line::from(vec![
                     Span::raw("  "),
-                    Span::styled("Navigation:", Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
+                    Span::styled(
+                        "Navigation:",
+                        Style::default()
+                            .fg(Color::White)
+                            .add_modifier(Modifier::BOLD),
+                    ),
                 ]),
                 Line::from(vec![
                     Span::raw("  "),
                     Span::styled("Use ", Style::default().fg(Color::DarkGray)),
                     Span::styled("↑↓ / JK", Style::default().fg(Color::Yellow)),
-                    Span::styled(" to navigate repositories", Style::default().fg(Color::DarkGray)),
+                    Span::styled(
+                        " to navigate repositories",
+                        Style::default().fg(Color::DarkGray),
+                    ),
                 ]),
             ]);
-            
+
             lines
         } else {
             vec![
                 Line::from(""),
                 Line::from(vec![
                     Span::raw("  "),
-                    Span::styled("No Repository Selected", Style::default().fg(Color::DarkGray)),
+                    Span::styled(
+                        "No Repository Selected",
+                        Style::default().fg(Color::DarkGray),
+                    ),
                 ]),
                 Line::from(""),
                 Line::from(vec![
@@ -1117,10 +1271,10 @@ impl AnalyticsScreen {
                 Constraint::Percentage(60), // Language details
             ])
             .split(area);
-        
+
         // Left side: Language list
         let mut items: Vec<ListItem> = Vec::new();
-        
+
         if data.top_languages.is_empty() {
             items.push(ListItem::new("No languages available"));
         } else {
@@ -1128,7 +1282,7 @@ impl AnalyticsScreen {
             let available_width = chunks[0].width.saturating_sub(4) as usize; // Account for borders
             let cpm_count_width = 12; // "123.4 CPM (99)" max width
             let name_width = available_width.saturating_sub(cpm_count_width);
-            
+
             for (lang_name, avg_cpm, session_count) in data.top_languages.iter() {
                 // Truncate name to fit available space
                 let display_name = if lang_name.len() > name_width {
@@ -1136,15 +1290,13 @@ impl AnalyticsScreen {
                 } else {
                     lang_name.clone()
                 };
-                
+
                 let cpm_text = format!("{:.1} CPM ({:2})", avg_cpm, session_count);
-                let spaces_needed = available_width.saturating_sub(display_name.len() + cpm_text.len());
-                
-                let item_text = format!("{}{}{}", 
-                    display_name, 
-                    " ".repeat(spaces_needed),
-                    cpm_text
-                );
+                let spaces_needed =
+                    available_width.saturating_sub(display_name.len() + cpm_text.len());
+
+                let item_text =
+                    format!("{}{}{}", display_name, " ".repeat(spaces_needed), cpm_text);
                 items.push(ListItem::new(item_text));
             }
         }
@@ -1163,12 +1315,14 @@ impl AnalyticsScreen {
                     .add_modifier(Modifier::BOLD),
             )
             .highlight_symbol("► ");
-            
+
         // Update scrollbar content length
-        self.language_scroll_state = self.language_scroll_state.content_length(data.top_languages.len());
-        
+        self.language_scroll_state = self
+            .language_scroll_state
+            .content_length(data.top_languages.len());
+
         f.render_stateful_widget(list, chunks[0], &mut self.language_list_state);
-        
+
         // Render scrollbar for language list
         let scrollbar = Scrollbar::default()
             .orientation(ScrollbarOrientation::VerticalRight)
@@ -1182,102 +1336,170 @@ impl AnalyticsScreen {
             }),
             &mut self.language_scroll_state,
         );
-        
+
         // Right side: Language details
         self.render_language_details(f, chunks[1], data);
     }
 
     fn render_language_details(&self, f: &mut Frame, area: Rect, data: &AnalyticsData) {
         let selected_index = self.language_list_state.selected();
-        
-        let detail_lines = if let (Some(_), Some(lang_data)) = (selected_index, data.top_languages.get(selected_index.unwrap_or(0))) {
+
+        let detail_lines = if let (Some(_), Some(lang_data)) = (
+            selected_index,
+            data.top_languages.get(selected_index.unwrap_or(0)),
+        ) {
             let lang_name = &lang_data.0;
             let detailed_stats = data.language_stats.get(lang_name);
-            
+
             let mut lines = vec![
                 Line::from(vec![
                     Span::raw("  "),
                     Span::styled("Language: ", Style::default().fg(Color::White)),
-                    Span::styled(&lang_data.0, Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+                    Span::styled(
+                        &lang_data.0,
+                        Style::default()
+                            .fg(Color::Cyan)
+                            .add_modifier(Modifier::BOLD),
+                    ),
                 ]),
                 Line::from(""),
             ];
-            
+
             if let Some(stats) = detailed_stats {
                 lines.extend_from_slice(&[
                     Line::from(vec![
                         Span::raw("  "),
-                        Span::styled("📈 Speed Metrics:", Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
+                        Span::styled(
+                            "📈 Speed Metrics:",
+                            Style::default()
+                                .fg(Color::White)
+                                .add_modifier(Modifier::BOLD),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Average CPM: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{:.1}", stats.avg_cpm), Style::default().fg(Color::LightGreen)),
+                        Span::styled(
+                            format!("{:.1}", stats.avg_cpm),
+                            Style::default().fg(Color::LightGreen),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Average WPM: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{:.1}", stats.avg_wpm), Style::default().fg(Color::LightBlue)),
+                        Span::styled(
+                            format!("{:.1}", stats.avg_wpm),
+                            Style::default().fg(Color::LightBlue),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Best CPM: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{:.1}", stats.best_cpm), Style::default().fg(Color::Green)),
+                        Span::styled(
+                            format!("{:.1}", stats.best_cpm),
+                            Style::default().fg(Color::Green),
+                        ),
                     ]),
                     Line::from(""),
                     Line::from(vec![
                         Span::raw("  "),
-                        Span::styled("🎯 Accuracy & Quality:", Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
+                        Span::styled(
+                            "🎯 Accuracy & Quality:",
+                            Style::default()
+                                .fg(Color::White)
+                                .add_modifier(Modifier::BOLD),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Average Accuracy: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{:.1}%", stats.avg_accuracy), Style::default().fg(Color::Yellow)),
+                        Span::styled(
+                            format!("{:.1}%", stats.avg_accuracy),
+                            Style::default().fg(Color::Yellow),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Best Accuracy: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{:.1}%", stats.best_accuracy), Style::default().fg(Color::LightYellow)),
+                        Span::styled(
+                            format!("{:.1}%", stats.best_accuracy),
+                            Style::default().fg(Color::LightYellow),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Total Mistakes: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{}", stats.total_mistakes), Style::default().fg(Color::Red)),
+                        Span::styled(
+                            format!("{}", stats.total_mistakes),
+                            Style::default().fg(Color::Red),
+                        ),
                     ]),
                     Line::from(""),
                     Line::from(vec![
                         Span::raw("  "),
-                        Span::styled("📊 Volume & Activity:", Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
+                        Span::styled(
+                            "📊 Volume & Activity:",
+                            Style::default()
+                                .fg(Color::White)
+                                .add_modifier(Modifier::BOLD),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Total Sessions: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{}", stats.total_sessions), Style::default().fg(Color::Cyan)),
+                        Span::styled(
+                            format!("{}", stats.total_sessions),
+                            Style::default().fg(Color::Cyan),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Total Keystrokes: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{}", stats.total_keystrokes), Style::default().fg(Color::Magenta)),
+                        Span::styled(
+                            format!("{}", stats.total_keystrokes),
+                            Style::default().fg(Color::Magenta),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Total Time: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{}h {}m", stats.total_duration_ms / 3600000, (stats.total_duration_ms % 3600000) / 60000), Style::default().fg(Color::Gray)),
+                        Span::styled(
+                            format!(
+                                "{}h {}m",
+                                stats.total_duration_ms / 3600000,
+                                (stats.total_duration_ms % 3600000) / 60000
+                            ),
+                            Style::default().fg(Color::Gray),
+                        ),
                     ]),
                     Line::from(""),
                     Line::from(vec![
                         Span::raw("  "),
-                        Span::styled("🏆 Progress:", Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
+                        Span::styled(
+                            "🏆 Progress:",
+                            Style::default()
+                                .fg(Color::White)
+                                .add_modifier(Modifier::BOLD),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Average Score: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{:.0}", stats.avg_score), Style::default().fg(Color::LightMagenta)),
+                        Span::styled(
+                            format!("{:.0}", stats.avg_score),
+                            Style::default().fg(Color::LightMagenta),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled("• Total Stages: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{}/{} completed", stats.stages_completed, stats.stages_attempted), Style::default().fg(Color::Blue)),
+                        Span::styled(
+                            format!(
+                                "{}/{} completed",
+                                stats.stages_completed, stats.stages_attempted
+                            ),
+                            Style::default().fg(Color::Blue),
+                        ),
                     ]),
                 ]);
             } else {
@@ -1285,35 +1507,52 @@ impl AnalyticsScreen {
                     Line::from(vec![
                         Span::raw("  "),
                         Span::styled("• Average CPM: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{:.1}", lang_data.1), Style::default().fg(Color::LightGreen)),
+                        Span::styled(
+                            format!("{:.1}", lang_data.1),
+                            Style::default().fg(Color::LightGreen),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("  "),
                         Span::styled("• WPM Equivalent: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{:.1}", lang_data.1 / 5.0), Style::default().fg(Color::LightBlue)),
+                        Span::styled(
+                            format!("{:.1}", lang_data.1 / 5.0),
+                            Style::default().fg(Color::LightBlue),
+                        ),
                     ]),
                     Line::from(vec![
                         Span::raw("  "),
                         Span::styled("• Session Count: ", Style::default().fg(Color::White)),
-                        Span::styled(format!("{}", lang_data.2), Style::default().fg(Color::Yellow)),
+                        Span::styled(
+                            format!("{}", lang_data.2),
+                            Style::default().fg(Color::Yellow),
+                        ),
                     ]),
                 ]);
             }
-            
+
             lines.extend_from_slice(&[
                 Line::from(""),
                 Line::from(vec![
                     Span::raw("  "),
-                    Span::styled("Navigation:", Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
+                    Span::styled(
+                        "Navigation:",
+                        Style::default()
+                            .fg(Color::White)
+                            .add_modifier(Modifier::BOLD),
+                    ),
                 ]),
                 Line::from(vec![
                     Span::raw("  "),
                     Span::styled("Use ", Style::default().fg(Color::DarkGray)),
                     Span::styled("↑↓ / JK", Style::default().fg(Color::Yellow)),
-                    Span::styled(" to navigate languages", Style::default().fg(Color::DarkGray)),
+                    Span::styled(
+                        " to navigate languages",
+                        Style::default().fg(Color::DarkGray),
+                    ),
                 ]),
             ]);
-            
+
             lines
         } else {
             vec![
@@ -1366,28 +1605,26 @@ impl AnalyticsScreen {
         let bar_width = 2u16;
         let bar_gap = 1u16;
         let chars_per_bar = (bar_width + bar_gap) as usize;
-        let max_days = (available_width / chars_per_bar).max(7).min(90); // Between 7-90 days
-        
+        let max_days = (available_width / chars_per_bar).clamp(7, 90); // Between 7-90 days
+
         // Generate continuous day range with 0 for missing days
-        use chrono::{Local, Duration, Datelike};
+        use chrono::{Datelike, Duration, Local};
         let today = Local::now().date_naive();
         let mut continuous_data = Vec::new();
-        
+
         for i in (0..max_days).rev() {
             let date = today - Duration::days(i as i64);
             let date_key = format!("{:02}-{:02}", date.month(), date.day());
             let count = data.daily_sessions.get(&date_key).copied().unwrap_or(0);
             continuous_data.push((date.day(), count));
         }
-        
+
         // Create bar chart data
         let bar_data: Vec<(String, u64)> = continuous_data
             .iter()
-            .map(|(day, count)| {
-                (format!("{:02}", day), *count as u64)
-            })
+            .map(|(day, count)| (format!("{:02}", day), *count as u64))
             .collect();
-            
+
         // Convert to &str references for BarChart
         let bars: Vec<(&str, u64)> = bar_data
             .iter()
@@ -1395,23 +1632,31 @@ impl AnalyticsScreen {
             .collect();
 
         // bar_width already defined above
-        
+
         let max_value = data.daily_sessions.values().max().copied().unwrap_or(0) as u64;
         let total_sessions: usize = data.daily_sessions.values().sum();
-        
+
         let chart = BarChart::default()
             .block(
                 Block::default()
                     .borders(Borders::ALL)
                     .border_style(Style::default().fg(Color::Blue))
-                    .title(format!("Recent Activity - {} Days | {} Total Sessions | Max: {}/Day", 
-                        continuous_data.len(), total_sessions, max_value)),
+                    .title(format!(
+                        "Recent Activity - {} Days | {} Total Sessions | Max: {}/Day",
+                        continuous_data.len(),
+                        total_sessions,
+                        max_value
+                    )),
             )
             .data(&bars)
             .bar_width(bar_width)
             .bar_gap(1) // Small gap for better readability
             .bar_style(Style::default().fg(Color::LightGreen))
-            .value_style(Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD))
+            .value_style(
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD),
+            )
             .label_style(Style::default().fg(Color::Cyan))
             .max(max_value);
 
@@ -1438,7 +1683,7 @@ impl AnalyticsScreen {
             let cpm_text_width = 10; // "123.4 CPM" max width
             let index_width = 4; // "99. " max width
             let name_width = available_width.saturating_sub(cpm_text_width + index_width);
-            
+
             for (i, (repo_name, avg_cpm)) in data.top_repositories.iter().enumerate() {
                 // Truncate name to fit available space
                 let display_name = if repo_name.len() > name_width {
@@ -1446,14 +1691,14 @@ impl AnalyticsScreen {
                 } else {
                     repo_name.clone()
                 };
-                
+
                 let index_text = format!("{}. ", i + 1);
                 let cpm_text = format!("{:.1} CPM", avg_cpm);
-                
+
                 // Calculate spaces needed to push CPM to the right
                 let used_width = 2 + index_text.len() + display_name.len(); // 2 for left padding
                 let spaces_needed = available_width.saturating_sub(used_width + cpm_text.len());
-                
+
                 repo_lines.push(Line::from(vec![
                     Span::raw("  "), // Left padding
                     Span::styled(index_text, Style::default().fg(Color::DarkGray)),
@@ -1480,10 +1725,10 @@ impl AnalyticsScreen {
         } else {
             // Calculate available width (subtract borders and padding)
             let available_width = chunks[1].width.saturating_sub(4) as usize; // Account for borders
-            let cpm_count_width = 12; // "123.4 CPM (99)" max width  
+            let cpm_count_width = 12; // "123.4 CPM (99)" max width
             let index_width = 4; // "99. " max width
             let name_width = available_width.saturating_sub(cpm_count_width + index_width);
-            
+
             for (i, (lang_name, avg_cpm, _)) in data.top_languages.iter().enumerate() {
                 // Truncate name to fit available space
                 let display_name = if lang_name.len() > name_width {
@@ -1491,14 +1736,14 @@ impl AnalyticsScreen {
                 } else {
                     lang_name.clone()
                 };
-                
+
                 let index_text = format!("{}. ", i + 1);
                 let cpm_text = format!("{:.1} CPM", avg_cpm);
-                
+
                 // Calculate spaces needed to push CPM to the right
                 let used_width = 2 + index_text.len() + display_name.len(); // 2 for left padding
                 let spaces_needed = available_width.saturating_sub(used_width + cpm_text.len());
-                
+
                 lang_lines.push(Line::from(vec![
                     Span::raw("  "), // Left padding
                     Span::styled(index_text, Style::default().fg(Color::DarkGray)),
@@ -1535,18 +1780,30 @@ impl AnalyticsScreen {
 
 // Extension trait for getting session results and repository data
 trait AnalyticsExt {
-    fn get_session_result(&self, session_id: i64) -> Result<Option<crate::storage::daos::session_dao::SessionResultData>>;
-    fn get_repository(&self, repo_id: i64) -> Result<Option<crate::storage::daos::StoredRepository>>;
+    fn get_session_result(
+        &self,
+        session_id: i64,
+    ) -> Result<Option<crate::storage::daos::session_dao::SessionResultData>>;
+    fn get_repository(
+        &self,
+        repo_id: i64,
+    ) -> Result<Option<crate::storage::daos::StoredRepository>>;
 }
 
 impl AnalyticsExt for crate::storage::Database {
-    fn get_session_result(&self, session_id: i64) -> Result<Option<crate::storage::daos::session_dao::SessionResultData>> {
+    fn get_session_result(
+        &self,
+        session_id: i64,
+    ) -> Result<Option<crate::storage::daos::session_dao::SessionResultData>> {
         use crate::storage::daos::SessionDao;
         let dao = SessionDao::new(self);
         dao.get_session_result(session_id)
     }
 
-    fn get_repository(&self, repo_id: i64) -> Result<Option<crate::storage::daos::StoredRepository>> {
+    fn get_repository(
+        &self,
+        repo_id: i64,
+    ) -> Result<Option<crate::storage::daos::StoredRepository>> {
         use crate::storage::daos::RepositoryDao;
         let dao = RepositoryDao::new(self);
         dao.get_repository_by_id(repo_id)
