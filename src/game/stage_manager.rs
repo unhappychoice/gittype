@@ -15,6 +15,7 @@ use crate::scoring::{
     SessionCalculator, StageResult, StageTracker,
 };
 use crate::storage::SessionRepository;
+use crate::ui::Colors;
 use crate::Result;
 use crossterm::{
     event::{KeyboardEnhancementFlags, PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags},
@@ -705,7 +706,7 @@ pub fn show_session_summary_on_interrupt() {
         use crossterm::{
             cursor::MoveTo,
             execute,
-            style::{Color, Print, ResetColor, SetForegroundColor},
+            style::{Print, ResetColor, SetForegroundColor},
         };
         use std::io::stdout;
 
@@ -715,7 +716,7 @@ pub fn show_session_summary_on_interrupt() {
             crossterm::terminal::Clear(crossterm::terminal::ClearType::All)
         );
         let _ = execute!(stdout, MoveTo(10, 5));
-        let _ = execute!(stdout, SetForegroundColor(Color::Yellow));
+        let _ = execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::WARNING)));
         let _ = execute!(
             stdout,
             Print("Interrupted by user - no session data available")
@@ -724,7 +725,7 @@ pub fn show_session_summary_on_interrupt() {
         let _ = execute!(stdout, MoveTo(10, 7));
         let _ = execute!(stdout, Print("Thanks for playing GitType!"));
         let _ = execute!(stdout, MoveTo(10, 9));
-        let _ = execute!(stdout, SetForegroundColor(Color::Grey));
+        let _ = execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::MUTED)));
         let _ = execute!(stdout, Print("[ESC] Exit"));
         let _ = execute!(stdout, ResetColor);
 

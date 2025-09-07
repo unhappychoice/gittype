@@ -1,4 +1,5 @@
 use crate::storage::{repositories::SessionRepository, HasDatabase};
+use crate::ui::Colors;
 use crate::Result;
 use crossterm::{
     event::{self, Event, KeyCode, KeyModifiers},
@@ -8,7 +9,7 @@ use crossterm::{
 use ratatui::{
     backend::CrosstermBackend,
     layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},
-    style::{Color, Modifier, Style},
+    style::{Modifier, Style},
     text::{Line, Span},
     widgets::{
         Axis, BarChart, Block, Borders, Chart, Dataset, GraphType, List, ListItem, ListState,
@@ -606,7 +607,7 @@ impl AnalyticsScreen {
             Span::styled(
                 "Performance Analytics",
                 Style::default()
-                    .fg(Color::Cyan)
+                    .fg(Colors::INFO)
                     .add_modifier(Modifier::BOLD),
             ),
         ])])
@@ -614,7 +615,7 @@ impl AnalyticsScreen {
         .block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Color::Blue))
+                .border_style(Style::default().fg(Colors::BORDER))
                 .title("GitType Analytics"),
         );
         f.render_widget(header, area);
@@ -633,15 +634,15 @@ impl AnalyticsScreen {
 
         for (i, view) in all_views.iter().enumerate() {
             if i > 0 {
-                tab_spans.push(Span::styled(" | ", Style::default().fg(Color::White)));
+                tab_spans.push(Span::styled(" | ", Style::default().fg(Colors::TEXT)));
             }
 
             let style = if *view == self.view_mode {
                 Style::default()
-                    .fg(Color::White)
+                    .fg(Colors::TEXT)
                     .add_modifier(Modifier::BOLD)
             } else {
-                Style::default().fg(Color::DarkGray)
+                Style::default().fg(Colors::MUTED)
             };
 
             tab_spans.push(Span::styled(view.display_name(), style));
@@ -652,7 +653,7 @@ impl AnalyticsScreen {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
+                    .border_style(Style::default().fg(Colors::BORDER))
                     .title("Navigation"),
             );
 
@@ -692,44 +693,44 @@ impl AnalyticsScreen {
                 Span::raw("Sessions: "),
                 Span::styled(
                     data.total_sessions.to_string(),
-                    Style::default().fg(Color::Green),
+                    Style::default().fg(Colors::CPM_WPM),
                 ),
                 Span::raw("  │  Avg CPM: "),
                 Span::styled(
                     format!("{:.1}", data.avg_cpm),
-                    Style::default().fg(Color::Yellow),
+                    Style::default().fg(Colors::ACCURACY),
                 ),
                 Span::raw("  │  Best CPM: "),
                 Span::styled(
                     format!("{:.1}", data.best_cpm),
-                    Style::default().fg(Color::LightYellow),
+                    Style::default().fg(Colors::ACCURACY),
                 ),
                 Span::raw("  │  Avg Accuracy: "),
                 Span::styled(
                     format!("{:.1}%", data.avg_accuracy),
-                    Style::default().fg(Color::Cyan),
+                    Style::default().fg(Colors::INFO),
                 ),
             ]),
             Line::from(vec![
                 Span::raw("Total Time: "),
                 Span::styled(
                     format!("{:.1}h", data.total_time_hours),
-                    Style::default().fg(Color::Magenta),
+                    Style::default().fg(Colors::SCORE),
                 ),
                 Span::raw("  │  Avg Session: "),
                 Span::styled(
                     format!("{:.1}m", data.avg_session_duration),
-                    Style::default().fg(Color::LightMagenta),
+                    Style::default().fg(Colors::SCORE),
                 ),
                 Span::raw("  │  Total Mistakes: "),
                 Span::styled(
                     data.total_mistakes.to_string(),
-                    Style::default().fg(Color::Red),
+                    Style::default().fg(Colors::ERROR),
                 ),
                 Span::raw("  │  Repositories: "),
                 Span::styled(
                     data.top_repositories.len().to_string(),
-                    Style::default().fg(Color::LightBlue),
+                    Style::default().fg(Colors::ACTION_KEY),
                 ),
             ]),
         ];
@@ -739,7 +740,7 @@ impl AnalyticsScreen {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
+                    .border_style(Style::default().fg(Colors::BORDER))
                     .title("Overview (Last 7 days)"),
             );
         f.render_widget(overview, chunks[0]);
@@ -779,7 +780,7 @@ impl AnalyticsScreen {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
+                    .border_style(Style::default().fg(Colors::BORDER))
                     .title("CPM Trend"),
             );
             f.render_widget(empty_msg, area);
@@ -808,7 +809,7 @@ impl AnalyticsScreen {
         let datasets = vec![Dataset::default()
             .name("CPM")
             .marker(ratatui::symbols::Marker::Braille)
-            .style(Style::default().fg(Color::LightGreen))
+            .style(Style::default().fg(Colors::CPM_WPM))
             .graph_type(GraphType::Line)
             .data(&chart_data)];
 
@@ -819,7 +820,7 @@ impl AnalyticsScreen {
             .step_by((data.cpm_trend.len().max(1) / 8).max(1)) // Show ~8 labels max
             .map(|(date, _)| {
                 let day = if date.len() >= 5 { &date[3..] } else { date };
-                Span::styled(day, Style::default().fg(Color::White))
+                Span::styled(day, Style::default().fg(Colors::TEXT))
             })
             .collect();
 
@@ -827,28 +828,28 @@ impl AnalyticsScreen {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
+                    .border_style(Style::default().fg(Colors::BORDER))
                     .title("CPM Performance Trend"),
             )
             .x_axis(
                 Axis::default()
                     .title("Date")
-                    .style(Style::default().fg(Color::Gray))
+                    .style(Style::default().fg(Colors::SECONDARY))
                     .labels(x_labels)
                     .bounds([0.0, (data.cpm_trend.len().saturating_sub(1)) as f64]),
             )
             .y_axis(
                 Axis::default()
                     .title("CPM")
-                    .style(Style::default().fg(Color::Gray))
+                    .style(Style::default().fg(Colors::SECONDARY))
                     .bounds([min_cpm - cpm_range * 0.1, max_cpm + cpm_range * 0.1])
                     .labels(vec![
-                        Span::styled(format!("{:.0}", min_cpm), Style::default().fg(Color::White)),
+                        Span::styled(format!("{:.0}", min_cpm), Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{:.0}", (min_cpm + max_cpm) / 2.0),
-                            Style::default().fg(Color::White),
+                            Style::default().fg(Colors::TEXT),
                         ),
-                        Span::styled(format!("{:.0}", max_cpm), Style::default().fg(Color::White)),
+                        Span::styled(format!("{:.0}", max_cpm), Style::default().fg(Colors::TEXT)),
                     ]),
             );
 
@@ -868,7 +869,7 @@ impl AnalyticsScreen {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
+                    .border_style(Style::default().fg(Colors::BORDER))
                     .title("Accuracy Trend"),
             );
             f.render_widget(empty_msg, area);
@@ -897,7 +898,7 @@ impl AnalyticsScreen {
         let datasets = vec![Dataset::default()
             .name("Accuracy")
             .marker(ratatui::symbols::Marker::Braille)
-            .style(Style::default().fg(Color::Yellow))
+            .style(Style::default().fg(Colors::ACCURACY))
             .graph_type(GraphType::Line)
             .data(&chart_data)];
 
@@ -908,7 +909,7 @@ impl AnalyticsScreen {
             .step_by((data.accuracy_trend.len().max(1) / 8).max(1))
             .map(|(date, _)| {
                 let day = if date.len() >= 5 { &date[3..] } else { date };
-                Span::styled(day, Style::default().fg(Color::White))
+                Span::styled(day, Style::default().fg(Colors::TEXT))
             })
             .collect();
 
@@ -916,20 +917,20 @@ impl AnalyticsScreen {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
+                    .border_style(Style::default().fg(Colors::BORDER))
                     .title("Accuracy Performance Trend"),
             )
             .x_axis(
                 Axis::default()
                     .title("Date")
-                    .style(Style::default().fg(Color::Gray))
+                    .style(Style::default().fg(Colors::SECONDARY))
                     .labels(x_labels)
                     .bounds([0.0, (data.accuracy_trend.len().saturating_sub(1)) as f64]),
             )
             .y_axis(
                 Axis::default()
                     .title("Accuracy (%)")
-                    .style(Style::default().fg(Color::Gray))
+                    .style(Style::default().fg(Colors::SECONDARY))
                     .bounds([
                         min_accuracy - accuracy_range * 0.1,
                         max_accuracy + accuracy_range * 0.1,
@@ -937,15 +938,15 @@ impl AnalyticsScreen {
                     .labels(vec![
                         Span::styled(
                             format!("{:.1}%", min_accuracy),
-                            Style::default().fg(Color::White),
+                            Style::default().fg(Colors::TEXT),
                         ),
                         Span::styled(
                             format!("{:.1}%", (min_accuracy + max_accuracy) / 2.0),
-                            Style::default().fg(Color::White),
+                            Style::default().fg(Colors::TEXT),
                         ),
                         Span::styled(
                             format!("{:.1}%", max_accuracy),
-                            Style::default().fg(Color::White),
+                            Style::default().fg(Colors::TEXT),
                         ),
                     ]),
             );
@@ -995,13 +996,13 @@ impl AnalyticsScreen {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
+                    .border_style(Style::default().fg(Colors::BORDER))
                     .title("Repositories"),
             )
-            .style(Style::default().fg(Color::White))
+            .style(Style::default().fg(Colors::TEXT))
             .highlight_style(
                 Style::default()
-                    .bg(Color::DarkGray)
+                    .bg(Colors::MUTED)
                     .add_modifier(Modifier::BOLD),
             )
             .highlight_symbol("► ");
@@ -1044,11 +1045,11 @@ impl AnalyticsScreen {
             let mut lines = vec![
                 Line::from(vec![
                     Span::raw("  "),
-                    Span::styled("Repository: ", Style::default().fg(Color::White)),
+                    Span::styled("Repository: ", Style::default().fg(Colors::TEXT)),
                     Span::styled(
                         &repo_data.0,
                         Style::default()
-                            .fg(Color::Cyan)
+                            .fg(Colors::INFO)
                             .add_modifier(Modifier::BOLD),
                     ),
                 ]),
@@ -1062,32 +1063,32 @@ impl AnalyticsScreen {
                         Span::styled(
                             "📈 Speed Metrics:",
                             Style::default()
-                                .fg(Color::White)
+                                .fg(Colors::TEXT)
                                 .add_modifier(Modifier::BOLD),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Average CPM: ", Style::default().fg(Color::White)),
+                        Span::styled("• Average CPM: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{:.1}", stats.avg_cpm),
-                            Style::default().fg(Color::LightGreen),
+                            Style::default().fg(Colors::CPM_WPM),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Average WPM: ", Style::default().fg(Color::White)),
+                        Span::styled("• Average WPM: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{:.1}", stats.avg_wpm),
-                            Style::default().fg(Color::LightBlue),
+                            Style::default().fg(Colors::ACTION_KEY),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Best CPM: ", Style::default().fg(Color::White)),
+                        Span::styled("• Best CPM: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{:.1}", stats.best_cpm),
-                            Style::default().fg(Color::Green),
+                            Style::default().fg(Colors::CPM_WPM),
                         ),
                     ]),
                     Line::from(""),
@@ -1096,32 +1097,32 @@ impl AnalyticsScreen {
                         Span::styled(
                             "🎯 Accuracy & Quality:",
                             Style::default()
-                                .fg(Color::White)
+                                .fg(Colors::TEXT)
                                 .add_modifier(Modifier::BOLD),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Average Accuracy: ", Style::default().fg(Color::White)),
+                        Span::styled("• Average Accuracy: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{:.1}%", stats.avg_accuracy),
-                            Style::default().fg(Color::Yellow),
+                            Style::default().fg(Colors::ACCURACY),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Best Accuracy: ", Style::default().fg(Color::White)),
+                        Span::styled("• Best Accuracy: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{:.1}%", stats.best_accuracy),
-                            Style::default().fg(Color::LightYellow),
+                            Style::default().fg(Colors::ACCURACY),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Total Mistakes: ", Style::default().fg(Color::White)),
+                        Span::styled("• Total Mistakes: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{}", stats.total_mistakes),
-                            Style::default().fg(Color::Red),
+                            Style::default().fg(Colors::ERROR),
                         ),
                     ]),
                     Line::from(""),
@@ -1130,36 +1131,36 @@ impl AnalyticsScreen {
                         Span::styled(
                             "📊 Volume & Activity:",
                             Style::default()
-                                .fg(Color::White)
+                                .fg(Colors::TEXT)
                                 .add_modifier(Modifier::BOLD),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Total Sessions: ", Style::default().fg(Color::White)),
+                        Span::styled("• Total Sessions: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{}", stats.total_sessions),
-                            Style::default().fg(Color::Cyan),
+                            Style::default().fg(Colors::INFO),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Total Keystrokes: ", Style::default().fg(Color::White)),
+                        Span::styled("• Total Keystrokes: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{}", stats.total_keystrokes),
-                            Style::default().fg(Color::Magenta),
+                            Style::default().fg(Colors::SCORE),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Total Time: ", Style::default().fg(Color::White)),
+                        Span::styled("• Total Time: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!(
                                 "{}h {}m",
                                 stats.total_duration_ms / 3600000,
                                 (stats.total_duration_ms % 3600000) / 60000
                             ),
-                            Style::default().fg(Color::Gray),
+                            Style::default().fg(Colors::SECONDARY),
                         ),
                     ]),
                     Line::from(""),
@@ -1168,27 +1169,27 @@ impl AnalyticsScreen {
                         Span::styled(
                             "🏆 Progress:",
                             Style::default()
-                                .fg(Color::White)
+                                .fg(Colors::TEXT)
                                 .add_modifier(Modifier::BOLD),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Average Score: ", Style::default().fg(Color::White)),
+                        Span::styled("• Average Score: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{:.0}", stats.avg_score),
-                            Style::default().fg(Color::LightMagenta),
+                            Style::default().fg(Colors::SCORE),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Total Stages: ", Style::default().fg(Color::White)),
+                        Span::styled("• Total Stages: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!(
                                 "{}/{} completed",
                                 stats.stages_completed, stats.stages_attempted
                             ),
-                            Style::default().fg(Color::Blue),
+                            Style::default().fg(Colors::BORDER),
                         ),
                     ]),
                 ]);
@@ -1196,18 +1197,18 @@ impl AnalyticsScreen {
                 lines.extend_from_slice(&[
                     Line::from(vec![
                         Span::raw("  "),
-                        Span::styled("• Average CPM: ", Style::default().fg(Color::White)),
+                        Span::styled("• Average CPM: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{:.1}", repo_data.1),
-                            Style::default().fg(Color::LightGreen),
+                            Style::default().fg(Colors::CPM_WPM),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("  "),
-                        Span::styled("• WPM Equivalent: ", Style::default().fg(Color::White)),
+                        Span::styled("• WPM Equivalent: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{:.1}", repo_data.1 / 5.0),
-                            Style::default().fg(Color::LightBlue),
+                            Style::default().fg(Colors::ACTION_KEY),
                         ),
                     ]),
                 ]);
@@ -1220,17 +1221,17 @@ impl AnalyticsScreen {
                     Span::styled(
                         "Navigation:",
                         Style::default()
-                            .fg(Color::White)
+                            .fg(Colors::TEXT)
                             .add_modifier(Modifier::BOLD),
                     ),
                 ]),
                 Line::from(vec![
                     Span::raw("  "),
-                    Span::styled("Use ", Style::default().fg(Color::DarkGray)),
-                    Span::styled("↑↓ / JK", Style::default().fg(Color::Yellow)),
+                    Span::styled("Use ", Style::default().fg(Colors::MUTED)),
+                    Span::styled("↑↓ / JK", Style::default().fg(Colors::ACCURACY)),
                     Span::styled(
                         " to navigate repositories",
-                        Style::default().fg(Color::DarkGray),
+                        Style::default().fg(Colors::MUTED),
                     ),
                 ]),
             ]);
@@ -1243,7 +1244,7 @@ impl AnalyticsScreen {
                     Span::raw("  "),
                     Span::styled(
                         "No Repository Selected",
-                        Style::default().fg(Color::DarkGray),
+                        Style::default().fg(Colors::MUTED),
                     ),
                 ]),
                 Line::from(""),
@@ -1259,7 +1260,7 @@ impl AnalyticsScreen {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
+                    .border_style(Style::default().fg(Colors::BORDER))
                     .title("Repository Details (Last 90 Days)"),
             );
         f.render_widget(details, area);
@@ -1307,13 +1308,13 @@ impl AnalyticsScreen {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
+                    .border_style(Style::default().fg(Colors::BORDER))
                     .title("Languages"),
             )
-            .style(Style::default().fg(Color::White))
+            .style(Style::default().fg(Colors::TEXT))
             .highlight_style(
                 Style::default()
-                    .bg(Color::DarkGray)
+                    .bg(Colors::MUTED)
                     .add_modifier(Modifier::BOLD),
             )
             .highlight_symbol("► ");
@@ -1356,11 +1357,11 @@ impl AnalyticsScreen {
             let mut lines = vec![
                 Line::from(vec![
                     Span::raw("  "),
-                    Span::styled("Language: ", Style::default().fg(Color::White)),
+                    Span::styled("Language: ", Style::default().fg(Colors::TEXT)),
                     Span::styled(
                         &lang_data.0,
                         Style::default()
-                            .fg(Color::Cyan)
+                            .fg(Colors::INFO)
                             .add_modifier(Modifier::BOLD),
                     ),
                 ]),
@@ -1374,32 +1375,32 @@ impl AnalyticsScreen {
                         Span::styled(
                             "📈 Speed Metrics:",
                             Style::default()
-                                .fg(Color::White)
+                                .fg(Colors::TEXT)
                                 .add_modifier(Modifier::BOLD),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Average CPM: ", Style::default().fg(Color::White)),
+                        Span::styled("• Average CPM: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{:.1}", stats.avg_cpm),
-                            Style::default().fg(Color::LightGreen),
+                            Style::default().fg(Colors::CPM_WPM),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Average WPM: ", Style::default().fg(Color::White)),
+                        Span::styled("• Average WPM: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{:.1}", stats.avg_wpm),
-                            Style::default().fg(Color::LightBlue),
+                            Style::default().fg(Colors::ACTION_KEY),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Best CPM: ", Style::default().fg(Color::White)),
+                        Span::styled("• Best CPM: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{:.1}", stats.best_cpm),
-                            Style::default().fg(Color::Green),
+                            Style::default().fg(Colors::CPM_WPM),
                         ),
                     ]),
                     Line::from(""),
@@ -1408,32 +1409,32 @@ impl AnalyticsScreen {
                         Span::styled(
                             "🎯 Accuracy & Quality:",
                             Style::default()
-                                .fg(Color::White)
+                                .fg(Colors::TEXT)
                                 .add_modifier(Modifier::BOLD),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Average Accuracy: ", Style::default().fg(Color::White)),
+                        Span::styled("• Average Accuracy: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{:.1}%", stats.avg_accuracy),
-                            Style::default().fg(Color::Yellow),
+                            Style::default().fg(Colors::ACCURACY),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Best Accuracy: ", Style::default().fg(Color::White)),
+                        Span::styled("• Best Accuracy: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{:.1}%", stats.best_accuracy),
-                            Style::default().fg(Color::LightYellow),
+                            Style::default().fg(Colors::ACCURACY),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Total Mistakes: ", Style::default().fg(Color::White)),
+                        Span::styled("• Total Mistakes: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{}", stats.total_mistakes),
-                            Style::default().fg(Color::Red),
+                            Style::default().fg(Colors::ERROR),
                         ),
                     ]),
                     Line::from(""),
@@ -1442,36 +1443,36 @@ impl AnalyticsScreen {
                         Span::styled(
                             "📊 Volume & Activity:",
                             Style::default()
-                                .fg(Color::White)
+                                .fg(Colors::TEXT)
                                 .add_modifier(Modifier::BOLD),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Total Sessions: ", Style::default().fg(Color::White)),
+                        Span::styled("• Total Sessions: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{}", stats.total_sessions),
-                            Style::default().fg(Color::Cyan),
+                            Style::default().fg(Colors::INFO),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Total Keystrokes: ", Style::default().fg(Color::White)),
+                        Span::styled("• Total Keystrokes: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{}", stats.total_keystrokes),
-                            Style::default().fg(Color::Magenta),
+                            Style::default().fg(Colors::SCORE),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Total Time: ", Style::default().fg(Color::White)),
+                        Span::styled("• Total Time: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!(
                                 "{}h {}m",
                                 stats.total_duration_ms / 3600000,
                                 (stats.total_duration_ms % 3600000) / 60000
                             ),
-                            Style::default().fg(Color::Gray),
+                            Style::default().fg(Colors::SECONDARY),
                         ),
                     ]),
                     Line::from(""),
@@ -1480,27 +1481,27 @@ impl AnalyticsScreen {
                         Span::styled(
                             "🏆 Progress:",
                             Style::default()
-                                .fg(Color::White)
+                                .fg(Colors::TEXT)
                                 .add_modifier(Modifier::BOLD),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Average Score: ", Style::default().fg(Color::White)),
+                        Span::styled("• Average Score: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{:.0}", stats.avg_score),
-                            Style::default().fg(Color::LightMagenta),
+                            Style::default().fg(Colors::SCORE),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Total Stages: ", Style::default().fg(Color::White)),
+                        Span::styled("• Total Stages: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!(
                                 "{}/{} completed",
                                 stats.stages_completed, stats.stages_attempted
                             ),
-                            Style::default().fg(Color::Blue),
+                            Style::default().fg(Colors::BORDER),
                         ),
                     ]),
                 ]);
@@ -1508,26 +1509,26 @@ impl AnalyticsScreen {
                 lines.extend_from_slice(&[
                     Line::from(vec![
                         Span::raw("  "),
-                        Span::styled("• Average CPM: ", Style::default().fg(Color::White)),
+                        Span::styled("• Average CPM: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{:.1}", lang_data.1),
-                            Style::default().fg(Color::LightGreen),
+                            Style::default().fg(Colors::CPM_WPM),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("  "),
-                        Span::styled("• WPM Equivalent: ", Style::default().fg(Color::White)),
+                        Span::styled("• WPM Equivalent: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{:.1}", lang_data.1 / 5.0),
-                            Style::default().fg(Color::LightBlue),
+                            Style::default().fg(Colors::ACTION_KEY),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("  "),
-                        Span::styled("• Session Count: ", Style::default().fg(Color::White)),
+                        Span::styled("• Session Count: ", Style::default().fg(Colors::TEXT)),
                         Span::styled(
                             format!("{}", lang_data.2),
-                            Style::default().fg(Color::Yellow),
+                            Style::default().fg(Colors::ACCURACY),
                         ),
                     ]),
                 ]);
@@ -1540,17 +1541,17 @@ impl AnalyticsScreen {
                     Span::styled(
                         "Navigation:",
                         Style::default()
-                            .fg(Color::White)
+                            .fg(Colors::TEXT)
                             .add_modifier(Modifier::BOLD),
                     ),
                 ]),
                 Line::from(vec![
                     Span::raw("  "),
-                    Span::styled("Use ", Style::default().fg(Color::DarkGray)),
-                    Span::styled("↑↓ / JK", Style::default().fg(Color::Yellow)),
+                    Span::styled("Use ", Style::default().fg(Colors::MUTED)),
+                    Span::styled("↑↓ / JK", Style::default().fg(Colors::ACCURACY)),
                     Span::styled(
                         " to navigate languages",
-                        Style::default().fg(Color::DarkGray),
+                        Style::default().fg(Colors::MUTED),
                     ),
                 ]),
             ]);
@@ -1561,7 +1562,7 @@ impl AnalyticsScreen {
                 Line::from(""),
                 Line::from(vec![
                     Span::raw("  "),
-                    Span::styled("No Language Selected", Style::default().fg(Color::DarkGray)),
+                    Span::styled("No Language Selected", Style::default().fg(Colors::MUTED)),
                 ]),
                 Line::from(""),
                 Line::from(vec![
@@ -1576,7 +1577,7 @@ impl AnalyticsScreen {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
+                    .border_style(Style::default().fg(Colors::BORDER))
                     .title("Language Details (Last 90 Days)"),
             );
         f.render_widget(details, area);
@@ -1595,7 +1596,7 @@ impl AnalyticsScreen {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
+                    .border_style(Style::default().fg(Colors::BORDER))
                     .title("Recent Activity"),
             );
             f.render_widget(empty_msg, area);
@@ -1642,7 +1643,7 @@ impl AnalyticsScreen {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Blue))
+                    .border_style(Style::default().fg(Colors::BORDER))
                     .title(format!(
                         "Recent Activity - {} Days | {} Total Sessions | Max: {}/Day",
                         continuous_data.len(),
@@ -1653,13 +1654,13 @@ impl AnalyticsScreen {
             .data(&bars)
             .bar_width(bar_width)
             .bar_gap(1) // Small gap for better readability
-            .bar_style(Style::default().fg(Color::LightGreen))
+            .bar_style(Style::default().fg(Colors::CPM_WPM))
             .value_style(
                 Style::default()
-                    .fg(Color::Yellow)
+                    .fg(Colors::ACCURACY)
                     .add_modifier(Modifier::BOLD),
             )
-            .label_style(Style::default().fg(Color::Cyan))
+            .label_style(Style::default().fg(Colors::INFO))
             .max(max_value);
 
         f.render_widget(chart, area);
@@ -1703,10 +1704,10 @@ impl AnalyticsScreen {
 
                 repo_lines.push(Line::from(vec![
                     Span::raw("  "), // Left padding
-                    Span::styled(index_text, Style::default().fg(Color::DarkGray)),
-                    Span::styled(display_name, Style::default().fg(Color::Cyan)),
+                    Span::styled(index_text, Style::default().fg(Colors::MUTED)),
+                    Span::styled(display_name, Style::default().fg(Colors::INFO)),
                     Span::raw(" ".repeat(spaces_needed)), // Spacer to push CPM right
-                    Span::styled(cpm_text, Style::default().fg(Color::Green)),
+                    Span::styled(cpm_text, Style::default().fg(Colors::CPM_WPM)),
                 ]));
             }
         }
@@ -1714,7 +1715,7 @@ impl AnalyticsScreen {
         let repositories = Paragraph::new(repo_lines).block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Color::Blue))
+                .border_style(Style::default().fg(Colors::BORDER))
                 .title("Top Repositories (Last 90 Days)"),
         );
         f.render_widget(repositories, chunks[0]);
@@ -1748,10 +1749,10 @@ impl AnalyticsScreen {
 
                 lang_lines.push(Line::from(vec![
                     Span::raw("  "), // Left padding
-                    Span::styled(index_text, Style::default().fg(Color::DarkGray)),
-                    Span::styled(display_name, Style::default().fg(Color::Cyan)),
+                    Span::styled(index_text, Style::default().fg(Colors::MUTED)),
+                    Span::styled(display_name, Style::default().fg(Colors::INFO)),
                     Span::raw(" ".repeat(spaces_needed)), // Spacer to push CPM right
-                    Span::styled(cpm_text, Style::default().fg(Color::Green)),
+                    Span::styled(cpm_text, Style::default().fg(Colors::CPM_WPM)),
                 ]));
             }
         }
@@ -1759,7 +1760,7 @@ impl AnalyticsScreen {
         let languages = Paragraph::new(lang_lines).block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Color::Blue))
+                .border_style(Style::default().fg(Colors::BORDER))
                 .title("Top Languages (Last 90 Days)"),
         );
         f.render_widget(languages, chunks[1]);
@@ -1767,12 +1768,12 @@ impl AnalyticsScreen {
 
     fn render_controls(&self, f: &mut Frame, area: Rect) {
         let controls_line = Line::from(vec![
-            Span::styled("[←→/HL]", Style::default().fg(Color::Blue)),
-            Span::styled(" Switch View  ", Style::default().fg(Color::White)),
-            Span::styled("[R]", Style::default().fg(Color::Magenta)),
-            Span::styled(" Refresh  ", Style::default().fg(Color::White)),
-            Span::styled("[ESC]", Style::default().fg(Color::Red)),
-            Span::styled(" Back", Style::default().fg(Color::White)),
+            Span::styled("[←→/HL]", Style::default().fg(Colors::BORDER)),
+            Span::styled(" Switch View  ", Style::default().fg(Colors::TEXT)),
+            Span::styled("[R]", Style::default().fg(Colors::SCORE)),
+            Span::styled(" Refresh  ", Style::default().fg(Colors::TEXT)),
+            Span::styled("[ESC]", Style::default().fg(Colors::ERROR)),
+            Span::styled(" Back", Style::default().fg(Colors::TEXT)),
         ]);
 
         let controls = Paragraph::new(controls_line).alignment(Alignment::Center);

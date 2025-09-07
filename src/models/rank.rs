@@ -1,3 +1,5 @@
+use crate::ui::Colors;
+
 /// Represents a rank with associated metadata
 #[derive(Debug, Clone, PartialEq)]
 pub struct Rank {
@@ -30,13 +32,12 @@ impl RankTier {
 
     /// Get the terminal color for this tier
     pub fn terminal_color(&self) -> crossterm::style::Color {
-        use crossterm::style::Color;
         match self {
-            RankTier::Beginner => Color::Cyan,
-            RankTier::Intermediate => Color::Blue,
-            RankTier::Advanced => Color::Green,
-            RankTier::Expert => Color::Yellow,
-            RankTier::Legendary => Color::Red,
+            RankTier::Beginner => Colors::to_crossterm(Colors::INFO),
+            RankTier::Intermediate => Colors::to_crossterm(Colors::BORDER),
+            RankTier::Advanced => Colors::to_crossterm(Colors::CPM_WPM),
+            RankTier::Expert => Colors::to_crossterm(Colors::ACCURACY),
+            RankTier::Legendary => Colors::to_crossterm(Colors::ERROR),
         }
     }
 }

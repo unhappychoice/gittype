@@ -4,6 +4,7 @@ use crate::storage::{
     repositories::SessionRepository,
     HasDatabase,
 };
+use crate::ui::Colors;
 use crate::Result;
 use chrono::{DateTime, Local};
 use crossterm::{
@@ -262,7 +263,7 @@ impl HistoryScreen {
                 Span::styled(
                     "History - Typing Session Records",
                     Style::default()
-                        .fg(Color::Cyan)
+                        .fg(Colors::INFO)
                         .add_modifier(Modifier::BOLD),
                 ),
             ]),
@@ -280,7 +281,7 @@ impl HistoryScreen {
                         },
                         self.sessions.len()
                     ),
-                    Style::default().fg(Color::Yellow),
+                    Style::default().fg(Colors::ACCURACY),
                 ),
             ]),
         ];
@@ -288,7 +289,7 @@ impl HistoryScreen {
         let header = Paragraph::new(header_lines).block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Color::Blue))
+                .border_style(Style::default().fg(Colors::BORDER))
                 .title("Session History"),
         );
         f.render_widget(header, chunks[0]);
@@ -300,12 +301,12 @@ impl HistoryScreen {
                 Line::from("Start typing to build your history!"),
             ];
             let empty_paragraph = Paragraph::new(empty_msg)
-                .style(Style::default().fg(Color::DarkGray))
+                .style(Style::default().fg(Colors::MUTED))
                 .alignment(Alignment::Center)
                 .block(
                     Block::default()
                         .borders(Borders::ALL)
-                        .border_style(Style::default().fg(Color::Blue))
+                        .border_style(Style::default().fg(Colors::BORDER))
                         .title("Sessions"),
                 );
             f.render_widget(empty_paragraph, chunks[1]);
@@ -327,18 +328,18 @@ impl HistoryScreen {
                 .block(
                     Block::default()
                         .borders(Borders::ALL)
-                        .border_style(Style::default().fg(Color::Blue))
+                        .border_style(Style::default().fg(Colors::BORDER))
                         .title("Sessions")
                         .title_style(
                             Style::default()
-                                .fg(Color::White)
+                                .fg(Colors::TEXT)
                                 .add_modifier(Modifier::BOLD),
                         ),
                 )
-                .style(Style::default().fg(Color::White))
+                .style(Style::default().fg(Colors::TEXT))
                 .highlight_style(
                     Style::default()
-                        .bg(Color::DarkGray)
+                        .bg(Colors::MUTED)
                         .add_modifier(Modifier::BOLD),
                 )
                 .highlight_symbol("► ");
@@ -362,17 +363,17 @@ impl HistoryScreen {
 
         // Controls at the bottom row - matching title screen colors
         let controls_line = Line::from(vec![
-            Span::styled("[↑↓/JK] Navigate  ", Style::default().fg(Color::White)),
-            Span::styled("[SPACE]", Style::default().fg(Color::Green)),
-            Span::styled(" Details  ", Style::default().fg(Color::White)),
-            Span::styled("[F]", Style::default().fg(Color::Blue)),
-            Span::styled(" Filter  ", Style::default().fg(Color::White)),
-            Span::styled("[S]", Style::default().fg(Color::Cyan)),
-            Span::styled(" Sort  ", Style::default().fg(Color::White)),
+            Span::styled("[↑↓/JK] Navigate  ", Style::default().fg(Colors::TEXT)),
+            Span::styled("[SPACE]", Style::default().fg(Colors::SUCCESS)),
+            Span::styled(" Details  ", Style::default().fg(Colors::TEXT)),
+            Span::styled("[F]", Style::default().fg(Colors::BORDER)),
+            Span::styled(" Filter  ", Style::default().fg(Colors::TEXT)),
+            Span::styled("[S]", Style::default().fg(Colors::INFO)),
+            Span::styled(" Sort  ", Style::default().fg(Colors::TEXT)),
             Span::styled("[R]", Style::default().fg(Color::Magenta)),
-            Span::styled(" Refresh  ", Style::default().fg(Color::White)),
-            Span::styled("[ESC]", Style::default().fg(Color::Red)),
-            Span::styled(" Back", Style::default().fg(Color::White)),
+            Span::styled(" Refresh  ", Style::default().fg(Colors::TEXT)),
+            Span::styled("[ESC]", Style::default().fg(Colors::ERROR)),
+            Span::styled(" Back", Style::default().fg(Colors::TEXT)),
         ]);
 
         let controls = Paragraph::new(controls_line).alignment(Alignment::Center);
@@ -502,24 +503,24 @@ fn format_session_line_ratatui_static<'a>(session_data: &'a SessionDisplayData) 
     Line::from(vec![
         Span::styled(
             format!("{:<17}", date_str),
-            Style::default().fg(Color::White),
+            Style::default().fg(Colors::TEXT),
         ),
         Span::styled(
             format!("{:<26}", repo_display),
-            Style::default().fg(Color::Cyan),
+            Style::default().fg(Colors::INFO),
         ),
         Span::styled(
             format!("{:>6}", score_str),
             Style::default().fg(Color::Magenta),
         ),
-        Span::styled(format!("{:>6}", cpm_str), Style::default().fg(Color::Green)),
+        Span::styled(format!("{:>6}", cpm_str), Style::default().fg(Colors::SUCCESS)),
         Span::styled(
             format!("{:>6}", acc_str),
-            Style::default().fg(Color::Yellow),
+            Style::default().fg(Colors::ACCURACY),
         ),
         Span::styled(
             format!("{:>5}", stages_str),
-            Style::default().fg(Color::Blue),
+            Style::default().fg(Colors::BORDER),
         ),
         Span::styled(
             format!("{:>10}", duration_str),

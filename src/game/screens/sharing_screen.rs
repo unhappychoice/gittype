@@ -1,4 +1,5 @@
 use crate::sharing::{SharingPlatform, SharingService};
+use crate::ui::Colors;
 use crate::{models::GitRepository, Result};
 use crossterm::{
     cursor::MoveTo,
@@ -44,7 +45,7 @@ impl SharingScreen {
             execute!(
                 stdout,
                 SetAttribute(Attribute::Bold),
-                SetForegroundColor(Color::Cyan)
+                SetForegroundColor(Colors::to_crossterm(Colors::INFO))
             )?;
             execute!(stdout, Print(line))?;
             execute!(stdout, ResetColor)?;
@@ -85,7 +86,7 @@ impl SharingScreen {
             let option_text = format!("[{}] {}", i + 1, platform.name());
             let option_col = center_col.saturating_sub(option_text.len() as u16 / 2);
             execute!(stdout, MoveTo(option_col, start_row + i as u16))?;
-            execute!(stdout, SetForegroundColor(Color::White))?;
+            execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
             execute!(stdout, Print(&option_text))?;
             execute!(stdout, ResetColor)?;
         }
@@ -99,9 +100,9 @@ impl SharingScreen {
             stdout,
             MoveTo(back_col, start_row + platforms.len() as u16 + 2)
         )?;
-        execute!(stdout, SetForegroundColor(Color::Green))?;
+        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS)))?;
         execute!(stdout, Print(back_key))?;
-        execute!(stdout, SetForegroundColor(Color::White))?;
+        execute!(stdout, SetForegroundColor(Colors::to_crossterm(Colors::TEXT)))?;
         execute!(stdout, Print(back_label))?;
         execute!(stdout, ResetColor)?;
 
