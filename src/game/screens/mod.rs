@@ -13,6 +13,7 @@ pub mod sharing_screen;
 pub mod stage_summary_screen;
 pub mod title_screen;
 pub mod typing_screen;
+pub mod version_check_screen;
 
 pub use analytics_screen::{AnalyticsAction, AnalyticsScreen};
 pub use animation_screen::AnimationScreen;
@@ -29,3 +30,4 @@ pub use sharing_screen::SharingScreen;
 pub use stage_summary_screen::StageSummaryScreen;
 pub use title_screen::{TitleAction, TitleScreen};
 pub use typing_screen::TypingScreen;
+pub use version_check_screen::{VersionCheckResult, VersionCheckScreen};
