@@ -310,18 +310,19 @@ impl TypingCore {
         let lines: Vec<&str> = original.lines().collect();
         let mut processed_lines = Vec::new();
         let mut position_mapping = Vec::new();
-        let mut original_pos = 0;
+        let mut original_char_pos = 0;
         let mut _processed_pos = 0;
 
         for (line_idx, line) in lines.iter().enumerate() {
-            let line_start_pos = original_pos;
+            let line_start_char_pos = original_char_pos;
 
             // Process this line, removing comments
             let mut line_result = String::new();
             let mut line_mapping = Vec::new();
 
-            for (char_idx, ch) in line.char_indices() {
-                let char_pos = line_start_pos + char_idx;
+            // Use enumerate() to get character position, not byte position
+            for (char_idx_in_line, ch) in line.chars().enumerate() {
+                let char_pos = line_start_char_pos + char_idx_in_line;
 
                 // Check if this character is in a comment
                 let in_comment = comment_ranges
@@ -335,14 +336,16 @@ impl TypingCore {
                     let is_leading = line_result.chars().all(|c| c.is_whitespace());
 
                     // Check if this is trailing whitespace or followed by comment
-                    let remaining_line = &line[char_idx..];
-                    let is_trailing = remaining_line.chars().all(|c| {
-                        c.is_whitespace()
-                            || comment_ranges.iter().any(|&(start, end)| {
-                                let pos =
-                                    line_start_pos + char_idx + remaining_line.find(c).unwrap_or(0);
-                                pos >= start && pos < end
-                            })
+                    let remaining_chars: Vec<char> = line.chars().skip(char_idx_in_line).collect();
+                    let is_trailing = remaining_chars.iter().all(|&c| {
+                        c.is_whitespace() || {
+                            // Calculate the absolute char position of this character
+                            let check_pos = char_pos
+                                + remaining_chars.iter().position(|&rc| rc == c).unwrap_or(0);
+                            comment_ranges
+                                .iter()
+                                .any(|&(start, end)| check_pos >= start && check_pos < end)
+                        }
                     });
 
                     // Skip leading and trailing whitespace, preserve internal spaces
@@ -366,15 +369,15 @@ impl TypingCore {
 
             // Add line mappings to main mapping
             position_mapping.extend(line_mapping);
-            original_pos += line.len();
+            original_char_pos += line.chars().count();
 
             // Handle newline character if not the last line
             if line_idx < lines.len() - 1 {
                 if !is_empty_line {
-                    position_mapping.push(line_start_pos + line.len());
+                    position_mapping.push(line_start_char_pos + line.chars().count());
                     _processed_pos += 1;
                 }
-                original_pos += 1; // Account for \n
+                original_char_pos += 1; // Account for \n
             }
         }
 
@@ -391,19 +394,19 @@ impl TypingCore {
         let mut position_mapping = Vec::new();
 
         let lines: Vec<&str> = original_text.lines().collect();
-        let mut original_pos = 0;
+        let mut original_char_pos = 0;
 
         for (line_idx, line) in lines.iter().enumerate() {
-            let line_start = original_pos;
+            let line_start_char_pos = original_char_pos;
 
             // Check if this line has any content that needs typing (not just comments)
             let line_has_typeable_content = {
                 let mut has_content = false;
-                for (char_idx, line_ch) in line.char_indices() {
-                    let absolute_pos = line_start + char_idx;
+                for (char_idx_in_line, line_ch) in line.chars().enumerate() {
+                    let absolute_char_pos = line_start_char_pos + char_idx_in_line;
                     let in_comment = comment_ranges
                         .iter()
-                        .any(|&(start, end)| absolute_pos >= start && absolute_pos < end);
+                        .any(|&(start, end)| absolute_char_pos >= start && absolute_char_pos < end);
 
                     if !in_comment && !line_ch.is_whitespace() {
                         has_content = true;
@@ -414,16 +417,16 @@ impl TypingCore {
             };
 
             // Find the position of the last typeable character in this line
-            let last_typeable_pos = if line_has_typeable_content {
+            let last_typeable_char_idx = if line_has_typeable_content {
                 let mut last_pos = None;
-                for (char_idx, line_ch) in line.char_indices() {
-                    let absolute_pos = line_start + char_idx;
+                for (char_idx_in_line, line_ch) in line.chars().enumerate() {
+                    let absolute_char_pos = line_start_char_pos + char_idx_in_line;
                     let in_comment = comment_ranges
                         .iter()
-                        .any(|&(start, end)| absolute_pos >= start && absolute_pos < end);
+                        .any(|&(start, end)| absolute_char_pos >= start && absolute_char_pos < end);
 
                     if !in_comment && !line_ch.is_whitespace() {
-                        last_pos = Some(char_idx);
+                        last_pos = Some(char_idx_in_line);
                     }
                 }
                 last_pos
@@ -432,8 +435,8 @@ impl TypingCore {
             };
 
             // Process each character in the line
-            for (char_idx, ch) in line.char_indices() {
-                let char_original_pos = line_start + char_idx;
+            for (char_idx_in_line, ch) in line.chars().enumerate() {
+                let char_original_pos = line_start_char_pos + char_idx_in_line;
                 position_mapping.push(char_original_pos);
 
                 if options.highlight_special_chars && ch == '\t' {
@@ -447,20 +450,20 @@ impl TypingCore {
                 }
 
                 // Insert ↵ right after the last typeable character
-                if options.add_newline_symbols && Some(char_idx) == last_typeable_pos {
-                    position_mapping.push(line_start + line.len()); // Position for ↵
+                if options.add_newline_symbols && Some(char_idx_in_line) == last_typeable_char_idx {
+                    position_mapping.push(line_start_char_pos + line.chars().count()); // Position for ↵
                     display_text.push('↵');
                 }
             }
 
             // Handle newline
             if line_idx < lines.len() - 1 {
-                position_mapping.push(line_start + line.len()); // Position of \n
+                position_mapping.push(line_start_char_pos + line.chars().count()); // Position of \n
                 display_text.push('\n');
 
-                original_pos += line.len() + 1; // +1 for \n
+                original_char_pos += line.chars().count() + 1; // +1 for \n
             } else {
-                original_pos += line.len();
+                original_char_pos += line.chars().count();
             }
         }
 
@@ -489,12 +492,13 @@ impl TypingCore {
 
     // Helper methods for typing logic
     pub fn is_position_at_line_end(&self, type_pos: usize) -> bool {
-        if type_pos >= self.text_to_type.len() {
+        let chars: Vec<char> = self.text_to_type.chars().collect();
+
+        if type_pos >= chars.len() {
             return true;
         }
 
         // Check if current position is newline or if all following chars on line are whitespace
-        let chars: Vec<char> = self.text_to_type.chars().collect();
         if chars.get(type_pos) == Some(&'\n') {
             return true;
         }
@@ -519,11 +523,11 @@ impl TypingCore {
 
     // Helper methods for typing logic
     pub fn is_completed(&self) -> bool {
-        self.current_position_to_type >= self.text_to_type.len()
+        self.current_position_to_type >= self.text_to_type.chars().count()
     }
 
     pub fn can_accept_input(&self) -> bool {
-        self.current_position_to_type < self.text_to_type.len()
+        self.current_position_to_type < self.text_to_type.chars().count()
     }
 
     pub fn check_character_match(&self, input_char: char) -> bool {
