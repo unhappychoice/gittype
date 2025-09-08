@@ -66,7 +66,7 @@ git2 = { version = "0.18", features = ["vendored-openssl"] }
 dirs = "6.0"
 streaming-iterator = "0.1"
 log = "0.4"
-log4rs = "1.2"
+log4rs = "1.4"
 tempfile = "3.8"
 
 [dev-dependencies]
