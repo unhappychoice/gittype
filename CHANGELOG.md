@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2025-09-08
+
+### ✨ Features
+
+- feat: improve exclude patterns for dependency and generated source directories ([21a63fe](https://github.com/unhappychoice/gittype/commit/21a63fe))
+- feat: improve install script with better sudo handling ([dcf43d7](https://github.com/unhappychoice/gittype/commit/dcf43d7))
+- feat: improve package manager distribution support ([6e246b7](https://github.com/unhappychoice/gittype/commit/6e246b7))
+
+### 🐛 Bug Fixes
+
+- fix: resolve multibyte character input issues in typing core ([c67924a](https://github.com/unhappychoice/gittype/commit/c67924a))
+- fix: improve permission detection for macOS compatibility ([fbd17ce](https://github.com/unhappychoice/gittype/commit/fbd17ce))
+
+### 📝 Other Changes
+
+- chore: bump version to v0.5.1 ([0e5e685](https://github.com/unhappychoice/gittype/commit/0e5e685))
+- docs: improve README installation section formatting ([87da908](https://github.com/unhappychoice/gittype/commit/87da908))
+
+
 ## [0.5.0] - 2025-09-07
 
 ### ✨ Features
@@ -62,7 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📝 Other Changes
 
-- chore: bump version to v0.5.0 ([37d5b6e](https://github.com/unhappychoice/gittype/commit/37d5b6e))
+- chore: bump version to v0.5.0 ([2a6a917](https://github.com/unhappychoice/gittype/commit/2a6a917))
 - style: apply cargo fmt formatting ([afe7aca](https://github.com/unhappychoice/gittype/commit/afe7aca))
 - style: Change typing screen header border to dark blue ([85639eb](https://github.com/unhappychoice/gittype/commit/85639eb))
 - style: Format code with cargo fmt ([31c5517](https://github.com/unhappychoice/gittype/commit/31c5517))
