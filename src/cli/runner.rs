@@ -2,7 +2,6 @@ use crate::cli::args::{Cli, Commands};
 use crate::cli::commands::{run_export, run_game_session, run_history, run_stats};
 use crate::game::stage_manager::{cleanup_terminal, show_session_summary_on_interrupt};
 use crate::logging::{log_panic_to_file, setup_console_logging, setup_logging};
-use crate::version::VersionChecker;
 use crate::Result;
 
 pub async fn run_cli(cli: Cli) -> Result<()> {
@@ -17,16 +16,7 @@ pub async fn run_cli(cli: Cli) -> Result<()> {
         Some(Commands::History) => run_history(),
         Some(Commands::Stats) => run_stats(),
         Some(Commands::Export { format, output }) => run_export(format.clone(), output.clone()),
-        None => {
-            // Check for updates only when starting a game session
-            if let Ok(Some(update_info)) = VersionChecker::check_for_updates().await {
-                if !VersionChecker::display_update_notification(&update_info)? {
-                    // User chose to exit via ESC
-                    std::process::exit(0);
-                }
-            }
-            run_game_session(cli)
-        }
+        None => run_game_session(cli),
     }
 }
 
