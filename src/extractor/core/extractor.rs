@@ -111,6 +111,7 @@ impl CommonExtractor {
             "cpp" => node_kind == "comment",
             "haskell" => node_kind == "comment",
             "dart" => node_kind == "comment" || node_kind == "documentation_comment",
+            "scala" => node_kind == "comment" || node_kind == "block_comment",
             _ => false,
         }
     }

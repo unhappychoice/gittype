@@ -37,7 +37,7 @@ impl Eq for dyn Language {}
 // Re-export language implementations from languages/
 pub use super::languages::{
     CSharp, Cpp, Dart, Go, Haskell, Java, JavaScript, Kotlin, Php, Python, Ruby, Rust, Swift,
-    TypeScript, C,
+    Scala, TypeScript, C,
 };
 
 pub struct LanguageRegistry;
@@ -60,6 +60,7 @@ impl LanguageRegistry {
             Box::new(Cpp),
             Box::new(Haskell),
             Box::new(Dart),
+            Box::new(Scala),
         ]
     }
 

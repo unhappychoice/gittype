@@ -19,6 +19,7 @@
 | C++ | `.cpp`, `.cc`, `.cxx`, `.hpp` | ✅ Full support | `tree-sitter-cpp` |
 | Haskell | `.hs`, `.lhs` | ✅ Full support | `tree-sitter-haskell` |
 | Dart | `.dart` | ✅ Full support | `tree-sitter-dart` |
+| Scala | `.scala`, `.sc` | ✅ Full support | `tree-sitter-scala` |
 
 ## Extraction Features
 
@@ -204,6 +205,15 @@
 - Abstract classes and methods
 - Static members (methods and properties)
 - Type definitions (`typedef`)
+
+### Scala
+- Functions (`def`)
+- Classes (`class`, `case class`)
+- Object declarations (`object`)
+- Trait and sealed trait
+- Properties (`val`, `var`)
+- Enum
+- Anonymous functions
 
 ## Planned Support
 

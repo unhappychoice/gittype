@@ -1,6 +1,6 @@
 use crate::extractor::models::language::{
     CSharp, Cpp, Dart, Go, Haskell, Java, JavaScript, Kotlin, Language, Php, Python, Ruby, Rust,
-    Swift, TypeScript, C,
+    Scala, Swift, TypeScript, C,
 };
 use crate::models::ChunkType;
 use crate::{GitTypeError, Result};
@@ -22,6 +22,7 @@ pub mod php;
 pub mod python;
 pub mod ruby;
 pub mod rust;
+pub mod scala;
 pub mod swift;
 pub mod typescript;
 
@@ -135,6 +136,12 @@ impl ParserRegistry {
             Dart.name().to_string(),
             dart::DartExtractor::create_parser,
             || Box::new(dart::DartExtractor),
+        );
+
+        registry.register(
+            Scala.name().to_string(),
+            scala::ScalaExtractor::create_parser,
+            || Box::new(scala::ScalaExtractor),
         );
 
         registry
