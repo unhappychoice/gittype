@@ -235,40 +235,28 @@ jobs:
           
           cd homebrew-tap
           
-          # Use awk to update the formula
-          awk -v version="$VERSION" \
-              -v macos_intel_url="$MACOS_INTEL_URL" \
-              -v macos_intel_sha="$MACOS_INTEL_SHA" \
-              -v macos_arm_url="$MACOS_ARM_URL" \
-              -v macos_arm_sha="$MACOS_ARM_SHA" \
-              -v linux_intel_url="$LINUX_INTEL_URL" \
-              -v linux_intel_sha="$LINUX_INTEL_SHA" \
-              -v linux_arm_url="$LINUX_ARM_URL" \
-              -v linux_arm_sha="$LINUX_ARM_SHA" '
-          BEGIN { in_macos = 0; in_linux = 0; in_intel = 0; in_arm = 0 }
-          /on_macos do/ { in_macos = 1; in_linux = 0; print; next }
-          /on_linux do/ { in_linux = 1; in_macos = 0; print; next }
-          /on_intel do/ { in_intel = 1; in_arm = 0; print; next }
-          /on_arm do/ { in_arm = 1; in_intel = 0; print; next }
-          /end/ { in_macos = 0; in_linux = 0; in_intel = 0; in_arm = 0; print; next }
-          /url "/ {
-              if (in_macos && in_intel) print "      url \"" macos_intel_url "\""
-              else if (in_macos && in_arm) print "      url \"" macos_arm_url "\""
-              else if (in_linux && in_intel) print "      url \"" linux_intel_url "\""
-              else if (in_linux && in_arm) print "      url \"" linux_arm_url "\""
-              else print
-              next
-          }
-          /sha256 "/ {
-              if (in_macos && in_intel) print "      sha256 \"" macos_intel_sha "\""
-              else if (in_macos && in_arm) print "      sha256 \"" macos_arm_sha "\""
-              else if (in_linux && in_intel) print "      sha256 \"" linux_intel_sha "\""
-              else if (in_linux && in_arm) print "      sha256 \"" linux_arm_sha "\""
-              else print
-              next
-          }
-          { print }
-          ' Formula/gittype.rb > Formula/gittype.rb.tmp && mv Formula/gittype.rb.tmp Formula/gittype.rb
+          # Use sed to update each architecture's URL and SHA
+          sed -i "s|https://github.com/unhappychoice/gittype/releases/download/v[0-9.]\+/gittype-v[0-9.]\+-x86_64-apple-darwin.tar.gz|$MACOS_INTEL_URL|g" Formula/gittype.rb
+          sed -i "s|https://github.com/unhappychoice/gittype/releases/download/v[0-9.]\+/gittype-v[0-9.]\+-aarch64-apple-darwin.tar.gz|$MACOS_ARM_URL|g" Formula/gittype.rb
+          sed -i "s|https://github.com/unhappychoice/gittype/releases/download/v[0-9.]\+/gittype-v[0-9.]\+-x86_64-unknown-linux-gnu.tar.gz|$LINUX_INTEL_URL|g" Formula/gittype.rb
+          sed -i "s|https://github.com/unhappychoice/gittype/releases/download/v[0-9.]\+/gittype-v[0-9.]\+-aarch64-unknown-linux-gnu.tar.gz|$LINUX_ARM_URL|g" Formula/gittype.rb
+          
+          # Update SHA values in the same order they appear in the file
+          # macOS Intel
+          FIRST_SHA_LINE=$(grep -n 'sha256 "' Formula/gittype.rb | head -1 | cut -d: -f1)
+          sed -i "${FIRST_SHA_LINE}s/sha256 \"[a-f0-9]\+\"/sha256 \"$MACOS_INTEL_SHA\"/" Formula/gittype.rb
+          
+          # macOS ARM  
+          SECOND_SHA_LINE=$(grep -n 'sha256 "' Formula/gittype.rb | head -2 | tail -1 | cut -d: -f1)
+          sed -i "${SECOND_SHA_LINE}s/sha256 \"[a-f0-9]\+\"/sha256 \"$MACOS_ARM_SHA\"/" Formula/gittype.rb
+          
+          # Linux Intel
+          THIRD_SHA_LINE=$(grep -n 'sha256 "' Formula/gittype.rb | head -3 | tail -1 | cut -d: -f1)
+          sed -i "${THIRD_SHA_LINE}s/sha256 \"[a-f0-9]\+\"/sha256 \"$LINUX_INTEL_SHA\"/" Formula/gittype.rb
+          
+          # Linux ARM
+          FOURTH_SHA_LINE=$(grep -n 'sha256 "' Formula/gittype.rb | head -4 | tail -1 | cut -d: -f1)
+          sed -i "${FOURTH_SHA_LINE}s/sha256 \"[a-f0-9]\+\"/sha256 \"$LINUX_ARM_SHA\"/" Formula/gittype.rb
           
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
