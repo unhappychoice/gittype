@@ -10,14 +10,17 @@ impl LanguageExtractor for ScalaExtractor {
         tree_sitter_scala::LANGUAGE.into()
     }
 
-    // TODO (trait_definition) @trait_definition
     fn query_patterns(&self) -> &str {
         "
-            (function_declaration) @function
+            (function_definition) @function
             (class_definition) @class
             (object_definition) @object
-            (enum_definition) @enum_definition
-            (type_definition) @type_definition
+            (trait_definition) @trait
+            (enum_definition) @enum
+            (type_definition) @type
+            (package_object) @package_object
+            (given_definition) @given
+            (extension_definition) @extension
         "
     }
 
@@ -33,9 +36,12 @@ impl LanguageExtractor for ScalaExtractor {
             "function" => Some(ChunkType::Function),
             "class" => Some(ChunkType::Class),
             "object" => Some(ChunkType::Class),
-            "enum_definition" => Some(ChunkType::Const), // TODO might not make sense, is it "enum"
             "trait" => Some(ChunkType::Class),
-            "type_definition" => Some(ChunkType::Class), // TODO or is this "type"?
+            "enum" => Some(ChunkType::Const),
+            "type" => Some(ChunkType::Class),
+            "package_object" => Some(ChunkType::Class),
+            "given" => Some(ChunkType::Function),
+            "extension" => Some(ChunkType::Function),
             _ => None,
         }
     }
@@ -47,11 +53,19 @@ impl LanguageExtractor for ScalaExtractor {
 
 impl ScalaExtractor {
     fn extract_name_from_node(&self, node: Node, source_code: &str) -> Option<String> {
+        // Look for a named field called "name" first
+        if let Some(name_node) = node.child_by_field_name("name") {
+            let start = name_node.start_byte();
+            let end = name_node.end_byte();
+            return Some(source_code[start..end].to_string());
+        }
+        
+        // Fallback: look for the first identifier node
         let mut cursor = node.walk();
         if cursor.goto_first_child() {
             loop {
                 let child = cursor.node();
-                if child.kind() == "simple_identifier" || child.kind() == "type_identifier" {
+                if child.kind() == "identifier" {
                     let start = child.start_byte();
                     let end = child.end_byte();
                     return Some(source_code[start..end].to_string());
@@ -61,6 +75,7 @@ impl ScalaExtractor {
                 }
             }
         }
+        
         None
     }
 
