@@ -351,7 +351,7 @@ class TsClass{} {{
 fn test_scala_extractor_basic() {
     let temp_dir = TempDir::new().unwrap();
     let scala_file = temp_dir.path().join("Test.scala");
-    
+
     let scala_code = r#"
 object Main {
   def main(args: Array[String]): Unit = {
@@ -383,7 +383,7 @@ enum Color {
   case Red, Green, Blue
 }
 "#;
-    
+
     fs::write(&scala_file, scala_code).unwrap();
 
     let mut extractor = CodeExtractor::new().unwrap();
@@ -392,8 +392,11 @@ enum Color {
 
     let chunks = extractor.extract_chunks(temp_dir.path(), options).unwrap();
 
-    assert!(!chunks.is_empty(), "Should extract at least one chunk from Scala code");
-    
+    assert!(
+        !chunks.is_empty(),
+        "Should extract at least one chunk from Scala code"
+    );
+
     // Verify we have Scala chunks
     let scala_chunks: Vec<_> = chunks.iter().filter(|c| c.language == "scala").collect();
     assert!(!scala_chunks.is_empty(), "Should find Scala chunks");
@@ -411,6 +414,10 @@ enum Color {
     assert!(function_count > 0, "Should find at least one function");
     assert!(class_count > 0, "Should find at least one class/object");
 
-    println!("Scala extraction found {} chunks: {} functions, {} classes/objects", 
-             scala_chunks.len(), function_count, class_count);
+    println!(
+        "Scala extraction found {} chunks: {} functions, {} classes/objects",
+        scala_chunks.len(),
+        function_count,
+        class_count
+    );
 }

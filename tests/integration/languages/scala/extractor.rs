@@ -299,7 +299,10 @@ type UserId = Long
         .count();
 
     assert!(function_count >= 2, "Should find at least 2 functions");
-    assert!(class_count >= 4, "Should find at least 4 classes/objects/traits");
+    assert!(
+        class_count >= 4,
+        "Should find at least 4 classes/objects/traits"
+    );
     assert!(const_count >= 1, "Should find at least 1 enum/const");
 
     // Verify specific names exist
@@ -446,9 +449,12 @@ def oldFunction(): Unit = {}
         }
     }
 
-    assert!(duplicates.is_empty(), 
-            "Found duplicate chunks at indices: {:?}", duplicates);
-    
+    assert!(
+        duplicates.is_empty(),
+        "Found duplicate chunks at indices: {:?}",
+        duplicates
+    );
+
     // Check for position duplicates
     let mut seen_positions = HashSet::new();
     let mut position_duplicates = Vec::new();
@@ -460,8 +466,14 @@ def oldFunction(): Unit = {}
         }
     }
 
-    assert!(position_duplicates.is_empty(),
-            "Found chunks with duplicate positions at indices: {:?}", position_duplicates);
-    
-    println!("✅ Duplicate check passed with {} unique chunks", chunks.len());
+    assert!(
+        position_duplicates.is_empty(),
+        "Found chunks with duplicate positions at indices: {:?}",
+        position_duplicates
+    );
+
+    println!(
+        "✅ Duplicate check passed with {} unique chunks",
+        chunks.len()
+    );
 }

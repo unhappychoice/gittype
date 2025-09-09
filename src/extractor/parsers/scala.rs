@@ -59,7 +59,7 @@ impl ScalaExtractor {
             let end = name_node.end_byte();
             return Some(source_code[start..end].to_string());
         }
-        
+
         // Fallback: look for the first identifier node
         let mut cursor = node.walk();
         if cursor.goto_first_child() {
@@ -75,7 +75,7 @@ impl ScalaExtractor {
                 }
             }
         }
-        
+
         None
     }
 

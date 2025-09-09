@@ -471,17 +471,25 @@ class MathUtils {
             // First single-line comment
             (0, "// Scala object definition with comments".len()),
             // Multi-line comment
-            (scala_code.find("/* Multi-line comment").unwrap(),
-             scala_code.find("calculations */").unwrap() + "calculations */".len()),
+            (
+                scala_code.find("/* Multi-line comment").unwrap(),
+                scala_code.find("calculations */").unwrap() + "calculations */".len(),
+            ),
             // Single line comment for multiplication
-            (scala_code.find("// Single line comment").unwrap(),
-             scala_code.find("multiplication").unwrap() + "multiplication".len()),
+            (
+                scala_code.find("// Single line comment").unwrap(),
+                scala_code.find("multiplication").unwrap() + "multiplication".len(),
+            ),
             // Another block comment
-            (scala_code.find("/* Another block comment").unwrap(),
-             scala_code.find("comment */").unwrap() + "comment */".len()),
+            (
+                scala_code.find("/* Another block comment").unwrap(),
+                scala_code.find("comment */").unwrap() + "comment */".len(),
+            ),
             // Comment with special symbols
-            (scala_code.find("// Comment with special").unwrap(),
-             scala_code.find("↑ ↓").unwrap() + "↑ ↓".len()),
+            (
+                scala_code.find("// Comment with special").unwrap(),
+                scala_code.find("↑ ↓").unwrap() + "↑ ↓".len(),
+            ),
         ];
 
         println!("=== Scala Comment Processing Test ===");
@@ -508,12 +516,26 @@ class MathUtils {
 
             // Verify comments contain expected content
             match i {
-                0 => assert!(comment.contains("Scala object"), "Should contain 'Scala object'"),
-                1 => assert!(comment.contains("Multi-line") && comment.contains("calculations"), 
-                           "Should contain multi-line comment content"),
-                2 => assert!(comment.contains("multiplication"), "Should contain 'multiplication'"),
-                3 => assert!(comment.contains("Another block"), "Should contain 'Another block'"),
-                4 => assert!(comment.contains("→ ← ↑ ↓"), "Should contain special symbols"),
+                0 => assert!(
+                    comment.contains("Scala object"),
+                    "Should contain 'Scala object'"
+                ),
+                1 => assert!(
+                    comment.contains("Multi-line") && comment.contains("calculations"),
+                    "Should contain multi-line comment content"
+                ),
+                2 => assert!(
+                    comment.contains("multiplication"),
+                    "Should contain 'multiplication'"
+                ),
+                3 => assert!(
+                    comment.contains("Another block"),
+                    "Should contain 'Another block'"
+                ),
+                4 => assert!(
+                    comment.contains("→ ← ↑ ↓"),
+                    "Should contain special symbols"
+                ),
                 _ => {}
             }
         }
