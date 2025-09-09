@@ -41,4 +41,4 @@ cobertura.xml
 *.profraw
 
 # Claude Code
-.claude/version_cache.json
+.claude/
