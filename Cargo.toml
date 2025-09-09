@@ -30,6 +30,10 @@ path = "src/main.rs"
 name = "screen_manager_demo"
 path = "examples/screen_manager_demo.rs"
 
+[[example]]
+name = "phase3_screen_test"
+path = "examples/phase3_screen_test.rs"
+
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
 tree-sitter = "0.25"

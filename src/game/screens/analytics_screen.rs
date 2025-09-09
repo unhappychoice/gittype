@@ -1,3 +1,4 @@
+use crate::game::screen_manager::{Screen, ScreenTransition, UpdateStrategy};
 use crate::storage::{repositories::SessionRepository, HasDatabase};
 use crate::ui::Colors;
 use crate::Result;
@@ -111,6 +112,7 @@ pub struct LangStats {
     pub stages_skipped: usize,
 }
 
+#[derive(Clone)]
 pub enum AnalyticsAction {
     Return,
 }
@@ -122,6 +124,8 @@ pub struct AnalyticsScreen {
     language_list_state: ListState,
     repository_scroll_state: ScrollbarState,
     language_scroll_state: ScrollbarState,
+    action_result: Option<AnalyticsAction>,
+    should_exit: bool,
 }
 
 impl AnalyticsScreen {
@@ -143,6 +147,8 @@ impl AnalyticsScreen {
             language_list_state,
             repository_scroll_state: ScrollbarState::default(),
             language_scroll_state: ScrollbarState::default(),
+            action_result: None,
+            should_exit: false,
         })
     }
 
@@ -1828,5 +1834,57 @@ impl AnalyticsExt for crate::storage::Database {
         use crate::storage::daos::RepositoryDao;
         let dao = RepositoryDao::new(self);
         dao.get_repository_by_id(repo_id)
+    }
+}
+
+impl Screen for AnalyticsScreen {
+    fn init(&mut self) -> Result<()> {
+        self.action_result = None;
+        self.should_exit = false;
+        Ok(())
+    }
+
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<ScreenTransition> {
+        use crossterm::event::{KeyCode, KeyModifiers};
+        
+        match key_event.code {
+            KeyCode::Esc => {
+                self.action_result = Some(AnalyticsAction::Return);
+                self.should_exit = true;
+                Ok(ScreenTransition::None)
+            }
+            KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.action_result = Some(AnalyticsAction::Return);
+                self.should_exit = true;
+                Ok(ScreenTransition::Exit)
+            }
+            _ => Ok(ScreenTransition::None)
+        }
+    }
+
+    fn render_crossterm(&self, _stdout: &mut std::io::Stdout) -> Result<()> {
+        Ok(())
+    }
+
+    fn render_ratatui(&self, _frame: &mut ratatui::Frame) -> Result<()> {
+        Ok(())
+    }
+
+    fn should_exit(&self) -> bool {
+        self.should_exit
+    }
+
+    fn get_update_strategy(&self) -> UpdateStrategy {
+        UpdateStrategy::InputOnly
+    }
+
+    fn update(&mut self) -> Result<bool> {
+        Ok(false)
+    }
+}
+
+impl AnalyticsScreen {
+    pub fn get_action_result(&self) -> Option<AnalyticsAction> {
+        self.action_result.clone()
     }
 }

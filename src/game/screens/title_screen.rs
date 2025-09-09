@@ -1,3 +1,4 @@
+use crate::game::screen_manager::{Screen, ScreenTransition, UpdateStrategy};
 use crate::game::screens::{InfoAction, InfoDialog};
 use crate::game::stage_builder::DifficultyLevel;
 use crate::models::GitRepository;
@@ -5,13 +6,14 @@ use crate::ui::Colors;
 use crate::Result;
 use crossterm::{
     cursor::{Hide, MoveTo},
-    event::{self, Event, KeyCode, KeyModifiers},
+    event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
     execute,
     style::{Attribute, Color, Print, ResetColor, SetAttribute, SetForegroundColor},
     terminal::{self, ClearType},
 };
-use std::io::{stdout, Write};
+use std::io::{stdout, Stdout, Write};
 
+#[derive(Clone)]
 pub enum TitleAction {
     Start(DifficultyLevel),
     History,
@@ -19,7 +21,53 @@ pub enum TitleAction {
     Quit,
 }
 
-pub struct TitleScreen;
+pub struct TitleScreen {
+    selected_difficulty: usize,
+    challenge_counts: [usize; 5],
+    git_repository: Option<GitRepository>,
+    should_exit: bool,
+    action_result: Option<TitleAction>,
+    difficulties: [(String, DifficultyLevel); 5],
+}
+
+impl Default for TitleScreen {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl TitleScreen {
+    pub fn new() -> Self {
+        Self {
+            selected_difficulty: 1, // Start with Normal
+            challenge_counts: [0, 0, 0, 0, 0],
+            git_repository: None,
+            should_exit: false,
+            action_result: None,
+            difficulties: [
+                ("Easy".to_string(), DifficultyLevel::Easy),
+                ("Normal".to_string(), DifficultyLevel::Normal),
+                ("Hard".to_string(), DifficultyLevel::Hard),
+                ("Wild".to_string(), DifficultyLevel::Wild),
+                ("Zen".to_string(), DifficultyLevel::Zen),
+            ],
+        }
+    }
+
+    pub fn with_challenge_counts(mut self, counts: [usize; 5]) -> Self {
+        self.challenge_counts = counts;
+        self
+    }
+
+    pub fn with_git_repository(mut self, repo: Option<GitRepository>) -> Self {
+        self.git_repository = repo;
+        self
+    }
+
+    pub fn get_action_result(&self) -> Option<TitleAction> {
+        self.action_result.clone()
+    }
+}
 
 impl TitleScreen {
     pub fn show() -> Result<TitleAction> {
@@ -389,5 +437,102 @@ impl TitleScreen {
             }
         }
         Ok(())
+    }
+}
+
+impl Screen for TitleScreen {
+    fn init(&mut self) -> Result<()> {
+        self.should_exit = false;
+        self.action_result = None;
+        Ok(())
+    }
+
+    fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<ScreenTransition> {
+        match key_event.code {
+            KeyCode::Char(' ') => {
+                self.action_result = Some(TitleAction::Start(
+                    self.difficulties[self.selected_difficulty].1.clone(),
+                ));
+                self.should_exit = true;
+                Ok(ScreenTransition::None)
+            }
+            KeyCode::Left | KeyCode::Char('h') => {
+                self.selected_difficulty = if self.selected_difficulty == 0 {
+                    self.difficulties.len() - 1
+                } else {
+                    self.selected_difficulty - 1
+                };
+                Ok(ScreenTransition::None)
+            }
+            KeyCode::Right | KeyCode::Char('l') => {
+                self.selected_difficulty = (self.selected_difficulty + 1) % self.difficulties.len();
+                Ok(ScreenTransition::None)
+            }
+            KeyCode::Esc => {
+                self.action_result = Some(TitleAction::Quit);
+                self.should_exit = true;
+                Ok(ScreenTransition::Exit)
+            }
+            KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.action_result = Some(TitleAction::Quit);
+                self.should_exit = true;
+                Ok(ScreenTransition::Exit)
+            }
+            KeyCode::Char('i') | KeyCode::Char('?') => {
+                let _ = Self::handle_info_dialog();
+                Ok(ScreenTransition::None)
+            }
+            KeyCode::Char('r') | KeyCode::Char('R') => {
+                self.action_result = Some(TitleAction::History);
+                self.should_exit = true;
+                Ok(ScreenTransition::None)
+            }
+            KeyCode::Char('a') | KeyCode::Char('A') => {
+                self.action_result = Some(TitleAction::Analytics);
+                self.should_exit = true;
+                Ok(ScreenTransition::None)
+            }
+            _ => Ok(ScreenTransition::None),
+        }
+    }
+
+    fn render_crossterm(&self, stdout: &mut Stdout) -> Result<()> {
+        execute!(stdout, terminal::Clear(ClearType::All))?;
+        
+        let (terminal_width, terminal_height) = terminal::size()?;
+        let center_row = terminal_height / 2;
+        let center_col = terminal_width / 2;
+
+        Self::draw_static_elements(stdout, center_row, center_col, self.git_repository.as_ref())?;
+        
+        let difficulties_array: [(&str, DifficultyLevel); 5] = [
+            (self.difficulties[0].0.as_str(), self.difficulties[0].1.clone()),
+            (self.difficulties[1].0.as_str(), self.difficulties[1].1.clone()),
+            (self.difficulties[2].0.as_str(), self.difficulties[2].1.clone()),
+            (self.difficulties[3].0.as_str(), self.difficulties[3].1.clone()),
+            (self.difficulties[4].0.as_str(), self.difficulties[4].1.clone()),
+        ];
+        Self::draw_difficulty_selection(
+            stdout,
+            center_row,
+            center_col,
+            &difficulties_array,
+            self.selected_difficulty,
+            &self.challenge_counts,
+        )?;
+        
+        Ok(())
+    }
+
+    fn should_exit(&self) -> bool {
+        self.should_exit
+    }
+
+    fn get_update_strategy(&self) -> UpdateStrategy {
+        UpdateStrategy::InputOnly
+    }
+
+    fn update(&mut self) -> Result<bool> {
+        Ok(false)
     }
 }

@@ -1,5 +1,6 @@
 use super::super::{
     context_loader::{self, CodeContext},
+    screen_manager::{Screen, ScreenTransition, UpdateStrategy},
     stage_renderer::StageRenderer,
     typing_core::{InputResult, ProcessingOptions, TypingCore},
 };
@@ -11,6 +12,7 @@ use crossterm::{
     event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers},
     terminal,
 };
+use std::io::Stdout;
 
 pub struct TypingScreen {
     challenge: Option<Challenge>,
@@ -540,5 +542,69 @@ impl TypingScreen {
 
     pub fn was_skipped(&self) -> bool {
         !self.typing_core.is_completed()
+    }
+}
+
+impl Screen for TypingScreen {
+    fn init(&mut self) -> Result<()> {
+        self.start_time = std::time::Instant::now();
+        Ok(())
+    }
+
+    fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<ScreenTransition> {
+        let session_state = self.handle_key(key_event)?;
+        
+        match session_state {
+            SessionState::Complete | SessionState::Exit | SessionState::Skip | SessionState::Failed => {
+                Ok(ScreenTransition::None)
+            }
+            _ => Ok(ScreenTransition::None),
+        }
+    }
+
+    fn render_crossterm(&self, _stdout: &mut Stdout) -> Result<()> {
+        Ok(())
+    }
+
+    fn render_ratatui(&self, _frame: &mut ratatui::Frame) -> Result<()> {
+        Ok(())
+    }
+
+    fn should_exit(&self) -> bool {
+        false
+    }
+
+    fn get_update_strategy(&self) -> UpdateStrategy {
+        use std::time::Duration;
+        
+        if self.countdown_active {
+            UpdateStrategy::Hybrid {
+                interval: Duration::from_millis(50),
+                input_priority: true,
+            }
+        } else if self.waiting_to_start {
+            UpdateStrategy::InputOnly
+        } else {
+            UpdateStrategy::Hybrid {
+                interval: Duration::from_millis(100),
+                input_priority: true,
+            }
+        }
+    }
+
+    fn update(&mut self) -> Result<bool> {
+        if self.countdown_active {
+            let countdown_finished = self.update_countdown();
+            if countdown_finished {
+                return Ok(true);
+            }
+        }
+        
+        Ok(true)
+    }
+
+    fn cleanup(&mut self) -> Result<()> {
+        self.stage_tracker.record(StageInput::Finish);
+        Ok(())
     }
 }

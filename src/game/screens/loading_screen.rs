@@ -1,5 +1,6 @@
 use crate::extractor::{ExtractionOptions, RepositoryLoader};
 use crate::game::models::loading_steps::{ExecutionContext, StepManager, StepType};
+use crate::game::screen_manager::{Screen, ScreenTransition, UpdateStrategy};
 use crate::models::Challenge;
 use crate::Result;
 use crossterm::{
@@ -558,5 +559,59 @@ impl ProgressReporter for LoadingScreen {
             0.0
         };
         let _ = self.update_progress(progress, processed, total);
+    }
+}
+
+impl Screen for LoadingScreen {
+    fn init(&mut self) -> Result<()> {
+        self.show_initial()
+    }
+
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<ScreenTransition> {
+        use crossterm::event::{KeyCode, KeyModifiers};
+        
+        if key_event.code == KeyCode::Char('c') && key_event.modifiers.contains(KeyModifiers::CONTROL) {
+            crate::game::stage_manager::show_session_summary_on_interrupt();
+            std::process::exit(0);
+        }
+        
+        Ok(ScreenTransition::None)
+    }
+
+    fn render_crossterm(&self, _stdout: &mut std::io::Stdout) -> Result<()> {
+        Ok(())
+    }
+
+    fn render_ratatui(&self, frame: &mut ratatui::Frame) -> Result<()> {
+        Self::draw_ui_static(frame, &self.state);
+        Ok(())
+    }
+
+    fn cleanup(&mut self) -> Result<()> {
+        self.state.should_stop.store(true, std::sync::atomic::Ordering::Relaxed);
+        
+        if let Some(handle) = self.render_handle.take() {
+            let _ = handle.join();
+        }
+        
+        Ok(())
+    }
+
+    fn should_exit(&self) -> bool {
+        self.state.should_stop.load(std::sync::atomic::Ordering::Relaxed)
+    }
+
+    fn get_update_strategy(&self) -> UpdateStrategy {
+        use std::time::Duration;
+        UpdateStrategy::TimeBased(Duration::from_millis(50))
+    }
+
+    fn update(&mut self) -> Result<bool> {
+        let current_index = self.state.spinner_index.load(std::sync::atomic::Ordering::Relaxed);
+        self.state.spinner_index.store(
+            (current_index + 1) % SPINNER_CHARS.len(),
+            std::sync::atomic::Ordering::Relaxed,
+        );
+        Ok(true)
     }
 }

@@ -1,4 +1,5 @@
 use super::session_detail_screen::{SessionDetailScreen, SessionDisplayData};
+use crate::game::screen_manager::{Screen, ScreenTransition, UpdateStrategy};
 use crate::storage::{
     daos::{session_dao::SessionResultData, StoredRepository},
     repositories::SessionRepository,
@@ -100,6 +101,7 @@ impl Default for FilterState {
     }
 }
 
+#[derive(Clone)]
 pub enum HistoryAction {
     Return,
     ViewDetails(i64),
@@ -111,6 +113,8 @@ pub struct HistoryScreen {
     filter_state: FilterState,
     list_state: ListState,
     scroll_state: ScrollbarState,
+    action_result: Option<HistoryAction>,
+    should_exit: bool,
 }
 
 impl HistoryScreen {
@@ -133,6 +137,8 @@ impl HistoryScreen {
             filter_state: FilterState::default(),
             list_state,
             scroll_state: ScrollbarState::default(),
+            action_result: None,
+            should_exit: false,
         };
 
         screen.refresh_sessions()?;
@@ -542,5 +548,62 @@ impl SessionResultExt for crate::storage::Database {
         use crate::storage::daos::SessionDao;
         let dao = SessionDao::new(self);
         dao.get_session_result(session_id)
+    }
+}
+
+impl Screen for HistoryScreen {
+    fn init(&mut self) -> Result<()> {
+        self.action_result = None;
+        self.should_exit = false;
+        self.refresh_sessions()?;
+        Ok(())
+    }
+
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<ScreenTransition> {
+        use crossterm::event::{KeyCode, KeyModifiers};
+        
+        match key_event.code {
+            KeyCode::Esc => {
+                self.action_result = Some(HistoryAction::Return);
+                self.should_exit = true;
+                Ok(ScreenTransition::None)
+            }
+            KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.action_result = Some(HistoryAction::Return);
+                self.should_exit = true;
+                Ok(ScreenTransition::Exit)
+            }
+            _ => Ok(ScreenTransition::None)
+        }
+    }
+
+    fn render_crossterm(&self, _stdout: &mut std::io::Stdout) -> Result<()> {
+        Ok(())
+    }
+
+    fn render_ratatui(&self, _frame: &mut ratatui::Frame) -> Result<()> {
+        Ok(())
+    }
+
+    fn should_exit(&self) -> bool {
+        self.should_exit
+    }
+
+    fn get_update_strategy(&self) -> UpdateStrategy {
+        UpdateStrategy::InputOnly
+    }
+
+    fn update(&mut self) -> Result<bool> {
+        Ok(false)
+    }
+
+    fn cleanup(&mut self) -> Result<()> {
+        Ok(())
+    }
+}
+
+impl HistoryScreen {
+    pub fn get_action_result(&self) -> Option<HistoryAction> {
+        self.action_result.clone()
     }
 }
