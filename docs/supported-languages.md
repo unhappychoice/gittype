@@ -207,13 +207,15 @@
 - Type definitions (`typedef`)
 
 ### Scala
-- Functions (`def`)
-- Classes (`class`, `case class`)
-- Object declarations (`object`)
-- Trait and sealed trait
-- Properties (`val`, `var`)
-- Enum
-- Anonymous functions
+- Functions (`def`) - method and function definitions
+- Classes (`class`, `case class`) - class definitions with constructors and methods
+- Object declarations (`object`) - singleton objects and companion objects
+- Traits (`trait`) - trait definitions with methods and implementations
+- Enums (`enum`) - Scala 3 enum definitions with cases
+- Type definitions (`type`) - type aliases and abstract types
+- Package objects (`package object`) - utility functions and implicit conversions
+- Given definitions (`given`) - Scala 3 contextual abstractions
+- Extension methods (`extension`) - Scala 3 extension method definitions
 
 ## Planned Support
 
@@ -230,14 +232,14 @@
 gittype --langs rust
 
 # Multiple languages
-gittype --langs rust,typescript,javascript,python,go,ruby,swift,kotlin,java,php,csharp,c,cpp,haskell,dart
+gittype --langs rust,typescript,javascript,python,go,ruby,swift,kotlin,java,php,csharp,c,cpp,haskell,dart,scala
 ```
 
 ### Configuration File
 
 ```toml
 [default]
-langs = ["rust", "typescript", "javascript", "python", "go", "ruby", "swift", "kotlin", "java", "php", "csharp", "c", "cpp", "haskell", "dart"]
+langs = ["rust", "typescript", "javascript", "python", "go", "ruby", "swift", "kotlin", "java", "php", "csharp", "c", "cpp", "haskell", "dart", "scala"]
 ```
 
 ## Code Extraction Quality
