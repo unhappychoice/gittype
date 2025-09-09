@@ -563,6 +563,8 @@ impl Screen for TypingScreen {
     }
 
     fn render_crossterm(&self, _stdout: &mut Stdout) -> Result<()> {
+        // TypingScreen::show requires &mut self, so we need to handle this differently
+        // For now, return Ok - the actual game loop will call show() directly
         Ok(())
     }
 

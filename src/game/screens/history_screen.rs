@@ -578,6 +578,7 @@ impl Screen for HistoryScreen {
     }
 
     fn render_crossterm(&self, _stdout: &mut std::io::Stdout) -> Result<()> {
+        let _ = HistoryScreen::show();
         Ok(())
     }
 

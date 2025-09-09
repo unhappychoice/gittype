@@ -1863,6 +1863,7 @@ impl Screen for AnalyticsScreen {
     }
 
     fn render_crossterm(&self, _stdout: &mut std::io::Stdout) -> Result<()> {
+        let _ = AnalyticsScreen::show();
         Ok(())
     }
 

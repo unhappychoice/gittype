@@ -1,3 +1,5 @@
+use crate::game::screen_manager::{Screen, ScreenTransition, UpdateStrategy};
+use std::io::Stdout;
 use crate::storage::{
     daos::{
         session_dao::{SessionResultData, SessionStageResult},
@@ -469,5 +471,69 @@ impl SessionDetailScreen {
             .wrap(Wrap { trim: false });
 
         f.render_widget(stage_paragraph, area);
+    }
+}
+
+// Basic Screen trait implementation for ScreenManager compatibility
+pub struct ScreenState {
+    should_exit: bool,
+}
+
+impl ScreenState {
+    pub fn new() -> Self {
+        Self { should_exit: false }
+    }
+}
+
+impl Screen for ScreenState {
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> crate::Result<ScreenTransition> {
+        use crossterm::event::{KeyCode, KeyModifiers};
+        match key_event.code {
+            KeyCode::Esc => {
+                self.should_exit = true;
+                Ok(ScreenTransition::None)
+            }
+            KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.should_exit = true;
+                Ok(ScreenTransition::Exit)
+            }
+            _ => Ok(ScreenTransition::None),
+        }
+    }
+
+    fn render_crossterm(&self, _stdout: &mut Stdout) -> crate::Result<()> {
+        // TODO: Use real SessionDisplayData instead of dummy
+        let dummy_session = crate::storage::daos::StoredSession {
+            id: 1,
+            started_at: chrono::Utc::now(),
+            completed_at: None,
+            branch: Some("main".to_string()),
+            commit_hash: Some("dummy".to_string()),
+            is_dirty: false,
+            game_mode: "normal".to_string(),
+            repository_id: None,
+            max_stages: Some(1),
+            difficulty_level: Some("easy".to_string()),
+            time_limit_seconds: None,
+        };
+        let dummy_data = SessionDisplayData {
+            session: dummy_session,
+            repository: None,
+            session_result: None,
+        };
+        let _ = SessionDetailScreen::show(dummy_data);
+        Ok(())
+    }
+
+    fn should_exit(&self) -> bool {
+        self.should_exit
+    }
+
+    fn get_update_strategy(&self) -> UpdateStrategy {
+        UpdateStrategy::InputOnly
+    }
+
+    fn update(&mut self) -> crate::Result<bool> {
+        Ok(false)
     }
 }

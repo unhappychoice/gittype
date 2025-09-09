@@ -1,3 +1,5 @@
+use crate::game::screen_manager::{Screen, ScreenTransition, UpdateStrategy};
+use std::io::Stdout;
 use crate::ui::colors::Colors;
 use crate::Result;
 use crossterm::{
@@ -185,5 +187,51 @@ impl VersionCheckScreen {
                 Constraint::Percentage((100 - percent_x) / 2),
             ])
             .split(popup_layout[1])[1]
+    }
+}
+
+// Basic Screen trait implementation for ScreenManager compatibility
+pub struct ScreenState {
+    should_exit: bool,
+}
+
+impl ScreenState {
+    pub fn new() -> Self {
+        Self { should_exit: false }
+    }
+}
+
+impl Screen for ScreenState {
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> crate::Result<ScreenTransition> {
+        use crossterm::event::{KeyCode, KeyModifiers};
+        match key_event.code {
+            KeyCode::Esc => {
+                self.should_exit = true;
+                Ok(ScreenTransition::None)
+            }
+            KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.should_exit = true;
+                Ok(ScreenTransition::Exit)
+            }
+            _ => Ok(ScreenTransition::None),
+        }
+    }
+
+    fn render_crossterm(&self, _stdout: &mut Stdout) -> crate::Result<()> {
+        // TODO: Use real version data instead of dummy
+        let _ = VersionCheckScreen::show("1.0.0", "1.1.0");
+        Ok(())
+    }
+
+    fn should_exit(&self) -> bool {
+        self.should_exit
+    }
+
+    fn get_update_strategy(&self) -> UpdateStrategy {
+        UpdateStrategy::InputOnly
+    }
+
+    fn update(&mut self) -> crate::Result<bool> {
+        Ok(false)
     }
 }

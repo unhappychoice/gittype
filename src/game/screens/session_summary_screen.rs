@@ -1,5 +1,6 @@
 use crate::game::ascii_digits::get_digit_patterns;
 use crate::game::ascii_rank_titles_generated::get_rank_display;
+use crate::game::screen_manager::{Screen, ScreenTransition, UpdateStrategy};
 use crate::storage::repositories::SessionRepository;
 use crate::ui::Colors;
 use crate::{models::GitRepository, Result};
@@ -12,7 +13,7 @@ use crossterm::{
 };
 use std::io::{stdout, Write};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ResultAction {
     Restart,
     BackToTitle,
@@ -517,5 +518,68 @@ impl SessionSummaryScreen {
                 }
             }
         }
+    }
+}
+
+pub struct SessionSummaryScreenState {
+    action_result: Option<ResultAction>,
+    should_exit: bool,
+}
+
+impl SessionSummaryScreenState {
+    pub fn new() -> Self {
+        Self {
+            action_result: None,
+            should_exit: false,
+        }
+    }
+
+    pub fn get_action_result(&self) -> Option<ResultAction> {
+        self.action_result.clone()
+    }
+}
+
+impl Screen for SessionSummaryScreenState {
+    fn init(&mut self) -> Result<()> {
+        self.action_result = None;
+        self.should_exit = false;
+        Ok(())
+    }
+
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<ScreenTransition> {
+        use crossterm::event::{KeyCode, KeyModifiers};
+        
+        match key_event.code {
+            KeyCode::Esc => {
+                self.action_result = Some(ResultAction::BackToTitle);
+                self.should_exit = true;
+                Ok(ScreenTransition::None)
+            }
+            KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.action_result = Some(ResultAction::Quit);
+                self.should_exit = true;
+                Ok(ScreenTransition::Exit)
+            }
+            _ => Ok(ScreenTransition::None),
+        }
+    }
+
+    fn render_crossterm(&self, _stdout: &mut std::io::Stdout) -> Result<()> {
+        // TODO: Use real SessionResult and GitRepository data instead of dummy
+        let dummy_result = crate::models::SessionResult::default();
+        let _ = SessionSummaryScreen::show_session_summary(&dummy_result, &None);
+        Ok(())
+    }
+
+    fn should_exit(&self) -> bool {
+        self.should_exit
+    }
+
+    fn get_update_strategy(&self) -> UpdateStrategy {
+        UpdateStrategy::InputOnly
+    }
+
+    fn update(&mut self) -> Result<bool> {
+        Ok(false)
     }
 }

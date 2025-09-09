@@ -1,3 +1,5 @@
+use crate::game::screen_manager::{Screen, ScreenTransition, UpdateStrategy};
+use std::io::Stdout;
 use crate::game::ascii_digits::get_digit_patterns;
 use crate::models::TotalResult;
 use crate::sharing::SharingPlatform;
@@ -863,5 +865,53 @@ impl ExitSummaryScreen {
                 }
             }
         }
+    }
+}
+
+// Basic Screen trait implementation for ScreenManager compatibility
+pub struct ScreenState {
+    should_exit: bool,
+}
+
+impl ScreenState {
+    pub fn new() -> Self {
+        Self { should_exit: false }
+    }
+}
+
+impl Screen for ScreenState {
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> crate::Result<ScreenTransition> {
+        use crossterm::event::{KeyCode, KeyModifiers};
+        match key_event.code {
+            KeyCode::Esc => {
+                self.should_exit = true;
+                Ok(ScreenTransition::None)
+            }
+            KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.should_exit = true;
+                Ok(ScreenTransition::Exit)
+            }
+            _ => Ok(ScreenTransition::None),
+        }
+    }
+
+    fn render_crossterm(&self, _stdout: &mut Stdout) -> crate::Result<()> {
+        // Call existing high-quality implementation
+        // TODO: Use real TotalResult data instead of dummy
+        let dummy_result = crate::models::TotalResult::default();
+        let _ = ExitSummaryScreen::show(&dummy_result);
+        Ok(())
+    }
+
+    fn should_exit(&self) -> bool {
+        self.should_exit
+    }
+
+    fn get_update_strategy(&self) -> UpdateStrategy {
+        UpdateStrategy::InputOnly
+    }
+
+    fn update(&mut self) -> crate::Result<bool> {
+        Ok(false)
     }
 }

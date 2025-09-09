@@ -1,4 +1,5 @@
 use crate::game::ascii_digits::get_digit_patterns;
+use crate::game::screen_manager::{Screen, ScreenTransition, UpdateStrategy};
 use crate::game::screens::ResultAction;
 use crate::scoring::StageResult;
 use crate::ui::Colors;
@@ -337,5 +338,102 @@ impl StageSummaryScreen {
             }
         }
         Ok(None)
+    }
+}
+
+pub struct StageSummaryScreenState {
+    stage_result: Option<StageResult>,
+    action_result: Option<ResultAction>,
+    should_exit: bool,
+}
+
+impl StageSummaryScreenState {
+    fn create_ascii_numbers(score: &str) -> Vec<String> {
+        StageSummaryScreen::create_ascii_numbers(score)
+    }
+
+    pub fn new() -> Self {
+        Self {
+            stage_result: None,
+            action_result: None,
+            should_exit: false,
+        }
+    }
+
+    pub fn with_result(mut self, result: StageResult) -> Self {
+        self.stage_result = Some(result);
+        self
+    }
+
+    pub fn get_action_result(&self) -> Option<ResultAction> {
+        self.action_result.clone()
+    }
+
+}
+
+impl Screen for StageSummaryScreenState {
+    fn init(&mut self) -> Result<()> {
+        self.action_result = None;
+        self.should_exit = false;
+        Ok(())
+    }
+
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<ScreenTransition> {
+        use crossterm::event::{KeyCode, KeyModifiers};
+        
+        match key_event.code {
+            KeyCode::Esc => {
+                self.action_result = Some(ResultAction::BackToTitle);
+                self.should_exit = true;
+                Ok(ScreenTransition::None)
+            }
+            KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.action_result = Some(ResultAction::Quit);
+                self.should_exit = true;
+                Ok(ScreenTransition::Exit)
+            }
+            _ => Ok(ScreenTransition::None),
+        }
+    }
+
+    fn render_crossterm(&self, stdout: &mut std::io::Stdout) -> Result<()> {
+        // Call existing high-quality implementation directly
+        if let Some(ref stage_result) = self.stage_result {
+            let fake_metrics = crate::scoring::StageResult {
+                cpm: stage_result.cpm,
+                wpm: stage_result.wpm,
+                accuracy: stage_result.accuracy,
+                keystrokes: stage_result.keystrokes,
+                mistakes: stage_result.mistakes,
+                consistency_streaks: stage_result.consistency_streaks.clone(),
+                completion_time: stage_result.completion_time,
+                challenge_score: stage_result.challenge_score,
+                rank_name: stage_result.rank_name.clone(),
+                tier_name: stage_result.tier_name.clone(),
+                tier_position: stage_result.tier_position,
+                tier_total: stage_result.tier_total,
+                overall_position: stage_result.overall_position,
+                overall_total: stage_result.overall_total,
+                was_skipped: stage_result.was_skipped,
+                was_failed: stage_result.was_failed,
+                challenge_path: stage_result.challenge_path.clone(),
+            };
+            let _ = StageSummaryScreen::show_stage_completion(&fake_metrics, 1, 1, false, stage_result.keystrokes);
+            Ok(())
+        } else {
+            Ok(())
+        }
+    }
+
+    fn should_exit(&self) -> bool {
+        self.should_exit
+    }
+
+    fn get_update_strategy(&self) -> UpdateStrategy {
+        UpdateStrategy::InputOnly
+    }
+
+    fn update(&mut self) -> Result<bool> {
+        Ok(false)
     }
 }

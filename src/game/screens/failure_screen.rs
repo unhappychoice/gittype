@@ -1,3 +1,5 @@
+use crate::game::screen_manager::{Screen, ScreenTransition, UpdateStrategy};
+use std::io::Stdout;
 use crate::game::screens::session_summary_screen::ResultAction;
 use crate::scoring::StageTracker;
 use crate::ui::Colors;
@@ -158,5 +160,52 @@ impl FailureScreen {
                 }
             }
         }
+    }
+}
+
+// Basic Screen trait implementation for ScreenManager compatibility
+pub struct ScreenState {
+    should_exit: bool,
+}
+
+impl ScreenState {
+    pub fn new() -> Self {
+        Self { should_exit: false }
+    }
+}
+
+impl Screen for ScreenState {
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> crate::Result<ScreenTransition> {
+        use crossterm::event::{KeyCode, KeyModifiers};
+        match key_event.code {
+            KeyCode::Esc => {
+                self.should_exit = true;
+                Ok(ScreenTransition::None)
+            }
+            KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.should_exit = true;
+                Ok(ScreenTransition::Exit)
+            }
+            _ => Ok(ScreenTransition::None),
+        }
+    }
+
+    fn render_crossterm(&self, stdout: &mut Stdout) -> crate::Result<()> {
+        // Call existing high-quality implementation directly
+        let stage_trackers: Vec<(String, StageTracker)> = vec![];
+        let _ = FailureScreen::show_session_summary_fail_mode(1, 0, &stage_trackers, &None);
+        Ok(())
+    }
+
+    fn should_exit(&self) -> bool {
+        self.should_exit
+    }
+
+    fn get_update_strategy(&self) -> UpdateStrategy {
+        UpdateStrategy::InputOnly
+    }
+
+    fn update(&mut self) -> crate::Result<bool> {
+        Ok(false)
     }
 }
