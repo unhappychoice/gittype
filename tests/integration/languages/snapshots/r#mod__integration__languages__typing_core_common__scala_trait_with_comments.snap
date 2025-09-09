@@ -1,0 +1,42 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+trait Animal {
+    // Abstract method for animal sound
+    def speak(): String
+    
+    // Default implementation for movement
+    def move(): Unit = {
+        println("Moving...") // Print movement message
+    }
+    
+    /* Method to get animal info
+       Returns a formatted string */
+    def info(): String = s"Animal that says: ${speak()}"
+}
+
+# text_to_type
+trait Animal {
+def speak(): String
+def move(): Unit = {
+println("Moving...")
+}
+def info(): String = s"Animal that says: ${speak()}"
+}
+
+# text_to_display
+trait Animal {↵
+    // Abstract method for animal sound
+    def speak(): String↵
+    
+    // Default implementation for movement
+    def move(): Unit = {↵
+        println("Moving...")↵ // Print movement message
+    }↵
+    
+    /* Method to get animal info
+       Returns a formatted string */
+    def info(): String = s"Animal that says: ${speak()}"↵
+}↵

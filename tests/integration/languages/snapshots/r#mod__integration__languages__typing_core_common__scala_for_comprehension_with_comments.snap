@@ -1,0 +1,36 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+def processNumbers(numbers: List[Int]): List[String] = {
+    // Use for comprehension to transform numbers
+    for {
+        n <- numbers          // Extract each number
+        if n > 0             // Filter positive numbers
+        doubled = n * 2      // Double the value
+        /* Convert to string with prefix
+           Format: "Value: XX" */
+    } yield s"Value: $doubled"
+}
+
+# text_to_type
+def processNumbers(numbers: List[Int]): List[String] = {
+for {
+n <- numbers
+if n > 0
+doubled = n * 2
+} yield s"Value: $doubled"
+}
+
+# text_to_display
+def processNumbers(numbers: List[Int]): List[String] = {↵
+    // Use for comprehension to transform numbers
+    for {↵
+        n <- numbers↵          // Extract each number
+        if n > 0↵             // Filter positive numbers
+        doubled = n * 2↵      // Double the value
+        /* Convert to string with prefix
+           Format: "Value: XX" */
+    } yield s"Value: $doubled"↵
+}↵

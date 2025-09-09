@@ -1,0 +1,39 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+def processValue(value: Any): String = {
+    // Pattern matching on different types
+    value match {
+        case s: String => s"String: $s"     // Handle strings
+        case i: Int => s"Integer: $i"       // Handle integers
+        case d: Double => s"Double: $d"     // Handle doubles
+        /* Default case for unknown types
+           Returns a generic message */
+        case _ => "Unknown type"
+    }
+}
+
+# text_to_type
+def processValue(value: Any): String = {
+value match {
+case s: String => s"String: $s"
+case i: Int => s"Integer: $i"
+case d: Double => s"Double: $d"
+case _ => "Unknown type"
+}
+}
+
+# text_to_display
+def processValue(value: Any): String = {↵
+    // Pattern matching on different types
+    value match {↵
+        case s: String => s"String: $s"↵     // Handle strings
+        case i: Int => s"Integer: $i"↵       // Handle integers
+        case d: Double => s"Double: $d"↵     // Handle doubles
+        /* Default case for unknown types
+           Returns a generic message */
+        case _ => "Unknown type"↵
+    }↵
+}↵

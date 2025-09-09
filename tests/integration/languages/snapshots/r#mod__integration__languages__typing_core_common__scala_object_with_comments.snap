@@ -1,0 +1,35 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+object Calculator {
+    // Add two integers
+    def add(a: Int, b: Int): Int = {
+        a + b // Simple addition
+    }
+    
+    /* Multiply two integers
+       Returns the product */
+    def multiply(x: Int, y: Int): Int = x * y
+}
+
+# text_to_type
+object Calculator {
+def add(a: Int, b: Int): Int = {
+a + b
+}
+def multiply(x: Int, y: Int): Int = x * y
+}
+
+# text_to_display
+object Calculator {↵
+    // Add two integers
+    def add(a: Int, b: Int): Int = {↵
+        a + b↵ // Simple addition
+    }↵
+    
+    /* Multiply two integers
+       Returns the product */
+    def multiply(x: Int, y: Int): Int = x * y↵
+}↵
