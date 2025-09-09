@@ -26,6 +26,10 @@ exclude = [
 name = "gittype"
 path = "src/main.rs"
 
+[[example]]
+name = "screen_manager_demo"
+path = "examples/screen_manager_demo.rs"
+
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
 tree-sitter = "0.25"

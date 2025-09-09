@@ -3,6 +3,7 @@ pub mod ascii_rank_titles_generated;
 pub mod context_loader;
 pub mod models;
 pub mod rank_messages;
+pub mod screen_manager;
 pub mod screens;
 pub mod stage_builder;
 pub mod stage_manager;
@@ -13,6 +14,7 @@ pub mod typing_core;
 
 pub use crate::models::Challenge;
 pub use crate::models::SessionResult;
+pub use screen_manager::{BasicScreen, RenderBackend, Screen, ScreenManager, ScreenTransition, ScreenType, UpdateStrategy};
 pub use screens::TypingScreen;
 pub use stage_builder::{DifficultyLevel, GameMode, StageBuilder, StageConfig};
 pub use stage_manager::StageManager;
