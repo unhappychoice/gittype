@@ -55,6 +55,14 @@ fn test_language_from_extension() {
         LanguageRegistry::from_extension("go").map(|l| l.name().to_string()),
         Some("go".to_string())
     );
+    assert_eq!(
+        LanguageRegistry::from_extension("scala").map(|l| l.name().to_string()),
+        Some("scala".to_string())
+    );
+    assert_eq!(
+        LanguageRegistry::from_extension("sc").map(|l| l.name().to_string()),
+        Some("scala".to_string())
+    );
     assert_eq!(LanguageRegistry::from_extension("unknown"), None);
 }
 
@@ -336,5 +344,80 @@ class TsClass{} {{
     assert!(
         duration.as_millis() < 5000,
         "Parallel parsing should complete within 5 seconds"
+    );
+}
+
+#[test]
+fn test_scala_extractor_basic() {
+    let temp_dir = TempDir::new().unwrap();
+    let scala_file = temp_dir.path().join("Test.scala");
+
+    let scala_code = r#"
+object Main {
+  def main(args: Array[String]): Unit = {
+    println("Hello, Scala!")
+  }
+  
+  def factorial(n: Int): Int = {
+    if (n <= 1) 1 else n * factorial(n - 1)
+  }
+}
+
+class Person(val name: String, val age: Int) {
+  def greet(): String = s"Hello, I'm $name"
+  
+  def isAdult: Boolean = age >= 18
+}
+
+case class Point(x: Double, y: Double) {
+  def distance(other: Point): Double = {
+    math.sqrt(math.pow(x - other.x, 2) + math.pow(y - other.y, 2))
+  }
+}
+
+trait Animal {
+  def speak(): String
+}
+
+enum Color {
+  case Red, Green, Blue
+}
+"#;
+
+    fs::write(&scala_file, scala_code).unwrap();
+
+    let mut extractor = CodeExtractor::new().unwrap();
+    let mut options = ExtractionOptions::default();
+    options.exclude_patterns.retain(|p| p != "**/tmp/**");
+
+    let chunks = extractor.extract_chunks(temp_dir.path(), options).unwrap();
+
+    assert!(
+        !chunks.is_empty(),
+        "Should extract at least one chunk from Scala code"
+    );
+
+    // Verify we have Scala chunks
+    let scala_chunks: Vec<_> = chunks.iter().filter(|c| c.language == "scala").collect();
+    assert!(!scala_chunks.is_empty(), "Should find Scala chunks");
+
+    // Look for specific chunk types
+    let function_count = scala_chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Function))
+        .count();
+    let class_count = scala_chunks
+        .iter()
+        .filter(|c| matches!(c.chunk_type, ChunkType::Class))
+        .count();
+
+    assert!(function_count > 0, "Should find at least one function");
+    assert!(class_count > 0, "Should find at least one class/object");
+
+    println!(
+        "Scala extraction found {} chunks: {} functions, {} classes/objects",
+        scala_chunks.len(),
+        function_count,
+        class_count
     );
 }

@@ -19,6 +19,7 @@
 | C++ | `.cpp`, `.cc`, `.cxx`, `.hpp` | ✅ Full support | `tree-sitter-cpp` |
 | Haskell | `.hs`, `.lhs` | ✅ Full support | `tree-sitter-haskell` |
 | Dart | `.dart` | ✅ Full support | `tree-sitter-dart` |
+| Scala | `.scala`, `.sc` | ✅ Full support | `tree-sitter-scala` |
 
 ## Extraction Features
 
@@ -205,6 +206,17 @@
 - Static members (methods and properties)
 - Type definitions (`typedef`)
 
+### Scala
+- Functions (`def`) - method and function definitions
+- Classes (`class`, `case class`) - class definitions with constructors and methods
+- Object declarations (`object`) - singleton objects and companion objects
+- Traits (`trait`) - trait definitions with methods and implementations
+- Enums (`enum`) - Scala 3 enum definitions with cases
+- Type definitions (`type`) - type aliases and abstract types
+- Package objects (`package object`) - utility functions and implicit conversions
+- Given definitions (`given`) - Scala 3 contextual abstractions
+- Extension methods (`extension`) - Scala 3 extension method definitions
+
 ## Planned Support
 
 | Language | Priority | Expected | Notes |
@@ -220,14 +232,14 @@
 gittype --langs rust
 
 # Multiple languages
-gittype --langs rust,typescript,javascript,python,go,ruby,swift,kotlin,java,php,csharp,c,cpp,haskell,dart
+gittype --langs rust,typescript,javascript,python,go,ruby,swift,kotlin,java,php,csharp,c,cpp,haskell,dart,scala
 ```
 
 ### Configuration File
 
 ```toml
 [default]
-langs = ["rust", "typescript", "javascript", "python", "go", "ruby", "swift", "kotlin", "java", "php", "csharp", "c", "cpp", "haskell", "dart"]
+langs = ["rust", "typescript", "javascript", "python", "go", "ruby", "swift", "kotlin", "java", "php", "csharp", "c", "cpp", "haskell", "dart", "scala"]
 ```
 
 ## Code Extraction Quality

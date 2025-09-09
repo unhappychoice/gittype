@@ -443,4 +443,101 @@ functionB();"#;
             );
         }
     }
+
+    #[test]
+    fn test_scala_comment_processing() {
+        let scala_code = r#"// Scala object definition with comments
+object Calculator {
+  /* Multi-line comment
+     with calculations */
+  def add(x: Int, y: Int): Int = x + y
+  
+  // Single line comment for multiplication
+  def multiply(x: Int, y: Int): Int = {
+    /* Another block comment */
+    x * y
+  }
+}
+
+class MathUtils {
+  // Comment with special symbols: → ← ↑ ↓
+  def factorial(n: Int): Int = {
+    if (n <= 1) 1 else n * factorial(n - 1)
+  }
+}"#;
+
+        // Find all comment ranges manually for testing
+        let comment_ranges = vec![
+            // First single-line comment
+            (0, "// Scala object definition with comments".len()),
+            // Multi-line comment
+            (
+                scala_code.find("/* Multi-line comment").unwrap(),
+                scala_code.find("calculations */").unwrap() + "calculations */".len(),
+            ),
+            // Single line comment for multiplication
+            (
+                scala_code.find("// Single line comment").unwrap(),
+                scala_code.find("multiplication").unwrap() + "multiplication".len(),
+            ),
+            // Another block comment
+            (
+                scala_code.find("/* Another block comment").unwrap(),
+                scala_code.find("comment */").unwrap() + "comment */".len(),
+            ),
+            // Comment with special symbols
+            (
+                scala_code.find("// Comment with special").unwrap(),
+                scala_code.find("↑ ↓").unwrap() + "↑ ↓".len(),
+            ),
+        ];
+
+        println!("=== Scala Comment Processing Test ===");
+        println!("Code: {}", scala_code);
+        println!("Comment ranges: {:?}", comment_ranges);
+
+        let typing_core = TypingCore::new(scala_code, &comment_ranges, Default::default());
+        let display_ranges = typing_core.display_comment_ranges();
+
+        println!("Display text: {}", typing_core.text_to_display());
+        println!("Display ranges: {:?}", display_ranges);
+
+        // Should find all comment ranges
+        assert_eq!(
+            display_ranges.len(),
+            comment_ranges.len(),
+            "Should find all Scala comments"
+        );
+
+        for (i, &(start, end)) in display_ranges.iter().enumerate() {
+            let display_text = typing_core.text_to_display();
+            let comment = &display_text[start..end];
+            println!("Comment {}: {:?}", i, comment);
+
+            // Verify comments contain expected content
+            match i {
+                0 => assert!(
+                    comment.contains("Scala object"),
+                    "Should contain 'Scala object'"
+                ),
+                1 => assert!(
+                    comment.contains("Multi-line") && comment.contains("calculations"),
+                    "Should contain multi-line comment content"
+                ),
+                2 => assert!(
+                    comment.contains("multiplication"),
+                    "Should contain 'multiplication'"
+                ),
+                3 => assert!(
+                    comment.contains("Another block"),
+                    "Should contain 'Another block'"
+                ),
+                4 => assert!(
+                    comment.contains("→ ← ↑ ↓"),
+                    "Should contain special symbols"
+                ),
+                _ => {}
+            }
+        }
+    }
 }

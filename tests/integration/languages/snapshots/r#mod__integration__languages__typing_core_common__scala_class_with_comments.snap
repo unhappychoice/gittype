@@ -1,0 +1,29 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+class Person(val name: String, val age: Int) {
+    // Person's greeting method
+    def greet(): String = s"Hello, I'm $name"
+    
+    /* Check if person is adult
+       Returns true if age >= 18 */
+    def isAdult: Boolean = age >= 18
+}
+
+# text_to_type
+class Person(val name: String, val age: Int) {
+def greet(): String = s"Hello, I'm $name"
+def isAdult: Boolean = age >= 18
+}
+
+# text_to_display
+class Person(val name: String, val age: Int) {↵
+    // Person's greeting method
+    def greet(): String = s"Hello, I'm $name"↵
+    
+    /* Check if person is adult
+       Returns true if age >= 18 */
+    def isAdult: Boolean = age >= 18↵
+}↵

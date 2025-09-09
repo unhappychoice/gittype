@@ -1,0 +1,41 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+object StringExtensions {
+    // Implicit class to extend String functionality
+    implicit class RichString(s: String) {
+        // Check if string is palindrome
+        def isPalindrome: Boolean = {
+            val cleaned = s.toLowerCase.replaceAll("[^a-z]", "")
+            /* Compare string with its reverse
+               Returns true if they match */
+            cleaned == cleaned.reverse
+        }
+    }
+}
+
+# text_to_type
+object StringExtensions {
+implicit class RichString(s: String) {
+def isPalindrome: Boolean = {
+val cleaned = s.toLowerCase.replaceAll("[^a-z]", "")
+cleaned == cleaned.reverse
+}
+}
+}
+
+# text_to_display
+object StringExtensions {↵
+    // Implicit class to extend String functionality
+    implicit class RichString(s: String) {↵
+        // Check if string is palindrome
+        def isPalindrome: Boolean = {↵
+            val cleaned = s.toLowerCase.replaceAll("[^a-z]", "")↵
+            /* Compare string with its reverse
+               Returns true if they match */
+            cleaned == cleaned.reverse↵
+        }↵
+    }↵
+}↵

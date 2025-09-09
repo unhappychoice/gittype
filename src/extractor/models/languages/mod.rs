@@ -11,6 +11,7 @@ pub mod php;
 pub mod python;
 pub mod ruby;
 pub mod rust;
+pub mod scala;
 pub mod swift;
 pub mod typescript;
 
@@ -27,5 +28,6 @@ pub use php::Php;
 pub use python::Python;
 pub use ruby::Ruby;
 pub use rust::Rust;
+pub use scala::Scala;
 pub use swift::Swift;
 pub use typescript::TypeScript;

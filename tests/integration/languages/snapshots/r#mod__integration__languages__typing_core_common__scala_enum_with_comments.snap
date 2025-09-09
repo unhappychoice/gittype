@@ -1,0 +1,47 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+enum Color {
+    case Red, Green, Blue // Primary colors
+    case RGB(r: Int, g: Int, b: Int) // Custom RGB color
+    
+    // Convert color to hex string
+    def toHex(): String = this match {
+        case Red => "#FF0000"    // Red hex
+        case Green => "#00FF00"  // Green hex
+        case Blue => "#0000FF"   // Blue hex
+        /* Custom RGB to hex conversion
+           Format: #RRGGBB */
+        case RGB(r, g, b) => f"#$r%02X$g%02X$b%02X"
+    }
+}
+
+# text_to_type
+enum Color {
+case Red, Green, Blue
+case RGB(r: Int, g: Int, b: Int)
+def toHex(): String = this match {
+case Red => "#FF0000"
+case Green => "#00FF00"
+case Blue => "#0000FF"
+case RGB(r, g, b) => f"#$r%02X$g%02X$b%02X"
+}
+}
+
+# text_to_display
+enum Color {↵
+    case Red, Green, Blue↵ // Primary colors
+    case RGB(r: Int, g: Int, b: Int)↵ // Custom RGB color
+    
+    // Convert color to hex string
+    def toHex(): String = this match {↵
+        case Red => "#FF0000"↵    // Red hex
+        case Green => "#00FF00"↵  // Green hex
+        case Blue => "#0000FF"↵   // Blue hex
+        /* Custom RGB to hex conversion
+           Format: #RRGGBB */
+        case RGB(r, g, b) => f"#$r%02X$g%02X$b%02X"↵
+    }↵
+}↵

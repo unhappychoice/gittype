@@ -42,7 +42,7 @@ pub struct Cli {
         long_help = "Filter by programming languages (comma-separated). \
                      Supported languages:\n  \
                      rust, typescript, javascript, python, ruby, go, swift, \
-                     kotlin, java, php, csharp, c, cpp, haskell, dart\n  \
+                     kotlin, java, php, csharp, c, cpp, haskell, dart, scala\n  \
                      Example: --langs rust,python,typescript"
     )]
     pub langs: Option<Vec<String>>,

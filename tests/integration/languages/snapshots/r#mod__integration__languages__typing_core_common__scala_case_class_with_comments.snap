@@ -1,0 +1,30 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+case class Point(x: Double, y: Double) {
+    // Calculate distance to another point
+    def distance(other: Point): Double = {
+        /* Use Euclidean distance formula:
+           sqrt((x2-x1)² + (y2-y1)²) */
+        math.sqrt(math.pow(x - other.x, 2) + math.pow(y - other.y, 2))
+    }
+}
+
+# text_to_type
+case class Point(x: Double, y: Double) {
+def distance(other: Point): Double = {
+math.sqrt(math.pow(x - other.x, 2) + math.pow(y - other.y, 2))
+}
+}
+
+# text_to_display
+case class Point(x: Double, y: Double) {↵
+    // Calculate distance to another point
+    def distance(other: Point): Double = {↵
+        /* Use Euclidean distance formula:
+           sqrt((x2-x1)² + (y2-y1)²) */
+        math.sqrt(math.pow(x - other.x, 2) + math.pow(y - other.y, 2))↵
+    }↵
+}↵
