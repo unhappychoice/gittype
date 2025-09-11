@@ -1,7 +1,8 @@
+use crate::game::GameData;
 use crate::models::Challenge;
 use crate::Result;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone)]
 pub struct CodeContext {
@@ -34,7 +35,25 @@ pub fn load_context_for_challenge(
         return Ok(CodeContext::empty());
     };
 
-    load_context_lines(Path::new(source_path), start_line, end_line, context_lines)
+    // Convert relative path to absolute path by resolving from git repository root
+    let file_path = if Path::new(source_path).is_absolute() {
+        PathBuf::from(source_path)
+    } else {
+        // Get git root from GameData's GitRepository and resolve relative path
+        if let Some(git_repository) = GameData::get_git_repository() {
+            if let Some(git_root) = git_repository.root_path {
+                git_root.join(source_path)
+            } else {
+                // Fallback to using the path as-is if git root is not found in GitRepository
+                PathBuf::from(source_path)
+            }
+        } else {
+            // Fallback to using the path as-is if git repository is not found
+            PathBuf::from(source_path)
+        }
+    };
+
+    load_context_lines(&file_path, start_line, end_line, context_lines)
 }
 
 pub fn load_context_lines(

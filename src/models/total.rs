@@ -87,6 +87,18 @@ impl TotalResult {
             (completed, attempted) => format!("{}/{} sessions completed", completed, attempted),
         }
     }
+
+    pub fn create_share_text(&self) -> String {
+        format!(
+            "Just demolished {} keystrokes total in gittype! 🔥 Total Score: {:.0}, CPM: {:.0}, Sessions: {}/{}, Time: {:.1}min 💪\n\nYour turn to abuse your keyboard! https://github.com/unhappychoice/gittype\n\n#gittype #typing #coding #keyboardwarrior",
+            self.total_keystrokes,
+            self.total_score,
+            self.overall_cpm,
+            self.total_sessions_completed,
+            self.total_sessions_attempted,
+            self.total_duration.as_secs_f64() / 60.0
+        )
+    }
 }
 
 impl Default for Total {

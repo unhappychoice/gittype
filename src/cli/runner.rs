@@ -1,6 +1,6 @@
 use crate::cli::args::{Cli, Commands};
 use crate::cli::commands::{run_export, run_game_session, run_history, run_stats};
-use crate::game::stage_manager::{cleanup_terminal, show_session_summary_on_interrupt};
+use crate::game::screen_manager::ScreenManager;
 use crate::logging::{log_panic_to_file, setup_console_logging, setup_logging};
 use crate::Result;
 
@@ -31,7 +31,7 @@ pub fn setup_signal_handlers() {
         let _ = writeln!(stderr(), "Error: {}", panic_info);
         let _ = stderr().flush();
 
-        cleanup_terminal();
+        ScreenManager::cleanup_terminal_static();
 
         // Display panic info again after cleanup to ensure visibility
         eprintln!("Application encountered a panic: {}", panic_info);
@@ -39,7 +39,7 @@ pub fn setup_signal_handlers() {
     }));
 
     ctrlc::set_handler(move || {
-        show_session_summary_on_interrupt();
+        ScreenManager::show_session_summary_on_interrupt();
         std::process::exit(0);
     })
     .expect("Error setting Ctrl-C handler");

@@ -57,27 +57,31 @@ impl Step for CloningStep {
                 RepositoryManager::clone_or_update_repo(&repo_info, context.loading_screen)?;
 
             // Extract actual git info from cloned repository and set it in loading screen
-            if let Some(screen) = context.loading_screen {
-                if let Ok(Some(git_repository)) =
-                    crate::extractor::GitRepositoryExtractor::extract_git_repository(&repo_path)
-                {
-                    let _ = screen.set_git_repository(&git_repository);
-                } else {
-                    // Fallback to basic info from RepoInfo if git extraction fails
-                    let git_repository = crate::models::GitRepository {
-                        user_name: repo_info.owner.clone(),
-                        repository_name: repo_info.name.clone(),
-                        remote_url: format!(
-                            "https://{}/{}/{}",
-                            repo_info.origin, repo_info.owner, repo_info.name
-                        ),
-                        branch: None,
-                        commit_hash: None,
-                        is_dirty: false,
-                    };
-                    let _ = screen.set_git_repository(&git_repository);
+            let git_repository = if let Ok(Some(git_repository)) =
+                crate::extractor::GitRepositoryExtractor::extract_git_repository(&repo_path)
+            {
+                git_repository
+            } else {
+                // Fallback to basic info from RepoInfo if git extraction fails
+                crate::models::GitRepository {
+                    user_name: repo_info.owner.clone(),
+                    repository_name: repo_info.name.clone(),
+                    remote_url: format!(
+                        "https://{}/{}/{}",
+                        repo_info.origin, repo_info.owner, repo_info.name
+                    ),
+                    branch: None,
+                    commit_hash: None,
+                    is_dirty: false,
+                    root_path: Some(repo_path.clone()),
                 }
+            };
+
+            // Set git repository in loading screen and context
+            if let Some(screen) = context.loading_screen {
+                let _ = screen.set_git_repository(&git_repository);
             }
+            context.git_repository = Some(git_repository);
 
             Ok(StepResult::RepoPath(repo_path))
         } else {

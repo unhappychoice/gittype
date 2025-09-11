@@ -14,7 +14,8 @@ impl SessionHistory {
     }
 
     pub fn get_history(&self) -> Result<Vec<String>> {
-        // TODO: Implement session history retrieval
+        // Session history retrieval not yet implemented
+        // Returns empty vec as placeholder until database integration is complete
         Ok(vec![])
     }
 }

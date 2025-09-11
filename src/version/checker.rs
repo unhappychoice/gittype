@@ -115,7 +115,7 @@ impl VersionChecker {
 
     pub fn display_update_notification(entry: &VersionCacheEntry) -> Result<bool> {
         if entry.update_available {
-            match VersionCheckScreen::show(&entry.current_version, &entry.latest_version)? {
+            match VersionCheckScreen::show_legacy(&entry.current_version, &entry.latest_version)? {
                 VersionCheckResult::Continue => Ok(true),
                 VersionCheckResult::Exit => Ok(false),
             }

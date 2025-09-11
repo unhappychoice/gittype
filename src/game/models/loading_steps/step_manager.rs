@@ -3,7 +3,6 @@ use super::{
     GeneratingStep, ScanningStep, Step, StepResult,
 };
 use crate::game::screens::loading_screen::ProgressReporter;
-use crate::models::Challenge;
 use crate::Result;
 
 pub struct StepManager {
@@ -54,9 +53,7 @@ impl StepManager {
             .unwrap_or(0)
     }
 
-    pub fn execute_pipeline(&self, context: &mut ExecutionContext) -> Result<Vec<Challenge>> {
-        let mut challenges: Option<Vec<Challenge>> = None;
-
+    pub fn execute_pipeline(&self, context: &mut ExecutionContext) -> Result<()> {
         for step in &self.steps {
             // Skip step if it can be skipped
             if step.can_skip(context) {
@@ -66,15 +63,42 @@ impl StepManager {
             // Set current step for progress reporting
             if let Some(screen) = context.loading_screen {
                 screen.set_step(step.step_type());
+
+                // Initialize progress for steps that support it
+                if step.supports_progress() {
+                    // Initialize with 0% progress
+                    screen.set_file_counts(step.step_type(), 0, 1, None);
+                }
             }
 
             // Execute step
-            match step.execute(context)? {
+            let step_result = step.execute(context)?;
+
+            // Mark step as completed after successful execution
+            if let Some(screen) = context.loading_screen {
+                // For steps that support progress, ensure they show 100% completion
+                if step.supports_progress() {
+                    screen.set_file_counts(step.step_type(), 1, 1, None);
+                    // Small delay to ensure the completion is visible before transitioning
+                    std::thread::sleep(std::time::Duration::from_millis(200));
+                } else {
+                    // Even non-progress steps get a small delay for visual clarity
+                    std::thread::sleep(std::time::Duration::from_millis(100));
+                }
+            }
+
+            match step_result {
                 StepResult::RepoPath(path) => {
                     context.current_repo_path = Some(path);
                 }
-                StepResult::Challenges(step_challenges) => {
-                    challenges = Some(step_challenges);
+                StepResult::Challenges(_step_challenges) => {
+                    // Challenges are handled by GameData, ignore here
+                }
+                StepResult::ScannedFiles(files) => {
+                    context.scanned_files = Some(files);
+                }
+                StepResult::Chunks(chunks) => {
+                    context.chunks = Some(chunks);
                 }
                 StepResult::Skipped => {
                     // Continue to next step
@@ -82,8 +106,6 @@ impl StepManager {
             }
         }
 
-        challenges.ok_or_else(|| {
-            crate::GitTypeError::ExtractionFailed("No challenges generated".to_string())
-        })
+        Ok(())
     }
 }

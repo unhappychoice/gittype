@@ -26,14 +26,6 @@ exclude = [
 name = "gittype"
 path = "src/main.rs"
 
-[[example]]
-name = "screen_manager_demo"
-path = "examples/screen_manager_demo.rs"
-
-[[example]]
-name = "phase3_screen_test"
-path = "examples/phase3_screen_test.rs"
-
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
 tree-sitter = "0.25"
@@ -79,6 +71,7 @@ log4rs = "1.4"
 tempfile = "3.8"
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 reqwest = { version = "0.12", features = ["json"] }
+atty = "0.2"
 
 [dev-dependencies]
 paste = "1.0"

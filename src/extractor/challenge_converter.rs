@@ -1,4 +1,6 @@
 use super::ProgressReporter;
+use crate::game::models::StepType;
+use crate::game::DifficultyLevel;
 use crate::models::{Challenge, CodeChunk};
 use rayon::prelude::*;
 use std::sync::{
@@ -6,15 +8,6 @@ use std::sync::{
     Arc,
 };
 use uuid::Uuid;
-
-struct NoOpProgressReporter;
-
-impl ProgressReporter for NoOpProgressReporter {
-    fn set_step(&self, _step_type: crate::game::models::loading_steps::StepType) {}
-    fn set_progress(&self, _progress: f64) {}
-    fn set_current_file(&self, _file: Option<String>) {}
-    fn set_file_counts(&self, _processed: usize, _total: usize) {}
-}
 
 pub struct ChallengeConverter;
 
@@ -40,114 +33,166 @@ impl ChallengeConverter {
             .with_comment_ranges(chunk.comment_ranges)
     }
 
-    pub fn convert_chunks_to_challenges(&self, chunks: Vec<CodeChunk>) -> Vec<Challenge> {
-        self.convert_chunks_to_challenges_with_progress(chunks, &NoOpProgressReporter)
+    fn convert_chunk_to_challenge_ref(&self, chunk: &CodeChunk) -> Challenge {
+        let id = Uuid::new_v4().to_string();
+        let language = chunk.language.to_string();
+        let file_path = chunk.file_path.to_string_lossy().to_string();
+
+        Challenge::new(id, chunk.content.clone())
+            .with_source_info(file_path, chunk.start_line, chunk.end_line)
+            .with_language(language)
+            .with_comment_ranges(chunk.comment_ranges.clone())
     }
 
-    pub fn convert_chunks_to_challenges_with_progress(
+    pub fn convert_chunks_and_files_to_challenges_with_progress(
         &self,
         chunks: Vec<CodeChunk>,
+        file_paths: Vec<std::path::PathBuf>,
+        git_root: Option<&std::path::Path>,
         progress: &dyn ProgressReporter,
     ) -> Vec<Challenge> {
-        // Parallelize per-chunk conversion with atomic progress updates
-        let total = chunks.len();
-        let processed = Arc::new(AtomicUsize::new(0));
+        let total_chunks = chunks.len();
+        let total_files = file_paths.len();
+        let total_work = total_chunks + total_files;
 
-        let difficulties = [
-            super::super::game::stage_builder::DifficultyLevel::Easy,
-            super::super::game::stage_builder::DifficultyLevel::Normal,
-            super::super::game::stage_builder::DifficultyLevel::Hard,
-            super::super::game::stage_builder::DifficultyLevel::Wild,
-        ];
+        let mut all_challenges = Vec::new();
 
-        // Initialize progress bounds (0 processed yet)
-        progress.set_file_counts(0, total);
+        progress.set_file_counts(StepType::Generating, 0, total_work, None);
 
-        let all: Vec<Challenge> = chunks
-            .into_par_iter()
-            .flat_map(|chunk| {
-                let mut local = Vec::new();
-                for difficulty in &difficulties {
-                    let split = self.split_chunk_by_difficulty(&chunk, difficulty);
-                    local.extend(split);
-                }
+        // Global progress tracking for both phases
+        let processed_total = Arc::new(AtomicUsize::new(0));
 
-                // Track progress count without calling reporter from parallel context
-                let _ = processed.fetch_add(1, Ordering::Relaxed);
-                local
-            })
-            .collect();
+        // Phase 1: Convert chunks to regular challenges
+        if !chunks.is_empty() {
+            let difficulties = [
+                DifficultyLevel::Easy,
+                DifficultyLevel::Normal,
+                DifficultyLevel::Hard,
+                DifficultyLevel::Wild,
+            ];
 
-        // Final progress update only (avoid Sync bound on ProgressReporter)
-        progress.set_file_counts(total, total);
-        progress.set_progress(1.0);
+            // Sort chunks by content length (largest first) for better loading progress perception
+            let mut sorted_chunks = chunks;
+            sorted_chunks.sort_by(|a, b| b.content.len().cmp(&a.content.len()));
 
-        all
-    }
+            let processed_total_clone = processed_total.clone();
 
-    pub fn convert_with_filter<F>(&self, chunks: Vec<CodeChunk>, filter: F) -> Vec<Challenge>
-    where
-        F: Fn(&CodeChunk) -> bool,
-    {
-        chunks
-            .into_iter()
-            .filter(filter)
-            .map(|chunk| self.convert_chunk_to_challenge(chunk))
-            .collect()
-    }
+            let chunk_challenges: Vec<Challenge> = sorted_chunks
+                .into_par_iter()
+                .map(|chunk| {
+                    let mut local = Vec::new();
+                    for difficulty in &difficulties {
+                        let split = self.split_chunk_by_difficulty(&chunk, difficulty);
+                        local.extend(split);
+                    }
 
-    pub fn convert_with_difficulty_split(
-        &self,
-        chunks: Vec<CodeChunk>,
-        difficulty: &super::super::game::stage_builder::DifficultyLevel,
-    ) -> Vec<Challenge> {
-        chunks
-            .into_par_iter()
-            .flat_map(|chunk| self.split_chunk_by_difficulty(&chunk, difficulty))
-            .collect()
-    }
+                    // Update progress atomically - always increment for every chunk
+                    let current = processed_total_clone.fetch_add(1, Ordering::Relaxed) + 1;
+                    if current % 5 == 0 || current == total_work {
+                        progress.set_file_counts(StepType::Generating, current, total_work, None);
+                    }
 
-    pub fn convert_whole_files_to_challenges(
-        &self,
-        file_paths: Vec<std::path::PathBuf>,
-    ) -> Vec<Challenge> {
-        use super::super::game::stage_builder::DifficultyLevel;
-        file_paths
-            .into_par_iter()
-            .filter_map(|file_path| {
-                std::fs::read_to_string(&file_path)
-                    .ok()
-                    .map(|c| (file_path, c))
-            })
-            .map(|(file_path, content)| {
-                let id = Uuid::new_v4().to_string();
-                let language =
-                    super::models::language::LanguageRegistry::detect_from_path(&file_path);
-                let file_path_str = file_path.to_string_lossy().to_string();
-                let line_count = content.lines().count();
-                Challenge::new(id, content)
-                    .with_source_info(file_path_str, 1, line_count)
-                    .with_language(language)
-                    .with_difficulty_level(DifficultyLevel::Zen)
-            })
-            .collect()
+                    local
+                })
+                .flatten()
+                .collect();
+
+            all_challenges.extend(chunk_challenges);
+        }
+
+        // Phase 2: Convert files to zen challenges
+        if !file_paths.is_empty() {
+            // Sort files by size (largest first) for better loading progress perception
+            // Cache metadata to avoid repeated filesystem calls
+            let mut files_with_sizes: Vec<_> = file_paths
+                .into_iter()
+                .map(|path| {
+                    let size = std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
+                    (path, size)
+                })
+                .collect();
+
+            files_with_sizes.sort_by(|a, b| b.1.cmp(&a.1)); // Sort by size (largest first)
+
+            let sorted_file_paths: Vec<_> = files_with_sizes
+                .into_iter()
+                .map(|(path, _size)| path)
+                .collect();
+
+            let processed_total_clone = processed_total.clone();
+
+            let file_challenges: Vec<Challenge> = sorted_file_paths
+                .into_par_iter()
+                .map(|file_path| {
+                    // Always update progress, regardless of file read success
+                    let current = processed_total_clone.fetch_add(1, Ordering::Relaxed) + 1;
+                    if current % 5 == 0 || current == total_work {
+                        progress.set_file_counts(StepType::Generating, current, total_work, None);
+                    }
+
+                    match std::fs::read_to_string(&file_path) {
+                        Ok(content) => {
+                            let id = Uuid::new_v4().to_string();
+                            let language =
+                                super::models::language::LanguageRegistry::detect_from_path(
+                                    &file_path,
+                                );
+
+                            let relative_file_path = if let Some(root) = git_root {
+                                if let Ok(relative) = file_path.strip_prefix(root) {
+                                    relative.to_path_buf()
+                                } else {
+                                    file_path.clone()
+                                }
+                            } else {
+                                file_path.clone()
+                            };
+
+                            let file_path_str = relative_file_path.to_string_lossy().to_string();
+                            let line_count = content.lines().count();
+                            Some(
+                                Challenge::new(id, content)
+                                    .with_source_info(file_path_str, 1, line_count)
+                                    .with_language(language)
+                                    .with_difficulty_level(DifficultyLevel::Zen),
+                            )
+                        }
+                        Err(e) => {
+                            eprintln!(
+                                "Warning: Failed to read file {:?} for Zen challenge: {}",
+                                file_path, e
+                            );
+                            None
+                        }
+                    }
+                })
+                .filter_map(|result| result)
+                .collect();
+
+            all_challenges.extend(file_challenges);
+        }
+
+        // Ensure final progress is 100%
+        progress.set_file_counts(StepType::Generating, total_work, total_work, None);
+
+        all_challenges
     }
 
     fn split_chunk_by_difficulty(
         &self,
         chunk: &CodeChunk,
-        difficulty: &super::super::game::stage_builder::DifficultyLevel,
+        difficulty: &crate::game::DifficultyLevel,
     ) -> Vec<Challenge> {
-        use super::super::game::stage_builder::DifficultyLevel;
+        use crate::game::DifficultyLevel;
 
         if matches!(difficulty, DifficultyLevel::Zen) {
-            return vec![self.convert_chunk_to_challenge(chunk.clone())];
+            return vec![self.convert_chunk_to_challenge_ref(chunk)];
         }
 
         // Wild difficulty uses the full chunk as-is
         if matches!(difficulty, DifficultyLevel::Wild) {
-            let mut challenge = self.convert_chunk_to_challenge(chunk.clone());
-            challenge.difficulty_level = Some(difficulty.clone());
+            let mut challenge = self.convert_chunk_to_challenge_ref(chunk);
+            challenge.difficulty_level = Some(*difficulty);
             return vec![challenge];
         }
 
@@ -166,8 +211,8 @@ impl ChallengeConverter {
 
         // If the chunk is within the target range, return as-is
         if code_char_count <= max_chars {
-            let mut challenge = self.convert_chunk_to_challenge(chunk.clone());
-            challenge.difficulty_level = Some(difficulty.clone());
+            let mut challenge = self.convert_chunk_to_challenge_ref(chunk);
+            challenge.difficulty_level = Some(*difficulty);
 
             return vec![challenge];
         }
@@ -199,6 +244,7 @@ impl ChallengeConverter {
                 if truncated_code_chars >= min_chars {
                     let id = Uuid::new_v4().to_string();
                     let language = chunk.language.to_string();
+                    // file_path is already relative to git project root from CodeChunk
                     let file_path = chunk.file_path.to_string_lossy().to_string();
 
                     let challenge = Challenge::new(id, truncated_content.to_string())
@@ -209,7 +255,7 @@ impl ChallengeConverter {
                         )
                         .with_language(language)
                         .with_comment_ranges(adjusted_comment_ranges)
-                        .with_difficulty_level(difficulty.clone());
+                        .with_difficulty_level(*difficulty);
 
                     return vec![challenge];
                 }
@@ -334,31 +380,6 @@ impl ChallengeConverter {
                 } else {
                     None
                 }
-            })
-            .collect()
-    }
-
-    pub fn convert_whole_files_to_zen_challenges_only(
-        &self,
-        file_paths: Vec<std::path::PathBuf>,
-    ) -> Vec<Challenge> {
-        file_paths
-            .into_par_iter()
-            .filter_map(|file_path| {
-                std::fs::read_to_string(&file_path)
-                    .ok()
-                    .map(|c| (file_path, c))
-            })
-            .map(|(file_path, content)| {
-                let id = uuid::Uuid::new_v4().to_string();
-                let language =
-                    super::models::language::LanguageRegistry::detect_from_path(&file_path);
-                let file_path_str = file_path.to_string_lossy().to_string();
-                let line_count = content.lines().count();
-                Challenge::new(id, content)
-                    .with_source_info(file_path_str, 1, line_count)
-                    .with_language(language)
-                    .with_difficulty_level(super::super::game::stage_builder::DifficultyLevel::Zen)
             })
             .collect()
     }

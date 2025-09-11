@@ -13,3 +13,7 @@ pub use tracker::{
     Keystroke, SessionTracker, SessionTrackerData, StageInput, StageTracker, StageTrackerData,
     TotalTracker, TotalTrackerData,
 };
+
+// Export global tracker instances
+pub use tracker::session::GLOBAL_SESSION_TRACKER;
+pub use tracker::total::GLOBAL_TOTAL_TRACKER;

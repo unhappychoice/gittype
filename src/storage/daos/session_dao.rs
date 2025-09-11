@@ -111,7 +111,7 @@ impl<'a> SessionDao<'a> {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             params![
                 session_id,
-                repository_id.unwrap_or(0), // repository_id is NOT NULL, use 0 as default
+                repository_id.ok_or_else(|| crate::GitTypeError::TerminalError("repository_id is required for session_results".to_string()))?,
                 session_result.valid_keystrokes as i64,
                 session_result.valid_mistakes as i64,
                 session_result.session_duration.as_millis() as i64,
@@ -172,7 +172,11 @@ impl<'a> SessionDao<'a> {
             rusqlite::params![
                 stage_id,
                 params.session_id,
-                params.repository_id.unwrap_or(0), // repository_id is NOT NULL in schema
+                params
+                    .repository_id
+                    .ok_or_else(|| crate::GitTypeError::TerminalError(
+                        "repository_id is required for stage_results".to_string()
+                    ))?,
                 params.keystrokes as i64,
                 params.stage_result.mistakes as i64,
                 params.stage_result.completion_time.as_millis() as i64,

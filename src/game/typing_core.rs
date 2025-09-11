@@ -618,3 +618,13 @@ impl TypingCore {
         }
     }
 }
+
+impl Default for TypingCore {
+    fn default() -> Self {
+        Self::new(
+            "// Placeholder - will be updated with challenge data",
+            &[],
+            ProcessingOptions::default(),
+        )
+    }
+}
