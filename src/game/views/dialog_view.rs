@@ -1,0 +1,106 @@
+use crate::ui::Colors;
+use ratatui::{
+    layout::{Alignment, Rect},
+    style::{Modifier, Style},
+    text::{Line, Span},
+    widgets::{Block, Borders, Clear, Paragraph},
+    Frame,
+};
+
+pub struct DialogView;
+
+impl DialogView {
+    pub fn render(frame: &mut Frame, skips_remaining: usize) {
+        // Calculate dialog size and position
+        let area = frame.area();
+        let dialog_width = 50.min(area.width - 4);
+        let dialog_height = 9; // Increased to accommodate all options
+
+        let dialog_area = Rect {
+            x: (area.width - dialog_width) / 2,
+            y: (area.height - dialog_height) / 2,
+            width: dialog_width,
+            height: dialog_height,
+        };
+
+        // Clear the area behind the dialog
+        frame.render_widget(Clear, dialog_area);
+
+        // Create dialog content
+        let dialog_lines = vec![
+            Line::from(""),
+            Line::from(vec![Span::styled(
+                "Choose an option:",
+                Style::default()
+                    .fg(Colors::TEXT)
+                    .add_modifier(Modifier::BOLD),
+            )]),
+            Line::from(""),
+            Line::from(vec![
+                if skips_remaining > 0 {
+                    Span::styled(
+                        "[S] ",
+                        Style::default()
+                            .fg(Colors::INFO)
+                            .add_modifier(Modifier::BOLD),
+                    )
+                } else {
+                    Span::styled(
+                        "[S] ",
+                        Style::default()
+                            .fg(Colors::MUTED)
+                            .add_modifier(Modifier::DIM),
+                    )
+                },
+                if skips_remaining > 0 {
+                    Span::styled(
+                        format!("Skip challenge ({})", skips_remaining),
+                        Style::default().fg(Colors::TEXT),
+                    )
+                } else {
+                    Span::styled(
+                        "No skips remaining",
+                        Style::default()
+                            .fg(Colors::MUTED)
+                            .add_modifier(Modifier::DIM),
+                    )
+                },
+            ]),
+            Line::from(vec![
+                Span::styled(
+                    "[Q] ",
+                    Style::default()
+                        .fg(Colors::ERROR)
+                        .add_modifier(Modifier::BOLD),
+                ),
+                Span::styled("Quit (fail)", Style::default().fg(Colors::TEXT)),
+            ]),
+            Line::from(vec![
+                Span::styled(
+                    "[ESC] ",
+                    Style::default()
+                        .fg(Colors::ACTION_KEY)
+                        .add_modifier(Modifier::BOLD),
+                ),
+                Span::styled("Back to game", Style::default().fg(Colors::TEXT)),
+            ]),
+            Line::from(""),
+        ];
+
+        let dialog = Paragraph::new(dialog_lines)
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .title("Game Options")
+                    .title_style(
+                        Style::default()
+                            .fg(Colors::ACTION_KEY)
+                            .add_modifier(Modifier::BOLD),
+                    )
+                    .border_style(Style::default().fg(Colors::BORDER)),
+            )
+            .alignment(Alignment::Center);
+
+        frame.render_widget(dialog, dialog_area);
+    }
+}
