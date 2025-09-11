@@ -1,4 +1,9 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
+use crate::game::session_manager::{SessionConfig, SessionManager};
+use crate::game::stage_repository::StageRepository;
+use crate::game::DifficultyLevel;
+use crate::game::GameData;
+use crate::scoring::tracker::{SessionTracker, TotalTracker};
 use crate::ui::Colors;
 use crate::Result;
 use ratatui::style::Color;
@@ -47,8 +52,44 @@ impl Step for FinalizingStep {
         "Finalizing...".to_string()
     }
 
-    fn execute(&self, _context: &mut ExecutionContext) -> Result<StepResult> {
-        // Finalization steps - no-op for now
+    fn execute(&self, context: &mut ExecutionContext) -> Result<StepResult> {
+        let git_repository = context
+            .git_repository
+            .clone()
+            .or_else(GameData::get_git_repository);
+
+        // Verify challenges are available in GameData
+        let challenge_count = GameData::with_challenges(|c| c.len()).unwrap_or(0);
+
+        if challenge_count == 0 {
+            return Err(crate::GitTypeError::ExtractionFailed(
+                "No challenges available for finalization".to_string(),
+            ));
+        }
+
+        log::info!("Finalizing with {} challenges", challenge_count);
+
+        // Initialize StageRepository (no longer requires challenges ownership)
+        StageRepository::initialize_global(git_repository.clone())?;
+
+        // Initialize SessionManager
+        SessionManager::reset_global_session()?;
+        let session_config = SessionConfig {
+            max_stages: 3,
+            session_timeout: None,
+            difficulty: DifficultyLevel::Normal,
+            max_skips: 3,
+        };
+        SessionManager::initialize_session(Some(session_config))?;
+        SessionManager::set_git_repository(git_repository)?;
+        SessionManager::start_global_session()?;
+
+        // Initialize global trackers for Ctrl+C handler
+        SessionTracker::initialize_global_instance(SessionTracker::new());
+        TotalTracker::initialize_global_instance(TotalTracker::new());
+
+        log::info!("StageRepository, SessionManager, and trackers initialized successfully");
+
         Ok(StepResult::Skipped)
     }
 }

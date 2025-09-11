@@ -1,19 +1,24 @@
-use crate::game::screen_manager::{Screen, ScreenTransition, UpdateStrategy};
-use crate::game::screens::{InfoAction, InfoDialog};
-use crate::game::stage_builder::DifficultyLevel;
+use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
+use crate::game::stage_repository::DifficultyLevel;
+use crate::game::views::title::{DifficultySelectionView, StaticElementsView};
+use crate::game::ScreenType;
 use crate::models::GitRepository;
-use crate::ui::Colors;
 use crate::Result;
 use crossterm::{
-    cursor::{Hide, MoveTo},
-    event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
-    execute,
-    style::{Attribute, Color, Print, ResetColor, SetAttribute, SetForegroundColor},
-    terminal::{self, ClearType},
+    event::{KeyCode, KeyEvent, KeyModifiers},
+    terminal::{self},
 };
-use std::io::{stdout, Stdout, Write};
+use std::io::Stdout;
 
-#[derive(Clone)]
+const DIFFICULTIES: [(&str, DifficultyLevel); 5] = [
+    ("Easy", DifficultyLevel::Easy),
+    ("Normal", DifficultyLevel::Normal),
+    ("Hard", DifficultyLevel::Hard),
+    ("Wild", DifficultyLevel::Wild),
+    ("Zen", DifficultyLevel::Zen),
+];
+
+#[derive(Clone, Debug)]
 pub enum TitleAction {
     Start(DifficultyLevel),
     History,
@@ -25,9 +30,8 @@ pub struct TitleScreen {
     selected_difficulty: usize,
     challenge_counts: [usize; 5],
     git_repository: Option<GitRepository>,
-    should_exit: bool,
     action_result: Option<TitleAction>,
-    difficulties: [(String, DifficultyLevel); 5],
+    needs_render: bool,
 }
 
 impl Default for TitleScreen {
@@ -39,18 +43,11 @@ impl Default for TitleScreen {
 impl TitleScreen {
     pub fn new() -> Self {
         Self {
-            selected_difficulty: 1, // Start with Normal
+            selected_difficulty: 1,
             challenge_counts: [0, 0, 0, 0, 0],
             git_repository: None,
-            should_exit: false,
             action_result: None,
-            difficulties: [
-                ("Easy".to_string(), DifficultyLevel::Easy),
-                ("Normal".to_string(), DifficultyLevel::Normal),
-                ("Hard".to_string(), DifficultyLevel::Hard),
-                ("Wild".to_string(), DifficultyLevel::Wild),
-                ("Zen".to_string(), DifficultyLevel::Zen),
-            ],
+            needs_render: true,
         }
     }
 
@@ -64,468 +61,101 @@ impl TitleScreen {
         self
     }
 
-    pub fn get_action_result(&self) -> Option<TitleAction> {
-        self.action_result.clone()
-    }
-}
-
-impl TitleScreen {
-    pub fn show() -> Result<TitleAction> {
-        // Use default challenge counts when none provided
-        let default_counts = [0, 0, 0, 0, 0];
-        Self::show_with_challenge_counts(&default_counts)
+    pub fn get_action_result(&self) -> Option<&TitleAction> {
+        self.action_result.as_ref()
     }
 
-    pub fn show_with_challenge_counts(challenge_counts: &[usize; 5]) -> Result<TitleAction> {
-        Self::show_with_challenge_counts_and_git_repository(challenge_counts, None)
+    pub fn get_selected_difficulty(&self) -> DifficultyLevel {
+        DIFFICULTIES[self.selected_difficulty].1
     }
 
-    pub fn show_with_challenge_counts_and_git_repository(
-        challenge_counts: &[usize; 5],
-        git_repository: Option<&GitRepository>,
-    ) -> Result<TitleAction> {
-        let mut selected_difficulty = 1; // Start with Normal (index 1)
-        let difficulties = [
-            ("Easy", DifficultyLevel::Easy),
-            ("Normal", DifficultyLevel::Normal),
-            ("Hard", DifficultyLevel::Hard),
-            ("Wild", DifficultyLevel::Wild),
-            ("Zen", DifficultyLevel::Zen),
-        ];
-
-        let mut stdout = stdout();
-        execute!(stdout, terminal::Clear(ClearType::All))?;
-
-        let (terminal_width, terminal_height) = terminal::size()?;
-        let center_row = terminal_height / 2;
-        let center_col = terminal_width / 2;
-
-        // Draw static elements once
-        Self::draw_static_elements(&mut stdout, center_row, center_col, git_repository)?;
-
-        let mut last_difficulty = selected_difficulty;
-        // Draw initial difficulty selection
-        Self::draw_difficulty_selection(
-            &mut stdout,
-            center_row,
-            center_col,
-            &difficulties,
-            selected_difficulty,
-            challenge_counts,
-        )?;
-        stdout.flush()?;
-
-        loop {
-            // Only redraw difficulty selection if it changed
-            if selected_difficulty != last_difficulty {
-                Self::draw_difficulty_selection(
-                    &mut stdout,
-                    center_row,
-                    center_col,
-                    &difficulties,
-                    selected_difficulty,
-                    challenge_counts,
-                )?;
-                last_difficulty = selected_difficulty;
-                stdout.flush()?;
-            }
-
-            // Wait for user input
-            if let Ok(true) = event::poll(std::time::Duration::from_millis(50)) {
-                if let Ok(Event::Key(key_event)) = event::read() {
-                    match key_event.code {
-                        KeyCode::Char(' ') => {
-                            return Ok(TitleAction::Start(
-                                difficulties[selected_difficulty].1.clone(),
-                            ));
-                        }
-                        KeyCode::Left | KeyCode::Char('h') => {
-                            selected_difficulty = if selected_difficulty == 0 {
-                                difficulties.len() - 1
-                            } else {
-                                selected_difficulty - 1
-                            };
-                        }
-                        KeyCode::Right | KeyCode::Char('l') => {
-                            selected_difficulty = (selected_difficulty + 1) % difficulties.len();
-                        }
-                        KeyCode::Esc => return Ok(TitleAction::Quit),
-                        KeyCode::Char('c')
-                            if key_event.modifiers.contains(KeyModifiers::CONTROL) =>
-                        {
-                            return Ok(TitleAction::Quit);
-                        }
-                        KeyCode::Char('i') | KeyCode::Char('?') => {
-                            Self::handle_info_dialog()?;
-                            // Redraw the entire screen after closing the dialog
-                            execute!(stdout, terminal::Clear(ClearType::All))?;
-                            Self::draw_static_elements(
-                                &mut stdout,
-                                center_row,
-                                center_col,
-                                git_repository,
-                            )?;
-                            last_difficulty = selected_difficulty + 1; // Force redraw of difficulty selection
-                        }
-                        KeyCode::Char('r') | KeyCode::Char('R') => {
-                            return Ok(TitleAction::History);
-                        }
-                        KeyCode::Char('a') | KeyCode::Char('A') => {
-                            return Ok(TitleAction::Analytics);
-                        }
-                        _ => {}
-                    }
-                }
-            }
-        }
+    pub fn set_challenge_counts(&mut self, counts: [usize; 5]) {
+        self.challenge_counts = counts;
     }
 
-    fn draw_static_elements(
-        stdout: &mut std::io::Stdout,
-        center_row: u16,
-        center_col: u16,
-        git_repository: Option<&GitRepository>,
-    ) -> Result<()> {
-        execute!(stdout, Hide)?;
-        // ASCII logo lines from oh-my-logo "GitType" purple
-        let logo_lines = [
-            "\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m_\x1b[39m\x1b[38;5;104m_\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m_\x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m",
-            "\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m/\x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m_\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m(\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;74m)\x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m|\x1b[39m\x1b[38;5;74m|\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;32m_\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m_\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m_\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m \x1b[39m",
-            "\x1b[38;5;104m \x1b[39m\x1b[38;5;104m|\x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m|\x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m|\x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;74m|\x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m_\x1b[39m\x1b[38;5;74m_\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m|\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m'\x1b[39m\x1b[38;5;32m_\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m\\\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m/\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m\\\x1b[39m",
-            "\x1b[38;5;104m \x1b[39m\x1b[38;5;104m|\x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m|\x1b[39m\x1b[38;5;104m_\x1b[39m\x1b[38;5;68m|\x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;68m|\x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;74m|\x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m|\x1b[39m\x1b[38;5;74m_\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m|\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m|\x1b[39m\x1b[38;5;32m_\x1b[39m\x1b[38;5;33m)\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m|\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m/\x1b[39m",
-            "\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m\\\x1b[39m\x1b[38;5;104m_\x1b[39m\x1b[38;5;104m_\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m|\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;74m|\x1b[39m\x1b[38;5;74m\\\x1b[39m\x1b[38;5;74m_\x1b[39m\x1b[38;5;74m_\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m\\\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m,\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m|\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m.\x1b[39m\x1b[38;5;32m_\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m/\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m\\\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m|\x1b[39m",
-            "\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;32m/\x1b[39m\x1b[38;5;32m|\x1b[39m\x1b[38;5;32m_\x1b[39m\x1b[38;5;32m|\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m",
-        ];
-
-        // Display ASCII logo
-        // GitType logo width is approximately 47 visible characters
-        let logo_width = 47u16;
-        let logo_start_col = center_col.saturating_sub(logo_width / 2) + 5;
-        let logo_start_row = center_row.saturating_sub(8);
-
-        for (i, line) in logo_lines.iter().enumerate() {
-            execute!(stdout, MoveTo(logo_start_col, logo_start_row + i as u16))?;
-            execute!(stdout, Print(line))?;
-        }
-
-        // Display subtitle
-        let subtitle = "Code Typing Challenge";
-        let subtitle_col = center_col.saturating_sub(subtitle.len() as u16 / 2);
-        execute!(stdout, MoveTo(subtitle_col, center_row - 1))?;
-        execute!(stdout, SetForegroundColor(Color::Grey))?;
-        execute!(stdout, Print(subtitle))?;
-        execute!(stdout, ResetColor)?;
-
-        // Display instructions in organized 3-tier structure
-        let instructions_start_row = center_row + 6;
-
-        // Tier 1: Change Difficulty (Difficulty selection controls)
-        let change_display_width = 26u16; // "[←→/HL] Change Difficulty"
-        let change_col = center_col.saturating_sub(change_display_width / 2) + 2;
-        execute!(stdout, MoveTo(change_col, instructions_start_row))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::BORDER))
-        )?;
-        execute!(stdout, Print("[←→/HL]"))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
-        )?;
-        execute!(stdout, Print(" Change Difficulty"))?;
-        execute!(stdout, ResetColor)?;
-
-        // Tier 2: Secondary actions (history analytics info)
-        let secondary_display_width = 38u16; // "[R] history  [A] analytics  [I/?] info"
-        let secondary_col = center_col.saturating_sub(secondary_display_width / 2) + 2;
-        execute!(stdout, MoveTo(secondary_col, instructions_start_row + 1))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::INFO))
-        )?;
-        execute!(stdout, Print("[R]"))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
-        )?;
-        execute!(stdout, Print(" History  "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::INFO))
-        )?;
-        execute!(stdout, Print("[A]"))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
-        )?;
-        execute!(stdout, Print(" Analytics  "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::INFO))
-        )?;
-        execute!(stdout, Print("[I/?]"))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
-        )?;
-        execute!(stdout, Print(" Info"))?;
-        execute!(stdout, ResetColor)?;
-
-        // Tier 3: Primary actions (Start Quit)
-        let primary_display_width = 22u16; // "[SPACE] Start  [ESC] Quit"
-        let primary_col = center_col.saturating_sub(primary_display_width / 2) + 2;
-        execute!(stdout, MoveTo(primary_col, instructions_start_row + 2))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS))
-        )?;
-        execute!(stdout, Print("[SPACE]"))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
-        )?;
-        execute!(stdout, Print(" Start  "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::ERROR))
-        )?;
-        execute!(stdout, Print("[ESC]"))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
-        )?;
-        execute!(stdout, Print(" Quit"))?;
-        execute!(stdout, ResetColor)?;
-
-        // Display git info at bottom
-        Self::draw_git_repository(stdout, git_repository)?;
-
-        Ok(())
-    }
-
-    fn draw_difficulty_selection(
-        stdout: &mut std::io::Stdout,
-        center_row: u16,
-        center_col: u16,
-        difficulties: &[(&str, DifficultyLevel); 5],
-        selected_difficulty: usize,
-        challenge_counts: &[usize; 5],
-    ) -> Result<()> {
-        let start_row = center_row + 1;
-        let (name, difficulty_level) = &difficulties[selected_difficulty];
-        let count = challenge_counts[selected_difficulty];
-
-        // Clear previous difficulty display (multiple lines)
-        for i in 0..4 {
-            execute!(stdout, MoveTo(0, start_row + i))?;
-            execute!(stdout, Print(" ".repeat(120)))?;
-        }
-
-        // Line 1: Difficulty selection
-        let difficulty_text = format!("Difficulty: ← {} →", name);
-        let difficulty_col = center_col.saturating_sub(difficulty_text.chars().count() as u16 / 2);
-
-        execute!(stdout, MoveTo(difficulty_col, start_row))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
-        )?;
-        execute!(stdout, Print("Difficulty: "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY))
-        )?;
-        execute!(stdout, Print("← "))?;
-        execute!(
-            stdout,
-            SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
-        )?;
-        execute!(stdout, Print(name))?;
-        execute!(
-            stdout,
-            ResetColor,
-            SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY))
-        )?;
-        execute!(stdout, Print(" →"))?;
-        execute!(stdout, ResetColor)?;
-
-        // Line 2: Challenge count
-        let count_text = if count > 0 {
-            format!("{} challenges available", count)
-        } else {
-            "Challenge count will be displayed after loading".to_string()
-        };
-        let count_col = center_col.saturating_sub(count_text.chars().count() as u16 / 2);
-
-        execute!(stdout, MoveTo(count_col, start_row + 1))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::INFO)),
-            SetAttribute(Attribute::Dim)
-        )?;
-        execute!(stdout, Print(count_text))?;
-        execute!(stdout, ResetColor)?;
-
-        // Line 3 & 4: Description lines
-        let descriptions = [difficulty_level.description(), difficulty_level.subtitle()];
-        for (i, description) in descriptions.iter().enumerate() {
-            let desc_col = center_col.saturating_sub(description.chars().count() as u16 / 2);
-            execute!(stdout, MoveTo(desc_col, start_row + 2 + i as u16))?;
-            execute!(
-                stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::TEXT)),
-                SetAttribute(Attribute::Dim)
-            )?;
-            execute!(stdout, Print(description))?;
-            execute!(stdout, ResetColor)?;
-        }
-
-        Ok(())
-    }
-
-    fn draw_git_repository(
-        stdout: &mut std::io::Stdout,
-        git_repository: Option<&GitRepository>,
-    ) -> Result<()> {
-        if let Some(info) = git_repository {
-            let (terminal_width, terminal_height) = terminal::size()?;
-            let bottom_row = terminal_height - 1;
-
-            // Build git info string
-            let mut parts = vec![format!("📁 {}/{}", info.user_name, info.repository_name)];
-
-            if let Some(ref branch) = info.branch {
-                parts.push(format!("🌿 {}", branch));
-            }
-
-            if let Some(ref commit) = info.commit_hash {
-                parts.push(format!("📝 {}", &commit[..8]));
-            }
-
-            let status_symbol = if info.is_dirty { "⚠️" } else { "✓" };
-            parts.push(status_symbol.to_string());
-
-            let git_text = parts.join(" • ");
-
-            // Calculate approximate display width considering emoji width
-            // Each emoji takes about 2 characters worth of width
-            let emoji_count = git_text.chars().filter(|c| *c as u32 > 127).count();
-            let approximate_width = git_text.chars().count() + emoji_count;
-
-            // Center the text using approximate width
-            let git_col = terminal_width.saturating_sub(approximate_width as u16) / 2;
-
-            execute!(stdout, MoveTo(git_col, bottom_row))?;
-            execute!(stdout, SetForegroundColor(Color::DarkGrey))?;
-            execute!(stdout, Print(&git_text))?;
-            execute!(stdout, ResetColor)?;
-        }
-        Ok(())
-    }
-
-    fn handle_info_dialog() -> Result<()> {
-        match InfoDialog::show()? {
-            InfoAction::OpenGithub => {
-                InfoDialog::open_github()?;
-            }
-            InfoAction::OpenX => {
-                InfoDialog::open_x()?;
-            }
-            InfoAction::Close => {
-                // Do nothing, just close the dialog
-            }
-        }
-        Ok(())
+    pub fn set_git_repository(&mut self, repo: Option<GitRepository>) {
+        self.git_repository = repo;
     }
 }
 
 impl Screen for TitleScreen {
     fn init(&mut self) -> Result<()> {
-        self.should_exit = false;
         self.action_result = None;
+        self.needs_render = true;
         Ok(())
     }
 
     fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<ScreenTransition> {
         match key_event.code {
             KeyCode::Char(' ') => {
-                self.action_result = Some(TitleAction::Start(
-                    self.difficulties[self.selected_difficulty].1.clone(),
-                ));
-                self.should_exit = true;
-                Ok(ScreenTransition::None)
+                self.action_result =
+                    Some(TitleAction::Start(DIFFICULTIES[self.selected_difficulty].1));
+                Ok(ScreenTransition::Replace(ScreenType::Typing))
             }
             KeyCode::Left | KeyCode::Char('h') => {
                 self.selected_difficulty = if self.selected_difficulty == 0 {
-                    self.difficulties.len() - 1
+                    DIFFICULTIES.len() - 1
                 } else {
                     self.selected_difficulty - 1
                 };
+                self.needs_render = true;
                 Ok(ScreenTransition::None)
             }
             KeyCode::Right | KeyCode::Char('l') => {
-                self.selected_difficulty = (self.selected_difficulty + 1) % self.difficulties.len();
+                self.selected_difficulty = (self.selected_difficulty + 1) % DIFFICULTIES.len();
+                self.needs_render = true;
                 Ok(ScreenTransition::None)
             }
             KeyCode::Esc => {
                 self.action_result = Some(TitleAction::Quit);
-                self.should_exit = true;
                 Ok(ScreenTransition::Exit)
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
                 self.action_result = Some(TitleAction::Quit);
-                self.should_exit = true;
                 Ok(ScreenTransition::Exit)
             }
             KeyCode::Char('i') | KeyCode::Char('?') => {
-                let _ = Self::handle_info_dialog();
-                Ok(ScreenTransition::None)
+                Ok(ScreenTransition::Push(ScreenType::InfoDialog))
             }
             KeyCode::Char('r') | KeyCode::Char('R') => {
                 self.action_result = Some(TitleAction::History);
-                self.should_exit = true;
-                Ok(ScreenTransition::None)
+                Ok(ScreenTransition::Replace(ScreenType::History))
             }
             KeyCode::Char('a') | KeyCode::Char('A') => {
                 self.action_result = Some(TitleAction::Analytics);
-                self.should_exit = true;
-                Ok(ScreenTransition::None)
+                Ok(ScreenTransition::Replace(ScreenType::Analytics))
             }
             _ => Ok(ScreenTransition::None),
         }
     }
 
-    fn render_crossterm(&self, stdout: &mut Stdout) -> Result<()> {
-        execute!(stdout, terminal::Clear(ClearType::All))?;
-        
+    fn render_crossterm_with_data(
+        &mut self,
+        stdout: &mut Stdout,
+        _session_result: Option<&crate::models::SessionResult>,
+        _total_result: Option<&crate::scoring::TotalResult>,
+    ) -> Result<()> {
         let (terminal_width, terminal_height) = terminal::size()?;
         let center_row = terminal_height / 2;
         let center_col = terminal_width / 2;
 
-        Self::draw_static_elements(stdout, center_row, center_col, self.git_repository.as_ref())?;
-        
-        let difficulties_array: [(&str, DifficultyLevel); 5] = [
-            (self.difficulties[0].0.as_str(), self.difficulties[0].1.clone()),
-            (self.difficulties[1].0.as_str(), self.difficulties[1].1.clone()),
-            (self.difficulties[2].0.as_str(), self.difficulties[2].1.clone()),
-            (self.difficulties[3].0.as_str(), self.difficulties[3].1.clone()),
-            (self.difficulties[4].0.as_str(), self.difficulties[4].1.clone()),
-        ];
-        Self::draw_difficulty_selection(
+        // Get git repository from global GameData or use local one as fallback
+        let binding = crate::game::game_data::GameData::get_git_repository();
+        let git_repo_to_use = binding.as_ref().or(self.git_repository.as_ref());
+        let difficulties_array = &DIFFICULTIES;
+
+        StaticElementsView::draw(stdout, center_row, center_col, git_repo_to_use)?;
+
+        DifficultySelectionView::draw(
             stdout,
             center_row,
             center_col,
-            &difficulties_array,
+            difficulties_array,
             self.selected_difficulty,
             &self.challenge_counts,
         )?;
-        
-        Ok(())
-    }
 
-    fn should_exit(&self) -> bool {
-        self.should_exit
+        Ok(())
     }
 
     fn get_update_strategy(&self) -> UpdateStrategy {
@@ -533,6 +163,18 @@ impl Screen for TitleScreen {
     }
 
     fn update(&mut self) -> Result<bool> {
-        Ok(false)
+        let should_render = self.needs_render;
+        if self.needs_render {
+            self.needs_render = false;
+        }
+        Ok(should_render)
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
     }
 }
