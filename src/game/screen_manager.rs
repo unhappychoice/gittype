@@ -15,18 +15,18 @@
 //! ## Usage Example
 //!
 //! ```rust,no_run
-//! use gittype::game::{ScreenManager, ScreenType, UpdateStrategy};
+//! use gittype::game::{ScreenManager, ScreenType};
 //! use gittype::game::screens::title_screen::TitleScreen;
 //!
-//! fn main() -> gittype::Result<()> {
-//!     let mut screen_manager = ScreenManager::new();
-//!     
+//! fn example() -> gittype::Result<()> {
 //!     let screen = TitleScreen::new();
 //!     
-//!     screen_manager.register_screen(ScreenType::Title, Box::new(screen));
-//!     screen_manager.run()?;
+//!     ScreenManager::with_instance(|manager| {
+//!         let mut manager = manager.borrow_mut();
+//!         manager.register_screen(ScreenType::Title, Box::new(screen));
+//!     });
 //!     
-//!     Ok(())
+//!     ScreenManager::run_global()
 //! }
 //! ```
 
@@ -376,6 +376,7 @@ impl ScreenManager {
                 _ => {}
             }
 
+            log::info!("Initializing screen: {:?}", self.current_screen_type);
             new_screen.init()?;
         }
 
@@ -613,10 +614,6 @@ impl ScreenManager {
         // Initialize current screen and force initial render
         Self::with_instance(|screen_manager| -> Result<()> {
             let mut manager = screen_manager.borrow_mut();
-            let current_screen_type = manager.current_screen_type.clone();
-            if let Some(current_screen) = manager.screens.get_mut(&current_screen_type) {
-                current_screen.init()?;
-            }
             manager.render_current_screen()
         })?;
 
@@ -639,36 +636,6 @@ impl ScreenManager {
                 break;
             }
         }
-        Ok(())
-    }
-
-    pub fn run(&mut self) -> Result<()> {
-        // Initialize terminal for standalone usage (not used by run_global)
-        self.initialize_terminal()?;
-
-        if let Some(current_screen) = self.screens.get_mut(&self.current_screen_type) {
-            current_screen.init()?;
-        }
-
-        // Force initial render to display the screen
-        self.render_current_screen()?;
-
-        // Main game loop - continue until exit is requested
-        loop {
-            self.update_and_render()?;
-            self.handle_input()?;
-
-            // Exit the main loop when exit is requested
-            if self.exit_requested {
-                break;
-            }
-        }
-
-        if let Some(current_screen) = self.screens.get_mut(&self.current_screen_type) {
-            current_screen.cleanup()?;
-        }
-
-        self.cleanup_terminal()?;
         Ok(())
     }
 

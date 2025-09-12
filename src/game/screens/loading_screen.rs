@@ -345,19 +345,13 @@ impl Screen for LoadingScreen {
         if let Some((repo_spec, repo_path, extraction_options)) =
             GameData::get_processing_parameters()
         {
-            log::info!(
-                "LoadingScreen::init() called with repo_spec={:?}, repo_path={:?}",
-                repo_spec,
-                repo_path
-            );
-            log::info!("Starting background processing");
             self.start_background_processing(
                 repo_spec.as_deref(),
                 repo_path.as_ref(),
                 extraction_options,
             )?;
         } else {
-            log::warn!("No processing parameters available in GameData - background processing not started");
+            log::error!("No processing parameters found in GameData");
         }
 
         self.show_initial()

@@ -118,6 +118,8 @@ impl RepositoryManager {
         repo_info: &RepoInfo,
         loading_screen: Option<&crate::game::screens::loading_screen::LoadingScreen>,
     ) -> Result<PathBuf> {
+        log::info!("Cloning repository: {}/{}", repo_info.owner, repo_info.name);
+
         let local_path = Self::get_local_repo_path(repo_info)?;
 
         if local_path.exists() {
