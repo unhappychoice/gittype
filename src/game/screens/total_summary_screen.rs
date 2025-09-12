@@ -111,8 +111,7 @@ impl Screen for TotalSummaryScreen {
         _total_result: Option<&crate::scoring::TotalResult>,
     ) -> Result<()> {
         if !self.displayed {
-            let total_result = Self::get_total_result_from_tracker()
-                .unwrap_or_default();
+            let total_result = Self::get_total_result_from_tracker().unwrap_or_default();
 
             let _ = TotalSummaryScreen::show(&total_result);
             self.displayed = true;

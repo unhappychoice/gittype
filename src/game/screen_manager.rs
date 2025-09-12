@@ -15,18 +15,18 @@
 //! ## Usage Example
 //!
 //! ```rust,no_run
-//! use gittype::game::{ScreenManager, ScreenType, UpdateStrategy};
+//! use gittype::game::{ScreenManager, ScreenType};
 //! use gittype::game::screens::title_screen::TitleScreen;
 //!
-//! fn main() -> gittype::Result<()> {
-//!     let mut screen_manager = ScreenManager::new();
-//!     
+//! fn example() -> gittype::Result<()> {
 //!     let screen = TitleScreen::new();
 //!     
-//!     screen_manager.register_screen(ScreenType::Title, Box::new(screen));
-//!     screen_manager.run()?;
+//!     ScreenManager::with_instance(|manager| {
+//!         let mut manager = manager.borrow_mut();
+//!         manager.register_screen(ScreenType::Title, Box::new(screen));
+//!     });
 //!     
-//!     Ok(())
+//!     ScreenManager::run_global()
 //! }
 //! ```
 
