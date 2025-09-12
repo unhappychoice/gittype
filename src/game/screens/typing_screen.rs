@@ -20,6 +20,7 @@ pub struct TypingScreen {
     code_context: CodeContext,
     waiting_to_start: bool,
     dialog_shown: bool,
+    typing_view: TypingView,
 }
 
 pub enum SessionState {
@@ -46,6 +47,7 @@ impl TypingScreen {
             code_context: CodeContext::empty(),
             waiting_to_start: true,
             dialog_shown: false,
+            typing_view: TypingView::new(),
         })
     }
 
@@ -360,7 +362,7 @@ impl Screen for TypingScreen {
         let chars: Vec<char> = self.typing_core.text_to_display().chars().collect();
         let skips_remaining = SessionManager::get_global_skips_remaining().unwrap_or(0);
 
-        TypingView::render(
+        self.typing_view.render(
             frame,
             self.challenge.as_ref(),
             self.git_repository.as_ref(),

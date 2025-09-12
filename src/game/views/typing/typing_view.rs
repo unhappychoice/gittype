@@ -11,11 +11,25 @@ use ratatui::{
     Frame,
 };
 
-pub struct TypingView;
+pub struct TypingView {
+    content_view: TypingContentView,
+}
 
+impl Default for TypingView {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl TypingView {
+    pub fn new() -> Self {
+        Self {
+            content_view: TypingContentView::new(),
+        }
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub fn render(
+        &mut self,
         frame: &mut Frame,
         challenge: Option<&Challenge>,
         git_repository: Option<&GitRepository>,
@@ -48,7 +62,7 @@ impl TypingView {
 
         // Content
         let show_code = !(waiting_to_start || countdown_active);
-        TypingContentView::render(
+        self.content_view.render(
             frame,
             chunks[1],
             show_code,
