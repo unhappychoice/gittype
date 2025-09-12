@@ -1,5 +1,5 @@
 use super::git_repository::GitRepository;
-use crate::game::stage_builder::DifficultyLevel;
+use crate::game::DifficultyLevel;
 
 #[derive(Debug, Clone)]
 pub struct Challenge {

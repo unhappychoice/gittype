@@ -1,33 +1,25 @@
 use super::super::{
     context_loader::{self, CodeContext},
-    stage_renderer::StageRenderer,
     typing_core::{InputResult, ProcessingOptions, TypingCore},
 };
-use crate::models::Challenge;
-use crate::models::StageResult;
-use crate::scoring::{StageInput, StageTracker};
+use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
+use crate::game::{game_data::GameData, views::TypingView};
+use crate::game::{ScreenType, SessionManager};
+use crate::models::{Challenge, Countdown};
+use crate::scoring::StageInput;
 use crate::{models::GitRepository, Result};
-use crossterm::{
-    event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers},
-    terminal,
-};
+use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
+use std::io::Stdout;
+use std::time::Duration;
 
 pub struct TypingScreen {
-    challenge: Option<Challenge>,
+    countdown: Countdown,
+    git_repository: Option<GitRepository>,
     typing_core: TypingCore,
-    start_time: std::time::Instant,
-    renderer: StageRenderer,
-    stage_tracker: StageTracker,
-    skips_remaining: usize,
-    dialog_shown: bool,
-    repo_info: Option<GitRepository>,
+    challenge: Option<Challenge>,
     code_context: CodeContext,
     waiting_to_start: bool,
-    countdown_active: bool,
-    countdown_number: Option<u8>,
-    countdown_start_time: Option<std::time::Instant>,
-    countdown_pause_time: Option<std::time::Instant>,
-    countdown_total_paused: std::time::Duration,
+    dialog_shown: bool,
 }
 
 pub enum SessionState {
@@ -42,162 +34,48 @@ pub enum SessionState {
 }
 
 impl TypingScreen {
-    pub fn new(challenge_text: String, repo_info: Option<GitRepository>) -> Result<Self> {
-        let comment_ranges = vec![];
-        let options = ProcessingOptions::default();
-        Self::create_typing_screen(None, &challenge_text, &comment_ranges, options, repo_info)
-    }
-
-    pub fn new_with_challenge(
-        challenge: &Challenge,
-        repo_info: Option<GitRepository>,
-    ) -> Result<Self> {
-        let options = ProcessingOptions {
-            preserve_empty_lines: true,
-            ..Default::default()
-        };
-        Self::create_typing_screen(
-            Some(challenge.clone()),
-            &challenge.code_content,
-            &challenge.comment_ranges,
-            options,
-            repo_info,
-        )
-    }
-
-    fn create_typing_screen(
-        challenge: Option<Challenge>,
-        code_content: &str,
-        comment_ranges: &[(usize, usize)],
-        options: ProcessingOptions,
-        repo_info: Option<GitRepository>,
-    ) -> Result<Self> {
-        let typing_core = TypingCore::new(code_content, comment_ranges, options);
-        let renderer = StageRenderer::new(typing_core.text_to_display())?;
-        let challenge_path = challenge
-            .as_ref()
-            .and_then(|c| c.source_file_path.clone())
-            .unwrap_or_default();
-        let stage_tracker =
-            StageTracker::new_with_path(typing_core.text_to_type().to_string(), challenge_path);
-        // Start event will be recorded when typing actually begins
-
-        // Load context lines if challenge has source file info
-        let code_context = if let Some(ref challenge) = challenge {
-            context_loader::load_context_for_challenge(challenge, 4)?
-        } else {
-            CodeContext::empty()
-        };
-
+    pub fn new() -> Result<Self> {
         Ok(Self {
-            challenge,
-            typing_core,
-            start_time: std::time::Instant::now(), // This will be reset when typing actually starts
-            renderer,
-            stage_tracker,
-            skips_remaining: 3,
-            dialog_shown: false,
-            repo_info,
-            code_context,
+            countdown: Countdown::new(),
+            git_repository: GameData::instance()
+                .lock()
+                .ok()
+                .and_then(|game_data| game_data.git_repository.clone()),
+            typing_core: TypingCore::default(),
+            challenge: None,
+            code_context: CodeContext::empty(),
             waiting_to_start: true,
-            countdown_active: false,
-            countdown_number: None,
-            countdown_start_time: None,
-            countdown_pause_time: None,
-            countdown_total_paused: std::time::Duration::ZERO,
+            dialog_shown: false,
         })
     }
 
-    pub fn start_session(&mut self) -> Result<StageResult> {
-        terminal::enable_raw_mode().map_err(|e| {
-            crate::error::GitTypeError::TerminalError(format!("Failed to enable raw mode: {}", e))
-        })?;
-
-        let result = self.run_session_loop()?;
-
-        self.renderer.cleanup()?;
-        crate::game::stage_manager::cleanup_terminal();
-
-        Ok(result)
-    }
-
-    pub fn show(&mut self) -> Result<StageResult> {
-        self.start_time = std::time::Instant::now();
-        self.run_session_loop()
-    }
-
-    pub fn show_with_state(&mut self) -> Result<(StageResult, SessionState)> {
-        self.start_time = std::time::Instant::now();
-
-        self.update_display()?;
-
-        let final_state = self.event_loop()?;
-        self.stage_tracker.record(StageInput::Finish);
-
-        Ok((self.calculate_result_with_state(&final_state), final_state))
-    }
-
-    fn run_session_loop(&mut self) -> Result<StageResult> {
-        self.update_display()?;
-        self.event_loop()?;
-        self.stage_tracker.record(StageInput::Finish);
-        Ok(self.calculate_result())
-    }
-
-    fn event_loop(&mut self) -> Result<SessionState> {
-        let mut last_update = std::time::Instant::now();
-
-        loop {
-            let poll_timeout = if self.countdown_active {
-                // More responsive during countdown for precise timing
-                std::time::Duration::from_millis(16) // ~60fps equivalent
-            } else {
-                // Normal responsiveness during typing
-                std::time::Duration::from_millis(33) // ~30fps equivalent
+    /// Load the current challenge from global SessionManager
+    pub fn load_current_challenge(&mut self) -> Result<bool> {
+        if let Some(challenge) = SessionManager::get_global_current_challenge()? {
+            let comment_ranges = &challenge.comment_ranges;
+            let options = ProcessingOptions {
+                preserve_empty_lines: true,
+                ..Default::default()
             };
 
-            let should_update_display = if event::poll(poll_timeout)? {
-                if let Event::Key(key_event) = event::read()? {
-                    match self.handle_key(key_event)? {
-                        SessionState::Continue
-                        | SessionState::ShowDialog
-                        | SessionState::WaitingToStart
-                        | SessionState::Countdown => true,
-                        state @ (SessionState::Complete
-                        | SessionState::Exit
-                        | SessionState::Skip
-                        | SessionState::Failed) => {
-                            return Ok(state);
-                        }
-                    }
-                } else {
-                    false
-                }
-            } else {
-                // Update display periodically for timer and countdown
-                let update_interval = if self.countdown_active {
-                    // Smooth countdown updates
-                    std::time::Duration::from_millis(50)
-                } else {
-                    // Normal typing updates - more frequent for better time display accuracy
-                    std::time::Duration::from_millis(100)
-                };
-                last_update.elapsed() >= update_interval
-            };
+            self.countdown = Countdown::new();
+            self.typing_core = TypingCore::new(&challenge.code_content, comment_ranges, options);
+            self.challenge = Some(challenge.clone());
+            self.code_context = context_loader::load_context_for_challenge(&challenge, 4)?;
+            // Update git_repository from GameData
+            self.git_repository = GameData::get_git_repository();
+            self.waiting_to_start = true;
+            self.dialog_shown = false;
 
-            // Handle countdown timing
-            if self.countdown_active {
-                let countdown_finished = self.update_countdown();
-                if countdown_finished {
-                    // Countdown finished, normal typing can now begin
-                    // No need to do anything special, just continue the loop
-                }
-            }
+            // Update stage tracker in SessionManager
+            let _ = SessionManager::init_global_stage_tracker(
+                self.typing_core.text_to_type().to_string(),
+                challenge.source_file_path.clone(),
+            );
 
-            if should_update_display {
-                self.update_display()?;
-                last_update = std::time::Instant::now();
-            }
+            Ok(true)
+        } else {
+            Ok(false)
         }
     }
 
@@ -206,14 +84,52 @@ impl TypingScreen {
             return Ok(SessionState::Continue);
         }
 
-        // Handle waiting to start state
-        if self.waiting_to_start {
-            return self.handle_waiting_key(key_event);
-        }
-
-        // During countdown, allow ESC for dialog and Ctrl+C for exit
-        if self.countdown_active {
-            match key_event.code {
+        match (self.waiting_to_start, self.countdown.is_active()) {
+            (true, _) => match key_event.code {
+                KeyCode::Char(' ') => {
+                    self.waiting_to_start = false;
+                    self.countdown.start_countdown();
+                    Ok(SessionState::Countdown)
+                }
+                KeyCode::Esc => {
+                    if self.dialog_shown {
+                        self.close_dialog();
+                        Ok(SessionState::WaitingToStart)
+                    } else {
+                        self.open_dialog();
+                        Ok(SessionState::ShowDialog)
+                    }
+                }
+                KeyCode::Char('s' | 'S') => {
+                    if self.dialog_shown {
+                        let result = self.handle_skip_action()?;
+                        match result {
+                            SessionState::Skip => Ok(SessionState::Skip),
+                            _ => Ok(SessionState::WaitingToStart),
+                        }
+                    } else {
+                        Ok(SessionState::WaitingToStart)
+                    }
+                }
+                KeyCode::Char('q' | 'Q') => {
+                    if self.dialog_shown {
+                        self.close_dialog();
+                        Ok(SessionState::Failed)
+                    } else {
+                        Ok(SessionState::WaitingToStart)
+                    }
+                }
+                KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
+                    Ok(SessionState::Exit)
+                }
+                _ => {
+                    if self.dialog_shown {
+                        self.close_dialog();
+                    }
+                    Ok(SessionState::WaitingToStart)
+                }
+            },
+            (false, true) => match key_event.code {
                 KeyCode::Esc => {
                     if self.dialog_shown {
                         self.close_dialog();
@@ -225,12 +141,10 @@ impl TypingScreen {
                 }
                 KeyCode::Char('s' | 'S') => {
                     if self.dialog_shown {
-                        self.close_dialog();
-                        if self.skips_remaining > 0 {
-                            self.skips_remaining -= 1;
-                            Ok(SessionState::Skip)
-                        } else {
-                            Ok(SessionState::Countdown)
+                        let result = self.handle_skip_action()?;
+                        match result {
+                            SessionState::Skip => Ok(SessionState::Skip),
+                            _ => Ok(SessionState::Countdown),
                         }
                     } else {
                         Ok(SessionState::Countdown)
@@ -253,196 +167,91 @@ impl TypingScreen {
                     }
                     Ok(SessionState::Countdown)
                 }
-            }
-        } else {
-            match key_event.code {
-                KeyCode::Esc => self.handle_escape_key(),
-                KeyCode::Char('s' | 'S') => self.handle_s_key(key_event),
-                KeyCode::Char('q' | 'Q') => self.handle_q_key(key_event),
+            },
+            (false, false) => match key_event.code {
+                KeyCode::Esc => {
+                    if self.dialog_shown {
+                        self.close_dialog();
+                        Ok(SessionState::Continue)
+                    } else {
+                        self.open_dialog();
+                        Ok(SessionState::ShowDialog)
+                    }
+                }
+                KeyCode::Char('s' | 'S') => {
+                    if self.dialog_shown {
+                        self.handle_skip_action()
+                    } else {
+                        let ch = if key_event.code == KeyCode::Char('S') {
+                            'S'
+                        } else {
+                            's'
+                        };
+                        self.handle_character_input(ch)
+                    }
+                }
+                KeyCode::Char('q' | 'Q') => {
+                    if self.dialog_shown {
+                        self.close_dialog();
+                        Ok(SessionState::Failed)
+                    } else {
+                        let ch = if key_event.code == KeyCode::Char('Q') {
+                            'Q'
+                        } else {
+                            'q'
+                        };
+                        self.handle_character_input(ch)
+                    }
+                }
                 KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
                     Ok(SessionState::Exit)
                 }
-                KeyCode::Char(ch) => self.handle_char_key(ch),
-                KeyCode::Tab => self.handle_tab_key(),
-                KeyCode::Enter => self.handle_enter_key(),
+                KeyCode::Char(ch) => {
+                    if self.dialog_shown {
+                        self.close_dialog();
+                        Ok(SessionState::Continue)
+                    } else {
+                        self.handle_character_input(ch)
+                    }
+                }
+                KeyCode::Tab => {
+                    if self.dialog_shown {
+                        self.close_dialog();
+                        Ok(SessionState::Continue)
+                    } else {
+                        self.handle_tab_key()
+                    }
+                }
+                KeyCode::Enter => {
+                    if self.dialog_shown {
+                        self.close_dialog();
+                        Ok(SessionState::Continue)
+                    } else {
+                        self.handle_enter_key()
+                    }
+                }
                 _ => {
                     if self.dialog_shown {
                         self.close_dialog();
                     }
                     Ok(SessionState::Continue)
                 }
-            }
+            },
         }
     }
 
-    fn handle_waiting_key(&mut self, key_event: KeyEvent) -> Result<SessionState> {
-        match key_event.code {
-            KeyCode::Char(' ') => {
-                self.waiting_to_start = false;
-                self.countdown_active = true;
-                self.countdown_number = Some(3);
-                self.countdown_start_time = Some(std::time::Instant::now());
-                self.countdown_pause_time = None;
-                self.countdown_total_paused = std::time::Duration::ZERO;
-                Ok(SessionState::Countdown)
-            }
-            KeyCode::Esc => {
-                if self.dialog_shown {
-                    self.close_dialog();
-                    Ok(SessionState::WaitingToStart)
-                } else {
-                    self.open_dialog();
-                    Ok(SessionState::ShowDialog)
-                }
-            }
-            KeyCode::Char('s' | 'S') => {
-                if self.dialog_shown {
-                    self.close_dialog();
-                    if self.skips_remaining > 0 {
-                        self.skips_remaining -= 1;
-                        Ok(SessionState::Skip)
-                    } else {
-                        Ok(SessionState::WaitingToStart)
-                    }
-                } else {
-                    Ok(SessionState::WaitingToStart)
-                }
-            }
-            KeyCode::Char('q' | 'Q') => {
-                if self.dialog_shown {
-                    self.close_dialog();
-                    Ok(SessionState::Failed)
-                } else {
-                    Ok(SessionState::WaitingToStart)
-                }
-            }
-            KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                Ok(SessionState::Exit)
-            }
-            _ => {
-                if self.dialog_shown {
-                    self.close_dialog();
-                }
-                Ok(SessionState::WaitingToStart)
-            }
-        }
-    }
-
-    fn update_countdown(&mut self) -> bool {
-        // Don't update countdown if dialog is shown (paused)
-        if self.dialog_shown {
-            return false;
-        }
-
-        if let (Some(start_time), Some(current_num)) =
-            (self.countdown_start_time, self.countdown_number)
-        {
-            // Calculate elapsed time excluding paused duration
-            let total_elapsed = start_time.elapsed();
-            let current_paused = if let Some(pause_time) = self.countdown_pause_time {
-                self.countdown_total_paused + pause_time.elapsed()
-            } else {
-                self.countdown_total_paused
-            };
-            let elapsed = total_elapsed.saturating_sub(current_paused);
-
-            let required_duration = if current_num == 0 {
-                // GO! shows for 400ms (shorter duration)
-                std::time::Duration::from_millis(400)
-            } else {
-                // Numbers 3, 2, 1 show for 600ms each
-                std::time::Duration::from_millis(600)
-            };
-
-            if elapsed >= required_duration {
-                if current_num > 1 {
-                    // Move to next countdown number
-                    self.countdown_number = Some(current_num - 1);
-                    self.countdown_start_time = Some(std::time::Instant::now());
-                    self.countdown_pause_time = None;
-                    self.countdown_total_paused = std::time::Duration::ZERO;
-                } else if current_num == 1 {
-                    // Show "GO!" for a brief moment
-                    self.countdown_number = Some(0); // 0 represents "GO!"
-                    self.countdown_start_time = Some(std::time::Instant::now());
-                    self.countdown_pause_time = None;
-                    self.countdown_total_paused = std::time::Duration::ZERO;
-                } else {
-                    // Countdown finished, start typing
-                    self.countdown_active = false;
-                    self.countdown_number = None;
-                    self.countdown_start_time = None;
-                    self.countdown_pause_time = None;
-                    self.countdown_total_paused = std::time::Duration::ZERO;
-
-                    // Use the same timestamp for both to ensure accuracy
-                    let now = std::time::Instant::now();
-                    self.start_time = now;
-
-                    // Manually set the stage_tracker start time to match exactly
-                    self.stage_tracker.set_start_time(now);
-                    self.stage_tracker.record(StageInput::Start); // This will not overwrite the start_time we just set
-                    return true; // Countdown finished
-                }
-            }
-        }
-        false // Countdown still active
-    }
-
-    fn handle_escape_key(&mut self) -> Result<SessionState> {
-        if self.dialog_shown {
-            self.close_dialog();
+    fn handle_skip_action(&mut self) -> Result<SessionState> {
+        self.close_dialog();
+        let skips_remaining = SessionManager::get_global_skips_remaining().unwrap_or(0);
+        if skips_remaining > 0 {
+            Ok(SessionState::Skip)
+        } else {
             Ok(SessionState::Continue)
-        } else {
-            self.open_dialog();
-            Ok(SessionState::ShowDialog)
-        }
-    }
-
-    fn handle_s_key(&mut self, key_event: KeyEvent) -> Result<SessionState> {
-        if self.dialog_shown {
-            self.close_dialog();
-            if self.skips_remaining > 0 {
-                self.skips_remaining -= 1;
-                Ok(SessionState::Skip)
-            } else {
-                Ok(SessionState::Continue)
-            }
-        } else {
-            let ch = if key_event.code == KeyCode::Char('S') {
-                'S'
-            } else {
-                's'
-            };
-            self.handle_character_input(ch)
-        }
-    }
-
-    fn handle_q_key(&mut self, key_event: KeyEvent) -> Result<SessionState> {
-        if self.dialog_shown {
-            self.close_dialog();
-            Ok(SessionState::Failed)
-        } else {
-            let ch = if key_event.code == KeyCode::Char('Q') {
-                'Q'
-            } else {
-                'q'
-            };
-            self.handle_character_input(ch)
-        }
-    }
-
-    fn handle_char_key(&mut self, ch: char) -> Result<SessionState> {
-        if self.dialog_shown {
-            self.close_dialog();
-            Ok(SessionState::Continue)
-        } else {
-            self.handle_character_input(ch)
         }
     }
 
     fn handle_tab_key(&mut self) -> Result<SessionState> {
-        self.stage_tracker.record(StageInput::Keystroke {
+        let _ = SessionManager::record_global_stage_input(StageInput::Keystroke {
             ch: '\t',
             position: self.typing_core.current_position_to_type(),
         });
@@ -451,7 +260,7 @@ impl TypingScreen {
     }
 
     fn handle_enter_key(&mut self) -> Result<SessionState> {
-        self.stage_tracker.record(StageInput::Keystroke {
+        let _ = SessionManager::record_global_stage_input(StageInput::Keystroke {
             ch: '\n',
             position: self.typing_core.current_position_to_type(),
         });
@@ -460,7 +269,7 @@ impl TypingScreen {
     }
 
     fn handle_character_input(&mut self, ch: char) -> Result<SessionState> {
-        self.stage_tracker.record(StageInput::Keystroke {
+        let _ = SessionManager::record_global_stage_input(StageInput::Keystroke {
             ch,
             position: self.typing_core.current_position_to_type(),
         });
@@ -479,66 +288,123 @@ impl TypingScreen {
 
     fn open_dialog(&mut self) {
         self.dialog_shown = true;
-        self.stage_tracker.record(StageInput::Pause);
+        let _ = SessionManager::record_global_stage_input(StageInput::Pause);
 
-        // Pause countdown timer if active
-        if self.countdown_active && self.countdown_pause_time.is_none() {
-            self.countdown_pause_time = Some(std::time::Instant::now());
-        }
+        self.countdown.pause();
     }
 
     fn close_dialog(&mut self) {
         self.dialog_shown = false;
-        self.stage_tracker.record(StageInput::Resume);
+        let _ = SessionManager::record_global_stage_input(StageInput::Resume);
 
-        // Resume countdown timer if paused
-        if let Some(pause_time) = self.countdown_pause_time.take() {
-            self.countdown_total_paused += pause_time.elapsed();
+        self.countdown.resume();
+    }
+
+    fn handle_countdown_logic(&mut self) {
+        if !self.countdown.is_active() {
+            return;
+        }
+
+        if self.dialog_shown {
+            return;
+        }
+
+        // Update countdown and check if typing should start
+        if let Some(typing_start_time) = self.countdown.update_state() {
+            // Set the start time in SessionManager and record start
+            let _ = SessionManager::set_global_stage_start_time(typing_start_time);
+            // Record Start event when countdown finishes
+            let _ = SessionManager::record_global_stage_input(StageInput::Start);
+        }
+    }
+}
+
+impl Screen for TypingScreen {
+    fn init(&mut self) -> Result<()> {
+        Ok(())
+    }
+
+    fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<ScreenTransition> {
+        self.handle_countdown_logic();
+
+        let session_state = self.handle_key(key_event)?;
+
+        match session_state {
+            SessionState::Complete => {
+                let _ = SessionManager::finalize_global_stage()?;
+                Ok(ScreenTransition::Replace(ScreenType::StageSummary))
+            }
+            SessionState::Exit => Ok(ScreenTransition::PopTo(ScreenType::Title)),
+            SessionState::Skip => {
+                let _ = SessionManager::skip_global_stage()?;
+                Ok(ScreenTransition::Replace(ScreenType::StageSummary))
+            }
+            SessionState::Failed => Ok(ScreenTransition::Replace(ScreenType::SessionFailure)),
+            SessionState::ShowDialog => Ok(ScreenTransition::None),
+            _ => Ok(ScreenTransition::None),
         }
     }
 
-    fn update_display(&mut self) -> Result<()> {
-        let display_comment_ranges = self.typing_core.display_comment_ranges();
-        self.renderer.display_challenge_with_info(
-            self.typing_core.text_to_display(),
-            self.typing_core.current_position_to_display(),
-            self.typing_core.current_line_to_display(),
-            self.typing_core.mistakes(),
+    fn render_crossterm_with_data(
+        &mut self,
+        _stdout: &mut Stdout,
+        _session_result: Option<&crate::models::SessionResult>,
+        _total_result: Option<&crate::scoring::TotalResult>,
+    ) -> Result<()> {
+        Ok(())
+    }
+
+    fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()> {
+        self.handle_countdown_logic();
+
+        let chars: Vec<char> = self.typing_core.text_to_display().chars().collect();
+        let skips_remaining = SessionManager::get_global_skips_remaining().unwrap_or(0);
+
+        TypingView::render(
+            frame,
             self.challenge.as_ref(),
-            self.typing_core.current_mistake_position(),
-            self.skips_remaining,
-            self.dialog_shown,
-            &self.stage_tracker,
-            &self.repo_info,
-            &display_comment_ranges,
+            self.git_repository.as_ref(),
+            &self.typing_core,
+            &chars,
             &self.code_context,
             self.waiting_to_start,
-            self.countdown_number,
-        )
+            self.countdown.get_current_count(),
+            skips_remaining,
+            self.dialog_shown,
+        );
+
+        Ok(())
     }
 
-    fn calculate_result(&self) -> StageResult {
-        crate::scoring::StageCalculator::calculate(&self.stage_tracker)
+    fn get_update_strategy(&self) -> UpdateStrategy {
+        if self.countdown.is_active() {
+            UpdateStrategy::Hybrid {
+                interval: Duration::from_millis(50),
+                input_priority: true,
+            }
+        } else if self.waiting_to_start {
+            UpdateStrategy::InputOnly
+        } else {
+            UpdateStrategy::Hybrid {
+                interval: Duration::from_millis(16), // ~60 FPS for smooth typing display
+                input_priority: true,
+            }
+        }
     }
 
-    pub fn calculate_result_with_state(&self, _state: &SessionState) -> StageResult {
-        crate::scoring::StageCalculator::calculate(&self.stage_tracker)
+    fn update(&mut self) -> Result<bool> {
+        Ok(true)
     }
 
-    // Public getters for external use
-    pub fn get_stage_tracker(&self) -> &StageTracker {
-        &self.stage_tracker
+    fn cleanup(&mut self) -> Result<()> {
+        Ok(())
     }
 
-    pub fn get_skips_remaining(&self) -> usize {
-        self.skips_remaining
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
     }
 
-    pub fn set_skips_remaining(&mut self, skips: usize) {
-        self.skips_remaining = skips;
-    }
-
-    pub fn was_skipped(&self) -> bool {
-        !self.typing_core.is_completed()
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
     }
 }

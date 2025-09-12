@@ -1,12 +1,23 @@
 use crate::cli::args::Cli;
 use crate::extractor::ExtractionOptions;
-use crate::game::screens::loading_screen::{LoadingScreen, ProcessingResult};
-use crate::game::StageManager;
+use crate::game::models::ScreenType;
+use crate::game::screen_manager::ScreenManager;
 use crate::{GitTypeError, Result};
 use std::path::PathBuf;
 
 pub fn run_game_session(cli: Cli) -> Result<()> {
     log::info!("Starting GitType game session");
+
+    // Check for updates before starting the game session
+    tokio::task::block_in_place(|| {
+        tokio::runtime::Handle::current().block_on(async {
+            if let Ok(Some(entry)) = crate::version::VersionChecker::check_for_updates().await {
+                if entry.update_available {
+                    let _ = crate::version::VersionChecker::display_update_notification(&entry);
+                }
+            }
+        })
+    });
 
     // Session repository will be initialized in DatabaseInitStep during loading screen
 
@@ -43,50 +54,30 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
         Some(&default_repo_path)
     };
 
-    let session_result = LoadingScreen::new()
-        .and_then(|mut loading_screen| {
-            log::info!(
-                "Processing repository with repo_spec: {:?}, repo_path: {:?}",
-                repo_spec,
-                initial_repo_path
-            );
-            let result = loading_screen.process_repository(repo_spec, initial_repo_path, &options);
-            let _ = loading_screen.cleanup();
-            result
-        })
-        .and_then(|result| {
-            log::info!("Found {} challenges", result.challenges.len());
-            if let Some(ref git_repo) = result.git_repository {
-                log::info!(
-                    "Repository: {}/{} (branch: {:?}, commit: {:?}, dirty: {})",
-                    git_repo.user_name,
-                    git_repo.repository_name,
-                    git_repo.branch,
-                    git_repo.commit_hash,
-                    git_repo.is_dirty
-                );
-            } else {
-                log::info!("No git repository context available");
-            }
+    // Initialize GameData and set processing parameters
+    use crate::game::GameData;
+    GameData::initialize()?;
+    GameData::set_processing_parameters(repo_spec, initial_repo_path, &options)?;
 
-            if result.challenges.is_empty() {
-                log::warn!("No supported files found in repository");
-                Err(GitTypeError::NoSupportedFiles)
-            } else {
-                Ok(result)
-            }
-        })
-        .and_then(
-            |ProcessingResult {
-                 challenges,
-                 git_repository,
-             }| {
-                log::info!("Starting game session with {} challenges", challenges.len());
-                let mut stage_manager = StageManager::new(challenges);
-                stage_manager.set_git_repository(git_repository);
-                stage_manager.run_session()
-            },
+    // Initialize ScreenManager with all screens
+    ScreenManager::with_instance(|screen_manager| -> Result<()> {
+        let mut manager = screen_manager.borrow_mut();
+
+        log::info!(
+            "Initializing all screens with GameData parameters: repo_spec={:?}, repo_path={:?}",
+            repo_spec,
+            initial_repo_path
         );
+        manager.initialize_all_screens()?;
+
+        manager.initialize_terminal()?;
+        manager.set_current_screen(ScreenType::Loading)?;
+        Ok(())
+    })?;
+
+    // Run ScreenManager normally - LoadingScreen will handle processing internally
+    // StageRepository and SessionManager will be initialized automatically when data is ready
+    let session_result = ScreenManager::run_global();
 
     match session_result {
         Ok(_) => {

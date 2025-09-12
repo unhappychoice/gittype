@@ -1,4 +1,4 @@
-use crate::extractor::{ExtractionOptions, RepositoryLoader};
+use crate::extractor::{ExtractionOptions, RepositoryExtractor};
 use crate::models::Challenge;
 use crate::Result;
 use ratatui::style::Color;
@@ -20,7 +20,7 @@ pub use generating_step::GeneratingStep;
 pub use scanning_step::ScanningStep;
 pub use step_manager::StepManager;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum StepType {
     DatabaseInit,
     Cloning,
@@ -37,14 +37,19 @@ pub struct ExecutionContext<'a> {
     pub repo_path: Option<&'a PathBuf>,
     pub extraction_options: Option<&'a ExtractionOptions>,
     pub loading_screen: Option<&'a crate::game::screens::loading_screen::LoadingScreen>,
-    pub repository_loader: Option<&'a mut RepositoryLoader>,
+    pub repository_loader: Option<&'a mut RepositoryExtractor>,
     pub current_repo_path: Option<PathBuf>,
+    pub git_repository: Option<crate::models::GitRepository>,
+    pub scanned_files: Option<Vec<PathBuf>>, // Temporary storage for step results
+    pub chunks: Option<Vec<crate::extractor::models::CodeChunk>>, // Chunks from ExtractingStep
 }
 
 #[derive(Debug)]
 pub enum StepResult {
     RepoPath(PathBuf),
     Challenges(Vec<Challenge>),
+    ScannedFiles(Vec<PathBuf>),
+    Chunks(Vec<crate::extractor::models::CodeChunk>),
     Skipped,
 }
 

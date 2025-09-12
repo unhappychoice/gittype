@@ -1,4 +1,10 @@
 use crate::models::SessionResult;
+use once_cell::sync::Lazy;
+use std::sync::{Arc, Mutex};
+
+// Global total tracker for game-wide statistics
+pub static GLOBAL_TOTAL_TRACKER: Lazy<Arc<Mutex<Option<TotalTracker>>>> =
+    Lazy::new(|| Arc::new(Mutex::new(None)));
 
 /// Total level raw data tracking
 #[derive(Clone)]
@@ -20,6 +26,12 @@ impl TotalTracker {
     pub fn get_data(&self) -> TotalTrackerData {
         TotalTrackerData {
             session_results: self.session_results.clone(),
+        }
+    }
+
+    pub fn initialize_global_instance(tracker: TotalTracker) {
+        if let Ok(mut global) = GLOBAL_TOTAL_TRACKER.lock() {
+            *global = Some(tracker);
         }
     }
 }

@@ -71,6 +71,7 @@ log4rs = "1.4"
 tempfile = "3.22"
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 reqwest = { version = "0.12", features = ["json"] }
+atty = "0.2"
 
 [dev-dependencies]
 paste = "1.0"

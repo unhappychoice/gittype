@@ -1,5 +1,11 @@
 use crate::models::StageResult;
+use once_cell::sync::Lazy;
+use std::sync::{Arc, Mutex};
 use std::time::Instant;
+
+// Global session tracker for Ctrl+C handler
+pub static GLOBAL_SESSION_TRACKER: Lazy<Arc<Mutex<Option<SessionTracker>>>> =
+    Lazy::new(|| Arc::new(Mutex::new(None)));
 
 /// Session level raw data tracking
 #[derive(Clone)]
@@ -24,6 +30,12 @@ impl SessionTracker {
         SessionTrackerData {
             session_start_time: self.session_start_time,
             stage_results: self.stage_results.clone(),
+        }
+    }
+
+    pub fn initialize_global_instance(tracker: SessionTracker) {
+        if let Ok(mut global) = GLOBAL_SESSION_TRACKER.lock() {
+            *global = Some(tracker);
         }
     }
 }

@@ -180,7 +180,12 @@ impl RepositoryManager {
                             let screen: &crate::game::screens::loading_screen::LoadingScreen =
                                 &*screen_ptr;
                             let current_step = (total_progress * 100.0) as usize;
-                            let _ = screen.update_progress(total_progress, current_step, 100);
+                            screen.set_file_counts(
+                                crate::game::models::loading_steps::StepType::Cloning,
+                                current_step,
+                                100,
+                                None,
+                            );
                         }
                     }
                 }
@@ -201,7 +206,12 @@ impl RepositoryManager {
                     // Map refs progress to 60-80% of total clone progress
                     let refs_progress = 0.6 + (ref_count as f64 * 0.005).min(0.2); // Increment by 0.5% per ref, max 20%
                     let current_step = (refs_progress * 100.0) as usize;
-                    let _ = screen.update_progress(refs_progress, current_step, 100);
+                    screen.set_file_counts(
+                        crate::game::models::loading_steps::StepType::Cloning,
+                        current_step,
+                        100,
+                        None,
+                    );
                 }
             }
             true
@@ -232,7 +242,12 @@ impl RepositoryManager {
                             let screen: &crate::game::screens::loading_screen::LoadingScreen =
                                 &*screen_ptr;
                             let current_step = (total_progress * 100.0) as usize;
-                            let _ = screen.update_progress(total_progress, current_step, 100);
+                            screen.set_file_counts(
+                                crate::game::models::loading_steps::StepType::Cloning,
+                                current_step,
+                                100,
+                                None,
+                            );
                         }
                     }
                 }
@@ -240,11 +255,6 @@ impl RepositoryManager {
         });
 
         builder.with_checkout(checkout_builder);
-
-        // Start cloning with progress display
-        if let Some(screen) = loading_screen {
-            screen.set_step(crate::game::models::loading_steps::StepType::Cloning);
-        }
 
         // Perform the clone operation
         match builder.clone(&clone_url, &local_path) {

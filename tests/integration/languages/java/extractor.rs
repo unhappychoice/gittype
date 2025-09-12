@@ -1,5 +1,5 @@
-use crate::integration::test_extraction_options;
-use gittype::extractor::CodeExtractor;
+use crate::integration::{extract_chunks_for_test, test_extraction_options};
+use gittype::extractor::CodeChunkExtractor;
 use gittype::models::ChunkType;
 use std::fs;
 use tempfile::TempDir;
@@ -31,10 +31,10 @@ fn test_java_class_method_extraction() {
 }"#;
     fs::write(&file_path, java_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     // Remove debug output
     assert!(chunks.len() >= 4); // 1 class + 3+ methods (constructor, printMessage, main, calculateLength)
@@ -117,10 +117,10 @@ public class Circle implements Drawable, Resizable {
 }"#;
     fs::write(&file_path, java_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     // Find interface chunks
     let interface_chunks: Vec<_> = chunks
@@ -188,10 +188,10 @@ public class ColorTest {
 }"##;
     fs::write(&file_path, java_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     // Find enum chunk
     let enum_chunks: Vec<_> = chunks
@@ -253,10 +253,10 @@ fn test_java_field_extraction() {
 }"#;
     fs::write(&file_path, java_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     // Find class chunk
     let class_chunks: Vec<_> = chunks

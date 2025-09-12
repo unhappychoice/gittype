@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct GitRepository {
@@ -8,4 +9,5 @@ pub struct GitRepository {
     pub branch: Option<String>,
     pub commit_hash: Option<String>,
     pub is_dirty: bool,
+    pub root_path: Option<PathBuf>,
 }

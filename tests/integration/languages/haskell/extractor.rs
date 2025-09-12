@@ -1,5 +1,5 @@
-use crate::integration::test_extraction_options;
-use gittype::extractor::{ChallengeConverter, CodeExtractor};
+use crate::integration::{extract_chunks_for_test, test_extraction_options};
+use gittype::extractor::{ChallengeConverter, CodeChunkExtractor};
 use gittype::models::{ChunkType, CodeChunk};
 use std::fs;
 use std::path::PathBuf;
@@ -21,10 +21,10 @@ quicksort (x:xs) = quicksort [y | y <- xs, y < x] ++ [x] ++ quicksort [y | y <- 
 "#;
     fs::write(&file_path, haskell_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     let function_chunks: Vec<_> = chunks
         .iter()
@@ -58,10 +58,10 @@ newtype UserId = UserId Int
 "#;
     fs::write(&file_path, haskell_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     // Should find data type related chunks
     assert!(!chunks.is_empty(), "Should extract chunks from data types");
@@ -94,10 +94,10 @@ instance Eq Int where
 "#;
     fs::write(&file_path, haskell_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     assert!(
         !chunks.is_empty(),
@@ -133,10 +133,10 @@ head' (x:_) = x
 "#;
     fs::write(&file_path, haskell_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     assert!(!chunks.is_empty(), "Should extract chunks from module");
 
@@ -178,10 +178,10 @@ instance Eq Int where
 "#;
     fs::write(&file_path, haskell_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     assert!(
         !chunks.is_empty(),

@@ -1,19 +1,14 @@
-use crate::ui::colors::Colors;
+use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
+use crate::game::views::version_check::VersionCheckView;
 use crate::Result;
 use crossterm::{
     event::{self, Event, KeyCode},
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
-use ratatui::{
-    backend::CrosstermBackend,
-    layout::{Constraint, Direction, Layout, Rect},
-    style::{Modifier, Style},
-    text::{Line, Span},
-    widgets::{Paragraph, Wrap},
-    Frame, Terminal,
-};
+use ratatui::{backend::CrosstermBackend, Terminal};
 use std::io::stdout;
+use std::io::Stdout;
 
 pub enum VersionCheckResult {
     Continue,
@@ -23,7 +18,7 @@ pub enum VersionCheckResult {
 pub struct VersionCheckScreen;
 
 impl VersionCheckScreen {
-    pub fn show(current_version: &str, latest_version: &str) -> Result<VersionCheckResult> {
+    pub fn show_legacy(current_version: &str, latest_version: &str) -> Result<VersionCheckResult> {
         enable_raw_mode()?;
         let mut stdout = stdout();
         stdout.execute(EnterAlternateScreen)?;
@@ -39,12 +34,12 @@ impl VersionCheckScreen {
     }
 
     fn run_notification_loop(
-        terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
+        terminal: &mut Terminal<CrosstermBackend<Stdout>>,
         current_version: &str,
         latest_version: &str,
     ) -> Result<VersionCheckResult> {
         loop {
-            terminal.draw(|f| Self::draw_ui(f, current_version, latest_version))?;
+            terminal.draw(|f| VersionCheckView::draw_ui(f, current_version, latest_version))?;
 
             if let Ok(true) = event::poll(std::time::Duration::from_millis(50)) {
                 if let Ok(Event::Key(key_event)) = event::read() {
@@ -63,127 +58,59 @@ impl VersionCheckScreen {
             }
         }
     }
+}
 
-    fn draw_ui(f: &mut Frame, current_version: &str, latest_version: &str) {
-        let size = f.area();
+pub struct ScreenState {}
 
-        // Create main layout for content and controls
-        let main_chunks = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([
-                Constraint::Min(1),    // Content area
-                Constraint::Length(2), // Control instructions area
-            ])
-            .split(size);
+impl Default for ScreenState {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
-        // Create centered content area (no border)
-        let content_area = Self::centered_rect(90, 60, main_chunks[0]);
+impl ScreenState {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
 
-        // Create layout for content
-        let chunks = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([
-                Constraint::Length(3), // Title
-                Constraint::Length(2), // Current version
-                Constraint::Length(2), // Latest version
-                Constraint::Min(1),    // Install instruction
-            ])
-            .split(content_area);
-
-        // Title
-        let title_text = vec![
-            Line::from(""),
-            Line::from(vec![Span::styled(
-                "🎮 GitType Update Available",
-                Style::default()
-                    .fg(Colors::TITLE)
-                    .add_modifier(Modifier::BOLD),
-            )]),
-        ];
-        let title_para = Paragraph::new(title_text);
-        f.render_widget(title_para, chunks[0]);
-
-        // Current version
-        let current_text = vec![Line::from(vec![
-            Span::styled("Current version: ", Style::default().fg(Colors::TEXT)),
-            Span::styled(
-                format!("v{}", current_version),
-                Style::default()
-                    .fg(Colors::TEXT)
-                    .add_modifier(Modifier::BOLD),
-            ),
-        ])];
-        let current_para = Paragraph::new(current_text);
-        f.render_widget(current_para, chunks[1]);
-
-        // Latest version
-        let latest_text = vec![Line::from(vec![
-            Span::styled("Latest version:  ", Style::default().fg(Colors::TEXT)),
-            Span::styled(
-                format!("v{}", latest_version),
-                Style::default()
-                    .fg(Colors::SUCCESS)
-                    .add_modifier(Modifier::BOLD),
-            ),
-        ])];
-        let latest_para = Paragraph::new(latest_text);
-        f.render_widget(latest_para, chunks[2]);
-
-        // Install instruction with word wrap for narrow terminals
-        let install_text = vec![
-            Line::from(""),
-            Line::from("To update, run:"),
-            Line::from(""),
-            Line::from("curl -sSL https://raw.githubusercontent.com/unhappychoice/gittype/main/install.sh | bash"),
-        ];
-        let install_para = Paragraph::new(install_text)
-            .style(Style::default().fg(Colors::SECONDARY))
-            .wrap(Wrap { trim: true });
-        f.render_widget(install_para, chunks[3]);
-
-        // Control instructions with same margins as content
-        let control_area = Self::centered_rect(90, 100, main_chunks[1]);
-        let control_text = vec![
-            Line::from(""),
-            Line::from(vec![
-                Span::styled(
-                    "[SPACE] ",
-                    Style::default()
-                        .fg(Colors::SUCCESS)
-                        .add_modifier(Modifier::BOLD),
-                ),
-                Span::styled("Continue", Style::default().fg(Colors::TEXT)),
-                Span::styled("  ", Style::default()),
-                Span::styled(
-                    "[ESC] ",
-                    Style::default()
-                        .fg(Colors::ERROR)
-                        .add_modifier(Modifier::BOLD),
-                ),
-                Span::styled("Exit", Style::default().fg(Colors::TEXT)),
-            ]),
-        ];
-        let control_para = Paragraph::new(control_text);
-        f.render_widget(control_para, control_area);
+impl Screen for ScreenState {
+    fn handle_key_event(&mut self, key_event: event::KeyEvent) -> Result<ScreenTransition> {
+        use crossterm::event::{KeyCode, KeyModifiers};
+        match key_event.code {
+            KeyCode::Esc => Ok(ScreenTransition::Exit),
+            KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
+                Ok(ScreenTransition::Exit)
+            }
+            _ => Ok(ScreenTransition::None),
+        }
     }
 
-    fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
-        let popup_layout = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([
-                Constraint::Percentage((100 - percent_y) / 2),
-                Constraint::Percentage(percent_y),
-                Constraint::Percentage((100 - percent_y) / 2),
-            ])
-            .split(r);
+    fn render_crossterm_with_data(
+        &mut self,
+        _stdout: &mut Stdout,
+        _session_result: Option<&crate::models::SessionResult>,
+        _total_result: Option<&crate::scoring::TotalResult>,
+    ) -> crate::Result<()> {
+        // Version check is now handled by ScreenManager
+        // let current_version = env!("CARGO_PKG_VERSION");
+        // let _ = VersionCheckScreen::show(current_version, "1.1.0");
+        Ok(())
+    }
 
-        Layout::default()
-            .direction(Direction::Horizontal)
-            .constraints([
-                Constraint::Percentage((100 - percent_x) / 2),
-                Constraint::Percentage(percent_x),
-                Constraint::Percentage((100 - percent_x) / 2),
-            ])
-            .split(popup_layout[1])[1]
+    fn get_update_strategy(&self) -> UpdateStrategy {
+        UpdateStrategy::InputOnly
+    }
+
+    fn update(&mut self) -> crate::Result<bool> {
+        Ok(false)
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
     }
 }

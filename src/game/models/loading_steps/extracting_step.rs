@@ -1,5 +1,4 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
-use crate::extractor::CodeExtractor;
 use crate::ui::Colors;
 use crate::Result;
 use ratatui::style::Color;
@@ -55,14 +54,6 @@ impl Step for ExtractingStep {
     }
 
     fn execute(&self, context: &mut ExecutionContext) -> Result<StepResult> {
-        let repo_path = context
-            .current_repo_path
-            .as_ref()
-            .or(context.repo_path)
-            .ok_or_else(|| {
-                crate::GitTypeError::ExtractionFailed("No repository path available".to_string())
-            })?;
-
         let options = context.extraction_options.ok_or_else(|| {
             crate::GitTypeError::ExtractionFailed("No extraction options available".to_string())
         })?;
@@ -71,25 +62,27 @@ impl Step for ExtractingStep {
             crate::GitTypeError::ExtractionFailed("No loading screen available".to_string())
         })?;
 
-        if let Some(loader) = &mut context.repository_loader {
-            let challenges = loader.load_challenges_from_repository_with_progress(
-                repo_path,
-                Some(options.clone()),
-                screen,
-            )?;
+        let loader = context.repository_loader.as_mut().ok_or_else(|| {
+            crate::GitTypeError::ExtractionFailed("No repository loader available".to_string())
+        })?;
 
-            // Set git repository in loading screen if available (for local paths)
-            if let Some(git_repository) = loader.get_git_repository() {
-                let _ = screen.set_git_repository(git_repository);
-            }
+        let scanned_files = context.scanned_files.as_ref().ok_or_else(|| {
+            crate::GitTypeError::ExtractionFailed(
+                "No scanned files available from ScanningStep".to_string(),
+            )
+        })?;
 
-            Ok(StepResult::Challenges(challenges))
-        } else {
-            // Fallback to direct CodeExtractor
-            let mut extractor = CodeExtractor::new()?;
-            let _chunks =
-                extractor.extract_chunks_with_progress(repo_path, options.clone(), screen)?;
-            Ok(StepResult::Challenges(vec![])) // Would need conversion logic
+        // Use pre-scanned files for extraction
+        let chunks = loader.extract_chunks_from_scanned_files_with_progress(
+            scanned_files,
+            options.clone(),
+            screen,
+        )?;
+
+        if chunks.is_empty() {
+            return Err(crate::GitTypeError::NoSupportedFiles);
         }
+
+        Ok(StepResult::Chunks(chunks))
     }
 }

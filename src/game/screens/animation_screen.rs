@@ -1,58 +1,77 @@
-use crate::game::typing_animation::{AnimationPhase, TypingAnimation};
+use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
+use crate::game::views::typing::typing_animation_view::AnimationPhase;
+use crate::game::views::typing::TypingAnimationView;
 use crate::scoring::Rank;
+use crate::ui::Colors;
 use crate::Result;
-use crossterm::event::{self, Event, KeyCode};
+use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::{
-    backend::CrosstermBackend,
     layout::{Alignment, Constraint, Direction, Layout},
     style::Style,
     text::{Line, Span, Text},
     widgets::Paragraph,
-    Frame, Terminal,
+    Frame,
 };
-use std::io;
+use std::io::Stdout;
 
-pub struct AnimationScreen;
+pub struct AnimationScreen {
+    animation: Option<TypingAnimationView>,
+    session_result: Option<crate::models::SessionResult>,
+    animation_initialized: bool,
+}
+
+impl Default for AnimationScreen {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl AnimationScreen {
-    // Helper function to convert crossterm::Color to ratatui::Color
-    fn convert_crossterm_color(color: crossterm::style::Color) -> ratatui::style::Color {
-        match color {
-            crossterm::style::Color::Black => ratatui::style::Color::Black,
-            crossterm::style::Color::DarkGrey => ratatui::style::Color::DarkGray,
-            crossterm::style::Color::Red => ratatui::style::Color::Red,
-            crossterm::style::Color::DarkRed => ratatui::style::Color::DarkGray,
-            crossterm::style::Color::Green => ratatui::style::Color::Green,
-            crossterm::style::Color::DarkGreen => ratatui::style::Color::DarkGray,
-            crossterm::style::Color::Yellow => ratatui::style::Color::Yellow,
-            crossterm::style::Color::DarkYellow => ratatui::style::Color::DarkGray,
-            crossterm::style::Color::Blue => ratatui::style::Color::Blue,
-            crossterm::style::Color::DarkBlue => ratatui::style::Color::DarkGray,
-            crossterm::style::Color::Magenta => ratatui::style::Color::Magenta,
-            crossterm::style::Color::DarkMagenta => ratatui::style::Color::DarkGray,
-            crossterm::style::Color::Cyan => ratatui::style::Color::Cyan,
-            crossterm::style::Color::DarkCyan => ratatui::style::Color::DarkGray,
-            crossterm::style::Color::White => ratatui::style::Color::White,
-            crossterm::style::Color::Grey => ratatui::style::Color::Gray,
-            _ => ratatui::style::Color::White, // Default fallback
+    pub fn new() -> Self {
+        Self {
+            animation: None,
+            session_result: None,
+            animation_initialized: false,
         }
     }
 
-    // Helper function to render typing animation with ratatui
+    /// Pre-inject session result from ScreenManager (avoids RefCell conflicts)
+    pub fn inject_session_result(&mut self, session_result: crate::models::SessionResult) {
+        self.session_result = Some(session_result);
+
+        if let Some(ref session_result) = self.session_result {
+            let best_rank = Rank::for_score(session_result.session_score);
+            let tier = Self::get_tier_from_rank_name(best_rank.name());
+            let mut typing_animation = TypingAnimationView::new(tier, 80, 24);
+            typing_animation.set_rank_messages(best_rank.name());
+            self.animation = Some(typing_animation);
+            self.animation_initialized = true;
+        }
+    }
+
+    /// Check if the animation is complete (for ScreenManager auto-transition)
+    pub fn is_animation_complete(&self) -> bool {
+        if let Some(ref animation) = self.animation {
+            animation.is_complete()
+        } else {
+            false
+        }
+    }
+
     fn render_typing_animation_ratatui(
+        &self,
         frame: &mut Frame,
-        animation: &TypingAnimation,
+        animation: &TypingAnimationView,
         _rank_name: &str,
     ) {
         let area = frame.area();
 
-        // Create vertical layout for centering
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
-                Constraint::Percentage(40), // Top padding
-                Constraint::Min(4),         // Animation area
-                Constraint::Percentage(40), // Bottom padding
+                Constraint::Percentage(40),
+                Constraint::Min(4),
+                Constraint::Percentage(40),
             ])
             .split(area);
 
@@ -62,25 +81,22 @@ impl AnimationScreen {
 
                 for (i, line) in animation.get_hacking_lines().iter().enumerate() {
                     let text = &line.text[..line.typed_length];
-                    let line_color = Self::convert_crossterm_color(line.color);
+                    let line_color = line.color;
 
                     if i == animation.get_current_line()
                         && line.typed_length < line.text.len()
                         && !line.completed
                     {
-                        // Show cursor on current line
                         lines.push(Line::from(vec![
                             Span::styled(text, Style::default().fg(line_color)),
-                            Span::styled("█", Style::default().fg(ratatui::style::Color::White)),
+                            Span::styled("█", Style::default().fg(Colors::TEXT)),
                         ]));
                     } else if !text.is_empty() {
-                        // Regular completed or typing line
                         lines.push(Line::from(Span::styled(
                             text,
                             Style::default().fg(line_color),
                         )));
                     } else {
-                        // Empty placeholder line
                         lines.push(Line::from(""));
                     }
                 }
@@ -89,34 +105,30 @@ impl AnimationScreen {
 
                 frame.render_widget(paragraph, chunks[1]);
 
-                // Render skip hint in bottom right
-                Self::render_skip_hint(frame, area);
+                self.render_skip_hint(frame, area);
             }
             AnimationPhase::Pause => {
-                // Show all completed lines plus dots
                 let mut lines = Vec::new();
 
                 for line in animation.get_hacking_lines().iter() {
-                    let line_color = Self::convert_crossterm_color(line.color);
+                    let line_color = line.color;
                     lines.push(Line::from(Span::styled(
                         &line.text,
                         Style::default().fg(line_color),
                     )));
                 }
 
-                // Add dots line
                 let dots = ".".repeat(animation.get_pause_dots());
                 lines.push(Line::from(Span::styled(
                     dots,
-                    Style::default().fg(ratatui::style::Color::Gray),
+                    Style::default().fg(Colors::SECONDARY),
                 )));
 
                 let paragraph = Paragraph::new(Text::from(lines)).alignment(Alignment::Center);
 
                 frame.render_widget(paragraph, chunks[1]);
 
-                // Render skip hint in bottom right
-                Self::render_skip_hint(frame, area);
+                self.render_skip_hint(frame, area);
             }
             AnimationPhase::Complete => {
                 // Animation is complete, ready to transition to result
@@ -124,13 +136,11 @@ impl AnimationScreen {
         }
     }
 
-    // Helper function to render skip hint in bottom right corner
-    fn render_skip_hint(frame: &mut Frame, area: ratatui::layout::Rect) {
+    fn render_skip_hint(&self, frame: &mut Frame, area: ratatui::layout::Rect) {
         let skip_text = "[S] Skip";
         let skip_width = skip_text.len() as u16;
         let skip_height = 1;
 
-        // Position in bottom right corner with small margin
         let skip_x = area.width.saturating_sub(skip_width + 1);
         let skip_y = area.height.saturating_sub(skip_height + 1);
 
@@ -142,12 +152,11 @@ impl AnimationScreen {
         };
 
         let skip_paragraph =
-            Paragraph::new(skip_text).style(Style::default().fg(ratatui::style::Color::Gray));
+            Paragraph::new(skip_text).style(Style::default().fg(Colors::SECONDARY));
 
         frame.render_widget(skip_paragraph, skip_area);
     }
 
-    // Helper function to get tier from rank name
     fn get_tier_from_rank_name(rank_name: &str) -> crate::models::RankTier {
         Rank::all_ranks()
             .iter()
@@ -155,50 +164,77 @@ impl AnimationScreen {
             .map(|rank| rank.tier().clone())
             .unwrap_or(crate::models::RankTier::Beginner)
     }
+}
 
-    pub fn show_session_animation(session_result: &crate::models::SessionResult) -> Result<()> {
-        // Use the provided SessionResult directly
-
-        // Set up ratatui terminal
-        let backend = CrosstermBackend::new(io::stdout());
-        let mut terminal = Terminal::new(backend)?;
-        terminal.clear()?;
-
-        // Create typing animation for session complete
-        let best_rank = crate::scoring::Rank::for_score(session_result.session_score);
-        let tier = Self::get_tier_from_rank_name(best_rank.name());
-        let mut typing_animation =
-            TypingAnimation::new(tier, terminal.size()?.width, terminal.size()?.height);
-        typing_animation.set_rank_messages(best_rank.name());
-
-        // Show typing reveal animation with ratatui
-        while !typing_animation.is_complete() {
-            let updated = typing_animation.update();
-
-            if updated {
-                let rank_name = best_rank.name();
-                terminal.draw(|frame| {
-                    Self::render_typing_animation_ratatui(frame, &typing_animation, rank_name);
-                })?;
-            }
-
-            // Check for S key to skip animation
-            if event::poll(std::time::Duration::from_millis(50))? {
-                if let Event::Key(key_event) = event::read()? {
-                    match key_event.code {
-                        KeyCode::Char('s') | KeyCode::Char('S') => {
-                            break;
-                        }
-                        _ => {
-                            // Ignore other keys to prevent accidental skipping
-                        }
-                    }
-                }
-            }
-
-            std::thread::sleep(std::time::Duration::from_millis(16)); // ~60fps
+impl Screen for AnimationScreen {
+    fn init(&mut self) -> Result<()> {
+        if self.animation.is_none() {
+            self.animation_initialized = false;
+            self.session_result = None;
         }
 
         Ok(())
+    }
+
+    fn handle_key_event(
+        &mut self,
+        key_event: crossterm::event::KeyEvent,
+    ) -> Result<ScreenTransition> {
+        match key_event.code {
+            KeyCode::Char('s') | KeyCode::Char('S') => Ok(ScreenTransition::Replace(
+                crate::game::models::ScreenType::SessionSummary,
+            )),
+            KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
+                Ok(ScreenTransition::Exit)
+            }
+            _ => Ok(ScreenTransition::None),
+        }
+    }
+
+    fn render_crossterm_with_data(
+        &mut self,
+        _stdout: &mut Stdout,
+        _session_result: Option<&crate::models::SessionResult>,
+        _total_result: Option<&crate::scoring::TotalResult>,
+    ) -> Result<()> {
+        Ok(())
+    }
+
+    fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()> {
+        if let Some(ref animation) = self.animation {
+            if let Some(ref session_result) = self.session_result {
+                let best_rank = Rank::for_score(session_result.session_score);
+                let rank_name = best_rank.name();
+
+                self.render_typing_animation_ratatui(frame, animation, rank_name);
+            }
+        }
+        Ok(())
+    }
+
+    fn get_update_strategy(&self) -> UpdateStrategy {
+        use std::time::Duration;
+        UpdateStrategy::TimeBased(Duration::from_millis(16)) // ~60 FPS for smooth animation
+    }
+
+    fn update(&mut self) -> Result<bool> {
+        if let Some(ref mut animation) = self.animation {
+            let updated = animation.update();
+
+            if animation.is_complete() {
+                return Ok(true);
+            }
+
+            return Ok(updated);
+        }
+        Ok(false)
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
     }
 }

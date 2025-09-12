@@ -1,5 +1,5 @@
-use crate::integration::test_extraction_options;
-use gittype::extractor::CodeExtractor;
+use crate::integration::{extract_chunks_for_test, test_extraction_options};
+use gittype::extractor::CodeChunkExtractor;
 use gittype::models::ChunkType;
 use std::fs;
 use tempfile::TempDir;
@@ -51,10 +51,10 @@ class Dialog extends React.Component<Props> {
 "#;
     fs::write(&file_path, tsx_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     // Should find functions, classes, interface, and JSX components
     assert!(!chunks.is_empty(), "Should find code chunks in TSX file");
@@ -135,10 +135,10 @@ function FormComponent() {
 "#;
     fs::write(&file_path, jsx_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     println!("JSX file chunks found: {}", chunks.len());
     for chunk in &chunks {
@@ -250,10 +250,10 @@ export default UserList;
 "#;
     fs::write(&file_path, mixed_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     assert!(
         !chunks.is_empty(),

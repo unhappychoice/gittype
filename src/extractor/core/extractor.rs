@@ -2,13 +2,37 @@ use crate::extractor::parsers::{get_parser_registry, parse_with_thread_local};
 use crate::models::CodeChunk;
 use crate::{GitTypeError, Result};
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use streaming_iterator::StreamingIterator;
 use tree_sitter::{Node, QueryCursor, Tree};
 
 pub struct CommonExtractor;
 
 impl CommonExtractor {
+    /// Find git repository root starting from the given path
+    fn find_git_repository_root(start_path: &Path) -> Option<PathBuf> {
+        let mut current_path = start_path;
+
+        // If start_path is a file, start from its parent directory
+        if current_path.is_file() {
+            current_path = current_path.parent()?;
+        }
+
+        loop {
+            let git_dir = current_path.join(".git");
+            if git_dir.exists() {
+                return Some(current_path.to_path_buf());
+            }
+
+            // Move to parent directory
+            match current_path.parent() {
+                Some(parent) => current_path = parent,
+                None => break,
+            }
+        }
+
+        None
+    }
     pub fn extract_chunks_from_tree(
         tree: &Tree,
         source_code: &str,
@@ -21,6 +45,18 @@ impl CommonExtractor {
         let file_comment_ranges = Self::extract_comment_ranges(tree, source_code, language)?;
         let query = registry.create_query(language)?;
 
+        // Find git root once for this file
+        let git_root = Self::find_git_repository_root(file_path);
+        let relative_file_path = if let Some(ref git_root) = git_root {
+            if let Ok(relative) = file_path.strip_prefix(git_root) {
+                relative.to_path_buf()
+            } else {
+                file_path.to_path_buf()
+            }
+        } else {
+            file_path.to_path_buf()
+        };
+
         let mut cursor = QueryCursor::new();
         let mut matches = cursor.matches(&query, tree.root_node(), source_code.as_bytes());
 
@@ -32,7 +68,7 @@ impl CommonExtractor {
                 if let Some(chunk) = Self::node_to_chunk(
                     node,
                     source_code,
-                    file_path,
+                    &relative_file_path,
                     language,
                     capture_name,
                     &file_comment_ranges,

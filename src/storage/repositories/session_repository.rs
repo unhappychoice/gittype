@@ -304,6 +304,16 @@ impl SessionRepository {
             Ok(None)
         }
     }
+
+    /// Get session result data for analytics
+    pub fn get_session_result_for_analytics(
+        &self,
+        session_id: i64,
+    ) -> Result<Option<SessionResultData>> {
+        let db = self.db_with_lock()?;
+        let dao = SessionDao::new(&db);
+        dao.get_session_result(session_id)
+    }
 }
 
 #[derive(Debug, Clone)]

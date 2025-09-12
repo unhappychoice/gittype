@@ -1,5 +1,5 @@
-use crate::integration::test_extraction_options;
-use gittype::extractor::CodeExtractor;
+use crate::integration::{extract_chunks_for_test, test_extraction_options};
+use gittype::extractor::CodeChunkExtractor;
 use gittype::models::ChunkType;
 use std::fs;
 use tempfile::TempDir;
@@ -25,10 +25,10 @@ async function fetchUserData(userId) {
 "#;
     fs::write(&file_path, js_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     assert_eq!(chunks.len(), 3);
 
@@ -63,10 +63,10 @@ const processData = async (data) => {
 "#;
     fs::write(&file_path, js_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     assert_eq!(chunks.len(), 3);
 
@@ -133,10 +133,10 @@ class EventEmitter {
 "#;
     fs::write(&file_path, js_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     // Should find 2 classes + their methods
     let class_chunks: Vec<_> = chunks
@@ -189,10 +189,10 @@ export default class UserService {
 "#;
     fs::write(&file_path, js_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     // Should find exported functions and classes
     let function_chunks: Vec<_> = chunks
@@ -250,10 +250,10 @@ const eventHandlers = {
 "#;
     fs::write(&file_path, js_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     // Should find method assignments
     let method_chunks: Vec<_> = chunks
@@ -326,10 +326,10 @@ export default UserManager;
 "#;
     fs::write(&file_path, js_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     // Should find at least the class and functions
     assert!(!chunks.is_empty());

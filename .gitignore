@@ -42,3 +42,4 @@ cobertura.xml
 
 # Claude Code
 .claude/
+.serena/

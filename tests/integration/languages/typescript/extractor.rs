@@ -1,5 +1,5 @@
-use crate::integration::test_extraction_options;
-use gittype::extractor::CodeExtractor;
+use crate::integration::{extract_chunks_for_test, test_extraction_options};
+use gittype::extractor::CodeChunkExtractor;
 use gittype::models::ChunkType;
 use std::fs;
 use tempfile::TempDir;
@@ -22,10 +22,10 @@ interface Admin extends User {
 "#;
     fs::write(&file_path, ts_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     assert_eq!(chunks.len(), 2);
 
@@ -55,10 +55,10 @@ type ApiResponse<T> = {
 "#;
     fs::write(&file_path, ts_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     assert_eq!(chunks.len(), 3);
 
@@ -94,10 +94,10 @@ enum Status {
 "#;
     fs::write(&file_path, ts_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     assert_eq!(chunks.len(), 2);
 
@@ -138,10 +138,10 @@ namespace Api {
 "#;
     fs::write(&file_path, ts_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     // Should find 2 namespaces + 2 functions + 1 interface = 5 total
     assert!(chunks.len() >= 2, "Should find at least 2 namespace chunks");
@@ -213,10 +213,10 @@ const calculateTotal = (items: number[]): number => {
 "#;
     fs::write(&file_path, ts_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     // Should find: 1 interface + 1 type alias + 1 enum + 1 namespace + 1 class + 4 functions = 9 total minimum
     assert!(

@@ -1,5 +1,5 @@
-use crate::integration::test_extraction_options;
-use gittype::extractor::CodeExtractor;
+use crate::integration::{extract_chunks_for_test, test_extraction_options};
+use gittype::extractor::CodeChunkExtractor;
 use gittype::models::ChunkType;
 use std::fs;
 use tempfile::TempDir;
@@ -45,10 +45,10 @@ class Person {
 "#;
     fs::write(&file_path, dart_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     // Should find 2 classes + methods
     assert!(chunks.len() >= 2);
@@ -95,10 +95,10 @@ void processItems(List<String> items) {
 "#;
     fs::write(&file_path, dart_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     assert!(chunks.len() >= 4);
 
@@ -145,10 +145,10 @@ enum Status {
 "#;
     fs::write(&file_path, dart_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     // Should find 2 enums + methods
     assert!(chunks.len() >= 2);
@@ -200,10 +200,10 @@ class Bird with Flyable {
 "#;
     fs::write(&file_path, dart_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     // Should find 2 mixins + 1 class + methods
     assert!(chunks.len() >= 3);
@@ -244,10 +244,10 @@ class Config {
 "#;
     fs::write(&file_path, dart_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     // Should find variables + class
     assert!(chunks.len() >= 4);
@@ -293,10 +293,10 @@ extension ListExtensions<T> on List<T> {
 "#;
     fs::write(&file_path, dart_code).unwrap();
 
-    let mut extractor = CodeExtractor::new().unwrap();
-    let chunks = extractor
-        .extract_chunks(temp_dir.path(), test_extraction_options())
-        .unwrap();
+    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let chunks =
+        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
+            .unwrap();
 
     // Should find 2 extensions + methods
     assert!(chunks.len() >= 2);

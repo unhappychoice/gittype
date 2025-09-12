@@ -1,4 +1,5 @@
-use super::session_detail_screen::{SessionDetailScreen, SessionDisplayData};
+use super::session_detail_screen::SessionDisplayData;
+use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
 use crate::storage::{
     daos::{session_dao::SessionResultData, StoredRepository},
     repositories::SessionRepository,
@@ -7,23 +8,16 @@ use crate::storage::{
 use crate::ui::Colors;
 use crate::Result;
 use chrono::{DateTime, Local};
-use crossterm::{
-    event::{self, Event, KeyCode, KeyModifiers},
-    terminal::{EnterAlternateScreen, LeaveAlternateScreen},
-    ExecutableCommand,
-};
 use ratatui::{
-    backend::CrosstermBackend,
     layout::{Alignment, Constraint, Direction, Layout, Margin},
-    style::{Color, Modifier, Style},
+    style::{Modifier, Style},
     text::{Line, Span},
     widgets::{
         Block, Borders, List, ListItem, ListState, Paragraph, Scrollbar, ScrollbarOrientation,
         ScrollbarState,
     },
-    Frame, Terminal,
+    Frame,
 };
-use std::io::stdout;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum SortBy {
@@ -100,6 +94,7 @@ impl Default for FilterState {
     }
 }
 
+#[derive(Clone)]
 pub enum HistoryAction {
     Return,
     ViewDetails(i64),
@@ -111,12 +106,13 @@ pub struct HistoryScreen {
     filter_state: FilterState,
     list_state: ListState,
     scroll_state: ScrollbarState,
+    action_result: Option<HistoryAction>,
+    selected_session_for_detail: Option<SessionDisplayData>,
 }
 
 impl HistoryScreen {
-    pub fn show() -> Result<HistoryAction> {
-        let mut screen = Self::new()?;
-        screen.run()
+    pub fn new_for_screen_manager() -> Result<Self> {
+        Self::new()
     }
 
     fn new() -> Result<Self> {
@@ -133,107 +129,16 @@ impl HistoryScreen {
             filter_state: FilterState::default(),
             list_state,
             scroll_state: ScrollbarState::default(),
+            action_result: None,
+            selected_session_for_detail: None,
         };
 
         screen.refresh_sessions()?;
         Ok(screen)
     }
 
-    fn run(&mut self) -> Result<HistoryAction> {
-        // Setup terminal - raw mode is already enabled by StageManager
-        let mut stdout = stdout();
-        stdout.execute(EnterAlternateScreen)?;
-
-        let backend = CrosstermBackend::new(stdout);
-        let mut terminal = Terminal::new(backend)?;
-
-        let result = self.run_app(&mut terminal);
-
-        // Cleanup - don't disable raw_mode as StageManager manages it
-        terminal.backend_mut().execute(LeaveAlternateScreen)?;
-
-        result
-    }
-
-    fn run_app(
-        &mut self,
-        terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
-    ) -> Result<HistoryAction> {
-        loop {
-            terminal.draw(|f| self.ui(f))?;
-
-            if let Event::Key(key) = event::read()? {
-                match key.code {
-                    KeyCode::Esc => return Ok(HistoryAction::Return),
-                    KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                        return Ok(HistoryAction::Return);
-                    }
-                    KeyCode::Char(' ') => {
-                        if !self.sessions.is_empty() {
-                            if let Some(selected) = self.list_state.selected() {
-                                let selected_session = &self.sessions[selected];
-                                // Show session detail screen
-                                SessionDetailScreen::show(selected_session.clone())?;
-                                // Force a full redraw when returning
-                                terminal.clear()?;
-                            }
-                        }
-                    }
-                    KeyCode::Up | KeyCode::Char('k') => {
-                        self.previous();
-                    }
-                    KeyCode::Down | KeyCode::Char('j') => {
-                        self.next();
-                    }
-                    KeyCode::Char('r') => {
-                        self.refresh_sessions()?;
-                    }
-                    KeyCode::Char('s') => {
-                        self.cycle_sort();
-                        self.refresh_sessions()?;
-                    }
-                    KeyCode::Char('f') => {
-                        self.cycle_date_filter();
-                        self.refresh_sessions()?;
-                    }
-                    _ => {}
-                }
-            }
-        }
-    }
-
-    fn next(&mut self) {
-        let i = match self.list_state.selected() {
-            Some(i) => {
-                if i >= self.sessions.len() - 1 {
-                    0
-                } else {
-                    i + 1
-                }
-            }
-            None => 0,
-        };
-        self.list_state.select(Some(i));
-        self.scroll_state = self.scroll_state.position(i);
-    }
-
-    fn previous(&mut self) {
-        let i = match self.list_state.selected() {
-            Some(i) => {
-                if i == 0 {
-                    self.sessions.len() - 1
-                } else {
-                    i - 1
-                }
-            }
-            None => 0,
-        };
-        self.list_state.select(Some(i));
-        self.scroll_state = self.scroll_state.position(i);
-    }
-
-    fn ui(&mut self, f: &mut Frame) {
-        self.render_session_list(f);
+    pub fn get_selected_session_for_detail(&self) -> &Option<SessionDisplayData> {
+        &self.selected_session_for_detail
     }
 
     fn render_session_list(&mut self, f: &mut Frame) {
@@ -370,7 +275,7 @@ impl HistoryScreen {
             Span::styled(" Filter  ", Style::default().fg(Colors::TEXT)),
             Span::styled("[S]", Style::default().fg(Colors::INFO)),
             Span::styled(" Sort  ", Style::default().fg(Colors::TEXT)),
-            Span::styled("[R]", Style::default().fg(Color::Magenta)),
+            Span::styled("[R]", Style::default().fg(Colors::WARNING)),
             Span::styled(" Refresh  ", Style::default().fg(Colors::TEXT)),
             Span::styled("[ESC]", Style::default().fg(Colors::ERROR)),
             Span::styled(" Back", Style::default().fg(Colors::TEXT)),
@@ -511,7 +416,7 @@ fn format_session_line_ratatui_static<'a>(session_data: &'a SessionDisplayData) 
         ),
         Span::styled(
             format!("{:>6}", score_str),
-            Style::default().fg(Color::Magenta),
+            Style::default().fg(Colors::SCORE),
         ),
         Span::styled(
             format!("{:>6}", cpm_str),
@@ -527,7 +432,7 @@ fn format_session_line_ratatui_static<'a>(session_data: &'a SessionDisplayData) 
         ),
         Span::styled(
             format!("{:>10}", duration_str),
-            Style::default().fg(Color::Gray),
+            Style::default().fg(Colors::SECONDARY),
         ),
     ])
 }
@@ -542,5 +447,150 @@ impl SessionResultExt for crate::storage::Database {
         use crate::storage::daos::SessionDao;
         let dao = SessionDao::new(self);
         dao.get_session_result(session_id)
+    }
+}
+
+impl Screen for HistoryScreen {
+    fn init(&mut self) -> Result<()> {
+        self.action_result = None;
+        self.refresh_sessions()?;
+        Ok(())
+    }
+
+    fn handle_key_event(
+        &mut self,
+        key_event: crossterm::event::KeyEvent,
+    ) -> Result<ScreenTransition> {
+        use crossterm::event::{KeyCode, KeyModifiers};
+
+        match key_event.code {
+            KeyCode::Esc => {
+                self.action_result = Some(HistoryAction::Return);
+                // Return to Title screen
+                Ok(ScreenTransition::Replace(
+                    crate::game::models::ScreenType::Title,
+                ))
+            }
+            KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.action_result = Some(HistoryAction::Return);
+                Ok(ScreenTransition::Exit)
+            }
+            KeyCode::Up | KeyCode::Char('k') => {
+                self.previous_item();
+                Ok(ScreenTransition::None)
+            }
+            KeyCode::Down | KeyCode::Char('j') => {
+                self.next_item();
+                Ok(ScreenTransition::None)
+            }
+            KeyCode::Char('r') => {
+                if let Err(e) = self.refresh_sessions() {
+                    eprintln!("Error refreshing sessions: {}", e);
+                }
+                Ok(ScreenTransition::None)
+            }
+            KeyCode::Enter | KeyCode::Char(' ') => {
+                if let Some(selected_index) = self.list_state.selected() {
+                    if let Some(session) = self.sessions.get(selected_index) {
+                        // Store session data for the transition
+                        self.selected_session_for_detail = Some(session.clone());
+
+                        return Ok(ScreenTransition::Push(
+                            crate::game::models::ScreenType::SessionDetail,
+                        ));
+                    }
+                }
+                Ok(ScreenTransition::None)
+            }
+            KeyCode::Char('s') => {
+                self.cycle_sort();
+                if let Err(e) = self.refresh_sessions() {
+                    eprintln!("Error refreshing sessions after sort change: {}", e);
+                }
+                Ok(ScreenTransition::None)
+            }
+            KeyCode::Char('f') => {
+                self.cycle_date_filter();
+                if let Err(e) = self.refresh_sessions() {
+                    eprintln!("Error refreshing sessions after filter change: {}", e);
+                }
+                Ok(ScreenTransition::None)
+            }
+            _ => Ok(ScreenTransition::None),
+        }
+    }
+
+    fn render_crossterm_with_data(
+        &mut self,
+        _stdout: &mut std::io::Stdout,
+        _session_result: Option<&crate::models::SessionResult>,
+        _total_result: Option<&crate::scoring::TotalResult>,
+    ) -> Result<()> {
+        // NOTE: History screen should use render_ratatui() instead
+        // This render_crossterm_with_data() should not be used
+        eprintln!("Warning: History screen render_crossterm_with_data() called - this should use ratatui backend");
+        Ok(())
+    }
+
+    fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()> {
+        // Full implementation matching original render_session_list design
+        self.render_session_list(frame);
+        Ok(())
+    }
+
+    fn get_update_strategy(&self) -> UpdateStrategy {
+        UpdateStrategy::InputOnly
+    }
+
+    fn update(&mut self) -> Result<bool> {
+        Ok(false)
+    }
+
+    fn cleanup(&mut self) -> Result<()> {
+        Ok(())
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
+    }
+}
+
+impl HistoryScreen {
+    pub fn get_action_result(&self) -> Option<HistoryAction> {
+        self.action_result.clone()
+    }
+
+    fn next_item(&mut self) {
+        let i = match self.list_state.selected() {
+            Some(i) => {
+                if i >= self.sessions.len().saturating_sub(1) {
+                    0
+                } else {
+                    i + 1
+                }
+            }
+            None => 0,
+        };
+        self.list_state.select(Some(i));
+        self.scroll_state = self.scroll_state.position(i);
+    }
+
+    fn previous_item(&mut self) {
+        let i = match self.list_state.selected() {
+            Some(i) => {
+                if i == 0 {
+                    self.sessions.len().saturating_sub(1)
+                } else {
+                    i - 1
+                }
+            }
+            None => 0,
+        };
+        self.list_state.select(Some(i));
+        self.scroll_state = self.scroll_state.position(i);
     }
 }
