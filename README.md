@@ -6,6 +6,10 @@
 
 **GitType** turns your own source code into typing challenges. Because why practice with boring lorem ipsum when you can type your beautiful `fn main()` implementations?
 
+## Demo 🎬
+
+![GitType Demo](docs/images/demo.gif)
+
 ## Features ✨
 
 - 🦀🐍⚡🐹💎🍎🎯☕🐘#️⃣🔧➕🎭🎯 **Multi-language**: Rust, TypeScript, JavaScript, Python, Go, Ruby, Swift, Kotlin, Java, PHP, C#, C, C++, Haskell, Dart, Scala (more languages incoming!)  
