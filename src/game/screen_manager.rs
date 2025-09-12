@@ -376,6 +376,7 @@ impl ScreenManager {
                 _ => {}
             }
 
+            log::info!("Initializing screen: {:?}", self.current_screen_type);
             new_screen.init()?;
         }
 
@@ -613,10 +614,6 @@ impl ScreenManager {
         // Initialize current screen and force initial render
         Self::with_instance(|screen_manager| -> Result<()> {
             let mut manager = screen_manager.borrow_mut();
-            let current_screen_type = manager.current_screen_type.clone();
-            if let Some(current_screen) = manager.screens.get_mut(&current_screen_type) {
-                current_screen.init()?;
-            }
             manager.render_current_screen()
         })?;
 
@@ -639,36 +636,6 @@ impl ScreenManager {
                 break;
             }
         }
-        Ok(())
-    }
-
-    pub fn run(&mut self) -> Result<()> {
-        // Initialize terminal for standalone usage (not used by run_global)
-        self.initialize_terminal()?;
-
-        if let Some(current_screen) = self.screens.get_mut(&self.current_screen_type) {
-            current_screen.init()?;
-        }
-
-        // Force initial render to display the screen
-        self.render_current_screen()?;
-
-        // Main game loop - continue until exit is requested
-        loop {
-            self.update_and_render()?;
-            self.handle_input()?;
-
-            // Exit the main loop when exit is requested
-            if self.exit_requested {
-                break;
-            }
-        }
-
-        if let Some(current_screen) = self.screens.get_mut(&self.current_screen_type) {
-            current_screen.cleanup()?;
-        }
-
-        self.cleanup_terminal()?;
         Ok(())
     }
 
