@@ -5,6 +5,54 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2025-09-12
+
+### ✨ Features
+
+- feat: implement dedicated panic/error screen with comprehensive error handling ([219cd50](https://github.com/unhappychoice/gittype/commit/219cd50))
+- feat: add comprehensive view components for UI rendering ([e8c9000](https://github.com/unhappychoice/gittype/commit/e8c9000))
+- feat: add new extractor components and models ([cdf9d44](https://github.com/unhappychoice/gittype/commit/cdf9d44))
+- feat: implement core Screen trait architecture ([efb4327](https://github.com/unhappychoice/gittype/commit/efb4327))
+- feat: complete Phase 3 - migrate all screens to new Screen trait ([3a86d6d](https://github.com/unhappychoice/gittype/commit/3a86d6d))
+- feat: migrate major screens to new Screen trait architecture (Phase 3) ([25d64ef](https://github.com/unhappychoice/gittype/commit/25d64ef))
+- feat: implement ScreenManager core architecture and UpdateStrategy system ([2196197](https://github.com/unhappychoice/gittype/commit/2196197))
+- feat: ignore entire .claude directory in gitignore ([4c22865](https://github.com/unhappychoice/gittype/commit/4c22865))
+- feat: add comprehensive Scala test suite ([d79029c](https://github.com/unhappychoice/gittype/commit/d79029c))
+- feat: added scala language with model and parser, then deleted this file ([7465c9d](https://github.com/unhappychoice/gittype/commit/7465c9d))
+- feat: add automatic version update check functionality ([2202d53](https://github.com/unhappychoice/gittype/commit/2202d53))
+
+### 🐛 Bug Fixes
+
+- fix: optimize Scala parser to prevent duplicate extractions ([596ecd9](https://github.com/unhappychoice/gittype/commit/596ecd9))
+- fix: remove version_cache.json and add to gitignore ([2c9f926](https://github.com/unhappychoice/gittype/commit/2c9f926))
+- fix: remove version check from CLI runner ([b83eb8e](https://github.com/unhappychoice/gittype/commit/b83eb8e))
+- fix: improve homebrew formula update script reliability ([0d859b2](https://github.com/unhappychoice/gittype/commit/0d859b2))
+
+### 📝 Other Changes
+
+- chore: bump version to v0.6.0 ([9a29f4e](https://github.com/unhappychoice/gittype/commit/9a29f4e))
+- docs: add demo section to README with demo.gif ([fe98070](https://github.com/unhappychoice/gittype/commit/fe98070))
+- perf: optimize typing_content_view with individual caching and function splitting ([bdddc83](https://github.com/unhappychoice/gittype/commit/bdddc83))
+- chore: remove temporary files and documentation ([ee4deb2](https://github.com/unhappychoice/gittype/commit/ee4deb2))
+- refactor: complete screen manager architecture migration ([9167b85](https://github.com/unhappychoice/gittype/commit/9167b85))
+- style: fix clippy warnings for code quality ([c3f4a4c](https://github.com/unhappychoice/gittype/commit/c3f4a4c))
+- refactor: add new screen implementations for Screen trait ([3986365](https://github.com/unhappychoice/gittype/commit/3986365))
+- chore(deps): bump tree-sitter-python from 0.23.6 to 0.25.0 ([12e1481](https://github.com/unhappychoice/gittype/commit/12e1481))
+- chore(deps): bump tempfile from 3.21.0 to 3.22.0 ([3e8d090](https://github.com/unhappychoice/gittype/commit/3e8d090))
+- chore: apply cargo fmt to Scala implementation ([8909847](https://github.com/unhappychoice/gittype/commit/8909847))
+- docs: update Scala language documentation ([766b61d](https://github.com/unhappychoice/gittype/commit/766b61d))
+- chore: reordered languages alphabetically with new Scala to pass fmt ([8dc6b40](https://github.com/unhappychoice/gittype/commit/8dc6b40))
+- chore: restore title_screen.rs from main after rebase ([1dbfd8c](https://github.com/unhappychoice/gittype/commit/1dbfd8c))
+- chore: restore options.rs from main after rebase ([549f0df](https://github.com/unhappychoice/gittype/commit/549f0df))
+- chore: fattened up main screen arrows, changed Info indicator to [I] deleted this change and file ([683be16](https://github.com/unhappychoice/gittype/commit/683be16))
+- chore(deps): bump chrono from 0.4.41 to 0.4.42 ([09adf9d](https://github.com/unhappychoice/gittype/commit/09adf9d))
+- chore(deps): bump tree-sitter from 0.25.8 to 0.25.9 ([fe4ff03](https://github.com/unhappychoice/gittype/commit/fe4ff03))
+- chore(deps): bump ctrlc from 3.4.7 to 3.5.0 ([530fd59](https://github.com/unhappychoice/gittype/commit/530fd59))
+- chore(deps): bump log4rs from 1.3.0 to 1.4.0 ([ef4e6ae](https://github.com/unhappychoice/gittype/commit/ef4e6ae))
+- chore(deps): bump log from 0.4.27 to 0.4.28 ([fd105e3](https://github.com/unhappychoice/gittype/commit/fd105e3))
+- docs: Add demo.gif file ([e9f5502](https://github.com/unhappychoice/gittype/commit/e9f5502))
+
+
 ## [0.5.1] - 2025-09-08
 
 ### ✨ Features
@@ -20,7 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📝 Other Changes
 
-- chore: bump version to v0.5.1 ([0e5e685](https://github.com/unhappychoice/gittype/commit/0e5e685))
+- chore: bump version to v0.5.1 ([f4b8466](https://github.com/unhappychoice/gittype/commit/f4b8466))
 - docs: improve README installation section formatting ([87da908](https://github.com/unhappychoice/gittype/commit/87da908))
 
 
