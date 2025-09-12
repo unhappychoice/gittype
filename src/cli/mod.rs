@@ -3,4 +3,4 @@ pub mod commands;
 pub mod runner;
 
 pub use args::{Cli, Commands};
-pub use runner::{run_cli, setup_signal_handlers};
+pub use runner::run_cli;

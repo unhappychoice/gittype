@@ -22,6 +22,7 @@ pub enum ScreenType {
     VersionCheck,
     InfoDialog,
     DetailsDialog,
+    Panic,
 }
 
 /// Update strategy defines how and when a screen should be updated and re-rendered

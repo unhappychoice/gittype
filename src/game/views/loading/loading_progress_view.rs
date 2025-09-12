@@ -30,13 +30,6 @@ impl LoadingProgressView {
         let (progress, files_processed, total_files) =
             if let Ok(step_progress) = state.step_progress.read() {
                 if let Some(step_prog) = step_progress.get(&current_step_type) {
-                    log::info!(
-                        "UI: Found progress for {:?}: {:.3} ({}/{})",
-                        current_step_type,
-                        step_prog.progress,
-                        step_prog.processed,
-                        step_prog.total
-                    );
                     (step_prog.progress, step_prog.processed, step_prog.total)
                 } else {
                     log::info!(

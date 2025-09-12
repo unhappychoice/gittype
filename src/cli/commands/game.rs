@@ -165,5 +165,10 @@ fn handle_game_error(e: GitTypeError) -> Result<()> {
             eprintln!("💡 This might be caused by unsupported language features");
             std::process::exit(1);
         }
+        GitTypeError::PanicError(msg) => {
+            eprintln!("💥 Application panic occurred: {}", msg);
+            eprintln!("💡 This indicates an unexpected error. Please report this issue.");
+            std::process::exit(1);
+        }
     }
 }

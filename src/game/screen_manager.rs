@@ -103,7 +103,8 @@ impl ScreenManager {
         use crate::game::screens::{
             analytics_screen::AnalyticsScreen, animation_screen::AnimationScreen,
             history_screen::HistoryScreen, info_dialog::InfoDialogScreen,
-            loading_screen::LoadingScreen, session_detail_screen::SessionDetailScreen,
+            loading_screen::LoadingScreen, panic_screen::PanicScreen,
+            session_detail_screen::SessionDetailScreen,
             session_details_dialog::SessionDetailsDialog as DetailsDialogScreenState,
             session_failure_screen::SessionFailureScreen as FailureScreenState,
             session_summary_screen::SessionSummaryScreen,
@@ -165,6 +166,7 @@ impl ScreenManager {
             ScreenType::DetailsDialog,
             Box::new(DetailsDialogScreenState::new()),
         );
+        self.register_screen(ScreenType::Panic, Box::new(PanicScreen::new()));
 
         // Register History and Analytics screens
         if let Ok(history_screen) = HistoryScreen::new_for_screen_manager() {
@@ -325,7 +327,8 @@ impl ScreenManager {
             | ScreenType::InfoDialog
             | ScreenType::Loading
             | ScreenType::SessionDetail
-            | ScreenType::Typing => {
+            | ScreenType::Typing
+            | ScreenType::Panic => {
                 self.render_backend = RenderBackend::Ratatui;
             }
             ScreenType::Animation => {
