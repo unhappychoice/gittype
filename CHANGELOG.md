@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2025-09-12
+
+### 🐛 Bug Fixes
+
+- fix: display default TotalSummaryScreen when no sessions exist ([e7fd86d](https://github.com/unhappychoice/gittype/commit/e7fd86d))
+- fix: prevent duplicate LoadingScreen initialization causing repository clone conflicts ([3a90250](https://github.com/unhappychoice/gittype/commit/3a90250))
+
+### 📝 Other Changes
+
+- chore: bump version to v0.6.1 ([31462af](https://github.com/unhappychoice/gittype/commit/31462af))
+- docs: fix ScreenManager doctest after run method removal ([7358f8d](https://github.com/unhappychoice/gittype/commit/7358f8d))
+
+
 ## [0.6.0] - 2025-09-12
 
 ### ✨ Features
@@ -30,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📝 Other Changes
 
-- chore: bump version to v0.6.0 ([9a29f4e](https://github.com/unhappychoice/gittype/commit/9a29f4e))
+- chore: bump version to v0.6.0 ([14c0188](https://github.com/unhappychoice/gittype/commit/14c0188))
 - docs: add demo section to README with demo.gif ([fe98070](https://github.com/unhappychoice/gittype/commit/fe98070))
 - perf: optimize typing_content_view with individual caching and function splitting ([bdddc83](https://github.com/unhappychoice/gittype/commit/bdddc83))
 - chore: remove temporary files and documentation ([ee4deb2](https://github.com/unhappychoice/gittype/commit/ee4deb2))
