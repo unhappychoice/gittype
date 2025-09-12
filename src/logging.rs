@@ -6,6 +6,9 @@ use log4rs::{
     encode::pattern::PatternEncoder,
 };
 use std::path::PathBuf;
+use std::sync::OnceLock;
+
+static CURRENT_LOG_FILE: OnceLock<String> = OnceLock::new();
 
 pub fn setup_logging() -> Result<()> {
     let log_dir = get_log_directory()?;
@@ -14,6 +17,9 @@ pub fn setup_logging() -> Result<()> {
     // Create timestamp-based log filename
     let timestamp = chrono::Local::now().format("%Y%m%d_%H%M%S");
     let log_file = log_dir.join(format!("gittype_{}.log", timestamp));
+
+    // Store the log file path for later retrieval
+    let _ = CURRENT_LOG_FILE.set(log_file.display().to_string());
 
     let file_appender = FileAppender::builder()
         .encoder(Box::new(PatternEncoder::new(
@@ -49,7 +55,7 @@ pub fn setup_logging() -> Result<()> {
 }
 
 /// Get the log directory path (temp in tests, project/logs/ in dev, ~/.gittype/logs/ in release)
-fn get_log_directory() -> Result<PathBuf> {
+pub fn get_log_directory() -> Result<PathBuf> {
     if cfg!(test) {
         // Test: use temporary directory (each test gets its own)
         use tempfile::TempDir;
@@ -76,6 +82,11 @@ fn get_log_directory() -> Result<PathBuf> {
         })?;
         Ok(home_dir.join(".gittype").join("logs"))
     }
+}
+
+/// Get the current log file path (the actual file being used)
+pub fn get_current_log_file_path() -> Option<String> {
+    CURRENT_LOG_FILE.get().cloned()
 }
 
 /// Get appropriate log level based on build configuration
