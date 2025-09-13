@@ -22,6 +22,13 @@ fn test_is_version_newer() {
     assert!(!VersionChecker::is_version_newer("1.2.2", "1.2.3"));
     assert!(!VersionChecker::is_version_newer("1.2", "1.2.0"));
     assert!(VersionChecker::is_version_newer("1.2.0", "1.2"));
+
+    // Test the specific case causing issues
+    println!(
+        "Testing 0.6.2 vs 0.6.2: {}",
+        VersionChecker::is_version_newer("0.6.2", "0.6.2")
+    );
+    assert!(!VersionChecker::is_version_newer("0.6.2", "0.6.2"));
 }
 
 #[test]
