@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.2] - 2025-09-13
+
+### 🐛 Bug Fixes
+
+- fix: finalize TotalResult to prevent MAX value display in TotalSummaryScreen ([5b2b165](https://github.com/unhappychoice/gittype/commit/5b2b165))
+
+### 📝 Other Changes
+
+- chore: bump version to v0.6.2 ([d86e17f](https://github.com/unhappychoice/gittype/commit/d86e17f))
+
+
 ## [0.6.1] - 2025-09-12
 
 ### 🐛 Bug Fixes
@@ -14,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📝 Other Changes
 
-- chore: bump version to v0.6.1 ([31462af](https://github.com/unhappychoice/gittype/commit/31462af))
+- chore: bump version to v0.6.1 ([4950eee](https://github.com/unhappychoice/gittype/commit/4950eee))
 - docs: fix ScreenManager doctest after run method removal ([7358f8d](https://github.com/unhappychoice/gittype/commit/7358f8d))
 
 
