@@ -70,6 +70,12 @@ impl VersionCache {
     pub fn is_cache_valid(entry: &VersionCacheEntry, frequency_hours: u64) -> bool {
         let now = Utc::now();
         let hours_since_check = (now - entry.last_checked).num_hours();
-        hours_since_check < frequency_hours as i64
+        let time_valid = hours_since_check < frequency_hours as i64;
+
+        // Also check if the current version matches
+        let current_version = env!("CARGO_PKG_VERSION");
+        let version_valid = entry.current_version == current_version;
+
+        time_valid && version_valid
     }
 }
