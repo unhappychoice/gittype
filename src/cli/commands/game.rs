@@ -9,15 +9,22 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
     log::info!("Starting GitType game session");
 
     // Check for updates before starting the game session
-    tokio::task::block_in_place(|| {
+    let should_exit = tokio::task::block_in_place(|| {
         tokio::runtime::Handle::current().block_on(async {
             if let Ok(Some(entry)) = crate::version::VersionChecker::check_for_updates().await {
                 if entry.update_available {
-                    let _ = crate::version::VersionChecker::display_update_notification(&entry);
+                    return crate::version::VersionChecker::display_update_notification(&entry)
+                        .map(|should_continue| !should_continue);
                 }
             }
+            Ok(false)
         })
-    });
+    })?;
+
+    if should_exit {
+        log::info!("User exited after update notification");
+        return Ok(());
+    }
 
     // Session repository will be initialized in DatabaseInitStep during loading screen
 
