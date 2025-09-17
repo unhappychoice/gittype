@@ -31,6 +31,15 @@
 //! ```
 
 use crate::game::models::{Screen, ScreenTransition, ScreenType, UpdateStrategy};
+use crate::game::screen_transition_manager::ScreenTransitionManager;
+use crate::game::screens::animation_screen::AnimationScreen;
+use crate::game::screens::session_detail_screen::SessionDetailScreen;
+use crate::game::screens::stage_summary_screen::StageSummaryScreen;
+use crate::game::screens::total_summary_share_screen::TotalSummaryShareScreen;
+use crate::game::session_manager::SessionManager;
+use crate::game::stage_repository::StageRepository;
+use crate::scoring::TotalCalculator;
+use crate::scoring::GLOBAL_TOTAL_TRACKER;
 use crate::Result;
 use crossterm::event::{Event, KeyEventKind};
 use std::cell::RefCell;
@@ -221,7 +230,7 @@ impl ScreenManager {
                 Ok(()) => {}
                 Err(e) => {
                     // In WSL, sometimes raw mode fails initially, try after a short delay
-                    std::thread::sleep(std::time::Duration::from_millis(10));
+                    std::thread::sleep(Duration::from_millis(10));
                     terminal::enable_raw_mode().map_err(|e2| {
                         crate::error::GitTypeError::TerminalError(format!(
                             "Failed to enable raw mode: {} (retry also failed: {})",
@@ -360,14 +369,18 @@ impl ScreenManager {
             // Pre-inject data BEFORE calling init() to avoid RefCell conflicts
             match self.current_screen_type {
                 ScreenType::StageSummary => {
-                    if let Some(stage_summary_screen) = new_screen.as_any_mut().downcast_mut::<crate::game::screens::stage_summary_screen::StageSummaryScreen>() {
+                    if let Some(stage_summary_screen) =
+                        new_screen.as_any_mut().downcast_mut::<StageSummaryScreen>()
+                    {
                         if let Some(ref stage_result) = self.shared_stage_result {
                             stage_summary_screen.stage_result = Some(stage_result.clone());
                         }
                     }
                 }
                 ScreenType::Animation => {
-                    if let Some(animation_screen) = new_screen.as_any_mut().downcast_mut::<crate::game::screens::animation_screen::AnimationScreen>() {
+                    if let Some(animation_screen) =
+                        new_screen.as_any_mut().downcast_mut::<AnimationScreen>()
+                    {
                         if let Some(ref session_result) = self.shared_session_result {
                             animation_screen.inject_session_result(session_result.clone());
                         }
@@ -426,10 +439,7 @@ impl ScreenManager {
         // Special handling for TotalSummaryShare - update with current total result
         if screen_type == ScreenType::TotalSummaryShare {
             if let Some(total_result) = self.get_current_total_result() {
-                let share_screen =
-                    crate::game::screens::total_summary_share_screen::TotalSummaryShareScreen::new(
-                        total_result,
-                    );
+                let share_screen = TotalSummaryShareScreen::new(total_result);
                 self.screens
                     .insert(ScreenType::TotalSummaryShare, Box::new(share_screen));
             }
@@ -472,10 +482,7 @@ impl ScreenManager {
             ScreenTransition::Replace(screen_type) => {
                 // Use ScreenTransitionManager to handle transition with side effects
                 let validated_screen_type =
-                    crate::game::screen_transition_manager::ScreenTransitionManager::reduce(
-                        self.current_screen_type.clone(),
-                        screen_type,
-                    )?;
+                    ScreenTransitionManager::reduce(self.current_screen_type.clone(), screen_type)?;
 
                 self.prepare_screen_if_needed(&validated_screen_type)?;
                 self.set_current_screen(validated_screen_type)
@@ -483,10 +490,7 @@ impl ScreenManager {
             ScreenTransition::PopTo(screen_type) => {
                 // Use ScreenTransitionManager to handle transition with side effects
                 let validated_screen_type =
-                    crate::game::screen_transition_manager::ScreenTransitionManager::reduce(
-                        self.current_screen_type.clone(),
-                        screen_type,
-                    )?;
+                    ScreenTransitionManager::reduce(self.current_screen_type.clone(), screen_type)?;
 
                 self.prepare_screen_if_needed(&validated_screen_type)?;
                 self.pop_to_screen(validated_screen_type)
@@ -536,7 +540,7 @@ impl ScreenManager {
                 crate::game::stage_repository::StageRepository::set_global_difficulty(difficulty)?;
 
                 // Also set difficulty in SessionManager
-                let session_instance = crate::game::session_manager::SessionManager::instance();
+                let session_instance = SessionManager::instance();
                 if let Ok(mut session_manager) = session_instance.lock() {
                     session_manager.set_difficulty(difficulty);
                 };
@@ -567,9 +571,6 @@ impl ScreenManager {
             self.configure_session_detail_from_history()?;
         } else if *screen_type == ScreenType::TotalSummary {
             // Calculate total result from GLOBAL_TOTAL_TRACKER before showing ExitSummary
-            use crate::scoring::TotalCalculator;
-            use crate::scoring::GLOBAL_TOTAL_TRACKER;
-
             if let Ok(global_total_tracker) = GLOBAL_TOTAL_TRACKER.lock() {
                 if let Some(ref tracker) = *global_total_tracker {
                     self.shared_total_result = Some(TotalCalculator::calculate(tracker));
@@ -674,10 +675,14 @@ impl ScreenManager {
 
                 // Special handling for AnimationScreen auto-transition
                 if self.current_screen_type == ScreenType::Animation {
-                    if let Some(animation_screen) = screen.as_any_mut().downcast_mut::<crate::game::screens::animation_screen::AnimationScreen>() {
+                    if let Some(animation_screen) =
+                        screen.as_any_mut().downcast_mut::<AnimationScreen>()
+                    {
                         if animation_screen.is_animation_complete() {
                             // Animation is complete, transition to SessionSummary
-                            self.handle_transition(ScreenTransition::Replace(ScreenType::SessionSummary))?;
+                            self.handle_transition(ScreenTransition::Replace(
+                                ScreenType::SessionSummary,
+                            ))?;
                             return Ok(());
                         }
                     }
@@ -798,7 +803,9 @@ impl ScreenManager {
                 if self.current_screen_type == ScreenType::StageSummary {
                     // Special handling for StageSummaryScreen to inject stage_result
                     if let Some(screen) = self.screens.get_mut(&self.current_screen_type) {
-                        if let Some(stage_summary_screen) = screen.as_any_mut().downcast_mut::<crate::game::screens::stage_summary_screen::StageSummaryScreen>() {
+                        if let Some(stage_summary_screen) =
+                            screen.as_any_mut().downcast_mut::<StageSummaryScreen>()
+                        {
                             // Inject stage_result if not already set
                             if stage_summary_screen.stage_result.is_none() {
                                 if let Some(ref stage_result) = self.shared_stage_result {
@@ -882,8 +889,8 @@ impl ScreenManager {
         session_data: crate::game::screens::session_detail_screen::SessionDisplayData,
     ) -> Result<()> {
         if let Some(screen) = self.screens.get_mut(&ScreenType::SessionDetail) {
-            if let Some(session_detail_screen) = screen.as_any_mut()
-                .downcast_mut::<crate::game::screens::session_detail_screen::SessionDetailScreen>()
+            if let Some(session_detail_screen) =
+                screen.as_any_mut().downcast_mut::<SessionDetailScreen>()
             {
                 session_detail_screen.set_session_data(session_data)?;
             }
@@ -924,7 +931,7 @@ impl ScreenManager {
     /// Create session result from global trackers and store in shared data
     fn create_session_result_from_trackers(&mut self) -> Result<()> {
         // Get session result from SessionManager
-        match crate::game::session_manager::SessionManager::get_global_session_result() {
+        match SessionManager::get_global_session_result() {
             Ok(Some(session_result)) => {
                 self.shared_session_result = Some(session_result);
             }
@@ -975,8 +982,6 @@ impl ScreenManager {
 
     /// Update TitleScreen with challenge data after loading completion
     fn update_title_screen_with_data(&mut self) -> Result<()> {
-        use crate::game::stage_repository::StageRepository;
-
         log::info!("Updating TitleScreen with loaded data");
 
         // Update title screen with challenge counts and git repository info
