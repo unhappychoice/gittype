@@ -1,6 +1,7 @@
 use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
 use crate::game::views::{BestRecordsView, ControlsView, HeaderView, StageResultsView};
 use crate::game::{GameData, SessionManager};
+use crate::storage::repositories::session_repository::SessionRepository;
 use crate::{models::GitRepository, Result};
 use ratatui::{
     layout::{Constraint, Direction, Layout},
@@ -33,11 +34,29 @@ impl SessionDetailsDialog {
             .as_ref()
             .expect("SessionDetailsDialog requires session data");
 
+        // Calculate required content height dynamically
+        let stage_count = session_result.stage_results.len();
+        let best_records_lines = if let Ok(Some(_)) = SessionRepository::get_best_records_global() {
+            5 // Header + 3 records + padding
+        } else {
+            3 // Just header and no records message
+        };
+
+        let stage_results_lines = if stage_count > 0 {
+            2 + (stage_count * 2) // Header + (stage_name + metrics) * count
+        } else {
+            2 // Just header
+        };
+
+        let total_content_height = 1 + 1 + best_records_lines + stage_results_lines + 1 + 1; // header + spacing + content + spacing + controls
+        let dialog_height =
+            total_content_height.min(f.area().height.saturating_sub(4) as usize) as u16;
+
         let outer_chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Min(1),
-                Constraint::Length(17),
+                Constraint::Length(dialog_height),
                 Constraint::Min(1),
             ])
             .split(f.area());
@@ -66,7 +85,10 @@ impl SessionDetailsDialog {
 
         let content_chunks = Layout::default()
             .direction(Direction::Vertical)
-            .constraints([Constraint::Min(1), Constraint::Min(1)])
+            .constraints([
+                Constraint::Length(best_records_lines as u16),
+                Constraint::Min(1),
+            ])
             .split(main_chunks[2]);
 
         BestRecordsView::render(f, content_chunks[0], session_result);
