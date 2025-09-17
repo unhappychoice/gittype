@@ -431,4 +431,36 @@ mod tests {
         assert_eq!(repo_info.owner, "unhappychoice");
         assert_eq!(repo_info.name, "gittype");
     }
+
+    #[test]
+    fn test_parse_invalid_format() {
+        assert!(RepositoryManager::parse_repo_url("not a repo").is_err());
+        assert!(RepositoryManager::parse_repo_url("owner").is_err());
+    }
+
+    #[test]
+    fn test_is_repository_complete_without_git_dir() {
+        let temp_dir = tempfile::TempDir::new().unwrap();
+        let is_complete = RepositoryManager::is_repository_complete(temp_dir.path()).unwrap();
+        assert!(!is_complete);
+    }
+
+    #[test]
+    fn test_is_repository_complete_with_git_only() {
+        let temp_dir = tempfile::TempDir::new().unwrap();
+        std::fs::create_dir_all(temp_dir.path().join(".git")).unwrap();
+
+        let is_complete = RepositoryManager::is_repository_complete(temp_dir.path()).unwrap();
+        assert!(!is_complete);
+    }
+
+    #[test]
+    fn test_is_repository_complete_with_sources() {
+        let temp_dir = tempfile::TempDir::new().unwrap();
+        std::fs::create_dir_all(temp_dir.path().join(".git")).unwrap();
+        std::fs::write(temp_dir.path().join("main.rs"), "fn main() {}").unwrap();
+
+        let is_complete = RepositoryManager::is_repository_complete(temp_dir.path()).unwrap();
+        assert!(is_complete);
+    }
 }

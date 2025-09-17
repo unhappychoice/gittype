@@ -38,3 +38,16 @@ fn test_calculate_tier_info_legendary() {
     assert_eq!(overall_position, 14);
     assert_eq!(overall_total, 63);
 }
+
+#[test]
+fn test_calculate_tier_info_extreme_score() {
+    let score = 1_000_000.0;
+    let (tier_name, tier_position, tier_total, overall_position, overall_total) =
+        RankCalculator::calculate_tier_info(score);
+
+    assert_eq!(tier_name, "Legendary");
+    assert_eq!(tier_position, 1);
+    assert_eq!(tier_total, 15);
+    assert_eq!(overall_position, 1);
+    assert_eq!(overall_total, 63);
+}
