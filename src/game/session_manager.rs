@@ -1,3 +1,6 @@
+use crate::scoring::{SessionTracker, SessionTrackerData, StageCalculator, GLOBAL_TOTAL_TRACKER};
+use crate::storage::session_repository::BestStatus;
+use crate::storage::SessionRepository;
 use crate::{
     game::{stage_repository::StageRepository, DifficultyLevel},
     models::{Challenge, SessionResult},
@@ -66,6 +69,8 @@ pub struct SessionManager {
     git_repository: Option<crate::models::GitRepository>,
     // Challenge management - tracks all challenges used in this session (completed, failed, skipped)
     session_challenges: Vec<crate::models::Challenge>,
+    // Best records at session start (for accurate comparison)
+    best_records_at_start: Option<crate::storage::repositories::session_repository::BestRecords>,
 }
 
 static GLOBAL_SESSION_MANAGER: Lazy<Arc<Mutex<SessionManager>>> =
@@ -81,6 +86,7 @@ impl SessionManager {
             stage_trackers: Vec::new(),
             git_repository: None,
             session_challenges: Vec::new(),
+            best_records_at_start: None,
         }
     }
 
@@ -93,9 +99,18 @@ impl SessionManager {
             (SessionState::NotStarted, SessionAction::Start) => {
                 let session_start_time = Instant::now();
 
+                // Capture best records at session start for accurate comparison later
+                self.best_records_at_start =
+                    SessionRepository::get_best_records_global().ok().flatten();
+
+                log::debug!(
+                    "SessionManager::reduce Start: captured best_records_at_start={:?}",
+                    self.best_records_at_start
+                );
+
                 // Initialize global session tracker
-                let session_tracker = crate::scoring::SessionTracker::new();
-                crate::scoring::SessionTracker::initialize_global_instance(session_tracker);
+                let session_tracker = SessionTracker::new();
+                SessionTracker::initialize_global_instance(session_tracker);
 
                 SessionState::InProgress {
                     current_stage: 1,
@@ -162,11 +177,9 @@ impl SessionManager {
                 self.session_challenges.clear();
 
                 // Clear global session tracker
-                let _ = crate::scoring::GLOBAL_SESSION_TRACKER
-                    .lock()
-                    .map(|mut tracker| {
-                        *tracker = None;
-                    });
+                let _ = GLOBAL_SESSION_TRACKER.lock().map(|mut tracker| {
+                    *tracker = None;
+                });
 
                 SessionState::NotStarted
             }
@@ -214,6 +227,14 @@ impl SessionManager {
         manager.git_repository = None;
         manager.session_challenges.clear();
 
+        // Capture best records at session start for accurate comparison later
+        manager.best_records_at_start = SessionRepository::get_best_records_global().ok().flatten();
+
+        log::debug!(
+            "SessionManager::initialize_session: captured best_records_at_start={:?}",
+            manager.best_records_at_start
+        );
+
         Ok(())
     }
 
@@ -232,8 +253,8 @@ impl SessionManager {
     /// StageResult will be calculated by StageCalculator when needed
     pub fn add_stage_data(
         stage_name: String,
-        stage_tracker: crate::scoring::StageTracker,
-        challenge: crate::models::Challenge,
+        stage_tracker: StageTracker,
+        challenge: Challenge,
     ) -> Result<()> {
         let instance = Self::instance();
         let mut manager = instance.lock().map_err(|e| {
@@ -271,8 +292,8 @@ impl SessionManager {
                 };
 
                 // Initialize global session tracker
-                let session_tracker = crate::scoring::SessionTracker::new();
-                crate::scoring::SessionTracker::initialize_global_instance(session_tracker);
+                let session_tracker = SessionTracker::new();
+                SessionTracker::initialize_global_instance(session_tracker);
 
                 Ok(())
             }
@@ -372,7 +393,7 @@ impl SessionManager {
         let git_repository = &self.git_repository;
 
         // Call SessionRepository to save to database
-        crate::storage::repositories::SessionRepository::record_session_global(
+        SessionRepository::record_session_global(
             session_result,
             git_repository.as_ref(),
             &game_mode,
@@ -388,7 +409,6 @@ impl SessionManager {
     fn add_session_to_total_tracker(&self) -> Result<()> {
         if let Some(session_result) = self.generate_session_result() {
             // Record session result in GLOBAL_TOTAL_TRACKER
-            use crate::scoring::GLOBAL_TOTAL_TRACKER;
             if let Ok(mut global_total_tracker) = GLOBAL_TOTAL_TRACKER.lock() {
                 if let Some(ref mut tracker) = global_total_tracker.as_mut() {
                     tracker.record(session_result);
@@ -398,20 +418,18 @@ impl SessionManager {
         Ok(())
     }
 
-    /// Reset session to initial state
     pub fn reset(&mut self) {
         self.state = SessionState::NotStarted;
         self.stage_results.clear();
         self.current_stage_tracker = None;
         self.stage_trackers.clear();
         self.session_challenges.clear();
+        self.best_records_at_start = None;
 
         // Clear global session tracker
-        let _ = crate::scoring::GLOBAL_SESSION_TRACKER
-            .lock()
-            .map(|mut tracker| {
-                *tracker = None;
-            });
+        let _ = GLOBAL_SESSION_TRACKER.lock().map(|mut tracker| {
+            *tracker = None;
+        });
     }
 
     // ============================================
@@ -499,7 +517,7 @@ impl SessionManager {
             tracker.record(StageInput::Finish);
 
             // 2. StageCalculator: Calculate stage result from StageTracker
-            let stage_result = crate::scoring::StageCalculator::calculate(tracker);
+            let stage_result = StageCalculator::calculate(tracker);
 
             // 3. SessionTracker: Record stage result in global session tracker
             if let Ok(mut global_session_tracker) = GLOBAL_SESSION_TRACKER.lock() {
@@ -542,8 +560,7 @@ impl SessionManager {
     // ============================================
 
     /// Get session tracker data from global tracker
-    pub fn get_global_session_tracker_data(
-    ) -> Result<Option<crate::scoring::tracker::SessionTrackerData>> {
+    pub fn get_global_session_tracker_data() -> Result<Option<SessionTrackerData>> {
         if let Ok(global_session_tracker) = GLOBAL_SESSION_TRACKER.lock() {
             if let Some(ref session_tracker) = *global_session_tracker {
                 Ok(Some(session_tracker.get_data()))
@@ -633,6 +650,24 @@ impl SessionManager {
         })?;
 
         Ok(manager.generate_session_result())
+    }
+
+    /// Get best status using session start records
+    pub fn get_best_status_for_score(session_score: f64) -> Result<Option<BestStatus>> {
+        let instance = Self::instance();
+        let manager = instance.lock().map_err(|e| {
+            crate::GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
+        })?;
+
+        log::debug!("SessionManager::get_best_status_for_score: session_score={}, best_records_at_start={:?}", 
+                   session_score, manager.best_records_at_start);
+
+        let best_status = SessionRepository::determine_best_status_with_start_records(
+            session_score,
+            manager.best_records_at_start.as_ref(),
+        );
+
+        Ok(Some(best_status))
     }
 
     // ============================================

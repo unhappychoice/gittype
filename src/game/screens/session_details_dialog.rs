@@ -12,6 +12,7 @@ use std::io::Stdout;
 pub struct SessionDetailsDialog {
     session_result: Option<crate::models::SessionResult>,
     repo_info: Option<GitRepository>,
+    best_status: Option<crate::storage::repositories::session_repository::BestStatus>,
 }
 
 impl Default for SessionDetailsDialog {
@@ -25,6 +26,7 @@ impl SessionDetailsDialog {
         Self {
             session_result: None,
             repo_info: None,
+            best_status: None,
         }
     }
 
@@ -91,7 +93,12 @@ impl SessionDetailsDialog {
             ])
             .split(main_chunks[2]);
 
-        BestRecordsView::render(f, content_chunks[0], session_result);
+        BestRecordsView::render_with_best_status(
+            f,
+            content_chunks[0],
+            session_result,
+            self.best_status.as_ref(),
+        );
         StageResultsView::render(f, content_chunks[1], session_result, &self.repo_info);
         ControlsView::render(f, main_chunks[4]);
     }
@@ -104,6 +111,12 @@ impl Screen for SessionDetailsDialog {
             let data = game_data.lock().unwrap();
             let repo_info = data.git_repository.clone();
             drop(data);
+
+            // Calculate best_status once during initialization
+            self.best_status =
+                SessionManager::get_best_status_for_score(session_result.session_score)
+                    .ok()
+                    .flatten();
 
             self.session_result = Some(session_result);
             self.repo_info = repo_info;

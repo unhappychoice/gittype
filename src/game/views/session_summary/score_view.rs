@@ -1,5 +1,7 @@
 use crate::game::ascii_digits::get_digit_patterns;
+use crate::models::{Rank, SessionResult};
 use crate::storage::repositories::SessionRepository;
+use crate::storage::session_repository::BestStatus;
 use crate::ui::Colors;
 use crate::Result;
 use crossterm::{
@@ -31,34 +33,70 @@ impl ScoreView {
     }
 
     pub fn render(
-        session_result: &crate::models::SessionResult,
-        best_rank: crate::scoring::Rank,
+        session_result: &SessionResult,
+        best_rank: Rank,
         center_col: u16,
         score_label_row: u16,
+        best_status: Option<&BestStatus>,
     ) -> Result<u16> {
         let mut stdout = stdout();
 
-        let best_records = SessionRepository::get_best_records_global().ok().flatten();
-        let mut updated_best_type = None;
-        let todays_best_score = if let Some(records) = &best_records {
-            if let Some(ref all_time) = records.all_time_best {
-                if session_result.session_score >= all_time.score {
-                    updated_best_type = Some("ALL TIME");
-                }
-            } else if let Some(ref weekly) = records.weekly_best {
-                if session_result.session_score >= weekly.score {
-                    updated_best_type = Some("WEEKLY");
-                }
-            } else if let Some(ref today) = records.todays_best {
-                if session_result.session_score >= today.score {
-                    updated_best_type = Some("TODAY'S");
-                }
-            }
+        let (updated_best_type, comparison_score) = if let Some(status) = best_status {
+            // For comparison, always use the most relevant previous score
+            let comparison_score = if status.best_type.as_deref() == Some("ALL TIME") {
+                status.all_time_best_score
+            } else if status.best_type.as_deref() == Some("WEEKLY") {
+                status.weekly_best_score
+            } else if status.best_type.as_deref() == Some("TODAY'S") {
+                status.todays_best_score
+            } else {
+                // No new best, but still compare against today's best if available
+                status.todays_best_score
+            };
 
-            records.todays_best.as_ref().map(|t| t.score).unwrap_or(0.0)
+            log::debug!(
+                "ScoreView: best_type={:?}, comparison_score={}, session_score={}",
+                status.best_type,
+                comparison_score,
+                session_result.session_score
+            );
+            log::debug!(
+                "ScoreView: todays_best_score={}, weekly_best_score={}, all_time_best_score={}",
+                status.todays_best_score,
+                status.weekly_best_score,
+                status.all_time_best_score
+            );
+
+            (status.best_type.as_deref(), comparison_score)
         } else {
-            updated_best_type = Some("TODAY'S");
-            0.0
+            // Fallback to old behavior if no best_status provided
+            let best_records = SessionRepository::get_best_records_global().ok().flatten();
+            let mut updated_best_type = None;
+            let comparison_score = if let Some(records) = &best_records {
+                if let Some(ref all_time) = records.all_time_best {
+                    if session_result.session_score >= all_time.score {
+                        updated_best_type = Some("ALL TIME");
+                    }
+                    all_time.score
+                } else if let Some(ref weekly) = records.weekly_best {
+                    if session_result.session_score >= weekly.score {
+                        updated_best_type = Some("WEEKLY");
+                    }
+                    weekly.score
+                } else if let Some(ref today) = records.todays_best {
+                    if session_result.session_score >= today.score {
+                        updated_best_type = Some("TODAY'S");
+                    }
+                    today.score
+                } else {
+                    updated_best_type = Some("TODAY'S");
+                    0.0
+                }
+            } else {
+                updated_best_type = Some("TODAY'S");
+                0.0
+            };
+            (updated_best_type, comparison_score)
         };
 
         let score_label = "SESSION SCORE";
@@ -105,7 +143,7 @@ impl ScoreView {
             execute!(stdout, ResetColor)?;
         }
 
-        let score_diff = session_result.session_score - todays_best_score;
+        let score_diff = session_result.session_score - comparison_score;
         let diff_text = if score_diff > 0.0 {
             format!("(+{:.0})", score_diff)
         } else if score_diff < 0.0 {

@@ -305,6 +305,128 @@ impl SessionRepository {
         }
     }
 
+    /// Determine best status for a session using session start records
+    pub fn determine_best_status_with_start_records(
+        session_score: f64,
+        best_records_at_start: Option<&BestRecords>,
+    ) -> BestStatus {
+        let mut best_status = BestStatus::new();
+
+        log::debug!("determine_best_status_with_start_records: session_score={}, best_records_at_start={:?}", 
+                   session_score, best_records_at_start);
+
+        if let Some(best_records) = best_records_at_start {
+            // Store all current best scores from session start
+            best_status.todays_best_score = best_records
+                .todays_best
+                .as_ref()
+                .map(|t| t.score)
+                .unwrap_or(0.0);
+            best_status.weekly_best_score = best_records
+                .weekly_best
+                .as_ref()
+                .map(|w| w.score)
+                .unwrap_or(0.0);
+            best_status.all_time_best_score = best_records
+                .all_time_best
+                .as_ref()
+                .map(|a| a.score)
+                .unwrap_or(0.0);
+
+            log::debug!(
+                "Best scores from start: today={}, weekly={}, all_time={}",
+                best_status.todays_best_score,
+                best_status.weekly_best_score,
+                best_status.all_time_best_score
+            );
+
+            // Check each best type independently
+            // Check all-time best
+            if let Some(ref all_time) = best_records.all_time_best {
+                if session_score >= all_time.score {
+                    best_status.is_all_time_best = true;
+                    best_status.best_type = Some("ALL TIME".to_string());
+                }
+            }
+
+            // Check weekly best
+            if let Some(ref weekly) = best_records.weekly_best {
+                if session_score >= weekly.score {
+                    best_status.is_weekly_best = true;
+                    // Only set as best_type if not already all-time best
+                    if best_status.best_type.is_none() {
+                        best_status.best_type = Some("WEEKLY".to_string());
+                    }
+                }
+            }
+
+            // Check today's best
+            if let Some(ref today) = best_records.todays_best {
+                if session_score >= today.score {
+                    best_status.is_todays_best = true;
+                    // Only set as best_type if not already all-time or weekly best
+                    if best_status.best_type.is_none() {
+                        best_status.best_type = Some("TODAY'S".to_string());
+                    }
+                }
+            } else {
+                // No today's best record exists, this is automatically today's best
+                best_status.is_todays_best = true;
+                if best_status.best_type.is_none() {
+                    best_status.best_type = Some("TODAY'S".to_string());
+                }
+            }
+
+            // If no previous records exist at all, this is automatically today's best
+            if best_records.all_time_best.is_none()
+                && best_records.weekly_best.is_none()
+                && best_records.todays_best.is_none()
+            {
+                best_status.is_todays_best = true;
+                best_status.best_type = Some("TODAY'S".to_string());
+            }
+        } else {
+            // No records available, this is automatically today's best
+            best_status.is_todays_best = true;
+            best_status.best_type = Some("TODAY'S".to_string());
+        }
+
+        log::debug!("Final best_status: {:?}", best_status);
+        best_status
+    }
+
+    /// Determine best status for a session before saving it to database
+    pub fn determine_best_status_instance(&self, session_score: f64) -> Result<BestStatus> {
+        // Get current best records before the new session is saved
+        if let Ok(best_records) = self.get_best_records() {
+            Ok(Self::determine_best_status_with_start_records(
+                session_score,
+                Some(&best_records),
+            ))
+        } else {
+            Ok(Self::determine_best_status_with_start_records(
+                session_score,
+                None,
+            ))
+        }
+    }
+
+    /// Determine best status using global instance
+    pub fn determine_best_status_global(session_score: f64) -> Result<Option<BestStatus>> {
+        let global = Self::global();
+        let guard = global
+            .lock()
+            .map_err(|e| GitTypeError::database_error(format!("Failed to acquire lock: {}", e)))?;
+
+        if let Some(service) = guard.as_ref() {
+            service
+                .determine_best_status_instance(session_score)
+                .map(Some)
+        } else {
+            Ok(None)
+        }
+    }
+
     /// Get session result data for analytics
     pub fn get_session_result_for_analytics(
         &self,
@@ -321,6 +443,37 @@ pub struct BestRecords {
     pub todays_best: Option<SessionResultData>,
     pub weekly_best: Option<SessionResultData>,
     pub all_time_best: Option<SessionResultData>,
+}
+
+#[derive(Debug, Clone)]
+pub struct BestStatus {
+    pub is_todays_best: bool,
+    pub is_weekly_best: bool,
+    pub is_all_time_best: bool,
+    pub best_type: Option<String>,
+    pub todays_best_score: f64,
+    pub weekly_best_score: f64,
+    pub all_time_best_score: f64,
+}
+
+impl Default for BestStatus {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl BestStatus {
+    pub fn new() -> Self {
+        Self {
+            is_todays_best: false,
+            is_weekly_best: false,
+            is_all_time_best: false,
+            best_type: None,
+            todays_best_score: 0.0,
+            weekly_best_score: 0.0,
+            all_time_best_score: 0.0,
+        }
+    }
 }
 
 impl HasDatabase for SessionRepository {
@@ -340,5 +493,20 @@ impl Default for SessionRepository {
                 )),
             }
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_best_status_new() {
+        let status = BestStatus::new();
+        assert!(!status.is_todays_best);
+        assert!(!status.is_weekly_best);
+        assert!(!status.is_all_time_best);
+        assert!(status.best_type.is_none());
+        assert_eq!(status.todays_best_score, 0.0);
     }
 }
