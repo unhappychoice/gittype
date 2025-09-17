@@ -16,6 +16,8 @@ struct ChallengePointer {
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 struct CacheData {
+    /// For display/CLI purposes; filename becomes opaque once hashed.
+    repo_key: String,
     commit_hash: String,
     challenge_pointers: Vec<ChallengePointer>,
 }
@@ -44,6 +46,12 @@ impl ChallengeCache {
             return Ok(());
         }
 
+        // Do not save when the commit hash is unknown
+        let commit_str = match repo.commit_hash.as_deref() {
+            Some(h) if !h.is_empty() => h,
+            _ => return Ok(()),
+        };
+
         let cache_file = self.get_cache_file(repo);
 
         let challenge_pointers: Vec<ChallengePointer> = challenges
@@ -60,7 +68,8 @@ impl ChallengeCache {
             .collect();
 
         let cache_data = CacheData {
-            commit_hash: repo.commit_hash.clone().unwrap_or_default(),
+            repo_key: repo.cache_key(),
+            commit_hash: commit_str.to_string(),
             challenge_pointers,
         };
 
@@ -93,10 +102,10 @@ impl ChallengeCache {
         let total = cache_data.challenge_pointers.len();
         let processed = Arc::new(Mutex::new(0usize));
 
-        let challenges: Vec<Challenge> = cache_data
+        let results: Vec<Option<Challenge>> = cache_data
             .challenge_pointers
             .par_iter()
-            .filter_map(|pointer| {
+            .map(|pointer| {
                 let challenge = self.reconstruct_challenge(pointer, repo_root);
 
                 // Report progress atomically
@@ -118,6 +127,10 @@ impl ChallengeCache {
             })
             .collect();
 
+        if results.iter().any(|r| r.is_none()) {
+            return None;
+        }
+        let challenges: Vec<Challenge> = results.into_iter().map(Option::unwrap).collect();
         Some(challenges)
     }
 
@@ -172,22 +185,22 @@ impl ChallengeCache {
             return Ok(Vec::new());
         }
 
-        let keys = fs::read_dir(&self.cache_dir)
+        let mut keys: Vec<String> = fs::read_dir(&self.cache_dir)
             .map_err(|e| format!("Failed to read cache dir: {}", e))?
             .filter_map(|entry| entry.ok())
             .filter_map(|entry| {
-                entry
-                    .file_name()
-                    .to_str()
-                    .filter(|name| name.ends_with(".bin"))
-                    .and_then(|name| {
-                        let cache_key = name.trim_end_matches(".bin");
-                        GzipStorage::load::<CacheData>(&entry.path())
-                            .map(|cache_data| format!("{}:{}", cache_key, cache_data.commit_hash))
-                    })
+                // Prefer data inside the file (repo_key + commit_hash) instead of filename.
+                if entry.file_name().to_string_lossy().ends_with(".bin") {
+                    GzipStorage::load::<CacheData>(&entry.path())
+                        .map(|d| format!("{}:{}", d.repo_key, d.commit_hash))
+                } else {
+                    None
+                }
             })
             .collect();
 
+        keys.sort();
+        keys.dedup();
         Ok(keys)
     }
 
@@ -198,6 +211,11 @@ impl ChallengeCache {
     ) -> Option<Challenge> {
         let file_path = pointer.source_file_path.as_ref()?;
         let absolute_path = repo_root.join(file_path);
+        let absolute_path = absolute_path.canonicalize().ok()?;
+        let repo_root = repo_root.canonicalize().ok()?;
+        if !absolute_path.starts_with(&repo_root) {
+            return None;
+        }
 
         // Read file content
         let file_content = fs::read_to_string(&absolute_path).ok()?;
@@ -228,9 +246,22 @@ impl ChallengeCache {
     }
 
     fn get_cache_file(&self, repo: &GitRepository) -> PathBuf {
-        fs::create_dir_all(&self.cache_dir).ok();
-        let cache_key = repo.cache_key();
-        self.cache_dir.join(format!("{}.bin", cache_key))
+        // Best-effort dir creation; callers handle save/load errors.
+        let _ = fs::create_dir_all(&self.cache_dir);
+        // Compose a stable, collision-resistant, filesystem-safe key.
+        let commit = repo.commit_hash.as_deref().unwrap_or("nohash");
+        let dirty = if repo.is_dirty { "dirty" } else { "clean" };
+        let raw = format!("{}:{}:{}", repo.cache_key(), commit, dirty);
+        // Hash to keep filename short and safe across OSes.
+        use sha2::{Digest, Sha256};
+        let mut hasher = Sha256::new();
+        hasher.update(raw.as_bytes());
+        let digest = hasher.finalize();
+        let hex = digest
+            .iter()
+            .map(|b| format!("{:02x}", b))
+            .collect::<String>();
+        self.cache_dir.join(format!("{}.bin", hex))
     }
 }
 
