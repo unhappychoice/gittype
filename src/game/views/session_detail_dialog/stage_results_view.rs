@@ -37,60 +37,47 @@ impl StageResultsView {
             )));
             lines.push(Line::from(""));
 
-            let max_stage_name_width = Self::calculate_max_stage_name_width(session_result);
-
             for (i, stage_result) in session_result.stage_results.iter().enumerate() {
                 let stage_name = Self::get_stage_name(stage_result, i);
 
-                let mut spans = vec![];
+                // Stage name line
+                lines.push(Line::from(Span::styled(
+                    format!("{}:", stage_name),
+                    Style::default()
+                        .fg(Colors::TEXT)
+                        .add_modifier(Modifier::BOLD),
+                )));
 
-                spans.push(Span::styled(
-                    format!("{:>width$}: ", stage_name, width = max_stage_name_width),
-                    Style::default().fg(Colors::TEXT),
-                ));
+                // Metrics line (indented)
+                let mut metrics_spans = vec![];
+                metrics_spans.push(Span::styled("  ", Style::default()));
 
-                spans.push(Span::styled("Score ", Style::default().fg(Colors::SCORE)));
-                spans.push(Span::styled(
+                metrics_spans.push(Span::styled("Score: ", Style::default().fg(Colors::SCORE)));
+                metrics_spans.push(Span::styled(
                     format!("{:.0}", stage_result.challenge_score),
                     Style::default().fg(Colors::TEXT),
                 ));
-                spans.push(Span::styled(" | ", Style::default().fg(Colors::TEXT)));
+                metrics_spans.push(Span::styled(" | ", Style::default().fg(Colors::TEXT)));
 
-                spans.push(Span::styled("CPM ", Style::default().fg(Colors::CPM_WPM)));
-                spans.push(Span::styled(
+                metrics_spans.push(Span::styled("CPM: ", Style::default().fg(Colors::CPM_WPM)));
+                metrics_spans.push(Span::styled(
                     format!("{:.0}", stage_result.cpm),
                     Style::default().fg(Colors::TEXT),
                 ));
-                spans.push(Span::styled(" | ", Style::default().fg(Colors::TEXT)));
+                metrics_spans.push(Span::styled(" | ", Style::default().fg(Colors::TEXT)));
 
-                spans.push(Span::styled("Acc ", Style::default().fg(Colors::ACCURACY)));
-                spans.push(Span::styled(
+                metrics_spans.push(Span::styled("Acc: ", Style::default().fg(Colors::ACCURACY)));
+                metrics_spans.push(Span::styled(
                     format!("{:.1}%", stage_result.accuracy),
                     Style::default().fg(Colors::TEXT),
                 ));
 
-                lines.push(Line::from(spans));
+                lines.push(Line::from(metrics_spans));
             }
 
             let paragraph = Paragraph::new(lines).alignment(Alignment::Center);
             f.render_widget(paragraph, area);
         }
-    }
-
-    fn calculate_max_stage_name_width(session_result: &crate::models::SessionResult) -> usize {
-        session_result
-            .stage_results
-            .iter()
-            .enumerate()
-            .map(|(i, stage)| {
-                if !stage.challenge_path.is_empty() {
-                    stage.challenge_path.len()
-                } else {
-                    format!("Stage {}", i + 1).len()
-                }
-            })
-            .max()
-            .unwrap_or(20)
     }
 
     fn get_stage_name(stage_result: &crate::models::StageResult, index: usize) -> String {
