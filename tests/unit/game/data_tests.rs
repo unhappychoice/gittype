@@ -30,10 +30,11 @@ fn sample_repo(root: Option<PathBuf>) -> GitRepository {
 fn processing_parameters_roundtrip() {
     setup_game_data();
 
-    let mut options = ExtractionOptions::default();
-    options.include_patterns = vec!["**/*.rs".into()];
-    options.exclude_patterns = vec!["target".into()];
-    options.languages = Some(vec!["rust".into()]);
+    let options = ExtractionOptions {
+        include_patterns: vec!["**/*.rs".into()],
+        exclude_patterns: vec!["target".into()],
+        languages: Some(vec!["rust".into()]),
+    };
 
     let repo_path = PathBuf::from("/tmp/repo");
     GameData::set_processing_parameters(Some("owner/repo"), Some(&repo_path), &options)
