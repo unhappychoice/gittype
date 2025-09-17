@@ -64,7 +64,7 @@ once_cell = "1.19"
 rayon = "1.8"
 open = "5.0"
 urlencoding = "2.1"
-git2 = { version = "0.20", features = ["vendored-openssl"] }
+git2 = { version = "0.20", features = ["vendored-openssl", "vendored-libgit2"] }
 streaming-iterator = "0.1"
 log = "0.4"
 log4rs = "1.4"
