@@ -105,6 +105,16 @@ impl Countdown {
             self.total_paused += pause_time.elapsed();
         }
     }
+
+    #[cfg_attr(not(test), allow(dead_code))]
+    pub fn fast_forward_for_test(&mut self, duration: Duration) {
+        if let Some(start_time) = self.start_time {
+            self.start_time = start_time.checked_sub(duration).or(Some(start_time));
+        }
+        if let Some(pause_time) = self.pause_time {
+            self.pause_time = pause_time.checked_sub(duration).or(Some(pause_time));
+        }
+    }
 }
 
 impl Default for Countdown {
