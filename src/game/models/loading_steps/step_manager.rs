@@ -1,6 +1,6 @@
 use super::{
-    CloningStep, DatabaseInitStep, ExecutionContext, ExtractingStep, FinalizingStep,
-    GeneratingStep, ScanningStep, Step, StepResult,
+    CacheCheckStep, CloningStep, DatabaseInitStep, ExecutionContext, ExtractingStep,
+    FinalizingStep, GeneratingStep, ScanningStep, Step, StepResult,
 };
 use crate::game::screens::loading_screen::ProgressReporter;
 use crate::Result;
@@ -21,6 +21,7 @@ impl StepManager {
             steps: vec![
                 Box::new(DatabaseInitStep),
                 Box::new(CloningStep),
+                Box::new(CacheCheckStep),
                 Box::new(ScanningStep),
                 Box::new(ExtractingStep),
                 Box::new(GeneratingStep),
@@ -57,6 +58,11 @@ impl StepManager {
         for step in &self.steps {
             // Skip step if it can be skipped
             if step.can_skip(context) {
+                continue;
+            }
+
+            // Skip remaining steps if cache was used (except finalization)
+            if context.cache_used && step.step_type() != super::StepType::Finalizing {
                 continue;
             }
 

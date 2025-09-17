@@ -4,6 +4,7 @@ use crate::Result;
 use ratatui::style::Color;
 use std::path::PathBuf;
 
+pub mod cache_check_step;
 pub mod cloning_step;
 pub mod database_init_step;
 pub mod extracting_step;
@@ -12,6 +13,7 @@ pub mod generating_step;
 pub mod scanning_step;
 pub mod step_manager;
 
+pub use cache_check_step::CacheCheckStep;
 pub use cloning_step::CloningStep;
 pub use database_init_step::DatabaseInitStep;
 pub use extracting_step::ExtractingStep;
@@ -23,6 +25,7 @@ pub use step_manager::StepManager;
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum StepType {
     DatabaseInit,
+    CacheCheck,
     Cloning,
     Scanning,
     Extracting,
@@ -42,6 +45,7 @@ pub struct ExecutionContext<'a> {
     pub git_repository: Option<crate::models::GitRepository>,
     pub scanned_files: Option<Vec<PathBuf>>, // Temporary storage for step results
     pub chunks: Option<Vec<crate::extractor::models::CodeChunk>>, // Chunks from ExtractingStep
+    pub cache_used: bool, // Flag to indicate cache was used and remaining steps should be skipped
 }
 
 #[derive(Debug)]

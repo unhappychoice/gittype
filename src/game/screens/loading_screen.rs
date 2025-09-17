@@ -253,6 +253,7 @@ impl LoadingScreen {
             git_repository: None,
             scanned_files: None,
             chunks: None,
+            cache_used: false,
         };
 
         match step_manager.execute_pipeline(&mut context) {

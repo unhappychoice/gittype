@@ -70,4 +70,19 @@ pub enum Commands {
         #[arg(long)]
         output: Option<PathBuf>,
     },
+    /// Manage challenge cache
+    Cache {
+        #[command(subcommand)]
+        cache_command: CacheCommands,
+    },
+}
+
+#[derive(Subcommand)]
+pub enum CacheCommands {
+    /// Show cache statistics
+    Stats,
+    /// Clear all cached challenges
+    Clear,
+    /// List cached repository keys
+    List,
 }
