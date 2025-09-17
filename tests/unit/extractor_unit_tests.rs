@@ -85,7 +85,10 @@ fn test_detect_from_path_defaults_to_text() {
     assert_eq!(LanguageRegistry::detect_from_path(path), "text".to_string());
 
     let rust_path = std::path::Path::new("/tmp/lib.rs");
-    assert_eq!(LanguageRegistry::detect_from_path(rust_path), "rust".to_string());
+    assert_eq!(
+        LanguageRegistry::detect_from_path(rust_path),
+        "rust".to_string()
+    );
 }
 
 #[test]

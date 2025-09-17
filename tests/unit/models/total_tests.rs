@@ -1,8 +1,8 @@
-use gittype::models::total::TotalResult;
-use gittype::models::total::Total;
+use gittype::models::challenge::Challenge;
 use gittype::models::session::Session;
 use gittype::models::stage::Stage;
-use gittype::models::challenge::Challenge;
+use gittype::models::total::Total;
+use gittype::models::total::TotalResult;
 
 fn sample_session(id: &str) -> Session {
     let stage = Stage::new(Challenge::new(id.into(), "fn main() {}".into()), 1);
@@ -32,10 +32,7 @@ fn total_result_completion_status_variants() {
     );
 
     result.total_sessions_completed = 1;
-    assert_eq!(
-        result.get_completion_status(),
-        "1/2 sessions completed"
-    );
+    assert_eq!(result.get_completion_status(), "1/2 sessions completed");
 }
 
 #[test]

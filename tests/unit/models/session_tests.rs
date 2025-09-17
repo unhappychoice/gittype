@@ -21,7 +21,10 @@ fn session_new_preserves_stage_list() {
 #[test]
 fn session_result_completion_status_covers_cases() {
     let mut result = SessionResult::new();
-    assert_eq!(result.get_session_completion_status(), "No challenges attempted");
+    assert_eq!(
+        result.get_session_completion_status(),
+        "No challenges attempted"
+    );
 
     result.stages_completed = 2;
     assert_eq!(

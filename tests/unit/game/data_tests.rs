@@ -39,8 +39,8 @@ fn processing_parameters_roundtrip() {
     GameData::set_processing_parameters(Some("owner/repo"), Some(&repo_path), &options)
         .expect("should store parameters");
 
-    let (spec, path, stored) = GameData::get_processing_parameters()
-        .expect("processing parameters should be available");
+    let (spec, path, stored) =
+        GameData::get_processing_parameters().expect("processing parameters should be available");
 
     assert_eq!(spec, Some("owner/repo".into()));
     assert_eq!(path, Some(repo_path));
@@ -62,8 +62,9 @@ fn set_results_and_take_challenges() {
 
     assert!(GameData::is_loading_completed());
 
-    let ids = GameData::with_challenges(|list| list.iter().map(|c| c.id.clone()).collect::<Vec<_>>())
-        .expect("with_challenges should see stored data");
+    let ids =
+        GameData::with_challenges(|list| list.iter().map(|c| c.id.clone()).collect::<Vec<_>>())
+            .expect("with_challenges should see stored data");
     assert_eq!(ids, vec!["1", "2"]);
 
     let taken = GameData::take_challenges().expect("challenges should be taken once");

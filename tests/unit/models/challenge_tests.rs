@@ -22,8 +22,11 @@ fn display_title_defaults_to_id() {
 
 #[test]
 fn display_title_uses_relative_path_and_lines() {
-    let challenge = Challenge::new("x".into(), "fn main() {}".into())
-        .with_source_info("/tmp/src/main.rs".into(), 5, 10);
+    let challenge = Challenge::new("x".into(), "fn main() {}".into()).with_source_info(
+        "/tmp/src/main.rs".into(),
+        5,
+        10,
+    );
 
     assert_eq!(challenge.get_display_title(), "src/main.rs:5-10");
 }

@@ -108,6 +108,12 @@ fn difficulty_level_char_limits_are_ordered() {
 #[test]
 fn difficulty_level_texts_match_expectations() {
     assert_eq!(DifficultyLevel::Easy.description(), "~100 characters");
-    assert_eq!(DifficultyLevel::Hard.subtitle(), "Long functions or classes");
-    assert_eq!(DifficultyLevel::Wild.subtitle(), "Unpredictable length chunks");
+    assert_eq!(
+        DifficultyLevel::Hard.subtitle(),
+        "Long functions or classes"
+    );
+    assert_eq!(
+        DifficultyLevel::Wild.subtitle(),
+        "Unpredictable length chunks"
+    );
 }

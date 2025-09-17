@@ -5,7 +5,10 @@ use ratatui::style::Color;
 #[test]
 fn to_crossterm_maps_named_colors() {
     assert_eq!(Colors::to_crossterm(Color::Red), TerminalColor::Red);
-    assert_eq!(Colors::to_crossterm(Color::LightBlue), TerminalColor::DarkBlue);
+    assert_eq!(
+        Colors::to_crossterm(Color::LightBlue),
+        TerminalColor::DarkBlue
+    );
 }
 
 #[test]

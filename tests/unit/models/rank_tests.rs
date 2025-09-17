@@ -42,10 +42,7 @@ fn rank_color_palette_delegates_to_tier() {
 #[test]
 fn rank_terminal_color_matches_tier_output() {
     let rank = Rank::new("test", RankTier::Expert, 100, 200);
-    assert_eq!(
-        rank.terminal_color(),
-        RankTier::Expert.terminal_color()
-    );
+    assert_eq!(rank.terminal_color(), RankTier::Expert.terminal_color());
 }
 
 #[test]
