@@ -11,4 +11,13 @@ impl Language for C {
     fn extensions(&self) -> Vec<&'static str> {
         vec!["c", "h"]
     }
+
+    fn color(&self) -> ratatui::style::Color {
+        use crate::ui::Colors;
+        Colors::LANG_C
+    }
+
+    fn display_name(&self) -> &'static str {
+        "C"
+    }
 }

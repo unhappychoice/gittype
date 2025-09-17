@@ -14,4 +14,13 @@ impl Language for Kotlin {
     fn aliases(&self) -> Vec<&'static str> {
         vec!["kt"]
     }
+
+    fn color(&self) -> ratatui::style::Color {
+        use crate::ui::Colors;
+        Colors::LANG_KOTLIN
+    }
+
+    fn display_name(&self) -> &'static str {
+        "Kotlin"
+    }
 }

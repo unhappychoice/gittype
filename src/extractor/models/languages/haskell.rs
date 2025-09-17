@@ -14,4 +14,13 @@ impl Language for Haskell {
     fn aliases(&self) -> Vec<&'static str> {
         vec!["hs"]
     }
+
+    fn color(&self) -> ratatui::style::Color {
+        use crate::ui::Colors;
+        Colors::LANG_HASKELL
+    }
+
+    fn display_name(&self) -> &'static str {
+        "Haskell"
+    }
 }

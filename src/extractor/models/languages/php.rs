@@ -11,4 +11,13 @@ impl Language for Php {
     fn extensions(&self) -> Vec<&'static str> {
         vec!["php", "phtml", "php3", "php4", "php5"]
     }
+
+    fn color(&self) -> ratatui::style::Color {
+        use crate::ui::Colors;
+        Colors::LANG_PHP
+    }
+
+    fn display_name(&self) -> &'static str {
+        "PHP"
+    }
 }

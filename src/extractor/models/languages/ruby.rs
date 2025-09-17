@@ -14,4 +14,13 @@ impl Language for Ruby {
     fn aliases(&self) -> Vec<&'static str> {
         vec!["rb"]
     }
+
+    fn color(&self) -> ratatui::style::Color {
+        use crate::ui::Colors;
+        Colors::LANG_RUBY
+    }
+
+    fn display_name(&self) -> &'static str {
+        "Ruby"
+    }
 }

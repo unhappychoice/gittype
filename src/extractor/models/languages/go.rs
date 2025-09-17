@@ -11,4 +11,13 @@ impl Language for Go {
     fn extensions(&self) -> Vec<&'static str> {
         vec!["go"]
     }
+
+    fn color(&self) -> ratatui::style::Color {
+        use crate::ui::Colors;
+        Colors::LANG_GO
+    }
+
+    fn display_name(&self) -> &'static str {
+        "Go"
+    }
 }

@@ -1,11 +1,19 @@
+use crate::ui::Colors;
 use std::hash::{Hash, Hasher};
 
 pub trait Language: std::fmt::Debug + Send + Sync {
     fn name(&self) -> &'static str;
+
+    fn display_name(&self) -> &'static str {
+        self.name()
+    }
+
     fn extensions(&self) -> Vec<&'static str>;
+
     fn aliases(&self) -> Vec<&'static str> {
         vec![]
     }
+
     fn file_patterns(&self) -> Vec<String> {
         self.extensions()
             .into_iter()
@@ -13,9 +21,12 @@ pub trait Language: std::fmt::Debug + Send + Sync {
             .collect()
     }
 
-    // For hashing - use the name as unique identifier
     fn as_hash_key(&self) -> &'static str {
         self.name()
+    }
+
+    fn color(&self) -> ratatui::style::Color {
+        Colors::LANG_DEFAULT
     }
 }
 
@@ -109,6 +120,40 @@ impl LanguageRegistry {
                 .map(|lang| lang.name().to_string())
                 .unwrap_or_else(|| "text".to_string()),
             None => "text".to_string(),
+        }
+    }
+
+    /// Get language by name or alias
+    pub fn get_by_name(name: &str) -> Option<Box<dyn Language>> {
+        let name_lower = name.to_lowercase();
+        Self::all_languages()
+            .into_iter()
+            .find(|lang| lang.name() == name_lower || lang.aliases().contains(&name_lower.as_str()))
+    }
+
+    /// Get color for a language string
+    pub fn get_color(language: Option<&str>) -> ratatui::style::Color {
+        match language {
+            Some(lang) => Self::get_by_name(lang)
+                .map(|l| l.color())
+                .unwrap_or_else(|| {
+                    use crate::ui::Colors;
+                    Colors::LANG_DEFAULT
+                }),
+            None => {
+                use crate::ui::Colors;
+                Colors::LANG_DEFAULT
+            }
+        }
+    }
+
+    /// Get display name for a language string
+    pub fn get_display_name(language: Option<&str>) -> String {
+        match language {
+            Some(lang) => Self::get_by_name(lang)
+                .map(|l| l.display_name().to_string())
+                .unwrap_or_else(|| lang.to_string()),
+            None => "Unknown".to_string(),
         }
     }
 }

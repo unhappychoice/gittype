@@ -14,4 +14,13 @@ impl Language for JavaScript {
     fn aliases(&self) -> Vec<&'static str> {
         vec!["js"]
     }
+
+    fn color(&self) -> ratatui::style::Color {
+        use crate::ui::Colors;
+        Colors::LANG_JAVASCRIPT
+    }
+
+    fn display_name(&self) -> &'static str {
+        "JavaScript"
+    }
 }

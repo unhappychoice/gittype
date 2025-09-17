@@ -11,4 +11,13 @@ impl Language for Swift {
     fn extensions(&self) -> Vec<&'static str> {
         vec!["swift"]
     }
+
+    fn color(&self) -> ratatui::style::Color {
+        use crate::ui::Colors;
+        Colors::LANG_SWIFT
+    }
+
+    fn display_name(&self) -> &'static str {
+        "Swift"
+    }
 }

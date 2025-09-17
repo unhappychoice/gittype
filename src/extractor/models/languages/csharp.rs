@@ -14,4 +14,13 @@ impl Language for CSharp {
     fn aliases(&self) -> Vec<&'static str> {
         vec!["cs", "c#"]
     }
+
+    fn color(&self) -> ratatui::style::Color {
+        use crate::ui::Colors;
+        Colors::LANG_CSHARP
+    }
+
+    fn display_name(&self) -> &'static str {
+        "C#"
+    }
 }

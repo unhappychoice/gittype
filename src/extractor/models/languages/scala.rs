@@ -14,4 +14,13 @@ impl Language for Scala {
     fn aliases(&self) -> Vec<&'static str> {
         vec!["sc"]
     }
+
+    fn color(&self) -> ratatui::style::Color {
+        use crate::ui::Colors;
+        Colors::LANG_SCALA
+    }
+
+    fn display_name(&self) -> &'static str {
+        "Scala"
+    }
 }
