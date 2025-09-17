@@ -20,7 +20,7 @@ pub enum GameMode {
     },
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum DifficultyLevel {
     Easy,   // ~100 characters
     Normal, // ~200 characters

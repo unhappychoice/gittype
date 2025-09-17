@@ -1,4 +1,5 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
+use crate::cache::CHALLENGE_CACHE;
 use crate::ui::Colors;
 use crate::Result;
 use ratatui::style::Color;
@@ -11,7 +12,7 @@ impl Step for GeneratingStep {
         StepType::Generating
     }
     fn step_number(&self) -> usize {
-        6
+        7
     }
     fn description(&self) -> &str {
         "Generating challenges across difficulty levels"
@@ -78,17 +79,32 @@ impl Step for GeneratingStep {
         let git_root = context
             .git_repository
             .as_ref()
-            .and_then(|repo| repo.root_path.as_ref())
-            .map(|path| path.as_path());
+            .and_then(|repo| repo.root_path.as_deref());
 
-        // Convert both chunks and files with unified progress tracking (using move, not clone)
-        let challenges = loader.convert_chunks_and_files_to_challenges_with_progress(
+        // Generate challenges
+        let generated_challenges = loader.convert_chunks_and_files_to_challenges_with_progress(
             chunks, file_paths, git_root, screen,
         );
 
-        // Store challenges in GameData (using move, not clone)
+        // Cache the generated challenges if we have git repository info
+        if let Some(ref git_repo) = context.git_repository {
+            match CHALLENGE_CACHE.save(git_repo, &generated_challenges) {
+                Ok(_) => {
+                    log::info!(
+                        "Successfully cached {} challenges for {}",
+                        generated_challenges.len(),
+                        git_repo.remote_url
+                    );
+                }
+                Err(e) => {
+                    log::warn!("Failed to cache challenges: {}", e);
+                }
+            }
+        }
+
+        // Store challenges in GameData
         use crate::game::GameData;
-        GameData::set_results(challenges, context.git_repository.take())?;
+        GameData::set_results(generated_challenges, context.git_repository.take())?;
 
         Ok(StepResult::Skipped)
     }
