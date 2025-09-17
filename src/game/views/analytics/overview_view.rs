@@ -241,11 +241,14 @@ impl OverviewView {
             let name_width = available_width.saturating_sub(cpm_count_width + index_width);
 
             for (i, (lang_name, avg_cpm, _)) in data.top_languages.iter().enumerate() {
+                use crate::extractor::models::language::LanguageRegistry;
+                let display_name_full = LanguageRegistry::get_display_name(Some(lang_name));
+
                 // Truncate name to fit available space
-                let display_name = if lang_name.len() > name_width {
-                    format!("{}...", &lang_name[..name_width.saturating_sub(3)])
+                let display_name = if display_name_full.len() > name_width {
+                    format!("{}...", &display_name_full[..name_width.saturating_sub(3)])
                 } else {
-                    lang_name.clone()
+                    display_name_full
                 };
 
                 let index_text = format!("{}. ", i + 1);

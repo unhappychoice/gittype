@@ -37,10 +37,13 @@ impl LanguagesView {
             let name_width = available_width.saturating_sub(cpm_count_width);
 
             for (lang_name, avg_cpm, session_count) in data.top_languages.iter() {
-                let display_name = if lang_name.len() > name_width {
-                    format!("{}...", &lang_name[..name_width.saturating_sub(3)])
+                use crate::extractor::models::language::LanguageRegistry;
+                let display_name_full = LanguageRegistry::get_display_name(Some(lang_name));
+
+                let display_name = if display_name_full.len() > name_width {
+                    format!("{}...", &display_name_full[..name_width.saturating_sub(3)])
                 } else {
-                    lang_name.clone()
+                    display_name_full
                 };
 
                 let cpm_text = format!("{:.1} CPM ({:2})", avg_cpm, session_count);
@@ -107,12 +110,15 @@ impl LanguagesView {
             let lang_name = &lang_data.0;
             let detailed_stats = data.language_stats.get(lang_name);
 
+            use crate::extractor::models::language::LanguageRegistry;
+            let display_name = LanguageRegistry::get_display_name(Some(lang_name));
+
             let mut lines = vec![
                 Line::from(vec![
                     Span::raw("  "),
                     Span::styled("Language: ", Style::default().fg(Colors::TEXT)),
                     Span::styled(
-                        &lang_data.0,
+                        display_name,
                         Style::default()
                             .fg(Colors::INFO)
                             .add_modifier(Modifier::BOLD),
