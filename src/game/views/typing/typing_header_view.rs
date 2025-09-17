@@ -4,7 +4,7 @@ use crate::{
 };
 use ratatui::{
     style::Style,
-    text::Line,
+    text::{Line, Span},
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
@@ -23,16 +23,33 @@ impl TypingHeaderView {
                 Some(difficulty) => format!("{:?}", difficulty),
                 None => "Unknown".to_string(),
             };
-            format!(
-                "{} [{}]",
-                challenge.get_display_title_with_repo(&git_repository.cloned()),
-                difficulty_text
-            )
+
+            let base_title = challenge.get_display_title_with_repo(&git_repository.cloned());
+
+            // Create spans for colored language display before difficulty
+            let mut spans = vec![Span::from(base_title)];
+
+            // Add language with color if available
+            if let Some(ref language) = challenge.language {
+                use crate::extractor::models::language::LanguageRegistry;
+                let language_color = LanguageRegistry::get_color(Some(language));
+                let display_name = LanguageRegistry::get_display_name(Some(language));
+                spans.push(Span::from(" "));
+                spans.push(Span::styled(
+                    format!("[{}]", display_name),
+                    Style::default().fg(language_color),
+                ));
+            }
+
+            // Add difficulty at the end
+            spans.push(Span::from(format!(" [{}]", difficulty_text)));
+
+            Line::from(spans)
         } else {
-            "[Challenge]".to_string()
+            Line::from("[Challenge]")
         };
 
-        let header = Paragraph::new(vec![Line::from(header_text)]).block(
+        let header = Paragraph::new(vec![header_text]).block(
             Block::default()
                 .borders(Borders::ALL)
                 .border_style(Style::default().fg(Colors::BORDER))

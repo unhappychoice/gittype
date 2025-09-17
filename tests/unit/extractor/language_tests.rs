@@ -1,0 +1,67 @@
+use gittype::extractor::models::language::LanguageRegistry;
+use gittype::ui::Colors;
+
+#[test]
+fn language_registry_get_color_returns_specific_colors_for_known_languages() {
+    assert_eq!(LanguageRegistry::get_color(Some("rust")), Colors::LANG_RUST);
+    assert_eq!(LanguageRegistry::get_color(Some("python")), Colors::LANG_PYTHON);
+    assert_eq!(LanguageRegistry::get_color(Some("javascript")), Colors::LANG_JAVASCRIPT);
+    assert_eq!(LanguageRegistry::get_color(Some("typescript")), Colors::LANG_TYPESCRIPT);
+}
+
+#[test]
+fn language_registry_get_color_returns_default_for_unknown_languages() {
+    assert_eq!(LanguageRegistry::get_color(Some("unknown")), Colors::LANG_DEFAULT);
+    assert_eq!(LanguageRegistry::get_color(Some("xyz")), Colors::LANG_DEFAULT);
+    assert_eq!(LanguageRegistry::get_color(Some("")), Colors::LANG_DEFAULT);
+}
+
+#[test]
+fn language_registry_get_color_returns_default_for_none() {
+    assert_eq!(LanguageRegistry::get_color(None), Colors::LANG_DEFAULT);
+}
+
+#[test]
+fn language_registry_get_display_name_returns_formal_names() {
+    assert_eq!(LanguageRegistry::get_display_name(Some("rust")), "Rust");
+    assert_eq!(LanguageRegistry::get_display_name(Some("python")), "Python");
+    assert_eq!(LanguageRegistry::get_display_name(Some("javascript")), "JavaScript");
+    assert_eq!(LanguageRegistry::get_display_name(Some("typescript")), "TypeScript");
+    assert_eq!(LanguageRegistry::get_display_name(Some("cpp")), "C++");
+    assert_eq!(LanguageRegistry::get_display_name(Some("csharp")), "C#");
+}
+
+#[test]
+fn language_registry_get_display_name_is_case_insensitive() {
+    assert_eq!(LanguageRegistry::get_display_name(Some("RUST")), "Rust");
+    assert_eq!(LanguageRegistry::get_display_name(Some("JavaScript")), "JavaScript");
+    assert_eq!(LanguageRegistry::get_display_name(Some("Python")), "Python");
+}
+
+#[test]
+fn language_registry_get_display_name_preserves_unknown_languages() {
+    assert_eq!(LanguageRegistry::get_display_name(Some("unknown")), "unknown");
+    assert_eq!(LanguageRegistry::get_display_name(Some("CustomLang")), "CustomLang");
+}
+
+#[test]
+fn language_registry_get_display_name_returns_unknown_for_none() {
+    assert_eq!(LanguageRegistry::get_display_name(None), "Unknown");
+}
+
+#[test]
+fn language_registry_get_by_name_finds_known_languages() {
+    assert!(LanguageRegistry::get_by_name("rust").is_some());
+    assert!(LanguageRegistry::get_by_name("python").is_some());
+    assert!(LanguageRegistry::get_by_name("javascript").is_some());
+    assert!(LanguageRegistry::get_by_name("unknown").is_none());
+}
+
+#[test]
+fn language_trait_methods_work_correctly() {
+    if let Some(rust_lang) = LanguageRegistry::get_by_name("rust") {
+        assert_eq!(rust_lang.name(), "rust");
+        assert_eq!(rust_lang.display_name(), "Rust");
+        assert_eq!(rust_lang.color(), Colors::LANG_RUST);
+    }
+}

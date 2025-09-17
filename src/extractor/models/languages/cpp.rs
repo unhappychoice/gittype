@@ -14,4 +14,13 @@ impl Language for Cpp {
     fn aliases(&self) -> Vec<&'static str> {
         vec!["c++"]
     }
+
+    fn color(&self) -> ratatui::style::Color {
+        use crate::ui::Colors;
+        Colors::LANG_CPP
+    }
+
+    fn display_name(&self) -> &'static str {
+        "C++"
+    }
 }

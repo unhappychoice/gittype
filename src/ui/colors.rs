@@ -54,6 +54,25 @@ impl Colors {
     // Progress bar colors
     pub const PROGRESS_BAR: Color = Color::Cyan;
     pub const PROGRESS_BG: Color = Color::DarkGray;
+
+    // Programming language colors - distinct and accessible
+    pub const LANG_RUST: Color = Color::Rgb(222, 165, 132); // Rust orange
+    pub const LANG_PYTHON: Color = Color::Rgb(255, 212, 59); // Python yellow
+    pub const LANG_JAVASCRIPT: Color = Color::Rgb(240, 219, 79); // JS yellow
+    pub const LANG_TYPESCRIPT: Color = Color::Rgb(49, 120, 198); // TS blue
+    pub const LANG_GO: Color = Color::Rgb(0, 173, 181); // Go cyan
+    pub const LANG_JAVA: Color = Color::Rgb(237, 41, 57); // Java red
+    pub const LANG_C: Color = Color::Rgb(85, 85, 85); // C gray
+    pub const LANG_CPP: Color = Color::Rgb(0, 89, 156); // C++ blue
+    pub const LANG_CSHARP: Color = Color::Rgb(239, 117, 27); // C# orange
+    pub const LANG_PHP: Color = Color::Rgb(119, 123, 180); // PHP purple
+    pub const LANG_RUBY: Color = Color::Rgb(204, 52, 45); // Ruby red
+    pub const LANG_SWIFT: Color = Color::Rgb(250, 109, 63); // Swift orange
+    pub const LANG_KOTLIN: Color = Color::Rgb(124, 75, 255); // Kotlin purple
+    pub const LANG_SCALA: Color = Color::Rgb(220, 50, 47); // Scala red
+    pub const LANG_HASKELL: Color = Color::Rgb(94, 80, 134); // Haskell purple
+    pub const LANG_DART: Color = Color::Rgb(0, 180, 240); // Dart blue
+    pub const LANG_DEFAULT: Color = Color::White; // Default for unknown languages
 }
 
 impl Colors {

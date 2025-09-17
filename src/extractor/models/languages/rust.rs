@@ -14,4 +14,13 @@ impl Language for Rust {
     fn aliases(&self) -> Vec<&'static str> {
         vec!["rs"]
     }
+
+    fn color(&self) -> ratatui::style::Color {
+        use crate::ui::Colors;
+        Colors::LANG_RUST
+    }
+
+    fn display_name(&self) -> &'static str {
+        "Rust"
+    }
 }

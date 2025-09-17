@@ -14,4 +14,13 @@ impl Language for Python {
     fn aliases(&self) -> Vec<&'static str> {
         vec!["py"]
     }
+
+    fn color(&self) -> ratatui::style::Color {
+        use crate::ui::Colors;
+        Colors::LANG_PYTHON
+    }
+
+    fn display_name(&self) -> &'static str {
+        "Python"
+    }
 }

@@ -14,4 +14,13 @@ impl Language for TypeScript {
     fn aliases(&self) -> Vec<&'static str> {
         vec!["ts"]
     }
+
+    fn color(&self) -> ratatui::style::Color {
+        use crate::ui::Colors;
+        Colors::LANG_TYPESCRIPT
+    }
+
+    fn display_name(&self) -> &'static str {
+        "TypeScript"
+    }
 }
