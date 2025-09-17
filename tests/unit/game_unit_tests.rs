@@ -91,3 +91,23 @@ fn test_custom_mode_easy_prefers_short() {
     //     );
     // }
 }
+
+#[test]
+fn difficulty_level_char_limits_are_ordered() {
+    let limits: Vec<(usize, usize)> = vec![
+        DifficultyLevel::Easy.char_limits(),
+        DifficultyLevel::Normal.char_limits(),
+        DifficultyLevel::Hard.char_limits(),
+    ];
+
+    assert!(limits[0].0 < limits[1].0);
+    assert!(limits[1].0 < limits[2].0);
+    assert!(limits[2].1 >= limits[1].1);
+}
+
+#[test]
+fn difficulty_level_texts_match_expectations() {
+    assert_eq!(DifficultyLevel::Easy.description(), "~100 characters");
+    assert_eq!(DifficultyLevel::Hard.subtitle(), "Long functions or classes");
+    assert_eq!(DifficultyLevel::Wild.subtitle(), "Unpredictable length chunks");
+}
