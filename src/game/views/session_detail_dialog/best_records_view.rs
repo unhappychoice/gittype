@@ -1,4 +1,6 @@
+use crate::models::SessionResult;
 use crate::storage::repositories::session_repository::SessionRepository;
+use crate::storage::session_repository::BestStatus;
 use crate::ui::Colors;
 use ratatui::{
     layout::{Alignment, Rect},
@@ -11,7 +13,16 @@ use ratatui::{
 pub struct BestRecordsView;
 
 impl BestRecordsView {
-    pub fn render(f: &mut Frame, area: Rect, session_result: &crate::models::SessionResult) {
+    pub fn render(f: &mut Frame, area: Rect, session_result: &SessionResult) {
+        Self::render_with_best_status(f, area, session_result, None)
+    }
+
+    pub fn render_with_best_status(
+        f: &mut Frame,
+        area: Rect,
+        session_result: &SessionResult,
+        best_status: Option<&BestStatus>,
+    ) {
         if let Ok(Some(best_records)) = SessionRepository::get_best_records_global() {
             let mut lines = vec![
                 Line::from(Span::styled(
@@ -37,7 +48,18 @@ impl BestRecordsView {
 
             for (label, record_data) in records.iter() {
                 if let Some(record) = record_data {
-                    let is_new_pb = session_result.session_score > record.score;
+                    // Use best_status if provided, otherwise fall back to direct comparison
+                    let is_new_pb = if let Some(status) = best_status {
+                        match *label {
+                            "Today's Best" => status.is_todays_best,
+                            "Weekly Best" => status.is_weekly_best,
+                            "All time Best" => status.is_all_time_best,
+                            _ => false,
+                        }
+                    } else {
+                        session_result.session_score > record.score
+                    };
+
                     let diff = session_result.session_score - record.score;
 
                     let mut spans = vec![];

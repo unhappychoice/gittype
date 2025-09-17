@@ -41,6 +41,7 @@ impl SessionSummaryScreen {
     }
 
     fn show_session_summary(
+        &mut self,
         session_result: &crate::models::SessionResult,
         _repo_info: &Option<GitRepository>,
     ) -> Result<()> {
@@ -60,6 +61,13 @@ impl SessionSummaryScreen {
 
         let best_rank = crate::scoring::Rank::for_score(session_result.session_score);
 
+        // Get best status using session start records from SessionManager
+        let best_status = crate::game::session_manager::SessionManager::get_best_status_for_score(
+            session_result.session_score,
+        )
+        .ok()
+        .flatten();
+
         let total_content_height = 4 + 5 + 1 + 3 + 1 + 4 + 2 + 2;
         let rank_start_row = if total_content_height < terminal_height {
             center_row.saturating_sub(total_content_height / 2)
@@ -77,8 +85,13 @@ impl SessionSummaryScreen {
         )?;
 
         let score_label_row = rank_start_row + rank_height + 4;
-        let summary_start_row =
-            ScoreView::render(session_result, best_rank, center_col, score_label_row)?;
+        let summary_start_row = ScoreView::render(
+            session_result,
+            best_rank,
+            center_col,
+            score_label_row,
+            best_status.as_ref(),
+        )?;
 
         SummaryView::render(session_result, center_col, summary_start_row)?;
 
@@ -139,7 +152,7 @@ impl Screen for SessionSummaryScreen {
         if let Some(session_result) = session_result {
             // Get git repository from global GameData
             let git_repository = crate::game::game_data::GameData::get_git_repository();
-            let _ = SessionSummaryScreen::show_session_summary(session_result, &git_repository);
+            let _ = self.show_session_summary(session_result, &git_repository);
         }
         Ok(())
     }
