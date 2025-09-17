@@ -70,6 +70,25 @@ fn test_language_from_extension() {
 }
 
 #[test]
+fn test_validate_languages() {
+    let supported = vec!["rust".to_string(), "python".to_string()];
+    assert!(LanguageRegistry::validate_languages(&supported).is_ok());
+
+    let unsupported = vec!["rust".to_string(), "brainfuck".to_string()];
+    let error = LanguageRegistry::validate_languages(&unsupported).unwrap_err();
+    assert_eq!(error, vec!["brainfuck".to_string()]);
+}
+
+#[test]
+fn test_detect_from_path_defaults_to_text() {
+    let path = std::path::Path::new("/tmp/file.unknown_extension");
+    assert_eq!(LanguageRegistry::detect_from_path(path), "text".to_string());
+
+    let rust_path = std::path::Path::new("/tmp/lib.rs");
+    assert_eq!(LanguageRegistry::detect_from_path(rust_path), "rust".to_string());
+}
+
+#[test]
 fn test_code_extractor_creation() {
     let extractor = CodeChunkExtractor::new();
     assert!(extractor.is_ok());
