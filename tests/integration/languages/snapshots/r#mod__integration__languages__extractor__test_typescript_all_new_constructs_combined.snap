@@ -5,6 +5,37 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [
+        [
+          1,
+          25
+        ],
+        [
+          100,
+          113
+        ],
+        [
+          165,
+          184
+        ],
+        [
+          266,
+          290
+        ],
+        [
+          406,
+          448
+        ]
+      ],
+      "content": "\n// Interface declaration\ninterface User {\n    id: number;\n    name: string;\n    email?: string;\n}\n\n// Type alias\ntype Status = 'pending' | 'completed' | 'failed';\n\n// Enum declaration\nenum Color {\n    Red = '#ff0000',\n    Green = '#00ff00',\n    Blue = '#0000ff'\n}\n\n// Namespace declaration\nnamespace Utils {\n    export function formatDate(date: Date): string {\n        return date.toISOString();\n    }\n}\n\n// Existing constructs (should still work)\nclass UserService {\n    private users: User[] = [];\n\n    addUser(user: User): void {\n        this.users.push(user);\n    }\n\n    getUserById(id: number): User | undefined {\n        return this.users.find(u => u.id === id);\n    }\n}\n\nfunction processUser(user: User): Status {\n    return 'pending';\n}\n\nconst calculateTotal = (items: number[]): number => {\n    return items.reduce((sum, item) => sum + item, 0);\n};\n",
+      "end_line": 45,
+      "language": "typescript",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Interface",
       "comment_ranges": [],
       "content": "interface User {\n    id: number;\n    name: string;\n    email?: string;\n}",
@@ -107,5 +138,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\n// Interface declaration\ninterface User {\n    id: number;\n    name: string;\n    email?: string;\n}\n\n// Type alias\ntype Status = 'pending' | 'completed' | 'failed';\n\n// Enum declaration\nenum Color {\n    Red = '#ff0000',\n    Green = '#00ff00',\n    Blue = '#0000ff'\n}\n\n// Namespace declaration\nnamespace Utils {\n    export function formatDate(date: Date): string {\n        return date.toISOString();\n    }\n}\n\n// Existing constructs (should still work)\nclass UserService {\n    private users: User[] = [];\n\n    addUser(user: User): void {\n        this.users.push(user);\n    }\n\n    getUserById(id: number): User | undefined {\n        return this.users.find(u => u.id === id);\n    }\n}\n\nfunction processUser(user: User): Status {\n    return 'pending';\n}\n\nconst calculateTotal = (items: number[]): number => {\n    return items.reduce((sum, item) => sum + item, 0);\n};\n",
   "test_name": "test_typescript_all_new_constructs_combined",
-  "total_chunks": 10
+  "total_chunks": 11
 }

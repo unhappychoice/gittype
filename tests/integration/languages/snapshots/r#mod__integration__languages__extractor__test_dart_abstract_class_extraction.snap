@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nabstract class Shape {\n  double get area;\n  void draw();\n\n  void describe() {\n    print('This shape has area: $area');\n  }\n}\n\nclass Circle extends Shape {\n  double radius;\n\n  Circle(this.radius);\n\n  @override\n  double get area => 3.14159 * radius * radius;\n\n  @override\n  void draw() {\n    print('Drawing a circle');\n  }\n}\n",
+      "end_line": 23,
+      "language": "dart",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "abstract class Shape {\n  double get area;\n  void draw();\n\n  void describe() {\n    print('This shape has area: $area');\n  }\n}",
@@ -67,5 +77,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nabstract class Shape {\n  double get area;\n  void draw();\n\n  void describe() {\n    print('This shape has area: $area');\n  }\n}\n\nclass Circle extends Shape {\n  double radius;\n\n  Circle(this.radius);\n\n  @override\n  double get area => 3.14159 * radius * radius;\n\n  @override\n  void draw() {\n    print('Drawing a circle');\n  }\n}\n",
   "test_name": "test_dart_abstract_class_extraction",
-  "total_chunks": 6
+  "total_chunks": 7
 }

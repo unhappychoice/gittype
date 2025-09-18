@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nenum Color {\n    case Red, Green, Blue\n    case RGB(r: Int, g: Int, b: Int)\n\n    def toHex(): String = this match {\n        case Red => \"#FF0000\"\n        case Green => \"#00FF00\"\n        case Blue => \"#0000FF\"\n        case RGB(r, g, b) => f\"#$r%02X$g%02X$b%02X\"\n    }\n}\n\nenum Direction {\n    case North, South, East, West\n}\n",
+      "end_line": 16,
+      "language": "scala",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Const",
       "comment_ranges": [],
       "content": "enum Color {\n    case Red, Green, Blue\n    case RGB(r: Int, g: Int, b: Int)\n\n    def toHex(): String = this match {\n        case Red => \"#FF0000\"\n        case Green => \"#00FF00\"\n        case Blue => \"#0000FF\"\n        case RGB(r, g, b) => f\"#$r%02X$g%02X$b%02X\"\n    }\n}",
@@ -37,5 +47,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nenum Color {\n    case Red, Green, Blue\n    case RGB(r: Int, g: Int, b: Int)\n\n    def toHex(): String = this match {\n        case Red => \"#FF0000\"\n        case Green => \"#00FF00\"\n        case Blue => \"#0000FF\"\n        case RGB(r, g, b) => f\"#$r%02X$g%02X$b%02X\"\n    }\n}\n\nenum Direction {\n    case North, South, East, West\n}\n",
   "test_name": "test_scala_enum_extraction",
-  "total_chunks": 3
+  "total_chunks": 4
 }

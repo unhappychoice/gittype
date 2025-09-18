@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nobject Main {\n    def main(args: Array[String]): Unit = {\n        println(\"Hello, world!\")\n    }\n\n    val PI = 3.14159\n}\n\nobject MathUtils {\n    def factorial(n: Int): Int = {\n        if (n <= 1) 1 else n * factorial(n - 1)\n    }\n}\n\ncase object Singleton {\n    def process(): String = \"processing\"\n}\n",
+      "end_line": 18,
+      "language": "scala",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "object Main {\n    def main(args: Array[String]): Unit = {\n        println(\"Hello, world!\")\n    }\n\n    val PI = 3.14159\n}",
@@ -67,5 +77,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nobject Main {\n    def main(args: Array[String]): Unit = {\n        println(\"Hello, world!\")\n    }\n\n    val PI = 3.14159\n}\n\nobject MathUtils {\n    def factorial(n: Int): Int = {\n        if (n <= 1) 1 else n * factorial(n - 1)\n    }\n}\n\ncase object Singleton {\n    def process(): String = \"processing\"\n}\n",
   "test_name": "test_scala_object_extraction",
-  "total_chunks": 6
+  "total_chunks": 7
 }

@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nclass Eq a where\n  (==) :: a -> a -> Bool\n  (/=) :: a -> a -> Bool\n\nclass Show a where\n  show :: a -> String\n\ninstance Eq Bool where\n  True == True = True\n  False == False = True\n  _ == _ = False\n",
+      "end_line": 12,
+      "language": "haskell",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [],
       "content": "class Eq a where\n  (==) :: a -> a -> Bool\n  (/=) :: a -> a -> Bool",
@@ -97,5 +107,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nclass Eq a where\n  (==) :: a -> a -> Bool\n  (/=) :: a -> a -> Bool\n\nclass Show a where\n  show :: a -> String\n\ninstance Eq Bool where\n  True == True = True\n  False == False = True\n  _ == _ = False\n",
   "test_name": "test_haskell_type_class_extraction",
-  "total_chunks": 9
+  "total_chunks": 10
 }

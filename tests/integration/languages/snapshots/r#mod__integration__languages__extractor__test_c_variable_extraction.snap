@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nint global_counter = 0;\nchar *buffer = NULL;\nstatic int static_var = 42;\n\nint main() {\n    int local_var = 10;\n    char arr[100];\n    float *ptr = malloc(sizeof(float));\n    return 0;\n}\n",
+      "end_line": 11,
+      "language": "c",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "int global_counter = 0;",
@@ -47,5 +57,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nint global_counter = 0;\nchar *buffer = NULL;\nstatic int static_var = 42;\n\nint main() {\n    int local_var = 10;\n    char arr[100];\n    float *ptr = malloc(sizeof(float));\n    return 0;\n}\n",
   "test_name": "test_c_variable_extraction",
-  "total_chunks": 4
+  "total_chunks": 5
 }

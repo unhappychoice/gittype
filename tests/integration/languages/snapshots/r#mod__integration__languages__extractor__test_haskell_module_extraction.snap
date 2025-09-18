@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nmodule Math.Utils (\n  add,\n  multiply,\n  square\n) where\n\nadd :: Num a => a -> a -> a\nadd x y = x + y\n\nmultiply :: Num a => a -> a -> a\nmultiply x y = x * y\n\nsquare :: Num a => a -> a\nsquare x = x * x\n",
+      "end_line": 15,
+      "language": "haskell",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Module",
       "comment_ranges": [],
       "content": "module Math.Utils",
@@ -77,5 +87,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nmodule Math.Utils (\n  add,\n  multiply,\n  square\n) where\n\nadd :: Num a => a -> a -> a\nadd x y = x + y\n\nmultiply :: Num a => a -> a -> a\nmultiply x y = x * y\n\nsquare :: Num a => a -> a\nsquare x = x * x\n",
   "test_name": "test_haskell_module_extraction",
-  "total_chunks": 7
+  "total_chunks": 8
 }

@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nclass User\n  def self.find_by_email(email)\n    puts \"Finding user by email: #{email}\"\n  end\n\n  def instance_method\n    \"instance\"\n  end\nend\n",
+      "end_line": 10,
+      "language": "ruby",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "class User\n  def self.find_by_email(email)\n    puts \"Finding user by email: #{email}\"\n  end\n\n  def instance_method\n    \"instance\"\n  end\nend",
@@ -37,5 +47,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nclass User\n  def self.find_by_email(email)\n    puts \"Finding user by email: #{email}\"\n  end\n\n  def instance_method\n    \"instance\"\n  end\nend\n",
   "test_name": "test_ruby_class_method_extraction",
-  "total_chunks": 3
+  "total_chunks": 4
 }

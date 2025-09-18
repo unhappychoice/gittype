@@ -5,6 +5,29 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [
+        [
+          468,
+          520
+        ],
+        [
+          698,
+          749
+        ],
+        [
+          1445,
+          1488
+        ]
+      ],
+      "content": "\n#[derive(Debug, Clone)]\npub struct DataCache<T> {\n    cache: HashMap<String, T>,\n    max_size: usize,\n    access_count: HashMap<String, usize>,\n}\n\nimpl<T: Clone> DataCache<T> {\n    pub fn new(max_size: usize) -> Self {\n        Self {\n            cache: HashMap::new(),\n            max_size,\n            access_count: HashMap::new(),\n        }\n    }\n\n    pub fn get_or_insert<F>(&mut self, key: &str, compute: F) -> T\n    where\n        F: FnOnce() -> T,\n    {\n        // Cache management logic - extractable middle chunk\n        if let Some(value) = self.cache.get(key) {\n            *self.access_count.entry(key.to_string()).or_insert(0) += 1;\n            return value.clone();\n        }\n\n        // Check if cache is full and evict least used item\n        if self.cache.len() >= self.max_size {\n            if let Some(lru_key) = self.find_least_used_key() {\n                self.cache.remove(&lru_key);\n                self.access_count.remove(&lru_key);\n            }\n        }\n\n        let computed_value = compute();\n        self.cache.insert(key.to_string(), computed_value.clone());\n        self.access_count.insert(key.to_string(), 1);\n        computed_value\n    }\n\n    fn find_least_used_key(&self) -> Option<String> {\n        self.access_count\n            .iter()\n            .min_by_key(|(_, &count)| count)\n            .map(|(key, _)| key.clone())\n    }\n\n    pub fn clear_stale_entries(&mut self, max_access_count: usize) {\n        // Cleanup logic - extractable middle chunk\n        let stale_keys: Vec<String> = self\n            .access_count\n            .iter()\n            .filter(|(_, &count)| count > max_access_count)\n            .map(|(key, _)| key.clone())\n            .collect();\n\n        for key in stale_keys {\n            self.cache.remove(&key);\n            self.access_count.remove(&key);\n        }\n    }\n}\n",
+      "end_line": 63,
+      "language": "rust",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Struct",
       "comment_ranges": [],
       "content": "pub struct DataCache<T> {\n    cache: HashMap<String, T>,\n    max_size: usize,\n    access_count: HashMap<String, usize>,\n}",
@@ -200,5 +223,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\n#[derive(Debug, Clone)]\npub struct DataCache<T> {\n    cache: HashMap<String, T>,\n    max_size: usize,\n    access_count: HashMap<String, usize>,\n}\n\nimpl<T: Clone> DataCache<T> {\n    pub fn new(max_size: usize) -> Self {\n        Self {\n            cache: HashMap::new(),\n            max_size,\n            access_count: HashMap::new(),\n        }\n    }\n\n    pub fn get_or_insert<F>(&mut self, key: &str, compute: F) -> T\n    where\n        F: FnOnce() -> T,\n    {\n        // Cache management logic - extractable middle chunk\n        if let Some(value) = self.cache.get(key) {\n            *self.access_count.entry(key.to_string()).or_insert(0) += 1;\n            return value.clone();\n        }\n\n        // Check if cache is full and evict least used item\n        if self.cache.len() >= self.max_size {\n            if let Some(lru_key) = self.find_least_used_key() {\n                self.cache.remove(&lru_key);\n                self.access_count.remove(&lru_key);\n            }\n        }\n\n        let computed_value = compute();\n        self.cache.insert(key.to_string(), computed_value.clone());\n        self.access_count.insert(key.to_string(), 1);\n        computed_value\n    }\n\n    fn find_least_used_key(&self) -> Option<String> {\n        self.access_count\n            .iter()\n            .min_by_key(|(_, &count)| count)\n            .map(|(key, _)| key.clone())\n    }\n\n    pub fn clear_stale_entries(&mut self, max_access_count: usize) {\n        // Cleanup logic - extractable middle chunk\n        let stale_keys: Vec<String> = self\n            .access_count\n            .iter()\n            .filter(|(_, &count)| count > max_access_count)\n            .map(|(key, _)| key.clone())\n            .collect();\n\n        for key in stale_keys {\n            self.cache.remove(&key);\n            self.access_count.remove(&key);\n        }\n    }\n}\n",
   "test_name": "test_rust_struct_with_complex_impl",
-  "total_chunks": 17
+  "total_chunks": 18
 }

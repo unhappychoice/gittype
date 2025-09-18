@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nprotocol Drawable {\n    func draw()\n    func area() -> Double\n}\n\nprotocol Comparable {\n    func isGreaterThan(_ other: Self) -> Bool\n}\n",
+      "end_line": 9,
+      "language": "swift",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Interface",
       "comment_ranges": [],
       "content": "protocol Drawable {\n    func draw()\n    func area() -> Double\n}",
@@ -27,5 +37,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nprotocol Drawable {\n    func draw()\n    func area() -> Double\n}\n\nprotocol Comparable {\n    func isGreaterThan(_ other: Self) -> Bool\n}\n",
   "test_name": "test_swift_protocol_extraction",
-  "total_chunks": 2
+  "total_chunks": 3
 }

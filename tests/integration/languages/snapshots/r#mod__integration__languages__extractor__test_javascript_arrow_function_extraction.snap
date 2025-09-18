@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nconst add = (a, b) => a + b;\n\nconst multiply = (x, y) => {\n    return x * y;\n};\n\nconst processData = async (data) => {\n    const processed = data.map(item => item.value);\n    return processed;\n};\n",
+      "end_line": 11,
+      "language": "javascript",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [],
       "content": "const add = (a, b) => a + b",
@@ -37,5 +47,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nconst add = (a, b) => a + b;\n\nconst multiply = (x, y) => {\n    return x * y;\n};\n\nconst processData = async (data) => {\n    const processed = data.map(item => item.value);\n    return processed;\n};\n",
   "test_name": "test_javascript_arrow_function_extraction",
-  "total_chunks": 3
+  "total_chunks": 4
 }

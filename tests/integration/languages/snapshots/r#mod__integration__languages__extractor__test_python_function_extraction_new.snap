@@ -5,6 +5,45 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [
+        [
+          147,
+          169
+        ],
+        [
+          215,
+          282
+        ],
+        [
+          429,
+          452
+        ],
+        [
+          929,
+          947
+        ],
+        [
+          1354,
+          1408
+        ],
+        [
+          1600,
+          1611
+        ],
+        [
+          1788,
+          1807
+        ]
+      ],
+      "content": "\ndef complex_algorithm(data, threshold=10):\n    \"\"\"Complex function with middle implementation segments\"\"\"\n    if not data:\n        return []\n\n    # Initialize variables\n    result = []\n    processed_count = 0\n\n    # Main processing loop - this should be extractable as middle chunk\n    for item in data:\n        if isinstance(item, dict):\n            value = item.get('value', 0)\n        else:\n            value = item\n\n        # Apply transformations\n        if value > threshold:\n            transformed = value * 2\n            result.append({\n                'original': value,\n                'transformed': transformed,\n                'ratio': transformed / value\n            })\n            processed_count += 1\n        elif value > 0:\n            result.append({\n                'original': value,\n                'transformed': value + threshold,\n                'ratio': (value + threshold) / value\n            })\n\n    # Final processing\n    if processed_count > 0:\n        avg_ratio = sum(item['ratio'] for item in result) / len(result)\n        for item in result:\n            item['normalized_ratio'] = item['ratio'] / avg_ratio\n\n    return result\n\ndef data_processor(input_data):\n    \"\"\"Function with complex logic patterns\"\"\"\n    cache = {}\n    results = []\n\n    for idx, item in enumerate(input_data):\n        key = f\"item_{idx}\"\n\n        # Complex conditional logic - extractable middle chunk\n        if key in cache:\n            cached_result = cache[key]\n            if cached_result['valid']:\n                results.append(cached_result['data'])\n            else:\n                # Recompute\n                new_result = item * 2 + 1\n                cache[key] = {'data': new_result, 'valid': True}\n                results.append(new_result)\n        else:\n            # First computation\n            computed = item ** 2 if item > 5 else item * 3\n            cache[key] = {'data': computed, 'valid': True}\n            results.append(computed)\n\n    return results\n",
+      "end_line": 66,
+      "language": "python",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [
         [
@@ -199,5 +238,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\ndef complex_algorithm(data, threshold=10):\n    \"\"\"Complex function with middle implementation segments\"\"\"\n    if not data:\n        return []\n\n    # Initialize variables\n    result = []\n    processed_count = 0\n\n    # Main processing loop - this should be extractable as middle chunk\n    for item in data:\n        if isinstance(item, dict):\n            value = item.get('value', 0)\n        else:\n            value = item\n\n        # Apply transformations\n        if value > threshold:\n            transformed = value * 2\n            result.append({\n                'original': value,\n                'transformed': transformed,\n                'ratio': transformed / value\n            })\n            processed_count += 1\n        elif value > 0:\n            result.append({\n                'original': value,\n                'transformed': value + threshold,\n                'ratio': (value + threshold) / value\n            })\n\n    # Final processing\n    if processed_count > 0:\n        avg_ratio = sum(item['ratio'] for item in result) / len(result)\n        for item in result:\n            item['normalized_ratio'] = item['ratio'] / avg_ratio\n\n    return result\n\ndef data_processor(input_data):\n    \"\"\"Function with complex logic patterns\"\"\"\n    cache = {}\n    results = []\n\n    for idx, item in enumerate(input_data):\n        key = f\"item_{idx}\"\n\n        # Complex conditional logic - extractable middle chunk\n        if key in cache:\n            cached_result = cache[key]\n            if cached_result['valid']:\n                results.append(cached_result['data'])\n            else:\n                # Recompute\n                new_result = item * 2 + 1\n                cache[key] = {'data': new_result, 'valid': True}\n                results.append(new_result)\n        else:\n            # First computation\n            computed = item ** 2 if item > 5 else item * 3\n            cache[key] = {'data': computed, 'valid': True}\n            results.append(computed)\n\n    return results\n",
   "test_name": "test_python_function_extraction_new",
-  "total_chunks": 13
+  "total_chunks": 14
 }

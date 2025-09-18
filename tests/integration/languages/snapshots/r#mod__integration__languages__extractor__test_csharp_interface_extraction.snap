@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nusing System;\nusing System.Threading.Tasks;\n\nnamespace MyApplication.Contracts\n{\n    public interface IUserRepository\n    {\n        Task<User> GetByIdAsync(int id);\n        Task<IEnumerable<User>> GetAllAsync();\n        Task<bool> ExistsAsync(int id);\n    }\n\n    public interface IEmailService\n    {\n        Task SendEmailAsync(string to, string subject, string body);\n        Task<bool> ValidateEmailAsync(string email);\n    }\n}\n",
+      "end_line": 19,
+      "language": "csharp",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Namespace",
       "comment_ranges": [],
       "content": "namespace MyApplication.Contracts\n{\n    public interface IUserRepository\n    {\n        Task<User> GetByIdAsync(int id);\n        Task<IEnumerable<User>> GetAllAsync();\n        Task<bool> ExistsAsync(int id);\n    }\n\n    public interface IEmailService\n    {\n        Task SendEmailAsync(string to, string subject, string body);\n        Task<bool> ValidateEmailAsync(string email);\n    }\n}",
@@ -87,5 +97,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nusing System;\nusing System.Threading.Tasks;\n\nnamespace MyApplication.Contracts\n{\n    public interface IUserRepository\n    {\n        Task<User> GetByIdAsync(int id);\n        Task<IEnumerable<User>> GetAllAsync();\n        Task<bool> ExistsAsync(int id);\n    }\n\n    public interface IEmailService\n    {\n        Task SendEmailAsync(string to, string subject, string body);\n        Task<bool> ValidateEmailAsync(string email);\n    }\n}\n",
   "test_name": "test_csharp_interface_extraction",
-  "total_chunks": 8
+  "total_chunks": 9
 }

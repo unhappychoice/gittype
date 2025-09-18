@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nclass Calculator {\n    private var value: Int = 0\n\n    init() {\n        self.value = 0\n    }\n\n    deinit {\n        print(\"Calculator deallocated\")\n    }\n\n    func add(_ number: Int) -> Int {\n        value += number\n        return value\n    }\n\n    func multiply(_ number: Int) -> Int {\n        value *= number\n        return value\n    }\n}\n\nclass Person {\n    let name: String\n    let age: Int\n\n    init(name: String, age: Int) {\n        self.name = name\n        self.age = age\n    }\n\n    func greet() -> String {\n        return \"Hello, I'm \\(name)!\"\n    }\n}\n",
+      "end_line": 36,
+      "language": "swift",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "class Calculator {\n    private var value: Int = 0\n\n    init() {\n        self.value = 0\n    }\n\n    deinit {\n        print(\"Calculator deallocated\")\n    }\n\n    func add(_ number: Int) -> Int {\n        value += number\n        return value\n    }\n\n    func multiply(_ number: Int) -> Int {\n        value *= number\n        return value\n    }\n}",
@@ -107,5 +117,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nclass Calculator {\n    private var value: Int = 0\n\n    init() {\n        self.value = 0\n    }\n\n    deinit {\n        print(\"Calculator deallocated\")\n    }\n\n    func add(_ number: Int) -> Int {\n        value += number\n        return value\n    }\n\n    func multiply(_ number: Int) -> Int {\n        value *= number\n        return value\n    }\n}\n\nclass Person {\n    let name: String\n    let age: Int\n\n    init(name: String, age: Int) {\n        self.name = name\n        self.age = age\n    }\n\n    func greet() -> String {\n        return \"Hello, I'm \\(name)!\"\n    }\n}\n",
   "test_name": "test_swift_class_extraction",
-  "total_chunks": 10
+  "total_chunks": 11
 }

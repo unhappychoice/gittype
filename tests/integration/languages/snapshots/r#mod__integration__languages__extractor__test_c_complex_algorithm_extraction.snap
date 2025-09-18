@@ -5,6 +5,61 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [
+        [
+          545,
+          600
+        ],
+        [
+          1036,
+          1076
+        ],
+        [
+          1148,
+          1156
+        ],
+        [
+          1328,
+          1351
+        ],
+        [
+          1414,
+          1435
+        ],
+        [
+          1472,
+          1507
+        ],
+        [
+          1690,
+          1738
+        ],
+        [
+          2010,
+          2030
+        ],
+        [
+          2065,
+          2117
+        ],
+        [
+          2659,
+          2692
+        ],
+        [
+          2834,
+          2860
+        ]
+      ],
+      "content": "\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef struct {\n    int *data;\n    size_t size;\n    size_t capacity;\n} DynamicArray;\n\ntypedef struct {\n    int id;\n    int value;\n    char category[32];\n} ProcessedItem;\n\nint complex_data_processor(int *input, size_t input_size, int threshold, ProcessedItem **output, size_t *output_size) {\n    if (!input || !output || !output_size) return -1;\n\n    ProcessedItem *results = malloc(sizeof(ProcessedItem) * input_size);\n    if (!results) return -1;\n\n    size_t result_count = 0;\n\n    // Main processing algorithm - extractable middle chunk\n    for (size_t i = 0; i < input_size; i++) {\n        int value = input[i];\n        ProcessedItem item;\n        item.id = (int)i;\n\n        if (value > threshold) {\n            int transformed = value * 2;\n            item.value = transformed;\n\n            if (transformed > threshold * 3) {\n                strcpy(item.category, \"HIGH\");\n            } else {\n                strcpy(item.category, \"MEDIUM\");\n            }\n\n            // Additional processing for high values\n            if (transformed > 100) {\n                item.value += 10; // bonus\n            }\n        } else if (value > 0) {\n            item.value = value + threshold;\n            strcpy(item.category, \"LOW\");\n        } else {\n            continue; // skip negative values\n        }\n\n        results[result_count++] = item;\n    }\n\n    // Finalization logic\n    if (result_count > 0) {\n        // Calculate average for validation\n        int total = 0;\n        for (size_t i = 0; i < result_count; i++) {\n            total += results[i].value;\n        }\n        int average = total / (int)result_count;\n\n        // Add average as metadata (simplified approach)\n        printf(\"Average processed value: %d\\n\", average);\n    }\n\n    *output = results;\n    *output_size = result_count;\n    return 0;\n}\n\nvoid analyze_patterns(ProcessedItem *items, size_t count) {\n    if (!items || count == 0) return;\n\n    int category_counts[3] = {0}; // LOW, MEDIUM, HIGH\n    int value_sums[3] = {0};\n\n    // Pattern analysis logic - extractable middle chunk\n    for (size_t i = 0; i < count; i++) {\n        ProcessedItem *item = &items[i];\n        int category_index = -1;\n\n        if (strcmp(item->category, \"LOW\") == 0) {\n            category_index = 0;\n        } else if (strcmp(item->category, \"MEDIUM\") == 0) {\n            category_index = 1;\n        } else if (strcmp(item->category, \"HIGH\") == 0) {\n            category_index = 2;\n        }\n\n        if (category_index >= 0) {\n            category_counts[category_index]++;\n            value_sums[category_index] += item->value;\n\n            // Time-based analysis simulation\n            if (item->value > 1000) {\n                printf(\"High value item found: %d\\n\", item->value);\n            }\n        }\n    }\n\n    // Output analysis results\n    const char *categories[] = {\"LOW\", \"MEDIUM\", \"HIGH\"};\n    for (int i = 0; i < 3; i++) {\n        if (category_counts[i] > 0) {\n            int average = value_sums[i] / category_counts[i];\n            printf(\"Category %s: %d items, average value: %d\\n\",\n                   categories[i], category_counts[i], average);\n        }\n    }\n}\n",
+      "end_line": 113,
+      "language": "c",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Struct",
       "comment_ranges": [],
       "content": "typedef struct {\n    int *data;\n    size_t size;\n    size_t capacity;\n} DynamicArray;",
@@ -502,5 +557,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef struct {\n    int *data;\n    size_t size;\n    size_t capacity;\n} DynamicArray;\n\ntypedef struct {\n    int id;\n    int value;\n    char category[32];\n} ProcessedItem;\n\nint complex_data_processor(int *input, size_t input_size, int threshold, ProcessedItem **output, size_t *output_size) {\n    if (!input || !output || !output_size) return -1;\n\n    ProcessedItem *results = malloc(sizeof(ProcessedItem) * input_size);\n    if (!results) return -1;\n\n    size_t result_count = 0;\n\n    // Main processing algorithm - extractable middle chunk\n    for (size_t i = 0; i < input_size; i++) {\n        int value = input[i];\n        ProcessedItem item;\n        item.id = (int)i;\n\n        if (value > threshold) {\n            int transformed = value * 2;\n            item.value = transformed;\n\n            if (transformed > threshold * 3) {\n                strcpy(item.category, \"HIGH\");\n            } else {\n                strcpy(item.category, \"MEDIUM\");\n            }\n\n            // Additional processing for high values\n            if (transformed > 100) {\n                item.value += 10; // bonus\n            }\n        } else if (value > 0) {\n            item.value = value + threshold;\n            strcpy(item.category, \"LOW\");\n        } else {\n            continue; // skip negative values\n        }\n\n        results[result_count++] = item;\n    }\n\n    // Finalization logic\n    if (result_count > 0) {\n        // Calculate average for validation\n        int total = 0;\n        for (size_t i = 0; i < result_count; i++) {\n            total += results[i].value;\n        }\n        int average = total / (int)result_count;\n\n        // Add average as metadata (simplified approach)\n        printf(\"Average processed value: %d\\n\", average);\n    }\n\n    *output = results;\n    *output_size = result_count;\n    return 0;\n}\n\nvoid analyze_patterns(ProcessedItem *items, size_t count) {\n    if (!items || count == 0) return;\n\n    int category_counts[3] = {0}; // LOW, MEDIUM, HIGH\n    int value_sums[3] = {0};\n\n    // Pattern analysis logic - extractable middle chunk\n    for (size_t i = 0; i < count; i++) {\n        ProcessedItem *item = &items[i];\n        int category_index = -1;\n\n        if (strcmp(item->category, \"LOW\") == 0) {\n            category_index = 0;\n        } else if (strcmp(item->category, \"MEDIUM\") == 0) {\n            category_index = 1;\n        } else if (strcmp(item->category, \"HIGH\") == 0) {\n            category_index = 2;\n        }\n\n        if (category_index >= 0) {\n            category_counts[category_index]++;\n            value_sums[category_index] += item->value;\n\n            // Time-based analysis simulation\n            if (item->value > 1000) {\n                printf(\"High value item found: %d\\n\", item->value);\n            }\n        }\n    }\n\n    // Output analysis results\n    const char *categories[] = {\"LOW\", \"MEDIUM\", \"HIGH\"};\n    for (int i = 0; i < 3; i++) {\n        if (category_counts[i] > 0) {\n            int average = value_sums[i] / category_counts[i];\n            printf(\"Category %s: %d items, average value: %d\\n\",\n                   categories[i], category_counts[i], average);\n        }\n    }\n}\n",
   "test_name": "test_c_complex_algorithm_extraction",
-  "total_chunks": 38
+  "total_chunks": 39
 }

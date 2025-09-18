@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\ntrait Animal {\n    def speak(): String\n    def move(): Unit = println(\"Moving...\")\n}\n\nsealed trait Result[+T] {\n    def map[U](f: T => U): Result[U]\n}\n\ntrait Drawable {\n    def draw(): Unit\n}\n",
+      "end_line": 13,
+      "language": "scala",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "trait Animal {\n    def speak(): String\n    def move(): Unit = println(\"Moving...\")\n}",
@@ -47,5 +57,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\ntrait Animal {\n    def speak(): String\n    def move(): Unit = println(\"Moving...\")\n}\n\nsealed trait Result[+T] {\n    def map[U](f: T => U): Result[U]\n}\n\ntrait Drawable {\n    def draw(): Unit\n}\n",
   "test_name": "test_scala_trait_extraction",
-  "total_chunks": 4
+  "total_chunks": 5
 }

@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\ntypedef struct {\n    int id;\n    char name[32];\n} User;\n\ntypedef union {\n    int i;\n    float f;\n    char c[4];\n} Value;\n\nenum Status {\n    SUCCESS,\n    ERROR,\n    PENDING\n};\n\nint process_user(User *user, enum Status *status) {\n    if (!user || !status) return -1;\n    *status = SUCCESS;\n    return user->id;\n}\n",
+      "end_line": 23,
+      "language": "c",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Struct",
       "comment_ranges": [],
       "content": "typedef struct {\n    int id;\n    char name[32];\n} User;",
@@ -57,5 +67,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\ntypedef struct {\n    int id;\n    char name[32];\n} User;\n\ntypedef union {\n    int i;\n    float f;\n    char c[4];\n} Value;\n\nenum Status {\n    SUCCESS,\n    ERROR,\n    PENDING\n};\n\nint process_user(User *user, enum Status *status) {\n    if (!user || !status) return -1;\n    *status = SUCCESS;\n    return user->id;\n}\n",
   "test_name": "test_c_complex_types",
-  "total_chunks": 5
+  "total_chunks": 6
 }

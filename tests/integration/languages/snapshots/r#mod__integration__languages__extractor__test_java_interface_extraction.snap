@@ -15,6 +15,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "public interface Drawable {\n    void draw();\n    void setColor(String color);\n    String getColor();\n}\n\npublic interface Resizable {\n    void resize(int width, int height);\n    int getWidth();\n    int getHeight();\n}\n\npublic class Circle implements Drawable, Resizable {\n    private String color;\n    private int radius;\n\n    @Override\n    public void draw() {\n        System.out.println(\"Drawing a \" + color + \" circle\");\n    }\n\n    @Override\n    public void setColor(String color) {\n        this.color = color;\n    }\n\n    @Override\n    public String getColor() {\n        return this.color;\n    }\n\n    @Override\n    public void resize(int width, int height) {\n        this.radius = Math.min(width, height) / 2;\n    }\n\n    @Override\n    public int getWidth() {\n        return radius * 2;\n    }\n\n    @Override\n    public int getHeight() {\n        return radius * 2;\n    }\n}",
+      "end_line": 46,
+      "language": "java",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Method",
       "comment_ranges": [],
       "content": "    void draw();",
@@ -237,5 +247,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "public interface Drawable {\n    void draw();\n    void setColor(String color);\n    String getColor();\n}\n\npublic interface Resizable {\n    void resize(int width, int height);\n    int getWidth();\n    int getHeight();\n}\n\npublic class Circle implements Drawable, Resizable {\n    private String color;\n    private int radius;\n\n    @Override\n    public void draw() {\n        System.out.println(\"Drawing a \" + color + \" circle\");\n    }\n\n    @Override\n    public void setColor(String color) {\n        this.color = color;\n    }\n\n    @Override\n    public String getColor() {\n        return this.color;\n    }\n\n    @Override\n    public void resize(int width, int height) {\n        this.radius = Math.min(width, height) / 2;\n    }\n\n    @Override\n    public int getWidth() {\n        return radius * 2;\n    }\n\n    @Override\n    public int getHeight() {\n        return radius * 2;\n    }\n}",
   "test_name": "test_java_interface_extraction",
-  "total_chunks": 23
+  "total_chunks": 24
 }

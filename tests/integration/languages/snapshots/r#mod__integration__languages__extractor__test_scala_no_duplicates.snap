@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\npackage com.example.test\n\nobject Calculator {\n    def add(a: Int, b: Int): Int = {\n        val result = a + b\n        result\n    }\n\n    def processValue(value: Any): String = {\n        value match {\n            case s: String => s\"String: $s\"\n            case i: Int => s\"Int: $i\"\n            case _ => \"Unknown\"\n        }\n    }\n\n    val numbers = List(1, 2, 3)\n    val doubled = for {\n        n <- numbers\n        if n > 1\n        result = n * 2\n    } yield result\n\n    val filtered = numbers.filter(x => x > 2).map(y => y * y)\n\n    val attempt = Try {\n        \"123\".toInt\n    }\n}\n\nclass Person(val name: String) {\n    def greet(): String = s\"Hello, $name\"\n\n    def isLongName(): Boolean = {\n        if (name.length > 5) true else false\n    }\n}\n\ntrait Animal {\n    def speak(): String\n\n    def move(): Unit = {\n        println(\"Moving...\")\n    }\n}\n\nextension (s: String) {\n    def isPalindrome: Boolean = s == s.reverse\n}\n\n@deprecated\ndef oldFunction(): Unit = {}\n",
+      "end_line": 53,
+      "language": "scala",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "object Calculator {\n    def add(a: Int, b: Int): Int = {\n        val result = a + b\n        result\n    }\n\n    def processValue(value: Any): String = {\n        value match {\n            case s: String => s\"String: $s\"\n            case i: Int => s\"Int: $i\"\n            case _ => \"Unknown\"\n        }\n    }\n\n    val numbers = List(1, 2, 3)\n    val doubled = for {\n        n <- numbers\n        if n > 1\n        result = n * 2\n    } yield result\n\n    val filtered = numbers.filter(x => x > 2).map(y => y * y)\n\n    val attempt = Try {\n        \"123\".toInt\n    }\n}",
@@ -147,5 +157,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\npackage com.example.test\n\nobject Calculator {\n    def add(a: Int, b: Int): Int = {\n        val result = a + b\n        result\n    }\n\n    def processValue(value: Any): String = {\n        value match {\n            case s: String => s\"String: $s\"\n            case i: Int => s\"Int: $i\"\n            case _ => \"Unknown\"\n        }\n    }\n\n    val numbers = List(1, 2, 3)\n    val doubled = for {\n        n <- numbers\n        if n > 1\n        result = n * 2\n    } yield result\n\n    val filtered = numbers.filter(x => x > 2).map(y => y * y)\n\n    val attempt = Try {\n        \"123\".toInt\n    }\n}\n\nclass Person(val name: String) {\n    def greet(): String = s\"Hello, $name\"\n\n    def isLongName(): Boolean = {\n        if (name.length > 5) true else false\n    }\n}\n\ntrait Animal {\n    def speak(): String\n\n    def move(): Unit = {\n        println(\"Moving...\")\n    }\n}\n\nextension (s: String) {\n    def isPalindrome: Boolean = s == s.reverse\n}\n\n@deprecated\ndef oldFunction(): Unit = {}\n",
   "test_name": "test_scala_no_duplicates",
-  "total_chunks": 14
+  "total_chunks": 15
 }

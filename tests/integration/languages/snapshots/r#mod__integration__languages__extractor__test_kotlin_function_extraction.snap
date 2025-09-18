@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nfun greet(name: String): String {\n    return \"Hello, $name!\"\n}\n\nfun calculateSum(a: Int, b: Int): Int {\n    return a + b\n}\n\nfun processData(data: List<String>) {\n    data.forEach { println(it) }\n}\n",
+      "end_line": 12,
+      "language": "kotlin",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [],
       "content": "fun greet(name: String): String {\n    return \"Hello, $name!\"\n}",
@@ -37,5 +47,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nfun greet(name: String): String {\n    return \"Hello, $name!\"\n}\n\nfun calculateSum(a: Int, b: Int): Int {\n    return a + b\n}\n\nfun processData(data: List<String>) {\n    data.forEach { println(it) }\n}\n",
   "test_name": "test_kotlin_function_extraction",
-  "total_chunks": 3
+  "total_chunks": 4
 }

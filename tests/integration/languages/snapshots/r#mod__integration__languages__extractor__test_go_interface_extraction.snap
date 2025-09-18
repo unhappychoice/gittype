@@ -5,6 +5,21 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [
+        [
+          216,
+          238
+        ]
+      ],
+      "content": "package main\n\ntype Writer interface {\n    Write([]byte) (int, error)\n}\n\ntype Reader interface {\n    Read([]byte) (int, error)\n}\n\ntype ReadWriter interface {\n    Reader\n    Writer\n}\n\nfunc process(rw ReadWriter) {\n    // Implementation here\n}\n",
+      "end_line": 18,
+      "language": "go",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Interface",
       "comment_ranges": [],
       "content": "type Writer interface {\n    Write([]byte) (int, error)\n}",
@@ -52,5 +67,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "package main\n\ntype Writer interface {\n    Write([]byte) (int, error)\n}\n\ntype Reader interface {\n    Read([]byte) (int, error)\n}\n\ntype ReadWriter interface {\n    Reader\n    Writer\n}\n\nfunc process(rw ReadWriter) {\n    // Implementation here\n}\n",
   "test_name": "test_go_interface_extraction",
-  "total_chunks": 4
+  "total_chunks": 5
 }

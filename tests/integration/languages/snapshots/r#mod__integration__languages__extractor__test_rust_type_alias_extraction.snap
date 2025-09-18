@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\npub type UserId = u64;\npub type DatabaseResult<T> = Result<T, String>;\ntype Point = (f64, f64);\n",
+      "end_line": 4,
+      "language": "rust",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "TypeAlias",
       "comment_ranges": [],
       "content": "pub type UserId = u64;",
@@ -37,5 +47,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\npub type UserId = u64;\npub type DatabaseResult<T> = Result<T, String>;\ntype Point = (f64, f64);\n",
   "test_name": "test_rust_type_alias_extraction",
-  "total_chunks": 3
+  "total_chunks": 4
 }

@@ -16,7 +16,7 @@ def fibonacci(n):
         return n
     return fibonacci(n-1) + fibonacci(n-2)
 "#,
-    total_chunks: 3,
+    total_chunks: 4,
     chunk_counts: {
         Function: 3,
     }
@@ -45,7 +45,7 @@ class Calculator:
     def multiply(self, a, b):
         return a * b
 "#,
-    total_chunks: 7,
+    total_chunks: 8,
     chunk_counts: {
         Class: 2,
         Function: 5,
@@ -85,7 +85,7 @@ class Database:
 def process_data(data):
     return [item.upper() for item in data]
 "#,
-    total_chunks: 9,
+    total_chunks: 10,
     chunk_counts: {
         Class: 2,
         Function: 7,
@@ -163,7 +163,7 @@ def data_processor(input_data):
 
     return results
 "#,
-    total_chunks: 13,
+    total_chunks: 14,
     chunk_counts: {
         Function: 2,
     }
@@ -240,7 +240,7 @@ class DataAnalyzer:
         else:
             return 3
 "#,
-    total_chunks: 12,
+    total_chunks: 13,
     chunk_counts: {
         Class: 1,
         Function: 3,
@@ -352,7 +352,7 @@ class ConfigManager:
 
         return value
 "#,
-    total_chunks: 18,
+    total_chunks: 19,
     chunk_counts: {
         Function: 4,
         Class: 1,

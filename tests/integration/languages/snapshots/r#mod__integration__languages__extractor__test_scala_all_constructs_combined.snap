@@ -5,6 +5,45 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [
+        [
+          1,
+          21
+        ],
+        [
+          86,
+          105
+        ],
+        [
+          184,
+          197
+        ],
+        [
+          298,
+          317
+        ],
+        [
+          359,
+          377
+        ],
+        [
+          421,
+          443
+        ],
+        [
+          522,
+          540
+        ]
+      ],
+      "content": "\n// Object definition\nobject Calculator {\n    def add(a: Int, b: Int): Int = a + b\n}\n\n// Class definition\nclass Person(val name: String) {\n    def greet(): String = s\"Hello, $name\"\n}\n\n// Case class\ncase class Point(x: Int, y: Int) {\n    def move(dx: Int, dy: Int): Point = Point(x + dx, y + dy)\n}\n\n// Trait definition\ntrait Drawable {\n    def draw(): Unit\n}\n\n// Enum definition\nenum Status {\n    case Active, Inactive\n}\n\n// Function definition\ndef factorial(n: Int): Int = {\n    if (n <= 1) 1 else n * factorial(n - 1)\n}\n\n// Type definition\ntype UserId = Long\n",
+      "end_line": 33,
+      "language": "scala",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "object Calculator {\n    def add(a: Int, b: Int): Int = a + b\n}",
@@ -107,5 +146,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\n// Object definition\nobject Calculator {\n    def add(a: Int, b: Int): Int = a + b\n}\n\n// Class definition\nclass Person(val name: String) {\n    def greet(): String = s\"Hello, $name\"\n}\n\n// Case class\ncase class Point(x: Int, y: Int) {\n    def move(dx: Int, dy: Int): Point = Point(x + dx, y + dy)\n}\n\n// Trait definition\ntrait Drawable {\n    def draw(): Unit\n}\n\n// Enum definition\nenum Status {\n    case Active, Inactive\n}\n\n// Function definition\ndef factorial(n: Int): Int = {\n    if (n <= 1) 1 else n * factorial(n - 1)\n}\n\n// Type definition\ntype UserId = Long\n",
   "test_name": "test_scala_all_constructs_combined",
-  "total_chunks": 10
+  "total_chunks": 11
 }

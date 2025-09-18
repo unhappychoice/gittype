@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\ngreet :: String -> String\ngreet name = \"Hello, \" ++ name ++ \"!\"\n\nadd :: Int -> Int -> Int\nadd x y = x + y\n\nfactorial :: Int -> Int\nfactorial 0 = 1\nfactorial n = n * factorial (n - 1)\n",
+      "end_line": 10,
+      "language": "haskell",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [],
       "content": "greet :: String -> String",
@@ -77,5 +87,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\ngreet :: String -> String\ngreet name = \"Hello, \" ++ name ++ \"!\"\n\nadd :: Int -> Int -> Int\nadd x y = x + y\n\nfactorial :: Int -> Int\nfactorial 0 = 1\nfactorial n = n * factorial (n - 1)\n",
   "test_name": "test_haskell_function_extraction",
-  "total_chunks": 7
+  "total_chunks": 8
 }

@@ -5,6 +5,33 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [
+        [
+          1,
+          24
+        ],
+        [
+          76,
+          94
+        ],
+        [
+          275,
+          290
+        ],
+        [
+          470,
+          488
+        ]
+      ],
+      "content": "\n# Module-level function\ndef calculate_total(items):\n    return sum(items)\n\n# Class definition\nclass User:\n    def __init__(self, name, email):\n        self.name = name\n        self.email = email\n\n    def get_display_name(self):\n        return f\"{self.name} ({self.email})\"\n\n# Another class\nclass Database:\n    def __init__(self):\n        self.connections = []\n\n    def connect(self):\n        return \"Connected\"\n\n    def disconnect(self):\n        print(\"Disconnected\")\n\n# Another function\ndef process_data(data):\n    return [item.upper() for item in data]\n",
+      "end_line": 28,
+      "language": "python",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [],
       "content": "def calculate_total(items):\n    return sum(items)",
@@ -97,5 +124,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\n# Module-level function\ndef calculate_total(items):\n    return sum(items)\n\n# Class definition\nclass User:\n    def __init__(self, name, email):\n        self.name = name\n        self.email = email\n\n    def get_display_name(self):\n        return f\"{self.name} ({self.email})\"\n\n# Another class\nclass Database:\n    def __init__(self):\n        self.connections = []\n\n    def connect(self):\n        return \"Connected\"\n\n    def disconnect(self):\n        print(\"Disconnected\")\n\n# Another function\ndef process_data(data):\n    return [item.upper() for item in data]\n",
   "test_name": "test_python_combined_extraction",
-  "total_chunks": 9
+  "total_chunks": 10
 }

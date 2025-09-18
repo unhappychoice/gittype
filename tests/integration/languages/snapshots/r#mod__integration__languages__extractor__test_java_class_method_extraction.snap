@@ -15,6 +15,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "public class HelloWorld {\n    private String message;\n\n    public HelloWorld(String message) {\n        this.message = message;\n    }\n\n    public void printMessage() {\n        System.out.println(this.message);\n    }\n\n    public static void main(String[] args) {\n        HelloWorld hello = new HelloWorld(\"Hello, World!\");\n        hello.printMessage();\n    }\n\n    private int calculateLength() {\n        return this.message.length();\n    }\n}",
+      "end_line": 20,
+      "language": "java",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "    private String message;",
@@ -67,5 +77,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "public class HelloWorld {\n    private String message;\n\n    public HelloWorld(String message) {\n        this.message = message;\n    }\n\n    public void printMessage() {\n        System.out.println(this.message);\n    }\n\n    public static void main(String[] args) {\n        HelloWorld hello = new HelloWorld(\"Hello, World!\");\n        hello.printMessage();\n    }\n\n    private int calculateLength() {\n        return this.message.length();\n    }\n}",
   "test_name": "test_java_class_method_extraction",
-  "total_chunks": 6
+  "total_chunks": 7
 }

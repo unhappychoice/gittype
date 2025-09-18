@@ -17,7 +17,7 @@ void processData(List<String> data) {
   data.forEach(print);
 }
 "#,
-    total_chunks: 3,
+    total_chunks: 4,
     chunk_counts: {
         Function: 3,
     }
@@ -49,7 +49,7 @@ class Calculator {
   }
 }
 "#,
-    total_chunks: 6,
+    total_chunks: 7,
     chunk_counts: {
         Class: 2,
         CodeBlock: 1,
@@ -80,7 +80,7 @@ class Duck with Flyable, Swimmable {
   }
 }
 "#,
-    total_chunks: 7,
+    total_chunks: 8,
     chunk_counts: {
         Class: 3,
         CodeBlock: 1,
@@ -116,7 +116,7 @@ class Circle extends Shape {
   }
 }
 "#,
-    total_chunks: 6,
+    total_chunks: 7,
     chunk_counts: {
         Class: 2,
         CodeBlock: 2,
@@ -148,7 +148,7 @@ enum Color {
 
 enum Status { pending, completed, failed }
 "#,
-    total_chunks: 4,
+    total_chunks: 5,
     chunk_counts: {
         CodeBlock: 1,
         Conditional: 1,
@@ -173,7 +173,7 @@ var isLoggedIn = false;
 late String userId;
 late DatabaseConnection db;
 "#,
-    total_chunks: 8,
+    total_chunks: 9,
     chunk_counts: {
         Variable: 8,
     }
@@ -202,7 +202,7 @@ extension IntExtensions on int {
   int get squared => this * this;
 }
 "#,
-    total_chunks: 5,
+    total_chunks: 6,
     chunk_counts: {
         Class: 2,
         CodeBlock: 2,
@@ -381,7 +381,7 @@ class DataProcessor {
   }
 }
 "#,
-    total_chunks: 40,
+    total_chunks: 41,
     chunk_counts: {
         Class: 2,
         Function: 2,

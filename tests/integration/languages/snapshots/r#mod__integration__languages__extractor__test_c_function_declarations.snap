@@ -5,6 +5,25 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [
+        [
+          32,
+          56
+        ],
+        [
+          175,
+          198
+        ]
+      ],
+      "content": "\n#ifndef TEST_H\n#define TEST_H\n\n// Function declarations\nint calculate_sum(int a, int b);\nvoid print_message(const char *msg);\nfloat compute_average(int *values, int count);\n\n// Function definitions\nstatic inline int max(int a, int b) {\n    return (a > b) ? a : b;\n}\n\n#endif\n",
+      "end_line": 15,
+      "language": "c",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [],
       "content": "#define TEST_H",
@@ -27,5 +46,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\n#ifndef TEST_H\n#define TEST_H\n\n// Function declarations\nint calculate_sum(int a, int b);\nvoid print_message(const char *msg);\nfloat compute_average(int *values, int count);\n\n// Function definitions\nstatic inline int max(int a, int b) {\n    return (a > b) ? a : b;\n}\n\n#endif\n",
   "test_name": "test_c_function_declarations",
-  "total_chunks": 2
+  "total_chunks": 3
 }

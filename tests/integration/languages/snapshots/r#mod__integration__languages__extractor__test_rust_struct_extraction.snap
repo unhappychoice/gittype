@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nstruct Person {\n    name: String,\n    age: u32,\n}\n\npub struct Config {\n    debug: bool,\n}\n",
+      "end_line": 9,
+      "language": "rust",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Struct",
       "comment_ranges": [],
       "content": "struct Person {\n    name: String,\n    age: u32,\n}",
@@ -27,5 +37,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nstruct Person {\n    name: String,\n    age: u32,\n}\n\npub struct Config {\n    debug: bool,\n}\n",
   "test_name": "test_rust_struct_extraction",
-  "total_chunks": 2
+  "total_chunks": 3
 }

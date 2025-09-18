@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nconst String APP_NAME = 'MyApp';\nconst int VERSION = 1;\n\nfinal String sessionId = generateId();\nfinal List<String> items = [];\n\nvar globalCounter = 0;\nvar isLoggedIn = false;\n\nlate String userId;\nlate DatabaseConnection db;\n",
+      "end_line": 12,
+      "language": "dart",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "const String APP_NAME = 'MyApp';",
@@ -87,5 +97,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nconst String APP_NAME = 'MyApp';\nconst int VERSION = 1;\n\nfinal String sessionId = generateId();\nfinal List<String> items = [];\n\nvar globalCounter = 0;\nvar isLoggedIn = false;\n\nlate String userId;\nlate DatabaseConnection db;\n",
   "test_name": "test_dart_variable_extraction",
-  "total_chunks": 8
+  "total_chunks": 9
 }

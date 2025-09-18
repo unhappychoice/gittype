@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\npub enum Result<T, E> {\n    Ok(T),\n    Err(E),\n}\n\nenum Color {\n    Red,\n    Green,\n    Blue,\n}\n",
+      "end_line": 11,
+      "language": "rust",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Enum",
       "comment_ranges": [],
       "content": "pub enum Result<T, E> {\n    Ok(T),\n    Err(E),\n}",
@@ -27,5 +37,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\npub enum Result<T, E> {\n    Ok(T),\n    Err(E),\n}\n\nenum Color {\n    Red,\n    Green,\n    Blue,\n}\n",
   "test_name": "test_rust_enum_extraction",
-  "total_chunks": 2
+  "total_chunks": 3
 }

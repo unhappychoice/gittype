@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nstruct Point3D {\n    double x, y, z;\n\n    Point3D() : x(0), y(0), z(0) {}\n    Point3D(double x, double y, double z) : x(x), y(y), z(z) {}\n\n    double distance_from_origin() const {\n        return sqrt(x*x + y*y + z*z);\n    }\n};\n\nstruct Color {\n    uint8_t r, g, b, a;\n\n    Color(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha = 255)\n        : r(red), g(green), b(blue), a(alpha) {}\n};\n\nint main() {\n    Point3D origin;\n    Point3D point(1.0, 2.0, 3.0);\n    Color red(255, 0, 0);\n\n    double distance = point.distance_from_origin();\n    return 0;\n}\n",
+      "end_line": 27,
+      "language": "cpp",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Struct",
       "comment_ranges": [],
       "content": "struct Point3D {\n    double x, y, z;\n\n    Point3D() : x(0), y(0), z(0) {}\n    Point3D(double x, double y, double z) : x(x), y(y), z(z) {}\n\n    double distance_from_origin() const {\n        return sqrt(x*x + y*y + z*z);\n    }\n}",
@@ -107,5 +117,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nstruct Point3D {\n    double x, y, z;\n\n    Point3D() : x(0), y(0), z(0) {}\n    Point3D(double x, double y, double z) : x(x), y(y), z(z) {}\n\n    double distance_from_origin() const {\n        return sqrt(x*x + y*y + z*z);\n    }\n};\n\nstruct Color {\n    uint8_t r, g, b, a;\n\n    Color(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha = 255)\n        : r(red), g(green), b(blue), a(alpha) {}\n};\n\nint main() {\n    Point3D origin;\n    Point3D point(1.0, 2.0, 3.0);\n    Color red(255, 0, 0);\n\n    double distance = point.distance_from_origin();\n    return 0;\n}\n",
   "test_name": "test_cpp_struct_extraction",
-  "total_chunks": 10
+  "total_chunks": 11
 }

@@ -43,27 +43,29 @@ impl TypingContentView {
         code_context: &CodeContext,
     ) {
         if show_code {
-            let content_spans =
-                self.create_content_spans(area.width, challenge, typing_core, chars, code_context);
-
-            // Keep the current line roughly centered within the viewport
-            let view_height = area.height.saturating_sub(2); // account for borders/padding
+            let view_height = area.height.saturating_sub(2);
+            let content_spans = self.create_content_spans(
+                area.width,
+                challenge,
+                typing_core,
+                chars,
+                code_context,
+                view_height,
+            );
             let total_lines = content_spans.len() as u16;
-            let pre_context_lines = code_context.pre_context.len() as u16;
-            let current_line = typing_core.current_line_to_display();
-            let absolute_line_index = pre_context_lines.saturating_add(current_line as u16);
 
-            let desired_center = view_height / 2;
-            let mut scroll_offset = if total_lines > view_height {
-                absolute_line_index.saturating_sub(desired_center)
+            let current_display_line_index =
+                self.find_current_display_line_index(&content_spans, typing_core);
+            let effective_line_index = if current_display_line_index == 0 {
+                let pre_context_lines = code_context.pre_context.len() as u16;
+                let current_line = typing_core.current_line_to_display() as u16;
+                pre_context_lines + current_line
             } else {
-                0
+                current_display_line_index
             };
-            // Clamp so we don't scroll past the end
-            let max_scroll = total_lines.saturating_sub(view_height);
-            if scroll_offset > max_scroll {
-                scroll_offset = max_scroll;
-            }
+
+            let scroll_offset =
+                Self::calculate_scroll_offset(view_height, total_lines, effective_line_index);
 
             let content = Paragraph::new(Text::from(content_spans))
                 .scroll((scroll_offset, 0))
@@ -77,7 +79,6 @@ impl TypingContentView {
                 );
             frame.render_widget(content, area);
         } else {
-            // Hide code during waiting and countdown, show empty block
             let empty_content = Paragraph::new(Text::from(vec![])).block(
                 Block::default()
                     .borders(Borders::ALL)
@@ -97,33 +98,36 @@ impl TypingContentView {
         typing_core: &TypingCore,
         chars: &[char],
         code_context: &CodeContext,
+        view_height: u16,
     ) -> Vec<Line<'static>> {
         let mut lines = Vec::new();
         let start_line_number = challenge.and_then(|c| c.start_line).unwrap_or(1);
 
-        // Add pre-context lines with caching
         let pre_context_lines = self.get_cached_pre_context_lines(code_context, start_line_number);
         lines.extend(pre_context_lines);
 
-        // Process main content with caching
         let main_content_lines = self.get_cached_main_content_lines(
             terminal_width,
             challenge,
             typing_core,
             chars,
             start_line_number,
+            view_height,
         );
         lines.extend(main_content_lines);
 
-        // Add post-context lines with caching
         let post_context_lines =
             self.get_cached_post_context_lines(code_context, challenge, start_line_number);
         lines.extend(post_context_lines);
 
-        // Handle empty content case
         if lines.is_empty() {
             let line_num_span = self.create_line_number_span(start_line_number, false);
             lines.push(Line::from(vec![line_num_span]));
+        }
+
+        let padding_lines = view_height as usize / 2;
+        for _ in 0..padding_lines {
+            lines.push(Line::from(vec![Span::raw("")]));
         }
 
         lines
@@ -234,6 +238,7 @@ impl TypingContentView {
         typing_core: &TypingCore,
         chars: &[char],
         start_line_number: usize,
+        view_height: u16,
     ) -> Vec<Line<'static>> {
         let cache_key = self.calculate_main_content_cache_key(
             terminal_width,
@@ -241,6 +246,7 @@ impl TypingContentView {
             typing_core,
             chars,
             start_line_number,
+            view_height,
         );
 
         // Check if we can use cached result
@@ -438,6 +444,42 @@ impl TypingContentView {
         hasher.finish()
     }
 
+    fn calculate_scroll_offset(view_height: u16, total_lines: u16, current_line_index: u16) -> u16 {
+        let desired_center = view_height / 2;
+
+        if current_line_index > desired_center {
+            let centered_offset = current_line_index.saturating_sub(desired_center);
+
+            if total_lines > view_height {
+                let max_scroll = total_lines.saturating_sub(view_height);
+                centered_offset.min(max_scroll)
+            } else {
+                centered_offset
+            }
+        } else {
+            0
+        }
+    }
+
+    fn find_current_display_line_index(
+        &self,
+        content_spans: &[Line<'static>],
+        _typing_core: &TypingCore,
+    ) -> u16 {
+        for (display_line_index, line) in content_spans.iter().enumerate() {
+            for span in &line.spans {
+                if span
+                    .style
+                    .add_modifier
+                    .intersects(ratatui::style::Modifier::BOLD)
+                {
+                    return display_line_index as u16;
+                }
+            }
+        }
+        0
+    }
+
     fn calculate_main_content_cache_key(
         &self,
         terminal_width: u16,
@@ -445,38 +487,51 @@ impl TypingContentView {
         typing_core: &TypingCore,
         chars: &[char],
         start_line_number: usize,
+        view_height: u16,
     ) -> u64 {
         use std::collections::hash_map::DefaultHasher;
         use std::hash::{Hash, Hasher};
 
         let mut hasher = DefaultHasher::new();
 
-        // Main content changes frequently
         terminal_width.hash(&mut hasher);
         start_line_number.hash(&mut hasher);
+        view_height.hash(&mut hasher);
 
         if let Some(challenge) = challenge {
             challenge.start_line.hash(&mut hasher);
             challenge.end_line.hash(&mut hasher);
         }
 
-        // These change with typing progress
         typing_core.current_position_to_display().hash(&mut hasher);
         typing_core.current_mistake_position().hash(&mut hasher);
         typing_core.current_line_to_display().hash(&mut hasher);
 
-        // Hash the display comment ranges
         for (start, end) in typing_core.display_comment_ranges() {
             start.hash(&mut hasher);
             end.hash(&mut hasher);
         }
 
-        // Hash character data (most volatile)
         chars.len().hash(&mut hasher);
         for &ch in chars {
             ch.hash(&mut hasher);
         }
 
         hasher.finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::TypingContentView;
+
+    #[test]
+    fn test_calculate_scroll_offset() {
+        assert_eq!(TypingContentView::calculate_scroll_offset(20, 100, 10), 0);
+        assert_eq!(TypingContentView::calculate_scroll_offset(20, 100, 15), 5);
+        assert_eq!(TypingContentView::calculate_scroll_offset(20, 100, 30), 20);
+        assert_eq!(TypingContentView::calculate_scroll_offset(20, 25, 50), 5);
+        assert_eq!(TypingContentView::calculate_scroll_offset(20, 30, 15), 5);
+        assert_eq!(TypingContentView::calculate_scroll_offset(20, 100, 5), 0);
     }
 }

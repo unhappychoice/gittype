@@ -15,6 +15,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "public enum Color {\n    RED(\"red\", \"#FF0000\"),\n    GREEN(\"green\", \"#00FF00\"),\n    BLUE(\"blue\", \"#0000FF\");\n\n    private final String name;\n    private final String hexCode;\n\n    Color(String name, String hexCode) {\n        this.name = name;\n        this.hexCode = hexCode;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public String getHexCode() {\n        return hexCode;\n    }\n}\n\npublic class ColorTest {\n    public void testColor() {\n        Color color = Color.RED;\n        System.out.println(color.getName());\n    }\n}",
+      "end_line": 28,
+      "language": "java",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "    private final String name;",
@@ -87,5 +97,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "public enum Color {\n    RED(\"red\", \"#FF0000\"),\n    GREEN(\"green\", \"#00FF00\"),\n    BLUE(\"blue\", \"#0000FF\");\n\n    private final String name;\n    private final String hexCode;\n\n    Color(String name, String hexCode) {\n        this.name = name;\n        this.hexCode = hexCode;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public String getHexCode() {\n        return hexCode;\n    }\n}\n\npublic class ColorTest {\n    public void testColor() {\n        Color color = Color.RED;\n        System.out.println(color.getName());\n    }\n}",
   "test_name": "test_java_enum_extraction",
-  "total_chunks": 8
+  "total_chunks": 9
 }

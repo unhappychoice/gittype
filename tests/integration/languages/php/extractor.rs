@@ -22,7 +22,7 @@ function fibonacci($n) {
 }
 
 ?>"#,
-    total_chunks: 4,
+    total_chunks: 5,
     chunk_counts: {
         Conditional: 1,
         Function: 3,
@@ -64,7 +64,7 @@ class Calculator {
 }
 
 ?>"#,
-    total_chunks: 7,
+    total_chunks: 8,
     chunk_counts: {
         Class: 2,
         Function: 5,
@@ -113,7 +113,7 @@ class UserService {
 }
 
 ?>"#,
-    total_chunks: 8,
+    total_chunks: 9,
     chunk_counts: {
         Class: 1,
         CodeBlock: 2,
@@ -158,7 +158,7 @@ class Shape implements Drawable {
 }
 
 ?>"#,
-    total_chunks: 7,
+    total_chunks: 8,
     chunk_counts: {
         Class: 3,
         Function: 4,
@@ -327,7 +327,7 @@ class DataProcessor {
 
 ?>
 "#,
-    total_chunks: 23,
+    total_chunks: 24,
     chunk_counts: {
         Class: 2,
         Function: 4,

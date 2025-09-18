@@ -13,7 +13,7 @@ def calculate_sum(a, b)
   a + b
 end
 "#,
-    total_chunks: 2,
+    total_chunks: 3,
     chunk_counts: {
         Method: 2,
     }
@@ -37,7 +37,7 @@ class Person
   end
 end
 "#,
-    total_chunks: 4,
+    total_chunks: 5,
     chunk_counts: {
         Class: 1,
         Method: 3,
@@ -60,7 +60,7 @@ module Authentication
   end
 end
 "#,
-    total_chunks: 3,
+    total_chunks: 4,
     chunk_counts: {
         Method: 2,
         Module: 1,
@@ -82,7 +82,7 @@ class User
   end
 end
 "#,
-    total_chunks: 3,
+    total_chunks: 4,
     chunk_counts: {
         Class: 1,
         Method: 2,
@@ -100,7 +100,7 @@ class Product
   attr_writer :description
 end
 "#,
-    total_chunks: 4,
+    total_chunks: 5,
     chunk_counts: {
         Class: 1,
         Method: 3,
@@ -232,7 +232,7 @@ class DataProcessor
   end
 end
 "#,
-    total_chunks: 16,
+    total_chunks: 17,
     chunk_counts: {
         Class: 2,
         Method: 5,

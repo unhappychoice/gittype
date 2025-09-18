@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nnamespace math {\n    const double PI = 3.14159;\n\n    double square(double x) {\n        return x * x;\n    }\n\n    namespace geometry {\n        double circle_area(double radius) {\n            return PI * square(radius);\n        }\n    }\n}\n\nnamespace utils {\n    void print_message(const std::string& msg) {\n        std::cout << msg << std::endl;\n    }\n}\n\nint main() {\n    double area = math::geometry::circle_area(5.0);\n    utils::print_message(\"Hello from namespace!\");\n    return 0;\n}\n",
+      "end_line": 26,
+      "language": "cpp",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "    const double PI = 3.14159;",
@@ -67,5 +77,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nnamespace math {\n    const double PI = 3.14159;\n\n    double square(double x) {\n        return x * x;\n    }\n\n    namespace geometry {\n        double circle_area(double radius) {\n            return PI * square(radius);\n        }\n    }\n}\n\nnamespace utils {\n    void print_message(const std::string& msg) {\n        std::cout << msg << std::endl;\n    }\n}\n\nint main() {\n    double area = math::geometry::circle_area(5.0);\n    utils::print_message(\"Hello from namespace!\");\n    return 0;\n}\n",
   "test_name": "test_cpp_namespace_extraction",
-  "total_chunks": 6
+  "total_chunks": 7
 }

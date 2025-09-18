@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nnamespace MyApplication.Models\n{\n    public class User\n    {\n        private int _id;\n        private string _email;\n\n        public string Name { get; set; }\n        public DateTime CreatedAt { get; private set; }\n\n        public string FullName => $\"{FirstName} {LastName}\";\n\n        public string FirstName { get; set; }\n        public string LastName { get; set; }\n\n        public User(int id, string email)\n        {\n            _id = id;\n            _email = email;\n            CreatedAt = DateTime.Now;\n        }\n    }\n}\n",
+      "end_line": 24,
+      "language": "csharp",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Namespace",
       "comment_ranges": [],
       "content": "namespace MyApplication.Models\n{\n    public class User\n    {\n        private int _id;\n        private string _email;\n\n        public string Name { get; set; }\n        public DateTime CreatedAt { get; private set; }\n\n        public string FullName => $\"{FirstName} {LastName}\";\n\n        public string FirstName { get; set; }\n        public string LastName { get; set; }\n\n        public User(int id, string email)\n        {\n            _id = id;\n            _email = email;\n            CreatedAt = DateTime.Now;\n        }\n    }\n}",
@@ -97,5 +107,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nnamespace MyApplication.Models\n{\n    public class User\n    {\n        private int _id;\n        private string _email;\n\n        public string Name { get; set; }\n        public DateTime CreatedAt { get; private set; }\n\n        public string FullName => $\"{FirstName} {LastName}\";\n\n        public string FirstName { get; set; }\n        public string LastName { get; set; }\n\n        public User(int id, string email)\n        {\n            _id = id;\n            _email = email;\n            CreatedAt = DateTime.Now;\n        }\n    }\n}\n",
   "test_name": "test_csharp_properties_and_fields",
-  "total_chunks": 9
+  "total_chunks": 10
 }

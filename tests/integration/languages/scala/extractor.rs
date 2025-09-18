@@ -15,7 +15,7 @@ def add(a: Int, b: Int): Int = {
 
 def multiply(x: Int, y: Int): Int = x * y
 "#,
-    total_chunks: 3,
+    total_chunks: 4,
     chunk_counts: {
         Function: 3,
     }
@@ -40,7 +40,7 @@ abstract class Animal {
     def speak(): String
 }
 "#,
-    total_chunks: 5,
+    total_chunks: 6,
     chunk_counts: {
         Class: 3,
         Function: 2,
@@ -70,7 +70,7 @@ case object Singleton {
     def process(): String = "processing"
 }
 "#,
-    total_chunks: 6,
+    total_chunks: 7,
     chunk_counts: {
         Class: 3,
         Function: 3,
@@ -95,7 +95,7 @@ trait Drawable {
     def draw(): Unit
 }
 "#,
-    total_chunks: 4,
+    total_chunks: 5,
     chunk_counts: {
         Class: 3,
         Function: 1,
@@ -123,7 +123,7 @@ enum Direction {
     case North, South, East, West
 }
 "##,
-    total_chunks: 3,
+    total_chunks: 4,
     chunk_counts: {
         Const: 2,
         Function: 1,
@@ -168,7 +168,7 @@ def factorial(n: Int): Int = {
 // Type definition
 type UserId = Long
 "#,
-    total_chunks: 10,
+    total_chunks: 11,
     chunk_counts: {
         Class: 5,
         Const: 1,
@@ -189,7 +189,7 @@ def calculateSum(a: Int, b: Int): Int = {
     result
 }
 "#,
-    total_chunks: 1,
+    total_chunks: 2,
     chunk_counts: {
         Function: 1,
     }
@@ -253,7 +253,7 @@ extension (s: String) {
 @deprecated
 def oldFunction(): Unit = {}
 "#,
-    total_chunks: 14,
+    total_chunks: 15,
     chunk_counts: {
         Class: 3,
         Conditional: 1,
@@ -431,7 +431,7 @@ object DataProcessor {
   }
 }
 "#,
-    total_chunks: 32,
+    total_chunks: 33,
     chunk_counts: {
         Class: 3,
         Function: 6,

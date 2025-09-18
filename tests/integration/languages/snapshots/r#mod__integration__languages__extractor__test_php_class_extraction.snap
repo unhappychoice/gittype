@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "<?php\n\nclass Person {\n    private $name;\n    private $age;\n\n    public function __construct($name, $age) {\n        $this->name = $name;\n        $this->age = $age;\n    }\n\n    public function greet() {\n        return \"Hello, I'm \" . $this->name . \"!\";\n    }\n\n    public function getAge() {\n        return $this->age;\n    }\n}\n\nclass Calculator {\n    public function add($a, $b) {\n        return $a + $b;\n    }\n\n    public function multiply($a, $b) {\n        return $a * $b;\n    }\n}\n\n?>",
+      "end_line": 31,
+      "language": "php",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "class Person {\n    private $name;\n    private $age;\n\n    public function __construct($name, $age) {\n        $this->name = $name;\n        $this->age = $age;\n    }\n\n    public function greet() {\n        return \"Hello, I'm \" . $this->name . \"!\";\n    }\n\n    public function getAge() {\n        return $this->age;\n    }\n}",
@@ -77,5 +87,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "<?php\n\nclass Person {\n    private $name;\n    private $age;\n\n    public function __construct($name, $age) {\n        $this->name = $name;\n        $this->age = $age;\n    }\n\n    public function greet() {\n        return \"Hello, I'm \" . $this->name . \"!\";\n    }\n\n    public function getAge() {\n        return $this->age;\n    }\n}\n\nclass Calculator {\n    public function add($a, $b) {\n        return $a + $b;\n    }\n\n    public function multiply($a, $b) {\n        return $a * $b;\n    }\n}\n\n?>",
   "test_name": "test_php_class_extraction",
-  "total_chunks": 7
+  "total_chunks": 8
 }

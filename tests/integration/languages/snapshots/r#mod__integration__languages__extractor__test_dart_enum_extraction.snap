@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nenum Color {\n  red,\n  green,\n  blue;\n\n  String get name {\n    switch (this) {\n      case Color.red:\n        return 'Red';\n      case Color.green:\n        return 'Green';\n      case Color.blue:\n        return 'Blue';\n    }\n  }\n}\n\nenum Status { pending, completed, failed }\n",
+      "end_line": 19,
+      "language": "dart",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Enum",
       "comment_ranges": [],
       "content": "enum Color {\n  red,\n  green,\n  blue;\n\n  String",
@@ -47,5 +57,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nenum Color {\n  red,\n  green,\n  blue;\n\n  String get name {\n    switch (this) {\n      case Color.red:\n        return 'Red';\n      case Color.green:\n        return 'Green';\n      case Color.blue:\n        return 'Blue';\n    }\n  }\n}\n\nenum Status { pending, completed, failed }\n",
   "test_name": "test_dart_enum_extraction",
-  "total_chunks": 4
+  "total_chunks": 5
 }

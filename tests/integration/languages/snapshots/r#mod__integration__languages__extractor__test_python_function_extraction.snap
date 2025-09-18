@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\ndef hello_world():\n    print(\"Hello, world!\")\n\ndef calculate_sum(a, b):\n    return a + b\n\ndef fibonacci(n):\n    if n <= 1:\n        return n\n    return fibonacci(n-1) + fibonacci(n-2)\n",
+      "end_line": 11,
+      "language": "python",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [],
       "content": "def hello_world():\n    print(\"Hello, world!\")",
@@ -37,5 +47,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\ndef hello_world():\n    print(\"Hello, world!\")\n\ndef calculate_sum(a, b):\n    return a + b\n\ndef fibonacci(n):\n    if n <= 1:\n        return n\n    return fibonacci(n-1) + fibonacci(n-2)\n",
   "test_name": "test_python_function_extraction",
-  "total_chunks": 3
+  "total_chunks": 4
 }
