@@ -99,11 +99,14 @@ impl Step for CacheCheckStep {
             git_repo.remote_url
         );
 
+        let challenge_count = cached_challenges.len();
+
         use crate::game::GameData;
         GameData::set_results(cached_challenges, context.git_repository.clone())?;
 
         // Mark that cache was used so other steps can skip
         context.cache_used = true;
+        log::info!("Cache hit: {} challenges loaded from cache", challenge_count);
 
         Ok(StepResult::Skipped)
     }

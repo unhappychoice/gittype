@@ -22,26 +22,46 @@ impl ChallengeConverter {
         Self
     }
 
-    pub fn convert_chunk_to_challenge(&self, chunk: CodeChunk) -> Challenge {
+    pub fn convert_chunk_to_challenge(&self, chunk: CodeChunk) -> Option<Challenge> {
+        // Skip empty or whitespace-only chunks
+        if chunk.content.trim().is_empty() {
+            return None;
+        }
+
+        // Skip invalid line numbers
+        if chunk.start_line == 0 || chunk.end_line == 0 || chunk.start_line > chunk.end_line {
+            return None;
+        }
+
         let id = Uuid::new_v4().to_string();
         let language = chunk.language.to_string();
         let file_path = chunk.file_path.to_string_lossy().to_string();
 
-        Challenge::new(id, chunk.content)
+        Some(Challenge::new(id, chunk.content)
             .with_source_info(file_path, chunk.start_line, chunk.end_line)
             .with_language(language)
-            .with_comment_ranges(chunk.comment_ranges)
+            .with_comment_ranges(chunk.comment_ranges))
     }
 
-    fn convert_chunk_to_challenge_ref(&self, chunk: &CodeChunk) -> Challenge {
+    fn convert_chunk_to_challenge_ref(&self, chunk: &CodeChunk) -> Option<Challenge> {
+        // Skip empty or whitespace-only chunks
+        if chunk.content.trim().is_empty() {
+            return None;
+        }
+
+        // Skip invalid line numbers
+        if chunk.start_line == 0 || chunk.end_line == 0 || chunk.start_line > chunk.end_line {
+            return None;
+        }
+
         let id = Uuid::new_v4().to_string();
         let language = chunk.language.to_string();
         let file_path = chunk.file_path.to_string_lossy().to_string();
 
-        Challenge::new(id, chunk.content.clone())
+        Some(Challenge::new(id, chunk.content.clone())
             .with_source_info(file_path, chunk.start_line, chunk.end_line)
             .with_language(language)
-            .with_comment_ranges(chunk.comment_ranges.clone())
+            .with_comment_ranges(chunk.comment_ranges.clone()))
     }
 
     pub fn convert_chunks_and_files_to_challenges_with_progress(
@@ -114,9 +134,12 @@ impl ChallengeConverter {
         // Handle Zen mode only for File chunks
         if matches!(difficulty, DifficultyLevel::Zen) {
             if matches!(chunk.chunk_type, crate::models::ChunkType::File) {
-                let mut challenge = self.convert_chunk_to_challenge_ref(chunk);
-                challenge.difficulty_level = Some(*difficulty);
-                return vec![challenge];
+                if let Some(mut challenge) = self.convert_chunk_to_challenge_ref(chunk) {
+                    challenge.difficulty_level = Some(*difficulty);
+                    return vec![challenge];
+                } else {
+                    return vec![]; // Invalid chunk
+                }
             } else {
                 return vec![]; // Only File chunks for Zen mode
             }
@@ -124,9 +147,12 @@ impl ChallengeConverter {
 
         // Wild difficulty uses the full chunk as-is
         if matches!(difficulty, DifficultyLevel::Wild) {
-            let mut challenge = self.convert_chunk_to_challenge_ref(chunk);
-            challenge.difficulty_level = Some(*difficulty);
-            return vec![challenge];
+            if let Some(mut challenge) = self.convert_chunk_to_challenge_ref(chunk) {
+                challenge.difficulty_level = Some(*difficulty);
+                return vec![challenge];
+            } else {
+                return vec![]; // Invalid chunk
+            }
         }
 
         let (min_chars, max_chars) = difficulty.char_limits();
@@ -144,10 +170,12 @@ impl ChallengeConverter {
 
         // If the chunk is within the target range, return as-is
         if code_char_count <= max_chars {
-            let mut challenge = self.convert_chunk_to_challenge_ref(chunk);
-            challenge.difficulty_level = Some(*difficulty);
-
-            return vec![challenge];
+            if let Some(mut challenge) = self.convert_chunk_to_challenge_ref(chunk) {
+                challenge.difficulty_level = Some(*difficulty);
+                return vec![challenge];
+            } else {
+                return vec![]; // Invalid chunk
+            }
         }
 
         // Find the best natural break point that keeps us under max_chars
