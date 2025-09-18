@@ -89,17 +89,33 @@ impl CommonExtractor {
         )?;
         chunks.extend(middle_chunks);
 
+        // Add a whole-file chunk for Zen mode
+        let line_count = source_code.lines().count();
+        let zen_chunk = CodeChunk {
+            content: source_code.to_string(),
+            file_path: relative_file_path.clone(),
+            start_line: 1,
+            end_line: line_count,
+            language: language.to_string(),
+            chunk_type: crate::models::ChunkType::File,
+            name: "entire_file".to_string(),
+            comment_ranges: file_comment_ranges.clone(),
+            original_indentation: 0,
+        };
+        chunks.push(zen_chunk);
+
         // Remove duplicates: prioritize specific chunk types over generic ones
         // Sort by position first, then prioritize Function/Class/etc over CodeBlock
         chunks.sort_by(|a, b| {
             let pos_cmp = (a.start_line, a.end_line).cmp(&(b.start_line, b.end_line));
             if pos_cmp == std::cmp::Ordering::Equal {
-                // Prioritize specific types over generic CodeBlock
+                // Prioritize specific types over generic CodeBlock, File chunks go last
                 let a_priority = match a.chunk_type {
                     crate::models::ChunkType::Function => 0,
                     crate::models::ChunkType::Class => 0,
                     crate::models::ChunkType::Method => 0,
                     crate::models::ChunkType::CodeBlock => 10,
+                    crate::models::ChunkType::File => 20, // File chunks (Zen mode) go last
                     _ => 5,
                 };
                 let b_priority = match b.chunk_type {
@@ -107,6 +123,7 @@ impl CommonExtractor {
                     crate::models::ChunkType::Class => 0,
                     crate::models::ChunkType::Method => 0,
                     crate::models::ChunkType::CodeBlock => 10,
+                    crate::models::ChunkType::File => 20, // File chunks (Zen mode) go last
                     _ => 5,
                 };
                 a_priority.cmp(&b_priority)
@@ -115,8 +132,13 @@ impl CommonExtractor {
             }
         });
 
-        // Remove duplicates based on position (keep the higher priority one)
-        chunks.dedup_by(|a, b| a.start_line == b.start_line && a.end_line == b.end_line);
+        // Remove duplicates based on position, but keep File chunks separate
+        chunks.dedup_by(|a, b| {
+            a.start_line == b.start_line
+                && a.end_line == b.end_line
+                && a.chunk_type != crate::models::ChunkType::File
+                && b.chunk_type != crate::models::ChunkType::File
+        });
 
         Ok(chunks)
     }
