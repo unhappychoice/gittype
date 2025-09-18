@@ -99,7 +99,7 @@ impl CommonExtractor {
             language: language.to_string(),
             chunk_type: crate::models::ChunkType::File,
             name: "entire_file".to_string(),
-            comment_ranges: file_comment_ranges.clone(),
+            comment_ranges: file_comment_ranges,
             original_indentation: 0,
         };
         chunks.push(zen_chunk);

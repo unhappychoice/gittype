@@ -128,7 +128,7 @@ impl RepositoryExtractor {
     pub fn extract_chunks_from_scanned_files_with_progress(
         &mut self,
         scanned_files: &[std::path::PathBuf],
-        options: ExtractionOptions,
+        options: &ExtractionOptions,
         progress: &dyn ProgressReporter,
     ) -> Result<Vec<crate::extractor::models::CodeChunk>> {
         // Convert scanned files to (path, language) pairs

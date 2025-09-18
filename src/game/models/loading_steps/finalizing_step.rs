@@ -55,7 +55,8 @@ impl Step for FinalizingStep {
     fn execute(&self, context: &mut ExecutionContext) -> Result<StepResult> {
         let git_repository = context
             .git_repository
-            .clone()
+            .as_ref()
+            .cloned()
             .or_else(GameData::get_git_repository);
 
         // Verify challenges are available in GameData

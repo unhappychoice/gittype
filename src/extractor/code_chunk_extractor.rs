@@ -21,7 +21,7 @@ impl CodeChunkExtractor {
     pub fn extract_chunks_from_files_with_progress<P: ProgressReporter + ?Sized>(
         &mut self,
         files_to_process: Vec<(std::path::PathBuf, Box<dyn Language>)>,
-        _options: ExtractionOptions,
+        _options: &ExtractionOptions,
         progress: &P,
     ) -> Result<Vec<CodeChunk>> {
         let total_files = files_to_process.len();
@@ -52,7 +52,7 @@ impl CodeChunkExtractor {
         let all_chunks: Vec<CodeChunk> = files_to_process
             .into_par_iter()
             .flat_map(|(path, language)| {
-                let result = Self::extract_from_file_static(&path, language.as_ref(), &_options);
+                let result = Self::extract_from_file_static(&path, language.as_ref(), _options);
 
                 // Update progress atomically
                 let current = processed.fetch_add(1, Ordering::Relaxed) + 1;

@@ -75,7 +75,7 @@ impl Step for ExtractingStep {
         // Use pre-scanned files for extraction
         let chunks = loader.extract_chunks_from_scanned_files_with_progress(
             scanned_files,
-            options.clone(),
+            &options,
             screen,
         )?;
 

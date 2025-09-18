@@ -94,7 +94,7 @@ impl SessionManager {
     fn reduce(&mut self, action: SessionAction) -> Result<()> {
         log::debug!("SessionManager::reduce - {:?}", action);
 
-        let new_state = match (&self.state, action) {
+        let new_state = match (&self.state, &action) {
             // Start transitions
             (SessionState::NotStarted, SessionAction::Start) => {
                 let session_start_time = Instant::now();
@@ -525,34 +525,36 @@ impl SessionManager {
                     session_tracker.record(stage_result.clone());
                 }
             }
+        }
 
-            // 4. Collect data before borrowing conflicts
-            let tracker_clone = tracker.clone();
-            let current_challenge = self.get_current_challenge();
-            let stage_name = format!("Stage {}", self.current_stage());
+        // 4. Collect data before borrowing conflicts - move tracker out to avoid borrowing issues
+        let tracker_clone = self.current_stage_tracker.as_ref().map(|t| t.clone());
+        let current_challenge = self.get_current_challenge();
+        let stage_name = format!("Stage {}", self.current_stage());
+        
+        // Clear current stage tracker to avoid borrow issues
+        let stage_result = if let Some(tracker) = self.current_stage_tracker.take() {
+            StageCalculator::calculate(&tracker)
+        } else {
+            return Err(crate::GitTypeError::TerminalError(
+                "No active stage tracker to finalize".to_string(),
+            ));
+        };
 
-            // 5. Add stage data to session
+        // 5. Add stage data to session
+        if let Some(tracker) = tracker_clone {
             if let Some(challenge) = current_challenge {
-                self.stage_trackers
-                    .push((stage_name.clone(), tracker_clone));
+                self.stage_trackers.push((stage_name, tracker));
                 self.session_challenges.push(challenge);
             } else {
-                self.stage_trackers
-                    .push((stage_name.clone(), tracker_clone));
+                self.stage_trackers.push((stage_name, tracker));
             }
-
-            // Update SessionManager state using reducer pattern
-            self.reduce(SessionAction::CompleteStage(stage_result.clone()))?;
-
-            // Clear current stage tracker for next stage
-            self.current_stage_tracker = None;
-
-            Ok(stage_result)
-        } else {
-            Err(crate::GitTypeError::TerminalError(
-                "No active stage tracker to finalize".to_string(),
-            ))
         }
+
+        // Update SessionManager state using reducer pattern
+        self.reduce(SessionAction::CompleteStage(stage_result.clone()))?;
+
+        Ok(stage_result)
     }
 
     // ============================================
@@ -755,28 +757,26 @@ impl SessionManager {
                         }
                     }
 
-                    // Collect data before borrowing conflicts
-                    let tracker_clone = tracker.clone();
+                    // Collect data before borrowing conflicts - move tracker out
+                    let tracker_clone = manager.current_stage_tracker.as_ref().map(|t| t.clone());
                     let current_challenge = manager.get_current_challenge();
                     let stage_name = format!("Stage {}", manager.current_stage());
 
+                    // Clear current stage tracker for new challenge
+                    manager.current_stage_tracker = None;
+
                     // Add stage data to session before updating results
-                    if let Some(challenge) = current_challenge {
-                        manager
-                            .stage_trackers
-                            .push((stage_name.clone(), tracker_clone));
-                        manager.session_challenges.push(challenge);
-                    } else {
-                        manager
-                            .stage_trackers
-                            .push((stage_name.clone(), tracker_clone));
+                    if let Some(tracker) = tracker_clone {
+                        if let Some(challenge) = current_challenge {
+                            manager.stage_trackers.push((stage_name, tracker));
+                            manager.session_challenges.push(challenge);
+                        } else {
+                            manager.stage_trackers.push((stage_name, tracker));
+                        }
                     }
 
                     // Add skipped stage to results (don't advance stage)
                     manager.stage_results.push(stage_result.clone());
-
-                    // Clear current stage tracker for new challenge
-                    manager.current_stage_tracker = None;
 
                     // Return true to indicate new challenge should be generated
                     let skips_remaining = manager.get_skips_remaining();

@@ -34,8 +34,9 @@ impl ChallengeConverter {
         }
 
         let id = Uuid::new_v4().to_string();
-        let language = chunk.language.to_string();
-        let file_path = chunk.file_path.to_string_lossy().to_string();
+        // Reuse chunk's existing strings instead of converting
+        let language = chunk.language;
+        let file_path = chunk.file_path.to_string_lossy().into_owned();
 
         Some(Challenge::new(id, chunk.content)
             .with_source_info(file_path, chunk.start_line, chunk.end_line)
@@ -43,26 +44,6 @@ impl ChallengeConverter {
             .with_comment_ranges(chunk.comment_ranges))
     }
 
-    fn convert_chunk_to_challenge_ref(&self, chunk: &CodeChunk) -> Option<Challenge> {
-        // Skip empty or whitespace-only chunks
-        if chunk.content.trim().is_empty() {
-            return None;
-        }
-
-        // Skip invalid line numbers
-        if chunk.start_line == 0 || chunk.end_line == 0 || chunk.start_line > chunk.end_line {
-            return None;
-        }
-
-        let id = Uuid::new_v4().to_string();
-        let language = chunk.language.to_string();
-        let file_path = chunk.file_path.to_string_lossy().to_string();
-
-        Some(Challenge::new(id, chunk.content.clone())
-            .with_source_info(file_path, chunk.start_line, chunk.end_line)
-            .with_language(language)
-            .with_comment_ranges(chunk.comment_ranges.clone()))
-    }
 
     pub fn convert_chunks_and_files_to_challenges_with_progress(
         &self,
@@ -93,8 +74,7 @@ impl ChallengeConverter {
             let mut sorted_chunks = chunks;
             sorted_chunks.sort_by(|a, b| b.content.len().cmp(&a.content.len()));
 
-            let processed_total_clone = processed_total.clone();
-
+            // Capture Arc without cloning
             let chunk_challenges: Vec<Challenge> = sorted_chunks
                 .into_par_iter()
                 .map(|chunk| {
@@ -105,7 +85,7 @@ impl ChallengeConverter {
                     }
 
                     // Update progress atomically - always increment for every chunk
-                    let current = processed_total_clone.fetch_add(1, Ordering::Relaxed) + 1;
+                    let current = processed_total.fetch_add(1, Ordering::Relaxed) + 1;
                     if current % 5 == 0 || current == total_work {
                         progress.set_file_counts(StepType::Generating, current, total_work, None);
                     }
@@ -131,15 +111,39 @@ impl ChallengeConverter {
     ) -> Vec<Challenge> {
         use crate::game::DifficultyLevel;
 
+        // Skip empty or whitespace-only chunks early
+        if chunk.content.trim().is_empty() {
+            return vec![];
+        }
+
+        // Skip invalid line numbers early
+        if chunk.start_line == 0 || chunk.end_line == 0 || chunk.start_line > chunk.end_line {
+            return vec![];
+        }
+
+        // Helper function to create challenge directly - avoids intermediate string allocations
+        let create_challenge = |content: &str, start_line: usize, end_line: usize, comment_ranges: &[(usize, usize)]| -> Challenge {
+            let id = Uuid::new_v4().to_string();
+            let language = &chunk.language;
+            let file_path = chunk.file_path.to_string_lossy();
+
+            Challenge::new(id, content.to_string())
+                .with_source_info(file_path.into_owned(), start_line, end_line)
+                .with_language(language.clone())
+                .with_comment_ranges(comment_ranges.to_vec())
+                .with_difficulty_level(*difficulty)
+        };
+
         // Handle Zen mode only for File chunks
         if matches!(difficulty, DifficultyLevel::Zen) {
             if matches!(chunk.chunk_type, crate::models::ChunkType::File) {
-                if let Some(mut challenge) = self.convert_chunk_to_challenge_ref(chunk) {
-                    challenge.difficulty_level = Some(*difficulty);
-                    return vec![challenge];
-                } else {
-                    return vec![]; // Invalid chunk
-                }
+                let challenge = create_challenge(
+                    &chunk.content,
+                    chunk.start_line,
+                    chunk.end_line,
+                    &chunk.comment_ranges
+                );
+                return vec![challenge];
             } else {
                 return vec![]; // Only File chunks for Zen mode
             }
@@ -147,12 +151,13 @@ impl ChallengeConverter {
 
         // Wild difficulty uses the full chunk as-is
         if matches!(difficulty, DifficultyLevel::Wild) {
-            if let Some(mut challenge) = self.convert_chunk_to_challenge_ref(chunk) {
-                challenge.difficulty_level = Some(*difficulty);
-                return vec![challenge];
-            } else {
-                return vec![]; // Invalid chunk
-            }
+            let challenge = create_challenge(
+                &chunk.content,
+                chunk.start_line,
+                chunk.end_line,
+                &chunk.comment_ranges
+            );
+            return vec![challenge];
         }
 
         let (min_chars, max_chars) = difficulty.char_limits();
@@ -170,12 +175,13 @@ impl ChallengeConverter {
 
         // If the chunk is within the target range, return as-is
         if code_char_count <= max_chars {
-            if let Some(mut challenge) = self.convert_chunk_to_challenge_ref(chunk) {
-                challenge.difficulty_level = Some(*difficulty);
-                return vec![challenge];
-            } else {
-                return vec![]; // Invalid chunk
-            }
+            let challenge = create_challenge(
+                &chunk.content,
+                chunk.start_line,
+                chunk.end_line,
+                &chunk.comment_ranges
+            );
+            return vec![challenge];
         }
 
         // Find the best natural break point that keeps us under max_chars
@@ -187,7 +193,7 @@ impl ChallengeConverter {
             let selected_lines: String = lines
                 .iter()
                 .take(break_point)
-                .map(|l| format!("{}\n", l))
+                .map(|l| format!("{}\\n", l))
                 .collect();
 
             if !selected_lines.trim().is_empty() {
@@ -203,21 +209,12 @@ impl ChallengeConverter {
 
                 // Only create challenge if it meets minimum size for this difficulty
                 if truncated_code_chars >= min_chars {
-                    let id = Uuid::new_v4().to_string();
-                    let language = chunk.language.to_string();
-                    // file_path is already relative to git project root from CodeChunk
-                    let file_path = chunk.file_path.to_string_lossy().to_string();
-
-                    let challenge = Challenge::new(id, truncated_content.to_string())
-                        .with_source_info(
-                            file_path,
-                            chunk.start_line,
-                            chunk.start_line + break_point - 1,
-                        )
-                        .with_language(language)
-                        .with_comment_ranges(adjusted_comment_ranges)
-                        .with_difficulty_level(*difficulty);
-
+                    let challenge = create_challenge(
+                        truncated_content,
+                        chunk.start_line,
+                        chunk.start_line + break_point - 1,
+                        &adjusted_comment_ranges
+                    );
                     return vec![challenge];
                 }
             }
