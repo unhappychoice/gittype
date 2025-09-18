@@ -75,6 +75,11 @@ pub enum Commands {
         #[command(subcommand)]
         cache_command: CacheCommands,
     },
+    /// Manage repositories
+    Repo {
+        #[command(subcommand)]
+        repo_command: RepoCommands,
+    },
 }
 
 #[derive(Subcommand)]
@@ -85,4 +90,17 @@ pub enum CacheCommands {
     Clear,
     /// List cached repository keys
     List,
+}
+#[derive(Subcommand)]
+pub enum RepoCommands {
+    /// List all cached repositories
+    List,
+    /// Clear all cached repositories
+    Clear {
+        /// Force clear without confirmation
+        #[arg(long)]
+        force: bool,
+    },
+    /// Play a cached repository interactively
+    Play,
 }

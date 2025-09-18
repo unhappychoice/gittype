@@ -1,5 +1,8 @@
-use crate::cli::args::{CacheCommands, Cli, Commands};
-use crate::cli::commands::{run_export, run_game_session, run_history, run_stats};
+use crate::cli::args::{CacheCommands, Cli, Commands, RepoCommands};
+use crate::cli::commands::{
+    run_export, run_game_session, run_history, run_repo_clear, run_repo_list, run_repo_play,
+    run_stats,
+};
 use crate::logging::{setup_console_logging, setup_logging};
 use crate::Result;
 
@@ -16,6 +19,7 @@ pub async fn run_cli(cli: Cli) -> Result<()> {
         Some(Commands::Stats) => run_stats(),
         Some(Commands::Export { format, output }) => run_export(format.clone(), output.clone()),
         Some(Commands::Cache { cache_command }) => run_cache_command(cache_command),
+        Some(Commands::Repo { repo_command }) => run_repo_command(repo_command),
         None => run_game_session(cli),
     }
 }
@@ -81,4 +85,12 @@ fn run_cache_command(cache_command: &CacheCommands) -> Result<()> {
     }
 
     Ok(())
+}
+
+fn run_repo_command(repo_command: &RepoCommands) -> Result<()> {
+    match repo_command {
+        RepoCommands::List => run_repo_list(),
+        RepoCommands::Clear { force } => run_repo_clear(*force),
+        RepoCommands::Play => run_repo_play(),
+    }
 }
