@@ -24,6 +24,7 @@ pub enum ChunkType {
     SpecialBlock,  // language-specific blocks (with, defer, etc.)
     Comprehension, // list/dict comprehensions
     CodeBlock,     // generic code blocks
+    File,          // entire file for Zen mode
 }
 
 #[derive(Debug, Clone)]
