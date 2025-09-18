@@ -1,46 +1,42 @@
 use crate::repository_manager::{RepoInfo, RepositoryManager};
 
-/// Extract host, owner, and repository name from a git URL
+/// Extract host, owner path (can include `/` for subgroups), and repo name (no .git)
 fn parse_git_url(remote_url: &str) -> Option<(String, String, String)> {
-    // Handle SSH format: git@host:owner/repo
-    if let Some(ssh_part) = remote_url.strip_prefix("git@") {
-        if let Some(colon_pos) = ssh_part.find(':') {
-            let host = &ssh_part[..colon_pos];
-            let path = &ssh_part[colon_pos + 1..];
-            let parts: Vec<&str> = path.split('/').collect();
-            if parts.len() >= 2 {
-                let owner = parts[0];
-                let repo = parts[1].trim_end_matches(".git");
-                return Some((host.to_string(), owner.to_string(), repo.to_string()));
+    fn normalize_host(h: &str) -> String {
+        // Drop port if present; lowercase for consistent cache paths
+        h.split(':').next().unwrap_or(h).to_ascii_lowercase()
+    }
+
+    // 1) scp-like SSH: user@host:path
+    if let Some((user_host, path)) = remote_url.split_once(':') {
+        if let Some((_user, host)) = user_host.rsplit_once('@') {
+            let host = normalize_host(host);
+            let path = path.trim_start_matches('/').split('?').next().unwrap_or("");
+            let mut segs: Vec<&str> = path.split('/').filter(|s| !s.is_empty()).collect();
+            if segs.len() >= 2 {
+                let repo = segs.pop().unwrap().trim_end_matches(".git").to_string();
+                let owner = segs.join("/");
+                return Some((host, owner, repo));
             }
         }
     }
 
-    // Handle ssh:// format: ssh://git@host/owner/repo
-    if let Some(ssh_url) = remote_url.strip_prefix("ssh://") {
-        if let Some(at_pos) = ssh_url.find('@') {
-            let host_path = &ssh_url[at_pos + 1..];
-            let parts: Vec<&str> = host_path.split('/').collect();
-            if parts.len() >= 3 {
-                let host = parts[0];
-                let owner = parts[1];
-                let repo = parts[2].trim_end_matches(".git");
-                return Some((host.to_string(), owner.to_string(), repo.to_string()));
-            }
-        }
-    }
-
-    // Handle HTTP(S) format: https://host/owner/repo
-    if let Some(url_without_protocol) = remote_url
-        .strip_prefix("https://")
+    // 2) ssh:// or http(s)://
+    if let Some(rest) = remote_url
+        .strip_prefix("ssh://")
+        .or_else(|| remote_url.strip_prefix("https://"))
         .or_else(|| remote_url.strip_prefix("http://"))
     {
-        let parts: Vec<&str> = url_without_protocol.split('/').collect();
-        if parts.len() >= 3 {
-            let host = parts[0];
-            let owner = parts[1];
-            let repo = parts[2].trim_end_matches(".git");
-            return Some((host.to_string(), owner.to_string(), repo.to_string()));
+        let rest = rest.split('#').next().unwrap_or(rest); // drop fragment
+        let rest = rest.split('?').next().unwrap_or(rest); // drop query
+        if let Some((host_port, path)) = rest.split_once('/') {
+            let host = normalize_host(host_port);
+            let mut segs: Vec<&str> = path.split('/').filter(|s| !s.is_empty()).collect();
+            if segs.len() >= 2 {
+                let repo = segs.pop().unwrap().trim_end_matches(".git").to_string();
+                let owner = segs.join("/");
+                return Some((host, owner, repo));
+            }
         }
     }
 
