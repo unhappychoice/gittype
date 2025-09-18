@@ -60,6 +60,7 @@ impl CommonExtractor {
         let mut cursor = QueryCursor::new();
         let mut matches = cursor.matches(&query, tree.root_node(), source_code.as_bytes());
 
+        // Extract standard function/class start chunks
         while let Some(match_) = matches.next() {
             for capture in match_.captures {
                 let node = capture.node;
@@ -77,6 +78,170 @@ impl CommonExtractor {
                 }
             }
         }
+
+        // Extract middle implementation chunks for more variety
+        let middle_chunks = Self::extract_middle_chunks(
+            tree,
+            source_code,
+            &relative_file_path,
+            language,
+            &file_comment_ranges,
+        )?;
+        chunks.extend(middle_chunks);
+
+        // Remove duplicates: prioritize specific chunk types over generic ones
+        // Sort by position first, then prioritize Function/Class/etc over CodeBlock
+        chunks.sort_by(|a, b| {
+            let pos_cmp = (a.start_line, a.end_line).cmp(&(b.start_line, b.end_line));
+            if pos_cmp == std::cmp::Ordering::Equal {
+                // Prioritize specific types over generic CodeBlock
+                let a_priority = match a.chunk_type {
+                    crate::models::ChunkType::Function => 0,
+                    crate::models::ChunkType::Class => 0,
+                    crate::models::ChunkType::Method => 0,
+                    crate::models::ChunkType::CodeBlock => 10,
+                    _ => 5,
+                };
+                let b_priority = match b.chunk_type {
+                    crate::models::ChunkType::Function => 0,
+                    crate::models::ChunkType::Class => 0,
+                    crate::models::ChunkType::Method => 0,
+                    crate::models::ChunkType::CodeBlock => 10,
+                    _ => 5,
+                };
+                a_priority.cmp(&b_priority)
+            } else {
+                pos_cmp
+            }
+        });
+
+        // Remove duplicates based on position (keep the higher priority one)
+        chunks.dedup_by(|a, b| a.start_line == b.start_line && a.end_line == b.end_line);
+
+        Ok(chunks)
+    }
+
+    pub fn extract_middle_chunks(
+        tree: &Tree,
+        source_code: &str,
+        file_path: &Path,
+        language: &str,
+        file_comment_ranges: &[(usize, usize)],
+    ) -> Result<Vec<CodeChunk>> {
+        let registry = get_parser_registry();
+        let extractor = registry.get_extractor(language)?;
+        let middle_query = registry.create_middle_implementation_query(language)?;
+        let mut cursor = QueryCursor::new();
+        let mut matches = cursor.matches(&middle_query, tree.root_node(), source_code.as_bytes());
+
+        let mut captures = Vec::new();
+        while let Some(match_) = matches.next() {
+            captures.extend(match_.captures.iter().map(|capture| {
+                let node = capture.node;
+                let capture_name = &middle_query.capture_names()[capture.index as usize];
+                (node, capture_name)
+            }));
+        }
+
+        let mut chunks: Vec<CodeChunk> = captures
+            .into_iter()
+            .map(|(node, capture_name)| {
+                (
+                    node,
+                    capture_name,
+                    extractor.middle_capture_name_to_chunk_type(capture_name),
+                )
+            })
+            .filter(|(_, _, chunk_type)| chunk_type.is_some())
+            .map(|(node, capture_name, chunk_type)| (node, capture_name, chunk_type.unwrap()))
+            .map(|(node, capture_name, chunk_type)| {
+                let start_byte = node.start_byte();
+                let end_byte = node.end_byte();
+                let content = &source_code[start_byte..end_byte];
+                (
+                    node,
+                    capture_name,
+                    chunk_type,
+                    content,
+                    start_byte,
+                    end_byte,
+                )
+            })
+            .filter(|(_, _, _, content, _, _)| {
+                let line_count = content.lines().count();
+                line_count >= 2 && content.len() >= 30 && content.len() <= 2000
+            })
+            .map(
+                |(node, capture_name, chunk_type, content, start_byte, end_byte)| {
+                    // Use node_to_chunk-like logic for proper indentation and comment handling
+                    let start_char = Self::byte_to_char_position(source_code, start_byte);
+                    let end_char = Self::byte_to_char_position(source_code, end_byte);
+
+                    let start_line = node.start_position().row + 1;
+                    let end_line = node.end_position().row + 1;
+                    let original_indentation_bytes = node.start_position().column;
+
+                    // Extract actual indentation characters from source
+                    let original_indent_chars = if original_indentation_bytes > 0 {
+                        Self::extract_line_indent_chars_corrected(
+                            source_code,
+                            node.start_position().row,
+                            original_indentation_bytes,
+                        )
+                    } else {
+                        String::new()
+                    };
+
+                    let normalized_content =
+                        Self::normalize_first_line_indentation(content, &original_indent_chars);
+
+                    // Adjust comment ranges to be relative to the normalized content
+                    let indent_offset_chars = original_indent_chars.chars().count();
+
+                    let chunk_comment_ranges: Vec<(usize, usize)> = file_comment_ranges
+                        .iter()
+                        .filter_map(|&(comment_raw_pos_start, comment_raw_pos_end)| {
+                            // Check if comment is within this chunk's boundaries
+                            if comment_raw_pos_start >= start_char
+                                && comment_raw_pos_end <= end_char
+                            {
+                                // Convert to chunk-relative positions
+                                let comment_start_pos = comment_raw_pos_start - start_char;
+                                let comment_end_pos = comment_raw_pos_end - start_char;
+
+                                // Account for added indentation at the very start of normalized content
+                                let adjusted_start = comment_start_pos + indent_offset_chars;
+                                let adjusted_end = comment_end_pos + indent_offset_chars;
+
+                                Some((adjusted_start, adjusted_end))
+                            } else {
+                                None
+                            }
+                        })
+                        .collect();
+
+                    CodeChunk {
+                        name: capture_name.to_string(),
+                        content: normalized_content,
+                        chunk_type,
+                        language: language.to_string(),
+                        file_path: file_path.to_path_buf(),
+                        start_line,
+                        end_line,
+                        comment_ranges: chunk_comment_ranges,
+                        original_indentation: indent_offset_chars,
+                    }
+                },
+            )
+            .collect();
+
+        // Remove duplicates based on exact position and content
+        chunks.sort_by(|a, b| {
+            (a.start_line, a.end_line, &a.content).cmp(&(b.start_line, b.end_line, &b.content))
+        });
+        chunks.dedup_by(|a, b| {
+            a.start_line == b.start_line && a.end_line == b.end_line && a.content == b.content
+        });
 
         Ok(chunks)
     }

@@ -52,6 +52,28 @@ impl LanguageExtractor for GoExtractor {
             _ => self.extract_name_from_node(node, source_code),
         }
     }
+
+    fn middle_implementation_query(&self) -> &str {
+        "
+        (for_statement) @for_loop
+        (if_statement) @if_block
+        (expression_switch_statement) @switch_block
+        (type_switch_statement) @type_switch
+        (call_expression) @function_call
+        (block) @code_block
+        "
+    }
+
+    fn middle_capture_name_to_chunk_type(&self, capture_name: &str) -> Option<ChunkType> {
+        match capture_name {
+            "for_loop" => Some(ChunkType::Loop),
+            "if_block" => Some(ChunkType::Conditional),
+            "switch_block" | "type_switch" => Some(ChunkType::Conditional),
+            "function_call" => Some(ChunkType::FunctionCall),
+            "code_block" => Some(ChunkType::CodeBlock),
+            _ => None,
+        }
+    }
 }
 
 impl GoExtractor {

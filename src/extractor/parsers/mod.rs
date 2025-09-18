@@ -28,10 +28,15 @@ pub mod typescript;
 
 pub trait LanguageExtractor {
     fn tree_sitter_language(&self) -> tree_sitter::Language;
-    fn query_patterns(&self) -> &str;
+
     fn comment_query(&self) -> &str;
+
+    fn query_patterns(&self) -> &str;
     fn capture_name_to_chunk_type(&self, capture_name: &str) -> Option<ChunkType>;
     fn extract_name(&self, node: Node, source_code: &str, capture_name: &str) -> Option<String>;
+
+    fn middle_implementation_query(&self) -> &str;
+    fn middle_capture_name_to_chunk_type(&self, _capture_name: &str) -> Option<ChunkType>;
 }
 
 type ParserFactory = fn() -> Result<Parser>;
@@ -49,100 +54,33 @@ impl ParserRegistry {
             extractors: HashMap::new(),
         };
 
-        // Register all supported languages
-        registry.register(
-            Rust.name().to_string(),
-            rust::RustExtractor::create_parser,
-            || Box::new(rust::RustExtractor),
-        );
+        // Register all supported languages using a macro to reduce repetition
+        macro_rules! register_language {
+            ($lang:ident, $module:ident, $extractor:ident) => {
+                registry.register(
+                    $lang.name().to_string(),
+                    $module::$extractor::create_parser,
+                    || Box::new($module::$extractor),
+                );
+            };
+        }
 
-        registry.register(
-            TypeScript.name().to_string(),
-            typescript::TypeScriptExtractor::create_parser,
-            || Box::new(typescript::TypeScriptExtractor),
-        );
-
-        registry.register(
-            JavaScript.name().to_string(),
-            javascript::JavaScriptExtractor::create_parser,
-            || Box::new(javascript::JavaScriptExtractor),
-        );
-
-        registry.register(
-            Python.name().to_string(),
-            python::PythonExtractor::create_parser,
-            || Box::new(python::PythonExtractor),
-        );
-
-        registry.register(
-            Ruby.name().to_string(),
-            ruby::RubyExtractor::create_parser,
-            || Box::new(ruby::RubyExtractor),
-        );
-
-        registry.register(
-            Go.name().to_string(),
-            go::GoExtractor::create_parser,
-            || Box::new(go::GoExtractor),
-        );
-
-        registry.register(
-            Swift.name().to_string(),
-            swift::SwiftExtractor::create_parser,
-            || Box::new(swift::SwiftExtractor),
-        );
-
-        registry.register(
-            Kotlin.name().to_string(),
-            kotlin::KotlinExtractor::create_parser,
-            || Box::new(kotlin::KotlinExtractor),
-        );
-
-        registry.register(
-            Java.name().to_string(),
-            java::JavaExtractor::create_parser,
-            || Box::new(java::JavaExtractor),
-        );
-
-        registry.register(
-            Php.name().to_string(),
-            php::PhpExtractor::create_parser,
-            || Box::new(php::PhpExtractor),
-        );
-
-        registry.register(
-            CSharp.name().to_string(),
-            csharp::CSharpExtractor::create_parser,
-            || Box::new(csharp::CSharpExtractor),
-        );
-
-        registry.register(C.name().to_string(), c::CExtractor::create_parser, || {
-            Box::new(c::CExtractor)
-        });
-
-        registry.register(
-            Cpp.name().to_string(),
-            cpp::CppExtractor::create_parser,
-            || Box::new(cpp::CppExtractor),
-        );
-
-        registry.register(
-            Haskell.name().to_string(),
-            haskell::HaskellExtractor::create_parser,
-            || Box::new(haskell::HaskellExtractor),
-        );
-
-        registry.register(
-            Dart.name().to_string(),
-            dart::DartExtractor::create_parser,
-            || Box::new(dart::DartExtractor),
-        );
-
-        registry.register(
-            Scala.name().to_string(),
-            scala::ScalaExtractor::create_parser,
-            || Box::new(scala::ScalaExtractor),
-        );
+        register_language!(C, c, CExtractor);
+        register_language!(Cpp, cpp, CppExtractor);
+        register_language!(CSharp, csharp, CSharpExtractor);
+        register_language!(Dart, dart, DartExtractor);
+        register_language!(Go, go, GoExtractor);
+        register_language!(Haskell, haskell, HaskellExtractor);
+        register_language!(Java, java, JavaExtractor);
+        register_language!(JavaScript, javascript, JavaScriptExtractor);
+        register_language!(Kotlin, kotlin, KotlinExtractor);
+        register_language!(Php, php, PhpExtractor);
+        register_language!(Python, python, PythonExtractor);
+        register_language!(TypeScript, typescript, TypeScriptExtractor);
+        register_language!(Ruby, ruby, RubyExtractor);
+        register_language!(Rust, rust, RustExtractor);
+        register_language!(Scala, scala, ScalaExtractor);
+        register_language!(Swift, swift, SwiftExtractor);
 
         registry
     }
@@ -201,6 +139,26 @@ impl ParserRegistry {
         })
     }
 
+    pub fn create_middle_implementation_query(&self, language: &str) -> Result<Query> {
+        let extractor = self.get_extractor(language)?;
+        let tree_sitter_lang = extractor.tree_sitter_language();
+        let query_str = extractor.middle_implementation_query();
+
+        // If query is empty, create a dummy query that matches nothing
+        let actual_query = if query_str.trim().is_empty() {
+            "(ERROR) @dummy" // This will never match anything but is syntactically valid
+        } else {
+            query_str
+        };
+
+        Query::new(&tree_sitter_lang, actual_query).map_err(|e| {
+            GitTypeError::ExtractionFailed(format!(
+                "Failed to create middle implementation query for {}: {}",
+                language, e
+            ))
+        })
+    }
+
     pub fn supported_languages(&self) -> Vec<String> {
         self.parsers.keys().cloned().collect()
     }
@@ -213,7 +171,7 @@ pub fn get_parser_registry() -> &'static ParserRegistry {
 }
 
 thread_local! {
-    static TL_PARSERS: RefCell<std::collections::HashMap<String, Parser>> = RefCell::new(std::collections::HashMap::new());
+    static TL_PARSERS: RefCell<HashMap<String, Parser>> = RefCell::new(HashMap::new());
 }
 
 /// Parse source using a thread-local parser per language to avoid re-allocations.

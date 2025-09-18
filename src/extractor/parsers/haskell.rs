@@ -12,34 +12,37 @@ impl LanguageExtractor for HaskellExtractor {
 
     fn query_patterns(&self) -> &str {
         r#"
-            ; Function definitions with name extraction
-            (function name: (variable) @function.name) @function.definition
-            (function (variable) @function.name) @function.named
+            ; Function definitions
+            (function) @function
 
-            ; Type signatures with name extraction  
-            (signature name: (variable) @signature.name) @signature.definition
-            (signature (variable) @signature.name) @signature.named
+            ; Type signatures
+            (signature) @signature
+
+            ; Data type declarations
+            (data_type) @data
+            (newtype) @newtype
+            (data_family) @data_family
+            (data_instance) @data_instance
+
+            ; Data constructors
+            (data_constructor) @constructor
+            (gadt_constructor) @gadt_constructor
+            (newtype_constructor) @newtype_constructor
+
+            ; Type declarations
+            (type_family) @type_family
+            (type_instance) @type_instance
+            (type_synomym) @type_synonym
 
             ; Module declarations
-            (module) @module.definition
+            (module) @module
 
-            ; Import declarations (if present)
-            (import) @import.definition
+            ; Import declarations
+            (import) @import
 
-            ; General declarations with names
-            (declaration name: (variable) @declaration.name) @declaration.definition
-            (decl name: (variable) @decl.name) @decl.definition
-
-            ; Type elements
-            (type name: (variable) @type.name) @type.definition
-
-            ; Constructors
-            (constructor) @constructor.definition
-
-            ; Fallback patterns for completeness
-            (function) @function.basic
-            (signature) @signature.basic
-            (declaration) @declaration.basic
+            ; General declarations
+            (declaration) @declaration
+            (decl) @decl
         "#
     }
 
@@ -49,35 +52,55 @@ impl LanguageExtractor for HaskellExtractor {
 
     fn capture_name_to_chunk_type(&self, capture_name: &str) -> Option<ChunkType> {
         match capture_name {
-            "function.definition" | "function.named" | "function.basic" => {
-                Some(ChunkType::Function)
-            }
-            "signature.definition" | "signature.named" | "signature.basic" => {
-                Some(ChunkType::Function)
-            }
-            "module.definition" => Some(ChunkType::Module),
-            "import.definition" => Some(ChunkType::Module),
-            "declaration.definition" | "declaration.basic" => Some(ChunkType::Function),
-            "decl.definition" => Some(ChunkType::Function),
-            "type.definition" => Some(ChunkType::TypeAlias),
-            "constructor.definition" => Some(ChunkType::Struct),
+            "function" => Some(ChunkType::Function),
+            "signature" => Some(ChunkType::Function),
+            "data" | "newtype" | "data_family" | "data_instance" => Some(ChunkType::Class),
+            "constructor" | "gadt_constructor" | "newtype_constructor" => Some(ChunkType::Struct),
+            "type_family" | "type_instance" | "type_synonym" => Some(ChunkType::TypeAlias),
+            "module" => Some(ChunkType::Module),
+            "import" => Some(ChunkType::Module),
+            "declaration" | "decl" => Some(ChunkType::Function),
+            _ => None,
+        }
+    }
+
+    fn middle_implementation_query(&self) -> &str {
+        "
+        (apply) @function_call
+        (case) @case_expr
+        (let_in) @let_expr
+        (conditional) @if_expr
+        (do) @do_block
+        (list_comprehension) @list_comp
+        "
+    }
+
+    fn middle_capture_name_to_chunk_type(&self, capture_name: &str) -> Option<ChunkType> {
+        match capture_name {
+            "case_expr" | "if_expr" => Some(ChunkType::Conditional),
+            "function_call" => Some(ChunkType::FunctionCall),
+            "let_expr" => Some(ChunkType::Variable),
+            "do_block" => Some(ChunkType::SpecialBlock),
+            "list_comp" => Some(ChunkType::Comprehension),
             _ => None,
         }
     }
 
     fn extract_name(&self, node: Node, source_code: &str, capture_name: &str) -> Option<String> {
         match capture_name {
-            name if name.contains("function") => self.extract_function_name(node, source_code),
-            name if name.contains("signature") => self.extract_signature_name(node, source_code),
-            name if name.contains("declaration") || name.contains("decl") => {
-                self.extract_declaration_name(node, source_code)
+            "function" | "signature" => self.extract_function_name(node, source_code),
+            "declaration" | "decl" => self.extract_declaration_name(node, source_code),
+            "data" | "newtype" | "data_family" | "data_instance" => {
+                self.extract_type_name(node, source_code)
             }
-            name if name.contains("type") => self.extract_type_name(node, source_code),
-            name if name.contains("constructor") => {
+            "constructor" | "gadt_constructor" | "newtype_constructor" => {
                 self.extract_constructor_name(node, source_code)
             }
-            name if name.contains("module") => self.extract_module_name(node, source_code),
-            name if name.contains("import") => self.extract_import_name(node, source_code),
+            "type_family" | "type_instance" | "type_synonym" => {
+                self.extract_type_name(node, source_code)
+            }
+            "module" => self.extract_module_name(node, source_code),
+            "import" => self.extract_import_name(node, source_code),
             _ => extract_name_from_node(node, source_code),
         }
     }
@@ -86,11 +109,6 @@ impl LanguageExtractor for HaskellExtractor {
 impl HaskellExtractor {
     fn extract_function_name(&self, node: Node, source_code: &str) -> Option<String> {
         // Look for variable node in function definition
-        find_child_by_kind(node, source_code, "variable")
-    }
-
-    fn extract_signature_name(&self, node: Node, source_code: &str) -> Option<String> {
-        // Look for variable node in type signature
         find_child_by_kind(node, source_code, "variable")
     }
 

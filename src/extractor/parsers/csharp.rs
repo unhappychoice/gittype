@@ -56,6 +56,32 @@ impl LanguageExtractor for CSharpExtractor {
             _ => self.extract_name_from_node(node, source_code),
         }
     }
+
+    fn middle_implementation_query(&self) -> &str {
+        "
+        (for_statement) @for_loop
+        (foreach_statement) @foreach_loop
+        (while_statement) @while_loop
+        (if_statement) @if_block
+        (try_statement) @try_block
+        (switch_statement) @switch_block
+        (invocation_expression) @method_call
+        (lambda_expression) @lambda
+        (block) @code_block
+        "
+    }
+
+    fn middle_capture_name_to_chunk_type(&self, capture_name: &str) -> Option<ChunkType> {
+        match capture_name {
+            "for_loop" | "foreach_loop" | "while_loop" => Some(ChunkType::Loop),
+            "if_block" | "switch_block" => Some(ChunkType::Conditional),
+            "try_block" => Some(ChunkType::ErrorHandling),
+            "method_call" => Some(ChunkType::FunctionCall),
+            "lambda" => Some(ChunkType::Lambda),
+            "code_block" => Some(ChunkType::CodeBlock),
+            _ => None,
+        }
+    }
 }
 
 impl CSharpExtractor {

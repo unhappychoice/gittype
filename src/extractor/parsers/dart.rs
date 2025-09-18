@@ -42,6 +42,27 @@ impl LanguageExtractor for DartExtractor {
     fn extract_name(&self, node: Node, source_code: &str, _capture_name: &str) -> Option<String> {
         Self::extract_name_from_node(node, source_code)
     }
+
+    fn middle_implementation_query(&self) -> &str {
+        "
+        (for_statement) @for_loop
+        (while_statement) @while_loop
+        (if_statement) @if_block
+        (switch_statement) @switch_block
+        (try_statement) @try_block
+        (block) @code_block
+        "
+    }
+
+    fn middle_capture_name_to_chunk_type(&self, capture_name: &str) -> Option<ChunkType> {
+        match capture_name {
+            "for_loop" | "while_loop" => Some(ChunkType::Loop),
+            "if_block" | "switch_block" => Some(ChunkType::Conditional),
+            "try_block" => Some(ChunkType::ErrorHandling),
+            "code_block" => Some(ChunkType::CodeBlock),
+            _ => None,
+        }
+    }
 }
 
 impl DartExtractor {

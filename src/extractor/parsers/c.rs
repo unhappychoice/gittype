@@ -158,4 +158,25 @@ impl LanguageExtractor for CExtractor {
             _ => None,
         }
     }
+
+    fn middle_implementation_query(&self) -> &str {
+        "
+        (for_statement) @for_loop
+        (while_statement) @while_loop
+        (if_statement) @if_block
+        (switch_statement) @switch_block
+        (call_expression) @function_call
+        (compound_statement) @code_block
+        "
+    }
+
+    fn middle_capture_name_to_chunk_type(&self, capture_name: &str) -> Option<ChunkType> {
+        match capture_name {
+            "for_loop" | "while_loop" => Some(ChunkType::Loop),
+            "if_block" | "switch_block" => Some(ChunkType::Conditional),
+            "function_call" => Some(ChunkType::FunctionCall),
+            "code_block" => Some(ChunkType::CodeBlock),
+            _ => None,
+        }
+    }
 }

@@ -47,6 +47,33 @@ impl LanguageExtractor for JavaExtractor {
             _ => self.extract_name_from_node(node, source_code),
         }
     }
+
+    fn middle_implementation_query(&self) -> &str {
+        "
+        (for_statement) @for_loop
+        (enhanced_for_statement) @enhanced_for
+        (while_statement) @while_loop
+        (if_statement) @if_block
+        (try_statement) @try_block
+        (switch_expression) @switch_block
+        (method_invocation) @method_call
+        (lambda_expression) @lambda
+        (block) @code_block
+        "
+    }
+
+    fn middle_capture_name_to_chunk_type(&self, capture_name: &str) -> Option<ChunkType> {
+        match capture_name {
+            "for_loop" | "enhanced_for" | "while_loop" => Some(ChunkType::Loop),
+            "if_block" => Some(ChunkType::Conditional),
+            "try_block" => Some(ChunkType::ErrorHandling),
+            "switch_block" => Some(ChunkType::Conditional),
+            "method_call" => Some(ChunkType::FunctionCall),
+            "lambda" => Some(ChunkType::Lambda),
+            "code_block" => Some(ChunkType::CodeBlock),
+            _ => None,
+        }
+    }
 }
 
 impl JavaExtractor {
