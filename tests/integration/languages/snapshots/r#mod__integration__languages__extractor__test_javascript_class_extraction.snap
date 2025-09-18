@@ -1,0 +1,151 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "class UserManager {\n    constructor(apiKey) {\n        this.apiKey = apiKey;\n        this.users = [];\n    }\n\n    async loadUsers() {\n        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }\n    }\n\n    findUser = (id) => {\n        return this.users.find(user => user.id === id);\n    };\n}",
+      "end_line": 24,
+      "language": "javascript",
+      "name": "UserManager",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    constructor(apiKey) {\n        this.apiKey = apiKey;\n        this.users = [];\n    }",
+      "end_line": 6,
+      "language": "javascript",
+      "name": "constructor",
+      "original_indentation": 4,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    async loadUsers() {\n        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }\n    }",
+      "end_line": 19,
+      "language": "javascript",
+      "name": "loadUsers",
+      "original_indentation": 4,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        }",
+      "end_line": 15,
+      "language": "javascript",
+      "name": "code_block",
+      "original_indentation": 12,
+      "start_line": 9
+    },
+    {
+      "chunk_type": "ErrorHandling",
+      "comment_ranges": [],
+      "content": "        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }",
+      "end_line": 18,
+      "language": "javascript",
+      "name": "try_block",
+      "original_indentation": 8,
+      "start_line": 9
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            })",
+      "end_line": 12,
+      "language": "javascript",
+      "name": "function_call",
+      "original_indentation": 35,
+      "start_line": 10
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }",
+      "end_line": 18,
+      "language": "javascript",
+      "name": "code_block",
+      "original_indentation": 24,
+      "start_line": 15
+    },
+    {
+      "chunk_type": "Lambda",
+      "comment_ranges": [],
+      "content": "    findUser = (id) => {\n        return this.users.find(user => user.id === id);\n    }",
+      "end_line": 23,
+      "language": "javascript",
+      "name": "arrow_function",
+      "original_indentation": 15,
+      "start_line": 21
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "class EventEmitter {\n    constructor() {\n        this.events = {};\n    }\n\n    on(eventName, callback) {\n        if (!this.events[eventName]) {\n            this.events[eventName] = [];\n        }\n        this.events[eventName].push(callback);\n    }\n\n    emit(eventName, data) {\n        if (this.events[eventName]) {\n            this.events[eventName].forEach(callback => callback(data));\n        }\n    }\n}",
+      "end_line": 43,
+      "language": "javascript",
+      "name": "EventEmitter",
+      "original_indentation": 0,
+      "start_line": 26
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    constructor() {\n        this.events = {};\n    }",
+      "end_line": 29,
+      "language": "javascript",
+      "name": "constructor",
+      "original_indentation": 4,
+      "start_line": 27
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    on(eventName, callback) {\n        if (!this.events[eventName]) {\n            this.events[eventName] = [];\n        }\n        this.events[eventName].push(callback);\n    }",
+      "end_line": 36,
+      "language": "javascript",
+      "name": "on",
+      "original_indentation": 4,
+      "start_line": 31
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "        if (!this.events[eventName]) {\n            this.events[eventName] = [];\n        }",
+      "end_line": 34,
+      "language": "javascript",
+      "name": "if_block",
+      "original_indentation": 8,
+      "start_line": 32
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    emit(eventName, data) {\n        if (this.events[eventName]) {\n            this.events[eventName].forEach(callback => callback(data));\n        }\n    }",
+      "end_line": 42,
+      "language": "javascript",
+      "name": "emit",
+      "original_indentation": 4,
+      "start_line": 38
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "        if (this.events[eventName]) {\n            this.events[eventName].forEach(callback => callback(data));\n        }",
+      "end_line": 41,
+      "language": "javascript",
+      "name": "if_block",
+      "original_indentation": 8,
+      "start_line": 39
+    }
+  ],
+  "source_code": "\nclass UserManager {\n    constructor(apiKey) {\n        this.apiKey = apiKey;\n        this.users = [];\n    }\n\n    async loadUsers() {\n        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }\n    }\n\n    findUser = (id) => {\n        return this.users.find(user => user.id === id);\n    };\n}\n\nclass EventEmitter {\n    constructor() {\n        this.events = {};\n    }\n\n    on(eventName, callback) {\n        if (!this.events[eventName]) {\n            this.events[eventName] = [];\n        }\n        this.events[eventName].push(callback);\n    }\n\n    emit(eventName, data) {\n        if (this.events[eventName]) {\n            this.events[eventName].forEach(callback => callback(data));\n        }\n    }\n}\n",
+  "test_name": "test_javascript_class_extraction",
+  "total_chunks": 14
+}

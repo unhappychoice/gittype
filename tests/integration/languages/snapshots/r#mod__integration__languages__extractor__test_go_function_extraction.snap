@@ -1,0 +1,41 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "func main() {\n    fmt.Println(\"Hello, world!\")\n}",
+      "end_line": 7,
+      "language": "go",
+      "name": "main",
+      "original_indentation": 0,
+      "start_line": 5
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "func add(a, b int) int {\n    return a + b\n}",
+      "end_line": 11,
+      "language": "go",
+      "name": "add",
+      "original_indentation": 0,
+      "start_line": 9
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "func multiply(x int, y int) int {\n    return x * y\n}",
+      "end_line": 15,
+      "language": "go",
+      "name": "multiply",
+      "original_indentation": 0,
+      "start_line": 13
+    }
+  ],
+  "source_code": "package main\n\nimport \"fmt\"\n\nfunc main() {\n    fmt.Println(\"Hello, world!\")\n}\n\nfunc add(a, b int) int {\n    return a + b\n}\n\nfunc multiply(x int, y int) int {\n    return x * y\n}\n",
+  "test_name": "test_go_function_extraction",
+  "total_chunks": 3
+}

@@ -1,0 +1,91 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Enum",
+      "comment_ranges": [],
+      "content": "public enum Color {\n    RED(\"red\", \"#FF0000\"),\n    GREEN(\"green\", \"#00FF00\"),\n    BLUE(\"blue\", \"#0000FF\");\n\n    private final String name;\n    private final String hexCode;\n\n    Color(String name, String hexCode) {\n        this.name = name;\n        this.hexCode = hexCode;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public String getHexCode() {\n        return hexCode;\n    }\n}",
+      "end_line": 21,
+      "language": "java",
+      "name": "Color",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    private final String name;",
+      "end_line": 6,
+      "language": "java",
+      "name": "name",
+      "original_indentation": 4,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    private final String hexCode;",
+      "end_line": 7,
+      "language": "java",
+      "name": "hexCode",
+      "original_indentation": 4,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    Color(String name, String hexCode) {\n        this.name = name;\n        this.hexCode = hexCode;\n    }",
+      "end_line": 12,
+      "language": "java",
+      "name": "Color",
+      "original_indentation": 4,
+      "start_line": 9
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    public String getName() {\n        return name;\n    }",
+      "end_line": 16,
+      "language": "java",
+      "name": "getName",
+      "original_indentation": 4,
+      "start_line": 14
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    public String getHexCode() {\n        return hexCode;\n    }",
+      "end_line": 20,
+      "language": "java",
+      "name": "getHexCode",
+      "original_indentation": 4,
+      "start_line": 18
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "public class ColorTest {\n    public void testColor() {\n        Color color = Color.RED;\n        System.out.println(color.getName());\n    }\n}",
+      "end_line": 28,
+      "language": "java",
+      "name": "ColorTest",
+      "original_indentation": 0,
+      "start_line": 23
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    public void testColor() {\n        Color color = Color.RED;\n        System.out.println(color.getName());\n    }",
+      "end_line": 27,
+      "language": "java",
+      "name": "testColor",
+      "original_indentation": 4,
+      "start_line": 24
+    }
+  ],
+  "source_code": "public enum Color {\n    RED(\"red\", \"#FF0000\"),\n    GREEN(\"green\", \"#00FF00\"),\n    BLUE(\"blue\", \"#0000FF\");\n\n    private final String name;\n    private final String hexCode;\n\n    Color(String name, String hexCode) {\n        this.name = name;\n        this.hexCode = hexCode;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public String getHexCode() {\n        return hexCode;\n    }\n}\n\npublic class ColorTest {\n    public void testColor() {\n        Color color = Color.RED;\n        System.out.println(color.getName());\n    }\n}",
+  "test_name": "test_java_enum_extraction",
+  "total_chunks": 8
+}

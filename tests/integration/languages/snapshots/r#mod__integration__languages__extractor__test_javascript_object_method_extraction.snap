@@ -1,0 +1,91 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Lambda",
+      "comment_ranges": [],
+      "content": "    formatDate: (date) => {\n        return date.toLocaleDateString();\n    }",
+      "end_line": 5,
+      "language": "javascript",
+      "name": "arrow_function",
+      "original_indentation": 16,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Lambda",
+      "comment_ranges": [],
+      "content": "    calculateAge: function(birthDate) {\n        const today = new Date();\n        return today.getFullYear() - birthDate.getFullYear();\n    }",
+      "end_line": 10,
+      "language": "javascript",
+      "name": "function_expr",
+      "original_indentation": 18,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Lambda",
+      "comment_ranges": [],
+      "content": "    handleClick: (event) => {\n        console.log('Button clicked:', event.target);\n    }",
+      "end_line": 16,
+      "language": "javascript",
+      "name": "arrow_function",
+      "original_indentation": 17,
+      "start_line": 14
+    },
+    {
+      "chunk_type": "Lambda",
+      "comment_ranges": [],
+      "content": "    handleSubmit: async function(formData) {\n        try {\n            const response = await fetch('/api/submit', {\n                method: 'POST',\n                body: formData\n            });\n            return response.json();\n        } catch (error) {\n            console.error('Submit failed:', error);\n        }\n    }",
+      "end_line": 28,
+      "language": "javascript",
+      "name": "function_expr",
+      "original_indentation": 18,
+      "start_line": 18
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        try {\n            const response = await fetch('/api/submit', {\n                method: 'POST',\n                body: formData\n            });\n            return response.json();\n        }",
+      "end_line": 25,
+      "language": "javascript",
+      "name": "code_block",
+      "original_indentation": 12,
+      "start_line": 19
+    },
+    {
+      "chunk_type": "ErrorHandling",
+      "comment_ranges": [],
+      "content": "        try {\n            const response = await fetch('/api/submit', {\n                method: 'POST',\n                body: formData\n            });\n            return response.json();\n        } catch (error) {\n            console.error('Submit failed:', error);\n        }",
+      "end_line": 27,
+      "language": "javascript",
+      "name": "try_block",
+      "original_indentation": 8,
+      "start_line": 19
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "            const response = await fetch('/api/submit', {\n                method: 'POST',\n                body: formData\n            })",
+      "end_line": 23,
+      "language": "javascript",
+      "name": "function_call",
+      "original_indentation": 35,
+      "start_line": 20
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        } catch (error) {\n            console.error('Submit failed:', error);\n        }",
+      "end_line": 27,
+      "language": "javascript",
+      "name": "code_block",
+      "original_indentation": 24,
+      "start_line": 25
+    }
+  ],
+  "source_code": "\nconst utils = {\n    formatDate: (date) => {\n        return date.toLocaleDateString();\n    },\n\n    calculateAge: function(birthDate) {\n        const today = new Date();\n        return today.getFullYear() - birthDate.getFullYear();\n    }\n};\n\nconst eventHandlers = {\n    handleClick: (event) => {\n        console.log('Button clicked:', event.target);\n    },\n\n    handleSubmit: async function(formData) {\n        try {\n            const response = await fetch('/api/submit', {\n                method: 'POST',\n                body: formData\n            });\n            return response.json();\n        } catch (error) {\n            console.error('Submit failed:', error);\n        }\n    }\n};\n",
+  "test_name": "test_javascript_object_method_extraction",
+  "total_chunks": 8
+}

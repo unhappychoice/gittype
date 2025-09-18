@@ -1,0 +1,30 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [
+        [
+          65,
+          83
+        ],
+        [
+          88,
+          123
+        ]
+      ],
+      "content": "def calculateSum(a: Int, b: Int): Int = {\n    val result = a + b // Add the numbers\n    /*\n     * Return the result\n     */\n    result\n}",
+      "end_line": 8,
+      "language": "scala",
+      "name": "calculateSum",
+      "original_indentation": 0,
+      "start_line": 2
+    }
+  ],
+  "source_code": "// Scala function with comments\ndef calculateSum(a: Int, b: Int): Int = {\n    val result = a + b // Add the numbers\n    /*\n     * Return the result\n     */\n    result\n}\n",
+  "test_name": "test_scala_comment_ranges_in_challenge",
+  "total_chunks": 1
+}

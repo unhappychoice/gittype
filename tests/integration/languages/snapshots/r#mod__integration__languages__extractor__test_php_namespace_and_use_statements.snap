@@ -1,0 +1,91 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "namespace App\\Services;",
+      "end_line": 3,
+      "language": "php",
+      "name": "unknown",
+      "original_indentation": 0,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "class UserService {\n    private $database;\n\n    public function __construct(DatabaseConnection $database) {\n        $this->database = $database;\n    }\n\n    public function createUser(array $userData): User {\n        try {\n            $user = new User([\n                'name' => $userData['name'],\n                'email' => $userData['email'],\n                'password' => password_hash($userData['password'], PASSWORD_DEFAULT)\n            ]);\n\n            $userId = $this->database->insert('users', $user->toArray());\n            $user->setId($userId);\n\n            return $user;\n        } catch (Exception $e) {\n            throw new UserCreationException(\"Failed to create user: \" . $e->getMessage());\n        }\n    }\n\n    public function findUsersByRole(string $role): array {\n        $query = \"SELECT * FROM users WHERE role = ?\";\n        return $this->database->query($query, [$role]);\n    }\n}",
+      "end_line": 36,
+      "language": "php",
+      "name": "UserService",
+      "original_indentation": 0,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    public function __construct(DatabaseConnection $database) {\n        $this->database = $database;\n    }",
+      "end_line": 13,
+      "language": "php",
+      "name": "__construct",
+      "original_indentation": 4,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    public function createUser(array $userData): User {\n        try {\n            $user = new User([\n                'name' => $userData['name'],\n                'email' => $userData['email'],\n                'password' => password_hash($userData['password'], PASSWORD_DEFAULT)\n            ]);\n\n            $userId = $this->database->insert('users', $user->toArray());\n            $user->setId($userId);\n\n            return $user;\n        } catch (Exception $e) {\n            throw new UserCreationException(\"Failed to create user: \" . $e->getMessage());\n        }\n    }",
+      "end_line": 30,
+      "language": "php",
+      "name": "createUser",
+      "original_indentation": 4,
+      "start_line": 15
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        try {\n            $user = new User([\n                'name' => $userData['name'],\n                'email' => $userData['email'],\n                'password' => password_hash($userData['password'], PASSWORD_DEFAULT)\n            ]);\n\n            $userId = $this->database->insert('users', $user->toArray());\n            $user->setId($userId);\n\n            return $user;\n        }",
+      "end_line": 27,
+      "language": "php",
+      "name": "code_block",
+      "original_indentation": 12,
+      "start_line": 16
+    },
+    {
+      "chunk_type": "ErrorHandling",
+      "comment_ranges": [],
+      "content": "        try {\n            $user = new User([\n                'name' => $userData['name'],\n                'email' => $userData['email'],\n                'password' => password_hash($userData['password'], PASSWORD_DEFAULT)\n            ]);\n\n            $userId = $this->database->insert('users', $user->toArray());\n            $user->setId($userId);\n\n            return $user;\n        } catch (Exception $e) {\n            throw new UserCreationException(\"Failed to create user: \" . $e->getMessage());\n        }",
+      "end_line": 29,
+      "language": "php",
+      "name": "try_block",
+      "original_indentation": 8,
+      "start_line": 16
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        } catch (Exception $e) {\n            throw new UserCreationException(\"Failed to create user: \" . $e->getMessage());\n        }",
+      "end_line": 29,
+      "language": "php",
+      "name": "code_block",
+      "original_indentation": 31,
+      "start_line": 27
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    public function findUsersByRole(string $role): array {\n        $query = \"SELECT * FROM users WHERE role = ?\";\n        return $this->database->query($query, [$role]);\n    }",
+      "end_line": 35,
+      "language": "php",
+      "name": "findUsersByRole",
+      "original_indentation": 4,
+      "start_line": 32
+    }
+  ],
+  "source_code": "<?php\n\nnamespace App\\Services;\n\nuse App\\Models\\User;\nuse Exception;\n\nclass UserService {\n    private $database;\n\n    public function __construct(DatabaseConnection $database) {\n        $this->database = $database;\n    }\n\n    public function createUser(array $userData): User {\n        try {\n            $user = new User([\n                'name' => $userData['name'],\n                'email' => $userData['email'],\n                'password' => password_hash($userData['password'], PASSWORD_DEFAULT)\n            ]);\n\n            $userId = $this->database->insert('users', $user->toArray());\n            $user->setId($userId);\n\n            return $user;\n        } catch (Exception $e) {\n            throw new UserCreationException(\"Failed to create user: \" . $e->getMessage());\n        }\n    }\n\n    public function findUsersByRole(string $role): array {\n        $query = \"SELECT * FROM users WHERE role = ?\";\n        return $this->database->query($query, [$role]);\n    }\n}\n\n?>",
+  "test_name": "test_php_namespace_and_use_statements",
+  "total_chunks": 8
+}

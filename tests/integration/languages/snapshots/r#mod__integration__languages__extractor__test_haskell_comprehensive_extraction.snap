@@ -1,0 +1,181 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "module TestModule",
+      "end_line": 2,
+      "language": "haskell",
+      "name": "unknown",
+      "original_indentation": 7,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "import Data.List (sort)",
+      "end_line": 8,
+      "language": "haskell",
+      "name": "unknown",
+      "original_indentation": 0,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "import qualified Data.Map as M",
+      "end_line": 9,
+      "language": "haskell",
+      "name": "unknown",
+      "original_indentation": 0,
+      "start_line": 9
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "data Person = Person String Int deriving (Show, Eq)",
+      "end_line": 11,
+      "language": "haskell",
+      "name": "unknown",
+      "original_indentation": 0,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "data Tree a = Leaf a | Node (Tree a) (Tree a) deriving Show",
+      "end_line": 13,
+      "language": "haskell",
+      "name": "unknown",
+      "original_indentation": 0,
+      "start_line": 13
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "class Drawable a where\n    draw :: a -> String",
+      "end_line": 16,
+      "language": "haskell",
+      "name": "a",
+      "original_indentation": 0,
+      "start_line": 15
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    draw :: a -> String",
+      "end_line": 16,
+      "language": "haskell",
+      "name": "draw",
+      "original_indentation": 4,
+      "start_line": 16
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "instance Drawable Person where\n    draw (Person name age) = name ++ \" (\" ++ show age ++ \")\"",
+      "end_line": 19,
+      "language": "haskell",
+      "name": "draw",
+      "original_indentation": 0,
+      "start_line": 18
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    draw (Person name age) = name ++ \" (\" ++ show age ++ \")\"",
+      "end_line": 19,
+      "language": "haskell",
+      "name": "draw",
+      "original_indentation": 4,
+      "start_line": 19
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "greet :: Person -> String",
+      "end_line": 21,
+      "language": "haskell",
+      "name": "greet",
+      "original_indentation": 0,
+      "start_line": 21
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "greet (Person name _) = \"Hello, \" ++ name",
+      "end_line": 22,
+      "language": "haskell",
+      "name": "greet",
+      "original_indentation": 0,
+      "start_line": 22
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "calculate :: [Int] -> Int",
+      "end_line": 24,
+      "language": "haskell",
+      "name": "calculate",
+      "original_indentation": 0,
+      "start_line": 24
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "calculate xs = sum (map (*2) xs)",
+      "end_line": 25,
+      "language": "haskell",
+      "name": "calculate",
+      "original_indentation": 0,
+      "start_line": 25
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "fibonacci :: Int -> Int",
+      "end_line": 27,
+      "language": "haskell",
+      "name": "fibonacci",
+      "original_indentation": 0,
+      "start_line": 27
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "fibonacci 0 = 0",
+      "end_line": 28,
+      "language": "haskell",
+      "name": "fibonacci",
+      "original_indentation": 0,
+      "start_line": 28
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "fibonacci 1 = 1",
+      "end_line": 29,
+      "language": "haskell",
+      "name": "fibonacci",
+      "original_indentation": 0,
+      "start_line": 29
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "fibonacci n = fibonacci (n-1) + fibonacci (n-2)",
+      "end_line": 30,
+      "language": "haskell",
+      "name": "fibonacci",
+      "original_indentation": 0,
+      "start_line": 30
+    }
+  ],
+  "source_code": "\nmodule TestModule (\n    Person(..),\n    greet,\n    calculate\n) where\n\nimport Data.List (sort)\nimport qualified Data.Map as M\n\ndata Person = Person String Int deriving (Show, Eq)\n\ndata Tree a = Leaf a | Node (Tree a) (Tree a) deriving Show\n\nclass Drawable a where\n    draw :: a -> String\n\ninstance Drawable Person where\n    draw (Person name age) = name ++ \" (\" ++ show age ++ \")\"\n\ngreet :: Person -> String\ngreet (Person name _) = \"Hello, \" ++ name\n\ncalculate :: [Int] -> Int\ncalculate xs = sum (map (*2) xs)\n\nfibonacci :: Int -> Int\nfibonacci 0 = 0\nfibonacci 1 = 1\nfibonacci n = fibonacci (n-1) + fibonacci (n-2)\n",
+  "test_name": "test_haskell_comprehensive_extraction",
+  "total_chunks": 17
+}

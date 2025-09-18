@@ -1,0 +1,506 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "typedef struct {\n    int *data;\n    size_t size;\n    size_t capacity;\n} DynamicArray;",
+      "end_line": 10,
+      "language": "c",
+      "name": "DynamicArray",
+      "original_indentation": 0,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "typedef struct {\n    int id;\n    int value;\n    char category[32];\n} ProcessedItem;",
+      "end_line": 16,
+      "language": "c",
+      "name": "ProcessedItem",
+      "original_indentation": 0,
+      "start_line": 12
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [
+        [
+          312,
+          367
+        ],
+        [
+          803,
+          843
+        ],
+        [
+          915,
+          923
+        ],
+        [
+          1095,
+          1118
+        ],
+        [
+          1181,
+          1202
+        ],
+        [
+          1239,
+          1274
+        ],
+        [
+          1457,
+          1505
+        ]
+      ],
+      "content": "int complex_data_processor(int *input, size_t input_size, int threshold, ProcessedItem **output, size_t *output_size) {\n    if (!input || !output || !output_size) return -1;\n\n    ProcessedItem *results = malloc(sizeof(ProcessedItem) * input_size);\n    if (!results) return -1;\n\n    size_t result_count = 0;\n\n    // Main processing algorithm - extractable middle chunk\n    for (size_t i = 0; i < input_size; i++) {\n        int value = input[i];\n        ProcessedItem item;\n        item.id = (int)i;\n\n        if (value > threshold) {\n            int transformed = value * 2;\n            item.value = transformed;\n\n            if (transformed > threshold * 3) {\n                strcpy(item.category, \"HIGH\");\n            } else {\n                strcpy(item.category, \"MEDIUM\");\n            }\n\n            // Additional processing for high values\n            if (transformed > 100) {\n                item.value += 10; // bonus\n            }\n        } else if (value > 0) {\n            item.value = value + threshold;\n            strcpy(item.category, \"LOW\");\n        } else {\n            continue; // skip negative values\n        }\n\n        results[result_count++] = item;\n    }\n\n    // Finalization logic\n    if (result_count > 0) {\n        // Calculate average for validation\n        int total = 0;\n        for (size_t i = 0; i < result_count; i++) {\n            total += results[i].value;\n        }\n        int average = total / (int)result_count;\n\n        // Add average as metadata (simplified approach)\n        printf(\"Average processed value: %d\\n\", average);\n    }\n\n    *output = results;\n    *output_size = result_count;\n    return 0;\n}",
+      "end_line": 72,
+      "language": "c",
+      "name": "complex_data_processor",
+      "original_indentation": 0,
+      "start_line": 18
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    size_t result_count = 0;",
+      "end_line": 24,
+      "language": "c",
+      "name": "result_count",
+      "original_indentation": 4,
+      "start_line": 24
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    for (size_t i = 0;",
+      "end_line": 27,
+      "language": "c",
+      "name": "i",
+      "original_indentation": 9,
+      "start_line": 27
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [
+        [
+          435,
+          475
+        ],
+        [
+          547,
+          555
+        ],
+        [
+          727,
+          750
+        ]
+      ],
+      "content": "    for (size_t i = 0; i < input_size; i++) {\n        int value = input[i];\n        ProcessedItem item;\n        item.id = (int)i;\n\n        if (value > threshold) {\n            int transformed = value * 2;\n            item.value = transformed;\n\n            if (transformed > threshold * 3) {\n                strcpy(item.category, \"HIGH\");\n            } else {\n                strcpy(item.category, \"MEDIUM\");\n            }\n\n            // Additional processing for high values\n            if (transformed > 100) {\n                item.value += 10; // bonus\n            }\n        } else if (value > 0) {\n            item.value = value + threshold;\n            strcpy(item.category, \"LOW\");\n        } else {\n            continue; // skip negative values\n        }\n\n        results[result_count++] = item;\n    }",
+      "end_line": 54,
+      "language": "c",
+      "name": "for_loop",
+      "original_indentation": 4,
+      "start_line": 27
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "        int value = input[i];",
+      "end_line": 28,
+      "language": "c",
+      "name": "value",
+      "original_indentation": 8,
+      "start_line": 28
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [
+        [
+          304,
+          344
+        ],
+        [
+          416,
+          424
+        ]
+      ],
+      "content": "        if (value > threshold) {\n            int transformed = value * 2;\n            item.value = transformed;\n\n            if (transformed > threshold * 3) {\n                strcpy(item.category, \"HIGH\");\n            } else {\n                strcpy(item.category, \"MEDIUM\");\n            }\n\n            // Additional processing for high values\n            if (transformed > 100) {\n                item.value += 10; // bonus\n            }\n        }",
+      "end_line": 46,
+      "language": "c",
+      "name": "code_block",
+      "original_indentation": 31,
+      "start_line": 32
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [
+        [
+          304,
+          344
+        ],
+        [
+          416,
+          424
+        ],
+        [
+          596,
+          619
+        ]
+      ],
+      "content": "        if (value > threshold) {\n            int transformed = value * 2;\n            item.value = transformed;\n\n            if (transformed > threshold * 3) {\n                strcpy(item.category, \"HIGH\");\n            } else {\n                strcpy(item.category, \"MEDIUM\");\n            }\n\n            // Additional processing for high values\n            if (transformed > 100) {\n                item.value += 10; // bonus\n            }\n        } else if (value > 0) {\n            item.value = value + threshold;\n            strcpy(item.category, \"LOW\");\n        } else {\n            continue; // skip negative values\n        }",
+      "end_line": 51,
+      "language": "c",
+      "name": "if_block",
+      "original_indentation": 8,
+      "start_line": 32
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "            int transformed = value * 2;",
+      "end_line": 33,
+      "language": "c",
+      "name": "transformed",
+      "original_indentation": 12,
+      "start_line": 33
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "            if (transformed > threshold * 3) {\n                strcpy(item.category, \"HIGH\");\n            }",
+      "end_line": 38,
+      "language": "c",
+      "name": "code_block",
+      "original_indentation": 45,
+      "start_line": 36
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if (transformed > threshold * 3) {\n                strcpy(item.category, \"HIGH\");\n            } else {\n                strcpy(item.category, \"MEDIUM\");\n            }",
+      "end_line": 40,
+      "language": "c",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 36
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "            } else {\n                strcpy(item.category, \"MEDIUM\");\n            }",
+      "end_line": 40,
+      "language": "c",
+      "name": "code_block",
+      "original_indentation": 19,
+      "start_line": 38
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [
+        [
+          71,
+          79
+        ]
+      ],
+      "content": "            if (transformed > 100) {\n                item.value += 10; // bonus\n            }",
+      "end_line": 45,
+      "language": "c",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 43
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        } else if (value > 0) {\n            item.value = value + threshold;\n            strcpy(item.category, \"LOW\");\n        }",
+      "end_line": 49,
+      "language": "c",
+      "name": "code_block",
+      "original_indentation": 30,
+      "start_line": 46
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [
+        [
+          157,
+          180
+        ]
+      ],
+      "content": "        } else if (value > 0) {\n            item.value = value + threshold;\n            strcpy(item.category, \"LOW\");\n        } else {\n            continue; // skip negative values\n        }",
+      "end_line": 51,
+      "language": "c",
+      "name": "if_block",
+      "original_indentation": 15,
+      "start_line": 46
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [
+        [
+          39,
+          62
+        ]
+      ],
+      "content": "        } else {\n            continue; // skip negative values\n        }",
+      "end_line": 51,
+      "language": "c",
+      "name": "code_block",
+      "original_indentation": 15,
+      "start_line": 49
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [
+        [
+          36,
+          71
+        ],
+        [
+          254,
+          302
+        ]
+      ],
+      "content": "    if (result_count > 0) {\n        // Calculate average for validation\n        int total = 0;\n        for (size_t i = 0; i < result_count; i++) {\n            total += results[i].value;\n        }\n        int average = total / (int)result_count;\n\n        // Add average as metadata (simplified approach)\n        printf(\"Average processed value: %d\\n\", average);\n    }",
+      "end_line": 67,
+      "language": "c",
+      "name": "if_block",
+      "original_indentation": 4,
+      "start_line": 57
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "        int total = 0;",
+      "end_line": 59,
+      "language": "c",
+      "name": "total",
+      "original_indentation": 8,
+      "start_line": 59
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "        for (size_t i = 0;",
+      "end_line": 60,
+      "language": "c",
+      "name": "i",
+      "original_indentation": 13,
+      "start_line": 60
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [],
+      "content": "        for (size_t i = 0; i < result_count; i++) {\n            total += results[i].value;\n        }",
+      "end_line": 62,
+      "language": "c",
+      "name": "for_loop",
+      "original_indentation": 8,
+      "start_line": 60
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "        int average = total / (int)result_count;",
+      "end_line": 63,
+      "language": "c",
+      "name": "average",
+      "original_indentation": 8,
+      "start_line": 63
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [
+        [
+          133,
+          153
+        ],
+        [
+          188,
+          240
+        ],
+        [
+          782,
+          815
+        ],
+        [
+          957,
+          983
+        ]
+      ],
+      "content": "void analyze_patterns(ProcessedItem *items, size_t count) {\n    if (!items || count == 0) return;\n\n    int category_counts[3] = {0}; // LOW, MEDIUM, HIGH\n    int value_sums[3] = {0};\n\n    // Pattern analysis logic - extractable middle chunk\n    for (size_t i = 0; i < count; i++) {\n        ProcessedItem *item = &items[i];\n        int category_index = -1;\n\n        if (strcmp(item->category, \"LOW\") == 0) {\n            category_index = 0;\n        } else if (strcmp(item->category, \"MEDIUM\") == 0) {\n            category_index = 1;\n        } else if (strcmp(item->category, \"HIGH\") == 0) {\n            category_index = 2;\n        }\n\n        if (category_index >= 0) {\n            category_counts[category_index]++;\n            value_sums[category_index] += item->value;\n\n            // Time-based analysis simulation\n            if (item->value > 1000) {\n                printf(\"High value item found: %d\\n\", item->value);\n            }\n        }\n    }\n\n    // Output analysis results\n    const char *categories[] = {\"LOW\", \"MEDIUM\", \"HIGH\"};\n    for (int i = 0; i < 3; i++) {\n        if (category_counts[i] > 0) {\n            int average = value_sums[i] / category_counts[i];\n            printf(\"Category %s: %d items, average value: %d\\n\",\n                   categories[i], category_counts[i], average);\n        }\n    }\n}",
+      "end_line": 113,
+      "language": "c",
+      "name": "analyze_patterns",
+      "original_indentation": 0,
+      "start_line": 74
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    for (size_t i = 0;",
+      "end_line": 81,
+      "language": "c",
+      "name": "i",
+      "original_indentation": 9,
+      "start_line": 81
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [
+        [
+          541,
+          574
+        ]
+      ],
+      "content": "    for (size_t i = 0; i < count; i++) {\n        ProcessedItem *item = &items[i];\n        int category_index = -1;\n\n        if (strcmp(item->category, \"LOW\") == 0) {\n            category_index = 0;\n        } else if (strcmp(item->category, \"MEDIUM\") == 0) {\n            category_index = 1;\n        } else if (strcmp(item->category, \"HIGH\") == 0) {\n            category_index = 2;\n        }\n\n        if (category_index >= 0) {\n            category_counts[category_index]++;\n            value_sums[category_index] += item->value;\n\n            // Time-based analysis simulation\n            if (item->value > 1000) {\n                printf(\"High value item found: %d\\n\", item->value);\n            }\n        }\n    }",
+      "end_line": 102,
+      "language": "c",
+      "name": "for_loop",
+      "original_indentation": 4,
+      "start_line": 81
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "        int category_index = -1;",
+      "end_line": 83,
+      "language": "c",
+      "name": "category_index",
+      "original_indentation": 8,
+      "start_line": 83
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        if (strcmp(item->category, \"LOW\") == 0) {\n            category_index = 0;\n        }",
+      "end_line": 87,
+      "language": "c",
+      "name": "code_block",
+      "original_indentation": 48,
+      "start_line": 85
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "        if (strcmp(item->category, \"LOW\") == 0) {\n            category_index = 0;\n        } else if (strcmp(item->category, \"MEDIUM\") == 0) {\n            category_index = 1;\n        } else if (strcmp(item->category, \"HIGH\") == 0) {\n            category_index = 2;\n        }",
+      "end_line": 91,
+      "language": "c",
+      "name": "if_block",
+      "original_indentation": 8,
+      "start_line": 85
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        } else if (strcmp(item->category, \"MEDIUM\") == 0) {\n            category_index = 1;\n        }",
+      "end_line": 89,
+      "language": "c",
+      "name": "code_block",
+      "original_indentation": 58,
+      "start_line": 87
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "        } else if (strcmp(item->category, \"MEDIUM\") == 0) {\n            category_index = 1;\n        } else if (strcmp(item->category, \"HIGH\") == 0) {\n            category_index = 2;\n        }",
+      "end_line": 91,
+      "language": "c",
+      "name": "if_block",
+      "original_indentation": 15,
+      "start_line": 87
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "        } else if (strcmp(item->category, \"HIGH\") == 0) {\n            category_index = 2;\n        }",
+      "end_line": 91,
+      "language": "c",
+      "name": "if_block",
+      "original_indentation": 15,
+      "start_line": 89
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [
+        [
+          150,
+          183
+        ]
+      ],
+      "content": "        if (category_index >= 0) {\n            category_counts[category_index]++;\n            value_sums[category_index] += item->value;\n\n            // Time-based analysis simulation\n            if (item->value > 1000) {\n                printf(\"High value item found: %d\\n\", item->value);\n            }\n        }",
+      "end_line": 101,
+      "language": "c",
+      "name": "if_block",
+      "original_indentation": 8,
+      "start_line": 93
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if (item->value > 1000) {\n                printf(\"High value item found: %d\\n\", item->value);\n            }",
+      "end_line": 100,
+      "language": "c",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 98
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    for (int i = 0;",
+      "end_line": 106,
+      "language": "c",
+      "name": "i",
+      "original_indentation": 9,
+      "start_line": 106
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [],
+      "content": "    for (int i = 0; i < 3; i++) {\n        if (category_counts[i] > 0) {\n            int average = value_sums[i] / category_counts[i];\n            printf(\"Category %s: %d items, average value: %d\\n\",\n                   categories[i], category_counts[i], average);\n        }\n    }",
+      "end_line": 112,
+      "language": "c",
+      "name": "for_loop",
+      "original_indentation": 4,
+      "start_line": 106
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "        if (category_counts[i] > 0) {\n            int average = value_sums[i] / category_counts[i];\n            printf(\"Category %s: %d items, average value: %d\\n\",\n                   categories[i], category_counts[i], average);\n        }",
+      "end_line": 111,
+      "language": "c",
+      "name": "if_block",
+      "original_indentation": 8,
+      "start_line": 107
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "            int average = value_sums[i] / category_counts[i];",
+      "end_line": 108,
+      "language": "c",
+      "name": "average",
+      "original_indentation": 12,
+      "start_line": 108
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "            printf(\"Category %s: %d items, average value: %d\\n\",\n                   categories[i], category_counts[i], average)",
+      "end_line": 110,
+      "language": "c",
+      "name": "function_call",
+      "original_indentation": 12,
+      "start_line": 109
+    }
+  ],
+  "source_code": "\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef struct {\n    int *data;\n    size_t size;\n    size_t capacity;\n} DynamicArray;\n\ntypedef struct {\n    int id;\n    int value;\n    char category[32];\n} ProcessedItem;\n\nint complex_data_processor(int *input, size_t input_size, int threshold, ProcessedItem **output, size_t *output_size) {\n    if (!input || !output || !output_size) return -1;\n\n    ProcessedItem *results = malloc(sizeof(ProcessedItem) * input_size);\n    if (!results) return -1;\n\n    size_t result_count = 0;\n\n    // Main processing algorithm - extractable middle chunk\n    for (size_t i = 0; i < input_size; i++) {\n        int value = input[i];\n        ProcessedItem item;\n        item.id = (int)i;\n\n        if (value > threshold) {\n            int transformed = value * 2;\n            item.value = transformed;\n\n            if (transformed > threshold * 3) {\n                strcpy(item.category, \"HIGH\");\n            } else {\n                strcpy(item.category, \"MEDIUM\");\n            }\n\n            // Additional processing for high values\n            if (transformed > 100) {\n                item.value += 10; // bonus\n            }\n        } else if (value > 0) {\n            item.value = value + threshold;\n            strcpy(item.category, \"LOW\");\n        } else {\n            continue; // skip negative values\n        }\n\n        results[result_count++] = item;\n    }\n\n    // Finalization logic\n    if (result_count > 0) {\n        // Calculate average for validation\n        int total = 0;\n        for (size_t i = 0; i < result_count; i++) {\n            total += results[i].value;\n        }\n        int average = total / (int)result_count;\n\n        // Add average as metadata (simplified approach)\n        printf(\"Average processed value: %d\\n\", average);\n    }\n\n    *output = results;\n    *output_size = result_count;\n    return 0;\n}\n\nvoid analyze_patterns(ProcessedItem *items, size_t count) {\n    if (!items || count == 0) return;\n\n    int category_counts[3] = {0}; // LOW, MEDIUM, HIGH\n    int value_sums[3] = {0};\n\n    // Pattern analysis logic - extractable middle chunk\n    for (size_t i = 0; i < count; i++) {\n        ProcessedItem *item = &items[i];\n        int category_index = -1;\n\n        if (strcmp(item->category, \"LOW\") == 0) {\n            category_index = 0;\n        } else if (strcmp(item->category, \"MEDIUM\") == 0) {\n            category_index = 1;\n        } else if (strcmp(item->category, \"HIGH\") == 0) {\n            category_index = 2;\n        }\n\n        if (category_index >= 0) {\n            category_counts[category_index]++;\n            value_sums[category_index] += item->value;\n\n            // Time-based analysis simulation\n            if (item->value > 1000) {\n                printf(\"High value item found: %d\\n\", item->value);\n            }\n        }\n    }\n\n    // Output analysis results\n    const char *categories[] = {\"LOW\", \"MEDIUM\", \"HIGH\"};\n    for (int i = 0; i < 3; i++) {\n        if (category_counts[i] > 0) {\n            int average = value_sums[i] / category_counts[i];\n            printf(\"Category %s: %d items, average value: %d\\n\",\n                   categories[i], category_counts[i], average);\n        }\n    }\n}\n",
+  "test_name": "test_c_complex_algorithm_extraction",
+  "total_chunks": 38
+}

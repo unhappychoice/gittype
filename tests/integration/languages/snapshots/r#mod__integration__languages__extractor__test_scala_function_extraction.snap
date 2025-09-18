@@ -1,0 +1,41 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "def hello(): Unit = {\n    println(\"Hello, Scala!\")\n}",
+      "end_line": 4,
+      "language": "scala",
+      "name": "hello",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "def add(a: Int, b: Int): Int = {\n    a + b\n}",
+      "end_line": 8,
+      "language": "scala",
+      "name": "add",
+      "original_indentation": 0,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "def multiply(x: Int, y: Int): Int = x * y",
+      "end_line": 10,
+      "language": "scala",
+      "name": "multiply",
+      "original_indentation": 0,
+      "start_line": 10
+    }
+  ],
+  "source_code": "\ndef hello(): Unit = {\n    println(\"Hello, Scala!\")\n}\n\ndef add(a: Int, b: Int): Int = {\n    a + b\n}\n\ndef multiply(x: Int, y: Int): Int = x * y\n",
+  "test_name": "test_scala_function_extraction",
+  "total_chunks": 3
+}

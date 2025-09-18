@@ -1,0 +1,387 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Interface",
+      "comment_ranges": [],
+      "content": "interface DataItem {\n    id: string;\n    value: number;\n    metadata?: Record<string, unknown>;\n}",
+      "end_line": 6,
+      "language": "typescript",
+      "name": "DataItem",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Interface",
+      "comment_ranges": [],
+      "content": "interface ProcessedItem extends DataItem {\n    transformedValue: number;\n    category: 'LOW' | 'MEDIUM' | 'HIGH';\n    timestamp: number;\n    processingInfo: {\n        cached: boolean;\n        processor: string;\n        duration?: number;\n    };\n}",
+      "end_line": 17,
+      "language": "typescript",
+      "name": "ProcessedItem",
+      "original_indentation": 0,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [
+        [
+          396,
+          451
+        ],
+        [
+          1054,
+          1085
+        ],
+        [
+          1490,
+          1530
+        ],
+        [
+          2948,
+          3000
+        ],
+        [
+          4067,
+          4089
+        ],
+        [
+          4204,
+          4218
+        ]
+      ],
+      "content": "class DataProcessor<T extends DataItem> {\n    private cache = new Map<string, ProcessedItem>();\n    private stats = {\n        processed: 0,\n        cacheHits: 0,\n        errors: 0\n    };\n\n    constructor(private threshold: number) {}\n\n    async processComplexData(items: T[]): Promise<ProcessedItem[]> {\n        const results: ProcessedItem[] = [];\n        const startTime = Date.now();\n\n        // Main processing algorithm - extractable middle chunk\n        for (let i = 0; i < items.length; i++) {\n            const item = items[i];\n            const cacheKey = `item_${i}_${item.id}`;\n\n            if (this.cache.has(cacheKey)) {\n                const cachedResult = this.cache.get(cacheKey)!;\n                results.push({\n                    ...cachedResult,\n                    processingInfo: {\n                        ...cachedResult.processingInfo,\n                        cached: true\n                    }\n                });\n                this.stats.cacheHits++;\n                continue;\n            }\n\n            try {\n                // Complex transformation logic\n                let transformedValue: number;\n                let category: 'LOW' | 'MEDIUM' | 'HIGH';\n                let processor: string;\n\n                if (item.value > this.threshold) {\n                    transformedValue = item.value * 2;\n                    category = transformedValue > this.threshold * 3 ? 'HIGH' : 'MEDIUM';\n                    processor = 'enhanced';\n\n                    // Additional processing for high values\n                    if (category === 'HIGH' && item.metadata?.boost) {\n                        transformedValue *= 1.5;\n                        processor = 'boosted';\n                    }\n                } else {\n                    transformedValue = item.value + this.threshold;\n                    category = 'LOW';\n                    processor = 'basic';\n                }\n\n                const processedItem: ProcessedItem = {\n                    ...item,\n                    transformedValue,\n                    category,\n                    timestamp: Date.now(),\n                    processingInfo: {\n                        cached: false,\n                        processor,\n                        duration: Date.now() - startTime\n                    }\n                };\n\n                this.cache.set(cacheKey, processedItem);\n                results.push(processedItem);\n                this.stats.processed++;\n\n            } catch (error) {\n                this.stats.errors++;\n                console.error(`Error processing item ${item.id}:`, error);\n            }\n        }\n\n        return results;\n    }\n\n    analyzePatterns(items: ProcessedItem[]): Record<string, unknown> {\n        const analysis: Record<string, unknown> = {\n            totalItems: items.length,\n            categoryDistribution: {},\n            averageValues: {},\n            processingStats: this.stats\n        };\n\n        // Pattern analysis logic - extractable middle chunk\n        const categoryGroups = items.reduce((groups, item) => {\n            const { category } = item;\n            if (!groups[category]) {\n                groups[category] = [];\n            }\n            groups[category].push(item);\n            return groups;\n        }, {} as Record<string, ProcessedItem[]>);\n\n        for (const [category, categoryItems] of Object.entries(categoryGroups)) {\n            const values = categoryItems.map(item => item.transformedValue);\n            const average = values.reduce((sum, val) => sum + val, 0) / values.length;\n            const max = Math.max(...values);\n            const min = Math.min(...values);\n\n            analysis.categoryDistribution = {\n                ...analysis.categoryDistribution as object,\n                [category]: {\n                    count: categoryItems.length,\n                    percentage: (categoryItems.length / items.length) * 100,\n                    avgValue: average,\n                    minValue: min,\n                    maxValue: max\n                }\n            };\n\n            // Time-based analysis\n            const recentItems = categoryItems.filter(\n                item => Date.now() - item.timestamp < 60000 // last minute\n            );\n\n            if (recentItems.length > 0) {\n                analysis.averageValues = {\n                    ...analysis.averageValues as object,\n                    [`${category}_recent`]: recentItems.length\n                };\n            }\n        }\n\n        return analysis;\n    }\n}",
+      "end_line": 148,
+      "language": "typescript",
+      "name": "DataProcessor",
+      "original_indentation": 0,
+      "start_line": 19
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    constructor(private threshold: number) {}",
+      "end_line": 27,
+      "language": "typescript",
+      "name": "constructor",
+      "original_indentation": 4,
+      "start_line": 27
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [
+        [
+          161,
+          216
+        ],
+        [
+          819,
+          850
+        ],
+        [
+          1255,
+          1295
+        ]
+      ],
+      "content": "    async processComplexData(items: T[]): Promise<ProcessedItem[]> {\n        const results: ProcessedItem[] = [];\n        const startTime = Date.now();\n\n        // Main processing algorithm - extractable middle chunk\n        for (let i = 0; i < items.length; i++) {\n            const item = items[i];\n            const cacheKey = `item_${i}_${item.id}`;\n\n            if (this.cache.has(cacheKey)) {\n                const cachedResult = this.cache.get(cacheKey)!;\n                results.push({\n                    ...cachedResult,\n                    processingInfo: {\n                        ...cachedResult.processingInfo,\n                        cached: true\n                    }\n                });\n                this.stats.cacheHits++;\n                continue;\n            }\n\n            try {\n                // Complex transformation logic\n                let transformedValue: number;\n                let category: 'LOW' | 'MEDIUM' | 'HIGH';\n                let processor: string;\n\n                if (item.value > this.threshold) {\n                    transformedValue = item.value * 2;\n                    category = transformedValue > this.threshold * 3 ? 'HIGH' : 'MEDIUM';\n                    processor = 'enhanced';\n\n                    // Additional processing for high values\n                    if (category === 'HIGH' && item.metadata?.boost) {\n                        transformedValue *= 1.5;\n                        processor = 'boosted';\n                    }\n                } else {\n                    transformedValue = item.value + this.threshold;\n                    category = 'LOW';\n                    processor = 'basic';\n                }\n\n                const processedItem: ProcessedItem = {\n                    ...item,\n                    transformedValue,\n                    category,\n                    timestamp: Date.now(),\n                    processingInfo: {\n                        cached: false,\n                        processor,\n                        duration: Date.now() - startTime\n                    }\n                };\n\n                this.cache.set(cacheKey, processedItem);\n                results.push(processedItem);\n                this.stats.processed++;\n\n            } catch (error) {\n                this.stats.errors++;\n                console.error(`Error processing item ${item.id}:`, error);\n            }\n        }\n\n        return results;\n    }",
+      "end_line": 96,
+      "language": "typescript",
+      "name": "processComplexData",
+      "original_indentation": 4,
+      "start_line": 29
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if (this.cache.has(cacheKey)) {\n                const cachedResult = this.cache.get(cacheKey)!;\n                results.push({\n                    ...cachedResult,\n                    processingInfo: {\n                        ...cachedResult.processingInfo,\n                        cached: true\n                    }\n                });\n                this.stats.cacheHits++;\n                continue;\n            }",
+      "end_line": 49,
+      "language": "typescript",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 38
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "                results.push({\n                    ...cachedResult,\n                    processingInfo: {\n                        ...cachedResult.processingInfo,\n                        cached: true\n                    }\n                })",
+      "end_line": 46,
+      "language": "typescript",
+      "name": "function_call",
+      "original_indentation": 16,
+      "start_line": 40
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [
+        [
+          34,
+          65
+        ],
+        [
+          470,
+          510
+        ]
+      ],
+      "content": "            try {\n                // Complex transformation logic\n                let transformedValue: number;\n                let category: 'LOW' | 'MEDIUM' | 'HIGH';\n                let processor: string;\n\n                if (item.value > this.threshold) {\n                    transformedValue = item.value * 2;\n                    category = transformedValue > this.threshold * 3 ? 'HIGH' : 'MEDIUM';\n                    processor = 'enhanced';\n\n                    // Additional processing for high values\n                    if (category === 'HIGH' && item.metadata?.boost) {\n                        transformedValue *= 1.5;\n                        processor = 'boosted';\n                    }\n                } else {\n                    transformedValue = item.value + this.threshold;\n                    category = 'LOW';\n                    processor = 'basic';\n                }\n\n                const processedItem: ProcessedItem = {\n                    ...item,\n                    transformedValue,\n                    category,\n                    timestamp: Date.now(),\n                    processingInfo: {\n                        cached: false,\n                        processor,\n                        duration: Date.now() - startTime\n                    }\n                };\n\n                this.cache.set(cacheKey, processedItem);\n                results.push(processedItem);\n                this.stats.processed++;\n\n            }",
+      "end_line": 89,
+      "language": "typescript",
+      "name": "code_block",
+      "original_indentation": 16,
+      "start_line": 51
+    },
+    {
+      "chunk_type": "ErrorHandling",
+      "comment_ranges": [
+        [
+          34,
+          65
+        ],
+        [
+          470,
+          510
+        ]
+      ],
+      "content": "            try {\n                // Complex transformation logic\n                let transformedValue: number;\n                let category: 'LOW' | 'MEDIUM' | 'HIGH';\n                let processor: string;\n\n                if (item.value > this.threshold) {\n                    transformedValue = item.value * 2;\n                    category = transformedValue > this.threshold * 3 ? 'HIGH' : 'MEDIUM';\n                    processor = 'enhanced';\n\n                    // Additional processing for high values\n                    if (category === 'HIGH' && item.metadata?.boost) {\n                        transformedValue *= 1.5;\n                        processor = 'boosted';\n                    }\n                } else {\n                    transformedValue = item.value + this.threshold;\n                    category = 'LOW';\n                    processor = 'basic';\n                }\n\n                const processedItem: ProcessedItem = {\n                    ...item,\n                    transformedValue,\n                    category,\n                    timestamp: Date.now(),\n                    processingInfo: {\n                        cached: false,\n                        processor,\n                        duration: Date.now() - startTime\n                    }\n                };\n\n                this.cache.set(cacheKey, processedItem);\n                results.push(processedItem);\n                this.stats.processed++;\n\n            } catch (error) {\n                this.stats.errors++;\n                console.error(`Error processing item ${item.id}:`, error);\n            }",
+      "end_line": 92,
+      "language": "typescript",
+      "name": "try_block",
+      "original_indentation": 12,
+      "start_line": 51
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [
+        [
+          261,
+          301
+        ]
+      ],
+      "content": "                if (item.value > this.threshold) {\n                    transformedValue = item.value * 2;\n                    category = transformedValue > this.threshold * 3 ? 'HIGH' : 'MEDIUM';\n                    processor = 'enhanced';\n\n                    // Additional processing for high values\n                    if (category === 'HIGH' && item.metadata?.boost) {\n                        transformedValue *= 1.5;\n                        processor = 'boosted';\n                    }\n                }",
+      "end_line": 67,
+      "language": "typescript",
+      "name": "code_block",
+      "original_indentation": 49,
+      "start_line": 57
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [
+        [
+          261,
+          301
+        ]
+      ],
+      "content": "                if (item.value > this.threshold) {\n                    transformedValue = item.value * 2;\n                    category = transformedValue > this.threshold * 3 ? 'HIGH' : 'MEDIUM';\n                    processor = 'enhanced';\n\n                    // Additional processing for high values\n                    if (category === 'HIGH' && item.metadata?.boost) {\n                        transformedValue *= 1.5;\n                        processor = 'boosted';\n                    }\n                } else {\n                    transformedValue = item.value + this.threshold;\n                    category = 'LOW';\n                    processor = 'basic';\n                }",
+      "end_line": 71,
+      "language": "typescript",
+      "name": "if_block",
+      "original_indentation": 16,
+      "start_line": 57
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "                    if (category === 'HIGH' && item.metadata?.boost) {\n                        transformedValue *= 1.5;\n                        processor = 'boosted';\n                    }",
+      "end_line": 66,
+      "language": "typescript",
+      "name": "if_block",
+      "original_indentation": 20,
+      "start_line": 63
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "                } else {\n                    transformedValue = item.value + this.threshold;\n                    category = 'LOW';\n                    processor = 'basic';\n                }",
+      "end_line": 71,
+      "language": "typescript",
+      "name": "code_block",
+      "original_indentation": 23,
+      "start_line": 67
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "            } catch (error) {\n                this.stats.errors++;\n                console.error(`Error processing item ${item.id}:`, error);\n            }",
+      "end_line": 92,
+      "language": "typescript",
+      "name": "code_block",
+      "original_indentation": 28,
+      "start_line": 89
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [
+        [
+          290,
+          342
+        ],
+        [
+          1409,
+          1431
+        ],
+        [
+          1546,
+          1560
+        ]
+      ],
+      "content": "    analyzePatterns(items: ProcessedItem[]): Record<string, unknown> {\n        const analysis: Record<string, unknown> = {\n            totalItems: items.length,\n            categoryDistribution: {},\n            averageValues: {},\n            processingStats: this.stats\n        };\n\n        // Pattern analysis logic - extractable middle chunk\n        const categoryGroups = items.reduce((groups, item) => {\n            const { category } = item;\n            if (!groups[category]) {\n                groups[category] = [];\n            }\n            groups[category].push(item);\n            return groups;\n        }, {} as Record<string, ProcessedItem[]>);\n\n        for (const [category, categoryItems] of Object.entries(categoryGroups)) {\n            const values = categoryItems.map(item => item.transformedValue);\n            const average = values.reduce((sum, val) => sum + val, 0) / values.length;\n            const max = Math.max(...values);\n            const min = Math.min(...values);\n\n            analysis.categoryDistribution = {\n                ...analysis.categoryDistribution as object,\n                [category]: {\n                    count: categoryItems.length,\n                    percentage: (categoryItems.length / items.length) * 100,\n                    avgValue: average,\n                    minValue: min,\n                    maxValue: max\n                }\n            };\n\n            // Time-based analysis\n            const recentItems = categoryItems.filter(\n                item => Date.now() - item.timestamp < 60000 // last minute\n            );\n\n            if (recentItems.length > 0) {\n                analysis.averageValues = {\n                    ...analysis.averageValues as object,\n                    [`${category}_recent`]: recentItems.length\n                };\n            }\n        }\n\n        return analysis;\n    }",
+      "end_line": 147,
+      "language": "typescript",
+      "name": "analyzePatterns",
+      "original_indentation": 4,
+      "start_line": 98
+    },
+    {
+      "chunk_type": "Lambda",
+      "comment_ranges": [],
+      "content": "        const categoryGroups = items.reduce((groups, item) => {\n            const { category } = item;\n            if (!groups[category]) {\n                groups[category] = [];\n            }\n            groups[category].push(item);\n            return groups;\n        }",
+      "end_line": 114,
+      "language": "typescript",
+      "name": "arrow_function",
+      "original_indentation": 44,
+      "start_line": 107
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if (!groups[category]) {\n                groups[category] = [];\n            }",
+      "end_line": 111,
+      "language": "typescript",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 109
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [
+        [
+          753,
+          775
+        ],
+        [
+          890,
+          904
+        ]
+      ],
+      "content": "        for (const [category, categoryItems] of Object.entries(categoryGroups)) {\n            const values = categoryItems.map(item => item.transformedValue);\n            const average = values.reduce((sum, val) => sum + val, 0) / values.length;\n            const max = Math.max(...values);\n            const min = Math.min(...values);\n\n            analysis.categoryDistribution = {\n                ...analysis.categoryDistribution as object,\n                [category]: {\n                    count: categoryItems.length,\n                    percentage: (categoryItems.length / items.length) * 100,\n                    avgValue: average,\n                    minValue: min,\n                    maxValue: max\n                }\n            };\n\n            // Time-based analysis\n            const recentItems = categoryItems.filter(\n                item => Date.now() - item.timestamp < 60000 // last minute\n            );\n\n            if (recentItems.length > 0) {\n                analysis.averageValues = {\n                    ...analysis.averageValues as object,\n                    [`${category}_recent`]: recentItems.length\n                };\n            }\n        }",
+      "end_line": 144,
+      "language": "typescript",
+      "name": "for_in_loop",
+      "original_indentation": 8,
+      "start_line": 116
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [
+        [
+          114,
+          128
+        ]
+      ],
+      "content": "            const recentItems = categoryItems.filter(\n                item => Date.now() - item.timestamp < 60000 // last minute\n            )",
+      "end_line": 136,
+      "language": "typescript",
+      "name": "function_call",
+      "original_indentation": 32,
+      "start_line": 134
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if (recentItems.length > 0) {\n                analysis.averageValues = {\n                    ...analysis.averageValues as object,\n                    [`${category}_recent`]: recentItems.length\n                };\n            }",
+      "end_line": 143,
+      "language": "typescript",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 138
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [
+        [
+          201,
+          247
+        ],
+        [
+          550,
+          589
+        ]
+      ],
+      "content": "function createDataValidator<T>(schema: Record<keyof T, (value: unknown) => boolean>) {\n    return (data: unknown): data is T => {\n        if (!data || typeof data !== 'object') return false;\n\n        // Validation logic - extractable middle chunk\n        for (const [key, validator] of Object.entries(schema)) {\n            const value = (data as Record<string, unknown>)[key];\n\n            if (!validator(value)) {\n                console.warn(`Validation failed for field ${key}:`, value);\n                return false;\n            }\n\n            // Additional type-specific validations\n            if (typeof value === 'string' && value.length === 0) {\n                console.warn(`Empty string not allowed for field ${key}`);\n                return false;\n            }\n\n            if (typeof value === 'number' && !Number.isFinite(value)) {\n                console.warn(`Invalid number for field ${key}:`, value);\n                return false;\n            }\n        }\n\n        return true;\n    };\n}",
+      "end_line": 178,
+      "language": "typescript",
+      "name": "createDataValidator",
+      "original_indentation": 0,
+      "start_line": 151
+    },
+    {
+      "chunk_type": "Lambda",
+      "comment_ranges": [
+        [
+          113,
+          159
+        ],
+        [
+          462,
+          501
+        ]
+      ],
+      "content": "    return (data: unknown): data is T => {\n        if (!data || typeof data !== 'object') return false;\n\n        // Validation logic - extractable middle chunk\n        for (const [key, validator] of Object.entries(schema)) {\n            const value = (data as Record<string, unknown>)[key];\n\n            if (!validator(value)) {\n                console.warn(`Validation failed for field ${key}:`, value);\n                return false;\n            }\n\n            // Additional type-specific validations\n            if (typeof value === 'string' && value.length === 0) {\n                console.warn(`Empty string not allowed for field ${key}`);\n                return false;\n            }\n\n            if (typeof value === 'number' && !Number.isFinite(value)) {\n                console.warn(`Invalid number for field ${key}:`, value);\n                return false;\n            }\n        }\n\n        return true;\n    }",
+      "end_line": 177,
+      "language": "typescript",
+      "name": "arrow_function",
+      "original_indentation": 11,
+      "start_line": 152
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [
+        [
+          302,
+          341
+        ]
+      ],
+      "content": "        for (const [key, validator] of Object.entries(schema)) {\n            const value = (data as Record<string, unknown>)[key];\n\n            if (!validator(value)) {\n                console.warn(`Validation failed for field ${key}:`, value);\n                return false;\n            }\n\n            // Additional type-specific validations\n            if (typeof value === 'string' && value.length === 0) {\n                console.warn(`Empty string not allowed for field ${key}`);\n                return false;\n            }\n\n            if (typeof value === 'number' && !Number.isFinite(value)) {\n                console.warn(`Invalid number for field ${key}:`, value);\n                return false;\n            }\n        }",
+      "end_line": 174,
+      "language": "typescript",
+      "name": "for_in_loop",
+      "original_indentation": 8,
+      "start_line": 156
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if (!validator(value)) {\n                console.warn(`Validation failed for field ${key}:`, value);\n                return false;\n            }",
+      "end_line": 162,
+      "language": "typescript",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 159
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if (typeof value === 'string' && value.length === 0) {\n                console.warn(`Empty string not allowed for field ${key}`);\n                return false;\n            }",
+      "end_line": 168,
+      "language": "typescript",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 165
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if (typeof value === 'number' && !Number.isFinite(value)) {\n                console.warn(`Invalid number for field ${key}:`, value);\n                return false;\n            }",
+      "end_line": 173,
+      "language": "typescript",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 170
+    }
+  ],
+  "source_code": "\ninterface DataItem {\n    id: string;\n    value: number;\n    metadata?: Record<string, unknown>;\n}\n\ninterface ProcessedItem extends DataItem {\n    transformedValue: number;\n    category: 'LOW' | 'MEDIUM' | 'HIGH';\n    timestamp: number;\n    processingInfo: {\n        cached: boolean;\n        processor: string;\n        duration?: number;\n    };\n}\n\nclass DataProcessor<T extends DataItem> {\n    private cache = new Map<string, ProcessedItem>();\n    private stats = {\n        processed: 0,\n        cacheHits: 0,\n        errors: 0\n    };\n\n    constructor(private threshold: number) {}\n\n    async processComplexData(items: T[]): Promise<ProcessedItem[]> {\n        const results: ProcessedItem[] = [];\n        const startTime = Date.now();\n\n        // Main processing algorithm - extractable middle chunk\n        for (let i = 0; i < items.length; i++) {\n            const item = items[i];\n            const cacheKey = `item_${i}_${item.id}`;\n\n            if (this.cache.has(cacheKey)) {\n                const cachedResult = this.cache.get(cacheKey)!;\n                results.push({\n                    ...cachedResult,\n                    processingInfo: {\n                        ...cachedResult.processingInfo,\n                        cached: true\n                    }\n                });\n                this.stats.cacheHits++;\n                continue;\n            }\n\n            try {\n                // Complex transformation logic\n                let transformedValue: number;\n                let category: 'LOW' | 'MEDIUM' | 'HIGH';\n                let processor: string;\n\n                if (item.value > this.threshold) {\n                    transformedValue = item.value * 2;\n                    category = transformedValue > this.threshold * 3 ? 'HIGH' : 'MEDIUM';\n                    processor = 'enhanced';\n\n                    // Additional processing for high values\n                    if (category === 'HIGH' && item.metadata?.boost) {\n                        transformedValue *= 1.5;\n                        processor = 'boosted';\n                    }\n                } else {\n                    transformedValue = item.value + this.threshold;\n                    category = 'LOW';\n                    processor = 'basic';\n                }\n\n                const processedItem: ProcessedItem = {\n                    ...item,\n                    transformedValue,\n                    category,\n                    timestamp: Date.now(),\n                    processingInfo: {\n                        cached: false,\n                        processor,\n                        duration: Date.now() - startTime\n                    }\n                };\n\n                this.cache.set(cacheKey, processedItem);\n                results.push(processedItem);\n                this.stats.processed++;\n\n            } catch (error) {\n                this.stats.errors++;\n                console.error(`Error processing item ${item.id}:`, error);\n            }\n        }\n\n        return results;\n    }\n\n    analyzePatterns(items: ProcessedItem[]): Record<string, unknown> {\n        const analysis: Record<string, unknown> = {\n            totalItems: items.length,\n            categoryDistribution: {},\n            averageValues: {},\n            processingStats: this.stats\n        };\n\n        // Pattern analysis logic - extractable middle chunk\n        const categoryGroups = items.reduce((groups, item) => {\n            const { category } = item;\n            if (!groups[category]) {\n                groups[category] = [];\n            }\n            groups[category].push(item);\n            return groups;\n        }, {} as Record<string, ProcessedItem[]>);\n\n        for (const [category, categoryItems] of Object.entries(categoryGroups)) {\n            const values = categoryItems.map(item => item.transformedValue);\n            const average = values.reduce((sum, val) => sum + val, 0) / values.length;\n            const max = Math.max(...values);\n            const min = Math.min(...values);\n\n            analysis.categoryDistribution = {\n                ...analysis.categoryDistribution as object,\n                [category]: {\n                    count: categoryItems.length,\n                    percentage: (categoryItems.length / items.length) * 100,\n                    avgValue: average,\n                    minValue: min,\n                    maxValue: max\n                }\n            };\n\n            // Time-based analysis\n            const recentItems = categoryItems.filter(\n                item => Date.now() - item.timestamp < 60000 // last minute\n            );\n\n            if (recentItems.length > 0) {\n                analysis.averageValues = {\n                    ...analysis.averageValues as object,\n                    [`${category}_recent`]: recentItems.length\n                };\n            }\n        }\n\n        return analysis;\n    }\n}\n\n// Utility functions with complex logic\nfunction createDataValidator<T>(schema: Record<keyof T, (value: unknown) => boolean>) {\n    return (data: unknown): data is T => {\n        if (!data || typeof data !== 'object') return false;\n\n        // Validation logic - extractable middle chunk\n        for (const [key, validator] of Object.entries(schema)) {\n            const value = (data as Record<string, unknown>)[key];\n\n            if (!validator(value)) {\n                console.warn(`Validation failed for field ${key}:`, value);\n                return false;\n            }\n\n            // Additional type-specific validations\n            if (typeof value === 'string' && value.length === 0) {\n                console.warn(`Empty string not allowed for field ${key}`);\n                return false;\n            }\n\n            if (typeof value === 'number' && !Number.isFinite(value)) {\n                console.warn(`Invalid number for field ${key}:`, value);\n                return false;\n            }\n        }\n\n        return true;\n    };\n}\n",
+  "test_name": "test_typescript_complex_algorithm_extraction",
+  "total_chunks": 26
+}

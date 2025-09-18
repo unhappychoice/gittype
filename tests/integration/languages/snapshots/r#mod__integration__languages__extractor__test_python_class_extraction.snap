@@ -1,0 +1,81 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "class Person:\n    def __init__(self, name, age):\n        self.name = name\n        self.age = age\n\n    def greet(self):\n        return f\"Hello, I'm {self.name}!\"\n\n    def get_age(self):\n        return self.age",
+      "end_line": 11,
+      "language": "python",
+      "name": "Person",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    def __init__(self, name, age):\n        self.name = name\n        self.age = age",
+      "end_line": 5,
+      "language": "python",
+      "name": "__init__",
+      "original_indentation": 4,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    def greet(self):\n        return f\"Hello, I'm {self.name}!\"",
+      "end_line": 8,
+      "language": "python",
+      "name": "greet",
+      "original_indentation": 4,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    def get_age(self):\n        return self.age",
+      "end_line": 11,
+      "language": "python",
+      "name": "get_age",
+      "original_indentation": 4,
+      "start_line": 10
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "class Calculator:\n    def add(self, a, b):\n        return a + b\n\n    def multiply(self, a, b):\n        return a * b",
+      "end_line": 18,
+      "language": "python",
+      "name": "Calculator",
+      "original_indentation": 0,
+      "start_line": 13
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    def add(self, a, b):\n        return a + b",
+      "end_line": 15,
+      "language": "python",
+      "name": "add",
+      "original_indentation": 4,
+      "start_line": 14
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    def multiply(self, a, b):\n        return a * b",
+      "end_line": 18,
+      "language": "python",
+      "name": "multiply",
+      "original_indentation": 4,
+      "start_line": 17
+    }
+  ],
+  "source_code": "\nclass Person:\n    def __init__(self, name, age):\n        self.name = name\n        self.age = age\n\n    def greet(self):\n        return f\"Hello, I'm {self.name}!\"\n\n    def get_age(self):\n        return self.age\n\nclass Calculator:\n    def add(self, a, b):\n        return a + b\n\n    def multiply(self, a, b):\n        return a * b\n",
+  "test_name": "test_python_class_extraction",
+  "total_chunks": 7
+}

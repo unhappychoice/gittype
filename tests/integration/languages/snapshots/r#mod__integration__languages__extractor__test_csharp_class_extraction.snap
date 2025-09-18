@@ -1,0 +1,91 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Namespace",
+      "comment_ranges": [],
+      "content": "namespace MyApplication.Services\n{\n    public class UserService\n    {\n        private readonly IUserRepository _repository;\n\n        public UserService(IUserRepository repository)\n        {\n            _repository = repository ?? throw new ArgumentNullException(nameof(repository));\n        }\n\n        public async Task<User> GetUserAsync(int id)\n        {\n            var user = await _repository.GetByIdAsync(id);\n            return user;\n        }\n\n        public IEnumerable<User> GetActiveUsers()\n        {\n            return _repository.GetAll().Where(u => u.IsActive);\n        }\n    }\n}",
+      "end_line": 27,
+      "language": "csharp",
+      "name": "MyApplication.Services",
+      "original_indentation": 0,
+      "start_line": 5
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "    public class UserService\n    {\n        private readonly IUserRepository _repository;\n\n        public UserService(IUserRepository repository)\n        {\n            _repository = repository ?? throw new ArgumentNullException(nameof(repository));\n        }\n\n        public async Task<User> GetUserAsync(int id)\n        {\n            var user = await _repository.GetByIdAsync(id);\n            return user;\n        }\n\n        public IEnumerable<User> GetActiveUsers()\n        {\n            return _repository.GetAll().Where(u => u.IsActive);\n        }\n    }",
+      "end_line": 26,
+      "language": "csharp",
+      "name": "UserService",
+      "original_indentation": 4,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "        public UserService(IUserRepository repository)\n        {\n            _repository = repository ?? throw new ArgumentNullException(nameof(repository));\n        }",
+      "end_line": 14,
+      "language": "csharp",
+      "name": "UserService",
+      "original_indentation": 8,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        {\n            _repository = repository ?? throw new ArgumentNullException(nameof(repository));\n        }",
+      "end_line": 14,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 12
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "        public async Task<User> GetUserAsync(int id)\n        {\n            var user = await _repository.GetByIdAsync(id);\n            return user;\n        }",
+      "end_line": 20,
+      "language": "csharp",
+      "name": "GetUserAsync",
+      "original_indentation": 8,
+      "start_line": 16
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        {\n            var user = await _repository.GetByIdAsync(id);\n            return user;\n        }",
+      "end_line": 20,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 17
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "        public IEnumerable<User> GetActiveUsers()\n        {\n            return _repository.GetAll().Where(u => u.IsActive);\n        }",
+      "end_line": 25,
+      "language": "csharp",
+      "name": "GetActiveUsers",
+      "original_indentation": 8,
+      "start_line": 22
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        {\n            return _repository.GetAll().Where(u => u.IsActive);\n        }",
+      "end_line": 25,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 23
+    }
+  ],
+  "source_code": "\nusing System;\nusing System.Collections.Generic;\n\nnamespace MyApplication.Services\n{\n    public class UserService\n    {\n        private readonly IUserRepository _repository;\n\n        public UserService(IUserRepository repository)\n        {\n            _repository = repository ?? throw new ArgumentNullException(nameof(repository));\n        }\n\n        public async Task<User> GetUserAsync(int id)\n        {\n            var user = await _repository.GetByIdAsync(id);\n            return user;\n        }\n\n        public IEnumerable<User> GetActiveUsers()\n        {\n            return _repository.GetAll().Where(u => u.IsActive);\n        }\n    }\n}\n",
+  "test_name": "test_csharp_class_extraction",
+  "total_chunks": 8
+}

@@ -1,0 +1,51 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "function hello_world() {\n    echo \"Hello, world!\";\n}",
+      "end_line": 5,
+      "language": "php",
+      "name": "hello_world",
+      "original_indentation": 0,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "function calculate_sum($a, $b) {\n    return $a + $b;\n}",
+      "end_line": 9,
+      "language": "php",
+      "name": "calculate_sum",
+      "original_indentation": 0,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "function fibonacci($n) {\n    if ($n <= 1) {\n        return $n;\n    }\n    return fibonacci($n - 1) + fibonacci($n - 2);\n}",
+      "end_line": 16,
+      "language": "php",
+      "name": "fibonacci",
+      "original_indentation": 0,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "    if ($n <= 1) {\n        return $n;\n    }",
+      "end_line": 14,
+      "language": "php",
+      "name": "if_block",
+      "original_indentation": 4,
+      "start_line": 12
+    }
+  ],
+  "source_code": "<?php\n\nfunction hello_world() {\n    echo \"Hello, world!\";\n}\n\nfunction calculate_sum($a, $b) {\n    return $a + $b;\n}\n\nfunction fibonacci($n) {\n    if ($n <= 1) {\n        return $n;\n    }\n    return fibonacci($n - 1) + fibonacci($n - 2);\n}\n\n?>",
+  "test_name": "test_php_function_extraction",
+  "total_chunks": 4
+}

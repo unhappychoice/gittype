@@ -1,0 +1,51 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "class Person\n  attr_accessor :name, :age\n\n  def initialize(name, age)\n    @name = name\n    @age = age\n  end\n\n  def greet\n    puts \"Hello, I'm #{@name}!\"\n  end\nend",
+      "end_line": 13,
+      "language": "ruby",
+      "name": "Person",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "  attr_accessor :name, :age",
+      "end_line": 3,
+      "language": "ruby",
+      "name": "name, age (2)",
+      "original_indentation": 2,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "  def initialize(name, age)\n    @name = name\n    @age = age\n  end",
+      "end_line": 8,
+      "language": "ruby",
+      "name": "initialize",
+      "original_indentation": 2,
+      "start_line": 5
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "  def greet\n    puts \"Hello, I'm #{@name}!\"\n  end",
+      "end_line": 12,
+      "language": "ruby",
+      "name": "greet",
+      "original_indentation": 2,
+      "start_line": 10
+    }
+  ],
+  "source_code": "\nclass Person\n  attr_accessor :name, :age\n\n  def initialize(name, age)\n    @name = name\n    @age = age\n  end\n\n  def greet\n    puts \"Hello, I'm #{@name}!\"\n  end\nend\n",
+  "test_name": "test_ruby_class_extraction",
+  "total_chunks": 4
+}

@@ -1,0 +1,61 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "struct Point {\n    let x: Double\n    let y: Double\n\n    func distance(to other: Point) -> Double {\n        return sqrt(pow(x - other.x, 2) + pow(y - other.y, 2))\n    }\n}",
+      "end_line": 9,
+      "language": "swift",
+      "name": "Point",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    func distance(to other: Point) -> Double {\n        return sqrt(pow(x - other.x, 2) + pow(y - other.y, 2))\n    }",
+      "end_line": 8,
+      "language": "swift",
+      "name": "distance",
+      "original_indentation": 4,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        return sqrt(pow(x - other.x, 2) + pow(y - other.y, 2))\n    ",
+      "end_line": 8,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "struct Rectangle {\n    let width: Double\n    let height: Double\n\n    func area() -> Double {\n        return width * height\n    }\n}",
+      "end_line": 18,
+      "language": "swift",
+      "name": "Rectangle",
+      "original_indentation": 0,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    func area() -> Double {\n        return width * height\n    }",
+      "end_line": 17,
+      "language": "swift",
+      "name": "area",
+      "original_indentation": 4,
+      "start_line": 15
+    }
+  ],
+  "source_code": "\nstruct Point {\n    let x: Double\n    let y: Double\n\n    func distance(to other: Point) -> Double {\n        return sqrt(pow(x - other.x, 2) + pow(y - other.y, 2))\n    }\n}\n\nstruct Rectangle {\n    let width: Double\n    let height: Double\n\n    func area() -> Double {\n        return width * height\n    }\n}\n",
+  "test_name": "test_swift_struct_extraction",
+  "total_chunks": 5
+}

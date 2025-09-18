@@ -1,0 +1,41 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Const",
+      "comment_ranges": [],
+      "content": "enum Color {\n    case Red, Green, Blue\n    case RGB(r: Int, g: Int, b: Int)\n\n    def toHex(): String = this match {\n        case Red => \"#FF0000\"\n        case Green => \"#00FF00\"\n        case Blue => \"#0000FF\"\n        case RGB(r, g, b) => f\"#$r%02X$g%02X$b%02X\"\n    }\n}",
+      "end_line": 12,
+      "language": "scala",
+      "name": "Color",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    def toHex(): String = this match {\n        case Red => \"#FF0000\"\n        case Green => \"#00FF00\"\n        case Blue => \"#0000FF\"\n        case RGB(r, g, b) => f\"#$r%02X$g%02X$b%02X\"\n    }",
+      "end_line": 11,
+      "language": "scala",
+      "name": "toHex",
+      "original_indentation": 4,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Const",
+      "comment_ranges": [],
+      "content": "enum Direction {\n    case North, South, East, West\n}",
+      "end_line": 16,
+      "language": "scala",
+      "name": "Direction",
+      "original_indentation": 0,
+      "start_line": 14
+    }
+  ],
+  "source_code": "\nenum Color {\n    case Red, Green, Blue\n    case RGB(r: Int, g: Int, b: Int)\n\n    def toHex(): String = this match {\n        case Red => \"#FF0000\"\n        case Green => \"#00FF00\"\n        case Blue => \"#0000FF\"\n        case RGB(r, g, b) => f\"#$r%02X$g%02X$b%02X\"\n    }\n}\n\nenum Direction {\n    case North, South, East, West\n}\n",
+  "test_name": "test_scala_enum_extraction",
+  "total_chunks": 3
+}

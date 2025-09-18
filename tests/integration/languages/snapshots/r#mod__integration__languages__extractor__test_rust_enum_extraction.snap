@@ -1,0 +1,31 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Enum",
+      "comment_ranges": [],
+      "content": "pub enum Result<T, E> {\n    Ok(T),\n    Err(E),\n}",
+      "end_line": 5,
+      "language": "rust",
+      "name": "Result",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Enum",
+      "comment_ranges": [],
+      "content": "enum Color {\n    Red,\n    Green,\n    Blue,\n}",
+      "end_line": 11,
+      "language": "rust",
+      "name": "Color",
+      "original_indentation": 0,
+      "start_line": 7
+    }
+  ],
+  "source_code": "\npub enum Result<T, E> {\n    Ok(T),\n    Err(E),\n}\n\nenum Color {\n    Red,\n    Green,\n    Blue,\n}\n",
+  "test_name": "test_rust_enum_extraction",
+  "total_chunks": 2
+}

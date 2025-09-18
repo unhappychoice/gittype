@@ -1,0 +1,151 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "class Point {\nprivate:\n    int x, y;\npublic:\n    Point(int x, int y) : x(x), y(y) {}\n\n    int getX() const { return x; }\n    int getY() const { return y; }\n\n    void setX(int newX) { x = newX; }\n    void setY(int newY) { y = newY; }\n}",
+      "end_line": 13,
+      "language": "cpp",
+      "name": "Point",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    Point(int x, int y) : x(x), y(y) {}",
+      "end_line": 6,
+      "language": "cpp",
+      "name": "Point",
+      "original_indentation": 4,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    int getX() const { return x; }",
+      "end_line": 8,
+      "language": "cpp",
+      "name": "getX",
+      "original_indentation": 4,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    int getY() const { return y; }",
+      "end_line": 9,
+      "language": "cpp",
+      "name": "getY",
+      "original_indentation": 4,
+      "start_line": 9
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    void setX(int newX) { x = newX; }",
+      "end_line": 11,
+      "language": "cpp",
+      "name": "setX",
+      "original_indentation": 4,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    void setY(int newY) { y = newY; }",
+      "end_line": 12,
+      "language": "cpp",
+      "name": "setY",
+      "original_indentation": 4,
+      "start_line": 12
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "class Rectangle {\nprivate:\n    Point topLeft;\n    Point bottomRight;\n\npublic:\n    Rectangle(const Point& tl, const Point& br)\n        : topLeft(tl), bottomRight(br) {}\n\n    double area() const {\n        int width = bottomRight.getX() - topLeft.getX();\n        int height = topLeft.getY() - bottomRight.getY();\n        return width * height;\n    }\n}",
+      "end_line": 29,
+      "language": "cpp",
+      "name": "Rectangle",
+      "original_indentation": 0,
+      "start_line": 15
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    Rectangle(const Point& tl, const Point& br)\n        : topLeft(tl), bottomRight(br) {}",
+      "end_line": 22,
+      "language": "cpp",
+      "name": "Rectangle",
+      "original_indentation": 4,
+      "start_line": 21
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    double area() const {\n        int width = bottomRight.getX() - topLeft.getX();\n        int height = topLeft.getY() - bottomRight.getY();\n        return width * height;\n    }",
+      "end_line": 28,
+      "language": "cpp",
+      "name": "area",
+      "original_indentation": 4,
+      "start_line": 24
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "        int width = bottomRight.getX() - topLeft.getX();",
+      "end_line": 25,
+      "language": "cpp",
+      "name": "width",
+      "original_indentation": 8,
+      "start_line": 25
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "        int height = topLeft.getY() - bottomRight.getY();",
+      "end_line": 26,
+      "language": "cpp",
+      "name": "height",
+      "original_indentation": 8,
+      "start_line": 26
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "int main() {\n    Point p1(0, 10);\n    Point p2(10, 0);\n    Rectangle rect(p1, p2);\n    return 0;\n}",
+      "end_line": 36,
+      "language": "cpp",
+      "name": "main",
+      "original_indentation": 0,
+      "start_line": 31
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    Point p1(0, 10);",
+      "end_line": 32,
+      "language": "cpp",
+      "name": "p1",
+      "original_indentation": 4,
+      "start_line": 32
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    Point p2(10, 0);",
+      "end_line": 33,
+      "language": "cpp",
+      "name": "p2",
+      "original_indentation": 4,
+      "start_line": 33
+    }
+  ],
+  "source_code": "\nclass Point {\nprivate:\n    int x, y;\npublic:\n    Point(int x, int y) : x(x), y(y) {}\n\n    int getX() const { return x; }\n    int getY() const { return y; }\n\n    void setX(int newX) { x = newX; }\n    void setY(int newY) { y = newY; }\n};\n\nclass Rectangle {\nprivate:\n    Point topLeft;\n    Point bottomRight;\n\npublic:\n    Rectangle(const Point& tl, const Point& br)\n        : topLeft(tl), bottomRight(br) {}\n\n    double area() const {\n        int width = bottomRight.getX() - topLeft.getX();\n        int height = topLeft.getY() - bottomRight.getY();\n        return width * height;\n    }\n};\n\nint main() {\n    Point p1(0, 10);\n    Point p2(10, 0);\n    Rectangle rect(p1, p2);\n    return 0;\n}\n",
+  "test_name": "test_cpp_class_extraction",
+  "total_chunks": 14
+}

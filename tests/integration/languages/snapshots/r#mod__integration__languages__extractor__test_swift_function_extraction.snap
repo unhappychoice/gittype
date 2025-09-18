@@ -1,0 +1,61 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "func greet(name: String) -> String {\n    return \"Hello, \\(name)!\"\n}",
+      "end_line": 4,
+      "language": "swift",
+      "name": "greet",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "func calculateSum(a: Int, b: Int) -> Int {\n    return a + b\n}",
+      "end_line": 8,
+      "language": "swift",
+      "name": "calculateSum",
+      "original_indentation": 0,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "func processData(items: [String]) {\n    for item in items {\n        print(item)\n    }\n}",
+      "end_line": 14,
+      "language": "swift",
+      "name": "processData",
+      "original_indentation": 0,
+      "start_line": 10
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [],
+      "content": "    for item in items {\n        print(item)\n    }",
+      "end_line": 13,
+      "language": "swift",
+      "name": "for_loop",
+      "original_indentation": 4,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    for item in items {\n        print(item)\n    }",
+      "end_line": 14,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 4,
+      "start_line": 11
+    }
+  ],
+  "source_code": "\nfunc greet(name: String) -> String {\n    return \"Hello, \\(name)!\"\n}\n\nfunc calculateSum(a: Int, b: Int) -> Int {\n    return a + b\n}\n\nfunc processData(items: [String]) {\n    for item in items {\n        print(item)\n    }\n}\n",
+  "test_name": "test_swift_function_extraction",
+  "total_chunks": 5
+}

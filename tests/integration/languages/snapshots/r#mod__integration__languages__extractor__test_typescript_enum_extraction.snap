@@ -1,0 +1,31 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Enum",
+      "comment_ranges": [],
+      "content": "enum Color {\n    Red = '#ff0000',\n    Green = '#00ff00',\n    Blue = '#0000ff'\n}",
+      "end_line": 6,
+      "language": "typescript",
+      "name": "Color",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Enum",
+      "comment_ranges": [],
+      "content": "enum Status {\n    Pending,\n    Completed,\n    Failed\n}",
+      "end_line": 12,
+      "language": "typescript",
+      "name": "Status",
+      "original_indentation": 0,
+      "start_line": 8
+    }
+  ],
+  "source_code": "\nenum Color {\n    Red = '#ff0000',\n    Green = '#00ff00',\n    Blue = '#0000ff'\n}\n\nenum Status {\n    Pending,\n    Completed,\n    Failed\n}\n",
+  "test_name": "test_typescript_enum_extraction",
+  "total_chunks": 2
+}

@@ -1,0 +1,51 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "type Person struct {\n    Name string\n    Age  int\n}",
+      "end_line": 6,
+      "language": "go",
+      "name": "Person",
+      "original_indentation": 5,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "type Address struct {\n    Street string\n    City   string\n    Zip    string\n}",
+      "end_line": 12,
+      "language": "go",
+      "name": "Address",
+      "original_indentation": 5,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "func (p Person) GetName() string {\n    return p.Name\n}",
+      "end_line": 16,
+      "language": "go",
+      "name": "GetName",
+      "original_indentation": 0,
+      "start_line": 14
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "func (a *Address) GetFullAddress() string {\n    return a.Street + \", \" + a.City + \" \" + a.Zip\n}",
+      "end_line": 20,
+      "language": "go",
+      "name": "GetFullAddress",
+      "original_indentation": 0,
+      "start_line": 18
+    }
+  ],
+  "source_code": "package main\n\ntype Person struct {\n    Name string\n    Age  int\n}\n\ntype Address struct {\n    Street string\n    City   string\n    Zip    string\n}\n\nfunc (p Person) GetName() string {\n    return p.Name\n}\n\nfunc (a *Address) GetFullAddress() string {\n    return a.Street + \", \" + a.City + \" \" + a.Zip\n}\n",
+  "test_name": "test_go_struct_extraction",
+  "total_chunks": 4
+}

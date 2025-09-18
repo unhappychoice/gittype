@@ -1,0 +1,81 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "export function validateEmail(email) {\n    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n    return emailRegex.test(email);\n}",
+      "end_line": 5,
+      "language": "javascript",
+      "name": "validateEmail",
+      "original_indentation": 7,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "export class ApiClient {\n    constructor(baseUrl) {\n        this.baseUrl = baseUrl;\n    }\n\n    async get(endpoint) {\n        const response = await fetch(`${this.baseUrl}${endpoint}`);\n        return response.json();\n    }\n}",
+      "end_line": 16,
+      "language": "javascript",
+      "name": "ApiClient",
+      "original_indentation": 7,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    constructor(baseUrl) {\n        this.baseUrl = baseUrl;\n    }",
+      "end_line": 10,
+      "language": "javascript",
+      "name": "constructor",
+      "original_indentation": 4,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    async get(endpoint) {\n        const response = await fetch(`${this.baseUrl}${endpoint}`);\n        return response.json();\n    }",
+      "end_line": 15,
+      "language": "javascript",
+      "name": "get",
+      "original_indentation": 4,
+      "start_line": 12
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "export default class UserService {\n    constructor(apiClient) {\n        this.apiClient = apiClient;\n    }\n\n    async getUser(id) {\n        return this.apiClient.get(`/users/${id}`);\n    }\n}",
+      "end_line": 31,
+      "language": "javascript",
+      "name": "UserService",
+      "original_indentation": 15,
+      "start_line": 23
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    constructor(apiClient) {\n        this.apiClient = apiClient;\n    }",
+      "end_line": 26,
+      "language": "javascript",
+      "name": "constructor",
+      "original_indentation": 4,
+      "start_line": 24
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    async getUser(id) {\n        return this.apiClient.get(`/users/${id}`);\n    }",
+      "end_line": 30,
+      "language": "javascript",
+      "name": "getUser",
+      "original_indentation": 4,
+      "start_line": 28
+    }
+  ],
+  "source_code": "\nexport function validateEmail(email) {\n    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n    return emailRegex.test(email);\n}\n\nexport class ApiClient {\n    constructor(baseUrl) {\n        this.baseUrl = baseUrl;\n    }\n\n    async get(endpoint) {\n        const response = await fetch(`${this.baseUrl}${endpoint}`);\n        return response.json();\n    }\n}\n\nexport const config = {\n    apiUrl: process.env.API_URL || 'http://localhost:3000',\n    timeout: 5000\n};\n\nexport default class UserService {\n    constructor(apiClient) {\n        this.apiClient = apiClient;\n    }\n\n    async getUser(id) {\n        return this.apiClient.get(`/users/${id}`);\n    }\n}\n",
+  "test_name": "test_javascript_export_extraction",
+  "total_chunks": 7
+}

@@ -1,0 +1,41 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "module Authentication\n  def login(username, password)\n    puts \"Logging in #{username}\"\n    true\n  end\n\n  def logout\n    puts \"Logged out\"\n  end\nend",
+      "end_line": 11,
+      "language": "ruby",
+      "name": "Authentication",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "  def login(username, password)\n    puts \"Logging in #{username}\"\n    true\n  end",
+      "end_line": 6,
+      "language": "ruby",
+      "name": "login",
+      "original_indentation": 2,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "  def logout\n    puts \"Logged out\"\n  end",
+      "end_line": 10,
+      "language": "ruby",
+      "name": "logout",
+      "original_indentation": 2,
+      "start_line": 8
+    }
+  ],
+  "source_code": "\nmodule Authentication\n  def login(username, password)\n    puts \"Logging in #{username}\"\n    true\n  end\n\n  def logout\n    puts \"Logged out\"\n  end\nend\n",
+  "test_name": "test_ruby_module_extraction",
+  "total_chunks": 3
+}

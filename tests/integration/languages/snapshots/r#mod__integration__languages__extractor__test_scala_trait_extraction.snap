@@ -1,0 +1,51 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "trait Animal {\n    def speak(): String\n    def move(): Unit = println(\"Moving...\")\n}",
+      "end_line": 5,
+      "language": "scala",
+      "name": "Animal",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    def move(): Unit = println(\"Moving...\")",
+      "end_line": 4,
+      "language": "scala",
+      "name": "move",
+      "original_indentation": 4,
+      "start_line": 4
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "sealed trait Result[+T] {\n    def map[U](f: T => U): Result[U]\n}",
+      "end_line": 9,
+      "language": "scala",
+      "name": "Result",
+      "original_indentation": 0,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "trait Drawable {\n    def draw(): Unit\n}",
+      "end_line": 13,
+      "language": "scala",
+      "name": "Drawable",
+      "original_indentation": 0,
+      "start_line": 11
+    }
+  ],
+  "source_code": "\ntrait Animal {\n    def speak(): String\n    def move(): Unit = println(\"Moving...\")\n}\n\nsealed trait Result[+T] {\n    def map[U](f: T => U): Result[U]\n}\n\ntrait Drawable {\n    def draw(): Unit\n}\n",
+  "test_name": "test_scala_trait_extraction",
+  "total_chunks": 4
+}
