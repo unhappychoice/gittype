@@ -174,7 +174,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "            data.forEach(item => {\n                const key = typeof item === 'object' ?\n                    JSON.stringify(item) : String(item);\n                frequency[key] = (frequency[key] || 0) + 1;\n            }",
       "end_line": 114,
       "language": "javascript",
-      "name": "arrow_function",
+      "name": "arrow_lambda",
       "original_indentation": 25,
       "start_line": 110
     },

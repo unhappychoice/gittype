@@ -10,7 +10,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    formatDate: (date) => {\n        return date.toLocaleDateString();\n    }",
       "end_line": 5,
       "language": "javascript",
-      "name": "arrow_function",
+      "name": "arrow_lambda",
       "original_indentation": 16,
       "start_line": 3
     },
@@ -30,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    handleClick: (event) => {\n        console.log('Button clicked:', event.target);\n    }",
       "end_line": 16,
       "language": "javascript",
-      "name": "arrow_function",
+      "name": "arrow_lambda",
       "original_indentation": 17,
       "start_line": 14
     },

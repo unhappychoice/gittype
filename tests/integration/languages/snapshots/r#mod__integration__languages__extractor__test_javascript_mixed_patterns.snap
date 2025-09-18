@@ -80,7 +80,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    findUser = (id) => {\n        return this.users.find(user => user.id === id);\n    }",
       "end_line": 25,
       "language": "javascript",
-      "name": "arrow_function",
+      "name": "arrow_lambda",
       "original_indentation": 15,
       "start_line": 23
     },
@@ -100,7 +100,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    return users.map(user => ({\n        ...user,\n        displayName: `${user.firstName} ${user.lastName}`\n    })",
       "end_line": 32,
       "language": "javascript",
-      "name": "arrow_function",
+      "name": "arrow_lambda",
       "original_indentation": 21,
       "start_line": 29
     },

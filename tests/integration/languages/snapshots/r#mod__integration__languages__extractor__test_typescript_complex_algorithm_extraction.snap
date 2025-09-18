@@ -239,7 +239,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        const categoryGroups = items.reduce((groups, item) => {\n            const { category } = item;\n            if (!groups[category]) {\n                groups[category] = [];\n            }\n            groups[category].push(item);\n            return groups;\n        }",
       "end_line": 114,
       "language": "typescript",
-      "name": "arrow_function",
+      "name": "arrow_lambda",
       "original_indentation": 44,
       "start_line": 107
     },
@@ -331,7 +331,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    return (data: unknown): data is T => {\n        if (!data || typeof data !== 'object') return false;\n\n        // Validation logic - extractable middle chunk\n        for (const [key, validator] of Object.entries(schema)) {\n            const value = (data as Record<string, unknown>)[key];\n\n            if (!validator(value)) {\n                console.warn(`Validation failed for field ${key}:`, value);\n                return false;\n            }\n\n            // Additional type-specific validations\n            if (typeof value === 'string' && value.length === 0) {\n                console.warn(`Empty string not allowed for field ${key}`);\n                return false;\n            }\n\n            if (typeof value === 'number' && !Number.isFinite(value)) {\n                console.warn(`Invalid number for field ${key}:`, value);\n                return false;\n            }\n        }\n\n        return true;\n    }",
       "end_line": 177,
       "language": "typescript",
-      "name": "arrow_function",
+      "name": "arrow_lambda",
       "original_indentation": 11,
       "start_line": 152
     },

@@ -100,11 +100,12 @@ impl LanguageExtractor for JavaScriptExtractor {
         (for_statement) @for_loop
         (for_in_statement) @for_in_loop
         (while_statement) @while_loop
+        (do_statement) @do_while_loop
         (if_statement) @if_block
         (try_statement) @try_block
         (switch_statement) @switch_block
         (function_expression) @function_expr
-        (arrow_function) @arrow_function
+        (arrow_function) @arrow_lambda
         (call_expression) @function_call
         (statement_block) @code_block
         "
@@ -112,11 +113,11 @@ impl LanguageExtractor for JavaScriptExtractor {
 
     fn middle_capture_name_to_chunk_type(&self, capture_name: &str) -> Option<ChunkType> {
         match capture_name {
-            "for_loop" | "for_in_loop" | "while_loop" => Some(ChunkType::Loop),
+            "for_loop" | "for_in_loop" | "while_loop" | "do_while_loop" => Some(ChunkType::Loop),
             "if_block" => Some(ChunkType::Conditional),
             "try_block" => Some(ChunkType::ErrorHandling),
             "switch_block" => Some(ChunkType::Conditional),
-            "function_expr" | "arrow_function" => Some(ChunkType::Lambda),
+            "function_expr" | "arrow_lambda" => Some(ChunkType::Lambda),
             "function_call" => Some(ChunkType::FunctionCall),
             "code_block" => Some(ChunkType::CodeBlock),
             _ => None,

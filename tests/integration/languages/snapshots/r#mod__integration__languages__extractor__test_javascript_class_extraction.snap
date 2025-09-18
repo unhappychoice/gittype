@@ -80,7 +80,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    findUser = (id) => {\n        return this.users.find(user => user.id === id);\n    }",
       "end_line": 23,
       "language": "javascript",
-      "name": "arrow_function",
+      "name": "arrow_lambda",
       "original_indentation": 15,
       "start_line": 21
     },
