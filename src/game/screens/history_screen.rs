@@ -268,7 +268,10 @@ impl HistoryScreen {
 
         // Controls at the bottom row - matching title screen colors
         let controls_line = Line::from(vec![
-            Span::styled("[↑↓/JK] Navigate  ", Style::default().fg(Colors::TEXT)),
+            Span::styled(
+                "[↑↓/JK] Navigate  ",
+                Style::default().fg(Colors::NAVIGATION_KEY),
+            ),
             Span::styled("[SPACE]", Style::default().fg(Colors::SUCCESS)),
             Span::styled(" Details  ", Style::default().fg(Colors::TEXT)),
             Span::styled("[F]", Style::default().fg(Colors::BORDER)),
