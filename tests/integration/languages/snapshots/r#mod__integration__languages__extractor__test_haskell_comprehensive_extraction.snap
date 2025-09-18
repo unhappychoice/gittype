@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nmodule TestModule (\n    Person(..),\n    greet,\n    calculate\n) where\n\nimport Data.List (sort)\nimport qualified Data.Map as M\n\ndata Person = Person String Int deriving (Show, Eq)\n\ndata Tree a = Leaf a | Node (Tree a) (Tree a) deriving Show\n\nclass Drawable a where\n    draw :: a -> String\n\ninstance Drawable Person where\n    draw (Person name age) = name ++ \" (\" ++ show age ++ \")\"\n\ngreet :: Person -> String\ngreet (Person name _) = \"Hello, \" ++ name\n\ncalculate :: [Int] -> Int\ncalculate xs = sum (map (*2) xs)\n\nfibonacci :: Int -> Int\nfibonacci 0 = 0\nfibonacci 1 = 1\nfibonacci n = fibonacci (n-1) + fibonacci (n-2)\n",
+      "end_line": 30,
+      "language": "haskell",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Module",
       "comment_ranges": [],
       "content": "module TestModule",
@@ -177,5 +187,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nmodule TestModule (\n    Person(..),\n    greet,\n    calculate\n) where\n\nimport Data.List (sort)\nimport qualified Data.Map as M\n\ndata Person = Person String Int deriving (Show, Eq)\n\ndata Tree a = Leaf a | Node (Tree a) (Tree a) deriving Show\n\nclass Drawable a where\n    draw :: a -> String\n\ninstance Drawable Person where\n    draw (Person name age) = name ++ \" (\" ++ show age ++ \")\"\n\ngreet :: Person -> String\ngreet (Person name _) = \"Hello, \" ++ name\n\ncalculate :: [Int] -> Int\ncalculate xs = sum (map (*2) xs)\n\nfibonacci :: Int -> Int\nfibonacci 0 = 0\nfibonacci 1 = 1\nfibonacci n = fibonacci (n-1) + fibonacci (n-2)\n",
   "test_name": "test_haskell_comprehensive_extraction",
-  "total_chunks": 17
+  "total_chunks": 18
 }

@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nclass Product\n  attr_accessor :name, :price\n  attr_reader :id\n  attr_writer :description\nend\n",
+      "end_line": 6,
+      "language": "ruby",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "class Product\n  attr_accessor :name, :price\n  attr_reader :id\n  attr_writer :description\nend",
@@ -47,5 +57,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nclass Product\n  attr_accessor :name, :price\n  attr_reader :id\n  attr_writer :description\nend\n",
   "test_name": "test_ruby_attr_accessor_extraction",
-  "total_chunks": 4
+  "total_chunks": 5
 }

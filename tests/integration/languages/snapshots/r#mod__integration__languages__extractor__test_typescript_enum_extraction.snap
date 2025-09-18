@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nenum Color {\n    Red = '#ff0000',\n    Green = '#00ff00',\n    Blue = '#0000ff'\n}\n\nenum Status {\n    Pending,\n    Completed,\n    Failed\n}\n",
+      "end_line": 12,
+      "language": "typescript",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Enum",
       "comment_ranges": [],
       "content": "enum Color {\n    Red = '#ff0000',\n    Green = '#00ff00',\n    Blue = '#0000ff'\n}",
@@ -27,5 +37,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nenum Color {\n    Red = '#ff0000',\n    Green = '#00ff00',\n    Blue = '#0000ff'\n}\n\nenum Status {\n    Pending,\n    Completed,\n    Failed\n}\n",
   "test_name": "test_typescript_enum_extraction",
-  "total_chunks": 2
+  "total_chunks": 3
 }

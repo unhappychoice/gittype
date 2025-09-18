@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nString greet(String name) {\n  return 'Hello, $name!';\n}\n\nint calculateSum(int a, int b) {\n  return a + b;\n}\n\nvoid processData(List<String> data) {\n  data.forEach(print);\n}\n",
+      "end_line": 12,
+      "language": "dart",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [],
       "content": "String greet(String name) {\n  return 'Hello, $name!';\n}",
@@ -37,5 +47,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nString greet(String name) {\n  return 'Hello, $name!';\n}\n\nint calculateSum(int a, int b) {\n  return a + b;\n}\n\nvoid processData(List<String> data) {\n  data.forEach(print);\n}\n",
   "test_name": "test_dart_function_extraction",
-  "total_chunks": 3
+  "total_chunks": 4
 }

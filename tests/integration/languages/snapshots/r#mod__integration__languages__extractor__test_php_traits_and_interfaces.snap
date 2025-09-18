@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "<?php\n\ninterface Drawable {\n    public function draw();\n}\n\ntrait Timestampable {\n    private $created_at;\n    private $updated_at;\n\n    public function touch() {\n        $this->updated_at = time();\n    }\n}\n\nclass Shape implements Drawable {\n    use Timestampable;\n\n    protected $color;\n\n    public function __construct($color) {\n        $this->color = $color;\n        $this->created_at = time();\n        $this->updated_at = time();\n    }\n\n    public function draw() {\n        return \"Drawing a shape in \" . $this->color;\n    }\n}\n\n?>",
+      "end_line": 32,
+      "language": "php",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "interface Drawable {\n    public function draw();\n}",
@@ -77,5 +87,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "<?php\n\ninterface Drawable {\n    public function draw();\n}\n\ntrait Timestampable {\n    private $created_at;\n    private $updated_at;\n\n    public function touch() {\n        $this->updated_at = time();\n    }\n}\n\nclass Shape implements Drawable {\n    use Timestampable;\n\n    protected $color;\n\n    public function __construct($color) {\n        $this->color = $color;\n        $this->created_at = time();\n        $this->updated_at = time();\n    }\n\n    public function draw() {\n        return \"Drawing a shape in \" . $this->color;\n    }\n}\n\n?>",
   "test_name": "test_php_traits_and_interfaces",
-  "total_chunks": 7
+  "total_chunks": 8
 }

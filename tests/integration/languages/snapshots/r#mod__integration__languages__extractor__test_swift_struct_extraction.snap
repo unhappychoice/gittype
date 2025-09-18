@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nstruct Point {\n    let x: Double\n    let y: Double\n\n    func distance(to other: Point) -> Double {\n        return sqrt(pow(x - other.x, 2) + pow(y - other.y, 2))\n    }\n}\n\nstruct Rectangle {\n    let width: Double\n    let height: Double\n\n    func area() -> Double {\n        return width * height\n    }\n}\n",
+      "end_line": 18,
+      "language": "swift",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "struct Point {\n    let x: Double\n    let y: Double\n\n    func distance(to other: Point) -> Double {\n        return sqrt(pow(x - other.x, 2) + pow(y - other.y, 2))\n    }\n}",
@@ -57,5 +67,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nstruct Point {\n    let x: Double\n    let y: Double\n\n    func distance(to other: Point) -> Double {\n        return sqrt(pow(x - other.x, 2) + pow(y - other.y, 2))\n    }\n}\n\nstruct Rectangle {\n    let width: Double\n    let height: Double\n\n    func area() -> Double {\n        return width * height\n    }\n}\n",
   "test_name": "test_swift_struct_extraction",
-  "total_chunks": 5
+  "total_chunks": 6
 }

@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nclass Person {\n  String name;\n  int age;\n\n  Person(this.name, this.age);\n\n  String greet() {\n    return 'Hello, I am $name!';\n  }\n\n  bool get isAdult => age >= 18;\n}\n\nclass Calculator {\n  int add(int a, int b) => a + b;\n\n  int multiply(int a, int b) {\n    return a * b;\n  }\n}\n",
+      "end_line": 21,
+      "language": "dart",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "class Person {\n  String name;\n  int age;\n\n  Person(this.name, this.age);\n\n  String greet() {\n    return 'Hello, I am $name!';\n  }\n\n  bool get isAdult => age >= 18;\n}",
@@ -67,5 +77,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nclass Person {\n  String name;\n  int age;\n\n  Person(this.name, this.age);\n\n  String greet() {\n    return 'Hello, I am $name!';\n  }\n\n  bool get isAdult => age >= 18;\n}\n\nclass Calculator {\n  int add(int a, int b) => a + b;\n\n  int multiply(int a, int b) {\n    return a * b;\n  }\n}\n",
   "test_name": "test_dart_class_extraction",
-  "total_chunks": 6
+  "total_chunks": 7
 }

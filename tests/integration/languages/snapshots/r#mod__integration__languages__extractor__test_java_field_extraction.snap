@@ -15,6 +15,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "public class Person {\n    private String name;\n    private int age;\n    private static final String DEFAULT_COUNTRY = \"Unknown\";\n    public boolean isActive;\n\n    public Person(String name, int age) {\n        this.name = name;\n        this.age = age;\n        this.isActive = true;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public int getAge() {\n        return age;\n    }\n}",
+      "end_line": 20,
+      "language": "java",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "    private String name;",
@@ -87,5 +97,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "public class Person {\n    private String name;\n    private int age;\n    private static final String DEFAULT_COUNTRY = \"Unknown\";\n    public boolean isActive;\n\n    public Person(String name, int age) {\n        this.name = name;\n        this.age = age;\n        this.isActive = true;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public int getAge() {\n        return age;\n    }\n}",
   "test_name": "test_java_field_extraction",
-  "total_chunks": 8
+  "total_chunks": 9
 }

@@ -5,6 +5,45 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [
+        [
+          582,
+          637
+        ],
+        [
+          2204,
+          2227
+        ],
+        [
+          2390,
+          2411
+        ],
+        [
+          2965,
+          3017
+        ],
+        [
+          3523,
+          3545
+        ],
+        [
+          3693,
+          3707
+        ],
+        [
+          3957,
+          3979
+        ]
+      ],
+      "content": "\ndata class ProcessedItem(\n    val id: Int,\n    val originalValue: Int,\n    val transformedValue: Int,\n    val category: String,\n    val timestamp: Long = System.currentTimeMillis(),\n    val metadata: MutableMap<String, Any> = mutableMapOf()\n)\n\nclass DataProcessor(private val threshold: Int) {\n    private val cache = mutableMapOf<String, ProcessedItem>()\n    private val processingLog = mutableListOf<ProcessedItem>()\n\n    fun processComplexData(input: List<Int>): List<ProcessedItem> {\n        val results = mutableListOf<ProcessedItem>()\n        var processedCount = 0\n\n        // Main processing algorithm - extractable middle chunk\n        input.forEachIndexed { index, value ->\n            val cacheKey = \"item_${index}_$value\"\n\n            cache[cacheKey]?.let { cachedItem ->\n                results.add(cachedItem)\n                return@forEachIndexed\n            }\n\n            val processedItem = when {\n                value > threshold -> {\n                    val transformedValue = value * 2\n                    val category = if (transformedValue > threshold * 3) \"HIGH\" else \"MEDIUM\"\n                    val bonusValue = if (transformedValue > 100) transformedValue + 10 else transformedValue\n\n                    ProcessedItem(\n                        id = index,\n                        originalValue = value,\n                        transformedValue = bonusValue,\n                        category = category,\n                        metadata = mutableMapOf(\n                            \"processed\" to true,\n                            \"multiplier\" to 2,\n                            \"processor\" to \"enhanced\"\n                        )\n                    ).also { processedCount++ }\n                }\n                value > 0 -> ProcessedItem(\n                    id = index,\n                    originalValue = value,\n                    transformedValue = value + threshold,\n                    category = \"LOW\",\n                    metadata = mutableMapOf(\n                        \"processed\" to true,\n                        \"adjusted\" to true,\n                        \"processor\" to \"basic\"\n                    )\n                )\n                else -> return@forEachIndexed // skip negative values\n            }\n\n            cache[cacheKey] = processedItem\n            processingLog.add(processedItem)\n            results.add(processedItem)\n        }\n\n        // Finalization logic\n        if (processedCount > 0) {\n            val average = results.map { it.transformedValue }.average()\n            println(\"Processing complete. Average: %.2f\".format(average))\n\n            results.forEach { item ->\n                item.metadata[\"processing_average\"] = average\n            }\n        }\n\n        return results\n    }\n\n    fun analyzePatterns(items: List<ProcessedItem>): Map<String, Map<String, Any>> {\n        val analysis = mutableMapOf<String, Map<String, Any>>()\n        val categoryGroups = items.groupBy { it.category }\n\n        // Pattern analysis logic - extractable middle chunk\n        categoryGroups.forEach { (category, categoryItems) ->\n            val values = categoryItems.map { it.transformedValue.toDouble() }\n            val categoryAnalysis = mapOf(\n                \"count\" to categoryItems.size,\n                \"percentage\" to (categoryItems.size.toDouble() / items.size * 100),\n                \"avg_value\" to values.average(),\n                \"min_value\" to values.minOrNull(),\n                \"max_value\" to values.maxOrNull()\n            ).toMutableMap()\n\n            // Time-based analysis\n            val currentTime = System.currentTimeMillis()\n            val recentItems = categoryItems.filter { currentTime - it.timestamp < 60000 } // last minute\n            if (recentItems.isNotEmpty()) {\n                categoryAnalysis[\"recent_count\"] = recentItems.size\n                categoryAnalysis[\"recent_avg\"] = recentItems.map { it.transformedValue.toDouble() }.average()\n            }\n\n            // High-value analysis\n            val highValueItems = categoryItems.filter { it.transformedValue > 1000 }\n            if (highValueItems.isNotEmpty()) {\n                categoryAnalysis[\"high_value_count\"] = highValueItems.size\n            }\n\n            analysis[category] = categoryAnalysis\n        }\n\n        return analysis + mapOf(\n            \"total_items\" to items.size,\n            \"processing_time\" to System.currentTimeMillis()\n        )\n    }\n}\n",
+      "end_line": 115,
+      "language": "kotlin",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "data class ProcessedItem(\n    val id: Int,\n    val originalValue: Int,\n    val transformedValue: Int,\n    val category: String,\n    val timestamp: Long = System.currentTimeMillis(),\n    val metadata: MutableMap<String, Any> = mutableMapOf()\n)",
@@ -419,5 +458,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\ndata class ProcessedItem(\n    val id: Int,\n    val originalValue: Int,\n    val transformedValue: Int,\n    val category: String,\n    val timestamp: Long = System.currentTimeMillis(),\n    val metadata: MutableMap<String, Any> = mutableMapOf()\n)\n\nclass DataProcessor(private val threshold: Int) {\n    private val cache = mutableMapOf<String, ProcessedItem>()\n    private val processingLog = mutableListOf<ProcessedItem>()\n\n    fun processComplexData(input: List<Int>): List<ProcessedItem> {\n        val results = mutableListOf<ProcessedItem>()\n        var processedCount = 0\n\n        // Main processing algorithm - extractable middle chunk\n        input.forEachIndexed { index, value ->\n            val cacheKey = \"item_${index}_$value\"\n\n            cache[cacheKey]?.let { cachedItem ->\n                results.add(cachedItem)\n                return@forEachIndexed\n            }\n\n            val processedItem = when {\n                value > threshold -> {\n                    val transformedValue = value * 2\n                    val category = if (transformedValue > threshold * 3) \"HIGH\" else \"MEDIUM\"\n                    val bonusValue = if (transformedValue > 100) transformedValue + 10 else transformedValue\n\n                    ProcessedItem(\n                        id = index,\n                        originalValue = value,\n                        transformedValue = bonusValue,\n                        category = category,\n                        metadata = mutableMapOf(\n                            \"processed\" to true,\n                            \"multiplier\" to 2,\n                            \"processor\" to \"enhanced\"\n                        )\n                    ).also { processedCount++ }\n                }\n                value > 0 -> ProcessedItem(\n                    id = index,\n                    originalValue = value,\n                    transformedValue = value + threshold,\n                    category = \"LOW\",\n                    metadata = mutableMapOf(\n                        \"processed\" to true,\n                        \"adjusted\" to true,\n                        \"processor\" to \"basic\"\n                    )\n                )\n                else -> return@forEachIndexed // skip negative values\n            }\n\n            cache[cacheKey] = processedItem\n            processingLog.add(processedItem)\n            results.add(processedItem)\n        }\n\n        // Finalization logic\n        if (processedCount > 0) {\n            val average = results.map { it.transformedValue }.average()\n            println(\"Processing complete. Average: %.2f\".format(average))\n\n            results.forEach { item ->\n                item.metadata[\"processing_average\"] = average\n            }\n        }\n\n        return results\n    }\n\n    fun analyzePatterns(items: List<ProcessedItem>): Map<String, Map<String, Any>> {\n        val analysis = mutableMapOf<String, Map<String, Any>>()\n        val categoryGroups = items.groupBy { it.category }\n\n        // Pattern analysis logic - extractable middle chunk\n        categoryGroups.forEach { (category, categoryItems) ->\n            val values = categoryItems.map { it.transformedValue.toDouble() }\n            val categoryAnalysis = mapOf(\n                \"count\" to categoryItems.size,\n                \"percentage\" to (categoryItems.size.toDouble() / items.size * 100),\n                \"avg_value\" to values.average(),\n                \"min_value\" to values.minOrNull(),\n                \"max_value\" to values.maxOrNull()\n            ).toMutableMap()\n\n            // Time-based analysis\n            val currentTime = System.currentTimeMillis()\n            val recentItems = categoryItems.filter { currentTime - it.timestamp < 60000 } // last minute\n            if (recentItems.isNotEmpty()) {\n                categoryAnalysis[\"recent_count\"] = recentItems.size\n                categoryAnalysis[\"recent_avg\"] = recentItems.map { it.transformedValue.toDouble() }.average()\n            }\n\n            // High-value analysis\n            val highValueItems = categoryItems.filter { it.transformedValue > 1000 }\n            if (highValueItems.isNotEmpty()) {\n                categoryAnalysis[\"high_value_count\"] = highValueItems.size\n            }\n\n            analysis[category] = categoryAnalysis\n        }\n\n        return analysis + mapOf(\n            \"total_items\" to items.size,\n            \"processing_time\" to System.currentTimeMillis()\n        )\n    }\n}\n",
   "test_name": "test_kotlin_complex_algorithm_extraction",
-  "total_chunks": 33
+  "total_chunks": 34
 }

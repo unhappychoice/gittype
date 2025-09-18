@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "package main\n\ntype Person struct {\n    Name string\n    Age  int\n}\n\ntype Address struct {\n    Street string\n    City   string\n    Zip    string\n}\n\nfunc (p Person) GetName() string {\n    return p.Name\n}\n\nfunc (a *Address) GetFullAddress() string {\n    return a.Street + \", \" + a.City + \" \" + a.Zip\n}\n",
+      "end_line": 20,
+      "language": "go",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Struct",
       "comment_ranges": [],
       "content": "type Person struct {\n    Name string\n    Age  int\n}",
@@ -47,5 +57,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "package main\n\ntype Person struct {\n    Name string\n    Age  int\n}\n\ntype Address struct {\n    Street string\n    City   string\n    Zip    string\n}\n\nfunc (p Person) GetName() string {\n    return p.Name\n}\n\nfunc (a *Address) GetFullAddress() string {\n    return a.Street + \", \" + a.City + \" \" + a.Zip\n}\n",
   "test_name": "test_go_struct_extraction",
-  "total_chunks": 4
+  "total_chunks": 5
 }

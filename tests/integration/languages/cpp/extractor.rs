@@ -24,7 +24,7 @@ double calculate_area(double radius) {
     return 3.14159 * radius * radius;
 }
 "#,
-    total_chunks: 4,
+    total_chunks: 5,
     chunk_counts: {
         Function: 4,
     }
@@ -71,7 +71,7 @@ int main() {
     return 0;
 }
 "#,
-    total_chunks: 14,
+    total_chunks: 15,
     chunk_counts: {
         Function: 8,
         Struct: 2,
@@ -110,7 +110,7 @@ int main() {
     return 0;
 }
 "#,
-    total_chunks: 6,
+    total_chunks: 7,
     chunk_counts: {
         Function: 4,
         Variable: 2,
@@ -169,7 +169,7 @@ int main() {
     return 0;
 }
 "#,
-    total_chunks: 13,
+    total_chunks: 14,
     chunk_counts: {
         CodeBlock: 1,
         Conditional: 1,
@@ -238,7 +238,7 @@ int main() {
     return 0;
 }
 "#,
-    total_chunks: 15,
+    total_chunks: 16,
     chunk_counts: {
         CodeBlock: 3,
         Conditional: 1,
@@ -281,7 +281,7 @@ int main() {
     return 0;
 }
 "#,
-    total_chunks: 10,
+    total_chunks: 11,
     chunk_counts: {
         Function: 5,
         Struct: 2,
@@ -431,7 +431,7 @@ public:
     }
 };
 "#,
-    total_chunks: 39,
+    total_chunks: 40,
     chunk_counts: {
         Function: 4,
         Struct: 3,

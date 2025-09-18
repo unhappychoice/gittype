@@ -5,6 +5,61 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [
+        [
+          1,
+          16
+        ],
+        [
+          64,
+          77
+        ],
+        [
+          115,
+          139
+        ],
+        [
+          203,
+          222
+        ],
+        [
+          297,
+          318
+        ],
+        [
+          374,
+          390
+        ],
+        [
+          473,
+          486
+        ],
+        [
+          540,
+          553
+        ],
+        [
+          605,
+          626
+        ],
+        [
+          747,
+          777
+        ],
+        [
+          957,
+          970
+        ]
+      ],
+      "content": "\n// Line comment\n/* Block comment */\n\npackage com.example.test\n\n// Type alias\ntypealias StringList = List<String>\n\n// Interface declaration\ninterface TestInterface {\n    fun interfaceMethod(): String\n}\n\n// Regular function\nfun regularFunction(param: String): String {\n    return \"Hello $param\"\n}\n\n// Anonymous function\nval anonymousFunc = fun(x: Int): Int { return x * 2 }\n\n// Regular class\nclass RegularClass(private val name: String) {\n    fun method(): String = name\n}\n\n// Data class\ndata class DataClass(val id: Int, val name: String)\n\n// Enum class\nenum class Color {\n    RED,\n    GREEN,\n    BLUE\n}\n\n// Object declaration\nobject SingletonObject {\n    const val CONSTANT = \"constant_value\"\n\n    fun objectMethod(): String = \"object method\"\n}\n\n// Class with companion object\nclass ClassWithCompanion {\n    companion object {\n        const val COMPANION_CONSTANT = \"companion_constant\"\n\n        fun companionMethod(): String = \"companion method\"\n    }\n}\n\n// Properties\nval globalVal: String = \"global val\"\nvar globalVar: String = \"global var\"\n",
+      "end_line": 56,
+      "language": "kotlin",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "typealias StringList = List<String>",
@@ -217,5 +272,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\n// Line comment\n/* Block comment */\n\npackage com.example.test\n\n// Type alias\ntypealias StringList = List<String>\n\n// Interface declaration\ninterface TestInterface {\n    fun interfaceMethod(): String\n}\n\n// Regular function\nfun regularFunction(param: String): String {\n    return \"Hello $param\"\n}\n\n// Anonymous function\nval anonymousFunc = fun(x: Int): Int { return x * 2 }\n\n// Regular class\nclass RegularClass(private val name: String) {\n    fun method(): String = name\n}\n\n// Data class\ndata class DataClass(val id: Int, val name: String)\n\n// Enum class\nenum class Color {\n    RED,\n    GREEN,\n    BLUE\n}\n\n// Object declaration\nobject SingletonObject {\n    const val CONSTANT = \"constant_value\"\n\n    fun objectMethod(): String = \"object method\"\n}\n\n// Class with companion object\nclass ClassWithCompanion {\n    companion object {\n        const val COMPANION_CONSTANT = \"companion_constant\"\n\n        fun companionMethod(): String = \"companion method\"\n    }\n}\n\n// Properties\nval globalVal: String = \"global val\"\nvar globalVar: String = \"global var\"\n",
   "test_name": "test_kotlin_comprehensive_extraction",
-  "total_chunks": 21
+  "total_chunks": 22
 }

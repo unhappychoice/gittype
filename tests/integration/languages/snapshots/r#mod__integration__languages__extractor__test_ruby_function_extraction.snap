@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\ndef hello_world\n  puts \"Hello, world!\"\nend\n\ndef calculate_sum(a, b)\n  a + b\nend\n",
+      "end_line": 8,
+      "language": "ruby",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Method",
       "comment_ranges": [],
       "content": "def hello_world\n  puts \"Hello, world!\"\nend",
@@ -27,5 +37,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\ndef hello_world\n  puts \"Hello, world!\"\nend\n\ndef calculate_sum(a, b)\n  a + b\nend\n",
   "test_name": "test_ruby_function_extraction",
-  "total_chunks": 2
+  "total_chunks": 3
 }

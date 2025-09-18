@@ -61,12 +61,6 @@ impl Step for GeneratingStep {
             )
         })?;
 
-        let file_paths = context.scanned_files.take().ok_or_else(|| {
-            crate::GitTypeError::ExtractionFailed(
-                "No scanned files available from ScanningStep".to_string(),
-            )
-        })?;
-
         let screen = context.loading_screen.ok_or_else(|| {
             crate::GitTypeError::ExtractionFailed("No loading screen available".to_string())
         })?;
@@ -75,15 +69,12 @@ impl Step for GeneratingStep {
             crate::GitTypeError::ExtractionFailed("No repository loader available".to_string())
         })?;
 
-        // Get git_root from GitRepository if available
-        let git_root = context
-            .git_repository
-            .as_ref()
-            .and_then(|repo| repo.root_path.as_deref());
-
         // Generate challenges
         let generated_challenges = loader.convert_chunks_and_files_to_challenges_with_progress(
-            chunks, file_paths, git_root, screen,
+            chunks,
+            vec![],
+            None,
+            screen,
         );
 
         // Cache the generated challenges if we have git repository info

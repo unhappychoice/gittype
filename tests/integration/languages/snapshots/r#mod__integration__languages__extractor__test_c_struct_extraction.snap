@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nstruct Point {\n    int x;\n    int y;\n};\n\nstruct Person {\n    char name[50];\n    int age;\n    struct Point location;\n};\n\nint main() {\n    struct Point p = {10, 20};\n    return 0;\n}\n",
+      "end_line": 16,
+      "language": "c",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Struct",
       "comment_ranges": [],
       "content": "struct Point {\n    int x;\n    int y;\n}",
@@ -47,5 +57,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nstruct Point {\n    int x;\n    int y;\n};\n\nstruct Person {\n    char name[50];\n    int age;\n    struct Point location;\n};\n\nint main() {\n    struct Point p = {10, 20};\n    return 0;\n}\n",
   "test_name": "test_c_struct_extraction",
-  "total_chunks": 4
+  "total_chunks": 5
 }

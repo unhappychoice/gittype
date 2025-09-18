@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nhead' :: [a] -> a\nhead' [] = error \"Empty list\"\nhead' (x:_) = x\n\nlength' :: [a] -> Int\nlength' [] = 0\nlength' (_:xs) = 1 + length' xs\n\nmap' :: (a -> b) -> [a] -> [b]\nmap' _ [] = []\nmap' f (x:xs) = f x : map' f xs\n",
+      "end_line": 12,
+      "language": "haskell",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [],
       "content": "head' :: [a] -> a",
@@ -97,5 +107,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nhead' :: [a] -> a\nhead' [] = error \"Empty list\"\nhead' (x:_) = x\n\nlength' :: [a] -> Int\nlength' [] = 0\nlength' (_:xs) = 1 + length' xs\n\nmap' :: (a -> b) -> [a] -> [b]\nmap' _ [] = []\nmap' f (x:xs) = f x : map' f xs\n",
   "test_name": "test_haskell_pattern_matching_extraction",
-  "total_chunks": 9
+  "total_chunks": 10
 }

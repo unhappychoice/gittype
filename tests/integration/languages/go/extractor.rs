@@ -20,7 +20,7 @@ func multiply(x int, y int) int {
     return x * y
 }
 "#,
-    total_chunks: 3,
+    total_chunks: 4,
     chunk_counts: {
         Function: 3,
     }
@@ -51,7 +51,7 @@ func (a *Address) GetFullAddress() string {
     return a.Street + ", " + a.City + " " + a.Zip
 }
 "#,
-    total_chunks: 4,
+    total_chunks: 5,
     chunk_counts: {
         Method: 2,
         Struct: 2,
@@ -81,7 +81,7 @@ func process(rw ReadWriter) {
     // Implementation here
 }
 "#,
-    total_chunks: 4,
+    total_chunks: 5,
     chunk_counts: {
         Function: 1,
         Interface: 3,
@@ -124,7 +124,7 @@ type Point struct {
 
 func main() {}
 "#,
-    total_chunks: 8,
+    total_chunks: 9,
     chunk_counts: {
         Const: 2,
         Function: 1,
@@ -295,7 +295,7 @@ func (dp *DataProcessor) AnalyzePatterns(items []ProcessedItem) map[string]inter
     return analysis
 }
 "#,
-    total_chunks: 24,
+    total_chunks: 25,
     chunk_counts: {
         Function: 1,
         Struct: 3,

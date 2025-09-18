@@ -18,7 +18,7 @@ async function fetchUserData(userId) {
     return response.json();
 }
 "#,
-    total_chunks: 3,
+    total_chunks: 4,
     chunk_counts: {
         Function: 3,
     }
@@ -40,7 +40,7 @@ const processData = async (data) => {
     return processed;
 };
 "#,
-    total_chunks: 3,
+    total_chunks: 4,
     chunk_counts: {
         Function: 3,
     }
@@ -94,7 +94,7 @@ class EventEmitter {
     }
 }
 "#,
-    total_chunks: 14,
+    total_chunks: 15,
     chunk_counts: {
         Class: 2,
         CodeBlock: 2,
@@ -142,7 +142,7 @@ export default class UserService {
     }
 }
 "#,
-    total_chunks: 7,
+    total_chunks: 8,
     chunk_counts: {
         Class: 2,
         Function: 1,
@@ -184,7 +184,7 @@ const eventHandlers = {
     }
 };
 "#,
-    total_chunks: 8,
+    total_chunks: 9,
     chunk_counts: {
         CodeBlock: 2,
         ErrorHandling: 1,
@@ -248,7 +248,7 @@ const userService = {
 
 export default UserManager;
 "#,
-    total_chunks: 13,
+    total_chunks: 14,
     chunk_counts: {
         Class: 1,
         CodeBlock: 2,
@@ -389,7 +389,7 @@ const dataAnalyzer = {
     }
 };
 "#,
-    total_chunks: 18,
+    total_chunks: 19,
     chunk_counts: {
         Function: 1,
         Method: 1,

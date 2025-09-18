@@ -18,7 +18,7 @@ void print_number(int num) {
     printf("%d\n", num);
 }
 "#,
-    total_chunks: 3,
+    total_chunks: 4,
     chunk_counts: {
         Function: 3,
     }
@@ -45,7 +45,7 @@ int main() {
     return 0;
 }
 "#,
-    total_chunks: 4,
+    total_chunks: 5,
     chunk_counts: {
         Function: 1,
         Struct: 2,
@@ -69,7 +69,7 @@ int main() {
     return 0;
 }
 "#,
-    total_chunks: 4,
+    total_chunks: 5,
     chunk_counts: {
         Function: 1,
         Variable: 3,
@@ -96,7 +96,7 @@ static inline int max(int a, int b) {
 
 #endif
 "#,
-    total_chunks: 2,
+    total_chunks: 3,
     chunk_counts: {
         Function: 2,
     }
@@ -130,7 +130,7 @@ int process_user(User *user, enum Status *status) {
     return user->id;
 }
 "#,
-    total_chunks: 5,
+    total_chunks: 6,
     chunk_counts: {
         Function: 1,
         Struct: 4,
@@ -255,7 +255,7 @@ void analyze_patterns(ProcessedItem *items, size_t count) {
     }
 }
 "#,
-    total_chunks: 38,
+    total_chunks: 39,
     chunk_counts: {
         Function: 2,
         Struct: 2,

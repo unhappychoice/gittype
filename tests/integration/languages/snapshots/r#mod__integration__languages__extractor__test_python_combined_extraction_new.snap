@@ -5,6 +5,33 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [
+        [
+          425,
+          488
+        ],
+        [
+          703,
+          723
+        ],
+        [
+          2082,
+          2132
+        ],
+        [
+          2932,
+          2989
+        ]
+      ],
+      "content": "\nimport json\nfrom typing import List, Dict, Optional\n\ndef process_json_data(file_path: str) -> Dict:\n    \"\"\"Function with error handling and complex logic\"\"\"\n    try:\n        with open(file_path, 'r') as file:\n            data = json.load(file)\n    except FileNotFoundError:\n        return {'error': 'File not found', 'data': None}\n    except json.JSONDecodeError:\n        return {'error': 'Invalid JSON', 'data': None}\n\n    # Data validation and transformation - extractable middle chunk\n    if not isinstance(data, dict):\n        return {'error': 'Expected dictionary format', 'data': None}\n\n    processed_items = []\n    for key, value in data.items():\n        if isinstance(value, list):\n            # Process list items\n            processed_list = []\n            for item in value:\n                if isinstance(item, dict) and 'id' in item:\n                    processed_item = {\n                        'id': item['id'],\n                        'processed': True,\n                        'original_keys': list(item.keys())\n                    }\n                    processed_list.append(processed_item)\n\n            processed_items.append({\n                'key': key,\n                'type': 'list',\n                'items': processed_list,\n                'count': len(processed_list)\n            })\n        elif isinstance(value, dict):\n            processed_items.append({\n                'key': key,\n                'type': 'dict',\n                'keys': list(value.keys()),\n                'count': len(value)\n            })\n\n    return {\n        'error': None,\n        'data': processed_items,\n        'total_processed': len(processed_items)\n    }\n\nclass ConfigManager:\n    def __init__(self, config_path: str):\n        self.config_path = config_path\n        self.config = {}\n        self.load_config()\n\n    def load_config(self) -> bool:\n        \"\"\"Load configuration with fallback logic\"\"\"\n        try:\n            with open(self.config_path, 'r') as file:\n                self.config = json.load(file)\n            return True\n        except Exception:\n            # Default configuration - extractable middle chunk\n            self.config = {\n                'debug': False,\n                'log_level': 'INFO',\n                'database': {\n                    'host': 'localhost',\n                    'port': 5432,\n                    'name': 'default_db'\n                },\n                'cache': {\n                    'enabled': True,\n                    'ttl': 3600,\n                    'max_size': 1000\n                },\n                'features': {\n                    'analytics': True,\n                    'notifications': False,\n                    'beta_features': False\n                }\n            }\n            return False\n\n    def get_setting(self, key: str, default=None):\n        \"\"\"Get setting with dot notation support\"\"\"\n        keys = key.split('.')\n        value = self.config\n\n        # Navigate through nested keys - extractable middle chunk\n        for k in keys:\n            if isinstance(value, dict) and k in value:\n                value = value[k]\n            else:\n                return default\n\n        return value\n",
+      "end_line": 100,
+      "language": "python",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [
         [
@@ -230,5 +257,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nimport json\nfrom typing import List, Dict, Optional\n\ndef process_json_data(file_path: str) -> Dict:\n    \"\"\"Function with error handling and complex logic\"\"\"\n    try:\n        with open(file_path, 'r') as file:\n            data = json.load(file)\n    except FileNotFoundError:\n        return {'error': 'File not found', 'data': None}\n    except json.JSONDecodeError:\n        return {'error': 'Invalid JSON', 'data': None}\n\n    # Data validation and transformation - extractable middle chunk\n    if not isinstance(data, dict):\n        return {'error': 'Expected dictionary format', 'data': None}\n\n    processed_items = []\n    for key, value in data.items():\n        if isinstance(value, list):\n            # Process list items\n            processed_list = []\n            for item in value:\n                if isinstance(item, dict) and 'id' in item:\n                    processed_item = {\n                        'id': item['id'],\n                        'processed': True,\n                        'original_keys': list(item.keys())\n                    }\n                    processed_list.append(processed_item)\n\n            processed_items.append({\n                'key': key,\n                'type': 'list',\n                'items': processed_list,\n                'count': len(processed_list)\n            })\n        elif isinstance(value, dict):\n            processed_items.append({\n                'key': key,\n                'type': 'dict',\n                'keys': list(value.keys()),\n                'count': len(value)\n            })\n\n    return {\n        'error': None,\n        'data': processed_items,\n        'total_processed': len(processed_items)\n    }\n\nclass ConfigManager:\n    def __init__(self, config_path: str):\n        self.config_path = config_path\n        self.config = {}\n        self.load_config()\n\n    def load_config(self) -> bool:\n        \"\"\"Load configuration with fallback logic\"\"\"\n        try:\n            with open(self.config_path, 'r') as file:\n                self.config = json.load(file)\n            return True\n        except Exception:\n            # Default configuration - extractable middle chunk\n            self.config = {\n                'debug': False,\n                'log_level': 'INFO',\n                'database': {\n                    'host': 'localhost',\n                    'port': 5432,\n                    'name': 'default_db'\n                },\n                'cache': {\n                    'enabled': True,\n                    'ttl': 3600,\n                    'max_size': 1000\n                },\n                'features': {\n                    'analytics': True,\n                    'notifications': False,\n                    'beta_features': False\n                }\n            }\n            return False\n\n    def get_setting(self, key: str, default=None):\n        \"\"\"Get setting with dot notation support\"\"\"\n        keys = key.split('.')\n        value = self.config\n\n        # Navigate through nested keys - extractable middle chunk\n        for k in keys:\n            if isinstance(value, dict) and k in value:\n                value = value[k]\n            else:\n                return default\n\n        return value\n",
   "test_name": "test_python_combined_extraction_new",
-  "total_chunks": 18
+  "total_chunks": 19
 }

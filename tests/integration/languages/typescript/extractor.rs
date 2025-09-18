@@ -15,7 +15,7 @@ interface Admin extends User {
     permissions: string[];
 }
 "#,
-    total_chunks: 2,
+    total_chunks: 3,
     chunk_counts: {
         Interface: 2,
     }
@@ -33,7 +33,7 @@ type ApiResponse<T> = {
     error?: string;
 };
 "#,
-    total_chunks: 3,
+    total_chunks: 4,
     chunk_counts: {
         TypeAlias: 3,
     }
@@ -56,7 +56,7 @@ enum Status {
     Failed
 }
 "#,
-    total_chunks: 2,
+    total_chunks: 3,
     chunk_counts: {
         Enum: 2,
     }
@@ -85,7 +85,7 @@ namespace Api {
     }
 }
 "#,
-    total_chunks: 5,
+    total_chunks: 6,
     chunk_counts: {
         Function: 2,
         Interface: 1,
@@ -143,7 +143,7 @@ const calculateTotal = (items: number[]): number => {
     return items.reduce((sum, item) => sum + item, 0);
 };
 "#,
-    total_chunks: 10,
+    total_chunks: 11,
     chunk_counts: {
         Class: 1,
         Enum: 1,
@@ -338,7 +338,7 @@ function createDataValidator<T>(schema: Record<keyof T, (value: unknown) => bool
     };
 }
 "#,
-    total_chunks: 26,
+    total_chunks: 27,
     chunk_counts: {
         Class: 1,
         Function: 1,

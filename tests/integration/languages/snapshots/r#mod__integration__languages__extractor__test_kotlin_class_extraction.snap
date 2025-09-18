@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nclass Person(val name: String, val age: Int) {\n    fun greet(): String {\n        return \"Hello, I'm $name and I'm $age years old\"\n    }\n\n    fun isAdult(): Boolean {\n        return age >= 18\n    }\n}\n\ndata class User(\n    val id: Long,\n    val name: String,\n    val email: String\n) {\n    fun getDisplayName(): String = \"$name ($email)\"\n}\n",
+      "end_line": 18,
+      "language": "kotlin",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "class Person(val name: String, val age: Int) {\n    fun greet(): String {\n        return \"Hello, I'm $name and I'm $age years old\"\n    }\n\n    fun isAdult(): Boolean {\n        return age >= 18\n    }\n}",
@@ -57,5 +67,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nclass Person(val name: String, val age: Int) {\n    fun greet(): String {\n        return \"Hello, I'm $name and I'm $age years old\"\n    }\n\n    fun isAdult(): Boolean {\n        return age >= 18\n    }\n}\n\ndata class User(\n    val id: Long,\n    val name: String,\n    val email: String\n) {\n    fun getDisplayName(): String = \"$name ($email)\"\n}\n",
   "test_name": "test_kotlin_class_extraction",
-  "total_chunks": 5
+  "total_chunks": 6
 }

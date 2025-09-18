@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "package main\n\nimport \"fmt\"\n\nfunc main() {\n    fmt.Println(\"Hello, world!\")\n}\n\nfunc add(a, b int) int {\n    return a + b\n}\n\nfunc multiply(x int, y int) int {\n    return x * y\n}\n",
+      "end_line": 15,
+      "language": "go",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [],
       "content": "func main() {\n    fmt.Println(\"Hello, world!\")\n}",
@@ -37,5 +47,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "package main\n\nimport \"fmt\"\n\nfunc main() {\n    fmt.Println(\"Hello, world!\")\n}\n\nfunc add(a, b int) int {\n    return a + b\n}\n\nfunc multiply(x int, y int) int {\n    return x * y\n}\n",
   "test_name": "test_go_function_extraction",
-  "total_chunks": 3
+  "total_chunks": 4
 }

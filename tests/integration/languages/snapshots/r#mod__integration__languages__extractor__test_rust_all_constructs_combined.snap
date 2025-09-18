@@ -5,6 +5,37 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [
+        [
+          1,
+          22
+        ],
+        [
+          73,
+          92
+        ],
+        [
+          145,
+          165
+        ],
+        [
+          231,
+          244
+        ],
+        [
+          269,
+          311
+        ]
+      ],
+      "content": "\n// Enum with variants\npub enum Result<T, E> {\n    Ok(T),\n    Err(E),\n}\n\n// Trait definition\npub trait Display {\n    fn fmt(&self) -> String;\n}\n\n// Module definition\npub mod utils {\n    pub fn helper() -> i32 {\n        42\n    }\n}\n\n// Type alias\npub type UserId = u64;\n\n// Existing constructs (should still work)\npub struct User {\n    id: UserId,\n    name: String,\n}\n\nimpl Display for User {\n    fn fmt(&self) -> String {\n        format!(\"User({})\", self.name)\n    }\n}\n\npub fn create_user(name: String) -> User {\n    User {\n        id: 1,\n        name,\n    }\n}\n",
+      "end_line": 40,
+      "language": "rust",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Enum",
       "comment_ranges": [],
       "content": "pub enum Result<T, E> {\n    Ok(T),\n    Err(E),\n}",
@@ -97,5 +128,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\n// Enum with variants\npub enum Result<T, E> {\n    Ok(T),\n    Err(E),\n}\n\n// Trait definition\npub trait Display {\n    fn fmt(&self) -> String;\n}\n\n// Module definition\npub mod utils {\n    pub fn helper() -> i32 {\n        42\n    }\n}\n\n// Type alias\npub type UserId = u64;\n\n// Existing constructs (should still work)\npub struct User {\n    id: UserId,\n    name: String,\n}\n\nimpl Display for User {\n    fn fmt(&self) -> String {\n        format!(\"User({})\", self.name)\n    }\n}\n\npub fn create_user(name: String) -> User {\n    User {\n        id: 1,\n        name,\n    }\n}\n",
   "test_name": "test_rust_all_constructs_combined",
-  "total_chunks": 9
+  "total_chunks": 10
 }

@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nusing System;\n\nnamespace MyApplication.Core.Services\n{\n    public class EmailService\n    {\n        public void SendEmail(string to, string subject, string body)\n        {\n            Console.WriteLine($\"Sending email to {to}\");\n        }\n    }\n}\n\nnamespace MyApplication.Core.Models\n{\n    public class Message\n    {\n        public string Content { get; set; }\n        public DateTime Timestamp { get; set; }\n    }\n}\n",
+      "end_line": 22,
+      "language": "csharp",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Namespace",
       "comment_ranges": [],
       "content": "namespace MyApplication.Core.Services\n{\n    public class EmailService\n    {\n        public void SendEmail(string to, string subject, string body)\n        {\n            Console.WriteLine($\"Sending email to {to}\");\n        }\n    }\n}",
@@ -87,5 +97,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nusing System;\n\nnamespace MyApplication.Core.Services\n{\n    public class EmailService\n    {\n        public void SendEmail(string to, string subject, string body)\n        {\n            Console.WriteLine($\"Sending email to {to}\");\n        }\n    }\n}\n\nnamespace MyApplication.Core.Models\n{\n    public class Message\n    {\n        public string Content { get; set; }\n        public DateTime Timestamp { get; set; }\n    }\n}\n",
   "test_name": "test_csharp_namespace_extraction",
-  "total_chunks": 8
+  "total_chunks": 9
 }

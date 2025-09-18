@@ -5,6 +5,49 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [
+        [
+          577,
+          631
+        ],
+        [
+          2071,
+          2093
+        ],
+        [
+          2248,
+          2268
+        ],
+        [
+          2442,
+          2469
+        ],
+        [
+          2675,
+          2726
+        ],
+        [
+          3094,
+          3115
+        ],
+        [
+          3235,
+          3248
+        ],
+        [
+          3507,
+          3528
+        ]
+      ],
+      "content": "\nclass ProcessedItem\n  attr_accessor :id, :original_value, :transformed_value, :category, :timestamp, :metadata\n\n  def initialize(id, original_value, transformed_value, category, metadata = {})\n    @id = id\n    @original_value = original_value\n    @transformed_value = transformed_value\n    @category = category\n    @timestamp = Time.now\n    @metadata = metadata\n  end\nend\n\nclass DataProcessor\n  def initialize(threshold)\n    @threshold = threshold\n    @cache = {}\n    @processing_log = []\n  end\n\n  def process_complex_data(input)\n    results = []\n    processed_count = 0\n\n    # Main processing algorithm - extractable middle chunk\n    input.each_with_index do |value, index|\n      cache_key = \"item_#{index}_#{value}\"\n\n      if @cache.key?(cache_key)\n        results << @cache[cache_key]\n        next\n      end\n\n      processed_item = if value > @threshold\n                         transformed_value = value * 2\n                         category = transformed_value > @threshold * 3 ? 'HIGH' : 'MEDIUM'\n                         bonus_value = transformed_value > 100 ? transformed_value + 10 : transformed_value\n\n                         ProcessedItem.new(\n                           index,\n                           value,\n                           bonus_value,\n                           category,\n                           {\n                             processed: true,\n                             multiplier: 2,\n                             processor: 'enhanced'\n                           }\n                         ).tap { processed_count += 1 }\n                       elsif value > 0\n                         ProcessedItem.new(\n                           index,\n                           value,\n                           value + @threshold,\n                           'LOW',\n                           {\n                             processed: true,\n                             adjusted: true,\n                             processor: 'basic'\n                           }\n                         )\n                       else\n                         next # skip negative values\n                       end\n\n      @cache[cache_key] = processed_item\n      @processing_log << processed_item\n      results << processed_item\n    end\n\n    # Finalization logic\n    if processed_count > 0\n      average = results.sum(&:transformed_value).to_f / results.size\n      puts \"Processing complete. Average: #{format('%.2f', average)}\"\n\n      # Add processing statistics\n      results.each { |item| item.metadata[:processing_average] = average }\n    end\n\n    results\n  end\n\n  def analyze_patterns(items)\n    analysis = {}\n    category_groups = items.group_by(&:category)\n\n    # Pattern analysis logic - extractable middle chunk\n    category_groups.each do |category, category_items|\n      values = category_items.map(&:transformed_value)\n      category_analysis = {\n        count: category_items.size,\n        percentage: (category_items.size.to_f / items.size * 100),\n        avg_value: values.sum.to_f / values.size,\n        min_value: values.min,\n        max_value: values.max\n      }\n\n      # Time-based analysis\n      current_time = Time.now\n      recent_items = category_items.select { |item| current_time - item.timestamp < 60 } # last minute\n      unless recent_items.empty?\n        recent_values = recent_items.map(&:transformed_value)\n        category_analysis[:recent_count] = recent_items.size\n        category_analysis[:recent_avg] = recent_values.sum.to_f / recent_values.size\n      end\n\n      # High-value analysis\n      high_value_items = category_items.select { |item| item.transformed_value > 1000 }\n      category_analysis[:high_value_count] = high_value_items.size unless high_value_items.empty?\n\n      analysis[category] = category_analysis\n    end\n\n    analysis.merge(\n      total_items: items.size,\n      processing_time: Time.now.to_i\n    )\n  end\nend\n",
+      "end_line": 120,
+      "language": "ruby",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "class ProcessedItem\n  attr_accessor :id, :original_value, :transformed_value, :category, :timestamp, :metadata\n\n  def initialize(id, original_value, transformed_value, category, metadata = {})\n    @id = id\n    @original_value = original_value\n    @transformed_value = transformed_value\n    @category = category\n    @timestamp = Time.now\n    @metadata = metadata\n  end\nend",
@@ -262,5 +305,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nclass ProcessedItem\n  attr_accessor :id, :original_value, :transformed_value, :category, :timestamp, :metadata\n\n  def initialize(id, original_value, transformed_value, category, metadata = {})\n    @id = id\n    @original_value = original_value\n    @transformed_value = transformed_value\n    @category = category\n    @timestamp = Time.now\n    @metadata = metadata\n  end\nend\n\nclass DataProcessor\n  def initialize(threshold)\n    @threshold = threshold\n    @cache = {}\n    @processing_log = []\n  end\n\n  def process_complex_data(input)\n    results = []\n    processed_count = 0\n\n    # Main processing algorithm - extractable middle chunk\n    input.each_with_index do |value, index|\n      cache_key = \"item_#{index}_#{value}\"\n\n      if @cache.key?(cache_key)\n        results << @cache[cache_key]\n        next\n      end\n\n      processed_item = if value > @threshold\n                         transformed_value = value * 2\n                         category = transformed_value > @threshold * 3 ? 'HIGH' : 'MEDIUM'\n                         bonus_value = transformed_value > 100 ? transformed_value + 10 : transformed_value\n\n                         ProcessedItem.new(\n                           index,\n                           value,\n                           bonus_value,\n                           category,\n                           {\n                             processed: true,\n                             multiplier: 2,\n                             processor: 'enhanced'\n                           }\n                         ).tap { processed_count += 1 }\n                       elsif value > 0\n                         ProcessedItem.new(\n                           index,\n                           value,\n                           value + @threshold,\n                           'LOW',\n                           {\n                             processed: true,\n                             adjusted: true,\n                             processor: 'basic'\n                           }\n                         )\n                       else\n                         next # skip negative values\n                       end\n\n      @cache[cache_key] = processed_item\n      @processing_log << processed_item\n      results << processed_item\n    end\n\n    # Finalization logic\n    if processed_count > 0\n      average = results.sum(&:transformed_value).to_f / results.size\n      puts \"Processing complete. Average: #{format('%.2f', average)}\"\n\n      # Add processing statistics\n      results.each { |item| item.metadata[:processing_average] = average }\n    end\n\n    results\n  end\n\n  def analyze_patterns(items)\n    analysis = {}\n    category_groups = items.group_by(&:category)\n\n    # Pattern analysis logic - extractable middle chunk\n    category_groups.each do |category, category_items|\n      values = category_items.map(&:transformed_value)\n      category_analysis = {\n        count: category_items.size,\n        percentage: (category_items.size.to_f / items.size * 100),\n        avg_value: values.sum.to_f / values.size,\n        min_value: values.min,\n        max_value: values.max\n      }\n\n      # Time-based analysis\n      current_time = Time.now\n      recent_items = category_items.select { |item| current_time - item.timestamp < 60 } # last minute\n      unless recent_items.empty?\n        recent_values = recent_items.map(&:transformed_value)\n        category_analysis[:recent_count] = recent_items.size\n        category_analysis[:recent_avg] = recent_values.sum.to_f / recent_values.size\n      end\n\n      # High-value analysis\n      high_value_items = category_items.select { |item| item.transformed_value > 1000 }\n      category_analysis[:high_value_count] = high_value_items.size unless high_value_items.empty?\n\n      analysis[category] = category_analysis\n    end\n\n    analysis.merge(\n      total_items: items.size,\n      processing_time: Time.now.to_i\n    )\n  end\nend\n",
   "test_name": "test_ruby_complex_algorithm_extraction",
-  "total_chunks": 16
+  "total_chunks": 17
 }

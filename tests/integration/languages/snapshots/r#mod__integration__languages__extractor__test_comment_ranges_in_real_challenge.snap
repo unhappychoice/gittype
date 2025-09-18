@@ -5,6 +5,29 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [
+        [
+          0,
+          32
+        ],
+        [
+          99,
+          117
+        ],
+        [
+          122,
+          157
+        ]
+      ],
+      "content": "// Sample function with comments\nfn calculate_sum(a: i32, b: i32) -> i32 {\n    let result = a + b; // Add the numbers\n    /*\n     * Return the result\n     */\n    result\n}\n",
+      "end_line": 8,
+      "language": "rust",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [
         [
@@ -26,5 +49,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "// Sample function with comments\nfn calculate_sum(a: i32, b: i32) -> i32 {\n    let result = a + b; // Add the numbers\n    /*\n     * Return the result\n     */\n    result\n}\n",
   "test_name": "test_comment_ranges_in_real_challenge",
-  "total_chunks": 1
+  "total_chunks": 2
 }

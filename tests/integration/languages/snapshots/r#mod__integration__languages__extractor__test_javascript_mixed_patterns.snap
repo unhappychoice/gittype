@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nimport { fetchData } from './api.js';\n\nclass UserManager {\n    constructor(apiKey) {\n        this.apiKey = apiKey;\n        this.users = [];\n    }\n\n    async loadUsers() {\n        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }\n    }\n\n    findUser = (id) => {\n        return this.users.find(user => user.id === id);\n    };\n}\n\nfunction processUsers(users) {\n    return users.map(user => ({\n        ...user,\n        displayName: `${user.firstName} ${user.lastName}`\n    }));\n}\n\nconst filterActiveUsers = (users) => {\n    return users.filter(user => user.isActive);\n};\n\nconst userService = {\n    async createUser(userData) {\n        const response = await fetch('/api/users', {\n            method: 'POST',\n            headers: { 'Content-Type': 'application/json' },\n            body: JSON.stringify(userData)\n        });\n        return response.json();\n    }\n};\n\nexport default UserManager;\n",
+      "end_line": 50,
+      "language": "javascript",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "class UserManager {\n    constructor(apiKey) {\n        this.apiKey = apiKey;\n        this.users = [];\n    }\n\n    async loadUsers() {\n        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }\n    }\n\n    findUser = (id) => {\n        return this.users.find(user => user.id === id);\n    };\n}",
@@ -137,5 +147,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nimport { fetchData } from './api.js';\n\nclass UserManager {\n    constructor(apiKey) {\n        this.apiKey = apiKey;\n        this.users = [];\n    }\n\n    async loadUsers() {\n        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }\n    }\n\n    findUser = (id) => {\n        return this.users.find(user => user.id === id);\n    };\n}\n\nfunction processUsers(users) {\n    return users.map(user => ({\n        ...user,\n        displayName: `${user.firstName} ${user.lastName}`\n    }));\n}\n\nconst filterActiveUsers = (users) => {\n    return users.filter(user => user.isActive);\n};\n\nconst userService = {\n    async createUser(userData) {\n        const response = await fetch('/api/users', {\n            method: 'POST',\n            headers: { 'Content-Type': 'application/json' },\n            body: JSON.stringify(userData)\n        });\n        return response.json();\n    }\n};\n\nexport default UserManager;\n",
   "test_name": "test_javascript_mixed_patterns",
-  "total_chunks": 13
+  "total_chunks": 14
 }

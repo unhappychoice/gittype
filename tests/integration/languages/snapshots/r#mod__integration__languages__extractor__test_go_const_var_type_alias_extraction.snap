@@ -5,6 +5,37 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [
+        [
+          31,
+          50
+        ],
+        [
+          128,
+          143
+        ],
+        [
+          166,
+          183
+        ],
+        [
+          274,
+          287
+        ],
+        [
+          311,
+          330
+        ]
+      ],
+      "content": "package main\n\nimport \"errors\"\n\n// Const block test\nconst (\n    StatusOK = 200\n    StatusNotFound = 404\n    StatusError = 500\n)\n\n// Single const\nconst MaxRetries = 3\n\n// Var block test\nvar (\n    ErrNotFound = errors.New(\"not found\")\n    ErrTimeout = errors.New(\"timeout\")\n)\n\n// Single var\nvar GlobalCounter int\n\n// Type alias tests\ntype UserID int64\ntype Handler func(string, string)\ntype Point struct {\n    X, Y int\n}\n\nfunc main() {}\n",
+      "end_line": 31,
+      "language": "go",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Const",
       "comment_ranges": [],
       "content": "const (\n    StatusOK = 200\n    StatusNotFound = 404\n    StatusError = 500\n)",
@@ -87,5 +118,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "package main\n\nimport \"errors\"\n\n// Const block test\nconst (\n    StatusOK = 200\n    StatusNotFound = 404\n    StatusError = 500\n)\n\n// Single const\nconst MaxRetries = 3\n\n// Var block test\nvar (\n    ErrNotFound = errors.New(\"not found\")\n    ErrTimeout = errors.New(\"timeout\")\n)\n\n// Single var\nvar GlobalCounter int\n\n// Type alias tests\ntype UserID int64\ntype Handler func(string, string)\ntype Point struct {\n    X, Y int\n}\n\nfunc main() {}\n",
   "test_name": "test_go_const_var_type_alias_extraction",
-  "total_chunks": 8
+  "total_chunks": 9
 }

@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nfunc greet(name: String) -> String {\n    return \"Hello, \\(name)!\"\n}\n\nfunc calculateSum(a: Int, b: Int) -> Int {\n    return a + b\n}\n\nfunc processData(items: [String]) {\n    for item in items {\n        print(item)\n    }\n}\n",
+      "end_line": 14,
+      "language": "swift",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [],
       "content": "func greet(name: String) -> String {\n    return \"Hello, \\(name)!\"\n}",
@@ -57,5 +67,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nfunc greet(name: String) -> String {\n    return \"Hello, \\(name)!\"\n}\n\nfunc calculateSum(a: Int, b: Int) -> Int {\n    return a + b\n}\n\nfunc processData(items: [String]) {\n    for item in items {\n        print(item)\n    }\n}\n",
   "test_name": "test_swift_function_extraction",
-  "total_chunks": 5
+  "total_chunks": 6
 }

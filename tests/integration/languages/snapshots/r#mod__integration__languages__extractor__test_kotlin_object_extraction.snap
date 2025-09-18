@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nobject DatabaseHelper {\n    const val DB_NAME = \"app.db\"\n\n    fun connect(): String {\n        return \"Connected to $DB_NAME\"\n    }\n\n    fun disconnect() {\n        println(\"Disconnected from database\")\n    }\n}\n\nobject Utils {\n    fun formatName(name: String): String {\n        return name.trim().lowercase()\n    }\n}\n",
+      "end_line": 18,
+      "language": "kotlin",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "object DatabaseHelper {\n    const val DB_NAME = \"app.db\"\n\n    fun connect(): String {\n        return \"Connected to $DB_NAME\"\n    }\n\n    fun disconnect() {\n        println(\"Disconnected from database\")\n    }\n}",
@@ -67,5 +77,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nobject DatabaseHelper {\n    const val DB_NAME = \"app.db\"\n\n    fun connect(): String {\n        return \"Connected to $DB_NAME\"\n    }\n\n    fun disconnect() {\n        println(\"Disconnected from database\")\n    }\n}\n\nobject Utils {\n    fun formatName(name: String): String {\n        return name.trim().lowercase()\n    }\n}\n",
   "test_name": "test_kotlin_object_extraction",
-  "total_chunks": 6
+  "total_chunks": 7
 }

@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\ndata Color = Red | Green | Blue\n\nshowColor :: Color -> String\nshowColor Red = \"red\"\nshowColor Green = \"green\"\nshowColor Blue = \"blue\"\n\ndata Maybe' a = Nothing' | Just' a\n\ninstance Functor Maybe' where\n    fmap _ Nothing' = Nothing'\n    fmap f (Just' x) = Just' (f x)\n",
+      "end_line": 13,
+      "language": "haskell",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "data Color = Red | Green | Blue",
@@ -97,5 +107,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\ndata Color = Red | Green | Blue\n\nshowColor :: Color -> String\nshowColor Red = \"red\"\nshowColor Green = \"green\"\nshowColor Blue = \"blue\"\n\ndata Maybe' a = Nothing' | Just' a\n\ninstance Functor Maybe' where\n    fmap _ Nothing' = Nothing'\n    fmap f (Just' x) = Just' (f x)\n",
   "test_name": "test_haskell_converter",
-  "total_chunks": 9
+  "total_chunks": 10
 }

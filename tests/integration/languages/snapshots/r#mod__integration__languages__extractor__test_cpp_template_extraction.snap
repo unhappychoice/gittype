@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\ntemplate<typename T>\nclass Vector {\nprivate:\n    T* data;\n    size_t size;\n    size_t capacity;\n\npublic:\n    Vector() : data(nullptr), size(0), capacity(0) {}\n\n    void push_back(const T& value) {\n        if (size >= capacity) {\n            reserve(capacity == 0 ? 1 : capacity * 2);\n        }\n        data[size++] = value;\n    }\n\n    T& operator[](size_t index) {\n        return data[index];\n    }\n\nprivate:\n    void reserve(size_t new_capacity) {\n        T* new_data = new T[new_capacity];\n        for (size_t i = 0; i < size; ++i) {\n            new_data[i] = data[i];\n        }\n        delete[] data;\n        data = new_data;\n        capacity = new_capacity;\n    }\n};\n\ntemplate<typename T>\nT max_value(const T& a, const T& b) {\n    return (a > b) ? a : b;\n}\n\nint main() {\n    Vector<int> numbers;\n    numbers.push_back(1);\n    numbers.push_back(2);\n\n    int max_num = max_value(10, 20);\n    return 0;\n}\n",
+      "end_line": 47,
+      "language": "cpp",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Struct",
       "comment_ranges": [],
       "content": "template<typename T>\nclass Vector {\nprivate:\n    T* data;\n    size_t size;\n    size_t capacity;\n\npublic:\n    Vector() : data(nullptr), size(0), capacity(0) {}\n\n    void push_back(const T& value) {\n        if (size >= capacity) {\n            reserve(capacity == 0 ? 1 : capacity * 2);\n        }\n        data[size++] = value;\n    }\n\n    T& operator[](size_t index) {\n        return data[index];\n    }\n\nprivate:\n    void reserve(size_t new_capacity) {\n        T* new_data = new T[new_capacity];\n        for (size_t i = 0; i < size; ++i) {\n            new_data[i] = data[i];\n        }\n        delete[] data;\n        data = new_data;\n        capacity = new_capacity;\n    }\n};",
@@ -137,5 +147,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\ntemplate<typename T>\nclass Vector {\nprivate:\n    T* data;\n    size_t size;\n    size_t capacity;\n\npublic:\n    Vector() : data(nullptr), size(0), capacity(0) {}\n\n    void push_back(const T& value) {\n        if (size >= capacity) {\n            reserve(capacity == 0 ? 1 : capacity * 2);\n        }\n        data[size++] = value;\n    }\n\n    T& operator[](size_t index) {\n        return data[index];\n    }\n\nprivate:\n    void reserve(size_t new_capacity) {\n        T* new_data = new T[new_capacity];\n        for (size_t i = 0; i < size; ++i) {\n            new_data[i] = data[i];\n        }\n        delete[] data;\n        data = new_data;\n        capacity = new_capacity;\n    }\n};\n\ntemplate<typename T>\nT max_value(const T& a, const T& b) {\n    return (a > b) ? a : b;\n}\n\nint main() {\n    Vector<int> numbers;\n    numbers.push_back(1);\n    numbers.push_back(2);\n\n    int max_num = max_value(10, 20);\n    return 0;\n}\n",
   "test_name": "test_cpp_template_extraction",
-  "total_chunks": 13
+  "total_chunks": 14
 }

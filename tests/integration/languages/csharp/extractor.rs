@@ -32,7 +32,7 @@ namespace MyApplication.Services
     }
 }
 "#,
-    total_chunks: 8,
+    total_chunks: 9,
     chunk_counts: {
         Class: 1,
         CodeBlock: 3,
@@ -65,7 +65,7 @@ namespace MyApplication.Contracts
     }
 }
 "#,
-    total_chunks: 8,
+    total_chunks: 9,
     chunk_counts: {
         Interface: 2,
         Method: 5,
@@ -113,7 +113,7 @@ namespace MyApplication.Models
     }
 }
 "#,
-    total_chunks: 10,
+    total_chunks: 11,
     chunk_counts: {
         CodeBlock: 2,
         Enum: 2,
@@ -153,7 +153,7 @@ namespace MyApplication.Models
     }
 }
 "#,
-    total_chunks: 9,
+    total_chunks: 10,
     chunk_counts: {
         Class: 1,
         CodeBlock: 1,
@@ -190,7 +190,7 @@ namespace MyApplication.Core.Models
     }
 }
 "#,
-    total_chunks: 8,
+    total_chunks: 9,
     chunk_counts: {
         Class: 2,
         CodeBlock: 1,
@@ -349,7 +349,7 @@ namespace DataProcessing
     }
 }
 "#,
-    total_chunks: 35,
+    total_chunks: 36,
     chunk_counts: {
         Class: 2,
         Method: 3,

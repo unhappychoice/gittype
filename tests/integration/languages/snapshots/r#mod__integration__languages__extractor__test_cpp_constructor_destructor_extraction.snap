@@ -5,6 +5,37 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [
+        [
+          72,
+          94
+        ],
+        [
+          143,
+          171
+        ],
+        [
+          248,
+          267
+        ],
+        [
+          457,
+          470
+        ],
+        [
+          523,
+          545
+        ]
+      ],
+      "content": "\nclass Resource {\nprivate:\n    int* data;\n    size_t size;\n\npublic:\n    // Default constructor\n    Resource() : data(nullptr), size(0) {}\n\n    // Parameterized constructor\n    Resource(size_t s) : size(s) {\n        data = new int[size];\n    }\n\n    // Copy constructor\n    Resource(const Resource& other) : size(other.size) {\n        data = new int[size];\n        for (size_t i = 0; i < size; ++i) {\n            data[i] = other.data[i];\n        }\n    }\n\n    // Destructor\n    ~Resource() {\n        delete[] data;\n    }\n\n    // Assignment operator\n    Resource& operator=(const Resource& other) {\n        if (this != &other) {\n            delete[] data;\n            size = other.size;\n            data = new int[size];\n            for (size_t i = 0; i < size; ++i) {\n                data[i] = other.data[i];\n            }\n        }\n        return *this;\n    }\n\n    int& operator[](size_t index) {\n        return data[index];\n    }\n};\n\nint main() {\n    Resource r1(10);\n    Resource r2 = r1;\n    Resource r3;\n    r3 = r2;\n    return 0;\n}\n",
+      "end_line": 53,
+      "language": "cpp",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Struct",
       "comment_ranges": [
         [
@@ -178,5 +209,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nclass Resource {\nprivate:\n    int* data;\n    size_t size;\n\npublic:\n    // Default constructor\n    Resource() : data(nullptr), size(0) {}\n\n    // Parameterized constructor\n    Resource(size_t s) : size(s) {\n        data = new int[size];\n    }\n\n    // Copy constructor\n    Resource(const Resource& other) : size(other.size) {\n        data = new int[size];\n        for (size_t i = 0; i < size; ++i) {\n            data[i] = other.data[i];\n        }\n    }\n\n    // Destructor\n    ~Resource() {\n        delete[] data;\n    }\n\n    // Assignment operator\n    Resource& operator=(const Resource& other) {\n        if (this != &other) {\n            delete[] data;\n            size = other.size;\n            data = new int[size];\n            for (size_t i = 0; i < size; ++i) {\n                data[i] = other.data[i];\n            }\n        }\n        return *this;\n    }\n\n    int& operator[](size_t index) {\n        return data[index];\n    }\n};\n\nint main() {\n    Resource r1(10);\n    Resource r2 = r1;\n    Resource r3;\n    r3 = r2;\n    return 0;\n}\n",
   "test_name": "test_cpp_constructor_destructor_extraction",
-  "total_chunks": 15
+  "total_chunks": 16
 }

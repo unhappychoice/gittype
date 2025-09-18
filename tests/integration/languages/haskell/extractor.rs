@@ -15,7 +15,7 @@ factorial :: Int -> Int
 factorial 0 = 1
 factorial n = n * factorial (n - 1)
 "#,
-    total_chunks: 7,
+    total_chunks: 8,
     chunk_counts: {
         Function: 7,
     }
@@ -32,7 +32,7 @@ data Maybe a = Nothing | Just a
 
 data Tree a = Leaf a | Node (Tree a) (Tree a)
 "#,
-    total_chunks: 3,
+    total_chunks: 4,
     chunk_counts: {
         Class: 3,
     }
@@ -55,7 +55,7 @@ instance Eq Bool where
   False == False = True
   _ == _ = False
 "#,
-    total_chunks: 9,
+    total_chunks: 10,
     chunk_counts: {
         Function: 9,
     }
@@ -81,7 +81,7 @@ multiply x y = x * y
 square :: Num a => a -> a
 square x = x * x
 "#,
-    total_chunks: 7,
+    total_chunks: 8,
     chunk_counts: {
         Function: 6,
         Module: 1,
@@ -105,7 +105,7 @@ map' :: (a -> b) -> [a] -> [b]
 map' _ [] = []
 map' f (x:xs) = f x : map' f xs
 "#,
-    total_chunks: 9,
+    total_chunks: 10,
     chunk_counts: {
         Function: 9,
     }
@@ -146,7 +146,7 @@ fibonacci 0 = 0
 fibonacci 1 = 1
 fibonacci n = fibonacci (n-1) + fibonacci (n-2)
 "#,
-    total_chunks: 17,
+    total_chunks: 18,
     chunk_counts: {
         Class: 2,
         Function: 12,
@@ -172,7 +172,7 @@ instance Functor Maybe' where
     fmap _ Nothing' = Nothing'
     fmap f (Just' x) = Just' (f x)
 "#,
-    total_chunks: 9,
+    total_chunks: 10,
     chunk_counts: {
         Class: 2,
         Function: 7,
@@ -276,7 +276,7 @@ filterAndSort items targetCategory =
 batchProcess :: [[Int]] -> Int -> [[ProcessedItem]]
 batchProcess batches threshold = map (\batch -> processComplexData batch threshold) batches
 "#,
-    total_chunks: 56,
+    total_chunks: 57,
     chunk_counts: {
         Function: 38,
         Class: 1,

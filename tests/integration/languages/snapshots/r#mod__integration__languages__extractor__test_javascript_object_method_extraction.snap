@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nconst utils = {\n    formatDate: (date) => {\n        return date.toLocaleDateString();\n    },\n\n    calculateAge: function(birthDate) {\n        const today = new Date();\n        return today.getFullYear() - birthDate.getFullYear();\n    }\n};\n\nconst eventHandlers = {\n    handleClick: (event) => {\n        console.log('Button clicked:', event.target);\n    },\n\n    handleSubmit: async function(formData) {\n        try {\n            const response = await fetch('/api/submit', {\n                method: 'POST',\n                body: formData\n            });\n            return response.json();\n        } catch (error) {\n            console.error('Submit failed:', error);\n        }\n    }\n};\n",
+      "end_line": 29,
+      "language": "javascript",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Lambda",
       "comment_ranges": [],
       "content": "    formatDate: (date) => {\n        return date.toLocaleDateString();\n    }",
@@ -87,5 +97,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nconst utils = {\n    formatDate: (date) => {\n        return date.toLocaleDateString();\n    },\n\n    calculateAge: function(birthDate) {\n        const today = new Date();\n        return today.getFullYear() - birthDate.getFullYear();\n    }\n};\n\nconst eventHandlers = {\n    handleClick: (event) => {\n        console.log('Button clicked:', event.target);\n    },\n\n    handleSubmit: async function(formData) {\n        try {\n            const response = await fetch('/api/submit', {\n                method: 'POST',\n                body: formData\n            });\n            return response.json();\n        } catch (error) {\n            console.error('Submit failed:', error);\n        }\n    }\n};\n",
   "test_name": "test_javascript_object_method_extraction",
-  "total_chunks": 8
+  "total_chunks": 9
 }

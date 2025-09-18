@@ -15,6 +15,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "mod calculator {\n    pub struct Calculator;\n\n    impl Calculator {\n        pub fn new() -> Self { Self }\n\n        pub fn complex_calculation(&self, values: &[i32]) -> i32 {\n            values.iter().sum()\n        }\n    }\n\n    impl Default for Calculator {\n        fn default() -> Self {\n            Self::new()\n        }\n    }\n\n    mod advanced {\n        use super::Calculator;\n\n        impl Calculator {\n            pub fn advanced_method(&self) -> String {\n                \"advanced\".to_string()\n            }\n        }\n    }\n}\n",
+      "end_line": 27,
+      "language": "rust",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Struct",
       "comment_ranges": [],
       "content": "    pub struct Calculator;",
@@ -107,5 +117,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "mod calculator {\n    pub struct Calculator;\n\n    impl Calculator {\n        pub fn new() -> Self { Self }\n\n        pub fn complex_calculation(&self, values: &[i32]) -> i32 {\n            values.iter().sum()\n        }\n    }\n\n    impl Default for Calculator {\n        fn default() -> Self {\n            Self::new()\n        }\n    }\n\n    mod advanced {\n        use super::Calculator;\n\n        impl Calculator {\n            pub fn advanced_method(&self) -> String {\n                \"advanced\".to_string()\n            }\n        }\n    }\n}\n",
   "test_name": "test_nested_and_oneline_structures",
-  "total_chunks": 10
+  "total_chunks": 11
 }

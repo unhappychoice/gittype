@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\n#include <iostream>\n\nint main() {\n    std::cout << \"Hello, world!\" << std::endl;\n    return 0;\n}\n\nint add(int a, int b) {\n    return a + b;\n}\n\nvoid print_number(int num) {\n    std::cout << num << std::endl;\n}\n\ndouble calculate_area(double radius) {\n    return 3.14159 * radius * radius;\n}\n",
+      "end_line": 19,
+      "language": "cpp",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [],
       "content": "int main() {\n    std::cout << \"Hello, world!\" << std::endl;\n    return 0;\n}",
@@ -47,5 +57,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\n#include <iostream>\n\nint main() {\n    std::cout << \"Hello, world!\" << std::endl;\n    return 0;\n}\n\nint add(int a, int b) {\n    return a + b;\n}\n\nvoid print_number(int num) {\n    std::cout << num << std::endl;\n}\n\ndouble calculate_area(double radius) {\n    return 3.14159 * radius * radius;\n}\n",
   "test_name": "test_cpp_function_extraction",
-  "total_chunks": 4
+  "total_chunks": 5
 }

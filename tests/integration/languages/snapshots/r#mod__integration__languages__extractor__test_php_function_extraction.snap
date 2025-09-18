@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "<?php\n\nfunction hello_world() {\n    echo \"Hello, world!\";\n}\n\nfunction calculate_sum($a, $b) {\n    return $a + $b;\n}\n\nfunction fibonacci($n) {\n    if ($n <= 1) {\n        return $n;\n    }\n    return fibonacci($n - 1) + fibonacci($n - 2);\n}\n\n?>",
+      "end_line": 18,
+      "language": "php",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [],
       "content": "function hello_world() {\n    echo \"Hello, world!\";\n}",
@@ -47,5 +57,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "<?php\n\nfunction hello_world() {\n    echo \"Hello, world!\";\n}\n\nfunction calculate_sum($a, $b) {\n    return $a + $b;\n}\n\nfunction fibonacci($n) {\n    if ($n <= 1) {\n        return $n;\n    }\n    return fibonacci($n - 1) + fibonacci($n - 2);\n}\n\n?>",
   "test_name": "test_php_function_extraction",
-  "total_chunks": 4
+  "total_chunks": 5
 }

@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nexport function validateEmail(email) {\n    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n    return emailRegex.test(email);\n}\n\nexport class ApiClient {\n    constructor(baseUrl) {\n        this.baseUrl = baseUrl;\n    }\n\n    async get(endpoint) {\n        const response = await fetch(`${this.baseUrl}${endpoint}`);\n        return response.json();\n    }\n}\n\nexport const config = {\n    apiUrl: process.env.API_URL || 'http://localhost:3000',\n    timeout: 5000\n};\n\nexport default class UserService {\n    constructor(apiClient) {\n        this.apiClient = apiClient;\n    }\n\n    async getUser(id) {\n        return this.apiClient.get(`/users/${id}`);\n    }\n}\n",
+      "end_line": 31,
+      "language": "javascript",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [],
       "content": "export function validateEmail(email) {\n    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n    return emailRegex.test(email);\n}",
@@ -77,5 +87,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nexport function validateEmail(email) {\n    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n    return emailRegex.test(email);\n}\n\nexport class ApiClient {\n    constructor(baseUrl) {\n        this.baseUrl = baseUrl;\n    }\n\n    async get(endpoint) {\n        const response = await fetch(`${this.baseUrl}${endpoint}`);\n        return response.json();\n    }\n}\n\nexport const config = {\n    apiUrl: process.env.API_URL || 'http://localhost:3000',\n    timeout: 5000\n};\n\nexport default class UserService {\n    constructor(apiClient) {\n        this.apiClient = apiClient;\n    }\n\n    async getUser(id) {\n        return this.apiClient.get(`/users/${id}`);\n    }\n}\n",
   "test_name": "test_javascript_export_extraction",
-  "total_chunks": 7
+  "total_chunks": 8
 }

@@ -5,6 +5,21 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [
+        [
+          367,
+          419
+        ]
+      ],
+      "content": "\nclass DataAnalyzer:\n    def __init__(self, dataset):\n        self.dataset = dataset\n        self.cache = {}\n        self.stats = {\n            'processed': 0,\n            'errors': 0,\n            'cache_hits': 0\n        }\n\n    def analyze_patterns(self, pattern_type='default'):\n        \"\"\"Method with complex middle implementation\"\"\"\n        patterns = []\n\n        # Pattern detection logic - extractable middle chunk\n        for i, data_point in enumerate(self.dataset):\n            try:\n                if pattern_type == 'numeric':\n                    if isinstance(data_point, (int, float)):\n                        pattern = {\n                            'type': 'number',\n                            'value': data_point,\n                            'position': i,\n                            'quartile': self._get_quartile(data_point)\n                        }\n                        patterns.append(pattern)\n                elif pattern_type == 'sequence':\n                    if i > 0:\n                        prev_value = self.dataset[i-1]\n                        if data_point > prev_value:\n                            trend = 'increasing'\n                        elif data_point < prev_value:\n                            trend = 'decreasing'\n                        else:\n                            trend = 'stable'\n\n                        pattern = {\n                            'type': 'sequence',\n                            'trend': trend,\n                            'change': data_point - prev_value,\n                            'position': i\n                        }\n                        patterns.append(pattern)\n\n                self.stats['processed'] += 1\n            except Exception as e:\n                self.stats['errors'] += 1\n                continue\n\n        return patterns\n\n    def _get_quartile(self, value):\n        sorted_data = sorted([x for x in self.dataset if isinstance(x, (int, float))])\n        if not sorted_data:\n            return 0\n\n        q1 = sorted_data[len(sorted_data) // 4]\n        q3 = sorted_data[3 * len(sorted_data) // 4]\n\n        if value <= q1:\n            return 1\n        elif value <= q3:\n            return 2\n        else:\n            return 3\n",
+      "end_line": 66,
+      "language": "python",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [
         [
@@ -137,5 +152,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nclass DataAnalyzer:\n    def __init__(self, dataset):\n        self.dataset = dataset\n        self.cache = {}\n        self.stats = {\n            'processed': 0,\n            'errors': 0,\n            'cache_hits': 0\n        }\n\n    def analyze_patterns(self, pattern_type='default'):\n        \"\"\"Method with complex middle implementation\"\"\"\n        patterns = []\n\n        # Pattern detection logic - extractable middle chunk\n        for i, data_point in enumerate(self.dataset):\n            try:\n                if pattern_type == 'numeric':\n                    if isinstance(data_point, (int, float)):\n                        pattern = {\n                            'type': 'number',\n                            'value': data_point,\n                            'position': i,\n                            'quartile': self._get_quartile(data_point)\n                        }\n                        patterns.append(pattern)\n                elif pattern_type == 'sequence':\n                    if i > 0:\n                        prev_value = self.dataset[i-1]\n                        if data_point > prev_value:\n                            trend = 'increasing'\n                        elif data_point < prev_value:\n                            trend = 'decreasing'\n                        else:\n                            trend = 'stable'\n\n                        pattern = {\n                            'type': 'sequence',\n                            'trend': trend,\n                            'change': data_point - prev_value,\n                            'position': i\n                        }\n                        patterns.append(pattern)\n\n                self.stats['processed'] += 1\n            except Exception as e:\n                self.stats['errors'] += 1\n                continue\n\n        return patterns\n\n    def _get_quartile(self, value):\n        sorted_data = sorted([x for x in self.dataset if isinstance(x, (int, float))])\n        if not sorted_data:\n            return 0\n\n        q1 = sorted_data[len(sorted_data) // 4]\n        q3 = sorted_data[3 * len(sorted_data) // 4]\n\n        if value <= q1:\n            return 1\n        elif value <= q3:\n            return 2\n        else:\n            return 3\n",
   "test_name": "test_python_class_extraction_new",
-  "total_chunks": 12
+  "total_chunks": 13
 }

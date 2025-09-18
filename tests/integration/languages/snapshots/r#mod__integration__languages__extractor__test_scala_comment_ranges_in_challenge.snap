@@ -5,6 +5,29 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [
+        [
+          0,
+          31
+        ],
+        [
+          97,
+          115
+        ],
+        [
+          120,
+          155
+        ]
+      ],
+      "content": "// Scala function with comments\ndef calculateSum(a: Int, b: Int): Int = {\n    val result = a + b // Add the numbers\n    /*\n     * Return the result\n     */\n    result\n}\n",
+      "end_line": 8,
+      "language": "scala",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [
         [
@@ -26,5 +49,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "// Scala function with comments\ndef calculateSum(a: Int, b: Int): Int = {\n    val result = a + b // Add the numbers\n    /*\n     * Return the result\n     */\n    result\n}\n",
   "test_name": "test_scala_comment_ranges_in_challenge",
-  "total_chunks": 1
+  "total_chunks": 2
 }

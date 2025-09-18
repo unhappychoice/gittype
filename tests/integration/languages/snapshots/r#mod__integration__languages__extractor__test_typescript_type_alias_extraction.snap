@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\ntype Status = 'pending' | 'completed' | 'failed';\ntype UserId = number;\ntype ApiResponse<T> = {\n    data: T;\n    error?: string;\n};\n",
+      "end_line": 7,
+      "language": "typescript",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "TypeAlias",
       "comment_ranges": [],
       "content": "type Status = 'pending' | 'completed' | 'failed';",
@@ -37,5 +47,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\ntype Status = 'pending' | 'completed' | 'failed';\ntype UserId = number;\ntype ApiResponse<T> = {\n    data: T;\n    error?: string;\n};\n",
   "test_name": "test_typescript_type_alias_extraction",
-  "total_chunks": 3
+  "total_chunks": 4
 }

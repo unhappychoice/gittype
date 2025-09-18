@@ -5,6 +5,73 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [
+        [
+          479,
+          534
+        ],
+        [
+          1077,
+          1117
+        ],
+        [
+          1248,
+          1256
+        ],
+        [
+          1443,
+          1466
+        ],
+        [
+          1652,
+          1673
+        ],
+        [
+          1876,
+          1910
+        ],
+        [
+          2189,
+          2241
+        ],
+        [
+          2637,
+          2668
+        ],
+        [
+          2804,
+          2845
+        ],
+        [
+          3403,
+          3448
+        ],
+        [
+          3653,
+          3708
+        ],
+        [
+          3805,
+          3843
+        ],
+        [
+          3968,
+          4009
+        ],
+        [
+          4308,
+          4342
+        ]
+      ],
+      "content": "\n#include <vector>\n#include <map>\n#include <string>\n#include <algorithm>\n#include <memory>\n\ntemplate<typename T>\nclass DataProcessor {\nprivate:\n    std::map<std::string, T> cache;\n    std::vector<T> processing_log;\n    int threshold;\n\npublic:\n    DataProcessor(int thresh) : threshold(thresh) {}\n\n    std::vector<T> processComplexData(const std::vector<T>& input) {\n        std::vector<T> results;\n        results.reserve(input.size());\n        int processed_count = 0;\n\n        // Main processing algorithm - extractable middle chunk\n        for (size_t i = 0; i < input.size(); ++i) {\n            const T& value = input[i];\n            std::string cache_key = \"item_\" + std::to_string(i);\n\n            auto cache_it = cache.find(cache_key);\n            if (cache_it != cache.end()) {\n                results.push_back(cache_it->second);\n                continue;\n            }\n\n            T processed_value;\n            if (value > static_cast<T>(threshold)) {\n                processed_value = value * static_cast<T>(2);\n                processed_count++;\n\n                // Additional processing for high values\n                if (processed_value > static_cast<T>(threshold * 3)) {\n                    processed_value += static_cast<T>(10); // bonus\n                }\n            } else if (value > static_cast<T>(0)) {\n                processed_value = value + static_cast<T>(threshold);\n            } else {\n                continue; // skip negative values\n            }\n\n            cache[cache_key] = processed_value;\n            processing_log.push_back(processed_value);\n            results.push_back(processed_value);\n        }\n\n        // Finalization logic\n        if (processed_count > 0) {\n            T total = std::accumulate(results.begin(), results.end(), static_cast<T>(0));\n            T average = total / static_cast<T>(results.size());\n\n            // Add average to log for analysis\n            processing_log.push_back(average);\n        }\n\n        return results;\n    }\n\n    std::map<std::string, int> analyzePatterns(const std::vector<T>& data) {\n        std::map<std::string, int> analysis;\n        std::map<std::string, std::vector<T>> categories;\n\n        // Pattern analysis logic - extractable middle chunk\n        for (const auto& item : data) {\n            std::string category;\n\n            if (item > static_cast<T>(threshold * 2)) {\n                category = \"HIGH\";\n            } else if (item > static_cast<T>(threshold)) {\n                category = \"MEDIUM\";\n            } else {\n                category = \"LOW\";\n            }\n\n            categories[category].push_back(item);\n\n            // Additional pattern detection\n            if (item > static_cast<T>(1000)) {\n                categories[\"PREMIUM\"].push_back(item);\n            }\n        }\n\n        // Calculate statistics for each category\n        for (const auto& [cat_name, cat_data] : categories) {\n            analysis[cat_name + \"_count\"] = static_cast<int>(cat_data.size());\n\n            if (!cat_data.empty()) {\n                T sum = std::accumulate(cat_data.begin(), cat_data.end(), static_cast<T>(0));\n                analysis[cat_name + \"_average\"] = static_cast<int>(sum / static_cast<T>(cat_data.size()));\n                analysis[cat_name + \"_max\"] = static_cast<int>(*std::max_element(cat_data.begin(), cat_data.end()));\n            }\n        }\n\n        return analysis;\n    }\n};\n\n// Specialized function for string processing\nclass StringProcessor {\npublic:\n    static std::vector<std::string> processTextData(const std::vector<std::string>& input, const std::string& pattern) {\n        std::vector<std::string> results;\n\n        // Text processing algorithm - extractable middle chunk\n        for (const auto& text : input) {\n            std::string processed = text;\n\n            // Pattern matching and transformation\n            size_t pos = 0;\n            while ((pos = processed.find(pattern, pos)) != std::string::npos) {\n                // Replace pattern with uppercase version\n                std::string replacement = pattern;\n                std::transform(replacement.begin(), replacement.end(), replacement.begin(), ::toupper);\n                processed.replace(pos, pattern.length(), replacement);\n                pos += replacement.length();\n            }\n\n            // Additional text transformations\n            if (processed.length() > 50) {\n                processed = processed.substr(0, 47) + \"...\";\n            }\n\n            if (!processed.empty()) {\n                results.push_back(processed);\n            }\n        }\n\n        return results;\n    }\n};\n",
+      "end_line": 137,
+      "language": "cpp",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Struct",
       "comment_ranges": [
         [
@@ -621,5 +688,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\n#include <vector>\n#include <map>\n#include <string>\n#include <algorithm>\n#include <memory>\n\ntemplate<typename T>\nclass DataProcessor {\nprivate:\n    std::map<std::string, T> cache;\n    std::vector<T> processing_log;\n    int threshold;\n\npublic:\n    DataProcessor(int thresh) : threshold(thresh) {}\n\n    std::vector<T> processComplexData(const std::vector<T>& input) {\n        std::vector<T> results;\n        results.reserve(input.size());\n        int processed_count = 0;\n\n        // Main processing algorithm - extractable middle chunk\n        for (size_t i = 0; i < input.size(); ++i) {\n            const T& value = input[i];\n            std::string cache_key = \"item_\" + std::to_string(i);\n\n            auto cache_it = cache.find(cache_key);\n            if (cache_it != cache.end()) {\n                results.push_back(cache_it->second);\n                continue;\n            }\n\n            T processed_value;\n            if (value > static_cast<T>(threshold)) {\n                processed_value = value * static_cast<T>(2);\n                processed_count++;\n\n                // Additional processing for high values\n                if (processed_value > static_cast<T>(threshold * 3)) {\n                    processed_value += static_cast<T>(10); // bonus\n                }\n            } else if (value > static_cast<T>(0)) {\n                processed_value = value + static_cast<T>(threshold);\n            } else {\n                continue; // skip negative values\n            }\n\n            cache[cache_key] = processed_value;\n            processing_log.push_back(processed_value);\n            results.push_back(processed_value);\n        }\n\n        // Finalization logic\n        if (processed_count > 0) {\n            T total = std::accumulate(results.begin(), results.end(), static_cast<T>(0));\n            T average = total / static_cast<T>(results.size());\n\n            // Add average to log for analysis\n            processing_log.push_back(average);\n        }\n\n        return results;\n    }\n\n    std::map<std::string, int> analyzePatterns(const std::vector<T>& data) {\n        std::map<std::string, int> analysis;\n        std::map<std::string, std::vector<T>> categories;\n\n        // Pattern analysis logic - extractable middle chunk\n        for (const auto& item : data) {\n            std::string category;\n\n            if (item > static_cast<T>(threshold * 2)) {\n                category = \"HIGH\";\n            } else if (item > static_cast<T>(threshold)) {\n                category = \"MEDIUM\";\n            } else {\n                category = \"LOW\";\n            }\n\n            categories[category].push_back(item);\n\n            // Additional pattern detection\n            if (item > static_cast<T>(1000)) {\n                categories[\"PREMIUM\"].push_back(item);\n            }\n        }\n\n        // Calculate statistics for each category\n        for (const auto& [cat_name, cat_data] : categories) {\n            analysis[cat_name + \"_count\"] = static_cast<int>(cat_data.size());\n\n            if (!cat_data.empty()) {\n                T sum = std::accumulate(cat_data.begin(), cat_data.end(), static_cast<T>(0));\n                analysis[cat_name + \"_average\"] = static_cast<int>(sum / static_cast<T>(cat_data.size()));\n                analysis[cat_name + \"_max\"] = static_cast<int>(*std::max_element(cat_data.begin(), cat_data.end()));\n            }\n        }\n\n        return analysis;\n    }\n};\n\n// Specialized function for string processing\nclass StringProcessor {\npublic:\n    static std::vector<std::string> processTextData(const std::vector<std::string>& input, const std::string& pattern) {\n        std::vector<std::string> results;\n\n        // Text processing algorithm - extractable middle chunk\n        for (const auto& text : input) {\n            std::string processed = text;\n\n            // Pattern matching and transformation\n            size_t pos = 0;\n            while ((pos = processed.find(pattern, pos)) != std::string::npos) {\n                // Replace pattern with uppercase version\n                std::string replacement = pattern;\n                std::transform(replacement.begin(), replacement.end(), replacement.begin(), ::toupper);\n                processed.replace(pos, pattern.length(), replacement);\n                pos += replacement.length();\n            }\n\n            // Additional text transformations\n            if (processed.length() > 50) {\n                processed = processed.substr(0, 47) + \"...\";\n            }\n\n            if (!processed.empty()) {\n                results.push_back(processed);\n            }\n        }\n\n        return results;\n    }\n};\n",
   "test_name": "test_cpp_complex_algorithm_extraction",
-  "total_chunks": 39
+  "total_chunks": 40
 }

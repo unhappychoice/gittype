@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nnamespace Utils {\n    export function formatDate(date: Date): string {\n        return date.toISOString();\n    }\n\n    export function calculateAge(birthDate: Date): number {\n        const today = new Date();\n        return today.getFullYear() - birthDate.getFullYear();\n    }\n}\n\nnamespace Api {\n    export interface Response<T> {\n        data: T;\n        status: number;\n    }\n}\n",
+      "end_line": 18,
+      "language": "typescript",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Module",
       "comment_ranges": [],
       "content": "namespace Utils {\n    export function formatDate(date: Date): string {\n        return date.toISOString();\n    }\n\n    export function calculateAge(birthDate: Date): number {\n        const today = new Date();\n        return today.getFullYear() - birthDate.getFullYear();\n    }\n}",
@@ -57,5 +67,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nnamespace Utils {\n    export function formatDate(date: Date): string {\n        return date.toISOString();\n    }\n\n    export function calculateAge(birthDate: Date): number {\n        const today = new Date();\n        return today.getFullYear() - birthDate.getFullYear();\n    }\n}\n\nnamespace Api {\n    export interface Response<T> {\n        data: T;\n        status: number;\n    }\n}\n",
   "test_name": "test_typescript_namespace_extraction",
-  "total_chunks": 5
+  "total_chunks": 6
 }

@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nextension StringExtensions on String {\n  bool get isEmail {\n    return contains('@') && contains('.');\n  }\n\n  String capitalize() {\n    if (isEmpty) return this;\n    return this[0].toUpperCase() + substring(1);\n  }\n}\n\nextension IntExtensions on int {\n  bool get isEven => this % 2 == 0;\n  bool get isOdd => !isEven;\n\n  int get squared => this * this;\n}\n",
+      "end_line": 18,
+      "language": "dart",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "extension StringExtensions on String {\n  bool get isEmail {\n    return contains('@') && contains('.');\n  }\n\n  String capitalize() {\n    if (isEmpty) return this;\n    return this[0].toUpperCase() + substring(1);\n  }\n}",
@@ -57,5 +67,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nextension StringExtensions on String {\n  bool get isEmail {\n    return contains('@') && contains('.');\n  }\n\n  String capitalize() {\n    if (isEmpty) return this;\n    return this[0].toUpperCase() + substring(1);\n  }\n}\n\nextension IntExtensions on int {\n  bool get isEven => this % 2 == 0;\n  bool get isOdd => !isEven;\n\n  int get squared => this * this;\n}\n",
   "test_name": "test_dart_extension_extraction",
-  "total_chunks": 5
+  "total_chunks": 6
 }

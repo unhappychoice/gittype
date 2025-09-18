@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\npub trait Display {\n    fn fmt(&self) -> String;\n\n    fn to_string(&self) -> String {\n        self.fmt()\n    }\n}\n\ntrait Clone {\n    fn clone(&self) -> Self;\n}\n",
+      "end_line": 12,
+      "language": "rust",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Trait",
       "comment_ranges": [],
       "content": "pub trait Display {\n    fn fmt(&self) -> String;\n\n    fn to_string(&self) -> String {\n        self.fmt()\n    }\n}",
@@ -37,5 +47,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\npub trait Display {\n    fn fmt(&self) -> String;\n\n    fn to_string(&self) -> String {\n        self.fmt()\n    }\n}\n\ntrait Clone {\n    fn clone(&self) -> Self;\n}\n",
   "test_name": "test_rust_trait_extraction",
-  "total_chunks": 3
+  "total_chunks": 4
 }

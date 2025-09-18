@@ -17,7 +17,7 @@ fun processData(data: List<String>) {
     data.forEach { println(it) }
 }
 "#,
-    total_chunks: 3,
+    total_chunks: 4,
     chunk_counts: {
         Function: 3,
     }
@@ -46,7 +46,7 @@ data class User(
     fun getDisplayName(): String = "$name ($email)"
 }
 "#,
-    total_chunks: 5,
+    total_chunks: 6,
     chunk_counts: {
         Class: 2,
         Function: 3,
@@ -76,7 +76,7 @@ object Utils {
     }
 }
 "#,
-    total_chunks: 6,
+    total_chunks: 7,
     chunk_counts: {
         Class: 2,
         Function: 3,
@@ -145,7 +145,7 @@ class ClassWithCompanion {
 val globalVal: String = "global val"
 var globalVar: String = "global var"
 "#,
-    total_chunks: 21,
+    total_chunks: 22,
     chunk_counts: {
         Class: 8,
         Const: 3,
@@ -274,7 +274,7 @@ class DataProcessor(private val threshold: Int) {
     }
 }
 "#,
-    total_chunks: 33,
+    total_chunks: 34,
     chunk_counts: {
         Class: 2,
         Function: 2,

@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nenum Direction {\n    case north, south, east, west\n\n    func opposite() -> Direction {\n        switch self {\n        case .north: return .south\n        case .south: return .north\n        case .east: return .west\n        case .west: return .east\n        }\n    }\n}\n\nenum Status {\n    case pending\n    case completed\n    case failed\n}\n",
+      "end_line": 19,
+      "language": "swift",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "enum Direction {\n    case north, south, east, west\n\n    func opposite() -> Direction {\n        switch self {\n        case .north: return .south\n        case .south: return .north\n        case .east: return .west\n        case .west: return .east\n        }\n    }\n}",
@@ -57,5 +67,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nenum Direction {\n    case north, south, east, west\n\n    func opposite() -> Direction {\n        switch self {\n        case .north: return .south\n        case .south: return .north\n        case .east: return .west\n        case .west: return .east\n        }\n    }\n}\n\nenum Status {\n    case pending\n    case completed\n    case failed\n}\n",
   "test_name": "test_swift_enum_extraction",
-  "total_chunks": 5
+  "total_chunks": 6
 }

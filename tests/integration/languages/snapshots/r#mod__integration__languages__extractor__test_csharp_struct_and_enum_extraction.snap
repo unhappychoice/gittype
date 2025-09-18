@@ -5,6 +5,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nnamespace MyApplication.Models\n{\n    public struct Point\n    {\n        public int X { get; set; }\n        public int Y { get; set; }\n\n        public Point(int x, int y)\n        {\n            X = x;\n            Y = y;\n        }\n\n        public double DistanceToOrigin()\n        {\n            return Math.Sqrt(X * X + Y * Y);\n        }\n    }\n\n    public enum UserRole\n    {\n        Guest,\n        User,\n        Moderator,\n        Administrator\n    }\n\n    public enum Status\n    {\n        Active = 1,\n        Inactive = 0,\n        Pending = 2\n    }\n}\n",
+      "end_line": 35,
+      "language": "csharp",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
       "chunk_type": "Namespace",
       "comment_ranges": [],
       "content": "namespace MyApplication.Models\n{\n    public struct Point\n    {\n        public int X { get; set; }\n        public int Y { get; set; }\n\n        public Point(int x, int y)\n        {\n            X = x;\n            Y = y;\n        }\n\n        public double DistanceToOrigin()\n        {\n            return Math.Sqrt(X * X + Y * Y);\n        }\n    }\n\n    public enum UserRole\n    {\n        Guest,\n        User,\n        Moderator,\n        Administrator\n    }\n\n    public enum Status\n    {\n        Active = 1,\n        Inactive = 0,\n        Pending = 2\n    }\n}",
@@ -107,5 +117,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nnamespace MyApplication.Models\n{\n    public struct Point\n    {\n        public int X { get; set; }\n        public int Y { get; set; }\n\n        public Point(int x, int y)\n        {\n            X = x;\n            Y = y;\n        }\n\n        public double DistanceToOrigin()\n        {\n            return Math.Sqrt(X * X + Y * Y);\n        }\n    }\n\n    public enum UserRole\n    {\n        Guest,\n        User,\n        Moderator,\n        Administrator\n    }\n\n    public enum Status\n    {\n        Active = 1,\n        Inactive = 0,\n        Pending = 2\n    }\n}\n",
   "test_name": "test_csharp_struct_and_enum_extraction",
-  "total_chunks": 10
+  "total_chunks": 11
 }
