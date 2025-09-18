@@ -1,75 +1,42 @@
-use crate::integration::{extract_chunks_for_test, test_extraction_options};
-use gittype::extractor::CodeChunkExtractor;
-use gittype::models::ChunkType;
-use std::fs;
-use tempfile::TempDir;
+use crate::integration::languages::extractor::test_language_extractor;
 
-#[test]
-fn test_java_class_method_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("HelloWorld.java");
-
-    let java_code = r#"public class HelloWorld {
+test_language_extractor! {
+    name: test_java_class_method_extraction,
+    language: "java",
+    extension: "java",
+    source: r#"public class HelloWorld {
     private String message;
-    
+
     public HelloWorld(String message) {
         this.message = message;
     }
-    
+
     public void printMessage() {
         System.out.println(this.message);
     }
-    
+
     public static void main(String[] args) {
         HelloWorld hello = new HelloWorld("Hello, World!");
         hello.printMessage();
     }
-    
+
     private int calculateLength() {
         return this.message.length();
     }
-}"#;
-    fs::write(&file_path, java_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    // Remove debug output
-    assert!(chunks.len() >= 4); // 1 class + 3+ methods (constructor, printMessage, main, calculateLength)
-
-    // Find class chunk
-    let class_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Class))
-        .collect();
-    assert_eq!(class_chunks.len(), 1);
-    assert_eq!(class_chunks[0].name, "HelloWorld");
-
-    // Find method chunks
-    let method_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Method))
-        .collect();
-    assert!(method_chunks.len() >= 3);
-
-    let method_names: Vec<&String> = method_chunks.iter().map(|c| &c.name).collect();
-    assert!(method_names.contains(&&"printMessage".to_string()));
-    assert!(method_names.contains(&&"main".to_string()));
-    assert!(method_names.contains(&&"calculateLength".to_string()));
-
-    for chunk in &chunks {
-        assert_eq!(chunk.language, "java".to_string());
+}"#,
+    total_chunks: 6,
+    chunk_counts: {
+        Class: 1,
+        Method: 4,
+        Variable: 1,
     }
 }
 
-#[test]
-fn test_java_interface_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("Drawable.java");
-
-    let java_code = r#"public interface Drawable {
+test_language_extractor! {
+    name: test_java_interface_extraction,
+    language: "java",
+    extension: "java",
+    source: r#"public interface Drawable {
     void draw();
     void setColor(String color);
     String getColor();
@@ -84,97 +51,68 @@ public interface Resizable {
 public class Circle implements Drawable, Resizable {
     private String color;
     private int radius;
-    
+
     @Override
     public void draw() {
         System.out.println("Drawing a " + color + " circle");
     }
-    
+
     @Override
     public void setColor(String color) {
         this.color = color;
     }
-    
+
     @Override
     public String getColor() {
         return this.color;
     }
-    
+
     @Override
     public void resize(int width, int height) {
         this.radius = Math.min(width, height) / 2;
     }
-    
+
     @Override
     public int getWidth() {
         return radius * 2;
     }
-    
+
     @Override
     public int getHeight() {
         return radius * 2;
     }
-}"#;
-    fs::write(&file_path, java_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    // Find interface chunks
-    let interface_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Interface))
-        .collect();
-    assert_eq!(interface_chunks.len(), 2);
-
-    let interface_names: Vec<&String> = interface_chunks.iter().map(|c| &c.name).collect();
-    assert!(interface_names.contains(&&"Drawable".to_string()));
-    assert!(interface_names.contains(&&"Resizable".to_string()));
-
-    // Find class chunk
-    let class_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Class))
-        .collect();
-    assert_eq!(class_chunks.len(), 1);
-    assert_eq!(class_chunks[0].name, "Circle");
-
-    // Find method chunks
-    let method_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Method))
-        .collect();
-    assert!(method_chunks.len() >= 8); // Interface methods + class methods
-
-    for chunk in &chunks {
-        assert_eq!(chunk.language, "java".to_string());
+}"#,
+    total_chunks: 23,
+    chunk_counts: {
+        Class: 1,
+        CodeBlock: 6,
+        Interface: 2,
+        Method: 12,
+        Variable: 2,
     }
 }
 
-#[test]
-fn test_java_enum_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("Color.java");
-
-    let java_code = r##"public enum Color {
+test_language_extractor! {
+    name: test_java_enum_extraction,
+    language: "java",
+    extension: "java",
+    source: r##"public enum Color {
     RED("red", "#FF0000"),
     GREEN("green", "#00FF00"),
     BLUE("blue", "#0000FF");
-    
+
     private final String name;
     private final String hexCode;
-    
+
     Color(String name, String hexCode) {
         this.name = name;
         this.hexCode = hexCode;
     }
-    
+
     public String getName() {
         return name;
     }
-    
+
     public String getHexCode() {
         return hexCode;
     }
@@ -185,107 +123,189 @@ public class ColorTest {
         Color color = Color.RED;
         System.out.println(color.getName());
     }
-}"##;
-    fs::write(&file_path, java_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    // Find enum chunk
-    let enum_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Enum))
-        .collect();
-    assert_eq!(enum_chunks.len(), 1);
-    assert_eq!(enum_chunks[0].name, "Color");
-
-    // Find class chunk
-    let class_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Class))
-        .collect();
-    assert_eq!(class_chunks.len(), 1);
-    assert_eq!(class_chunks[0].name, "ColorTest");
-
-    // Find method chunks (constructor + getName + getHexCode + testColor)
-    let method_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Method))
-        .collect();
-    assert!(method_chunks.len() >= 3);
-
-    let method_names: Vec<&String> = method_chunks.iter().map(|c| &c.name).collect();
-    assert!(method_names.contains(&&"getName".to_string()));
-    assert!(method_names.contains(&&"getHexCode".to_string()));
-    assert!(method_names.contains(&&"testColor".to_string()));
-
-    for chunk in &chunks {
-        assert_eq!(chunk.language, "java".to_string());
+}"##,
+    total_chunks: 8,
+    chunk_counts: {
+        Class: 1,
+        Enum: 1,
+        Method: 4,
+        Variable: 2,
     }
 }
 
-#[test]
-fn test_java_field_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("Person.java");
-
-    let java_code = r#"public class Person {
+test_language_extractor! {
+    name: test_java_field_extraction,
+    language: "java",
+    extension: "java",
+    source: r#"public class Person {
     private String name;
     private int age;
     private static final String DEFAULT_COUNTRY = "Unknown";
     public boolean isActive;
-    
+
     public Person(String name, int age) {
         this.name = name;
         this.age = age;
         this.isActive = true;
     }
-    
+
     public String getName() {
         return name;
     }
-    
+
     public int getAge() {
         return age;
     }
-}"#;
-    fs::write(&file_path, java_code).unwrap();
+}"#,
+    total_chunks: 8,
+    chunk_counts: {
+        Class: 1,
+        Method: 3,
+        Variable: 4,
+    }
+}
 
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
+test_language_extractor! {
+    name: test_java_complex_algorithm_extraction,
+    language: "java",
+    extension: "java",
+    source: r#"
+import java.util.*;
+import java.util.stream.Collectors;
 
-    // Find class chunk
-    let class_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Class))
-        .collect();
-    assert_eq!(class_chunks.len(), 1);
-    assert_eq!(class_chunks[0].name, "Person");
+public class DataProcessor {
+    private Map<String, Object> cache;
+    private List<String> processingLog;
 
-    // Find field chunks
-    let field_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Variable))
-        .collect();
-    assert!(field_chunks.len() >= 3);
+    public DataProcessor() {
+        this.cache = new HashMap<>();
+        this.processingLog = new ArrayList<>();
+    }
 
-    let field_names: Vec<&String> = field_chunks.iter().map(|c| &c.name).collect();
-    assert!(field_names.contains(&&"name".to_string()));
-    assert!(field_names.contains(&&"age".to_string()));
-    assert!(field_names.contains(&&"isActive".to_string()));
+    public List<ProcessedItem> processComplexData(List<DataItem> items, int threshold) {
+        List<ProcessedItem> results = new ArrayList<>();
+        int processedCount = 0;
 
-    // Find method chunks
-    let method_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Method))
-        .collect();
-    assert!(method_chunks.len() >= 3); // constructor + getName + getAge
+        // Main processing algorithm - extractable middle chunk
+        for (int i = 0; i < items.size(); i++) {
+            DataItem item = items.get(i);
+            String cacheKey = "item_" + i + "_" + item.getId();
 
-    for chunk in &chunks {
-        assert_eq!(chunk.language, "java".to_string());
+            ProcessedItem processedItem;
+            if (cache.containsKey(cacheKey)) {
+                processedItem = (ProcessedItem) cache.get(cacheKey);
+                processingLog.add("Cache hit for: " + cacheKey);
+            } else {
+                // Complex transformation logic
+                if (item.getValue() > threshold) {
+                    int transformedValue = item.getValue() * 2;
+                    String category = transformedValue > threshold * 3 ? "HIGH" : "MEDIUM";
+
+                    processedItem = new ProcessedItem(
+                        item.getId(),
+                        item.getValue(),
+                        transformedValue,
+                        category,
+                        System.currentTimeMillis()
+                    );
+
+                    processedCount++;
+                } else {
+                    int adjustedValue = item.getValue() + threshold;
+                    processedItem = new ProcessedItem(
+                        item.getId(),
+                        item.getValue(),
+                        adjustedValue,
+                        "LOW",
+                        System.currentTimeMillis()
+                    );
+                }
+
+                cache.put(cacheKey, processedItem);
+                processingLog.add("Processed new item: " + cacheKey);
+            }
+
+            results.add(processedItem);
+        }
+
+        // Finalization logic
+        if (processedCount > 0) {
+            double average = results.stream()
+                .mapToDouble(ProcessedItem::getTransformedValue)
+                .average()
+                .orElse(0.0);
+
+            processingLog.add("Processing complete. Average: " + average);
+        }
+
+        return results;
+    }
+
+    public Map<String, List<ProcessedItem>> analyzeAndGroup(List<ProcessedItem> items) {
+        Map<String, List<ProcessedItem>> grouped = new HashMap<>();
+
+        // Analysis and grouping logic - extractable middle chunk
+        for (ProcessedItem item : items) {
+            String category = item.getCategory();
+
+            grouped.computeIfAbsent(category, k -> new ArrayList<>()).add(item);
+
+            // Additional analysis for high-value items
+            if ("HIGH".equals(category)) {
+                String subCategory = item.getTransformedValue() > 1000 ? "PREMIUM" : "STANDARD";
+                String key = category + "_" + subCategory;
+                grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(item);
+            }
+        }
+
+        // Sort each group by transformed value
+        grouped.forEach((category, itemList) -> {
+            itemList.sort(Comparator.comparingInt(ProcessedItem::getTransformedValue).reversed());
+        });
+
+        return grouped;
+    }
+}
+
+class DataItem {
+    private String id;
+    private int value;
+
+    public DataItem(String id, int value) {
+        this.id = id;
+        this.value = value;
+    }
+
+    public String getId() { return id; }
+    public int getValue() { return value; }
+}
+
+class ProcessedItem {
+    private String id;
+    private int originalValue;
+    private int transformedValue;
+    private String category;
+    private long timestamp;
+
+    public ProcessedItem(String id, int originalValue, int transformedValue,
+                        String category, long timestamp) {
+        this.id = id;
+        this.originalValue = originalValue;
+        this.transformedValue = transformedValue;
+        this.category = category;
+        this.timestamp = timestamp;
+    }
+
+    public String getId() { return id; }
+    public int getOriginalValue() { return originalValue; }
+    public int getTransformedValue() { return transformedValue; }
+    public String getCategory() { return category; }
+    public long getTimestamp() { return timestamp; }
+}
+"#,
+    total_chunks: 38,
+    chunk_counts: {
+        Class: 3,
+        Method: 12,
     }
 }

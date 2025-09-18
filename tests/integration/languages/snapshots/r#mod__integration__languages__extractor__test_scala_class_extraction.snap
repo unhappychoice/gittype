@@ -1,0 +1,61 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "class Person(val name: String, val age: Int) {\n    def greet(): String = s\"Hello, I'm $name\"\n}",
+      "end_line": 4,
+      "language": "scala",
+      "name": "Person",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    def greet(): String = s\"Hello, I'm $name\"",
+      "end_line": 3,
+      "language": "scala",
+      "name": "greet",
+      "original_indentation": 4,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "case class Point(x: Double, y: Double) {\n    def distance(other: Point): Double = {\n        math.sqrt(math.pow(x - other.x, 2) + math.pow(y - other.y, 2))\n    }\n}",
+      "end_line": 10,
+      "language": "scala",
+      "name": "Point",
+      "original_indentation": 0,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    def distance(other: Point): Double = {\n        math.sqrt(math.pow(x - other.x, 2) + math.pow(y - other.y, 2))\n    }",
+      "end_line": 9,
+      "language": "scala",
+      "name": "distance",
+      "original_indentation": 4,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "abstract class Animal {\n    def speak(): String\n}",
+      "end_line": 14,
+      "language": "scala",
+      "name": "Animal",
+      "original_indentation": 0,
+      "start_line": 12
+    }
+  ],
+  "source_code": "\nclass Person(val name: String, val age: Int) {\n    def greet(): String = s\"Hello, I'm $name\"\n}\n\ncase class Point(x: Double, y: Double) {\n    def distance(other: Point): Double = {\n        math.sqrt(math.pow(x - other.x, 2) + math.pow(y - other.y, 2))\n    }\n}\n\nabstract class Animal {\n    def speak(): String\n}\n",
+  "test_name": "test_scala_class_extraction",
+  "total_chunks": 5
+}

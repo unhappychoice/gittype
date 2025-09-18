@@ -1,0 +1,625 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [
+        [
+          387,
+          442
+        ],
+        [
+          985,
+          1025
+        ],
+        [
+          1156,
+          1164
+        ],
+        [
+          1351,
+          1374
+        ],
+        [
+          1560,
+          1581
+        ],
+        [
+          1784,
+          1818
+        ],
+        [
+          2097,
+          2149
+        ],
+        [
+          2545,
+          2576
+        ],
+        [
+          2712,
+          2753
+        ]
+      ],
+      "content": "template<typename T>\nclass DataProcessor {\nprivate:\n    std::map<std::string, T> cache;\n    std::vector<T> processing_log;\n    int threshold;\n\npublic:\n    DataProcessor(int thresh) : threshold(thresh) {}\n\n    std::vector<T> processComplexData(const std::vector<T>& input) {\n        std::vector<T> results;\n        results.reserve(input.size());\n        int processed_count = 0;\n\n        // Main processing algorithm - extractable middle chunk\n        for (size_t i = 0; i < input.size(); ++i) {\n            const T& value = input[i];\n            std::string cache_key = \"item_\" + std::to_string(i);\n\n            auto cache_it = cache.find(cache_key);\n            if (cache_it != cache.end()) {\n                results.push_back(cache_it->second);\n                continue;\n            }\n\n            T processed_value;\n            if (value > static_cast<T>(threshold)) {\n                processed_value = value * static_cast<T>(2);\n                processed_count++;\n\n                // Additional processing for high values\n                if (processed_value > static_cast<T>(threshold * 3)) {\n                    processed_value += static_cast<T>(10); // bonus\n                }\n            } else if (value > static_cast<T>(0)) {\n                processed_value = value + static_cast<T>(threshold);\n            } else {\n                continue; // skip negative values\n            }\n\n            cache[cache_key] = processed_value;\n            processing_log.push_back(processed_value);\n            results.push_back(processed_value);\n        }\n\n        // Finalization logic\n        if (processed_count > 0) {\n            T total = std::accumulate(results.begin(), results.end(), static_cast<T>(0));\n            T average = total / static_cast<T>(results.size());\n\n            // Add average to log for analysis\n            processing_log.push_back(average);\n        }\n\n        return results;\n    }\n\n    std::map<std::string, int> analyzePatterns(const std::vector<T>& data) {\n        std::map<std::string, int> analysis;\n        std::map<std::string, std::vector<T>> categories;\n\n        // Pattern analysis logic - extractable middle chunk\n        for (const auto& item : data) {\n            std::string category;\n\n            if (item > static_cast<T>(threshold * 2)) {\n                category = \"HIGH\";\n            } else if (item > static_cast<T>(threshold)) {\n                category = \"MEDIUM\";\n            } else {\n                category = \"LOW\";\n            }\n\n            categories[category].push_back(item);\n\n            // Additional pattern detection\n            if (item > static_cast<T>(1000)) {\n                categories[\"PREMIUM\"].push_back(item);\n            }\n        }\n\n        // Calculate statistics for each category\n        for (const auto& [cat_name, cat_data] : categories) {\n            analysis[cat_name + \"_count\"] = static_cast<int>(cat_data.size());\n\n            if (!cat_data.empty()) {\n                T sum = std::accumulate(cat_data.begin(), cat_data.end(), static_cast<T>(0));\n                analysis[cat_name + \"_average\"] = static_cast<int>(sum / static_cast<T>(cat_data.size()));\n                analysis[cat_name + \"_max\"] = static_cast<int>(*std::max_element(cat_data.begin(), cat_data.end()));\n            }\n        }\n\n        return analysis;\n    }\n};",
+      "end_line": 103,
+      "language": "cpp",
+      "name": "unknown",
+      "original_indentation": 0,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [
+        [
+          366,
+          421
+        ],
+        [
+          964,
+          1004
+        ],
+        [
+          1135,
+          1143
+        ],
+        [
+          1330,
+          1353
+        ],
+        [
+          1539,
+          1560
+        ],
+        [
+          1763,
+          1797
+        ],
+        [
+          2076,
+          2128
+        ],
+        [
+          2524,
+          2555
+        ],
+        [
+          2691,
+          2732
+        ]
+      ],
+      "content": "class DataProcessor {\nprivate:\n    std::map<std::string, T> cache;\n    std::vector<T> processing_log;\n    int threshold;\n\npublic:\n    DataProcessor(int thresh) : threshold(thresh) {}\n\n    std::vector<T> processComplexData(const std::vector<T>& input) {\n        std::vector<T> results;\n        results.reserve(input.size());\n        int processed_count = 0;\n\n        // Main processing algorithm - extractable middle chunk\n        for (size_t i = 0; i < input.size(); ++i) {\n            const T& value = input[i];\n            std::string cache_key = \"item_\" + std::to_string(i);\n\n            auto cache_it = cache.find(cache_key);\n            if (cache_it != cache.end()) {\n                results.push_back(cache_it->second);\n                continue;\n            }\n\n            T processed_value;\n            if (value > static_cast<T>(threshold)) {\n                processed_value = value * static_cast<T>(2);\n                processed_count++;\n\n                // Additional processing for high values\n                if (processed_value > static_cast<T>(threshold * 3)) {\n                    processed_value += static_cast<T>(10); // bonus\n                }\n            } else if (value > static_cast<T>(0)) {\n                processed_value = value + static_cast<T>(threshold);\n            } else {\n                continue; // skip negative values\n            }\n\n            cache[cache_key] = processed_value;\n            processing_log.push_back(processed_value);\n            results.push_back(processed_value);\n        }\n\n        // Finalization logic\n        if (processed_count > 0) {\n            T total = std::accumulate(results.begin(), results.end(), static_cast<T>(0));\n            T average = total / static_cast<T>(results.size());\n\n            // Add average to log for analysis\n            processing_log.push_back(average);\n        }\n\n        return results;\n    }\n\n    std::map<std::string, int> analyzePatterns(const std::vector<T>& data) {\n        std::map<std::string, int> analysis;\n        std::map<std::string, std::vector<T>> categories;\n\n        // Pattern analysis logic - extractable middle chunk\n        for (const auto& item : data) {\n            std::string category;\n\n            if (item > static_cast<T>(threshold * 2)) {\n                category = \"HIGH\";\n            } else if (item > static_cast<T>(threshold)) {\n                category = \"MEDIUM\";\n            } else {\n                category = \"LOW\";\n            }\n\n            categories[category].push_back(item);\n\n            // Additional pattern detection\n            if (item > static_cast<T>(1000)) {\n                categories[\"PREMIUM\"].push_back(item);\n            }\n        }\n\n        // Calculate statistics for each category\n        for (const auto& [cat_name, cat_data] : categories) {\n            analysis[cat_name + \"_count\"] = static_cast<int>(cat_data.size());\n\n            if (!cat_data.empty()) {\n                T sum = std::accumulate(cat_data.begin(), cat_data.end(), static_cast<T>(0));\n                analysis[cat_name + \"_average\"] = static_cast<int>(sum / static_cast<T>(cat_data.size()));\n                analysis[cat_name + \"_max\"] = static_cast<int>(*std::max_element(cat_data.begin(), cat_data.end()));\n            }\n        }\n\n        return analysis;\n    }\n}",
+      "end_line": 103,
+      "language": "cpp",
+      "name": "DataProcessor",
+      "original_indentation": 0,
+      "start_line": 9
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    DataProcessor(int thresh) : threshold(thresh) {}",
+      "end_line": 16,
+      "language": "cpp",
+      "name": "DataProcessor",
+      "original_indentation": 4,
+      "start_line": 16
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [
+        [
+          182,
+          237
+        ],
+        [
+          780,
+          820
+        ],
+        [
+          951,
+          959
+        ],
+        [
+          1146,
+          1169
+        ],
+        [
+          1355,
+          1376
+        ],
+        [
+          1579,
+          1613
+        ]
+      ],
+      "content": "    std::vector<T> processComplexData(const std::vector<T>& input) {\n        std::vector<T> results;\n        results.reserve(input.size());\n        int processed_count = 0;\n\n        // Main processing algorithm - extractable middle chunk\n        for (size_t i = 0; i < input.size(); ++i) {\n            const T& value = input[i];\n            std::string cache_key = \"item_\" + std::to_string(i);\n\n            auto cache_it = cache.find(cache_key);\n            if (cache_it != cache.end()) {\n                results.push_back(cache_it->second);\n                continue;\n            }\n\n            T processed_value;\n            if (value > static_cast<T>(threshold)) {\n                processed_value = value * static_cast<T>(2);\n                processed_count++;\n\n                // Additional processing for high values\n                if (processed_value > static_cast<T>(threshold * 3)) {\n                    processed_value += static_cast<T>(10); // bonus\n                }\n            } else if (value > static_cast<T>(0)) {\n                processed_value = value + static_cast<T>(threshold);\n            } else {\n                continue; // skip negative values\n            }\n\n            cache[cache_key] = processed_value;\n            processing_log.push_back(processed_value);\n            results.push_back(processed_value);\n        }\n\n        // Finalization logic\n        if (processed_count > 0) {\n            T total = std::accumulate(results.begin(), results.end(), static_cast<T>(0));\n            T average = total / static_cast<T>(results.size());\n\n            // Add average to log for analysis\n            processing_log.push_back(average);\n        }\n\n        return results;\n    }",
+      "end_line": 64,
+      "language": "cpp",
+      "name": "processComplexData",
+      "original_indentation": 4,
+      "start_line": 18
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "        int processed_count = 0;",
+      "end_line": 21,
+      "language": "cpp",
+      "name": "processed_count",
+      "original_indentation": 8,
+      "start_line": 21
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "        for (size_t i = 0;",
+      "end_line": 24,
+      "language": "cpp",
+      "name": "i",
+      "original_indentation": 13,
+      "start_line": 24
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [
+        [
+          542,
+          582
+        ],
+        [
+          713,
+          721
+        ],
+        [
+          908,
+          931
+        ]
+      ],
+      "content": "        for (size_t i = 0; i < input.size(); ++i) {\n            const T& value = input[i];\n            std::string cache_key = \"item_\" + std::to_string(i);\n\n            auto cache_it = cache.find(cache_key);\n            if (cache_it != cache.end()) {\n                results.push_back(cache_it->second);\n                continue;\n            }\n\n            T processed_value;\n            if (value > static_cast<T>(threshold)) {\n                processed_value = value * static_cast<T>(2);\n                processed_count++;\n\n                // Additional processing for high values\n                if (processed_value > static_cast<T>(threshold * 3)) {\n                    processed_value += static_cast<T>(10); // bonus\n                }\n            } else if (value > static_cast<T>(0)) {\n                processed_value = value + static_cast<T>(threshold);\n            } else {\n                continue; // skip negative values\n            }\n\n            cache[cache_key] = processed_value;\n            processing_log.push_back(processed_value);\n            results.push_back(processed_value);\n        }",
+      "end_line": 52,
+      "language": "cpp",
+      "name": "for_loop",
+      "original_indentation": 8,
+      "start_line": 24
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "            std::string cache_key = \"item_\" + std::to_string(i);",
+      "end_line": 26,
+      "language": "cpp",
+      "name": "cache_key",
+      "original_indentation": 12,
+      "start_line": 26
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "            auto cache_it = cache.find(cache_key);",
+      "end_line": 28,
+      "language": "cpp",
+      "name": "cache_it",
+      "original_indentation": 12,
+      "start_line": 28
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if (cache_it != cache.end()) {\n                results.push_back(cache_it->second);\n                continue;\n            }",
+      "end_line": 32,
+      "language": "cpp",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 29
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [
+        [
+          166,
+          206
+        ],
+        [
+          337,
+          345
+        ]
+      ],
+      "content": "            if (value > static_cast<T>(threshold)) {\n                processed_value = value * static_cast<T>(2);\n                processed_count++;\n\n                // Additional processing for high values\n                if (processed_value > static_cast<T>(threshold * 3)) {\n                    processed_value += static_cast<T>(10); // bonus\n                }\n            }",
+      "end_line": 43,
+      "language": "cpp",
+      "name": "code_block",
+      "original_indentation": 51,
+      "start_line": 35
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [
+        [
+          166,
+          206
+        ],
+        [
+          337,
+          345
+        ],
+        [
+          532,
+          555
+        ]
+      ],
+      "content": "            if (value > static_cast<T>(threshold)) {\n                processed_value = value * static_cast<T>(2);\n                processed_count++;\n\n                // Additional processing for high values\n                if (processed_value > static_cast<T>(threshold * 3)) {\n                    processed_value += static_cast<T>(10); // bonus\n                }\n            } else if (value > static_cast<T>(0)) {\n                processed_value = value + static_cast<T>(threshold);\n            } else {\n                continue; // skip negative values\n            }",
+      "end_line": 47,
+      "language": "cpp",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 35
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [
+        [
+          130,
+          138
+        ]
+      ],
+      "content": "                if (processed_value > static_cast<T>(threshold * 3)) {\n                    processed_value += static_cast<T>(10); // bonus\n                }",
+      "end_line": 42,
+      "language": "cpp",
+      "name": "if_block",
+      "original_indentation": 16,
+      "start_line": 40
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "            } else if (value > static_cast<T>(0)) {\n                processed_value = value + static_cast<T>(threshold);\n            }",
+      "end_line": 45,
+      "language": "cpp",
+      "name": "code_block",
+      "original_indentation": 50,
+      "start_line": 43
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [
+        [
+          168,
+          191
+        ]
+      ],
+      "content": "            } else if (value > static_cast<T>(0)) {\n                processed_value = value + static_cast<T>(threshold);\n            } else {\n                continue; // skip negative values\n            }",
+      "end_line": 47,
+      "language": "cpp",
+      "name": "if_block",
+      "original_indentation": 19,
+      "start_line": 43
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [
+        [
+          47,
+          70
+        ]
+      ],
+      "content": "            } else {\n                continue; // skip negative values\n            }",
+      "end_line": 47,
+      "language": "cpp",
+      "name": "code_block",
+      "original_indentation": 19,
+      "start_line": 45
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [
+        [
+          202,
+          236
+        ]
+      ],
+      "content": "        if (processed_count > 0) {\n            T total = std::accumulate(results.begin(), results.end(), static_cast<T>(0));\n            T average = total / static_cast<T>(results.size());\n\n            // Add average to log for analysis\n            processing_log.push_back(average);\n        }",
+      "end_line": 61,
+      "language": "cpp",
+      "name": "if_block",
+      "original_indentation": 8,
+      "start_line": 55
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "            T total = std::accumulate(results.begin(), results.end(), static_cast<T>(0));",
+      "end_line": 56,
+      "language": "cpp",
+      "name": "total",
+      "original_indentation": 12,
+      "start_line": 56
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "            T average = total / static_cast<T>(results.size());",
+      "end_line": 57,
+      "language": "cpp",
+      "name": "average",
+      "original_indentation": 12,
+      "start_line": 57
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [
+        [
+          189,
+          241
+        ],
+        [
+          637,
+          668
+        ],
+        [
+          804,
+          845
+        ]
+      ],
+      "content": "    std::map<std::string, int> analyzePatterns(const std::vector<T>& data) {\n        std::map<std::string, int> analysis;\n        std::map<std::string, std::vector<T>> categories;\n\n        // Pattern analysis logic - extractable middle chunk\n        for (const auto& item : data) {\n            std::string category;\n\n            if (item > static_cast<T>(threshold * 2)) {\n                category = \"HIGH\";\n            } else if (item > static_cast<T>(threshold)) {\n                category = \"MEDIUM\";\n            } else {\n                category = \"LOW\";\n            }\n\n            categories[category].push_back(item);\n\n            // Additional pattern detection\n            if (item > static_cast<T>(1000)) {\n                categories[\"PREMIUM\"].push_back(item);\n            }\n        }\n\n        // Calculate statistics for each category\n        for (const auto& [cat_name, cat_data] : categories) {\n            analysis[cat_name + \"_count\"] = static_cast<int>(cat_data.size());\n\n            if (!cat_data.empty()) {\n                T sum = std::accumulate(cat_data.begin(), cat_data.end(), static_cast<T>(0));\n                analysis[cat_name + \"_average\"] = static_cast<int>(sum / static_cast<T>(cat_data.size()));\n                analysis[cat_name + \"_max\"] = static_cast<int>(*std::max_element(cat_data.begin(), cat_data.end()));\n            }\n        }\n\n        return analysis;\n    }",
+      "end_line": 102,
+      "language": "cpp",
+      "name": "analyzePatterns",
+      "original_indentation": 4,
+      "start_line": 66
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [
+        [
+          395,
+          426
+        ]
+      ],
+      "content": "        for (const auto& item : data) {\n            std::string category;\n\n            if (item > static_cast<T>(threshold * 2)) {\n                category = \"HIGH\";\n            } else if (item > static_cast<T>(threshold)) {\n                category = \"MEDIUM\";\n            } else {\n                category = \"LOW\";\n            }\n\n            categories[category].push_back(item);\n\n            // Additional pattern detection\n            if (item > static_cast<T>(1000)) {\n                categories[\"PREMIUM\"].push_back(item);\n            }\n        }",
+      "end_line": 88,
+      "language": "cpp",
+      "name": "code_block",
+      "original_indentation": 38,
+      "start_line": 71
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "            if (item > static_cast<T>(threshold * 2)) {\n                category = \"HIGH\";\n            }",
+      "end_line": 76,
+      "language": "cpp",
+      "name": "code_block",
+      "original_indentation": 54,
+      "start_line": 74
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if (item > static_cast<T>(threshold * 2)) {\n                category = \"HIGH\";\n            } else if (item > static_cast<T>(threshold)) {\n                category = \"MEDIUM\";\n            } else {\n                category = \"LOW\";\n            }",
+      "end_line": 80,
+      "language": "cpp",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 74
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "            } else if (item > static_cast<T>(threshold)) {\n                category = \"MEDIUM\";\n            }",
+      "end_line": 78,
+      "language": "cpp",
+      "name": "code_block",
+      "original_indentation": 57,
+      "start_line": 76
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            } else if (item > static_cast<T>(threshold)) {\n                category = \"MEDIUM\";\n            } else {\n                category = \"LOW\";\n            }",
+      "end_line": 80,
+      "language": "cpp",
+      "name": "if_block",
+      "original_indentation": 19,
+      "start_line": 76
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "            } else {\n                category = \"LOW\";\n            }",
+      "end_line": 80,
+      "language": "cpp",
+      "name": "code_block",
+      "original_indentation": 19,
+      "start_line": 78
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if (item > static_cast<T>(1000)) {\n                categories[\"PREMIUM\"].push_back(item);\n            }",
+      "end_line": 87,
+      "language": "cpp",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 85
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        for (const auto& [cat_name, cat_data] : categories) {\n            analysis[cat_name + \"_count\"] = static_cast<int>(cat_data.size());\n\n            if (!cat_data.empty()) {\n                T sum = std::accumulate(cat_data.begin(), cat_data.end(), static_cast<T>(0));\n                analysis[cat_name + \"_average\"] = static_cast<int>(sum / static_cast<T>(cat_data.size()));\n                analysis[cat_name + \"_max\"] = static_cast<int>(*std::max_element(cat_data.begin(), cat_data.end()));\n            }\n        }",
+      "end_line": 99,
+      "language": "cpp",
+      "name": "code_block",
+      "original_indentation": 60,
+      "start_line": 91
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if (!cat_data.empty()) {\n                T sum = std::accumulate(cat_data.begin(), cat_data.end(), static_cast<T>(0));\n                analysis[cat_name + \"_average\"] = static_cast<int>(sum / static_cast<T>(cat_data.size()));\n                analysis[cat_name + \"_max\"] = static_cast<int>(*std::max_element(cat_data.begin(), cat_data.end()));\n            }",
+      "end_line": 98,
+      "language": "cpp",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 94
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "                T sum = std::accumulate(cat_data.begin(), cat_data.end(), static_cast<T>(0));",
+      "end_line": 95,
+      "language": "cpp",
+      "name": "sum",
+      "original_indentation": 16,
+      "start_line": 95
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [
+        [
+          204,
+          259
+        ],
+        [
+          356,
+          394
+        ],
+        [
+          519,
+          560
+        ],
+        [
+          859,
+          893
+        ]
+      ],
+      "content": "class StringProcessor {\npublic:\n    static std::vector<std::string> processTextData(const std::vector<std::string>& input, const std::string& pattern) {\n        std::vector<std::string> results;\n\n        // Text processing algorithm - extractable middle chunk\n        for (const auto& text : input) {\n            std::string processed = text;\n\n            // Pattern matching and transformation\n            size_t pos = 0;\n            while ((pos = processed.find(pattern, pos)) != std::string::npos) {\n                // Replace pattern with uppercase version\n                std::string replacement = pattern;\n                std::transform(replacement.begin(), replacement.end(), replacement.begin(), ::toupper);\n                processed.replace(pos, pattern.length(), replacement);\n                pos += replacement.length();\n            }\n\n            // Additional text transformations\n            if (processed.length() > 50) {\n                processed = processed.substr(0, 47) + \"...\";\n            }\n\n            if (!processed.empty()) {\n                results.push_back(processed);\n            }\n        }\n\n        return results;\n    }\n}",
+      "end_line": 137,
+      "language": "cpp",
+      "name": "StringProcessor",
+      "original_indentation": 0,
+      "start_line": 106
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [
+        [
+          172,
+          227
+        ],
+        [
+          324,
+          362
+        ],
+        [
+          487,
+          528
+        ],
+        [
+          827,
+          861
+        ]
+      ],
+      "content": "    static std::vector<std::string> processTextData(const std::vector<std::string>& input, const std::string& pattern) {\n        std::vector<std::string> results;\n\n        // Text processing algorithm - extractable middle chunk\n        for (const auto& text : input) {\n            std::string processed = text;\n\n            // Pattern matching and transformation\n            size_t pos = 0;\n            while ((pos = processed.find(pattern, pos)) != std::string::npos) {\n                // Replace pattern with uppercase version\n                std::string replacement = pattern;\n                std::transform(replacement.begin(), replacement.end(), replacement.begin(), ::toupper);\n                processed.replace(pos, pattern.length(), replacement);\n                pos += replacement.length();\n            }\n\n            // Additional text transformations\n            if (processed.length() > 50) {\n                processed = processed.substr(0, 47) + \"...\";\n            }\n\n            if (!processed.empty()) {\n                results.push_back(processed);\n            }\n        }\n\n        return results;\n    }",
+      "end_line": 136,
+      "language": "cpp",
+      "name": "processTextData",
+      "original_indentation": 4,
+      "start_line": 108
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [
+        [
+          96,
+          134
+        ],
+        [
+          259,
+          300
+        ],
+        [
+          599,
+          633
+        ]
+      ],
+      "content": "        for (const auto& text : input) {\n            std::string processed = text;\n\n            // Pattern matching and transformation\n            size_t pos = 0;\n            while ((pos = processed.find(pattern, pos)) != std::string::npos) {\n                // Replace pattern with uppercase version\n                std::string replacement = pattern;\n                std::transform(replacement.begin(), replacement.end(), replacement.begin(), ::toupper);\n                processed.replace(pos, pattern.length(), replacement);\n                pos += replacement.length();\n            }\n\n            // Additional text transformations\n            if (processed.length() > 50) {\n                processed = processed.substr(0, 47) + \"...\";\n            }\n\n            if (!processed.empty()) {\n                results.push_back(processed);\n            }\n        }",
+      "end_line": 133,
+      "language": "cpp",
+      "name": "code_block",
+      "original_indentation": 39,
+      "start_line": 112
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "            std::string processed = text;",
+      "end_line": 113,
+      "language": "cpp",
+      "name": "processed",
+      "original_indentation": 12,
+      "start_line": 113
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "            size_t pos = 0;",
+      "end_line": 116,
+      "language": "cpp",
+      "name": "pos",
+      "original_indentation": 12,
+      "start_line": 116
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [
+        [
+          96,
+          137
+        ]
+      ],
+      "content": "            while ((pos = processed.find(pattern, pos)) != std::string::npos) {\n                // Replace pattern with uppercase version\n                std::string replacement = pattern;\n                std::transform(replacement.begin(), replacement.end(), replacement.begin(), ::toupper);\n                processed.replace(pos, pattern.length(), replacement);\n                pos += replacement.length();\n            }",
+      "end_line": 123,
+      "language": "cpp",
+      "name": "while_loop",
+      "original_indentation": 12,
+      "start_line": 117
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "                std::string replacement = pattern;",
+      "end_line": 119,
+      "language": "cpp",
+      "name": "replacement",
+      "original_indentation": 16,
+      "start_line": 119
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if (processed.length() > 50) {\n                processed = processed.substr(0, 47) + \"...\";\n            }",
+      "end_line": 128,
+      "language": "cpp",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 126
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if (!processed.empty()) {\n                results.push_back(processed);\n            }",
+      "end_line": 132,
+      "language": "cpp",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 130
+    }
+  ],
+  "source_code": "\n#include <vector>\n#include <map>\n#include <string>\n#include <algorithm>\n#include <memory>\n\ntemplate<typename T>\nclass DataProcessor {\nprivate:\n    std::map<std::string, T> cache;\n    std::vector<T> processing_log;\n    int threshold;\n\npublic:\n    DataProcessor(int thresh) : threshold(thresh) {}\n\n    std::vector<T> processComplexData(const std::vector<T>& input) {\n        std::vector<T> results;\n        results.reserve(input.size());\n        int processed_count = 0;\n\n        // Main processing algorithm - extractable middle chunk\n        for (size_t i = 0; i < input.size(); ++i) {\n            const T& value = input[i];\n            std::string cache_key = \"item_\" + std::to_string(i);\n\n            auto cache_it = cache.find(cache_key);\n            if (cache_it != cache.end()) {\n                results.push_back(cache_it->second);\n                continue;\n            }\n\n            T processed_value;\n            if (value > static_cast<T>(threshold)) {\n                processed_value = value * static_cast<T>(2);\n                processed_count++;\n\n                // Additional processing for high values\n                if (processed_value > static_cast<T>(threshold * 3)) {\n                    processed_value += static_cast<T>(10); // bonus\n                }\n            } else if (value > static_cast<T>(0)) {\n                processed_value = value + static_cast<T>(threshold);\n            } else {\n                continue; // skip negative values\n            }\n\n            cache[cache_key] = processed_value;\n            processing_log.push_back(processed_value);\n            results.push_back(processed_value);\n        }\n\n        // Finalization logic\n        if (processed_count > 0) {\n            T total = std::accumulate(results.begin(), results.end(), static_cast<T>(0));\n            T average = total / static_cast<T>(results.size());\n\n            // Add average to log for analysis\n            processing_log.push_back(average);\n        }\n\n        return results;\n    }\n\n    std::map<std::string, int> analyzePatterns(const std::vector<T>& data) {\n        std::map<std::string, int> analysis;\n        std::map<std::string, std::vector<T>> categories;\n\n        // Pattern analysis logic - extractable middle chunk\n        for (const auto& item : data) {\n            std::string category;\n\n            if (item > static_cast<T>(threshold * 2)) {\n                category = \"HIGH\";\n            } else if (item > static_cast<T>(threshold)) {\n                category = \"MEDIUM\";\n            } else {\n                category = \"LOW\";\n            }\n\n            categories[category].push_back(item);\n\n            // Additional pattern detection\n            if (item > static_cast<T>(1000)) {\n                categories[\"PREMIUM\"].push_back(item);\n            }\n        }\n\n        // Calculate statistics for each category\n        for (const auto& [cat_name, cat_data] : categories) {\n            analysis[cat_name + \"_count\"] = static_cast<int>(cat_data.size());\n\n            if (!cat_data.empty()) {\n                T sum = std::accumulate(cat_data.begin(), cat_data.end(), static_cast<T>(0));\n                analysis[cat_name + \"_average\"] = static_cast<int>(sum / static_cast<T>(cat_data.size()));\n                analysis[cat_name + \"_max\"] = static_cast<int>(*std::max_element(cat_data.begin(), cat_data.end()));\n            }\n        }\n\n        return analysis;\n    }\n};\n\n// Specialized function for string processing\nclass StringProcessor {\npublic:\n    static std::vector<std::string> processTextData(const std::vector<std::string>& input, const std::string& pattern) {\n        std::vector<std::string> results;\n\n        // Text processing algorithm - extractable middle chunk\n        for (const auto& text : input) {\n            std::string processed = text;\n\n            // Pattern matching and transformation\n            size_t pos = 0;\n            while ((pos = processed.find(pattern, pos)) != std::string::npos) {\n                // Replace pattern with uppercase version\n                std::string replacement = pattern;\n                std::transform(replacement.begin(), replacement.end(), replacement.begin(), ::toupper);\n                processed.replace(pos, pattern.length(), replacement);\n                pos += replacement.length();\n            }\n\n            // Additional text transformations\n            if (processed.length() > 50) {\n                processed = processed.substr(0, 47) + \"...\";\n            }\n\n            if (!processed.empty()) {\n                results.push_back(processed);\n            }\n        }\n\n        return results;\n    }\n};\n",
+  "test_name": "test_cpp_complex_algorithm_extraction",
+  "total_chunks": 39
+}

@@ -1,0 +1,101 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "class Eq a where\n  (==) :: a -> a -> Bool\n  (/=) :: a -> a -> Bool",
+      "end_line": 4,
+      "language": "haskell",
+      "name": "a",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "  (==) :: a -> a -> Bool",
+      "end_line": 3,
+      "language": "haskell",
+      "name": "a",
+      "original_indentation": 2,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "  (/=) :: a -> a -> Bool",
+      "end_line": 4,
+      "language": "haskell",
+      "name": "a",
+      "original_indentation": 2,
+      "start_line": 4
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "class Show a where\n  show :: a -> String",
+      "end_line": 7,
+      "language": "haskell",
+      "name": "a",
+      "original_indentation": 0,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "  show :: a -> String",
+      "end_line": 7,
+      "language": "haskell",
+      "name": "show",
+      "original_indentation": 2,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "instance Eq Bool where\n  True == True = True\n  False == False = True\n  _ == _ = False",
+      "end_line": 12,
+      "language": "haskell",
+      "name": "unknown",
+      "original_indentation": 0,
+      "start_line": 9
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "  True == True = True",
+      "end_line": 10,
+      "language": "haskell",
+      "name": "unknown",
+      "original_indentation": 2,
+      "start_line": 10
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "  False == False = True",
+      "end_line": 11,
+      "language": "haskell",
+      "name": "unknown",
+      "original_indentation": 2,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "  _ == _ = False",
+      "end_line": 12,
+      "language": "haskell",
+      "name": "unknown",
+      "original_indentation": 2,
+      "start_line": 12
+    }
+  ],
+  "source_code": "\nclass Eq a where\n  (==) :: a -> a -> Bool\n  (/=) :: a -> a -> Bool\n\nclass Show a where\n  show :: a -> String\n\ninstance Eq Bool where\n  True == True = True\n  False == False = True\n  _ == _ = False\n",
+  "test_name": "test_haskell_type_class_extraction",
+  "total_chunks": 9
+}

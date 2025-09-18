@@ -1,0 +1,71 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "object Main {\n    def main(args: Array[String]): Unit = {\n        println(\"Hello, world!\")\n    }\n\n    val PI = 3.14159\n}",
+      "end_line": 8,
+      "language": "scala",
+      "name": "Main",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    def main(args: Array[String]): Unit = {\n        println(\"Hello, world!\")\n    }",
+      "end_line": 5,
+      "language": "scala",
+      "name": "main",
+      "original_indentation": 4,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "object MathUtils {\n    def factorial(n: Int): Int = {\n        if (n <= 1) 1 else n * factorial(n - 1)\n    }\n}",
+      "end_line": 14,
+      "language": "scala",
+      "name": "MathUtils",
+      "original_indentation": 0,
+      "start_line": 10
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    def factorial(n: Int): Int = {\n        if (n <= 1) 1 else n * factorial(n - 1)\n    }",
+      "end_line": 13,
+      "language": "scala",
+      "name": "factorial",
+      "original_indentation": 4,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "case object Singleton {\n    def process(): String = \"processing\"\n}",
+      "end_line": 18,
+      "language": "scala",
+      "name": "Singleton",
+      "original_indentation": 0,
+      "start_line": 16
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    def process(): String = \"processing\"",
+      "end_line": 17,
+      "language": "scala",
+      "name": "process",
+      "original_indentation": 4,
+      "start_line": 17
+    }
+  ],
+  "source_code": "\nobject Main {\n    def main(args: Array[String]): Unit = {\n        println(\"Hello, world!\")\n    }\n\n    val PI = 3.14159\n}\n\nobject MathUtils {\n    def factorial(n: Int): Int = {\n        if (n <= 1) 1 else n * factorial(n - 1)\n    }\n}\n\ncase object Singleton {\n    def process(): String = \"processing\"\n}\n",
+  "test_name": "test_scala_object_extraction",
+  "total_chunks": 6
+}

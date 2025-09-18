@@ -1,15 +1,10 @@
-use crate::integration::{extract_chunks_for_test, test_extraction_options};
-use gittype::extractor::CodeChunkExtractor;
-use gittype::models::ChunkType;
-use std::fs;
-use tempfile::TempDir;
+use crate::integration::languages::extractor::test_language_extractor;
 
-#[test]
-fn test_javascript_function_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.js");
-
-    let js_code = r#"
+test_language_extractor! {
+    name: test_javascript_function_extraction,
+    language: "javascript",
+    extension: "js",
+    source: r#"
 function calculateSum(a, b) {
     return a + b;
 }
@@ -22,34 +17,18 @@ async function fetchUserData(userId) {
     const response = await fetch(`/api/users/${userId}`);
     return response.json();
 }
-"#;
-    fs::write(&file_path, js_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    assert_eq!(chunks.len(), 3);
-
-    let function_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Function))
-        .collect();
-    assert_eq!(function_chunks.len(), 3);
-
-    let function_names: Vec<&String> = function_chunks.iter().map(|c| &c.name).collect();
-    assert!(function_names.contains(&&"calculateSum".to_string()));
-    assert!(function_names.contains(&&"greetUser".to_string()));
-    assert!(function_names.contains(&&"fetchUserData".to_string()));
+"#,
+    total_chunks: 3,
+    chunk_counts: {
+        Function: 3,
+    }
 }
 
-#[test]
-fn test_javascript_arrow_function_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.js");
-
-    let js_code = r#"
+test_language_extractor! {
+    name: test_javascript_arrow_function_extraction,
+    language: "javascript",
+    extension: "js",
+    source: r#"
 const add = (a, b) => a + b;
 
 const multiply = (x, y) => {
@@ -60,40 +39,24 @@ const processData = async (data) => {
     const processed = data.map(item => item.value);
     return processed;
 };
-"#;
-    fs::write(&file_path, js_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    assert_eq!(chunks.len(), 3);
-
-    let function_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Function))
-        .collect();
-    assert_eq!(function_chunks.len(), 3);
-
-    let function_names: Vec<&String> = function_chunks.iter().map(|c| &c.name).collect();
-    assert!(function_names.contains(&&"add".to_string()));
-    assert!(function_names.contains(&&"multiply".to_string()));
-    assert!(function_names.contains(&&"processData".to_string()));
+"#,
+    total_chunks: 3,
+    chunk_counts: {
+        Function: 3,
+    }
 }
 
-#[test]
-fn test_javascript_class_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.js");
-
-    let js_code = r#"
+test_language_extractor! {
+    name: test_javascript_class_extraction,
+    language: "javascript",
+    extension: "js",
+    source: r#"
 class UserManager {
     constructor(apiKey) {
         this.apiKey = apiKey;
         this.users = [];
     }
-    
+
     async loadUsers() {
         try {
             const response = await fetchData('/users', {
@@ -106,7 +69,7 @@ class UserManager {
             throw error;
         }
     }
-    
+
     findUser = (id) => {
         return this.users.find(user => user.id === id);
     };
@@ -116,46 +79,38 @@ class EventEmitter {
     constructor() {
         this.events = {};
     }
-    
+
     on(eventName, callback) {
         if (!this.events[eventName]) {
             this.events[eventName] = [];
         }
         this.events[eventName].push(callback);
     }
-    
+
     emit(eventName, data) {
         if (this.events[eventName]) {
             this.events[eventName].forEach(callback => callback(data));
         }
     }
 }
-"#;
-    fs::write(&file_path, js_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    // Should find 2 classes + their methods
-    let class_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Class))
-        .collect();
-    assert_eq!(class_chunks.len(), 2);
-
-    let class_names: Vec<&String> = class_chunks.iter().map(|c| &c.name).collect();
-    assert!(class_names.contains(&&"UserManager".to_string()));
-    assert!(class_names.contains(&&"EventEmitter".to_string()));
+"#,
+    total_chunks: 14,
+    chunk_counts: {
+        Class: 2,
+        CodeBlock: 2,
+        Conditional: 2,
+        ErrorHandling: 1,
+        FunctionCall: 1,
+        Lambda: 1,
+        Method: 5,
+    }
 }
 
-#[test]
-fn test_javascript_export_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.js");
-
-    let js_code = r#"
+test_language_extractor! {
+    name: test_javascript_export_extraction,
+    language: "javascript",
+    extension: "js",
+    source: r#"
 export function validateEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -165,7 +120,7 @@ export class ApiClient {
     constructor(baseUrl) {
         this.baseUrl = baseUrl;
     }
-    
+
     async get(endpoint) {
         const response = await fetch(`${this.baseUrl}${endpoint}`);
         return response.json();
@@ -181,49 +136,30 @@ export default class UserService {
     constructor(apiClient) {
         this.apiClient = apiClient;
     }
-    
+
     async getUser(id) {
         return this.apiClient.get(`/users/${id}`);
     }
 }
-"#;
-    fs::write(&file_path, js_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    // Should find exported functions and classes
-    let function_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Function))
-        .collect();
-    let class_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Class))
-        .collect();
-
-    assert!(!function_chunks.is_empty());
-    assert!(!class_chunks.is_empty());
-
-    let all_names: Vec<&String> = chunks.iter().map(|c| &c.name).collect();
-    assert!(all_names.contains(&&"validateEmail".to_string()));
-    assert!(all_names.contains(&&"ApiClient".to_string()));
-    assert!(all_names.contains(&&"UserService".to_string()));
+"#,
+    total_chunks: 7,
+    chunk_counts: {
+        Class: 2,
+        Function: 1,
+        Method: 4,
+    }
 }
 
-#[test]
-fn test_javascript_object_method_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.js");
-
-    let js_code = r#"
+test_language_extractor! {
+    name: test_javascript_object_method_extraction,
+    language: "javascript",
+    extension: "js",
+    source: r#"
 const utils = {
     formatDate: (date) => {
         return date.toLocaleDateString();
     },
-    
+
     calculateAge: function(birthDate) {
         const today = new Date();
         return today.getFullYear() - birthDate.getFullYear();
@@ -234,7 +170,7 @@ const eventHandlers = {
     handleClick: (event) => {
         console.log('Button clicked:', event.target);
     },
-    
+
     handleSubmit: async function(formData) {
         try {
             const response = await fetch('/api/submit', {
@@ -247,33 +183,21 @@ const eventHandlers = {
         }
     }
 };
-"#;
-    fs::write(&file_path, js_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    // Should find method assignments
-    let method_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Method))
-        .collect();
-
-    if !method_chunks.is_empty() {
-        let method_names: Vec<&String> = method_chunks.iter().map(|c| &c.name).collect();
-        // These might be detected as methods if the parser can handle object property assignments
-        println!("Found methods: {:?}", method_names);
+"#,
+    total_chunks: 8,
+    chunk_counts: {
+        CodeBlock: 2,
+        ErrorHandling: 1,
+        FunctionCall: 1,
+        Lambda: 4,
     }
 }
 
-#[test]
-fn test_javascript_mixed_patterns() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.js");
-
-    let js_code = r#"
+test_language_extractor! {
+    name: test_javascript_mixed_patterns,
+    language: "javascript",
+    extension: "js",
+    source: r#"
 import { fetchData } from './api.js';
 
 class UserManager {
@@ -281,7 +205,7 @@ class UserManager {
         this.apiKey = apiKey;
         this.users = [];
     }
-    
+
     async loadUsers() {
         try {
             const response = await fetchData('/users', {
@@ -294,7 +218,7 @@ class UserManager {
             throw error;
         }
     }
-    
+
     findUser = (id) => {
         return this.users.find(user => user.id === id);
     };
@@ -323,31 +247,151 @@ const userService = {
 };
 
 export default UserManager;
-"#;
-    fs::write(&file_path, js_code).unwrap();
+"#,
+    total_chunks: 13,
+    chunk_counts: {
+        Class: 1,
+        CodeBlock: 2,
+        ErrorHandling: 1,
+        Function: 2,
+        FunctionCall: 2,
+        Lambda: 2,
+        Method: 3,
+    }
+}
 
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
+test_language_extractor! {
+    name: test_javascript_complex_algorithm_extraction,
+    language: "javascript",
+    extension: "js",
+    source: r#"
+function complexDataProcessor(input, options = {}) {
+    const { threshold = 10, enableCaching = true } = options;
+    const cache = new Map();
+    const results = [];
 
-    // Should find at least the class and functions
-    assert!(!chunks.is_empty());
+    // Main processing algorithm - extractable middle chunk
+    for (let i = 0; i < input.length; i++) {
+        const item = input[i];
+        const cacheKey = `item_${i}_${item.id || i}`;
 
-    let class_count = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Class))
-        .count();
-    let function_count = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Function))
-        .count();
+        if (enableCaching && cache.has(cacheKey)) {
+            const cachedResult = cache.get(cacheKey);
+            if (cachedResult.valid) {
+                results.push(cachedResult.data);
+                continue;
+            }
+        }
 
-    assert!(class_count >= 1, "Should find at least 1 class");
-    assert!(function_count >= 2, "Should find at least 2 functions");
+        // Complex transformation logic
+        let processedItem;
+        if (typeof item === 'object' && item !== null) {
+            const score = (item.value || 0) * (item.weight || 1);
 
-    let chunk_names: Vec<&String> = chunks.iter().map(|c| &c.name).collect();
-    assert!(chunk_names.contains(&&"UserManager".to_string()));
-    assert!(chunk_names.contains(&&"processUsers".to_string()));
-    assert!(chunk_names.contains(&&"filterActiveUsers".to_string()));
+            if (score > threshold) {
+                processedItem = {
+                    id: item.id || i,
+                    originalValue: item.value,
+                    score: score,
+                    category: score > threshold * 2 ? 'high' : 'medium',
+                    metadata: {
+                        processed: true,
+                        timestamp: Date.now(),
+                        processor: 'complex'
+                    }
+                };
+            } else {
+                processedItem = {
+                    id: item.id || i,
+                    originalValue: item.value,
+                    score: score + threshold,
+                    category: 'low',
+                    metadata: {
+                        processed: true,
+                        timestamp: Date.now(),
+                        processor: 'simple',
+                        adjusted: true
+                    }
+                };
+            }
+        } else {
+            processedItem = {
+                id: i,
+                originalValue: item,
+                score: Number(item) || 0,
+                category: 'primitive',
+                metadata: {
+                    processed: true,
+                    timestamp: Date.now(),
+                    processor: 'primitive'
+                }
+            };
+        }
+
+        if (enableCaching) {
+            cache.set(cacheKey, { data: processedItem, valid: true });
+        }
+
+        results.push(processedItem);
+    }
+
+    return results;
+}
+
+const dataAnalyzer = {
+    analyzePatterns(data, patternTypes = ['sequence', 'frequency']) {
+        const analysis = {
+            patterns: [],
+            statistics: {},
+            insights: []
+        };
+
+        // Pattern analysis algorithm - extractable middle chunk
+        if (patternTypes.includes('sequence')) {
+            for (let i = 1; i < data.length; i++) {
+                const current = data[i];
+                const previous = data[i - 1];
+
+                if (typeof current === 'number' && typeof previous === 'number') {
+                    const difference = current - previous;
+                    const percentChange = previous !== 0 ? (difference / previous) * 100 : 0;
+
+                    const pattern = {
+                        type: 'sequence',
+                        position: i,
+                        change: difference,
+                        percentChange: percentChange,
+                        trend: difference > 0 ? 'increasing' :
+                               difference < 0 ? 'decreasing' : 'stable',
+                        magnitude: Math.abs(percentChange) > 50 ? 'significant' : 'minor'
+                    };
+
+                    analysis.patterns.push(pattern);
+                }
+            }
+        }
+
+        if (patternTypes.includes('frequency')) {
+            const frequency = {};
+            data.forEach(item => {
+                const key = typeof item === 'object' ?
+                    JSON.stringify(item) : String(item);
+                frequency[key] = (frequency[key] || 0) + 1;
+            });
+
+            analysis.statistics.frequency = frequency;
+            analysis.statistics.mostCommon = Object.entries(frequency)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 5);
+        }
+
+        return analysis;
+    }
+};
+"#,
+    total_chunks: 18,
+    chunk_counts: {
+        Function: 1,
+        Method: 1,
+    }
 }

@@ -1,0 +1,91 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "const String APP_NAME = 'MyApp';",
+      "end_line": 2,
+      "language": "dart",
+      "name": "APP_NAME",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "const int VERSION = 1;",
+      "end_line": 3,
+      "language": "dart",
+      "name": "VERSION",
+      "original_indentation": 0,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "final String sessionId = generateId();",
+      "end_line": 5,
+      "language": "dart",
+      "name": "sessionId",
+      "original_indentation": 0,
+      "start_line": 5
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "final List<String> items = [];",
+      "end_line": 6,
+      "language": "dart",
+      "name": "items",
+      "original_indentation": 0,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "var globalCounter = 0;",
+      "end_line": 8,
+      "language": "dart",
+      "name": "globalCounter",
+      "original_indentation": 0,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "var isLoggedIn = false;",
+      "end_line": 9,
+      "language": "dart",
+      "name": "isLoggedIn",
+      "original_indentation": 0,
+      "start_line": 9
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "late String userId;",
+      "end_line": 11,
+      "language": "dart",
+      "name": "userId",
+      "original_indentation": 0,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "late DatabaseConnection db;",
+      "end_line": 12,
+      "language": "dart",
+      "name": "db",
+      "original_indentation": 0,
+      "start_line": 12
+    }
+  ],
+  "source_code": "\nconst String APP_NAME = 'MyApp';\nconst int VERSION = 1;\n\nfinal String sessionId = generateId();\nfinal List<String> items = [];\n\nvar globalCounter = 0;\nvar isLoggedIn = false;\n\nlate String userId;\nlate DatabaseConnection db;\n",
+  "test_name": "test_dart_variable_extraction",
+  "total_chunks": 8
+}

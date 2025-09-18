@@ -49,6 +49,31 @@ impl LanguageExtractor for ScalaExtractor {
     fn extract_name(&self, node: Node, source_code: &str, _capture_name: &str) -> Option<String> {
         self.extract_name_from_node(node, source_code)
     }
+
+    fn middle_implementation_query(&self) -> &str {
+        "
+        (for_expression) @for_loop
+        (while_expression) @while_loop
+        (if_expression) @if_block
+        (try_expression) @try_block
+        (match_expression) @match_block
+        (call_expression) @function_call
+        (lambda_expression) @lambda
+        (block) @code_block
+        "
+    }
+
+    fn middle_capture_name_to_chunk_type(&self, capture_name: &str) -> Option<ChunkType> {
+        match capture_name {
+            "for_loop" | "while_loop" => Some(ChunkType::Loop),
+            "if_block" | "match_block" => Some(ChunkType::Conditional),
+            "try_block" => Some(ChunkType::ErrorHandling),
+            "function_call" => Some(ChunkType::FunctionCall),
+            "lambda" => Some(ChunkType::Lambda),
+            "code_block" => Some(ChunkType::CodeBlock),
+            _ => None,
+        }
+    }
 }
 
 impl ScalaExtractor {

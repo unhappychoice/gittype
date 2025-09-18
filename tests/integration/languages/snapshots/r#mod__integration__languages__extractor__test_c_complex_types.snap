@@ -1,0 +1,61 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "typedef struct {\n    int id;\n    char name[32];\n} User;",
+      "end_line": 5,
+      "language": "c",
+      "name": "User",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "typedef union {\n    int i;\n    float f;\n    char c[4];\n} Value;",
+      "end_line": 11,
+      "language": "c",
+      "name": "Value",
+      "original_indentation": 0,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "enum Status {\n    SUCCESS,\n    ERROR,\n    PENDING\n}",
+      "end_line": 17,
+      "language": "c",
+      "name": "Status",
+      "original_indentation": 0,
+      "start_line": 13
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "int process_user(User *user, enum Status",
+      "end_line": 19,
+      "language": "c",
+      "name": "Status",
+      "original_indentation": 29,
+      "start_line": 19
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "int process_user(User *user, enum Status *status) {\n    if (!user || !status) return -1;\n    *status = SUCCESS;\n    return user->id;\n}",
+      "end_line": 23,
+      "language": "c",
+      "name": "process_user",
+      "original_indentation": 0,
+      "start_line": 19
+    }
+  ],
+  "source_code": "\ntypedef struct {\n    int id;\n    char name[32];\n} User;\n\ntypedef union {\n    int i;\n    float f;\n    char c[4];\n} Value;\n\nenum Status {\n    SUCCESS,\n    ERROR,\n    PENDING\n};\n\nint process_user(User *user, enum Status *status) {\n    if (!user || !status) return -1;\n    *status = SUCCESS;\n    return user->id;\n}\n",
+  "test_name": "test_c_complex_types",
+  "total_chunks": 5
+}

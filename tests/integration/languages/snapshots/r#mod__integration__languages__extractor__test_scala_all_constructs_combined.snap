@@ -1,0 +1,111 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "object Calculator {\n    def add(a: Int, b: Int): Int = a + b\n}",
+      "end_line": 5,
+      "language": "scala",
+      "name": "Calculator",
+      "original_indentation": 0,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    def add(a: Int, b: Int): Int = a + b",
+      "end_line": 4,
+      "language": "scala",
+      "name": "add",
+      "original_indentation": 4,
+      "start_line": 4
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "class Person(val name: String) {\n    def greet(): String = s\"Hello, $name\"\n}",
+      "end_line": 10,
+      "language": "scala",
+      "name": "Person",
+      "original_indentation": 0,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    def greet(): String = s\"Hello, $name\"",
+      "end_line": 9,
+      "language": "scala",
+      "name": "greet",
+      "original_indentation": 4,
+      "start_line": 9
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "case class Point(x: Int, y: Int) {\n    def move(dx: Int, dy: Int): Point = Point(x + dx, y + dy)\n}",
+      "end_line": 15,
+      "language": "scala",
+      "name": "Point",
+      "original_indentation": 0,
+      "start_line": 13
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    def move(dx: Int, dy: Int): Point = Point(x + dx, y + dy)",
+      "end_line": 14,
+      "language": "scala",
+      "name": "move",
+      "original_indentation": 4,
+      "start_line": 14
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "trait Drawable {\n    def draw(): Unit\n}",
+      "end_line": 20,
+      "language": "scala",
+      "name": "Drawable",
+      "original_indentation": 0,
+      "start_line": 18
+    },
+    {
+      "chunk_type": "Const",
+      "comment_ranges": [],
+      "content": "enum Status {\n    case Active, Inactive\n}",
+      "end_line": 25,
+      "language": "scala",
+      "name": "Status",
+      "original_indentation": 0,
+      "start_line": 23
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "def factorial(n: Int): Int = {\n    if (n <= 1) 1 else n * factorial(n - 1)\n}",
+      "end_line": 30,
+      "language": "scala",
+      "name": "factorial",
+      "original_indentation": 0,
+      "start_line": 28
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "type UserId = Long",
+      "end_line": 33,
+      "language": "scala",
+      "name": "UserId",
+      "original_indentation": 0,
+      "start_line": 33
+    }
+  ],
+  "source_code": "\n// Object definition\nobject Calculator {\n    def add(a: Int, b: Int): Int = a + b\n}\n\n// Class definition\nclass Person(val name: String) {\n    def greet(): String = s\"Hello, $name\"\n}\n\n// Case class\ncase class Point(x: Int, y: Int) {\n    def move(dx: Int, dy: Int): Point = Point(x + dx, y + dy)\n}\n\n// Trait definition\ntrait Drawable {\n    def draw(): Unit\n}\n\n// Enum definition\nenum Status {\n    case Active, Inactive\n}\n\n// Function definition\ndef factorial(n: Int): Int = {\n    if (n <= 1) 1 else n * factorial(n - 1)\n}\n\n// Type definition\ntype UserId = Long\n",
+  "test_name": "test_scala_all_constructs_combined",
+  "total_chunks": 10
+}

@@ -1,0 +1,636 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "struct ProcessedItem {\n    let id: Int\n    let originalValue: Int\n    let transformedValue: Int\n    let category: String\n    let timestamp: Date\n    var metadata: [String: Any]\n\n    init(id: Int, originalValue: Int, transformedValue: Int, category: String, metadata: [String: Any] = [:]) {\n        self.id = id\n        self.originalValue = originalValue\n        self.transformedValue = transformedValue\n        self.category = category\n        self.timestamp = Date()\n        self.metadata = metadata\n    }\n}",
+      "end_line": 20,
+      "language": "swift",
+      "name": "ProcessedItem",
+      "original_indentation": 0,
+      "start_line": 4
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        self.id = id\n        self.originalValue = originalValue\n        self.transformedValue = transformedValue\n        self.category = category\n        self.timestamp = Date()\n        self.metadata = metadata\n    ",
+      "end_line": 19,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 13
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [
+        [
+          375,
+          430
+        ],
+        [
+          1928,
+          1951
+        ],
+        [
+          2161,
+          2182
+        ],
+        [
+          2421,
+          2449
+        ],
+        [
+          2828,
+          2880
+        ],
+        [
+          3394,
+          3416
+        ],
+        [
+          3558,
+          3572
+        ],
+        [
+          3894,
+          3916
+        ]
+      ],
+      "content": "class DataProcessor {\n    private var cache: [String: ProcessedItem] = [:]\n    private var processingLog: [ProcessedItem] = []\n    private let threshold: Int\n\n    init(threshold: Int) {\n        self.threshold = threshold\n    }\n\n    func processComplexData(_ input: [Int]) -> [ProcessedItem] {\n        var results: [ProcessedItem] = []\n        var processedCount = 0\n\n        // Main processing algorithm - extractable middle chunk\n        for (index, value) in input.enumerated() {\n            let cacheKey = \"item_\\(index)_\\(value)\"\n\n            if let cachedItem = cache[cacheKey] {\n                results.append(cachedItem)\n                continue\n            }\n\n            let processedItem: ProcessedItem?\n            if value > threshold {\n                let transformedValue = value * 2\n                let category = transformedValue > threshold * 3 ? \"HIGH\" : \"MEDIUM\"\n                let bonusValue = transformedValue > 100 ? transformedValue + 10 : transformedValue\n\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: bonusValue,\n                    category: category,\n                    metadata: [\n                        \"processed\": true,\n                        \"multiplier\": 2,\n                        \"processor\": \"enhanced\"\n                    ]\n                )\n                processedCount += 1\n            } else if value > 0 {\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: value + threshold,\n                    category: \"LOW\",\n                    metadata: [\n                        \"processed\": true,\n                        \"adjusted\": true,\n                        \"processor\": \"basic\"\n                    ]\n                )\n            } else {\n                continue // skip negative values\n            }\n\n            if let item = processedItem {\n                cache[cacheKey] = item\n                processingLog.append(item)\n                results.append(item)\n            }\n        }\n\n        // Finalization logic\n        if processedCount > 0 {\n            let average = Double(results.map { $0.transformedValue }.reduce(0, +)) / Double(results.count)\n            print(\"Processing complete. Average: \\(String(format: \"%.2f\", average))\")\n\n            // Add processing statistics\n            for i in 0..<results.count {\n                results[i].metadata[\"processing_average\"] = average\n            }\n        }\n\n        return results\n    }\n\n    func analyzePatterns(_ items: [ProcessedItem]) -> [String: [String: Any]] {\n        var analysis: [String: [String: Any]] = [:]\n        let categoryGroups = Dictionary(grouping: items) { $0.category }\n\n        // Pattern analysis logic - extractable middle chunk\n        for (category, categoryItems) in categoryGroups {\n            let values = categoryItems.map { $0.transformedValue }\n            var categoryAnalysis: [String: Any] = [\n                \"count\": categoryItems.count,\n                \"percentage\": Double(categoryItems.count) / Double(items.count) * 100,\n                \"avg_value\": Double(values.reduce(0, +)) / Double(values.count),\n                \"min_value\": values.min() ?? 0,\n                \"max_value\": values.max() ?? 0\n            ]\n\n            // Time-based analysis\n            let currentTime = Date()\n            let recentItems = categoryItems.filter { currentTime.timeIntervalSince($0.timestamp) < 60 } // last minute\n            if !recentItems.isEmpty {\n                let recentValues = recentItems.map { $0.transformedValue }\n                categoryAnalysis[\"recent_count\"] = recentItems.count\n                categoryAnalysis[\"recent_avg\"] = Double(recentValues.reduce(0, +)) / Double(recentValues.count)\n            }\n\n            // High-value analysis\n            let highValueItems = categoryItems.filter { $0.transformedValue > 1000 }\n            if !highValueItems.isEmpty {\n                categoryAnalysis[\"high_value_count\"] = highValueItems.count\n            }\n\n            analysis[category] = categoryAnalysis\n        }\n\n        analysis[\"total_items\"] = items.count\n        analysis[\"processing_time\"] = Date().timeIntervalSince1970\n\n        return analysis\n    }\n}",
+      "end_line": 137,
+      "language": "swift",
+      "name": "DataProcessor",
+      "original_indentation": 0,
+      "start_line": 22
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        self.threshold = threshold\n    ",
+      "end_line": 29,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 28
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [
+        [
+          147,
+          202
+        ],
+        [
+          1700,
+          1723
+        ],
+        [
+          1933,
+          1954
+        ],
+        [
+          2193,
+          2221
+        ]
+      ],
+      "content": "    func processComplexData(_ input: [Int]) -> [ProcessedItem] {\n        var results: [ProcessedItem] = []\n        var processedCount = 0\n\n        // Main processing algorithm - extractable middle chunk\n        for (index, value) in input.enumerated() {\n            let cacheKey = \"item_\\(index)_\\(value)\"\n\n            if let cachedItem = cache[cacheKey] {\n                results.append(cachedItem)\n                continue\n            }\n\n            let processedItem: ProcessedItem?\n            if value > threshold {\n                let transformedValue = value * 2\n                let category = transformedValue > threshold * 3 ? \"HIGH\" : \"MEDIUM\"\n                let bonusValue = transformedValue > 100 ? transformedValue + 10 : transformedValue\n\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: bonusValue,\n                    category: category,\n                    metadata: [\n                        \"processed\": true,\n                        \"multiplier\": 2,\n                        \"processor\": \"enhanced\"\n                    ]\n                )\n                processedCount += 1\n            } else if value > 0 {\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: value + threshold,\n                    category: \"LOW\",\n                    metadata: [\n                        \"processed\": true,\n                        \"adjusted\": true,\n                        \"processor\": \"basic\"\n                    ]\n                )\n            } else {\n                continue // skip negative values\n            }\n\n            if let item = processedItem {\n                cache[cacheKey] = item\n                processingLog.append(item)\n                results.append(item)\n            }\n        }\n\n        // Finalization logic\n        if processedCount > 0 {\n            let average = Double(results.map { $0.transformedValue }.reduce(0, +)) / Double(results.count)\n            print(\"Processing complete. Average: \\(String(format: \"%.2f\", average))\")\n\n            // Add processing statistics\n            for i in 0..<results.count {\n                results[i].metadata[\"processing_average\"] = average\n            }\n        }\n\n        return results\n    }",
+      "end_line": 97,
+      "language": "swift",
+      "name": "processComplexData",
+      "original_indentation": 4,
+      "start_line": 31
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [
+        [
+          1497,
+          1520
+        ]
+      ],
+      "content": "        for (index, value) in input.enumerated() {\n            let cacheKey = \"item_\\(index)_\\(value)\"\n\n            if let cachedItem = cache[cacheKey] {\n                results.append(cachedItem)\n                continue\n            }\n\n            let processedItem: ProcessedItem?\n            if value > threshold {\n                let transformedValue = value * 2\n                let category = transformedValue > threshold * 3 ? \"HIGH\" : \"MEDIUM\"\n                let bonusValue = transformedValue > 100 ? transformedValue + 10 : transformedValue\n\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: bonusValue,\n                    category: category,\n                    metadata: [\n                        \"processed\": true,\n                        \"multiplier\": 2,\n                        \"processor\": \"enhanced\"\n                    ]\n                )\n                processedCount += 1\n            } else if value > 0 {\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: value + threshold,\n                    category: \"LOW\",\n                    metadata: [\n                        \"processed\": true,\n                        \"adjusted\": true,\n                        \"processor\": \"basic\"\n                    ]\n                )\n            } else {\n                continue // skip negative values\n            }\n\n            if let item = processedItem {\n                cache[cacheKey] = item\n                processingLog.append(item)\n                results.append(item)\n            }\n        }",
+      "end_line": 83,
+      "language": "swift",
+      "name": "for_loop",
+      "original_indentation": 8,
+      "start_line": 36
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [
+        [
+          1446,
+          1469
+        ]
+      ],
+      "content": "            let cacheKey = \"item_\\(index)_\\(value)\"\n\n            if let cachedItem = cache[cacheKey] {\n                results.append(cachedItem)\n                continue\n            }\n\n            let processedItem: ProcessedItem?\n            if value > threshold {\n                let transformedValue = value * 2\n                let category = transformedValue > threshold * 3 ? \"HIGH\" : \"MEDIUM\"\n                let bonusValue = transformedValue > 100 ? transformedValue + 10 : transformedValue\n\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: bonusValue,\n                    category: category,\n                    metadata: [\n                        \"processed\": true,\n                        \"multiplier\": 2,\n                        \"processor\": \"enhanced\"\n                    ]\n                )\n                processedCount += 1\n            } else if value > 0 {\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: value + threshold,\n                    category: \"LOW\",\n                    metadata: [\n                        \"processed\": true,\n                        \"adjusted\": true,\n                        \"processor\": \"basic\"\n                    ]\n                )\n            } else {\n                continue // skip negative values\n            }\n\n            if let item = processedItem {\n                cache[cacheKey] = item\n                processingLog.append(item)\n                results.append(item)\n            }\n        ",
+      "end_line": 83,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 12,
+      "start_line": 37
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if let cachedItem = cache[cacheKey] {\n                results.append(cachedItem)\n                continue\n            }",
+      "end_line": 42,
+      "language": "swift",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 39
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "                results.append(cachedItem)\n                continue\n            ",
+      "end_line": 42,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 16,
+      "start_line": 40
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [
+        [
+          1214,
+          1237
+        ]
+      ],
+      "content": "            if value > threshold {\n                let transformedValue = value * 2\n                let category = transformedValue > threshold * 3 ? \"HIGH\" : \"MEDIUM\"\n                let bonusValue = transformedValue > 100 ? transformedValue + 10 : transformedValue\n\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: bonusValue,\n                    category: category,\n                    metadata: [\n                        \"processed\": true,\n                        \"multiplier\": 2,\n                        \"processor\": \"enhanced\"\n                    ]\n                )\n                processedCount += 1\n            } else if value > 0 {\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: value + threshold,\n                    category: \"LOW\",\n                    metadata: [\n                        \"processed\": true,\n                        \"adjusted\": true,\n                        \"processor\": \"basic\"\n                    ]\n                )\n            } else {\n                continue // skip negative values\n            }",
+      "end_line": 76,
+      "language": "swift",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 45
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "                let transformedValue = value * 2\n                let category = transformedValue > threshold * 3 ? \"HIGH\" : \"MEDIUM\"\n                let bonusValue = transformedValue > 100 ? transformedValue + 10 : transformedValue\n\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: bonusValue,\n                    category: category,\n                    metadata: [\n                        \"processed\": true,\n                        \"multiplier\": 2,\n                        \"processor\": \"enhanced\"\n                    ]\n                )\n                processedCount += 1\n            ",
+      "end_line": 62,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 16,
+      "start_line": 46
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: bonusValue,\n                    category: category,\n                    metadata: [\n                        \"processed\": true,\n                        \"multiplier\": 2,\n                        \"processor\": \"enhanced\"\n                    ]\n                )",
+      "end_line": 60,
+      "language": "swift",
+      "name": "function_call",
+      "original_indentation": 32,
+      "start_line": 50
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [
+        [
+          496,
+          519
+        ]
+      ],
+      "content": "            } else if value > 0 {\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: value + threshold,\n                    category: \"LOW\",\n                    metadata: [\n                        \"processed\": true,\n                        \"adjusted\": true,\n                        \"processor\": \"basic\"\n                    ]\n                )\n            } else {\n                continue // skip negative values\n            }",
+      "end_line": 76,
+      "language": "swift",
+      "name": "if_block",
+      "original_indentation": 19,
+      "start_line": 62
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: value + threshold,\n                    category: \"LOW\",\n                    metadata: [\n                        \"processed\": true,\n                        \"adjusted\": true,\n                        \"processor\": \"basic\"\n                    ]\n                )",
+      "end_line": 73,
+      "language": "swift",
+      "name": "function_call",
+      "original_indentation": 32,
+      "start_line": 63
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: value + threshold,\n                    category: \"LOW\",\n                    metadata: [\n                        \"processed\": true,\n                        \"adjusted\": true,\n                        \"processor\": \"basic\"\n                    ]\n                )\n            ",
+      "end_line": 74,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 16,
+      "start_line": 63
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [
+        [
+          25,
+          48
+        ]
+      ],
+      "content": "                continue // skip negative values\n            ",
+      "end_line": 76,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 16,
+      "start_line": 75
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if let item = processedItem {\n                cache[cacheKey] = item\n                processingLog.append(item)\n                results.append(item)\n            }",
+      "end_line": 82,
+      "language": "swift",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 78
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "                cache[cacheKey] = item\n                processingLog.append(item)\n                results.append(item)\n            ",
+      "end_line": 82,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 16,
+      "start_line": 79
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [
+        [
+          238,
+          266
+        ]
+      ],
+      "content": "        if processedCount > 0 {\n            let average = Double(results.map { $0.transformedValue }.reduce(0, +)) / Double(results.count)\n            print(\"Processing complete. Average: \\(String(format: \"%.2f\", average))\")\n\n            // Add processing statistics\n            for i in 0..<results.count {\n                results[i].metadata[\"processing_average\"] = average\n            }\n        }",
+      "end_line": 94,
+      "language": "swift",
+      "name": "if_block",
+      "original_indentation": 8,
+      "start_line": 86
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [
+        [
+          206,
+          234
+        ]
+      ],
+      "content": "            let average = Double(results.map { $0.transformedValue }.reduce(0, +)) / Double(results.count)\n            print(\"Processing complete. Average: \\(String(format: \"%.2f\", average))\")\n\n            // Add processing statistics\n            for i in 0..<results.count {\n                results[i].metadata[\"processing_average\"] = average\n            }\n        ",
+      "end_line": 94,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 12,
+      "start_line": 87
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [],
+      "content": "            for i in 0..<results.count {\n                results[i].metadata[\"processing_average\"] = average\n            }",
+      "end_line": 93,
+      "language": "swift",
+      "name": "for_loop",
+      "original_indentation": 12,
+      "start_line": 91
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "                results[i].metadata[\"processing_average\"] = average\n            ",
+      "end_line": 93,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 16,
+      "start_line": 92
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [
+        [
+          214,
+          266
+        ],
+        [
+          780,
+          802
+        ],
+        [
+          944,
+          958
+        ],
+        [
+          1280,
+          1302
+        ]
+      ],
+      "content": "    func analyzePatterns(_ items: [ProcessedItem]) -> [String: [String: Any]] {\n        var analysis: [String: [String: Any]] = [:]\n        let categoryGroups = Dictionary(grouping: items) { $0.category }\n\n        // Pattern analysis logic - extractable middle chunk\n        for (category, categoryItems) in categoryGroups {\n            let values = categoryItems.map { $0.transformedValue }\n            var categoryAnalysis: [String: Any] = [\n                \"count\": categoryItems.count,\n                \"percentage\": Double(categoryItems.count) / Double(items.count) * 100,\n                \"avg_value\": Double(values.reduce(0, +)) / Double(values.count),\n                \"min_value\": values.min() ?? 0,\n                \"max_value\": values.max() ?? 0\n            ]\n\n            // Time-based analysis\n            let currentTime = Date()\n            let recentItems = categoryItems.filter { currentTime.timeIntervalSince($0.timestamp) < 60 } // last minute\n            if !recentItems.isEmpty {\n                let recentValues = recentItems.map { $0.transformedValue }\n                categoryAnalysis[\"recent_count\"] = recentItems.count\n                categoryAnalysis[\"recent_avg\"] = Double(recentValues.reduce(0, +)) / Double(recentValues.count)\n            }\n\n            // High-value analysis\n            let highValueItems = categoryItems.filter { $0.transformedValue > 1000 }\n            if !highValueItems.isEmpty {\n                categoryAnalysis[\"high_value_count\"] = highValueItems.count\n            }\n\n            analysis[category] = categoryAnalysis\n        }\n\n        analysis[\"total_items\"] = items.count\n        analysis[\"processing_time\"] = Date().timeIntervalSince1970\n\n        return analysis\n    }",
+      "end_line": 136,
+      "language": "swift",
+      "name": "analyzePatterns",
+      "original_indentation": 4,
+      "start_line": 99
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [
+        [
+          134,
+          186
+        ],
+        [
+          700,
+          722
+        ],
+        [
+          864,
+          878
+        ],
+        [
+          1200,
+          1222
+        ]
+      ],
+      "content": "        var analysis: [String: [String: Any]] = [:]\n        let categoryGroups = Dictionary(grouping: items) { $0.category }\n\n        // Pattern analysis logic - extractable middle chunk\n        for (category, categoryItems) in categoryGroups {\n            let values = categoryItems.map { $0.transformedValue }\n            var categoryAnalysis: [String: Any] = [\n                \"count\": categoryItems.count,\n                \"percentage\": Double(categoryItems.count) / Double(items.count) * 100,\n                \"avg_value\": Double(values.reduce(0, +)) / Double(values.count),\n                \"min_value\": values.min() ?? 0,\n                \"max_value\": values.max() ?? 0\n            ]\n\n            // Time-based analysis\n            let currentTime = Date()\n            let recentItems = categoryItems.filter { currentTime.timeIntervalSince($0.timestamp) < 60 } // last minute\n            if !recentItems.isEmpty {\n                let recentValues = recentItems.map { $0.transformedValue }\n                categoryAnalysis[\"recent_count\"] = recentItems.count\n                categoryAnalysis[\"recent_avg\"] = Double(recentValues.reduce(0, +)) / Double(recentValues.count)\n            }\n\n            // High-value analysis\n            let highValueItems = categoryItems.filter { $0.transformedValue > 1000 }\n            if !highValueItems.isEmpty {\n                categoryAnalysis[\"high_value_count\"] = highValueItems.count\n            }\n\n            analysis[category] = categoryAnalysis\n        }\n\n        analysis[\"total_items\"] = items.count\n        analysis[\"processing_time\"] = Date().timeIntervalSince1970\n\n        return analysis\n    ",
+      "end_line": 136,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 100
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [
+        [
+          513,
+          535
+        ],
+        [
+          677,
+          691
+        ],
+        [
+          1013,
+          1035
+        ]
+      ],
+      "content": "        for (category, categoryItems) in categoryGroups {\n            let values = categoryItems.map { $0.transformedValue }\n            var categoryAnalysis: [String: Any] = [\n                \"count\": categoryItems.count,\n                \"percentage\": Double(categoryItems.count) / Double(items.count) * 100,\n                \"avg_value\": Double(values.reduce(0, +)) / Double(values.count),\n                \"min_value\": values.min() ?? 0,\n                \"max_value\": values.max() ?? 0\n            ]\n\n            // Time-based analysis\n            let currentTime = Date()\n            let recentItems = categoryItems.filter { currentTime.timeIntervalSince($0.timestamp) < 60 } // last minute\n            if !recentItems.isEmpty {\n                let recentValues = recentItems.map { $0.transformedValue }\n                categoryAnalysis[\"recent_count\"] = recentItems.count\n                categoryAnalysis[\"recent_avg\"] = Double(recentValues.reduce(0, +)) / Double(recentValues.count)\n            }\n\n            // High-value analysis\n            let highValueItems = categoryItems.filter { $0.transformedValue > 1000 }\n            if !highValueItems.isEmpty {\n                categoryAnalysis[\"high_value_count\"] = highValueItems.count\n            }\n\n            analysis[category] = categoryAnalysis\n        }",
+      "end_line": 130,
+      "language": "swift",
+      "name": "for_loop",
+      "original_indentation": 8,
+      "start_line": 104
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [
+        [
+          455,
+          477
+        ],
+        [
+          619,
+          633
+        ],
+        [
+          955,
+          977
+        ]
+      ],
+      "content": "            let values = categoryItems.map { $0.transformedValue }\n            var categoryAnalysis: [String: Any] = [\n                \"count\": categoryItems.count,\n                \"percentage\": Double(categoryItems.count) / Double(items.count) * 100,\n                \"avg_value\": Double(values.reduce(0, +)) / Double(values.count),\n                \"min_value\": values.min() ?? 0,\n                \"max_value\": values.max() ?? 0\n            ]\n\n            // Time-based analysis\n            let currentTime = Date()\n            let recentItems = categoryItems.filter { currentTime.timeIntervalSince($0.timestamp) < 60 } // last minute\n            if !recentItems.isEmpty {\n                let recentValues = recentItems.map { $0.transformedValue }\n                categoryAnalysis[\"recent_count\"] = recentItems.count\n                categoryAnalysis[\"recent_avg\"] = Double(recentValues.reduce(0, +)) / Double(recentValues.count)\n            }\n\n            // High-value analysis\n            let highValueItems = categoryItems.filter { $0.transformedValue > 1000 }\n            if !highValueItems.isEmpty {\n                categoryAnalysis[\"high_value_count\"] = highValueItems.count\n            }\n\n            analysis[category] = categoryAnalysis\n        ",
+      "end_line": 130,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 12,
+      "start_line": 105
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if !recentItems.isEmpty {\n                let recentValues = recentItems.map { $0.transformedValue }\n                categoryAnalysis[\"recent_count\"] = recentItems.count\n                categoryAnalysis[\"recent_avg\"] = Double(recentValues.reduce(0, +)) / Double(recentValues.count)\n            }",
+      "end_line": 121,
+      "language": "swift",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 117
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "                let recentValues = recentItems.map { $0.transformedValue }\n                categoryAnalysis[\"recent_count\"] = recentItems.count\n                categoryAnalysis[\"recent_avg\"] = Double(recentValues.reduce(0, +)) / Double(recentValues.count)\n            ",
+      "end_line": 121,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 16,
+      "start_line": 118
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if !highValueItems.isEmpty {\n                categoryAnalysis[\"high_value_count\"] = highValueItems.count\n            }",
+      "end_line": 127,
+      "language": "swift",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 125
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "                categoryAnalysis[\"high_value_count\"] = highValueItems.count\n            ",
+      "end_line": 127,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 16,
+      "start_line": 126
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    func complexTransform(_ item: ProcessedItem) -> ProcessedItem {\n        let newValue: Int\n        switch item.category {\n        case \"HIGH\":\n            newValue = item.transformedValue * 2\n        case \"MEDIUM\":\n            newValue = item.transformedValue + 50\n        case \"LOW\":\n            newValue = item.transformedValue + 10\n        default:\n            newValue = item.transformedValue\n        }\n\n        return ProcessedItem(\n            id: item.id,\n            originalValue: item.originalValue,\n            transformedValue: newValue,\n            category: item.category,\n            metadata: item.metadata\n        )\n    }",
+      "end_line": 161,
+      "language": "swift",
+      "name": "complexTransform",
+      "original_indentation": 4,
+      "start_line": 141
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        let newValue: Int\n        switch item.category {\n        case \"HIGH\":\n            newValue = item.transformedValue * 2\n        case \"MEDIUM\":\n            newValue = item.transformedValue + 50\n        case \"LOW\":\n            newValue = item.transformedValue + 10\n        default:\n            newValue = item.transformedValue\n        }\n\n        return ProcessedItem(\n            id: item.id,\n            originalValue: item.originalValue,\n            transformedValue: newValue,\n            category: item.category,\n            metadata: item.metadata\n        )\n    ",
+      "end_line": 161,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 142
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "        switch item.category {\n        case \"HIGH\":\n            newValue = item.transformedValue * 2\n        case \"MEDIUM\":\n            newValue = item.transformedValue + 50\n        case \"LOW\":\n            newValue = item.transformedValue + 10\n        default:\n            newValue = item.transformedValue\n        }",
+      "end_line": 152,
+      "language": "swift",
+      "name": "switch_block",
+      "original_indentation": 8,
+      "start_line": 143
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "            newValue = item.transformedValue * 2\n        ",
+      "end_line": 146,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 12,
+      "start_line": 145
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "            newValue = item.transformedValue + 50\n        ",
+      "end_line": 148,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 12,
+      "start_line": 147
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "            newValue = item.transformedValue\n        ",
+      "end_line": 152,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 12,
+      "start_line": 151
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "        return ProcessedItem(\n            id: item.id,\n            originalValue: item.originalValue,\n            transformedValue: newValue,\n            category: item.category,\n            metadata: item.metadata\n        )",
+      "end_line": 160,
+      "language": "swift",
+      "name": "function_call",
+      "original_indentation": 15,
+      "start_line": 154
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    func filterAndSort(_ items: [ProcessedItem], targetCategory: String) -> [ProcessedItem] {\n        return items\n            .filter { $0.category == targetCategory }\n            .sorted { $0.transformedValue > $1.transformedValue }\n    }",
+      "end_line": 167,
+      "language": "swift",
+      "name": "filterAndSort",
+      "original_indentation": 4,
+      "start_line": 163
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "        return items\n            .filter { $0.category == targetCategory }",
+      "end_line": 165,
+      "language": "swift",
+      "name": "function_call",
+      "original_indentation": 15,
+      "start_line": 164
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "        return items\n            .filter { $0.category == targetCategory }\n            .sorted { $0.transformedValue > $1.transformedValue }",
+      "end_line": 166,
+      "language": "swift",
+      "name": "function_call",
+      "original_indentation": 15,
+      "start_line": 164
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        return items\n            .filter { $0.category == targetCategory }\n            .sorted { $0.transformedValue > $1.transformedValue }\n    ",
+      "end_line": 167,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 164
+    },
+    {
+      "chunk_type": "Interface",
+      "comment_ranges": [],
+      "content": "protocol BatchProcessable {\n    func batchProcess(_ batches: [[Int]], threshold: Int) -> [Result<[ProcessedItem], Error>]\n}",
+      "end_line": 173,
+      "language": "swift",
+      "name": "BatchProcessable",
+      "original_indentation": 0,
+      "start_line": 171
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    func batchProcess(_ batches: [[Int]], threshold: Int) -> [Result<[ProcessedItem], Error>] {\n        return batches.map { batch in\n            Result {\n                let processor = DataProcessor(threshold: threshold)\n                return processor.processComplexData(batch)\n            }\n        }\n    }",
+      "end_line": 183,
+      "language": "swift",
+      "name": "batchProcess",
+      "original_indentation": 4,
+      "start_line": 176
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "        return batches.map { batch in\n            Result {\n                let processor = DataProcessor(threshold: threshold)\n                return processor.processComplexData(batch)\n            }\n        }",
+      "end_line": 182,
+      "language": "swift",
+      "name": "function_call",
+      "original_indentation": 15,
+      "start_line": 177
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        return batches.map { batch in\n            Result {\n                let processor = DataProcessor(threshold: threshold)\n                return processor.processComplexData(batch)\n            }\n        }\n    ",
+      "end_line": 183,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 177
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "            Result {\n                let processor = DataProcessor(threshold: threshold)\n                return processor.processComplexData(batch)\n            }",
+      "end_line": 181,
+      "language": "swift",
+      "name": "function_call",
+      "original_indentation": 12,
+      "start_line": 178
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "            Result {\n                let processor = DataProcessor(threshold: threshold)\n                return processor.processComplexData(batch)\n            }\n        ",
+      "end_line": 182,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 12,
+      "start_line": 178
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "                let processor = DataProcessor(threshold: threshold)\n                return processor.processComplexData(batch)\n            ",
+      "end_line": 181,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 16,
+      "start_line": 179
+    }
+  ],
+  "source_code": "\nimport Foundation\n\nstruct ProcessedItem {\n    let id: Int\n    let originalValue: Int\n    let transformedValue: Int\n    let category: String\n    let timestamp: Date\n    var metadata: [String: Any]\n\n    init(id: Int, originalValue: Int, transformedValue: Int, category: String, metadata: [String: Any] = [:]) {\n        self.id = id\n        self.originalValue = originalValue\n        self.transformedValue = transformedValue\n        self.category = category\n        self.timestamp = Date()\n        self.metadata = metadata\n    }\n}\n\nclass DataProcessor {\n    private var cache: [String: ProcessedItem] = [:]\n    private var processingLog: [ProcessedItem] = []\n    private let threshold: Int\n\n    init(threshold: Int) {\n        self.threshold = threshold\n    }\n\n    func processComplexData(_ input: [Int]) -> [ProcessedItem] {\n        var results: [ProcessedItem] = []\n        var processedCount = 0\n\n        // Main processing algorithm - extractable middle chunk\n        for (index, value) in input.enumerated() {\n            let cacheKey = \"item_\\(index)_\\(value)\"\n\n            if let cachedItem = cache[cacheKey] {\n                results.append(cachedItem)\n                continue\n            }\n\n            let processedItem: ProcessedItem?\n            if value > threshold {\n                let transformedValue = value * 2\n                let category = transformedValue > threshold * 3 ? \"HIGH\" : \"MEDIUM\"\n                let bonusValue = transformedValue > 100 ? transformedValue + 10 : transformedValue\n\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: bonusValue,\n                    category: category,\n                    metadata: [\n                        \"processed\": true,\n                        \"multiplier\": 2,\n                        \"processor\": \"enhanced\"\n                    ]\n                )\n                processedCount += 1\n            } else if value > 0 {\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: value + threshold,\n                    category: \"LOW\",\n                    metadata: [\n                        \"processed\": true,\n                        \"adjusted\": true,\n                        \"processor\": \"basic\"\n                    ]\n                )\n            } else {\n                continue // skip negative values\n            }\n\n            if let item = processedItem {\n                cache[cacheKey] = item\n                processingLog.append(item)\n                results.append(item)\n            }\n        }\n\n        // Finalization logic\n        if processedCount > 0 {\n            let average = Double(results.map { $0.transformedValue }.reduce(0, +)) / Double(results.count)\n            print(\"Processing complete. Average: \\(String(format: \"%.2f\", average))\")\n\n            // Add processing statistics\n            for i in 0..<results.count {\n                results[i].metadata[\"processing_average\"] = average\n            }\n        }\n\n        return results\n    }\n\n    func analyzePatterns(_ items: [ProcessedItem]) -> [String: [String: Any]] {\n        var analysis: [String: [String: Any]] = [:]\n        let categoryGroups = Dictionary(grouping: items) { $0.category }\n\n        // Pattern analysis logic - extractable middle chunk\n        for (category, categoryItems) in categoryGroups {\n            let values = categoryItems.map { $0.transformedValue }\n            var categoryAnalysis: [String: Any] = [\n                \"count\": categoryItems.count,\n                \"percentage\": Double(categoryItems.count) / Double(items.count) * 100,\n                \"avg_value\": Double(values.reduce(0, +)) / Double(values.count),\n                \"min_value\": values.min() ?? 0,\n                \"max_value\": values.max() ?? 0\n            ]\n\n            // Time-based analysis\n            let currentTime = Date()\n            let recentItems = categoryItems.filter { currentTime.timeIntervalSince($0.timestamp) < 60 } // last minute\n            if !recentItems.isEmpty {\n                let recentValues = recentItems.map { $0.transformedValue }\n                categoryAnalysis[\"recent_count\"] = recentItems.count\n                categoryAnalysis[\"recent_avg\"] = Double(recentValues.reduce(0, +)) / Double(recentValues.count)\n            }\n\n            // High-value analysis\n            let highValueItems = categoryItems.filter { $0.transformedValue > 1000 }\n            if !highValueItems.isEmpty {\n                categoryAnalysis[\"high_value_count\"] = highValueItems.count\n            }\n\n            analysis[category] = categoryAnalysis\n        }\n\n        analysis[\"total_items\"] = items.count\n        analysis[\"processing_time\"] = Date().timeIntervalSince1970\n\n        return analysis\n    }\n}\n\n// Extension for additional functionality\nextension DataProcessor {\n    func complexTransform(_ item: ProcessedItem) -> ProcessedItem {\n        let newValue: Int\n        switch item.category {\n        case \"HIGH\":\n            newValue = item.transformedValue * 2\n        case \"MEDIUM\":\n            newValue = item.transformedValue + 50\n        case \"LOW\":\n            newValue = item.transformedValue + 10\n        default:\n            newValue = item.transformedValue\n        }\n\n        return ProcessedItem(\n            id: item.id,\n            originalValue: item.originalValue,\n            transformedValue: newValue,\n            category: item.category,\n            metadata: item.metadata\n        )\n    }\n\n    func filterAndSort(_ items: [ProcessedItem], targetCategory: String) -> [ProcessedItem] {\n        return items\n            .filter { $0.category == targetCategory }\n            .sorted { $0.transformedValue > $1.transformedValue }\n    }\n}\n\n// Protocol for batch processing\nprotocol BatchProcessable {\n    func batchProcess(_ batches: [[Int]], threshold: Int) -> [Result<[ProcessedItem], Error>]\n}\n\nextension DataProcessor: BatchProcessable {\n    func batchProcess(_ batches: [[Int]], threshold: Int) -> [Result<[ProcessedItem], Error>] {\n        return batches.map { batch in\n            Result {\n                let processor = DataProcessor(threshold: threshold)\n                return processor.processComplexData(batch)\n            }\n        }\n    }\n}\n",
+  "test_name": "test_swift_complex_algorithm_extraction",
+  "total_chunks": 48
+}

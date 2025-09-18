@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ChunkType {
     Function,
     Class,
@@ -15,6 +15,15 @@ pub enum ChunkType {
     Variable,
     Component, // JSX/TSX React components
     Namespace, // For C# namespaces
+    // New chunk types for middle implementations
+    Loop,          // for/while/loop constructs
+    Conditional,   // if/switch/match statements
+    ErrorHandling, // try/catch/error handling blocks
+    FunctionCall,  // function/method calls
+    Lambda,        // closures, lambdas, arrow functions
+    SpecialBlock,  // language-specific blocks (with, defer, etc.)
+    Comprehension, // list/dict comprehensions
+    CodeBlock,     // generic code blocks
 }
 
 #[derive(Debug, Clone)]

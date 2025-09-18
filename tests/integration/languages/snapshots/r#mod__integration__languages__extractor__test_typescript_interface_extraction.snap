@@ -1,0 +1,31 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Interface",
+      "comment_ranges": [],
+      "content": "interface User {\n    id: number;\n    name: string;\n    email?: string;\n}",
+      "end_line": 6,
+      "language": "typescript",
+      "name": "User",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Interface",
+      "comment_ranges": [],
+      "content": "interface Admin extends User {\n    permissions: string[];\n}",
+      "end_line": 10,
+      "language": "typescript",
+      "name": "Admin",
+      "original_indentation": 0,
+      "start_line": 8
+    }
+  ],
+  "source_code": "\ninterface User {\n    id: number;\n    name: string;\n    email?: string;\n}\n\ninterface Admin extends User {\n    permissions: string[];\n}\n",
+  "test_name": "test_typescript_interface_extraction",
+  "total_chunks": 2
+}

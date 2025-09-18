@@ -1,0 +1,51 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "struct Point {\n    int x;\n    int y;\n}",
+      "end_line": 5,
+      "language": "c",
+      "name": "Point",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "struct Person {\n    char name[50];\n    int age;\n    struct Point location;\n}",
+      "end_line": 11,
+      "language": "c",
+      "name": "Person",
+      "original_indentation": 0,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "int main() {\n    struct Point p = {10, 20};\n    return 0;\n}",
+      "end_line": 16,
+      "language": "c",
+      "name": "main",
+      "original_indentation": 0,
+      "start_line": 13
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    struct Point p = {10, 20};",
+      "end_line": 14,
+      "language": "c",
+      "name": "p",
+      "original_indentation": 4,
+      "start_line": 14
+    }
+  ],
+  "source_code": "\nstruct Point {\n    int x;\n    int y;\n};\n\nstruct Person {\n    char name[50];\n    int age;\n    struct Point location;\n};\n\nint main() {\n    struct Point p = {10, 20};\n    return 0;\n}\n",
+  "test_name": "test_c_struct_extraction",
+  "total_chunks": 4
+}

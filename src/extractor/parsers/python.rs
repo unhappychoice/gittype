@@ -32,6 +32,35 @@ impl LanguageExtractor for PythonExtractor {
     fn extract_name(&self, node: Node, source_code: &str, _capture_name: &str) -> Option<String> {
         self.extract_name_from_node(node, source_code)
     }
+
+    fn middle_implementation_query(&self) -> &str {
+        "
+        (for_statement) @for_loop
+        (while_statement) @while_loop
+        (if_statement) @if_block
+        (try_statement) @try_block
+        (with_statement) @with_block
+        (function_definition) @nested_function
+        (class_definition) @nested_class
+        (list_comprehension) @list_comp
+        (dictionary_comprehension) @dict_comp
+        (call) @function_call
+        "
+    }
+
+    fn middle_capture_name_to_chunk_type(&self, capture_name: &str) -> Option<ChunkType> {
+        match capture_name {
+            "for_loop" | "while_loop" => Some(ChunkType::Loop),
+            "if_block" => Some(ChunkType::Conditional),
+            "try_block" => Some(ChunkType::ErrorHandling),
+            "with_block" => Some(ChunkType::SpecialBlock),
+            "nested_function" => Some(ChunkType::Function),
+            "nested_class" => Some(ChunkType::Class),
+            "list_comp" | "dict_comp" => Some(ChunkType::Comprehension),
+            "function_call" => Some(ChunkType::FunctionCall),
+            _ => None,
+        }
+    }
 }
 
 impl PythonExtractor {

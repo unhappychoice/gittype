@@ -1,0 +1,141 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "template<typename T>\nclass Vector {\nprivate:\n    T* data;\n    size_t size;\n    size_t capacity;\n\npublic:\n    Vector() : data(nullptr), size(0), capacity(0) {}\n\n    void push_back(const T& value) {\n        if (size >= capacity) {\n            reserve(capacity == 0 ? 1 : capacity * 2);\n        }\n        data[size++] = value;\n    }\n\n    T& operator[](size_t index) {\n        return data[index];\n    }\n\nprivate:\n    void reserve(size_t new_capacity) {\n        T* new_data = new T[new_capacity];\n        for (size_t i = 0; i < size; ++i) {\n            new_data[i] = data[i];\n        }\n        delete[] data;\n        data = new_data;\n        capacity = new_capacity;\n    }\n};",
+      "end_line": 33,
+      "language": "cpp",
+      "name": "unknown",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "class Vector {\nprivate:\n    T* data;\n    size_t size;\n    size_t capacity;\n\npublic:\n    Vector() : data(nullptr), size(0), capacity(0) {}\n\n    void push_back(const T& value) {\n        if (size >= capacity) {\n            reserve(capacity == 0 ? 1 : capacity * 2);\n        }\n        data[size++] = value;\n    }\n\n    T& operator[](size_t index) {\n        return data[index];\n    }\n\nprivate:\n    void reserve(size_t new_capacity) {\n        T* new_data = new T[new_capacity];\n        for (size_t i = 0; i < size; ++i) {\n            new_data[i] = data[i];\n        }\n        delete[] data;\n        data = new_data;\n        capacity = new_capacity;\n    }\n}",
+      "end_line": 33,
+      "language": "cpp",
+      "name": "Vector",
+      "original_indentation": 0,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    Vector() : data(nullptr), size(0), capacity(0) {}",
+      "end_line": 10,
+      "language": "cpp",
+      "name": "Vector",
+      "original_indentation": 4,
+      "start_line": 10
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    void push_back(const T& value) {\n        if (size >= capacity) {\n            reserve(capacity == 0 ? 1 : capacity * 2);\n        }\n        data[size++] = value;\n    }",
+      "end_line": 17,
+      "language": "cpp",
+      "name": "push_back",
+      "original_indentation": 4,
+      "start_line": 12
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "        if (size >= capacity) {\n            reserve(capacity == 0 ? 1 : capacity * 2);\n        }",
+      "end_line": 15,
+      "language": "cpp",
+      "name": "if_block",
+      "original_indentation": 8,
+      "start_line": 13
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    T& operator[](size_t index) {\n        return data[index];\n    }",
+      "end_line": 21,
+      "language": "cpp",
+      "name": "code_block",
+      "original_indentation": 32,
+      "start_line": 19
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    void reserve(size_t new_capacity) {\n        T* new_data = new T[new_capacity];\n        for (size_t i = 0; i < size; ++i) {\n            new_data[i] = data[i];\n        }\n        delete[] data;\n        data = new_data;\n        capacity = new_capacity;\n    }",
+      "end_line": 32,
+      "language": "cpp",
+      "name": "reserve",
+      "original_indentation": 4,
+      "start_line": 24
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "        for (size_t i = 0;",
+      "end_line": 26,
+      "language": "cpp",
+      "name": "i",
+      "original_indentation": 13,
+      "start_line": 26
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [],
+      "content": "        for (size_t i = 0; i < size; ++i) {\n            new_data[i] = data[i];\n        }",
+      "end_line": 28,
+      "language": "cpp",
+      "name": "for_loop",
+      "original_indentation": 8,
+      "start_line": 26
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "template<typename T>\nT max_value(const T& a, const T& b) {\n    return (a > b) ? a : b;\n}",
+      "end_line": 38,
+      "language": "cpp",
+      "name": "unknown",
+      "original_indentation": 0,
+      "start_line": 35
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "T max_value(const T& a, const T& b) {\n    return (a > b) ? a : b;\n}",
+      "end_line": 38,
+      "language": "cpp",
+      "name": "max_value",
+      "original_indentation": 0,
+      "start_line": 36
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "int main() {\n    Vector<int> numbers;\n    numbers.push_back(1);\n    numbers.push_back(2);\n\n    int max_num = max_value(10, 20);\n    return 0;\n}",
+      "end_line": 47,
+      "language": "cpp",
+      "name": "main",
+      "original_indentation": 0,
+      "start_line": 40
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    int max_num = max_value(10, 20);",
+      "end_line": 45,
+      "language": "cpp",
+      "name": "max_num",
+      "original_indentation": 4,
+      "start_line": 45
+    }
+  ],
+  "source_code": "\ntemplate<typename T>\nclass Vector {\nprivate:\n    T* data;\n    size_t size;\n    size_t capacity;\n\npublic:\n    Vector() : data(nullptr), size(0), capacity(0) {}\n\n    void push_back(const T& value) {\n        if (size >= capacity) {\n            reserve(capacity == 0 ? 1 : capacity * 2);\n        }\n        data[size++] = value;\n    }\n\n    T& operator[](size_t index) {\n        return data[index];\n    }\n\nprivate:\n    void reserve(size_t new_capacity) {\n        T* new_data = new T[new_capacity];\n        for (size_t i = 0; i < size; ++i) {\n            new_data[i] = data[i];\n        }\n        delete[] data;\n        data = new_data;\n        capacity = new_capacity;\n    }\n};\n\ntemplate<typename T>\nT max_value(const T& a, const T& b) {\n    return (a > b) ? a : b;\n}\n\nint main() {\n    Vector<int> numbers;\n    numbers.push_back(1);\n    numbers.push_back(2);\n\n    int max_num = max_value(10, 20);\n    return 0;\n}\n",
+  "test_name": "test_cpp_template_extraction",
+  "total_chunks": 13
+}

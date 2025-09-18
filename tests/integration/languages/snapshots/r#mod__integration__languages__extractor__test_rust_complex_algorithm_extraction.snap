@@ -1,0 +1,178 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [
+        [
+          152,
+          202
+        ],
+        [
+          463,
+          503
+        ],
+        [
+          833,
+          854
+        ]
+      ],
+      "content": "fn complex_data_processor(input: Vec<i32>, threshold: i32) -> HashMap<String, i32> {\n    let mut result = HashMap::new();\n    let mut counter = 0;\n\n    // Main processing loop - extractable middle chunk\n    for (index, value) in input.iter().enumerate() {\n        let key = format!(\"item_{}\", index);\n\n        if *value > threshold {\n            let processed = value * 2;\n            result.insert(key.clone(), processed);\n            counter += 1;\n\n            // Additional processing for high values\n            if processed > 100 {\n                let bonus_key = format!(\"{}_bonus\", key);\n                result.insert(bonus_key, processed / 10);\n            }\n        } else if *value > 0 {\n            let adjusted = value + threshold;\n            result.insert(key, adjusted);\n            counter += 1;\n        }\n    }\n\n    // Finalization logic\n    if counter > 0 {\n        result.insert(\"total_processed\".to_string(), counter);\n        result.insert(\"average_processed\".to_string(),\n                     result.values().sum::<i32>() / counter);\n    }\n\n    result\n}",
+      "end_line": 37,
+      "language": "rust",
+      "name": "complex_data_processor",
+      "original_indentation": 0,
+      "start_line": 4
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [
+        [
+          260,
+          300
+        ]
+      ],
+      "content": "    for (index, value) in input.iter().enumerate() {\n        let key = format!(\"item_{}\", index);\n\n        if *value > threshold {\n            let processed = value * 2;\n            result.insert(key.clone(), processed);\n            counter += 1;\n\n            // Additional processing for high values\n            if processed > 100 {\n                let bonus_key = format!(\"{}_bonus\", key);\n                result.insert(bonus_key, processed / 10);\n            }\n        } else if *value > 0 {\n            let adjusted = value + threshold;\n            result.insert(key, adjusted);\n            counter += 1;\n        }\n    }",
+      "end_line": 27,
+      "language": "rust",
+      "name": "for_loop",
+      "original_indentation": 4,
+      "start_line": 9
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [
+        [
+          161,
+          201
+        ]
+      ],
+      "content": "        if *value > threshold {\n            let processed = value * 2;\n            result.insert(key.clone(), processed);\n            counter += 1;\n\n            // Additional processing for high values\n            if processed > 100 {\n                let bonus_key = format!(\"{}_bonus\", key);\n                result.insert(bonus_key, processed / 10);\n            }\n        }",
+      "end_line": 22,
+      "language": "rust",
+      "name": "code_block",
+      "original_indentation": 30,
+      "start_line": 12
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [
+        [
+          161,
+          201
+        ]
+      ],
+      "content": "        if *value > threshold {\n            let processed = value * 2;\n            result.insert(key.clone(), processed);\n            counter += 1;\n\n            // Additional processing for high values\n            if processed > 100 {\n                let bonus_key = format!(\"{}_bonus\", key);\n                result.insert(bonus_key, processed / 10);\n            }\n        } else if *value > 0 {\n            let adjusted = value + threshold;\n            result.insert(key, adjusted);\n            counter += 1;\n        }",
+      "end_line": 26,
+      "language": "rust",
+      "name": "if_block",
+      "original_indentation": 8,
+      "start_line": 12
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if processed > 100 {\n                let bonus_key = format!(\"{}_bonus\", key);\n                result.insert(bonus_key, processed / 10);\n            }",
+      "end_line": 21,
+      "language": "rust",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 18
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "        } else if *value > 0 {\n            let adjusted = value + threshold;\n            result.insert(key, adjusted);\n            counter += 1;\n        }",
+      "end_line": 26,
+      "language": "rust",
+      "name": "if_block",
+      "original_indentation": 15,
+      "start_line": 22
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "    if counter > 0 {\n        result.insert(\"total_processed\".to_string(), counter);\n        result.insert(\"average_processed\".to_string(),\n                     result.values().sum::<i32>() / counter);\n    }",
+      "end_line": 34,
+      "language": "rust",
+      "name": "if_block",
+      "original_indentation": 4,
+      "start_line": 30
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "        result.insert(\"average_processed\".to_string(),\n                     result.values().sum::<i32>() / counter)",
+      "end_line": 33,
+      "language": "rust",
+      "name": "function_call",
+      "original_indentation": 8,
+      "start_line": 32
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [
+        [
+          127,
+          183
+        ],
+        [
+          731,
+          756
+        ]
+      ],
+      "content": "pub fn advanced_string_matcher(patterns: &[&str], text: &str) -> Vec<(usize, String)> {\n    let mut matches = Vec::new();\n\n    // Pattern matching algorithm - extractable middle chunk\n    for (pattern_idx, pattern) in patterns.iter().enumerate() {\n        let mut search_start = 0;\n\n        while let Some(pos) = text[search_start..].find(pattern) {\n            let absolute_pos = search_start + pos;\n            let context_start = absolute_pos.saturating_sub(10);\n            let context_end = (absolute_pos + pattern.len() + 10).min(text.len());\n            let context = text[context_start..context_end].to_string();\n\n            matches.push((absolute_pos, context));\n            search_start = absolute_pos + 1;\n\n            // Prevent infinite loops\n            if search_start >= text.len() {\n                break;\n            }\n        }\n    }\n\n    matches.sort_by_key(|&(pos, _)| pos);\n    matches.dedup_by_key(|&mut (pos, _)| pos);\n    matches\n}",
+      "end_line": 65,
+      "language": "rust",
+      "name": "advanced_string_matcher",
+      "original_indentation": 0,
+      "start_line": 39
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [
+        [
+          547,
+          572
+        ]
+      ],
+      "content": "    for (pattern_idx, pattern) in patterns.iter().enumerate() {\n        let mut search_start = 0;\n\n        while let Some(pos) = text[search_start..].find(pattern) {\n            let absolute_pos = search_start + pos;\n            let context_start = absolute_pos.saturating_sub(10);\n            let context_end = (absolute_pos + pattern.len() + 10).min(text.len());\n            let context = text[context_start..context_end].to_string();\n\n            matches.push((absolute_pos, context));\n            search_start = absolute_pos + 1;\n\n            // Prevent infinite loops\n            if search_start >= text.len() {\n                break;\n            }\n        }\n    }",
+      "end_line": 60,
+      "language": "rust",
+      "name": "for_loop",
+      "original_indentation": 4,
+      "start_line": 43
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [
+        [
+          448,
+          473
+        ]
+      ],
+      "content": "        while let Some(pos) = text[search_start..].find(pattern) {\n            let absolute_pos = search_start + pos;\n            let context_start = absolute_pos.saturating_sub(10);\n            let context_end = (absolute_pos + pattern.len() + 10).min(text.len());\n            let context = text[context_start..context_end].to_string();\n\n            matches.push((absolute_pos, context));\n            search_start = absolute_pos + 1;\n\n            // Prevent infinite loops\n            if search_start >= text.len() {\n                break;\n            }\n        }",
+      "end_line": 59,
+      "language": "rust",
+      "name": "while_loop",
+      "original_indentation": 8,
+      "start_line": 46
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if search_start >= text.len() {\n                break;\n            }",
+      "end_line": 58,
+      "language": "rust",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 56
+    }
+  ],
+  "source_code": "\nuse std::collections::HashMap;\n\nfn complex_data_processor(input: Vec<i32>, threshold: i32) -> HashMap<String, i32> {\n    let mut result = HashMap::new();\n    let mut counter = 0;\n\n    // Main processing loop - extractable middle chunk\n    for (index, value) in input.iter().enumerate() {\n        let key = format!(\"item_{}\", index);\n\n        if *value > threshold {\n            let processed = value * 2;\n            result.insert(key.clone(), processed);\n            counter += 1;\n\n            // Additional processing for high values\n            if processed > 100 {\n                let bonus_key = format!(\"{}_bonus\", key);\n                result.insert(bonus_key, processed / 10);\n            }\n        } else if *value > 0 {\n            let adjusted = value + threshold;\n            result.insert(key, adjusted);\n            counter += 1;\n        }\n    }\n\n    // Finalization logic\n    if counter > 0 {\n        result.insert(\"total_processed\".to_string(), counter);\n        result.insert(\"average_processed\".to_string(),\n                     result.values().sum::<i32>() / counter);\n    }\n\n    result\n}\n\npub fn advanced_string_matcher(patterns: &[&str], text: &str) -> Vec<(usize, String)> {\n    let mut matches = Vec::new();\n\n    // Pattern matching algorithm - extractable middle chunk\n    for (pattern_idx, pattern) in patterns.iter().enumerate() {\n        let mut search_start = 0;\n\n        while let Some(pos) = text[search_start..].find(pattern) {\n            let absolute_pos = search_start + pos;\n            let context_start = absolute_pos.saturating_sub(10);\n            let context_end = (absolute_pos + pattern.len() + 10).min(text.len());\n            let context = text[context_start..context_end].to_string();\n\n            matches.push((absolute_pos, context));\n            search_start = absolute_pos + 1;\n\n            // Prevent infinite loops\n            if search_start >= text.len() {\n                break;\n            }\n        }\n    }\n\n    matches.sort_by_key(|&(pos, _)| pos);\n    matches.dedup_by_key(|&mut (pos, _)| pos);\n    matches\n}\n",
+  "test_name": "test_rust_complex_algorithm_extraction",
+  "total_chunks": 12
+}

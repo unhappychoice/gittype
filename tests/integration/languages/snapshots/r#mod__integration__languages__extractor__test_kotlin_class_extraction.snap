@@ -1,0 +1,61 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "class Person(val name: String, val age: Int) {\n    fun greet(): String {\n        return \"Hello, I'm $name and I'm $age years old\"\n    }\n\n    fun isAdult(): Boolean {\n        return age >= 18\n    }\n}",
+      "end_line": 10,
+      "language": "kotlin",
+      "name": "Person",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    fun greet(): String {\n        return \"Hello, I'm $name and I'm $age years old\"\n    }",
+      "end_line": 5,
+      "language": "kotlin",
+      "name": "greet",
+      "original_indentation": 4,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    fun isAdult(): Boolean {\n        return age >= 18\n    }",
+      "end_line": 9,
+      "language": "kotlin",
+      "name": "isAdult",
+      "original_indentation": 4,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "data class User(\n    val id: Long,\n    val name: String,\n    val email: String\n) {\n    fun getDisplayName(): String = \"$name ($email)\"\n}",
+      "end_line": 18,
+      "language": "kotlin",
+      "name": "User",
+      "original_indentation": 0,
+      "start_line": 12
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    fun getDisplayName(): String = \"$name ($email)\"",
+      "end_line": 17,
+      "language": "kotlin",
+      "name": "getDisplayName",
+      "original_indentation": 4,
+      "start_line": 17
+    }
+  ],
+  "source_code": "\nclass Person(val name: String, val age: Int) {\n    fun greet(): String {\n        return \"Hello, I'm $name and I'm $age years old\"\n    }\n\n    fun isAdult(): Boolean {\n        return age >= 18\n    }\n}\n\ndata class User(\n    val id: Long,\n    val name: String,\n    val email: String\n) {\n    fun getDisplayName(): String = \"$name ($email)\"\n}\n",
+  "test_name": "test_kotlin_class_extraction",
+  "total_chunks": 5
+}

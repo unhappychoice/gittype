@@ -42,6 +42,32 @@ impl LanguageExtractor for SwiftExtractor {
     fn extract_name(&self, node: Node, source_code: &str, _capture_name: &str) -> Option<String> {
         self.extract_name_from_node(node, source_code)
     }
+
+    fn middle_implementation_query(&self) -> &str {
+        "
+        (for_statement) @for_loop
+        (while_statement) @while_loop
+        (if_statement) @if_block
+        (switch_statement) @switch_block
+        (do_statement) @do_block
+        (guard_statement) @guard_block
+        (call_expression) @function_call
+        (lambda_literal) @closure
+        (statements) @code_block
+        "
+    }
+
+    fn middle_capture_name_to_chunk_type(&self, capture_name: &str) -> Option<ChunkType> {
+        match capture_name {
+            "for_loop" | "while_loop" => Some(ChunkType::Loop),
+            "if_block" | "switch_block" => Some(ChunkType::Conditional),
+            "do_block" | "guard_block" => Some(ChunkType::SpecialBlock),
+            "function_call" => Some(ChunkType::FunctionCall),
+            "closure" => Some(ChunkType::Lambda),
+            "code_block" => Some(ChunkType::CodeBlock),
+            _ => None,
+        }
+    }
 }
 
 impl SwiftExtractor {

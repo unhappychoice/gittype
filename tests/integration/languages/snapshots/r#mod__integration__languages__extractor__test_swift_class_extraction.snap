@@ -1,0 +1,111 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "class Calculator {\n    private var value: Int = 0\n\n    init() {\n        self.value = 0\n    }\n\n    deinit {\n        print(\"Calculator deallocated\")\n    }\n\n    func add(_ number: Int) -> Int {\n        value += number\n        return value\n    }\n\n    func multiply(_ number: Int) -> Int {\n        value *= number\n        return value\n    }\n}",
+      "end_line": 22,
+      "language": "swift",
+      "name": "Calculator",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        print(\"Calculator deallocated\")\n    ",
+      "end_line": 11,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 10
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    func add(_ number: Int) -> Int {\n        value += number\n        return value\n    }",
+      "end_line": 16,
+      "language": "swift",
+      "name": "add",
+      "original_indentation": 4,
+      "start_line": 13
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        value += number\n        return value\n    ",
+      "end_line": 16,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 14
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    func multiply(_ number: Int) -> Int {\n        value *= number\n        return value\n    }",
+      "end_line": 21,
+      "language": "swift",
+      "name": "multiply",
+      "original_indentation": 4,
+      "start_line": 18
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        value *= number\n        return value\n    ",
+      "end_line": 21,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 19
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "class Person {\n    let name: String\n    let age: Int\n\n    init(name: String, age: Int) {\n        self.name = name\n        self.age = age\n    }\n\n    func greet() -> String {\n        return \"Hello, I'm \\(name)!\"\n    }\n}",
+      "end_line": 36,
+      "language": "swift",
+      "name": "Person",
+      "original_indentation": 0,
+      "start_line": 24
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        self.name = name\n        self.age = age\n    ",
+      "end_line": 31,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 29
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    func greet() -> String {\n        return \"Hello, I'm \\(name)!\"\n    }",
+      "end_line": 35,
+      "language": "swift",
+      "name": "greet",
+      "original_indentation": 4,
+      "start_line": 33
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        return \"Hello, I'm \\(name)!\"\n    ",
+      "end_line": 35,
+      "language": "swift",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 34
+    }
+  ],
+  "source_code": "\nclass Calculator {\n    private var value: Int = 0\n\n    init() {\n        self.value = 0\n    }\n\n    deinit {\n        print(\"Calculator deallocated\")\n    }\n\n    func add(_ number: Int) -> Int {\n        value += number\n        return value\n    }\n\n    func multiply(_ number: Int) -> Int {\n        value *= number\n        return value\n    }\n}\n\nclass Person {\n    let name: String\n    let age: Int\n\n    init(name: String, age: Int) {\n        self.name = name\n        self.age = age\n    }\n\n    func greet() -> String {\n        return \"Hello, I'm \\(name)!\"\n    }\n}\n",
+  "test_name": "test_swift_class_extraction",
+  "total_chunks": 10
+}

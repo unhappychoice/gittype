@@ -1,0 +1,91 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Namespace",
+      "comment_ranges": [],
+      "content": "namespace MyApplication.Core.Services\n{\n    public class EmailService\n    {\n        public void SendEmail(string to, string subject, string body)\n        {\n            Console.WriteLine($\"Sending email to {to}\");\n        }\n    }\n}",
+      "end_line": 13,
+      "language": "csharp",
+      "name": "MyApplication.Core.Services",
+      "original_indentation": 0,
+      "start_line": 4
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "    public class EmailService\n    {\n        public void SendEmail(string to, string subject, string body)\n        {\n            Console.WriteLine($\"Sending email to {to}\");\n        }\n    }",
+      "end_line": 12,
+      "language": "csharp",
+      "name": "EmailService",
+      "original_indentation": 4,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "        public void SendEmail(string to, string subject, string body)\n        {\n            Console.WriteLine($\"Sending email to {to}\");\n        }",
+      "end_line": 11,
+      "language": "csharp",
+      "name": "SendEmail",
+      "original_indentation": 8,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        {\n            Console.WriteLine($\"Sending email to {to}\");\n        }",
+      "end_line": 11,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 9
+    },
+    {
+      "chunk_type": "Namespace",
+      "comment_ranges": [],
+      "content": "namespace MyApplication.Core.Models\n{\n    public class Message\n    {\n        public string Content { get; set; }\n        public DateTime Timestamp { get; set; }\n    }\n}",
+      "end_line": 22,
+      "language": "csharp",
+      "name": "MyApplication.Core.Models",
+      "original_indentation": 0,
+      "start_line": 15
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "    public class Message\n    {\n        public string Content { get; set; }\n        public DateTime Timestamp { get; set; }\n    }",
+      "end_line": 21,
+      "language": "csharp",
+      "name": "Message",
+      "original_indentation": 4,
+      "start_line": 17
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "        public string Content { get; set; }",
+      "end_line": 19,
+      "language": "csharp",
+      "name": "Content",
+      "original_indentation": 8,
+      "start_line": 19
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "        public DateTime Timestamp { get; set; }",
+      "end_line": 20,
+      "language": "csharp",
+      "name": "DateTime",
+      "original_indentation": 8,
+      "start_line": 20
+    }
+  ],
+  "source_code": "\nusing System;\n\nnamespace MyApplication.Core.Services\n{\n    public class EmailService\n    {\n        public void SendEmail(string to, string subject, string body)\n        {\n            Console.WriteLine($\"Sending email to {to}\");\n        }\n    }\n}\n\nnamespace MyApplication.Core.Models\n{\n    public class Message\n    {\n        public string Content { get; set; }\n        public DateTime Timestamp { get; set; }\n    }\n}\n",
+  "test_name": "test_csharp_namespace_extraction",
+  "total_chunks": 8
+}

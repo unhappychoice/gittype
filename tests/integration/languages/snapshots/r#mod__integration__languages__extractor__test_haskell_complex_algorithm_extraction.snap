@@ -1,0 +1,606 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "import qualified Data.Map as Map",
+      "end_line": 2,
+      "language": "haskell",
+      "name": "unknown",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "import Data.List (groupBy, sortBy)",
+      "end_line": 3,
+      "language": "haskell",
+      "name": "unknown",
+      "original_indentation": 0,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "import Data.Function (on)",
+      "end_line": 4,
+      "language": "haskell",
+      "name": "unknown",
+      "original_indentation": 0,
+      "start_line": 4
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "data ProcessedItem = ProcessedItem\n    { itemId :: Int\n    , originalValue :: Int\n    , transformedValue :: Int\n    , category :: String\n    , timestamp :: String\n    } deriving (Show, Eq)",
+      "end_line": 12,
+      "language": "haskell",
+      "name": "unknown",
+      "original_indentation": 0,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "type ItemCache = Map.Map String ProcessedItem",
+      "end_line": 14,
+      "language": "haskell",
+      "name": "unknown",
+      "original_indentation": 0,
+      "start_line": 14
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "processComplexData :: [Int] -> Int -> [ProcessedItem]",
+      "end_line": 16,
+      "language": "haskell",
+      "name": "processComplexData",
+      "original_indentation": 0,
+      "start_line": 16
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "processComplexData input threshold = processWithCache input threshold Map.",
+      "end_line": 17,
+      "language": "haskell",
+      "name": "unknown",
+      "original_indentation": 70,
+      "start_line": 17
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [
+        [
+          432,
+          487
+        ]
+      ],
+      "content": "processComplexData input threshold = processWithCache input threshold Map.empty []\n  where\n    processWithCache [] _ _ acc = reverse acc\n    processWithCache (value:rest) thresh cache acc =\n        let cacheKey = \"item_\" ++ show (length acc) ++ \"_\" ++ show value\n        in case Map.lookup cacheKey cache of\n            Just cachedItem -> processWithCache rest thresh cache (cachedItem : acc)\n            Nothing ->\n                -- Main processing algorithm - extractable middle chunk\n                let processedItem = if value > thresh\n                        then let transformed = value * 2\n                                 cat = if transformed > thresh * 3 then \"HIGH\" else \"MEDIUM\"\n                                 bonusValue = if transformed > 100 then transformed + 10 else transformed\n                             in ProcessedItem (length acc) value bonusValue cat \"now\"\n                        else if value > 0\n                        then ProcessedItem (length acc) value (value + thresh) \"LOW\" \"now\"\n                        else ProcessedItem (length acc) value 0 \"INVALID\" \"now\"\n\n                    newCache = Map.insert cacheKey processedItem cache\n                in if category processedItem == \"INVALID\"\n                   then processWithCache rest thresh newCache acc\n                   else processWithCache rest thresh newCache (processedItem : acc)",
+      "end_line": 38,
+      "language": "haskell",
+      "name": "processComplexData",
+      "original_indentation": 0,
+      "start_line": 17
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    processWithCache [] _ _ acc = reverse acc",
+      "end_line": 19,
+      "language": "haskell",
+      "name": "processWithCache",
+      "original_indentation": 4,
+      "start_line": 19
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [
+        [
+          295,
+          350
+        ]
+      ],
+      "content": "    processWithCache (value:rest) thresh cache acc =\n        let cacheKey = \"item_\" ++ show (length acc) ++ \"_\" ++ show value\n        in case Map.lookup cacheKey cache of\n            Just cachedItem -> processWithCache rest thresh cache (cachedItem : acc)\n            Nothing ->\n                -- Main processing algorithm - extractable middle chunk\n                let processedItem = if value > thresh\n                        then let transformed = value * 2\n                                 cat = if transformed > thresh * 3 then \"HIGH\" else \"MEDIUM\"\n                                 bonusValue = if transformed > 100 then transformed + 10 else transformed\n                             in ProcessedItem (length acc) value bonusValue cat \"now\"\n                        else if value > 0\n                        then ProcessedItem (length acc) value (value + thresh) \"LOW\" \"now\"\n                        else ProcessedItem (length acc) value 0 \"INVALID\" \"now\"\n\n                    newCache = Map.insert cacheKey processedItem cache\n                in if category processedItem == \"INVALID\"\n                   then processWithCache rest thresh newCache acc\n                   else processWithCache rest thresh newCache (processedItem : acc)",
+      "end_line": 38,
+      "language": "haskell",
+      "name": "processWithCache",
+      "original_indentation": 4,
+      "start_line": 20
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "        let cacheKey = \"item_\" ++ show (length acc) ++ \"_\" ++ show value",
+      "end_line": 21,
+      "language": "haskell",
+      "name": "cacheKey",
+      "original_indentation": 12,
+      "start_line": 21
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [
+        [
+          242,
+          297
+        ]
+      ],
+      "content": "        let cacheKey = \"item_\" ++ show (length acc) ++ \"_\" ++ show value\n        in case Map.lookup cacheKey cache of\n            Just cachedItem -> processWithCache rest thresh cache (cachedItem : acc)\n            Nothing ->\n                -- Main processing algorithm - extractable middle chunk\n                let processedItem = if value > thresh\n                        then let transformed = value * 2\n                                 cat = if transformed > thresh * 3 then \"HIGH\" else \"MEDIUM\"\n                                 bonusValue = if transformed > 100 then transformed + 10 else transformed\n                             in ProcessedItem (length acc) value bonusValue cat \"now\"\n                        else if value > 0\n                        then ProcessedItem (length acc) value (value + thresh) \"LOW\" \"now\"\n                        else ProcessedItem (length acc) value 0 \"INVALID\" \"now\"\n\n                    newCache = Map.insert cacheKey processedItem cache\n                in if category processedItem == \"INVALID\"\n                   then processWithCache rest thresh newCache acc\n                   else processWithCache rest thresh newCache (processedItem : acc)",
+      "end_line": 38,
+      "language": "haskell",
+      "name": "let_expr",
+      "original_indentation": 8,
+      "start_line": 21
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "        in case Map.",
+      "end_line": 22,
+      "language": "haskell",
+      "name": "unknown",
+      "original_indentation": 16,
+      "start_line": 22
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [
+        [
+          169,
+          224
+        ]
+      ],
+      "content": "        in case Map.lookup cacheKey cache of\n            Just cachedItem -> processWithCache rest thresh cache (cachedItem : acc)\n            Nothing ->\n                -- Main processing algorithm - extractable middle chunk\n                let processedItem = if value > thresh\n                        then let transformed = value * 2\n                                 cat = if transformed > thresh * 3 then \"HIGH\" else \"MEDIUM\"\n                                 bonusValue = if transformed > 100 then transformed + 10 else transformed\n                             in ProcessedItem (length acc) value bonusValue cat \"now\"\n                        else if value > 0\n                        then ProcessedItem (length acc) value (value + thresh) \"LOW\" \"now\"\n                        else ProcessedItem (length acc) value 0 \"INVALID\" \"now\"\n\n                    newCache = Map.insert cacheKey processedItem cache\n                in if category processedItem == \"INVALID\"\n                   then processWithCache rest thresh newCache acc\n                   else processWithCache rest thresh newCache (processedItem : acc)",
+      "end_line": 38,
+      "language": "haskell",
+      "name": "case_expr",
+      "original_indentation": 11,
+      "start_line": 22
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "                let processedItem = if value > thresh\n                        then let transformed = value * 2\n                                 cat = if transformed > thresh * 3 then \"HIGH\" else \"MEDIUM\"\n                                 bonusValue = if transformed > 100 then transformed + 10 else transformed\n                             in ProcessedItem (length acc) value bonusValue cat \"now\"\n                        else if value > 0\n                        then ProcessedItem (length acc) value (value + thresh) \"LOW\" \"now\"\n                        else ProcessedItem (length acc) value 0 \"INVALID\" \"now\"",
+      "end_line": 33,
+      "language": "haskell",
+      "name": "processedItem",
+      "original_indentation": 20,
+      "start_line": 26
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "                let processedItem = if value > thresh\n                        then let transformed = value * 2\n                                 cat = if transformed > thresh * 3 then \"HIGH\" else \"MEDIUM\"\n                                 bonusValue = if transformed > 100 then transformed + 10 else transformed\n                             in ProcessedItem (length acc) value bonusValue cat \"now\"\n                        else if value > 0\n                        then ProcessedItem (length acc) value (value + thresh) \"LOW\" \"now\"\n                        else ProcessedItem (length acc) value 0 \"INVALID\" \"now\"\n\n                    newCache = Map.insert cacheKey processedItem cache\n                in if category processedItem == \"INVALID\"\n                   then processWithCache rest thresh newCache acc\n                   else processWithCache rest thresh newCache (processedItem : acc)",
+      "end_line": 38,
+      "language": "haskell",
+      "name": "let_expr",
+      "original_indentation": 16,
+      "start_line": 26
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "                        then let transformed = value * 2",
+      "end_line": 27,
+      "language": "haskell",
+      "name": "transformed",
+      "original_indentation": 33,
+      "start_line": 27
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "                        then let transformed = value * 2\n                                 cat = if transformed > thresh * 3 then \"HIGH\" else \"MEDIUM\"\n                                 bonusValue = if transformed > 100 then transformed + 10 else transformed\n                             in ProcessedItem (length acc) value bonusValue cat \"now\"",
+      "end_line": 30,
+      "language": "haskell",
+      "name": "let_expr",
+      "original_indentation": 29,
+      "start_line": 27
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "                                 cat = if transformed > thresh * 3 then \"HIGH\" else \"MEDIUM\"",
+      "end_line": 28,
+      "language": "haskell",
+      "name": "cat",
+      "original_indentation": 33,
+      "start_line": 28
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "                                 bonusValue = if transformed > 100 then transformed + 10 else transformed",
+      "end_line": 29,
+      "language": "haskell",
+      "name": "bonusValue",
+      "original_indentation": 33,
+      "start_line": 29
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "                        else if value > 0\n                        then ProcessedItem (length acc) value (value + thresh) \"LOW\" \"now\"\n                        else ProcessedItem (length acc) value 0 \"INVALID\" \"now\"",
+      "end_line": 33,
+      "language": "haskell",
+      "name": "if_expr",
+      "original_indentation": 29,
+      "start_line": 31
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "                    newCache = Map.insert cacheKey processedItem cache",
+      "end_line": 35,
+      "language": "haskell",
+      "name": "newCache",
+      "original_indentation": 20,
+      "start_line": 35
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "                in if category processedItem == \"INVALID\"\n                   then processWithCache rest thresh newCache acc\n                   else processWithCache rest thresh newCache (processedItem : acc)",
+      "end_line": 38,
+      "language": "haskell",
+      "name": "if_expr",
+      "original_indentation": 19,
+      "start_line": 36
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "analyzePatterns :: [ProcessedItem] -> Map.Map String (Map.Map String Double)",
+      "end_line": 40,
+      "language": "haskell",
+      "name": "analyzePatterns",
+      "original_indentation": 0,
+      "start_line": 40
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [
+        [
+          440,
+          492
+        ]
+      ],
+      "content": "analyzePatterns items =\n    let categoryGroups = groupBy ((==) `on` category) $ sortBy (compare `on` category) items\n    in Map.fromList $ map analyzeCategory categoryGroups\n  where\n    analyzeCategory group@(firstItem:_) =\n        let cat = category firstItem\n            values = map (fromIntegral . transformedValue) group\n            count = fromIntegral $ length group\n            totalItems = fromIntegral $ length items\n\n            -- Pattern analysis logic - extractable middle chunk\n            avgValue = sum values / count\n            minValue = minimum values\n            maxValue = maximum values\n            percentage = (count / totalItems) * 100\n\n            highValueItems = filter (> 1000) values\n            highValueCount = fromIntegral $ length highValueItems\n\n            recentItems = filter (\\item -> timestamp item == \"now\") group\n            recentCount = fromIntegral $ length recentItems\n\n            analysis = Map.fromList\n                [ (\"count\", count)\n                , (\"percentage\", percentage)\n                , (\"avg_value\", avgValue)\n                , (\"min_value\", minValue)\n                , (\"max_value\", maxValue)\n                , (\"high_value_count\", highValueCount)\n                , (\"recent_count\", recentCount)\n                ]\n        in (cat, analysis)\n    analyzeCategory [] = (\"EMPTY\", Map.empty)",
+      "end_line": 73,
+      "language": "haskell",
+      "name": "analyzePatterns",
+      "original_indentation": 0,
+      "start_line": 41
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    let categoryGroups = groupBy ((==) `on` category) $ sortBy (compare `on` category) items",
+      "end_line": 42,
+      "language": "haskell",
+      "name": "categoryGroups",
+      "original_indentation": 8,
+      "start_line": 42
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    let categoryGroups = groupBy ((==) `on` category) $ sortBy (compare `on` category) items\n    in Map.fromList $ map analyzeCategory categoryGroups",
+      "end_line": 43,
+      "language": "haskell",
+      "name": "let_expr",
+      "original_indentation": 4,
+      "start_line": 42
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "    in Map.",
+      "end_line": 43,
+      "language": "haskell",
+      "name": "unknown",
+      "original_indentation": 7,
+      "start_line": 43
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [
+        [
+          258,
+          310
+        ]
+      ],
+      "content": "    analyzeCategory group@(firstItem:_) =\n        let cat = category firstItem\n            values = map (fromIntegral . transformedValue) group\n            count = fromIntegral $ length group\n            totalItems = fromIntegral $ length items\n\n            -- Pattern analysis logic - extractable middle chunk\n            avgValue = sum values / count\n            minValue = minimum values\n            maxValue = maximum values\n            percentage = (count / totalItems) * 100\n\n            highValueItems = filter (> 1000) values\n            highValueCount = fromIntegral $ length highValueItems\n\n            recentItems = filter (\\item -> timestamp item == \"now\") group\n            recentCount = fromIntegral $ length recentItems\n\n            analysis = Map.fromList\n                [ (\"count\", count)\n                , (\"percentage\", percentage)\n                , (\"avg_value\", avgValue)\n                , (\"min_value\", minValue)\n                , (\"max_value\", maxValue)\n                , (\"high_value_count\", highValueCount)\n                , (\"recent_count\", recentCount)\n                ]\n        in (cat, analysis)",
+      "end_line": 72,
+      "language": "haskell",
+      "name": "analyzeCategory",
+      "original_indentation": 4,
+      "start_line": 45
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "        let cat = category firstItem",
+      "end_line": 46,
+      "language": "haskell",
+      "name": "cat",
+      "original_indentation": 12,
+      "start_line": 46
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [
+        [
+          216,
+          268
+        ]
+      ],
+      "content": "        let cat = category firstItem\n            values = map (fromIntegral . transformedValue) group\n            count = fromIntegral $ length group\n            totalItems = fromIntegral $ length items\n\n            -- Pattern analysis logic - extractable middle chunk\n            avgValue = sum values / count\n            minValue = minimum values\n            maxValue = maximum values\n            percentage = (count / totalItems) * 100\n\n            highValueItems = filter (> 1000) values\n            highValueCount = fromIntegral $ length highValueItems\n\n            recentItems = filter (\\item -> timestamp item == \"now\") group\n            recentCount = fromIntegral $ length recentItems\n\n            analysis = Map.fromList\n                [ (\"count\", count)\n                , (\"percentage\", percentage)\n                , (\"avg_value\", avgValue)\n                , (\"min_value\", minValue)\n                , (\"max_value\", maxValue)\n                , (\"high_value_count\", highValueCount)\n                , (\"recent_count\", recentCount)\n                ]\n        in (cat, analysis)",
+      "end_line": 72,
+      "language": "haskell",
+      "name": "let_expr",
+      "original_indentation": 8,
+      "start_line": 46
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "            values = map (fromIntegral . transformedValue) group",
+      "end_line": 47,
+      "language": "haskell",
+      "name": "values",
+      "original_indentation": 12,
+      "start_line": 47
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "            count = fromIntegral $ length group",
+      "end_line": 48,
+      "language": "haskell",
+      "name": "count",
+      "original_indentation": 12,
+      "start_line": 48
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "            totalItems = fromIntegral $ length items",
+      "end_line": 49,
+      "language": "haskell",
+      "name": "totalItems",
+      "original_indentation": 12,
+      "start_line": 49
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "            avgValue = sum values / count",
+      "end_line": 52,
+      "language": "haskell",
+      "name": "avgValue",
+      "original_indentation": 12,
+      "start_line": 52
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "            minValue = minimum values",
+      "end_line": 53,
+      "language": "haskell",
+      "name": "minValue",
+      "original_indentation": 12,
+      "start_line": 53
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "            maxValue = maximum values",
+      "end_line": 54,
+      "language": "haskell",
+      "name": "maxValue",
+      "original_indentation": 12,
+      "start_line": 54
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "            percentage = (count / totalItems) * 100",
+      "end_line": 55,
+      "language": "haskell",
+      "name": "percentage",
+      "original_indentation": 12,
+      "start_line": 55
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "            highValueItems = filter (> 1000) values",
+      "end_line": 57,
+      "language": "haskell",
+      "name": "highValueItems",
+      "original_indentation": 12,
+      "start_line": 57
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "            highValueCount = fromIntegral $ length highValueItems",
+      "end_line": 58,
+      "language": "haskell",
+      "name": "highValueCount",
+      "original_indentation": 12,
+      "start_line": 58
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "            recentItems = filter (\\item -> timestamp item == \"now\") group",
+      "end_line": 60,
+      "language": "haskell",
+      "name": "recentItems",
+      "original_indentation": 12,
+      "start_line": 60
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "            recentCount = fromIntegral $ length recentItems",
+      "end_line": 61,
+      "language": "haskell",
+      "name": "recentCount",
+      "original_indentation": 12,
+      "start_line": 61
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "            analysis = Map.",
+      "end_line": 63,
+      "language": "haskell",
+      "name": "unknown",
+      "original_indentation": 23,
+      "start_line": 63
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "            analysis = Map.fromList\n                [ (\"count\", count)\n                , (\"percentage\", percentage)\n                , (\"avg_value\", avgValue)\n                , (\"min_value\", minValue)\n                , (\"max_value\", maxValue)\n                , (\"high_value_count\", highValueCount)\n                , (\"recent_count\", recentCount)\n                ]",
+      "end_line": 71,
+      "language": "haskell",
+      "name": "analysis",
+      "original_indentation": 12,
+      "start_line": 63
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    analyzeCategory [] = (\"EMPTY\", Map.empty)",
+      "end_line": 73,
+      "language": "haskell",
+      "name": "analyzeCategory",
+      "original_indentation": 4,
+      "start_line": 73
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "complexTransform :: ProcessedItem -> ProcessedItem",
+      "end_line": 76,
+      "language": "haskell",
+      "name": "complexTransform",
+      "original_indentation": 0,
+      "start_line": 76
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "complexTransform item =\n    let newValue = case category item of\n            \"HIGH\" -> transformedValue item * 2\n            \"MEDIUM\" -> transformedValue item + 50\n            \"LOW\" -> transformedValue item + 10\n            _ -> transformedValue item\n    in item { transformedValue = newValue }",
+      "end_line": 83,
+      "language": "haskell",
+      "name": "complexTransform",
+      "original_indentation": 0,
+      "start_line": 77
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    let newValue = case category item of\n            \"HIGH\" -> transformedValue item * 2\n            \"MEDIUM\" -> transformedValue item + 50\n            \"LOW\" -> transformedValue item + 10\n            _ -> transformedValue item",
+      "end_line": 82,
+      "language": "haskell",
+      "name": "newValue",
+      "original_indentation": 8,
+      "start_line": 78
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    let newValue = case category item of\n            \"HIGH\" -> transformedValue item * 2\n            \"MEDIUM\" -> transformedValue item + 50\n            \"LOW\" -> transformedValue item + 10\n            _ -> transformedValue item\n    in item { transformedValue = newValue }",
+      "end_line": 83,
+      "language": "haskell",
+      "name": "let_expr",
+      "original_indentation": 4,
+      "start_line": 78
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "filterAndSort :: [ProcessedItem] -> String -> [ProcessedItem]",
+      "end_line": 85,
+      "language": "haskell",
+      "name": "filterAndSort",
+      "original_indentation": 0,
+      "start_line": 85
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "filterAndSort items targetCategory =\n    let filtered = filter (\\item -> category item == targetCategory) items\n        sorted = sortBy (compare `on` transformedValue) filtered\n    in reverse sorted",
+      "end_line": 89,
+      "language": "haskell",
+      "name": "filterAndSort",
+      "original_indentation": 0,
+      "start_line": 86
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    let filtered = filter (\\item -> category item == targetCategory) items",
+      "end_line": 87,
+      "language": "haskell",
+      "name": "filtered",
+      "original_indentation": 8,
+      "start_line": 87
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    let filtered = filter (\\item -> category item == targetCategory) items\n        sorted = sortBy (compare `on` transformedValue) filtered\n    in reverse sorted",
+      "end_line": 89,
+      "language": "haskell",
+      "name": "let_expr",
+      "original_indentation": 4,
+      "start_line": 87
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "        sorted = sortBy (compare `on` transformedValue) filtered",
+      "end_line": 88,
+      "language": "haskell",
+      "name": "sorted",
+      "original_indentation": 8,
+      "start_line": 88
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "batchProcess :: [[Int]] -> Int -> [[ProcessedItem]]",
+      "end_line": 91,
+      "language": "haskell",
+      "name": "batchProcess",
+      "original_indentation": 0,
+      "start_line": 91
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "batchProcess batches threshold = map (\\batch -> processComplexData batch threshold) batches",
+      "end_line": 92,
+      "language": "haskell",
+      "name": "batchProcess",
+      "original_indentation": 0,
+      "start_line": 92
+    }
+  ],
+  "source_code": "\nimport qualified Data.Map as Map\nimport Data.List (groupBy, sortBy)\nimport Data.Function (on)\n\ndata ProcessedItem = ProcessedItem\n    { itemId :: Int\n    , originalValue :: Int\n    , transformedValue :: Int\n    , category :: String\n    , timestamp :: String\n    } deriving (Show, Eq)\n\ntype ItemCache = Map.Map String ProcessedItem\n\nprocessComplexData :: [Int] -> Int -> [ProcessedItem]\nprocessComplexData input threshold = processWithCache input threshold Map.empty []\n  where\n    processWithCache [] _ _ acc = reverse acc\n    processWithCache (value:rest) thresh cache acc =\n        let cacheKey = \"item_\" ++ show (length acc) ++ \"_\" ++ show value\n        in case Map.lookup cacheKey cache of\n            Just cachedItem -> processWithCache rest thresh cache (cachedItem : acc)\n            Nothing ->\n                -- Main processing algorithm - extractable middle chunk\n                let processedItem = if value > thresh\n                        then let transformed = value * 2\n                                 cat = if transformed > thresh * 3 then \"HIGH\" else \"MEDIUM\"\n                                 bonusValue = if transformed > 100 then transformed + 10 else transformed\n                             in ProcessedItem (length acc) value bonusValue cat \"now\"\n                        else if value > 0\n                        then ProcessedItem (length acc) value (value + thresh) \"LOW\" \"now\"\n                        else ProcessedItem (length acc) value 0 \"INVALID\" \"now\"\n\n                    newCache = Map.insert cacheKey processedItem cache\n                in if category processedItem == \"INVALID\"\n                   then processWithCache rest thresh newCache acc\n                   else processWithCache rest thresh newCache (processedItem : acc)\n\nanalyzePatterns :: [ProcessedItem] -> Map.Map String (Map.Map String Double)\nanalyzePatterns items =\n    let categoryGroups = groupBy ((==) `on` category) $ sortBy (compare `on` category) items\n    in Map.fromList $ map analyzeCategory categoryGroups\n  where\n    analyzeCategory group@(firstItem:_) =\n        let cat = category firstItem\n            values = map (fromIntegral . transformedValue) group\n            count = fromIntegral $ length group\n            totalItems = fromIntegral $ length items\n\n            -- Pattern analysis logic - extractable middle chunk\n            avgValue = sum values / count\n            minValue = minimum values\n            maxValue = maximum values\n            percentage = (count / totalItems) * 100\n\n            highValueItems = filter (> 1000) values\n            highValueCount = fromIntegral $ length highValueItems\n\n            recentItems = filter (\\item -> timestamp item == \"now\") group\n            recentCount = fromIntegral $ length recentItems\n\n            analysis = Map.fromList\n                [ (\"count\", count)\n                , (\"percentage\", percentage)\n                , (\"avg_value\", avgValue)\n                , (\"min_value\", minValue)\n                , (\"max_value\", maxValue)\n                , (\"high_value_count\", highValueCount)\n                , (\"recent_count\", recentCount)\n                ]\n        in (cat, analysis)\n    analyzeCategory [] = (\"EMPTY\", Map.empty)\n\n-- Helper functions for complex transformations\ncomplexTransform :: ProcessedItem -> ProcessedItem\ncomplexTransform item =\n    let newValue = case category item of\n            \"HIGH\" -> transformedValue item * 2\n            \"MEDIUM\" -> transformedValue item + 50\n            \"LOW\" -> transformedValue item + 10\n            _ -> transformedValue item\n    in item { transformedValue = newValue }\n\nfilterAndSort :: [ProcessedItem] -> String -> [ProcessedItem]\nfilterAndSort items targetCategory =\n    let filtered = filter (\\item -> category item == targetCategory) items\n        sorted = sortBy (compare `on` transformedValue) filtered\n    in reverse sorted  -- highest values first\n\nbatchProcess :: [[Int]] -> Int -> [[ProcessedItem]]\nbatchProcess batches threshold = map (\\batch -> processComplexData batch threshold) batches\n",
+  "test_name": "test_haskell_complex_algorithm_extraction",
+  "total_chunks": 56
+}

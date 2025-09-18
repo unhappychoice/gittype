@@ -1,0 +1,462 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [
+        [
+          418,
+          473
+        ],
+        [
+          889,
+          920
+        ],
+        [
+          2039,
+          2060
+        ],
+        [
+          2547,
+          2604
+        ],
+        [
+          2793,
+          2836
+        ],
+        [
+          3149,
+          3188
+        ]
+      ],
+      "content": "public class DataProcessor {\n    private Map<String, Object> cache;\n    private List<String> processingLog;\n\n    public DataProcessor() {\n        this.cache = new HashMap<>();\n        this.processingLog = new ArrayList<>();\n    }\n\n    public List<ProcessedItem> processComplexData(List<DataItem> items, int threshold) {\n        List<ProcessedItem> results = new ArrayList<>();\n        int processedCount = 0;\n\n        // Main processing algorithm - extractable middle chunk\n        for (int i = 0; i < items.size(); i++) {\n            DataItem item = items.get(i);\n            String cacheKey = \"item_\" + i + \"_\" + item.getId();\n\n            ProcessedItem processedItem;\n            if (cache.containsKey(cacheKey)) {\n                processedItem = (ProcessedItem) cache.get(cacheKey);\n                processingLog.add(\"Cache hit for: \" + cacheKey);\n            } else {\n                // Complex transformation logic\n                if (item.getValue() > threshold) {\n                    int transformedValue = item.getValue() * 2;\n                    String category = transformedValue > threshold * 3 ? \"HIGH\" : \"MEDIUM\";\n\n                    processedItem = new ProcessedItem(\n                        item.getId(),\n                        item.getValue(),\n                        transformedValue,\n                        category,\n                        System.currentTimeMillis()\n                    );\n\n                    processedCount++;\n                } else {\n                    int adjustedValue = item.getValue() + threshold;\n                    processedItem = new ProcessedItem(\n                        item.getId(),\n                        item.getValue(),\n                        adjustedValue,\n                        \"LOW\",\n                        System.currentTimeMillis()\n                    );\n                }\n\n                cache.put(cacheKey, processedItem);\n                processingLog.add(\"Processed new item: \" + cacheKey);\n            }\n\n            results.add(processedItem);\n        }\n\n        // Finalization logic\n        if (processedCount > 0) {\n            double average = results.stream()\n                .mapToDouble(ProcessedItem::getTransformedValue)\n                .average()\n                .orElse(0.0);\n\n            processingLog.add(\"Processing complete. Average: \" + average);\n        }\n\n        return results;\n    }\n\n    public Map<String, List<ProcessedItem>> analyzeAndGroup(List<ProcessedItem> items) {\n        Map<String, List<ProcessedItem>> grouped = new HashMap<>();\n\n        // Analysis and grouping logic - extractable middle chunk\n        for (ProcessedItem item : items) {\n            String category = item.getCategory();\n\n            grouped.computeIfAbsent(category, k -> new ArrayList<>()).add(item);\n\n            // Additional analysis for high-value items\n            if (\"HIGH\".equals(category)) {\n                String subCategory = item.getTransformedValue() > 1000 ? \"PREMIUM\" : \"STANDARD\";\n                String key = category + \"_\" + subCategory;\n                grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(item);\n            }\n        }\n\n        // Sort each group by transformed value\n        grouped.forEach((category, itemList) -> {\n            itemList.sort(Comparator.comparingInt(ProcessedItem::getTransformedValue).reversed());\n        });\n\n        return grouped;\n    }\n}",
+      "end_line": 97,
+      "language": "java",
+      "name": "DataProcessor",
+      "original_indentation": 0,
+      "start_line": 5
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    private Map<String, Object> cache;",
+      "end_line": 6,
+      "language": "java",
+      "name": "cache",
+      "original_indentation": 4,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    private List<String> processingLog;",
+      "end_line": 7,
+      "language": "java",
+      "name": "processingLog",
+      "original_indentation": 4,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    public DataProcessor() {\n        this.cache = new HashMap<>();\n        this.processingLog = new ArrayList<>();\n    }",
+      "end_line": 12,
+      "language": "java",
+      "name": "DataProcessor",
+      "original_indentation": 4,
+      "start_line": 9
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [
+        [
+          187,
+          242
+        ],
+        [
+          658,
+          689
+        ],
+        [
+          1808,
+          1829
+        ]
+      ],
+      "content": "    public List<ProcessedItem> processComplexData(List<DataItem> items, int threshold) {\n        List<ProcessedItem> results = new ArrayList<>();\n        int processedCount = 0;\n\n        // Main processing algorithm - extractable middle chunk\n        for (int i = 0; i < items.size(); i++) {\n            DataItem item = items.get(i);\n            String cacheKey = \"item_\" + i + \"_\" + item.getId();\n\n            ProcessedItem processedItem;\n            if (cache.containsKey(cacheKey)) {\n                processedItem = (ProcessedItem) cache.get(cacheKey);\n                processingLog.add(\"Cache hit for: \" + cacheKey);\n            } else {\n                // Complex transformation logic\n                if (item.getValue() > threshold) {\n                    int transformedValue = item.getValue() * 2;\n                    String category = transformedValue > threshold * 3 ? \"HIGH\" : \"MEDIUM\";\n\n                    processedItem = new ProcessedItem(\n                        item.getId(),\n                        item.getValue(),\n                        transformedValue,\n                        category,\n                        System.currentTimeMillis()\n                    );\n\n                    processedCount++;\n                } else {\n                    int adjustedValue = item.getValue() + threshold;\n                    processedItem = new ProcessedItem(\n                        item.getId(),\n                        item.getValue(),\n                        adjustedValue,\n                        \"LOW\",\n                        System.currentTimeMillis()\n                    );\n                }\n\n                cache.put(cacheKey, processedItem);\n                processingLog.add(\"Processed new item: \" + cacheKey);\n            }\n\n            results.add(processedItem);\n        }\n\n        // Finalization logic\n        if (processedCount > 0) {\n            double average = results.stream()\n                .mapToDouble(ProcessedItem::getTransformedValue)\n                .average()\n                .orElse(0.0);\n\n            processingLog.add(\"Processing complete. Average: \" + average);\n        }\n\n        return results;\n    }",
+      "end_line": 71,
+      "language": "java",
+      "name": "processComplexData",
+      "original_indentation": 4,
+      "start_line": 14
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [
+        [
+          415,
+          446
+        ]
+      ],
+      "content": "        for (int i = 0; i < items.size(); i++) {\n            DataItem item = items.get(i);\n            String cacheKey = \"item_\" + i + \"_\" + item.getId();\n\n            ProcessedItem processedItem;\n            if (cache.containsKey(cacheKey)) {\n                processedItem = (ProcessedItem) cache.get(cacheKey);\n                processingLog.add(\"Cache hit for: \" + cacheKey);\n            } else {\n                // Complex transformation logic\n                if (item.getValue() > threshold) {\n                    int transformedValue = item.getValue() * 2;\n                    String category = transformedValue > threshold * 3 ? \"HIGH\" : \"MEDIUM\";\n\n                    processedItem = new ProcessedItem(\n                        item.getId(),\n                        item.getValue(),\n                        transformedValue,\n                        category,\n                        System.currentTimeMillis()\n                    );\n\n                    processedCount++;\n                } else {\n                    int adjustedValue = item.getValue() + threshold;\n                    processedItem = new ProcessedItem(\n                        item.getId(),\n                        item.getValue(),\n                        adjustedValue,\n                        \"LOW\",\n                        System.currentTimeMillis()\n                    );\n                }\n\n                cache.put(cacheKey, processedItem);\n                processingLog.add(\"Processed new item: \" + cacheKey);\n            }\n\n            results.add(processedItem);\n        }",
+      "end_line": 58,
+      "language": "java",
+      "name": "for_loop",
+      "original_indentation": 8,
+      "start_line": 19
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "            if (cache.containsKey(cacheKey)) {\n                processedItem = (ProcessedItem) cache.get(cacheKey);\n                processingLog.add(\"Cache hit for: \" + cacheKey);\n            }",
+      "end_line": 27,
+      "language": "java",
+      "name": "code_block",
+      "original_indentation": 45,
+      "start_line": 24
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [
+        [
+          218,
+          249
+        ]
+      ],
+      "content": "            if (cache.containsKey(cacheKey)) {\n                processedItem = (ProcessedItem) cache.get(cacheKey);\n                processingLog.add(\"Cache hit for: \" + cacheKey);\n            } else {\n                // Complex transformation logic\n                if (item.getValue() > threshold) {\n                    int transformedValue = item.getValue() * 2;\n                    String category = transformedValue > threshold * 3 ? \"HIGH\" : \"MEDIUM\";\n\n                    processedItem = new ProcessedItem(\n                        item.getId(),\n                        item.getValue(),\n                        transformedValue,\n                        category,\n                        System.currentTimeMillis()\n                    );\n\n                    processedCount++;\n                } else {\n                    int adjustedValue = item.getValue() + threshold;\n                    processedItem = new ProcessedItem(\n                        item.getId(),\n                        item.getValue(),\n                        adjustedValue,\n                        \"LOW\",\n                        System.currentTimeMillis()\n                    );\n                }\n\n                cache.put(cacheKey, processedItem);\n                processingLog.add(\"Processed new item: \" + cacheKey);\n            }",
+      "end_line": 55,
+      "language": "java",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 24
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [
+        [
+          37,
+          68
+        ]
+      ],
+      "content": "            } else {\n                // Complex transformation logic\n                if (item.getValue() > threshold) {\n                    int transformedValue = item.getValue() * 2;\n                    String category = transformedValue > threshold * 3 ? \"HIGH\" : \"MEDIUM\";\n\n                    processedItem = new ProcessedItem(\n                        item.getId(),\n                        item.getValue(),\n                        transformedValue,\n                        category,\n                        System.currentTimeMillis()\n                    );\n\n                    processedCount++;\n                } else {\n                    int adjustedValue = item.getValue() + threshold;\n                    processedItem = new ProcessedItem(\n                        item.getId(),\n                        item.getValue(),\n                        adjustedValue,\n                        \"LOW\",\n                        System.currentTimeMillis()\n                    );\n                }\n\n                cache.put(cacheKey, processedItem);\n                processingLog.add(\"Processed new item: \" + cacheKey);\n            }",
+      "end_line": 55,
+      "language": "java",
+      "name": "code_block",
+      "original_indentation": 19,
+      "start_line": 27
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "                if (item.getValue() > threshold) {\n                    int transformedValue = item.getValue() * 2;\n                    String category = transformedValue > threshold * 3 ? \"HIGH\" : \"MEDIUM\";\n\n                    processedItem = new ProcessedItem(\n                        item.getId(),\n                        item.getValue(),\n                        transformedValue,\n                        category,\n                        System.currentTimeMillis()\n                    );\n\n                    processedCount++;\n                }",
+      "end_line": 42,
+      "language": "java",
+      "name": "code_block",
+      "original_indentation": 49,
+      "start_line": 29
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "                if (item.getValue() > threshold) {\n                    int transformedValue = item.getValue() * 2;\n                    String category = transformedValue > threshold * 3 ? \"HIGH\" : \"MEDIUM\";\n\n                    processedItem = new ProcessedItem(\n                        item.getId(),\n                        item.getValue(),\n                        transformedValue,\n                        category,\n                        System.currentTimeMillis()\n                    );\n\n                    processedCount++;\n                } else {\n                    int adjustedValue = item.getValue() + threshold;\n                    processedItem = new ProcessedItem(\n                        item.getId(),\n                        item.getValue(),\n                        adjustedValue,\n                        \"LOW\",\n                        System.currentTimeMillis()\n                    );\n                }",
+      "end_line": 51,
+      "language": "java",
+      "name": "if_block",
+      "original_indentation": 16,
+      "start_line": 29
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "                } else {\n                    int adjustedValue = item.getValue() + threshold;\n                    processedItem = new ProcessedItem(\n                        item.getId(),\n                        item.getValue(),\n                        adjustedValue,\n                        \"LOW\",\n                        System.currentTimeMillis()\n                    );\n                }",
+      "end_line": 51,
+      "language": "java",
+      "name": "code_block",
+      "original_indentation": 23,
+      "start_line": 42
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "        if (processedCount > 0) {\n            double average = results.stream()\n                .mapToDouble(ProcessedItem::getTransformedValue)\n                .average()\n                .orElse(0.0);\n\n            processingLog.add(\"Processing complete. Average: \" + average);\n        }",
+      "end_line": 68,
+      "language": "java",
+      "name": "if_block",
+      "original_indentation": 8,
+      "start_line": 61
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "            double average = results.stream()\n                .mapToDouble(ProcessedItem::getTransformedValue)",
+      "end_line": 63,
+      "language": "java",
+      "name": "method_call",
+      "original_indentation": 29,
+      "start_line": 62
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "            double average = results.stream()\n                .mapToDouble(ProcessedItem::getTransformedValue)\n                .average()",
+      "end_line": 64,
+      "language": "java",
+      "name": "method_call",
+      "original_indentation": 29,
+      "start_line": 62
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "            double average = results.stream()\n                .mapToDouble(ProcessedItem::getTransformedValue)\n                .average()\n                .orElse(0.0)",
+      "end_line": 65,
+      "language": "java",
+      "name": "method_call",
+      "original_indentation": 29,
+      "start_line": 62
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [
+        [
+          166,
+          223
+        ],
+        [
+          412,
+          455
+        ],
+        [
+          768,
+          807
+        ]
+      ],
+      "content": "    public Map<String, List<ProcessedItem>> analyzeAndGroup(List<ProcessedItem> items) {\n        Map<String, List<ProcessedItem>> grouped = new HashMap<>();\n\n        // Analysis and grouping logic - extractable middle chunk\n        for (ProcessedItem item : items) {\n            String category = item.getCategory();\n\n            grouped.computeIfAbsent(category, k -> new ArrayList<>()).add(item);\n\n            // Additional analysis for high-value items\n            if (\"HIGH\".equals(category)) {\n                String subCategory = item.getTransformedValue() > 1000 ? \"PREMIUM\" : \"STANDARD\";\n                String key = category + \"_\" + subCategory;\n                grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(item);\n            }\n        }\n\n        // Sort each group by transformed value\n        grouped.forEach((category, itemList) -> {\n            itemList.sort(Comparator.comparingInt(ProcessedItem::getTransformedValue).reversed());\n        });\n\n        return grouped;\n    }",
+      "end_line": 96,
+      "language": "java",
+      "name": "analyzeAndGroup",
+      "original_indentation": 4,
+      "start_line": 73
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [
+        [
+          188,
+          231
+        ]
+      ],
+      "content": "        for (ProcessedItem item : items) {\n            String category = item.getCategory();\n\n            grouped.computeIfAbsent(category, k -> new ArrayList<>()).add(item);\n\n            // Additional analysis for high-value items\n            if (\"HIGH\".equals(category)) {\n                String subCategory = item.getTransformedValue() > 1000 ? \"PREMIUM\" : \"STANDARD\";\n                String key = category + \"_\" + subCategory;\n                grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(item);\n            }\n        }",
+      "end_line": 88,
+      "language": "java",
+      "name": "enhanced_for",
+      "original_indentation": 8,
+      "start_line": 77
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if (\"HIGH\".equals(category)) {\n                String subCategory = item.getTransformedValue() > 1000 ? \"PREMIUM\" : \"STANDARD\";\n                String key = category + \"_\" + subCategory;\n                grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(item);\n            }",
+      "end_line": 87,
+      "language": "java",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 83
+    },
+    {
+      "chunk_type": "Lambda",
+      "comment_ranges": [],
+      "content": "        grouped.forEach((category, itemList) -> {\n            itemList.sort(Comparator.comparingInt(ProcessedItem::getTransformedValue).reversed());\n        }",
+      "end_line": 93,
+      "language": "java",
+      "name": "lambda",
+      "original_indentation": 24,
+      "start_line": 91
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "class DataItem {\n    private String id;\n    private int value;\n\n    public DataItem(String id, int value) {\n        this.id = id;\n        this.value = value;\n    }\n\n    public String getId() { return id; }\n    public int getValue() { return value; }\n}",
+      "end_line": 110,
+      "language": "java",
+      "name": "DataItem",
+      "original_indentation": 0,
+      "start_line": 99
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    private String id;",
+      "end_line": 100,
+      "language": "java",
+      "name": "id",
+      "original_indentation": 4,
+      "start_line": 100
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    private int value;",
+      "end_line": 101,
+      "language": "java",
+      "name": "value",
+      "original_indentation": 4,
+      "start_line": 101
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    public DataItem(String id, int value) {\n        this.id = id;\n        this.value = value;\n    }",
+      "end_line": 106,
+      "language": "java",
+      "name": "DataItem",
+      "original_indentation": 4,
+      "start_line": 103
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    public String getId() { return id; }",
+      "end_line": 108,
+      "language": "java",
+      "name": "getId",
+      "original_indentation": 4,
+      "start_line": 108
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    public int getValue() { return value; }",
+      "end_line": 109,
+      "language": "java",
+      "name": "getValue",
+      "original_indentation": 4,
+      "start_line": 109
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "class ProcessedItem {\n    private String id;\n    private int originalValue;\n    private int transformedValue;\n    private String category;\n    private long timestamp;\n\n    public ProcessedItem(String id, int originalValue, int transformedValue,\n                        String category, long timestamp) {\n        this.id = id;\n        this.originalValue = originalValue;\n        this.transformedValue = transformedValue;\n        this.category = category;\n        this.timestamp = timestamp;\n    }\n\n    public String getId() { return id; }\n    public int getOriginalValue() { return originalValue; }\n    public int getTransformedValue() { return transformedValue; }\n    public String getCategory() { return category; }\n    public long getTimestamp() { return timestamp; }\n}",
+      "end_line": 133,
+      "language": "java",
+      "name": "ProcessedItem",
+      "original_indentation": 0,
+      "start_line": 112
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    private String id;",
+      "end_line": 113,
+      "language": "java",
+      "name": "id",
+      "original_indentation": 4,
+      "start_line": 113
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    private int originalValue;",
+      "end_line": 114,
+      "language": "java",
+      "name": "originalValue",
+      "original_indentation": 4,
+      "start_line": 114
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    private int transformedValue;",
+      "end_line": 115,
+      "language": "java",
+      "name": "transformedValue",
+      "original_indentation": 4,
+      "start_line": 115
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    private String category;",
+      "end_line": 116,
+      "language": "java",
+      "name": "category",
+      "original_indentation": 4,
+      "start_line": 116
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    private long timestamp;",
+      "end_line": 117,
+      "language": "java",
+      "name": "timestamp",
+      "original_indentation": 4,
+      "start_line": 117
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    public ProcessedItem(String id, int originalValue, int transformedValue,\n                        String category, long timestamp) {\n        this.id = id;\n        this.originalValue = originalValue;\n        this.transformedValue = transformedValue;\n        this.category = category;\n        this.timestamp = timestamp;\n    }",
+      "end_line": 126,
+      "language": "java",
+      "name": "ProcessedItem",
+      "original_indentation": 4,
+      "start_line": 119
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    public String getId() { return id; }",
+      "end_line": 128,
+      "language": "java",
+      "name": "getId",
+      "original_indentation": 4,
+      "start_line": 128
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    public int getOriginalValue() { return originalValue; }",
+      "end_line": 129,
+      "language": "java",
+      "name": "getOriginalValue",
+      "original_indentation": 4,
+      "start_line": 129
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    public int getTransformedValue() { return transformedValue; }",
+      "end_line": 130,
+      "language": "java",
+      "name": "getTransformedValue",
+      "original_indentation": 4,
+      "start_line": 130
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    public String getCategory() { return category; }",
+      "end_line": 131,
+      "language": "java",
+      "name": "getCategory",
+      "original_indentation": 4,
+      "start_line": 131
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    public long getTimestamp() { return timestamp; }",
+      "end_line": 132,
+      "language": "java",
+      "name": "getTimestamp",
+      "original_indentation": 4,
+      "start_line": 132
+    }
+  ],
+  "source_code": "\nimport java.util.*;\nimport java.util.stream.Collectors;\n\npublic class DataProcessor {\n    private Map<String, Object> cache;\n    private List<String> processingLog;\n\n    public DataProcessor() {\n        this.cache = new HashMap<>();\n        this.processingLog = new ArrayList<>();\n    }\n\n    public List<ProcessedItem> processComplexData(List<DataItem> items, int threshold) {\n        List<ProcessedItem> results = new ArrayList<>();\n        int processedCount = 0;\n\n        // Main processing algorithm - extractable middle chunk\n        for (int i = 0; i < items.size(); i++) {\n            DataItem item = items.get(i);\n            String cacheKey = \"item_\" + i + \"_\" + item.getId();\n\n            ProcessedItem processedItem;\n            if (cache.containsKey(cacheKey)) {\n                processedItem = (ProcessedItem) cache.get(cacheKey);\n                processingLog.add(\"Cache hit for: \" + cacheKey);\n            } else {\n                // Complex transformation logic\n                if (item.getValue() > threshold) {\n                    int transformedValue = item.getValue() * 2;\n                    String category = transformedValue > threshold * 3 ? \"HIGH\" : \"MEDIUM\";\n\n                    processedItem = new ProcessedItem(\n                        item.getId(),\n                        item.getValue(),\n                        transformedValue,\n                        category,\n                        System.currentTimeMillis()\n                    );\n\n                    processedCount++;\n                } else {\n                    int adjustedValue = item.getValue() + threshold;\n                    processedItem = new ProcessedItem(\n                        item.getId(),\n                        item.getValue(),\n                        adjustedValue,\n                        \"LOW\",\n                        System.currentTimeMillis()\n                    );\n                }\n\n                cache.put(cacheKey, processedItem);\n                processingLog.add(\"Processed new item: \" + cacheKey);\n            }\n\n            results.add(processedItem);\n        }\n\n        // Finalization logic\n        if (processedCount > 0) {\n            double average = results.stream()\n                .mapToDouble(ProcessedItem::getTransformedValue)\n                .average()\n                .orElse(0.0);\n\n            processingLog.add(\"Processing complete. Average: \" + average);\n        }\n\n        return results;\n    }\n\n    public Map<String, List<ProcessedItem>> analyzeAndGroup(List<ProcessedItem> items) {\n        Map<String, List<ProcessedItem>> grouped = new HashMap<>();\n\n        // Analysis and grouping logic - extractable middle chunk\n        for (ProcessedItem item : items) {\n            String category = item.getCategory();\n\n            grouped.computeIfAbsent(category, k -> new ArrayList<>()).add(item);\n\n            // Additional analysis for high-value items\n            if (\"HIGH\".equals(category)) {\n                String subCategory = item.getTransformedValue() > 1000 ? \"PREMIUM\" : \"STANDARD\";\n                String key = category + \"_\" + subCategory;\n                grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(item);\n            }\n        }\n\n        // Sort each group by transformed value\n        grouped.forEach((category, itemList) -> {\n            itemList.sort(Comparator.comparingInt(ProcessedItem::getTransformedValue).reversed());\n        });\n\n        return grouped;\n    }\n}\n\nclass DataItem {\n    private String id;\n    private int value;\n\n    public DataItem(String id, int value) {\n        this.id = id;\n        this.value = value;\n    }\n\n    public String getId() { return id; }\n    public int getValue() { return value; }\n}\n\nclass ProcessedItem {\n    private String id;\n    private int originalValue;\n    private int transformedValue;\n    private String category;\n    private long timestamp;\n\n    public ProcessedItem(String id, int originalValue, int transformedValue,\n                        String category, long timestamp) {\n        this.id = id;\n        this.originalValue = originalValue;\n        this.transformedValue = transformedValue;\n        this.category = category;\n        this.timestamp = timestamp;\n    }\n\n    public String getId() { return id; }\n    public int getOriginalValue() { return originalValue; }\n    public int getTransformedValue() { return transformedValue; }\n    public String getCategory() { return category; }\n    public long getTimestamp() { return timestamp; }\n}\n",
+  "test_name": "test_java_complex_algorithm_extraction",
+  "total_chunks": 38
+}

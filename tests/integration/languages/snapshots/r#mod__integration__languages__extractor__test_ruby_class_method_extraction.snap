@@ -1,0 +1,41 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "class User\n  def self.find_by_email(email)\n    puts \"Finding user by email: #{email}\"\n  end\n\n  def instance_method\n    \"instance\"\n  end\nend",
+      "end_line": 10,
+      "language": "ruby",
+      "name": "User",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "  def self.find_by_email(email)\n    puts \"Finding user by email: #{email}\"\n  end",
+      "end_line": 5,
+      "language": "ruby",
+      "name": "find_by_email",
+      "original_indentation": 2,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "  def instance_method\n    \"instance\"\n  end",
+      "end_line": 9,
+      "language": "ruby",
+      "name": "instance_method",
+      "original_indentation": 2,
+      "start_line": 7
+    }
+  ],
+  "source_code": "\nclass User\n  def self.find_by_email(email)\n    puts \"Finding user by email: #{email}\"\n  end\n\n  def instance_method\n    \"instance\"\n  end\nend\n",
+  "test_name": "test_ruby_class_method_extraction",
+  "total_chunks": 3
+}

@@ -1,0 +1,41 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Trait",
+      "comment_ranges": [],
+      "content": "pub trait Display {\n    fn fmt(&self) -> String;\n\n    fn to_string(&self) -> String {\n        self.fmt()\n    }\n}",
+      "end_line": 8,
+      "language": "rust",
+      "name": "Display",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    fn to_string(&self) -> String {\n        self.fmt()\n    }",
+      "end_line": 7,
+      "language": "rust",
+      "name": "to_string",
+      "original_indentation": 4,
+      "start_line": 5
+    },
+    {
+      "chunk_type": "Trait",
+      "comment_ranges": [],
+      "content": "trait Clone {\n    fn clone(&self) -> Self;\n}",
+      "end_line": 12,
+      "language": "rust",
+      "name": "Clone",
+      "original_indentation": 0,
+      "start_line": 10
+    }
+  ],
+  "source_code": "\npub trait Display {\n    fn fmt(&self) -> String;\n\n    fn to_string(&self) -> String {\n        self.fmt()\n    }\n}\n\ntrait Clone {\n    fn clone(&self) -> Self;\n}\n",
+  "test_name": "test_rust_trait_extraction",
+  "total_chunks": 3
+}

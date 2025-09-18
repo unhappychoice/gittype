@@ -1,0 +1,101 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "data Color = Red | Green | Blue",
+      "end_line": 2,
+      "language": "haskell",
+      "name": "unknown",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "showColor :: Color -> String",
+      "end_line": 4,
+      "language": "haskell",
+      "name": "showColor",
+      "original_indentation": 0,
+      "start_line": 4
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "showColor Red = \"red\"",
+      "end_line": 5,
+      "language": "haskell",
+      "name": "showColor",
+      "original_indentation": 0,
+      "start_line": 5
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "showColor Green = \"green\"",
+      "end_line": 6,
+      "language": "haskell",
+      "name": "showColor",
+      "original_indentation": 0,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "showColor Blue = \"blue\"",
+      "end_line": 7,
+      "language": "haskell",
+      "name": "showColor",
+      "original_indentation": 0,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "data Maybe' a = Nothing' | Just' a",
+      "end_line": 9,
+      "language": "haskell",
+      "name": "unknown",
+      "original_indentation": 0,
+      "start_line": 9
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "instance Functor Maybe' where\n    fmap _ Nothing' = Nothing'\n    fmap f (Just' x) = Just' (f x)",
+      "end_line": 13,
+      "language": "haskell",
+      "name": "fmap",
+      "original_indentation": 0,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    fmap _ Nothing' = Nothing'",
+      "end_line": 12,
+      "language": "haskell",
+      "name": "fmap",
+      "original_indentation": 4,
+      "start_line": 12
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    fmap f (Just' x) = Just' (f x)",
+      "end_line": 13,
+      "language": "haskell",
+      "name": "fmap",
+      "original_indentation": 4,
+      "start_line": 13
+    }
+  ],
+  "source_code": "\ndata Color = Red | Green | Blue\n\nshowColor :: Color -> String\nshowColor Red = \"red\"\nshowColor Green = \"green\"\nshowColor Blue = \"blue\"\n\ndata Maybe' a = Nothing' | Just' a\n\ninstance Functor Maybe' where\n    fmap _ Nothing' = Nothing'\n    fmap f (Just' x) = Just' (f x)\n",
+  "test_name": "test_haskell_converter",
+  "total_chunks": 9
+}

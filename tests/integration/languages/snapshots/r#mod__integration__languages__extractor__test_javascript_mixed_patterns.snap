@@ -1,0 +1,141 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "class UserManager {\n    constructor(apiKey) {\n        this.apiKey = apiKey;\n        this.users = [];\n    }\n\n    async loadUsers() {\n        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }\n    }\n\n    findUser = (id) => {\n        return this.users.find(user => user.id === id);\n    };\n}",
+      "end_line": 26,
+      "language": "javascript",
+      "name": "UserManager",
+      "original_indentation": 0,
+      "start_line": 4
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    constructor(apiKey) {\n        this.apiKey = apiKey;\n        this.users = [];\n    }",
+      "end_line": 8,
+      "language": "javascript",
+      "name": "constructor",
+      "original_indentation": 4,
+      "start_line": 5
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    async loadUsers() {\n        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }\n    }",
+      "end_line": 21,
+      "language": "javascript",
+      "name": "loadUsers",
+      "original_indentation": 4,
+      "start_line": 10
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        }",
+      "end_line": 17,
+      "language": "javascript",
+      "name": "code_block",
+      "original_indentation": 12,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "ErrorHandling",
+      "comment_ranges": [],
+      "content": "        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }",
+      "end_line": 20,
+      "language": "javascript",
+      "name": "try_block",
+      "original_indentation": 8,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            })",
+      "end_line": 14,
+      "language": "javascript",
+      "name": "function_call",
+      "original_indentation": 35,
+      "start_line": 12
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }",
+      "end_line": 20,
+      "language": "javascript",
+      "name": "code_block",
+      "original_indentation": 24,
+      "start_line": 17
+    },
+    {
+      "chunk_type": "Lambda",
+      "comment_ranges": [],
+      "content": "    findUser = (id) => {\n        return this.users.find(user => user.id === id);\n    }",
+      "end_line": 25,
+      "language": "javascript",
+      "name": "arrow_lambda",
+      "original_indentation": 15,
+      "start_line": 23
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "function processUsers(users) {\n    return users.map(user => ({\n        ...user,\n        displayName: `${user.firstName} ${user.lastName}`\n    }));\n}",
+      "end_line": 33,
+      "language": "javascript",
+      "name": "processUsers",
+      "original_indentation": 0,
+      "start_line": 28
+    },
+    {
+      "chunk_type": "Lambda",
+      "comment_ranges": [],
+      "content": "    return users.map(user => ({\n        ...user,\n        displayName: `${user.firstName} ${user.lastName}`\n    })",
+      "end_line": 32,
+      "language": "javascript",
+      "name": "arrow_lambda",
+      "original_indentation": 21,
+      "start_line": 29
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "const filterActiveUsers = (users) => {\n    return users.filter(user => user.isActive);\n}",
+      "end_line": 37,
+      "language": "javascript",
+      "name": "filterActiveUsers",
+      "original_indentation": 6,
+      "start_line": 35
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    async createUser(userData) {\n        const response = await fetch('/api/users', {\n            method: 'POST',\n            headers: { 'Content-Type': 'application/json' },\n            body: JSON.stringify(userData)\n        });\n        return response.json();\n    }",
+      "end_line": 47,
+      "language": "javascript",
+      "name": "createUser",
+      "original_indentation": 4,
+      "start_line": 40
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "        const response = await fetch('/api/users', {\n            method: 'POST',\n            headers: { 'Content-Type': 'application/json' },\n            body: JSON.stringify(userData)\n        })",
+      "end_line": 45,
+      "language": "javascript",
+      "name": "function_call",
+      "original_indentation": 31,
+      "start_line": 41
+    }
+  ],
+  "source_code": "\nimport { fetchData } from './api.js';\n\nclass UserManager {\n    constructor(apiKey) {\n        this.apiKey = apiKey;\n        this.users = [];\n    }\n\n    async loadUsers() {\n        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }\n    }\n\n    findUser = (id) => {\n        return this.users.find(user => user.id === id);\n    };\n}\n\nfunction processUsers(users) {\n    return users.map(user => ({\n        ...user,\n        displayName: `${user.firstName} ${user.lastName}`\n    }));\n}\n\nconst filterActiveUsers = (users) => {\n    return users.filter(user => user.isActive);\n};\n\nconst userService = {\n    async createUser(userData) {\n        const response = await fetch('/api/users', {\n            method: 'POST',\n            headers: { 'Content-Type': 'application/json' },\n            body: JSON.stringify(userData)\n        });\n        return response.json();\n    }\n};\n\nexport default UserManager;\n",
+  "test_name": "test_javascript_mixed_patterns",
+  "total_chunks": 13
+}

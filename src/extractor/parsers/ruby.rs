@@ -43,6 +43,34 @@ impl LanguageExtractor for RubyExtractor {
             _ => self.extract_name_from_node(node, source_code),
         }
     }
+
+    fn middle_implementation_query(&self) -> &str {
+        "
+        (for) @for_loop
+        (while) @while_loop
+        (until) @until_loop
+        (if) @if_block
+        (unless) @unless_block
+        (case) @case_block
+        (begin) @begin_block
+        (rescue) @rescue_block
+        (call) @method_call
+        (lambda) @lambda
+        (block) @code_block
+        "
+    }
+
+    fn middle_capture_name_to_chunk_type(&self, capture_name: &str) -> Option<ChunkType> {
+        match capture_name {
+            "for_loop" | "while_loop" | "until_loop" => Some(ChunkType::Loop),
+            "if_block" | "unless_block" | "case_block" => Some(ChunkType::Conditional),
+            "begin_block" | "rescue_block" => Some(ChunkType::ErrorHandling),
+            "method_call" => Some(ChunkType::FunctionCall),
+            "lambda" => Some(ChunkType::Lambda),
+            "code_block" => Some(ChunkType::CodeBlock),
+            _ => None,
+        }
+    }
 }
 
 impl RubyExtractor {

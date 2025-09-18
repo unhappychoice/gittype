@@ -1,0 +1,61 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "extension StringExtensions on String {\n  bool get isEmail {\n    return contains('@') && contains('.');\n  }\n\n  String capitalize() {\n    if (isEmpty) return this;\n    return this[0].toUpperCase() + substring(1);\n  }\n}",
+      "end_line": 11,
+      "language": "dart",
+      "name": "StringExtensions",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "  bool get isEmail {\n    return contains('@') && contains('.');\n  }",
+      "end_line": 5,
+      "language": "dart",
+      "name": "code_block",
+      "original_indentation": 19,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "  String capitalize()",
+      "end_line": 7,
+      "language": "dart",
+      "name": "capitalize",
+      "original_indentation": 2,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "  String capitalize() {\n    if (isEmpty) return this;\n    return this[0].toUpperCase() + substring(1);\n  }",
+      "end_line": 10,
+      "language": "dart",
+      "name": "code_block",
+      "original_indentation": 22,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "extension IntExtensions on int {\n  bool get isEven => this % 2 == 0;\n  bool get isOdd => !isEven;\n\n  int get squared => this * this;\n}",
+      "end_line": 18,
+      "language": "dart",
+      "name": "IntExtensions",
+      "original_indentation": 0,
+      "start_line": 13
+    }
+  ],
+  "source_code": "\nextension StringExtensions on String {\n  bool get isEmail {\n    return contains('@') && contains('.');\n  }\n\n  String capitalize() {\n    if (isEmpty) return this;\n    return this[0].toUpperCase() + substring(1);\n  }\n}\n\nextension IntExtensions on int {\n  bool get isEven => this % 2 == 0;\n  bool get isOdd => !isEven;\n\n  int get squared => this * this;\n}\n",
+  "test_name": "test_dart_extension_extraction",
+  "total_chunks": 5
+}

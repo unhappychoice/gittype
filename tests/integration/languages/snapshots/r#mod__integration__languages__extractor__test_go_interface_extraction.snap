@@ -1,0 +1,56 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Interface",
+      "comment_ranges": [],
+      "content": "type Writer interface {\n    Write([]byte) (int, error)\n}",
+      "end_line": 5,
+      "language": "go",
+      "name": "Writer",
+      "original_indentation": 5,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Interface",
+      "comment_ranges": [],
+      "content": "type Reader interface {\n    Read([]byte) (int, error)\n}",
+      "end_line": 9,
+      "language": "go",
+      "name": "Reader",
+      "original_indentation": 5,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Interface",
+      "comment_ranges": [],
+      "content": "type ReadWriter interface {\n    Reader\n    Writer\n}",
+      "end_line": 14,
+      "language": "go",
+      "name": "ReadWriter",
+      "original_indentation": 5,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [
+        [
+          34,
+          56
+        ]
+      ],
+      "content": "func process(rw ReadWriter) {\n    // Implementation here\n}",
+      "end_line": 18,
+      "language": "go",
+      "name": "process",
+      "original_indentation": 0,
+      "start_line": 16
+    }
+  ],
+  "source_code": "package main\n\ntype Writer interface {\n    Write([]byte) (int, error)\n}\n\ntype Reader interface {\n    Read([]byte) (int, error)\n}\n\ntype ReadWriter interface {\n    Reader\n    Writer\n}\n\nfunc process(rw ReadWriter) {\n    // Implementation here\n}\n",
+  "test_name": "test_go_interface_extraction",
+  "total_chunks": 4
+}

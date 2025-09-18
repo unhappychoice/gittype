@@ -1,15 +1,10 @@
-use crate::integration::{extract_chunks_for_test, test_extraction_options};
-use gittype::extractor::CodeChunkExtractor;
-use gittype::models::ChunkType;
-use std::fs;
-use tempfile::TempDir;
+use crate::integration::languages::extractor::test_language_extractor;
 
-#[test]
-fn test_csharp_class_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.cs");
-
-    let csharp_code = r#"
+test_language_extractor! {
+    name: test_csharp_class_extraction,
+    language: "csharp",
+    extension: "cs",
+    source: r#"
 using System;
 using System.Collections.Generic;
 
@@ -36,40 +31,21 @@ namespace MyApplication.Services
         }
     }
 }
-"#;
-    fs::write(&file_path, csharp_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    // Should find namespace and class
-    assert!(chunks.len() >= 2);
-
-    let class_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Class))
-        .collect();
-    assert_eq!(class_chunks.len(), 1);
-
-    let class_names: Vec<&String> = class_chunks.iter().map(|c| &c.name).collect();
-    assert!(class_names.contains(&&"UserService".to_string()));
-
-    // Check if we extracted methods
-    let method_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Method))
-        .collect();
-    assert!(method_chunks.len() >= 2);
+"#,
+    total_chunks: 8,
+    chunk_counts: {
+        Class: 1,
+        CodeBlock: 3,
+        Method: 3,
+        Namespace: 1,
+    }
 }
 
-#[test]
-fn test_csharp_interface_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.cs");
-
-    let csharp_code = r#"
+test_language_extractor! {
+    name: test_csharp_interface_extraction,
+    language: "csharp",
+    extension: "cs",
+    source: r#"
 using System;
 using System.Threading.Tasks;
 
@@ -88,31 +64,20 @@ namespace MyApplication.Contracts
         Task<bool> ValidateEmailAsync(string email);
     }
 }
-"#;
-    fs::write(&file_path, csharp_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    let interface_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Interface))
-        .collect();
-    assert_eq!(interface_chunks.len(), 2);
-
-    let interface_names: Vec<&String> = interface_chunks.iter().map(|c| &c.name).collect();
-    assert!(interface_names.contains(&&"IUserRepository".to_string()));
-    assert!(interface_names.contains(&&"IEmailService".to_string()));
+"#,
+    total_chunks: 8,
+    chunk_counts: {
+        Interface: 2,
+        Method: 5,
+        Namespace: 1,
+    }
 }
 
-#[test]
-fn test_csharp_struct_and_enum_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.cs");
-
-    let csharp_code = r#"
+test_language_extractor! {
+    name: test_csharp_struct_and_enum_extraction,
+    language: "csharp",
+    extension: "cs",
+    source: r#"
 namespace MyApplication.Models
 {
     public struct Point
@@ -147,40 +112,23 @@ namespace MyApplication.Models
         Pending = 2
     }
 }
-"#;
-    fs::write(&file_path, csharp_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    let struct_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Struct))
-        .collect();
-    assert_eq!(struct_chunks.len(), 1);
-
-    let enum_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Enum))
-        .collect();
-    assert_eq!(enum_chunks.len(), 2);
-
-    let struct_names: Vec<&String> = struct_chunks.iter().map(|c| &c.name).collect();
-    assert!(struct_names.contains(&&"Point".to_string()));
-
-    let enum_names: Vec<&String> = enum_chunks.iter().map(|c| &c.name).collect();
-    assert!(enum_names.contains(&&"UserRole".to_string()));
-    assert!(enum_names.contains(&&"Status".to_string()));
+"#,
+    total_chunks: 10,
+    chunk_counts: {
+        CodeBlock: 2,
+        Enum: 2,
+        Method: 2,
+        Namespace: 1,
+        Struct: 1,
+        Variable: 2,
+    }
 }
 
-#[test]
-fn test_csharp_properties_and_fields() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.cs");
-
-    let csharp_code = r#"
+test_language_extractor! {
+    name: test_csharp_properties_and_fields,
+    language: "csharp",
+    extension: "cs",
+    source: r#"
 namespace MyApplication.Models
 {
     public class User
@@ -190,9 +138,9 @@ namespace MyApplication.Models
 
         public string Name { get; set; }
         public DateTime CreatedAt { get; private set; }
-        
+
         public string FullName => $"{FirstName} {LastName}";
-        
+
         public string FirstName { get; set; }
         public string LastName { get; set; }
 
@@ -204,37 +152,22 @@ namespace MyApplication.Models
         }
     }
 }
-"#;
-    fs::write(&file_path, csharp_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    // Should find class and properties
-    let class_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Class))
-        .collect();
-    assert_eq!(class_chunks.len(), 1);
-
-    let property_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Variable))
-        .collect();
-    assert!(property_chunks.len() >= 5); // Properties and fields
-
-    let class_names: Vec<&String> = class_chunks.iter().map(|c| &c.name).collect();
-    assert!(class_names.contains(&&"User".to_string()));
+"#,
+    total_chunks: 9,
+    chunk_counts: {
+        Class: 1,
+        CodeBlock: 1,
+        Method: 1,
+        Namespace: 1,
+        Variable: 5,
+    }
 }
 
-#[test]
-fn test_csharp_namespace_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.cs");
-
-    let csharp_code = r#"
+test_language_extractor! {
+    name: test_csharp_namespace_extraction,
+    language: "csharp",
+    extension: "cs",
+    source: r#"
 using System;
 
 namespace MyApplication.Core.Services
@@ -256,21 +189,171 @@ namespace MyApplication.Core.Models
         public DateTime Timestamp { get; set; }
     }
 }
-"#;
-    fs::write(&file_path, csharp_code).unwrap();
+"#,
+    total_chunks: 8,
+    chunk_counts: {
+        Class: 2,
+        CodeBlock: 1,
+        Method: 1,
+        Namespace: 2,
+        Variable: 2,
+    }
+}
 
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
+test_language_extractor! {
+    name: test_csharp_complex_algorithm_extraction,
+    language: "csharp",
+    extension: "cs",
+    source: r#"
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-    let namespace_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Namespace))
-        .collect();
-    assert_eq!(namespace_chunks.len(), 2);
+namespace DataProcessing
+{
+    public class ProcessedItem
+    {
+        public int Id { get; set; }
+        public int OriginalValue { get; set; }
+        public int TransformedValue { get; set; }
+        public string Category { get; set; }
+        public DateTime Timestamp { get; set; }
+        public Dictionary<string, object> Metadata { get; set; }
+    }
 
-    let namespace_names: Vec<&String> = namespace_chunks.iter().map(|c| &c.name).collect();
-    assert!(namespace_names.contains(&&"MyApplication.Core.Services".to_string()));
-    assert!(namespace_names.contains(&&"MyApplication.Core.Models".to_string()));
+    public class DataProcessor<T> where T : IComparable<T>
+    {
+        private readonly Dictionary<string, ProcessedItem> _cache;
+        private readonly List<ProcessedItem> _processingLog;
+        private readonly T _threshold;
+
+        public DataProcessor(T threshold)
+        {
+            _cache = new Dictionary<string, ProcessedItem>();
+            _processingLog = new List<ProcessedItem>();
+            _threshold = threshold;
+        }
+
+        public List<ProcessedItem> ProcessComplexData(List<T> input)
+        {
+            var results = new List<ProcessedItem>();
+            var processedCount = 0;
+
+            // Main processing algorithm - extractable middle chunk
+            for (int i = 0; i < input.Count; i++)
+            {
+                var value = input[i];
+                var cacheKey = $"item_{i}_{value}";
+
+                if (_cache.TryGetValue(cacheKey, out var cachedItem))
+                {
+                    results.Add(cachedItem);
+                    continue;
+                }
+
+                var processedItem = new ProcessedItem
+                {
+                    Id = i,
+                    OriginalValue = Convert.ToInt32(value),
+                    Timestamp = DateTime.Now,
+                    Metadata = new Dictionary<string, object>()
+                };
+
+                if (value.CompareTo(_threshold) > 0)
+                {
+                    processedItem.TransformedValue = processedItem.OriginalValue * 2;
+                    processedItem.Category = processedItem.TransformedValue > Convert.ToInt32(_threshold) * 3 ? "HIGH" : "MEDIUM";
+                    processedCount++;
+
+                    // Additional processing for high values
+                    if (processedItem.TransformedValue > 100)
+                    {
+                        processedItem.Metadata["bonus"] = true;
+                        processedItem.TransformedValue += 10;
+                    }
+                }
+                else if (value.CompareTo(default(T)) > 0)
+                {
+                    processedItem.TransformedValue = processedItem.OriginalValue + Convert.ToInt32(_threshold);
+                    processedItem.Category = "LOW";
+                }
+                else
+                {
+                    continue; // skip invalid values
+                }
+
+                _cache[cacheKey] = processedItem;
+                _processingLog.Add(processedItem);
+                results.Add(processedItem);
+            }
+
+            // Finalization logic
+            if (processedCount > 0)
+            {
+                var average = results.Average(r => r.TransformedValue);
+                Console.WriteLine($"Processing complete. Average: {average:F2}");
+
+                // Add summary metadata
+                foreach (var item in results)
+                {
+                    item.Metadata["processing_average"] = average;
+                }
+            }
+
+            return results;
+        }
+
+        public Dictionary<string, object> AnalyzePatterns(List<ProcessedItem> items)
+        {
+            var analysis = new Dictionary<string, object>();
+            var categoryGroups = items.GroupBy(i => i.Category).ToDictionary(g => g.Key, g => g.ToList());
+
+            // Pattern analysis logic - extractable middle chunk
+            foreach (var categoryGroup in categoryGroups)
+            {
+                var category = categoryGroup.Key;
+                var categoryItems = categoryGroup.Value;
+
+                var categoryAnalysis = new Dictionary<string, object>
+                {
+                    ["count"] = categoryItems.Count,
+                    ["percentage"] = (double)categoryItems.Count / items.Count * 100,
+                    ["avg_value"] = categoryItems.Average(i => i.TransformedValue),
+                    ["min_value"] = categoryItems.Min(i => i.TransformedValue),
+                    ["max_value"] = categoryItems.Max(i => i.TransformedValue)
+                };
+
+                // Time-based analysis
+                var recentItems = categoryItems.Where(i => (DateTime.Now - i.Timestamp).TotalMinutes < 1).ToList();
+                if (recentItems.Any())
+                {
+                    categoryAnalysis["recent_count"] = recentItems.Count;
+                    categoryAnalysis["recent_avg"] = recentItems.Average(i => i.TransformedValue);
+                }
+
+                // High-value analysis
+                var highValueItems = categoryItems.Where(i => i.TransformedValue > 1000).ToList();
+                if (highValueItems.Any())
+                {
+                    categoryAnalysis["high_value_count"] = highValueItems.Count;
+                }
+
+                analysis[category] = categoryAnalysis;
+            }
+
+            analysis["total_items"] = items.Count;
+            analysis["processing_time"] = DateTime.Now;
+
+            return analysis;
+        }
+    }
+}
+"#,
+    total_chunks: 35,
+    chunk_counts: {
+        Class: 2,
+        Method: 3,
+        Namespace: 1,
+        Variable: 6,
+    }
 }

@@ -1,15 +1,10 @@
-use crate::integration::{extract_chunks_for_test, test_extraction_options};
-use gittype::extractor::CodeChunkExtractor;
-use gittype::models::ChunkType;
-use std::fs;
-use tempfile::TempDir;
+use crate::integration::languages::extractor::test_language_extractor;
 
-#[test]
-fn test_ruby_function_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.rb");
-
-    let ruby_code = r#"
+test_language_extractor! {
+    name: test_ruby_function_extraction,
+    language: "ruby",
+    extension: "rb",
+    source: r#"
 def hello_world
   puts "Hello, world!"
 end
@@ -17,192 +12,229 @@ end
 def calculate_sum(a, b)
   a + b
 end
-"#;
-    fs::write(&file_path, ruby_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    assert_eq!(chunks.len(), 2);
-    assert_eq!(chunks[0].name, "hello_world");
-    assert_eq!(chunks[1].name, "calculate_sum");
-    assert!(matches!(chunks[0].chunk_type, ChunkType::Method));
-    assert!(matches!(chunks[1].chunk_type, ChunkType::Method));
+"#,
+    total_chunks: 2,
+    chunk_counts: {
+        Method: 2,
+    }
 }
 
-#[test]
-fn test_ruby_class_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.rb");
-
-    let ruby_code = r#"
+test_language_extractor! {
+    name: test_ruby_class_extraction,
+    language: "ruby",
+    extension: "rb",
+    source: r#"
 class Person
   attr_accessor :name, :age
-  
+
   def initialize(name, age)
     @name = name
     @age = age
   end
-  
+
   def greet
     puts "Hello, I'm #{@name}!"
   end
 end
-"#;
-    fs::write(&file_path, ruby_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    // Debug output to see what's being extracted
-    for (i, chunk) in chunks.iter().enumerate() {
-        println!(
-            "Chunk {}: name='{}', type={:?}",
-            i, chunk.name, chunk.chunk_type
-        );
+"#,
+    total_chunks: 4,
+    chunk_counts: {
+        Class: 1,
+        Method: 3,
     }
-    assert_eq!(chunks.len(), 4); // class + 2 methods + 1 attr_accessor (name, age combined)
-
-    // Find class chunk
-    let class_chunk = chunks
-        .iter()
-        .find(|c| matches!(c.chunk_type, ChunkType::Class))
-        .unwrap();
-    assert_eq!(class_chunk.name, "Person");
-
-    // Find method chunks
-    let method_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Method))
-        .collect();
-    assert_eq!(method_chunks.len(), 3); // initialize, greet + attr_accessor (name, age combined)
-
-    let method_names: Vec<&String> = method_chunks.iter().map(|c| &c.name).collect();
-    assert!(method_names.iter().any(|name| name.contains("initialize")));
-    assert!(method_names.iter().any(|name| name.contains("greet")));
 }
 
-#[test]
-fn test_ruby_module_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.rb");
-
-    let ruby_code = r#"
+test_language_extractor! {
+    name: test_ruby_module_extraction,
+    language: "ruby",
+    extension: "rb",
+    source: r#"
 module Authentication
   def login(username, password)
     puts "Logging in #{username}"
     true
   end
-  
+
   def logout
     puts "Logged out"
   end
 end
-"#;
-    fs::write(&file_path, ruby_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    assert_eq!(chunks.len(), 3); // module + 2 methods
-
-    // Find module chunk
-    let module_chunk = chunks
-        .iter()
-        .find(|c| matches!(c.chunk_type, ChunkType::Module))
-        .unwrap();
-    assert_eq!(module_chunk.name, "Authentication");
-
-    // Find method chunks
-    let method_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Method))
-        .collect();
-    assert_eq!(method_chunks.len(), 2);
-
-    let method_names: Vec<&String> = method_chunks.iter().map(|c| &c.name).collect();
-    assert!(method_names.iter().any(|name| name.contains("login")));
-    assert!(method_names.iter().any(|name| name.contains("logout")));
+"#,
+    total_chunks: 3,
+    chunk_counts: {
+        Method: 2,
+        Module: 1,
+    }
 }
 
-#[test]
-fn test_ruby_class_method_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.rb");
-
-    let ruby_code = r#"
+test_language_extractor! {
+    name: test_ruby_class_method_extraction,
+    language: "ruby",
+    extension: "rb",
+    source: r#"
 class User
   def self.find_by_email(email)
     puts "Finding user by email: #{email}"
   end
-  
+
   def instance_method
     "instance"
   end
 end
-"#;
-    fs::write(&file_path, ruby_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    let class_methods: Vec<_> = chunks
-        .iter()
-        .filter(|chunk| chunk.name.contains("find_by_email"))
-        .collect();
-    assert!(
-        !class_methods.is_empty(),
-        "Should extract class method find_by_email"
-    );
-
-    let instance_methods: Vec<_> = chunks
-        .iter()
-        .filter(|chunk| chunk.name.contains("instance_method"))
-        .collect();
-    assert!(
-        !instance_methods.is_empty(),
-        "Should extract instance method"
-    );
+"#,
+    total_chunks: 3,
+    chunk_counts: {
+        Class: 1,
+        Method: 2,
+    }
 }
 
-#[test]
-fn test_ruby_attr_accessor_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.rb");
-
-    let ruby_code = r#"
+test_language_extractor! {
+    name: test_ruby_attr_accessor_extraction,
+    language: "ruby",
+    extension: "rb",
+    source: r#"
 class Product
   attr_accessor :name, :price
   attr_reader :id
   attr_writer :description
 end
-"#;
-    fs::write(&file_path, ruby_code).unwrap();
+"#,
+    total_chunks: 4,
+    chunk_counts: {
+        Class: 1,
+        Method: 3,
+    }
+}
 
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
+test_language_extractor! {
+    name: test_ruby_complex_algorithm_extraction,
+    language: "ruby",
+    extension: "rb",
+    source: r#"
+class ProcessedItem
+  attr_accessor :id, :original_value, :transformed_value, :category, :timestamp, :metadata
 
-    let attr_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|chunk| {
-            chunk.name.contains("name")
-                || chunk.name.contains("price")
-                || chunk.name.contains("id")
-                || chunk.name.contains("description")
-        })
-        .collect();
-    assert!(
-        !attr_chunks.is_empty(),
-        "Should extract attr_accessor, attr_reader, attr_writer"
-    );
+  def initialize(id, original_value, transformed_value, category, metadata = {})
+    @id = id
+    @original_value = original_value
+    @transformed_value = transformed_value
+    @category = category
+    @timestamp = Time.now
+    @metadata = metadata
+  end
+end
+
+class DataProcessor
+  def initialize(threshold)
+    @threshold = threshold
+    @cache = {}
+    @processing_log = []
+  end
+
+  def process_complex_data(input)
+    results = []
+    processed_count = 0
+
+    # Main processing algorithm - extractable middle chunk
+    input.each_with_index do |value, index|
+      cache_key = "item_#{index}_#{value}"
+
+      if @cache.key?(cache_key)
+        results << @cache[cache_key]
+        next
+      end
+
+      processed_item = if value > @threshold
+                         transformed_value = value * 2
+                         category = transformed_value > @threshold * 3 ? 'HIGH' : 'MEDIUM'
+                         bonus_value = transformed_value > 100 ? transformed_value + 10 : transformed_value
+
+                         ProcessedItem.new(
+                           index,
+                           value,
+                           bonus_value,
+                           category,
+                           {
+                             processed: true,
+                             multiplier: 2,
+                             processor: 'enhanced'
+                           }
+                         ).tap { processed_count += 1 }
+                       elsif value > 0
+                         ProcessedItem.new(
+                           index,
+                           value,
+                           value + @threshold,
+                           'LOW',
+                           {
+                             processed: true,
+                             adjusted: true,
+                             processor: 'basic'
+                           }
+                         )
+                       else
+                         next # skip negative values
+                       end
+
+      @cache[cache_key] = processed_item
+      @processing_log << processed_item
+      results << processed_item
+    end
+
+    # Finalization logic
+    if processed_count > 0
+      average = results.sum(&:transformed_value).to_f / results.size
+      puts "Processing complete. Average: #{format('%.2f', average)}"
+
+      # Add processing statistics
+      results.each { |item| item.metadata[:processing_average] = average }
+    end
+
+    results
+  end
+
+  def analyze_patterns(items)
+    analysis = {}
+    category_groups = items.group_by(&:category)
+
+    # Pattern analysis logic - extractable middle chunk
+    category_groups.each do |category, category_items|
+      values = category_items.map(&:transformed_value)
+      category_analysis = {
+        count: category_items.size,
+        percentage: (category_items.size.to_f / items.size * 100),
+        avg_value: values.sum.to_f / values.size,
+        min_value: values.min,
+        max_value: values.max
+      }
+
+      # Time-based analysis
+      current_time = Time.now
+      recent_items = category_items.select { |item| current_time - item.timestamp < 60 } # last minute
+      unless recent_items.empty?
+        recent_values = recent_items.map(&:transformed_value)
+        category_analysis[:recent_count] = recent_items.size
+        category_analysis[:recent_avg] = recent_values.sum.to_f / recent_values.size
+      end
+
+      # High-value analysis
+      high_value_items = category_items.select { |item| item.transformed_value > 1000 }
+      category_analysis[:high_value_count] = high_value_items.size unless high_value_items.empty?
+
+      analysis[category] = category_analysis
+    end
+
+    analysis.merge(
+      total_items: items.size,
+      processing_time: Time.now.to_i
+    )
+  end
+end
+"#,
+    total_chunks: 16,
+    chunk_counts: {
+        Class: 2,
+        Method: 5,
+    }
 }

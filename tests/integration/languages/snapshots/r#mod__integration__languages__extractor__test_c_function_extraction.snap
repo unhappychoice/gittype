@@ -1,0 +1,41 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "int main(void) {\n    printf(\"Hello, world!\");\n    return 0;\n}",
+      "end_line": 5,
+      "language": "c",
+      "name": "main",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "int add(int a, int b) {\n    return a + b;\n}",
+      "end_line": 9,
+      "language": "c",
+      "name": "add",
+      "original_indentation": 0,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "void print_number(int num) {\n    printf(\"%d\\n\", num);\n}",
+      "end_line": 13,
+      "language": "c",
+      "name": "print_number",
+      "original_indentation": 0,
+      "start_line": 11
+    }
+  ],
+  "source_code": "\nint main(void) {\n    printf(\"Hello, world!\");\n    return 0;\n}\n\nint add(int a, int b) {\n    return a + b;\n}\n\nvoid print_number(int num) {\n    printf(\"%d\\n\", num);\n}\n",
+  "test_name": "test_c_function_extraction",
+  "total_chunks": 3
+}

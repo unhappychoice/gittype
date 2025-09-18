@@ -1,0 +1,41 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "fun greet(name: String): String {\n    return \"Hello, $name!\"\n}",
+      "end_line": 4,
+      "language": "kotlin",
+      "name": "greet",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "fun calculateSum(a: Int, b: Int): Int {\n    return a + b\n}",
+      "end_line": 8,
+      "language": "kotlin",
+      "name": "calculateSum",
+      "original_indentation": 0,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "fun processData(data: List<String>) {\n    data.forEach { println(it) }\n}",
+      "end_line": 12,
+      "language": "kotlin",
+      "name": "processData",
+      "original_indentation": 0,
+      "start_line": 10
+    }
+  ],
+  "source_code": "\nfun greet(name: String): String {\n    return \"Hello, $name!\"\n}\n\nfun calculateSum(a: Int, b: Int): Int {\n    return a + b\n}\n\nfun processData(data: List<String>) {\n    data.forEach { println(it) }\n}\n",
+  "test_name": "test_kotlin_function_extraction",
+  "total_chunks": 3
+}

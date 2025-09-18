@@ -1,0 +1,71 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "class Person {\n  String name;\n  int age;\n\n  Person(this.name, this.age);\n\n  String greet() {\n    return 'Hello, I am $name!';\n  }\n\n  bool get isAdult => age >= 18;\n}",
+      "end_line": 13,
+      "language": "dart",
+      "name": "Person",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "  String greet()",
+      "end_line": 8,
+      "language": "dart",
+      "name": "greet",
+      "original_indentation": 2,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "  String greet() {\n    return 'Hello, I am $name!';\n  }",
+      "end_line": 10,
+      "language": "dart",
+      "name": "code_block",
+      "original_indentation": 17,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "class Calculator {\n  int add(int a, int b) => a + b;\n\n  int multiply(int a, int b) {\n    return a * b;\n  }\n}",
+      "end_line": 21,
+      "language": "dart",
+      "name": "Calculator",
+      "original_indentation": 0,
+      "start_line": 15
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "  int add(int a, int b)",
+      "end_line": 16,
+      "language": "dart",
+      "name": "add",
+      "original_indentation": 2,
+      "start_line": 16
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "  int multiply(int a, int b)",
+      "end_line": 18,
+      "language": "dart",
+      "name": "multiply",
+      "original_indentation": 2,
+      "start_line": 18
+    }
+  ],
+  "source_code": "\nclass Person {\n  String name;\n  int age;\n\n  Person(this.name, this.age);\n\n  String greet() {\n    return 'Hello, I am $name!';\n  }\n\n  bool get isAdult => age >= 18;\n}\n\nclass Calculator {\n  int add(int a, int b) => a + b;\n\n  int multiply(int a, int b) {\n    return a * b;\n  }\n}\n",
+  "test_name": "test_dart_class_extraction",
+  "total_chunks": 6
+}
