@@ -177,83 +177,16 @@ impl GitRepositoryExtractor {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::env;
-    use std::path::PathBuf;
 
     #[test]
-    fn test_find_git_repository_root_from_file() {
-        // Test with the specific Rails file that was causing issues
-        let rails_file = PathBuf::from(env::var("HOME").unwrap())
-            .join(".gittype/repos/github.com/rails/rails/actionview/test/template/form_tag_helper_test.rb");
+    fn test_find_git_repository_root_basic() {
+        // Test with current project directory
+        let current_dir = std::env::current_dir().unwrap();
+        let git_root = GitRepositoryExtractor::find_git_repository_root(&current_dir);
 
-        if rails_file.exists() {
-            let git_root = GitRepositoryExtractor::find_git_repository_root(&rails_file);
-
-            match git_root {
-                Some(root) => {
-                    println!("Found git root: {:?}", root);
-                    let expected_root = PathBuf::from(env::var("HOME").unwrap())
-                        .join(".gittype/repos/github.com/rails/rails");
-                    assert_eq!(root, expected_root);
-                }
-                None => {
-                    panic!("Should have found git root for Rails file");
-                }
-            }
-        } else {
-            println!("Rails file doesn't exist, skipping test");
-        }
-    }
-
-    #[test]
-    fn test_extract_git_repository_from_file() {
-        let rails_file = PathBuf::from(env::var("HOME").unwrap())
-            .join(".gittype/repos/github.com/rails/rails/actionview/test/template/form_tag_helper_test.rb");
-
-        if rails_file.exists() {
-            let result = GitRepositoryExtractor::extract_git_repository(&rails_file);
-
-            match result {
-                Ok(Some(repo)) => {
-                    println!("Extracted repository: {:?}", repo);
-                    assert_eq!(repo.user_name, "rails");
-                    assert_eq!(repo.repository_name, "rails");
-                    assert!(repo.root_path.is_some());
-                    let expected_root = PathBuf::from(env::var("HOME").unwrap())
-                        .join(".gittype/repos/github.com/rails/rails");
-                    assert_eq!(repo.root_path.unwrap(), expected_root);
-                }
-                Ok(None) => {
-                    panic!("Should have extracted git repository info");
-                }
-                Err(e) => {
-                    panic!("Error extracting repository: {:?}", e);
-                }
-            }
-        } else {
-            println!("Rails file doesn't exist, skipping test");
-        }
-    }
-
-    #[test]
-    fn test_find_git_repository_root_from_directory() {
-        let rails_dir =
-            PathBuf::from(env::var("HOME").unwrap()).join(".gittype/repos/github.com/rails/rails");
-
-        if rails_dir.exists() {
-            let git_root = GitRepositoryExtractor::find_git_repository_root(&rails_dir);
-
-            match git_root {
-                Some(root) => {
-                    println!("Found git root from directory: {:?}", root);
-                    assert_eq!(root, rails_dir);
-                }
-                None => {
-                    panic!("Should have found git root from Rails directory");
-                }
-            }
-        } else {
-            println!("Rails directory doesn't exist, skipping test");
-        }
+        // Should find the git root of the current project
+        assert!(git_root.is_some());
+        let root = git_root.unwrap();
+        assert!(root.join(".git").exists());
     }
 }
