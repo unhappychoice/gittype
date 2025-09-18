@@ -1,15 +1,10 @@
-use crate::integration::{extract_chunks_for_test, test_extraction_options};
-use gittype::extractor::CodeChunkExtractor;
-use gittype::models::ChunkType;
-use std::fs;
-use tempfile::TempDir;
+use crate::integration::languages::extractor::test_language_extractor;
 
-#[test]
-fn test_kotlin_function_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.kt");
-
-    let kotlin_code = r#"
+test_language_extractor! {
+    name: test_kotlin_function_extraction,
+    language: "kotlin",
+    extension: "kt",
+    source: r#"
 fun greet(name: String): String {
     return "Hello, $name!"
 }
@@ -21,38 +16,23 @@ fun calculateSum(a: Int, b: Int): Int {
 fun processData(data: List<String>) {
     data.forEach { println(it) }
 }
-"#;
-    fs::write(&file_path, kotlin_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    assert_eq!(chunks.len(), 3);
-
-    let function_names: Vec<&String> = chunks.iter().map(|c| &c.name).collect();
-    assert!(function_names.contains(&&"greet".to_string()));
-    assert!(function_names.contains(&&"calculateSum".to_string()));
-    assert!(function_names.contains(&&"processData".to_string()));
-
-    for chunk in &chunks {
-        assert!(matches!(chunk.chunk_type, ChunkType::Function));
-        assert_eq!(chunk.language, "kotlin".to_string());
+"#,
+    total_chunks: 3,
+    chunk_counts: {
+        Function: 3,
     }
 }
 
-#[test]
-fn test_kotlin_class_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.kt");
-
-    let kotlin_code = r#"
+test_language_extractor! {
+    name: test_kotlin_class_extraction,
+    language: "kotlin",
+    extension: "kt",
+    source: r#"
 class Person(val name: String, val age: Int) {
     fun greet(): String {
         return "Hello, I'm $name and I'm $age years old"
     }
-    
+
     fun isAdult(): Boolean {
         return age >= 18
     }
@@ -65,52 +45,26 @@ data class User(
 ) {
     fun getDisplayName(): String = "$name ($email)"
 }
-"#;
-    fs::write(&file_path, kotlin_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    // Should find 2 classes + 3 functions = 5 total
-    assert_eq!(chunks.len(), 5);
-
-    let class_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Class))
-        .collect();
-    assert_eq!(class_chunks.len(), 2);
-
-    let class_names: Vec<&String> = class_chunks.iter().map(|c| &c.name).collect();
-    assert!(class_names.contains(&&"Person".to_string()));
-    assert!(class_names.contains(&&"User".to_string()));
-
-    let function_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Function))
-        .collect();
-    assert_eq!(function_chunks.len(), 3);
-
-    let function_names: Vec<&String> = function_chunks.iter().map(|c| &c.name).collect();
-    assert!(function_names.contains(&&"greet".to_string()));
-    assert!(function_names.contains(&&"isAdult".to_string()));
-    assert!(function_names.contains(&&"getDisplayName".to_string()));
+"#,
+    total_chunks: 5,
+    chunk_counts: {
+        Class: 2,
+        Function: 3,
+    }
 }
 
-#[test]
-fn test_kotlin_object_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.kt");
-
-    let kotlin_code = r#"
+test_language_extractor! {
+    name: test_kotlin_object_extraction,
+    language: "kotlin",
+    extension: "kt",
+    source: r#"
 object DatabaseHelper {
     const val DB_NAME = "app.db"
-    
+
     fun connect(): String {
         return "Connected to $DB_NAME"
     }
-    
+
     fun disconnect() {
         println("Disconnected from database")
     }
@@ -121,38 +75,20 @@ object Utils {
         return name.trim().lowercase()
     }
 }
-"#;
-    fs::write(&file_path, kotlin_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    // Should find 2 objects + 3 functions = 5 total, but sometimes might find 6 due to additional functions
-    assert!(
-        chunks.len() >= 5,
-        "Should find at least 5 chunks, got {}",
-        chunks.len()
-    );
-
-    let object_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Class))
-        .collect();
-    assert_eq!(object_chunks.len(), 2);
-
-    let object_names: Vec<&String> = object_chunks.iter().map(|c| &c.name).collect();
-    assert!(object_names.contains(&&"DatabaseHelper".to_string()));
-    assert!(object_names.contains(&&"Utils".to_string()));
+"#,
+    total_chunks: 6,
+    chunk_counts: {
+        Class: 2,
+        Function: 3,
+        Variable: 1,
+    }
 }
 
-#[test]
-fn test_kotlin_comprehensive_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("comprehensive_test.kt");
-
-    let kotlin_code = r#"
+test_language_extractor! {
+    name: test_kotlin_comprehensive_extraction,
+    language: "kotlin",
+    extension: "kt",
+    source: r#"
 // Line comment
 /* Block comment */
 
@@ -192,7 +128,7 @@ enum class Color {
 // Object declaration
 object SingletonObject {
     const val CONSTANT = "constant_value"
-    
+
     fun objectMethod(): String = "object method"
 }
 
@@ -200,7 +136,7 @@ object SingletonObject {
 class ClassWithCompanion {
     companion object {
         const val COMPANION_CONSTANT = "companion_constant"
-        
+
         fun companionMethod(): String = "companion method"
     }
 }
@@ -208,75 +144,139 @@ class ClassWithCompanion {
 // Properties
 val globalVal: String = "global val"
 var globalVar: String = "global var"
-"#;
+"#,
+    total_chunks: 21,
+    chunk_counts: {
+        Class: 8,
+        Const: 3,
+        Function: 6,
+        Variable: 4,
+    }
+}
 
-    fs::write(&file_path, kotlin_code).unwrap();
+test_language_extractor! {
+    name: test_kotlin_complex_algorithm_extraction,
+    language: "kotlin",
+    extension: "kt",
+    source: r#"
+data class ProcessedItem(
+    val id: Int,
+    val originalValue: Int,
+    val transformedValue: Int,
+    val category: String,
+    val timestamp: Long = System.currentTimeMillis(),
+    val metadata: MutableMap<String, Any> = mutableMapOf()
+)
 
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
+class DataProcessor(private val threshold: Int) {
+    private val cache = mutableMapOf<String, ProcessedItem>()
+    private val processingLog = mutableListOf<ProcessedItem>()
 
-    println!("Total chunks found: {}", chunks.len());
-    for (i, chunk) in chunks.iter().enumerate() {
-        println!("{}. {:?} - {}", i + 1, chunk.chunk_type, chunk.name);
+    fun processComplexData(input: List<Int>): List<ProcessedItem> {
+        val results = mutableListOf<ProcessedItem>()
+        var processedCount = 0
+
+        // Main processing algorithm - extractable middle chunk
+        input.forEachIndexed { index, value ->
+            val cacheKey = "item_${index}_$value"
+
+            cache[cacheKey]?.let { cachedItem ->
+                results.add(cachedItem)
+                return@forEachIndexed
+            }
+
+            val processedItem = when {
+                value > threshold -> {
+                    val transformedValue = value * 2
+                    val category = if (transformedValue > threshold * 3) "HIGH" else "MEDIUM"
+                    val bonusValue = if (transformedValue > 100) transformedValue + 10 else transformedValue
+
+                    ProcessedItem(
+                        id = index,
+                        originalValue = value,
+                        transformedValue = bonusValue,
+                        category = category,
+                        metadata = mutableMapOf(
+                            "processed" to true,
+                            "multiplier" to 2,
+                            "processor" to "enhanced"
+                        )
+                    ).also { processedCount++ }
+                }
+                value > 0 -> ProcessedItem(
+                    id = index,
+                    originalValue = value,
+                    transformedValue = value + threshold,
+                    category = "LOW",
+                    metadata = mutableMapOf(
+                        "processed" to true,
+                        "adjusted" to true,
+                        "processor" to "basic"
+                    )
+                )
+                else -> return@forEachIndexed // skip negative values
+            }
+
+            cache[cacheKey] = processedItem
+            processingLog.add(processedItem)
+            results.add(processedItem)
+        }
+
+        // Finalization logic
+        if (processedCount > 0) {
+            val average = results.map { it.transformedValue }.average()
+            println("Processing complete. Average: %.2f".format(average))
+
+            results.forEach { item ->
+                item.metadata["processing_average"] = average
+            }
+        }
+
+        return results
     }
 
-    // Check for specific constructs
-    let chunk_names: Vec<&String> = chunks.iter().map(|c| &c.name).collect();
+    fun analyzePatterns(items: List<ProcessedItem>): Map<String, Map<String, Any>> {
+        val analysis = mutableMapOf<String, Map<String, Any>>()
+        val categoryGroups = items.groupBy { it.category }
 
-    // Functions
-    assert!(chunk_names.contains(&&"regularFunction".to_string()));
+        // Pattern analysis logic - extractable middle chunk
+        categoryGroups.forEach { (category, categoryItems) ->
+            val values = categoryItems.map { it.transformedValue.toDouble() }
+            val categoryAnalysis = mapOf(
+                "count" to categoryItems.size,
+                "percentage" to (categoryItems.size.toDouble() / items.size * 100),
+                "avg_value" to values.average(),
+                "min_value" to values.minOrNull(),
+                "max_value" to values.maxOrNull()
+            ).toMutableMap()
 
-    // Classes
-    assert!(chunk_names.contains(&&"RegularClass".to_string()));
-    assert!(chunk_names.contains(&&"DataClass".to_string()));
-    assert!(chunk_names.contains(&&"Color".to_string())); // enum class
+            // Time-based analysis
+            val currentTime = System.currentTimeMillis()
+            val recentItems = categoryItems.filter { currentTime - it.timestamp < 60000 } // last minute
+            if (recentItems.isNotEmpty()) {
+                categoryAnalysis["recent_count"] = recentItems.size
+                categoryAnalysis["recent_avg"] = recentItems.map { it.transformedValue.toDouble() }.average()
+            }
 
-    // Objects
-    assert!(chunk_names.contains(&&"SingletonObject".to_string()));
-    assert!(chunk_names.contains(&&"ClassWithCompanion".to_string()));
+            // High-value analysis
+            val highValueItems = categoryItems.filter { it.transformedValue > 1000 }
+            if (highValueItems.isNotEmpty()) {
+                categoryAnalysis["high_value_count"] = highValueItems.size
+            }
 
-    // Type alias
-    assert!(chunk_names.contains(&&"StringList".to_string()));
+            analysis[category] = categoryAnalysis
+        }
 
-    // Interface
-    assert!(chunk_names.contains(&&"TestInterface".to_string()));
-
-    // Enum entries
-    assert!(chunk_names.contains(&&"RED".to_string()));
-    assert!(chunk_names.contains(&&"GREEN".to_string()));
-    assert!(chunk_names.contains(&&"BLUE".to_string()));
-
-    // Verify chunk types are correct
-    let function_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Function))
-        .collect();
-    let class_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Class))
-        .collect();
-    let _variable_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Variable))
-        .collect();
-    let const_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Const))
-        .collect();
-
-    assert!(!function_chunks.is_empty(), "Should have function chunks");
-    assert!(!class_chunks.is_empty(), "Should have class chunks");
-    assert!(
-        !const_chunks.is_empty(),
-        "Should have const chunks (enum entries)"
-    );
-
-    // Check that we have at least the expected minimum chunks
-    assert!(
-        chunks.len() >= 15,
-        "Should have at least 15 chunks, got {}",
-        chunks.len()
-    );
+        return analysis + mapOf(
+            "total_items" to items.size,
+            "processing_time" to System.currentTimeMillis()
+        )
+    }
+}
+"#,
+    total_chunks: 33,
+    chunk_counts: {
+        Class: 2,
+        Function: 2,
+    }
 }

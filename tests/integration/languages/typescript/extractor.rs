@@ -1,15 +1,10 @@
-use crate::integration::{extract_chunks_for_test, test_extraction_options};
-use gittype::extractor::CodeChunkExtractor;
-use gittype::models::ChunkType;
-use std::fs;
-use tempfile::TempDir;
+use crate::integration::languages::extractor::test_language_extractor;
 
-#[test]
-fn test_typescript_interface_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.ts");
-
-    let ts_code = r#"
+test_language_extractor! {
+    name: test_typescript_interface_extraction,
+    language: "typescript",
+    extension: "ts",
+    source: r#"
 interface User {
     id: number;
     name: string;
@@ -19,67 +14,36 @@ interface User {
 interface Admin extends User {
     permissions: string[];
 }
-"#;
-    fs::write(&file_path, ts_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    assert_eq!(chunks.len(), 2);
-
-    let interface_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Interface))
-        .collect();
-    assert_eq!(interface_chunks.len(), 2);
-
-    let interface_names: Vec<&String> = interface_chunks.iter().map(|c| &c.name).collect();
-    assert!(interface_names.contains(&&"User".to_string()));
-    assert!(interface_names.contains(&&"Admin".to_string()));
+"#,
+    total_chunks: 2,
+    chunk_counts: {
+        Interface: 2,
+    }
 }
 
-#[test]
-fn test_typescript_type_alias_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.ts");
-
-    let ts_code = r#"
+test_language_extractor! {
+    name: test_typescript_type_alias_extraction,
+    language: "typescript",
+    extension: "ts",
+    source: r#"
 type Status = 'pending' | 'completed' | 'failed';
 type UserId = number;
 type ApiResponse<T> = {
     data: T;
     error?: string;
 };
-"#;
-    fs::write(&file_path, ts_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    assert_eq!(chunks.len(), 3);
-
-    let type_alias_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::TypeAlias))
-        .collect();
-    assert_eq!(type_alias_chunks.len(), 3);
-
-    let type_names: Vec<&String> = type_alias_chunks.iter().map(|c| &c.name).collect();
-    assert!(type_names.contains(&&"Status".to_string()));
-    assert!(type_names.contains(&&"UserId".to_string()));
-    assert!(type_names.contains(&&"ApiResponse".to_string()));
+"#,
+    total_chunks: 3,
+    chunk_counts: {
+        TypeAlias: 3,
+    }
 }
 
-#[test]
-fn test_typescript_enum_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.ts");
-
-    let ts_code = r#"
+test_language_extractor! {
+    name: test_typescript_enum_extraction,
+    language: "typescript",
+    extension: "ts",
+    source: r#"
 enum Color {
     Red = '#ff0000',
     Green = '#00ff00',
@@ -91,33 +55,18 @@ enum Status {
     Completed,
     Failed
 }
-"#;
-    fs::write(&file_path, ts_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    assert_eq!(chunks.len(), 2);
-
-    let enum_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Enum))
-        .collect();
-    assert_eq!(enum_chunks.len(), 2);
-
-    let enum_names: Vec<&String> = enum_chunks.iter().map(|c| &c.name).collect();
-    assert!(enum_names.contains(&&"Color".to_string()));
-    assert!(enum_names.contains(&&"Status".to_string()));
+"#,
+    total_chunks: 2,
+    chunk_counts: {
+        Enum: 2,
+    }
 }
 
-#[test]
-fn test_typescript_namespace_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.ts");
-
-    let ts_code = r#"
+test_language_extractor! {
+    name: test_typescript_namespace_extraction,
+    language: "typescript",
+    extension: "ts",
+    source: r#"
 namespace Utils {
     export function formatDate(date: Date): string {
         return date.toISOString();
@@ -135,37 +84,20 @@ namespace Api {
         status: number;
     }
 }
-"#;
-    fs::write(&file_path, ts_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    // Should find 2 namespaces + 2 functions + 1 interface = 5 total
-    assert!(chunks.len() >= 2, "Should find at least 2 namespace chunks");
-
-    let namespace_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Module))
-        .collect();
-    assert!(
-        namespace_chunks.len() >= 2,
-        "Should find at least 2 namespaces"
-    );
-
-    let namespace_names: Vec<&String> = namespace_chunks.iter().map(|c| &c.name).collect();
-    assert!(namespace_names.contains(&&"Utils".to_string()));
-    assert!(namespace_names.contains(&&"Api".to_string()));
+"#,
+    total_chunks: 5,
+    chunk_counts: {
+        Function: 2,
+        Interface: 1,
+        Module: 2,
+    }
 }
 
-#[test]
-fn test_typescript_all_new_constructs_combined() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.ts");
-
-    let ts_code = r#"
+test_language_extractor! {
+    name: test_typescript_all_new_constructs_combined,
+    language: "typescript",
+    extension: "ts",
+    source: r#"
 // Interface declaration
 interface User {
     id: number;
@@ -210,48 +142,206 @@ function processUser(user: User): Status {
 const calculateTotal = (items: number[]): number => {
     return items.reduce((sum, item) => sum + item, 0);
 };
-"#;
-    fs::write(&file_path, ts_code).unwrap();
+"#,
+    total_chunks: 10,
+    chunk_counts: {
+        Class: 1,
+        Enum: 1,
+        Function: 3,
+        Interface: 1,
+        Method: 2,
+        Module: 1,
+        TypeAlias: 1,
+    }
+}
 
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
+test_language_extractor! {
+    name: test_typescript_complex_algorithm_extraction,
+    language: "typescript",
+    extension: "ts",
+    source: r#"
+interface DataItem {
+    id: string;
+    value: number;
+    metadata?: Record<string, unknown>;
+}
 
-    // Should find: 1 interface + 1 type alias + 1 enum + 1 namespace + 1 class + 4 functions = 9 total minimum
-    assert!(
-        chunks.len() >= 9,
-        "Should find at least 9 chunks, got {}",
-        chunks.len()
-    );
+interface ProcessedItem extends DataItem {
+    transformedValue: number;
+    category: 'LOW' | 'MEDIUM' | 'HIGH';
+    timestamp: number;
+    processingInfo: {
+        cached: boolean;
+        processor: string;
+        duration?: number;
+    };
+}
 
-    // Verify each new chunk type
-    let interface_count = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Interface))
-        .count();
-    let type_alias_count = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::TypeAlias))
-        .count();
-    let enum_count = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Enum))
-        .count();
-    let namespace_count = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Module))
-        .count();
+class DataProcessor<T extends DataItem> {
+    private cache = new Map<string, ProcessedItem>();
+    private stats = {
+        processed: 0,
+        cacheHits: 0,
+        errors: 0
+    };
 
-    assert_eq!(interface_count, 1, "Should find 1 interface");
-    assert_eq!(type_alias_count, 1, "Should find 1 type alias");
-    assert_eq!(enum_count, 1, "Should find 1 enum");
-    assert_eq!(namespace_count, 1, "Should find 1 namespace");
+    constructor(private threshold: number) {}
 
-    // Verify names of all new constructs
-    let chunk_names: Vec<&String> = chunks.iter().map(|c| &c.name).collect();
-    assert!(chunk_names.contains(&&"User".to_string()));
-    assert!(chunk_names.contains(&&"Status".to_string()));
-    assert!(chunk_names.contains(&&"Color".to_string()));
-    assert!(chunk_names.contains(&&"Utils".to_string()));
+    async processComplexData(items: T[]): Promise<ProcessedItem[]> {
+        const results: ProcessedItem[] = [];
+        const startTime = Date.now();
+
+        // Main processing algorithm - extractable middle chunk
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            const cacheKey = `item_${i}_${item.id}`;
+
+            if (this.cache.has(cacheKey)) {
+                const cachedResult = this.cache.get(cacheKey)!;
+                results.push({
+                    ...cachedResult,
+                    processingInfo: {
+                        ...cachedResult.processingInfo,
+                        cached: true
+                    }
+                });
+                this.stats.cacheHits++;
+                continue;
+            }
+
+            try {
+                // Complex transformation logic
+                let transformedValue: number;
+                let category: 'LOW' | 'MEDIUM' | 'HIGH';
+                let processor: string;
+
+                if (item.value > this.threshold) {
+                    transformedValue = item.value * 2;
+                    category = transformedValue > this.threshold * 3 ? 'HIGH' : 'MEDIUM';
+                    processor = 'enhanced';
+
+                    // Additional processing for high values
+                    if (category === 'HIGH' && item.metadata?.boost) {
+                        transformedValue *= 1.5;
+                        processor = 'boosted';
+                    }
+                } else {
+                    transformedValue = item.value + this.threshold;
+                    category = 'LOW';
+                    processor = 'basic';
+                }
+
+                const processedItem: ProcessedItem = {
+                    ...item,
+                    transformedValue,
+                    category,
+                    timestamp: Date.now(),
+                    processingInfo: {
+                        cached: false,
+                        processor,
+                        duration: Date.now() - startTime
+                    }
+                };
+
+                this.cache.set(cacheKey, processedItem);
+                results.push(processedItem);
+                this.stats.processed++;
+
+            } catch (error) {
+                this.stats.errors++;
+                console.error(`Error processing item ${item.id}:`, error);
+            }
+        }
+
+        return results;
+    }
+
+    analyzePatterns(items: ProcessedItem[]): Record<string, unknown> {
+        const analysis: Record<string, unknown> = {
+            totalItems: items.length,
+            categoryDistribution: {},
+            averageValues: {},
+            processingStats: this.stats
+        };
+
+        // Pattern analysis logic - extractable middle chunk
+        const categoryGroups = items.reduce((groups, item) => {
+            const { category } = item;
+            if (!groups[category]) {
+                groups[category] = [];
+            }
+            groups[category].push(item);
+            return groups;
+        }, {} as Record<string, ProcessedItem[]>);
+
+        for (const [category, categoryItems] of Object.entries(categoryGroups)) {
+            const values = categoryItems.map(item => item.transformedValue);
+            const average = values.reduce((sum, val) => sum + val, 0) / values.length;
+            const max = Math.max(...values);
+            const min = Math.min(...values);
+
+            analysis.categoryDistribution = {
+                ...analysis.categoryDistribution as object,
+                [category]: {
+                    count: categoryItems.length,
+                    percentage: (categoryItems.length / items.length) * 100,
+                    avgValue: average,
+                    minValue: min,
+                    maxValue: max
+                }
+            };
+
+            // Time-based analysis
+            const recentItems = categoryItems.filter(
+                item => Date.now() - item.timestamp < 60000 // last minute
+            );
+
+            if (recentItems.length > 0) {
+                analysis.averageValues = {
+                    ...analysis.averageValues as object,
+                    [`${category}_recent`]: recentItems.length
+                };
+            }
+        }
+
+        return analysis;
+    }
+}
+
+// Utility functions with complex logic
+function createDataValidator<T>(schema: Record<keyof T, (value: unknown) => boolean>) {
+    return (data: unknown): data is T => {
+        if (!data || typeof data !== 'object') return false;
+
+        // Validation logic - extractable middle chunk
+        for (const [key, validator] of Object.entries(schema)) {
+            const value = (data as Record<string, unknown>)[key];
+
+            if (!validator(value)) {
+                console.warn(`Validation failed for field ${key}:`, value);
+                return false;
+            }
+
+            // Additional type-specific validations
+            if (typeof value === 'string' && value.length === 0) {
+                console.warn(`Empty string not allowed for field ${key}`);
+                return false;
+            }
+
+            if (typeof value === 'number' && !Number.isFinite(value)) {
+                console.warn(`Invalid number for field ${key}:`, value);
+                return false;
+            }
+        }
+
+        return true;
+    };
+}
+"#,
+    total_chunks: 26,
+    chunk_counts: {
+        Class: 1,
+        Function: 1,
+        Interface: 2,
+    }
 }

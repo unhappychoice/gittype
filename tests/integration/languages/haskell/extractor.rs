@@ -1,250 +1,284 @@
-use crate::integration::{extract_chunks_for_test, test_extraction_options};
-use gittype::extractor::{ChallengeConverter, CodeChunkExtractor};
-use gittype::models::{ChunkType, CodeChunk};
-use std::fs;
-use std::path::PathBuf;
-use tempfile::TempDir;
+use crate::integration::languages::extractor::test_language_extractor;
 
-#[test]
-fn test_haskell_function_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.hs");
+test_language_extractor! {
+    name: test_haskell_function_extraction,
+    language: "haskell",
+    extension: "hs",
+    source: r#"
+greet :: String -> String
+greet name = "Hello, " ++ name ++ "!"
 
-    let haskell_code = r#"
-factorial :: Integer -> Integer
+add :: Int -> Int -> Int
+add x y = x + y
+
+factorial :: Int -> Int
 factorial 0 = 1
 factorial n = n * factorial (n - 1)
-
-quicksort :: [a] -> [a]
-quicksort [] = []
-quicksort (x:xs) = quicksort [y | y <- xs, y < x] ++ [x] ++ quicksort [y | y <- xs, y >= x]
-"#;
-    fs::write(&file_path, haskell_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    let function_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Function))
-        .collect();
-
-    assert!(
-        function_chunks.len() >= 4,
-        "Should find at least 4 function-related chunks"
-    );
-
-    // Check that factorial functions are found
-    let has_factorial = function_chunks.iter().any(|c| c.name == "factorial");
-    let has_quicksort = function_chunks.iter().any(|c| c.name == "quicksort");
-
-    assert!(has_factorial, "Should find factorial function");
-    assert!(has_quicksort, "Should find quicksort function");
-}
-
-#[test]
-fn test_haskell_data_type_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.hs");
-
-    let haskell_code = r#"
-data Maybe a = Nothing | Just a
-
-data Tree a = Leaf a | Branch (Tree a) (Tree a)
-
-newtype UserId = UserId Int
-"#;
-    fs::write(&file_path, haskell_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    // Should find data type related chunks
-    assert!(!chunks.is_empty(), "Should extract chunks from data types");
-
-    // Check for constructor chunks
-    let constructor_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Struct))
-        .collect();
-
-    assert!(
-        !constructor_chunks.is_empty(),
-        "Should find constructor chunks"
-    );
-}
-
-#[test]
-fn test_haskell_type_class_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.hs");
-
-    let haskell_code = r#"
-class Eq a where
-    (==) :: a -> a -> Bool
-    (/=) :: a -> a -> Bool
-
-instance Eq Int where
-    x == y = x `eqInt` y
-    x /= y = not (x == y)
-"#;
-    fs::write(&file_path, haskell_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    assert!(
-        !chunks.is_empty(),
-        "Should extract chunks from type classes"
-    );
-
-    // Should find function chunks for type class methods
-    let function_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Function))
-        .collect();
-
-    assert!(
-        !function_chunks.is_empty(),
-        "Should find type class related functions"
-    );
-}
-
-#[test]
-fn test_haskell_module_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.hs");
-
-    let haskell_code = r#"
-module Data.List.Utils where
-
-import Data.List
-import qualified Data.Set as Set
-
-head' :: [a] -> a
-head' [] = error "Empty list"
-head' (x:_) = x
-"#;
-    fs::write(&file_path, haskell_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    assert!(!chunks.is_empty(), "Should extract chunks from module");
-
-    // Should find module chunks
-    let module_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Module))
-        .collect();
-
-    assert!(!module_chunks.is_empty(), "Should find module chunks");
-}
-
-#[test]
-fn test_haskell_comprehensive_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.hs");
-
-    let haskell_code = r#"
-module TestModule where
-
--- Function definition with type signature
-factorial :: Integer -> Integer
-factorial 0 = 1
-factorial n = n * factorial (n - 1)
-
--- Data type declaration
-data Maybe a = Nothing | Just a
-
--- Type class definition
-class Eq a where
-    (==) :: a -> a -> Bool
-
--- Type alias
-type Name = String
-
--- Instance declaration
-instance Eq Int where
-    x == y = x `eqInt` y
-"#;
-    fs::write(&file_path, haskell_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    assert!(
-        !chunks.is_empty(),
-        "Should extract chunks from comprehensive Haskell code"
-    );
-
-    // Check that we have chunks for different types
-    let has_function = chunks
-        .iter()
-        .any(|c| matches!(c.chunk_type, ChunkType::Function));
-    let has_struct = chunks
-        .iter()
-        .any(|c| matches!(c.chunk_type, ChunkType::Struct));
-    let has_module = chunks
-        .iter()
-        .any(|c| matches!(c.chunk_type, ChunkType::Module));
-    let has_type_alias = chunks
-        .iter()
-        .any(|c| matches!(c.chunk_type, ChunkType::TypeAlias));
-
-    assert!(has_function, "Should extract functions");
-    assert!(has_module, "Should extract module declaration");
-
-    // At least some of these should be present
-    assert!(
-        has_struct || has_type_alias,
-        "Should extract data types or type aliases"
-    );
-
-    println!("Extracted {} chunks total", chunks.len());
-    for chunk in &chunks {
-        println!(
-            "  {:?} {}: {}",
-            chunk.chunk_type,
-            chunk.name,
-            chunk.content.lines().next().unwrap_or("").trim()
-        );
+"#,
+    total_chunks: 7,
+    chunk_counts: {
+        Function: 7,
     }
 }
 
-#[test]
-fn test_haskell_converter() {
-    // CodeChunk is now imported from models at the top
+test_language_extractor! {
+    name: test_haskell_data_type_extraction,
+    language: "haskell",
+    extension: "hs",
+    source: r#"
+data Person = Person String Int
 
-    let converter = ChallengeConverter::new();
-    let chunk = CodeChunk {
-        content:
-            "factorial :: Integer -> Integer\nfactorial 0 = 1\nfactorial n = n * factorial (n - 1)"
-                .to_string(),
-        file_path: PathBuf::from("src/Math.hs"),
-        start_line: 5,
-        end_line: 7,
-        language: "haskell".to_string(),
-        chunk_type: ChunkType::Function,
-        name: "factorial".to_string(),
-        comment_ranges: vec![],
-        original_indentation: 0,
-    };
+data Maybe a = Nothing | Just a
 
-    let challenge = converter.convert_chunk_to_challenge(chunk);
+data Tree a = Leaf a | Node (Tree a) (Tree a)
+"#,
+    total_chunks: 3,
+    chunk_counts: {
+        Class: 3,
+    }
+}
 
-    assert_eq!(challenge.language, Some("haskell".to_string()));
-    assert_eq!(challenge.source_file_path, Some("src/Math.hs".to_string()));
-    assert!(challenge.code_content.contains("factorial"));
-    assert!(!challenge.id.is_empty());
+test_language_extractor! {
+    name: test_haskell_type_class_extraction,
+    language: "haskell",
+    extension: "hs",
+    source: r#"
+class Eq a where
+  (==) :: a -> a -> Bool
+  (/=) :: a -> a -> Bool
+
+class Show a where
+  show :: a -> String
+
+instance Eq Bool where
+  True == True = True
+  False == False = True
+  _ == _ = False
+"#,
+    total_chunks: 9,
+    chunk_counts: {
+        Function: 9,
+    }
+}
+
+test_language_extractor! {
+    name: test_haskell_module_extraction,
+    language: "haskell",
+    extension: "hs",
+    source: r#"
+module Math.Utils (
+  add,
+  multiply,
+  square
+) where
+
+add :: Num a => a -> a -> a
+add x y = x + y
+
+multiply :: Num a => a -> a -> a
+multiply x y = x * y
+
+square :: Num a => a -> a
+square x = x * x
+"#,
+    total_chunks: 7,
+    chunk_counts: {
+        Function: 6,
+        Module: 1,
+    }
+}
+
+test_language_extractor! {
+    name: test_haskell_pattern_matching_extraction,
+    language: "haskell",
+    extension: "hs",
+    source: r#"
+head' :: [a] -> a
+head' [] = error "Empty list"
+head' (x:_) = x
+
+length' :: [a] -> Int
+length' [] = 0
+length' (_:xs) = 1 + length' xs
+
+map' :: (a -> b) -> [a] -> [b]
+map' _ [] = []
+map' f (x:xs) = f x : map' f xs
+"#,
+    total_chunks: 9,
+    chunk_counts: {
+        Function: 9,
+    }
+}
+
+test_language_extractor! {
+    name: test_haskell_comprehensive_extraction,
+    language: "haskell",
+    extension: "hs",
+    source: r#"
+module TestModule (
+    Person(..),
+    greet,
+    calculate
+) where
+
+import Data.List (sort)
+import qualified Data.Map as M
+
+data Person = Person String Int deriving (Show, Eq)
+
+data Tree a = Leaf a | Node (Tree a) (Tree a) deriving Show
+
+class Drawable a where
+    draw :: a -> String
+
+instance Drawable Person where
+    draw (Person name age) = name ++ " (" ++ show age ++ ")"
+
+greet :: Person -> String
+greet (Person name _) = "Hello, " ++ name
+
+calculate :: [Int] -> Int
+calculate xs = sum (map (*2) xs)
+
+fibonacci :: Int -> Int
+fibonacci 0 = 0
+fibonacci 1 = 1
+fibonacci n = fibonacci (n-1) + fibonacci (n-2)
+"#,
+    total_chunks: 17,
+    chunk_counts: {
+        Class: 2,
+        Function: 12,
+        Module: 3,
+    }
+}
+
+test_language_extractor! {
+    name: test_haskell_converter,
+    language: "haskell",
+    extension: "hs",
+    source: r#"
+data Color = Red | Green | Blue
+
+showColor :: Color -> String
+showColor Red = "red"
+showColor Green = "green"
+showColor Blue = "blue"
+
+data Maybe' a = Nothing' | Just' a
+
+instance Functor Maybe' where
+    fmap _ Nothing' = Nothing'
+    fmap f (Just' x) = Just' (f x)
+"#,
+    total_chunks: 9,
+    chunk_counts: {
+        Class: 2,
+        Function: 7,
+    }
+}
+
+test_language_extractor! {
+    name: test_haskell_complex_algorithm_extraction,
+    language: "haskell",
+    extension: "hs",
+    source: r#"
+import qualified Data.Map as Map
+import Data.List (groupBy, sortBy)
+import Data.Function (on)
+
+data ProcessedItem = ProcessedItem
+    { itemId :: Int
+    , originalValue :: Int
+    , transformedValue :: Int
+    , category :: String
+    , timestamp :: String
+    } deriving (Show, Eq)
+
+type ItemCache = Map.Map String ProcessedItem
+
+processComplexData :: [Int] -> Int -> [ProcessedItem]
+processComplexData input threshold = processWithCache input threshold Map.empty []
+  where
+    processWithCache [] _ _ acc = reverse acc
+    processWithCache (value:rest) thresh cache acc =
+        let cacheKey = "item_" ++ show (length acc) ++ "_" ++ show value
+        in case Map.lookup cacheKey cache of
+            Just cachedItem -> processWithCache rest thresh cache (cachedItem : acc)
+            Nothing ->
+                -- Main processing algorithm - extractable middle chunk
+                let processedItem = if value > thresh
+                        then let transformed = value * 2
+                                 cat = if transformed > thresh * 3 then "HIGH" else "MEDIUM"
+                                 bonusValue = if transformed > 100 then transformed + 10 else transformed
+                             in ProcessedItem (length acc) value bonusValue cat "now"
+                        else if value > 0
+                        then ProcessedItem (length acc) value (value + thresh) "LOW" "now"
+                        else ProcessedItem (length acc) value 0 "INVALID" "now"
+
+                    newCache = Map.insert cacheKey processedItem cache
+                in if category processedItem == "INVALID"
+                   then processWithCache rest thresh newCache acc
+                   else processWithCache rest thresh newCache (processedItem : acc)
+
+analyzePatterns :: [ProcessedItem] -> Map.Map String (Map.Map String Double)
+analyzePatterns items =
+    let categoryGroups = groupBy ((==) `on` category) $ sortBy (compare `on` category) items
+    in Map.fromList $ map analyzeCategory categoryGroups
+  where
+    analyzeCategory group@(firstItem:_) =
+        let cat = category firstItem
+            values = map (fromIntegral . transformedValue) group
+            count = fromIntegral $ length group
+            totalItems = fromIntegral $ length items
+
+            -- Pattern analysis logic - extractable middle chunk
+            avgValue = sum values / count
+            minValue = minimum values
+            maxValue = maximum values
+            percentage = (count / totalItems) * 100
+
+            highValueItems = filter (> 1000) values
+            highValueCount = fromIntegral $ length highValueItems
+
+            recentItems = filter (\item -> timestamp item == "now") group
+            recentCount = fromIntegral $ length recentItems
+
+            analysis = Map.fromList
+                [ ("count", count)
+                , ("percentage", percentage)
+                , ("avg_value", avgValue)
+                , ("min_value", minValue)
+                , ("max_value", maxValue)
+                , ("high_value_count", highValueCount)
+                , ("recent_count", recentCount)
+                ]
+        in (cat, analysis)
+    analyzeCategory [] = ("EMPTY", Map.empty)
+
+-- Helper functions for complex transformations
+complexTransform :: ProcessedItem -> ProcessedItem
+complexTransform item =
+    let newValue = case category item of
+            "HIGH" -> transformedValue item * 2
+            "MEDIUM" -> transformedValue item + 50
+            "LOW" -> transformedValue item + 10
+            _ -> transformedValue item
+    in item { transformedValue = newValue }
+
+filterAndSort :: [ProcessedItem] -> String -> [ProcessedItem]
+filterAndSort items targetCategory =
+    let filtered = filter (\item -> category item == targetCategory) items
+        sorted = sortBy (compare `on` transformedValue) filtered
+    in reverse sorted  -- highest values first
+
+batchProcess :: [[Int]] -> Int -> [[ProcessedItem]]
+batchProcess batches threshold = map (\batch -> processComplexData batch threshold) batches
+"#,
+    total_chunks: 56,
+    chunk_counts: {
+        Function: 38,
+        Class: 1,
+    }
 }

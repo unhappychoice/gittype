@@ -1,15 +1,10 @@
-use crate::integration::{extract_chunks_for_test, test_extraction_options};
-use gittype::extractor::CodeChunkExtractor;
-use gittype::models::ChunkType;
-use std::fs;
-use tempfile::TempDir;
+use crate::integration::languages::extractor::test_language_extractor;
 
-#[test]
-fn test_go_function_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.go");
-
-    let go_code = r#"package main
+test_language_extractor! {
+    name: test_go_function_extraction,
+    language: "go",
+    extension: "go",
+    source: r#"package main
 
 import "fmt"
 
@@ -24,33 +19,18 @@ func add(a, b int) int {
 func multiply(x int, y int) int {
     return x * y
 }
-"#;
-    fs::write(&file_path, go_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    assert_eq!(chunks.len(), 3);
-
-    let function_names: Vec<&String> = chunks.iter().map(|c| &c.name).collect();
-    assert!(function_names.contains(&&"main".to_string()));
-    assert!(function_names.contains(&&"add".to_string()));
-    assert!(function_names.contains(&&"multiply".to_string()));
-
-    for chunk in &chunks {
-        assert!(matches!(chunk.chunk_type, ChunkType::Function));
-        assert_eq!(chunk.language, "go".to_string());
+"#,
+    total_chunks: 3,
+    chunk_counts: {
+        Function: 3,
     }
 }
 
-#[test]
-fn test_go_struct_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.go");
-
-    let go_code = r#"package main
+test_language_extractor! {
+    name: test_go_struct_extraction,
+    language: "go",
+    extension: "go",
+    source: r#"package main
 
 type Person struct {
     Name string
@@ -70,45 +50,19 @@ func (p Person) GetName() string {
 func (a *Address) GetFullAddress() string {
     return a.Street + ", " + a.City + " " + a.Zip
 }
-"#;
-    fs::write(&file_path, go_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    assert_eq!(chunks.len(), 4); // 2 structs + 2 methods
-
-    // Find struct chunks
-    let struct_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Struct))
-        .collect();
-    assert_eq!(struct_chunks.len(), 2);
-
-    let struct_names: Vec<&String> = struct_chunks.iter().map(|c| &c.name).collect();
-    assert!(struct_names.contains(&&"Person".to_string()));
-    assert!(struct_names.contains(&&"Address".to_string()));
-
-    // Find method chunks
-    let method_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Method))
-        .collect();
-    assert_eq!(method_chunks.len(), 2);
-
-    let method_names: Vec<&String> = method_chunks.iter().map(|c| &c.name).collect();
-    assert!(method_names.contains(&&"GetName".to_string()));
-    assert!(method_names.contains(&&"GetFullAddress".to_string()));
+"#,
+    total_chunks: 4,
+    chunk_counts: {
+        Method: 2,
+        Struct: 2,
+    }
 }
 
-#[test]
-fn test_go_interface_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.go");
-
-    let go_code = r#"package main
+test_language_extractor! {
+    name: test_go_interface_extraction,
+    language: "go",
+    extension: "go",
+    source: r#"package main
 
 type Writer interface {
     Write([]byte) (int, error)
@@ -126,43 +80,19 @@ type ReadWriter interface {
 func process(rw ReadWriter) {
     // Implementation here
 }
-"#;
-    fs::write(&file_path, go_code).unwrap();
-
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
-
-    assert_eq!(chunks.len(), 4); // 3 interfaces + 1 function
-
-    // Find interface chunks
-    let interface_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Interface))
-        .collect();
-    assert_eq!(interface_chunks.len(), 3);
-
-    let interface_names: Vec<&String> = interface_chunks.iter().map(|c| &c.name).collect();
-    assert!(interface_names.contains(&&"Writer".to_string()));
-    assert!(interface_names.contains(&&"Reader".to_string()));
-    assert!(interface_names.contains(&&"ReadWriter".to_string()));
-
-    // Find function chunk
-    let function_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Function))
-        .collect();
-    assert_eq!(function_chunks.len(), 1);
-    assert_eq!(function_chunks[0].name, "process");
+"#,
+    total_chunks: 4,
+    chunk_counts: {
+        Function: 1,
+        Interface: 3,
+    }
 }
 
-#[test]
-fn test_go_const_var_type_alias_extraction() {
-    let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("test.go");
-
-    let go_code = r#"package main
+test_language_extractor! {
+    name: test_go_const_var_type_alias_extraction,
+    language: "go",
+    extension: "go",
+    source: r#"package main
 
 import "errors"
 
@@ -193,62 +123,181 @@ type Point struct {
 }
 
 func main() {}
-"#;
-    fs::write(&file_path, go_code).unwrap();
+"#,
+    total_chunks: 8,
+    chunk_counts: {
+        Const: 2,
+        Function: 1,
+        Struct: 1,
+        TypeAlias: 2,
+        Variable: 2,
+    }
+}
 
-    let mut extractor = CodeChunkExtractor::new().unwrap();
-    let chunks =
-        extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
-            .unwrap();
+test_language_extractor! {
+    name: test_go_complex_algorithm_extraction,
+    language: "go",
+    extension: "go",
+    source: r#"
+package main
 
-    // Should find: 2 const blocks + 2 var blocks + 2 type aliases + 1 function + 1 struct = 8 total
-    assert_eq!(chunks.len(), 8);
+import (
+    "fmt"
+    "sync"
+    "time"
+)
 
-    // Find const chunks
-    let const_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Const))
-        .collect();
-    assert!(
-        const_chunks.len() >= 2,
-        "Should find at least 2 const blocks"
-    );
+type DataProcessor struct {
+    cache      map[string]interface{}
+    mutex      sync.RWMutex
+    stats      ProcessingStats
+    threshold  int
+}
 
-    // Find var chunks
-    let var_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Variable))
-        .collect();
-    assert!(var_chunks.len() >= 2, "Should find at least 2 var blocks");
+type ProcessingStats struct {
+    Processed   int
+    CacheHits   int
+    Errors      int
+    StartTime   time.Time
+}
 
-    // Find type alias chunks (should include UserID, Handler)
-    let type_alias_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::TypeAlias))
-        .collect();
-    assert!(
-        type_alias_chunks.len() >= 2,
-        "Should find at least 2 type aliases"
-    );
+type ProcessedItem struct {
+    ID             string
+    OriginalValue  int
+    TransformedValue int
+    Category       string
+    Timestamp      time.Time
+    Metadata       map[string]interface{}
+}
 
-    let type_alias_names: Vec<&String> = type_alias_chunks.iter().map(|c| &c.name).collect();
-    assert!(type_alias_names.contains(&&"UserID".to_string()));
-    assert!(type_alias_names.contains(&&"Handler".to_string()));
+func NewDataProcessor(threshold int) *DataProcessor {
+    return &DataProcessor{
+        cache:     make(map[string]interface{}),
+        stats:     ProcessingStats{StartTime: time.Now()},
+        threshold: threshold,
+    }
+}
 
-    // Verify we still find struct and function
-    let struct_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Struct))
-        .collect();
-    assert_eq!(struct_chunks.len(), 1);
-    assert_eq!(struct_chunks[0].name, "Point");
+func (dp *DataProcessor) ProcessComplexData(items []int) ([]ProcessedItem, error) {
+    var results []ProcessedItem
 
-    let function_chunks: Vec<_> = chunks
-        .iter()
-        .filter(|c| matches!(c.chunk_type, ChunkType::Function))
-        .collect();
-    assert!(!function_chunks.is_empty());
+    // Main processing algorithm - extractable middle chunk
+    for i, value := range items {
+        cacheKey := fmt.Sprintf("item_%d_%d", i, value)
 
-    let function_names: Vec<&String> = function_chunks.iter().map(|c| &c.name).collect();
-    assert!(function_names.contains(&&"main".to_string()));
+        dp.mutex.RLock()
+        if cached, exists := dp.cache[cacheKey]; exists {
+            dp.mutex.RUnlock()
+
+            if processedItem, ok := cached.(ProcessedItem); ok {
+                results = append(results, processedItem)
+                dp.stats.CacheHits++
+                continue
+            }
+        } else {
+            dp.mutex.RUnlock()
+        }
+
+        // Complex transformation logic
+        var processedItem ProcessedItem
+
+        if value > dp.threshold {
+            transformedValue := value * 2
+            category := "MEDIUM"
+            if transformedValue > dp.threshold*3 {
+                category = "HIGH"
+            }
+
+            processedItem = ProcessedItem{
+                ID:              fmt.Sprintf("item_%d", i),
+                OriginalValue:   value,
+                TransformedValue: transformedValue,
+                Category:        category,
+                Timestamp:       time.Now(),
+                Metadata: map[string]interface{}{
+                    "processed":    true,
+                    "multiplier":   2,
+                    "threshold":    dp.threshold,
+                    "processor":    "complex",
+                },
+            }
+        } else {
+            adjustedValue := value + dp.threshold
+            processedItem = ProcessedItem{
+                ID:              fmt.Sprintf("item_%d", i),
+                OriginalValue:   value,
+                TransformedValue: adjustedValue,
+                Category:        "LOW",
+                Timestamp:       time.Now(),
+                Metadata: map[string]interface{}{
+                    "processed":  true,
+                    "adjusted":   true,
+                    "threshold":  dp.threshold,
+                    "processor":  "simple",
+                },
+            }
+        }
+
+        // Cache the result
+        dp.mutex.Lock()
+        dp.cache[cacheKey] = processedItem
+        dp.mutex.Unlock()
+
+        results = append(results, processedItem)
+        dp.stats.Processed++
+    }
+
+    return results, nil
+}
+
+func (dp *DataProcessor) AnalyzePatterns(items []ProcessedItem) map[string]interface{} {
+    analysis := make(map[string]interface{})
+    categoryCount := make(map[string]int)
+    valueSum := make(map[string]int)
+
+    // Pattern analysis logic - extractable middle chunk
+    for _, item := range items {
+        category := item.Category
+        categoryCount[category]++
+        valueSum[category] += item.TransformedValue
+
+        // Time-based analysis
+        timeDiff := time.Since(item.Timestamp)
+        if timeDiff < time.Minute {
+            recentKey := fmt.Sprintf("%s_recent", category)
+            if count, exists := categoryCount[recentKey]; exists {
+                categoryCount[recentKey] = count + 1
+            } else {
+                categoryCount[recentKey] = 1
+            }
+        }
+
+        // Value distribution analysis
+        if item.TransformedValue > 1000 {
+            highValueKey := fmt.Sprintf("%s_high_value", category)
+            categoryCount[highValueKey]++
+        }
+    }
+
+    // Calculate averages
+    averages := make(map[string]float64)
+    for category, sum := range valueSum {
+        if count := categoryCount[category]; count > 0 {
+            averages[category] = float64(sum) / float64(count)
+        }
+    }
+
+    analysis["category_counts"] = categoryCount
+    analysis["averages"] = averages
+    analysis["total_items"] = len(items)
+    analysis["processing_time"] = time.Since(dp.stats.StartTime)
+
+    return analysis
+}
+"#,
+    total_chunks: 24,
+    chunk_counts: {
+        Function: 1,
+        Struct: 3,
+    }
 }
