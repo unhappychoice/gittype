@@ -24,7 +24,7 @@ test_language_extractor! {
         return this.message.length();
     }
 }"#,
-    total_chunks: 6,
+    total_chunks: 7,
     chunk_counts: {
         Class: 1,
         Method: 4,
@@ -82,7 +82,7 @@ public class Circle implements Drawable, Resizable {
         return radius * 2;
     }
 }"#,
-    total_chunks: 23,
+    total_chunks: 24,
     chunk_counts: {
         Class: 1,
         CodeBlock: 6,
@@ -124,7 +124,7 @@ public class ColorTest {
         System.out.println(color.getName());
     }
 }"##,
-    total_chunks: 8,
+    total_chunks: 9,
     chunk_counts: {
         Class: 1,
         Enum: 1,
@@ -157,7 +157,7 @@ test_language_extractor! {
         return age;
     }
 }"#,
-    total_chunks: 8,
+    total_chunks: 9,
     chunk_counts: {
         Class: 1,
         Method: 3,
@@ -303,7 +303,7 @@ class ProcessedItem {
     public long getTimestamp() { return timestamp; }
 }
 "#,
-    total_chunks: 38,
+    total_chunks: 39,
     chunk_counts: {
         Class: 3,
         Method: 12,

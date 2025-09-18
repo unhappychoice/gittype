@@ -13,7 +13,7 @@ pub fn add(a: i32, b: i32) -> i32 {
     a + b
 }
 "#,
-    total_chunks: 2,
+    total_chunks: 3,
     chunk_counts: {
         Function: 2,
     }
@@ -33,7 +33,7 @@ pub struct Config {
     debug: bool,
 }
 "#,
-    total_chunks: 2,
+    total_chunks: 3,
     chunk_counts: {
         Struct: 2,
     }
@@ -55,7 +55,7 @@ enum Color {
     Blue,
 }
 "#,
-    total_chunks: 2,
+    total_chunks: 3,
     chunk_counts: {
         Enum: 2,
     }
@@ -78,7 +78,7 @@ trait Clone {
     fn clone(&self) -> Self;
 }
 "#,
-    total_chunks: 3,
+    total_chunks: 4,
     chunk_counts: {
         Function: 1,
         Trait: 2,
@@ -104,7 +104,7 @@ mod private_utils {
     fn internal_function() {}
 }
 "#,
-    total_chunks: 5,
+    total_chunks: 6,
     chunk_counts: {
         Function: 2,
         Module: 2,
@@ -121,7 +121,7 @@ pub type UserId = u64;
 pub type DatabaseResult<T> = Result<T, String>;
 type Point = (f64, f64);
 "#,
-    total_chunks: 3,
+    total_chunks: 4,
     chunk_counts: {
         TypeAlias: 3,
     }
@@ -172,7 +172,7 @@ pub fn create_user(name: String) -> User {
     }
 }
 "#,
-    total_chunks: 9,
+    total_chunks: 10,
     chunk_counts: {
         Class: 1,
         Enum: 1,
@@ -216,7 +216,7 @@ test_language_extractor! {
     }
 }
 "#,
-    total_chunks: 10,
+    total_chunks: 11,
     chunk_counts: {
         Class: 3,
         Function: 4,
@@ -238,7 +238,7 @@ fn calculate_sum(a: i32, b: i32) -> i32 {
     result
 }
 "#,
-    total_chunks: 1,
+    total_chunks: 2,
     chunk_counts: {
         Function: 1,
     }
@@ -314,7 +314,7 @@ pub fn advanced_string_matcher(patterns: &[&str], text: &str) -> Vec<(usize, Str
     matches
 }
 "#,
-    total_chunks: 12,
+    total_chunks: 13,
     chunk_counts: {
         Function: 2,
     }
@@ -388,7 +388,7 @@ impl<T: Clone> DataCache<T> {
     }
 }
 "#,
-    total_chunks: 17,
+    total_chunks: 18,
     chunk_counts: {
         Struct: 1,
         Function: 4,

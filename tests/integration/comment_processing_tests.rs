@@ -5,6 +5,7 @@
 use gittype::extractor::challenge_converter::ChallengeConverter;
 use gittype::extractor::core::CommonExtractor;
 use gittype::game::typing_core::TypingCore;
+use gittype::models::ChunkType;
 use std::path::Path;
 
 /// Tests for the core bug: byte vs character position misalignment
@@ -110,8 +111,9 @@ mod byte_char_position_bugs {
                 chunk.comment_ranges.len()
             );
 
-            // Look for the specific chunk with lines 9-14 (the problematic one)
-            if chunk.start_line <= 14 && chunk.end_line >= 9 {
+            // Look for the specific chunk with lines 9-14 (the problematic one), but exclude File chunks
+            if chunk.start_line <= 14 && chunk.end_line >= 9 && chunk.chunk_type != ChunkType::File
+            {
                 println!(
                     "Found target chunk (lines {}-{})",
                     chunk.start_line, chunk.end_line
