@@ -19,6 +19,7 @@ impl Colors {
     // Specific UI element colors
     pub const BACK_KEY: Color = Color::Red;
     pub const ACTION_KEY: Color = Color::LightBlue;
+    pub const NAVIGATION_KEY: Color = Color::LightBlue;
     pub const HIGHLIGHT: Color = Color::Cyan;
 
     // Metrics and performance colors (from session_detail_screen.rs)

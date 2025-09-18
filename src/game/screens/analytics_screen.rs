@@ -573,7 +573,7 @@ impl AnalyticsScreen {
 
     fn render_controls(&mut self, f: &mut Frame, area: Rect) {
         let controls_line = Line::from(vec![
-            Span::styled("[←→/HL]", Style::default().fg(Colors::BORDER)),
+            Span::styled("[←→/HL]", Style::default().fg(Colors::NAVIGATION_KEY)),
             Span::styled(" Switch View  ", Style::default().fg(Colors::TEXT)),
             Span::styled("[R]", Style::default().fg(Colors::SCORE)),
             Span::styled(" Refresh  ", Style::default().fg(Colors::TEXT)),
