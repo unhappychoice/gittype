@@ -7,8 +7,8 @@ pub struct GzipStorage;
 
 impl GzipStorage {
     pub fn save<T: serde::Serialize>(path: &std::path::Path, data: &T) -> Result<(), String> {
-        let binary_data =
-            bincode::serialize(data).map_err(|e| format!("Failed to serialize data: {}", e))?;
+        let binary_data = bincode::serde::encode_to_vec(data, bincode::config::standard())
+            .map_err(|e| format!("Failed to serialize data: {}", e))?;
         let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
         encoder
             .write_all(&binary_data)
@@ -27,6 +27,8 @@ impl GzipStorage {
 
         decoder.read_to_end(&mut binary_data).ok()?;
 
-        bincode::deserialize(&binary_data).ok()
+        bincode::serde::decode_from_slice(&binary_data, bincode::config::standard())
+            .ok()
+            .map(|(data, _)| data)
     }
 }
