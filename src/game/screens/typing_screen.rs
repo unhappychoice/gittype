@@ -388,7 +388,7 @@ impl Screen for TypingScreen {
             UpdateStrategy::InputOnly
         } else {
             UpdateStrategy::Hybrid {
-                interval: Duration::from_millis(16), // ~60 FPS for smooth typing display
+                interval: Duration::from_millis(33), // ~30 FPS for efficient typing display
                 input_priority: true,
             }
         }
