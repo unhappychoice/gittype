@@ -460,8 +460,13 @@ impl SessionManager {
         match self.state {
             SessionState::InProgress { current_stage, .. } => current_stage,
             SessionState::Completed { .. } => {
-                // For completed sessions, return the number of stages actually completed
-                self.stage_results.len().max(1)
+                // For completed sessions, return the number of successfully completed stages
+                let completed = self
+                    .stage_results
+                    .iter()
+                    .filter(|sr| !sr.was_skipped && !sr.was_failed)
+                    .count();
+                completed.max(1).min(self.config.max_stages)
             }
             _ => 0,
         }
