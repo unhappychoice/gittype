@@ -2,226 +2,160 @@
 
 ## Current Support
 
-| Language | Extension | Status | Tree-sitter Grammar |
-|----------|-----------|--------|-------------------|
-| Rust | `.rs` | ✅ Full support | `tree-sitter-rust` |
-| TypeScript | `.ts`, `.tsx` | ✅ Full support | `tree-sitter-typescript` |
-| JavaScript | `.js`, `.jsx`, `.mjs`, `.cjs` | ✅ Full support | `tree-sitter-javascript` |
-| Python | `.py` | ✅ Full support | `tree-sitter-python` |
-| Go | `.go` | ✅ Full support | `tree-sitter-go` |
-| Ruby | `.rb` | ✅ Full support | `tree-sitter-ruby` |
-| Swift | `.swift` | ✅ Full support | `tree-sitter-swift` |
-| Kotlin | `.kt`, `.kts` | ✅ Full support | `tree-sitter-kotlin` |
-| Java | `.java` | ✅ Full support | `tree-sitter-java` |
-| PHP | `.php`, `.phtml`, `.php3`, `.php4`, `.php5` | ✅ Full support | `tree-sitter-php` |
-| C# | `.cs`, `.csx` | ✅ Full support | `tree-sitter-c-sharp` |
-| C | `.c`, `.h` | ✅ Full support | `tree-sitter-c` |
-| C++ | `.cpp`, `.cc`, `.cxx`, `.hpp` | ✅ Full support | `tree-sitter-cpp` |
-| Haskell | `.hs`, `.lhs` | ✅ Full support | `tree-sitter-haskell` |
-| Dart | `.dart` | ✅ Full support | `tree-sitter-dart` |
-| Scala | `.scala`, `.sc` | ✅ Full support | `tree-sitter-scala` |
+| Language | Extensions | Aliases | Tree-sitter Grammar |
+|----------|------------|---------|-------------------|
+| C | `.c`, `.h` | - | `tree_sitter_c` |
+| C# | `.cs`, `.csx` | `cs`, `c#` | `tree_sitter_c_sharp` |
+| C++ | `.cpp`, `.cc`, `.cxx`, `.hpp` | `c++` | `tree_sitter_cpp` |
+| Dart | `.dart` | - | `tree_sitter_dart` |
+| Go | `.go` | - | `tree_sitter_go` |
+| Haskell | `.hs`, `.lhs` | `hs` | `tree_sitter_haskell` |
+| Java | `.java` | - | `tree_sitter_java` |
+| JavaScript | `.js`, `.jsx`, `.mjs`, `.cjs` | `js` | `tree_sitter_javascript` |
+| Kotlin | `.kt`, `.kts` | `kt` | `tree_sitter_kotlin_ng` |
+| PHP | `.php`, `.phtml`, `.php3`, `.php4`, `.php5` | - | `tree_sitter_php` |
+| Python | `.py` | `py` | `tree_sitter_python` |
+| Ruby | `.rb` | `rb` | `tree_sitter_ruby` |
+| Rust | `.rs` | `rs` | `tree_sitter_rust` |
+| Scala | `.sc`, `.scala` | `sc` | `tree_sitter_scala` |
+| Swift | `.swift` | - | `tree_sitter_swift` |
+| TypeScript | `.ts`, `.tsx` | `ts` | `tree_sitter_typescript` (TSX) |
 
 ## Extraction Features
 
-### Rust
-- Functions (`fn`)
-- Implementations (`impl`)
-- Structs (`struct`)
-- Enums (`enum`) - complete enum definitions with variants and methods
-- Traits (`trait`) - trait definitions with associated types and functions
-- Modules (`mod`) - module blocks and their contents
-- Type aliases (`type`) - type alias declarations
-
-### TypeScript
-- Functions (`function`)
-- Classes (`class`)
-- Interfaces (`interface`) - interface declarations with properties and methods
-- Methods
-- Arrow functions
-- Function expressions
-- Type definitions (`type`) - type alias declarations
-- Enums (`enum`) - enum declarations with values and computed properties
-- Namespaces (`namespace`) - namespace declarations with exported members
-
-### JavaScript
-- Function declarations (`function`)
-- Arrow functions (`() => {}`)
-- Function expressions
-- Classes (`class`) - ES6+ class syntax
-- Methods (class and object methods)
-- Variable declarations with functions (`const fn = () => {}`)
-- Async functions (`async function`)
-- Export/import statements (ES modules)
-- Object literal methods
-- **JSX syntax** - React component definitions (`.jsx` files)
-
-### TypeScript/TSX
-- All JavaScript features plus:
-- **JSX/TSX syntax** - React components with TypeScript (`.tsx` files)
-- Full TSX parser support for mixed TypeScript and JSX content
-
-> **Note**: JSX/TSX components are extracted as function and class definitions. Individual JSX elements (`<Component />`) are not extracted as separate typing challenges, but the component definitions that contain JSX are fully supported.
-
-### Python
-- Functions (`def`)
-- Classes (`class`)
-- Methods
-- Decorators
-- Lambda functions
-
-### Go
-- Functions (`func`)
-- Methods (with receivers)
-- Structs (`type ... struct`)
-- Interfaces (`type ... interface`)
-- Constant declarations (`const` blocks and single constants)
-- Variable declarations (`var` blocks and single variables) 
-- Type aliases (`type UserID int64`, `type Handler func(...)`)
-- Function types
-- Pointer types
-- Slice/array types
-- Map types
-- Channel types
-
-### Ruby
-- Instance methods (`def method_name`)
-- Class methods (`def self.method_name`)
-- Singleton methods (methods defined on specific objects)
-- Classes (`class`)
-- Modules (`module`)
-- Attribute accessors (`attr_accessor`, `attr_reader`, `attr_writer`)
-- Method aliases (`alias`)
-
-### Swift
-- Functions (`func`)
-- Classes (`class`)
-- Structs (`struct`) - complete struct definitions with properties and methods
-- Enums (`enum`) - complete enum definitions with cases and methods
-- Protocols (`protocol`)
-- Extensions (`extension`) - complete extension blocks
-- Initializers (`init`)
-- Deinitializers (`deinit`)
-- Methods (instance and static)
-- Computed properties
-
-### Kotlin
-- Functions (`fun`)
-- Classes (`class`, `data class`, `sealed class`)
-- Object declarations (`object`)
-- Companion objects (`companion object`)
-- Properties (`val`, `var`)
-- Enum entries
-- Extension functions
-- Lambda expressions
-- Interface implementations
-
-### Java
-- Methods (`public/private/protected methods`)
-- Classes (`class`)
-- Interfaces (`interface`)
-- Enums (`enum`)
-- Constructors
-- Static methods and fields
-- Abstract classes and methods
-- Nested classes and interfaces
-
-### PHP
-- Functions (`function`)
-- Methods (`public/private/protected methods`)
-- Classes (`class`)
-- Interfaces (`interface`)
-- Traits (`trait`)
-- Namespaces (`namespace`)
-- Magic methods (`__construct`, `__toString`, etc.)
-- Static methods and properties
-- Anonymous functions and closures
-- Exception handling (`try/catch/finally`)
+### C
+- **Functions** (`function_definition`) - Function definitions
+- **Structs** (`struct_specifier`) - Struct definitions
+- **Unions** (`union_specifier`) - Union definitions
+- **Enums** (`enum_specifier`) - Enum definitions
+- **Type Definitions** (`typedef`) - Type alias definitions
 
 ### C#
-- Methods (`public/private/protected methods`)
-- Classes (`class`)
-- Structs (`struct`)
-- Interfaces (`interface`)
-- Enums (`enum`)
-- Records (`record`)
-- Constructors and destructors
-- Properties (auto-properties and with getters/setters)
-- Events (`event`)
-- Delegates (`delegate`)
-- Namespaces (`namespace`)
-- Extension methods
-- Async/await methods
-- LINQ expressions
-- Attributes
-- Access modifiers (public, private, protected, internal)
-
-### C
-- Functions (`int main()`, `void function()`)
-- Structs (`struct`)
-- Type definitions (`typedef`)
-- Enum definitions (`enum`)
-- Global variables
-- Macro definitions (`#define`)
-- Static functions and variables
-- Function pointers
-- Union definitions (`union`)
-
-### Haskell
-- Functions (`function_name :: Type -> Type`, `function_name arg = ...`)
-- Type signatures (`function_name :: Integer -> Integer`)
-- Module declarations (`module ModuleName where`)
-- Import declarations (`import Module`)
-- Data type declarations (`data Maybe a = Nothing | Just a`)
-- Type class definitions (`class Eq a where`)
-- Instance declarations (`instance Eq Int where`)
-- Type aliases (`type Name = String`)
-- Pattern matching functions
+- **Classes** (`class_declaration`) - Class definitions
+- **Structs** (`struct_declaration`) - Struct definitions
+- **Interfaces** (`interface_declaration`) - Interface definitions
+- **Enums** (`enum_declaration`) - Enum definitions
+- **Records** (`record_declaration`) - Record definitions
+- **Methods** (`method_declaration`) - Method definitions
+- **Constructors** (`constructor_declaration`) - Constructor definitions
+- **Destructors** (`destructor_declaration`) - Destructor definitions
+- **Properties** (`property_declaration`) - Property definitions
+- **Events** (`event_declaration`) - Event definitions
+- **Delegates** (`delegate_declaration`) - Delegate definitions
+- **Namespaces** (`namespace_declaration`) - Namespace definitions
 
 ### C++
-- Functions (`int main()`, `void function()`)
-- Methods (class and struct member functions)
-- Classes (`class`)
-- Structs (`struct`)
-- Template classes (`template<typename T> class`)
-- Template functions (`template<typename T> T function()`)
-- Constructors and destructors
-- Operator overloading
-- Global variables
-- Type definitions (`typedef`, `using`)
-- Enum definitions (`enum`, `enum class`)
-- Namespace functions (functions within namespaces)
+- **Functions** (`function_definition`) - Function definitions
+- **Methods** (`function_definition`) - Method definitions
+- **Classes** (`class_specifier`) - Class definitions
+- **Structs** (`struct_specifier`) - Struct definitions
+- **Templates** (`template_declaration`) - Template definitions
+- **Namespaces** (`namespace_definition`) - Namespace definitions
 
 ### Dart
-- Functions (`String greet(String name) { ... }`)
-- Methods (instance and static methods within classes)
-- Classes (`class`) - complete class definitions with constructors, methods, and properties
-- Enums (`enum`) - enum declarations with values and methods
-- Mixins (`mixin`) - mixin declarations with methods and properties
-- Extensions (`extension`) - extension methods on existing types
-- Variables (`final`, `var`, `const`) - global and local variable declarations
-- Constructors (default, named, and factory constructors)
-- Getters and setters (`get`, `set`)
-- Async functions (`Future<T>`, `async`/`await` patterns)
-- Abstract classes and methods
-- Static members (methods and properties)
-- Type definitions (`typedef`)
+- **Functions** (`function_signature`) - Function definitions
+- **Methods** (`method_signature`) - Method definitions
+- **Classes** (`class_definition`) - Class definitions
+- **Enums** (`enum_declaration`) - Enum definitions
+- **Extensions** (`extension_declaration`) - Extension definitions
+- **Mixins** (`mixin_declaration`) - Mixin definitions
+
+### Go
+- **Functions** (`function_declaration`) - Function definitions
+- **Methods** (`method_declaration`) - Method definitions with receivers
+- **Structs** (`type_spec` with `struct_type`) - Struct type definitions
+- **Interfaces** (`type_spec` with `interface_type`) - Interface type definitions
+- **Constants** (`const_declaration`) - Constant declarations
+- **Variables** (`var_declaration`) - Variable declarations
+- **Type Aliases** (`type_spec`) - Type alias definitions
+
+### Haskell
+- **Functions** (`function_declaration`) - Function definitions
+- **Type Signatures** (`type_signature`) - Type signature declarations
+- **Data Types** (`data_type`) - Data type definitions
+- **Type Classes** (`class_declaration`) - Type class definitions
+- **Instances** (`instance_declaration`) - Instance definitions
+
+### Java
+- **Classes** (`class_declaration`) - Class definitions
+- **Interfaces** (`interface_declaration`) - Interface definitions
+- **Methods** (`method_declaration`) - Method definitions
+- **Constructors** (`constructor_declaration`) - Constructor definitions
+- **Enums** (`enum_declaration`) - Enum definitions
+- **Records** (`record_declaration`) - Record definitions (Java 14+)
+- **Annotation Types** (`annotation_type_declaration`) - Annotation type definitions
+- **Fields** (`field_declaration`) - Field declarations
+
+### JavaScript
+- **Functions** (`function_declaration`) - Function declarations
+- **Methods** (`method_definition`) - Object and class methods
+- **Classes** (`class_declaration`) - ES6+ class definitions
+- **Arrow Functions** (`arrow_function`) - Arrow function expressions
+- **Function Expressions** (`function_expression`) - Function expression assignments
+- **JSX Elements** (`jsx_element`, `jsx_self_closing_element`) - React components
+
+### Kotlin
+- **Functions** (`function_declaration`) - Function definitions
+- **Classes** (`class_declaration`) - Class definitions
+- **Objects** (`object_declaration`) - Object declarations
+- **Properties** (`property_declaration`) - Property definitions
+- **Enums** (`enum_class_body`) - Enum class definitions
+
+### PHP
+- **Functions** (`function_definition`) - Function definitions
+- **Methods** (`method_declaration`) - Method definitions
+- **Classes** (`class_declaration`) - Class definitions
+- **Interfaces** (`interface_declaration`) - Interface definitions
+- **Traits** (`trait_declaration`) - Trait definitions
+- **Namespaces** (`namespace_definition`) - Namespace definitions
+
+### Python
+- **Functions** (`function_definition`) - Function definitions with decorators
+- **Classes** (`class_definition`) - Class definitions with methods and inheritance
+
+### Ruby
+- **Instance Methods** (`method`) - Instance method definitions
+- **Class Methods** (`singleton_method`) - Class method definitions
+- **Classes** (`class`) - Class definitions
+- **Modules** (`module`) - Module definitions
+
+### Rust
+- **Functions** (`function_item`) - Function definitions with parameters and body
+- **Implementations** (`impl_item`) - Implementation blocks for structs/traits
+- **Structs** (`struct_item`) - Struct definitions with fields
+- **Enums** (`enum_item`) - Enum definitions with variants
+- **Traits** (`trait_item`) - Trait definitions with associated functions
+- **Modules** (`mod_item`) - Module declarations and definitions
+- **Type Aliases** (`type_item`) - Type alias declarations
 
 ### Scala
-- Functions (`def`) - method and function definitions
-- Classes (`class`, `case class`) - class definitions with constructors and methods
-- Object declarations (`object`) - singleton objects and companion objects
-- Traits (`trait`) - trait definitions with methods and implementations
-- Enums (`enum`) - Scala 3 enum definitions with cases
-- Type definitions (`type`) - type aliases and abstract types
-- Package objects (`package object`) - utility functions and implicit conversions
-- Given definitions (`given`) - Scala 3 contextual abstractions
-- Extension methods (`extension`) - Scala 3 extension method definitions
+- **Functions** (`function_definition`) - Function definitions
+- **Classes** (`class_definition`) - Class definitions
+- **Objects** (`object_definition`) - Object definitions
+- **Traits** (`trait_definition`) - Trait definitions
+- **Type Definitions** (`type_definition`) - Type definitions
 
-## Planned Support
+### Swift
+- **Functions** (`function_declaration`) - Function definitions
+- **Classes** (`class_declaration`) - Class definitions
+- **Structs** (`struct_declaration`) - Struct definitions
+- **Enums** (`enum_declaration`) - Enum definitions
+- **Protocols** (`protocol_declaration`) - Protocol definitions
+- **Extensions** (`extension_declaration`) - Extension definitions
+- **Initializers** (`init_declaration`) - Initializer definitions
+- **Methods** (`function_declaration`) - Method definitions
 
-| Language | Priority | Expected | Notes |
-|----------|----------|----------|--------|
-| Zig | Low | Future | Systems programming |
+### TypeScript
+- **Functions** (`function_declaration`) - Function declarations
+- **Methods** (`method_definition`) - Class and object methods
+- **Classes** (`class_declaration`) - Class definitions with constructors and methods
+- **Arrow Functions** (`arrow_function`) - Arrow function expressions
+- **Function Expressions** (`function_expression`) - Function expression assignments
+- **Interfaces** (`interface_declaration`) - Interface definitions
+- **Type Aliases** (`type_alias_declaration`) - Type alias definitions
+- **Enums** (`enum_declaration`) - Enum declarations
+- **Namespaces** (`internal_module`) - Namespace declarations
+- **JSX Elements** (`jsx_element`, `jsx_self_closing_element`) - React components
 
 ## Language-Specific Options
 
@@ -232,7 +166,7 @@
 gittype --langs rust
 
 # Multiple languages
-gittype --langs rust,typescript,javascript,python,go,ruby,swift,kotlin,java,php,csharp,c,cpp,haskell,dart,scala
+gittype --langs rust,typescript,javascript,python
 ```
 
 ### Configuration File
@@ -246,17 +180,16 @@ langs = ["rust", "typescript", "javascript", "python", "go", "ruby", "swift", "k
 
 ### What Gets Extracted
 
-- **Complete Functions**: Full function definitions with signatures
-- **Class Definitions**: Complete class structures
-- **Method Bodies**: Individual methods and their implementations
-- **Self-Contained Blocks**: Code that makes sense in isolation
+- **Complete Definitions**: Full function/class/method definitions with signatures and bodies
+- **Self-Contained Blocks**: Code that makes sense in isolation for typing practice
+- **Real-World Constructs**: Actual code patterns from repository codebases
 
 ### What Gets Filtered Out
 
-- **Incomplete Snippets**: Partial code that lacks context
-- **Comments Only**: Blocks with only comments
+- **Incomplete Snippets**: Partial code lacking context
+- **Comments Only**: Blocks containing only comments
 - **Import Statements**: Standalone import/use declarations
-- **Very Short Code**: Code blocks under minimum threshold
+- **Very Short Code**: Code blocks under minimum threshold for meaningful practice
 
 ## Adding New Language Support
 

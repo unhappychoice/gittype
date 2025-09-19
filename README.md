@@ -69,6 +69,9 @@ gittype /path/to/another/repo
 gittype --repo clap-rs/clap
 gittype --repo https://github.com/ratatui-org/ratatui
 gittype --repo git@github.com:dtolnay/anyhow.git
+
+# Play with cached repositories interactively
+gittype repo play
 ```
 
 ## Screenshots 📸
@@ -78,6 +81,10 @@ gittype --repo git@github.com:dtolnay/anyhow.git
 ![GitType Gaming](docs/images/gaming.png)
 
 ![GitType Result](docs/images/result.png)
+
+![GitType Records](docs/images/records.png)
+
+![GitType Analytics](docs/images/analytics-trends.png)
 
 ## Why GitType? 🤔
 
@@ -98,7 +105,8 @@ gittype --repo git@github.com:dtolnay/anyhow.git
 Perfect for when the game gets too addictive:
 
 - **[Installation](docs/installation.md)** - `cargo install` and chill
-- **[Usage](docs/usage.md)** - All the CLI flags your heart desires  
+- **[Usage](docs/usage.md)** - All the CLI flags your heart desires
+- **[Playing Guide](docs/playing-guide.md)** - Game modes, scoring, and ranks
 - **[Languages](docs/supported-languages.md)** - What we extract and how
 - **[Contributing](docs/CONTRIBUTING.md)** - Join the keyboard warriors
 - **[Architecture](docs/ARCHITECTURE.md)** - For the curious minds

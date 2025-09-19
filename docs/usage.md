@@ -22,6 +22,11 @@
    gittype --repo unhappychoice/gittype
    ```
 
+5. **Play with cached repositories interactively:**
+   ```bash
+   gittype repo play
+   ```
+
 ## Command Line Options
 
 ```bash
@@ -51,21 +56,23 @@ gittype --langs rust,typescript
 ```bash
 gittype history
 ```
+Show session history.
 
 ### Show Analytics
 ```bash
 gittype stats
 ```
+Show analytics.
 
 ### Export Session Data
 ```bash
 gittype export [OPTIONS]
 ```
-Exports session data to a specified format.
+Export session data.
 
 | Option | Description | Default |
 |---|---|---|
-| `--format` | Export format (e.g., `json`) | `json` |
+| `--format` | Export format | `json` |
 | `--output` | Output file path | stdout |
 
 **Example:**
@@ -74,27 +81,22 @@ Exports session data to a specified format.
 gittype export --output history.json
 ```
 
-## Game Interface
+### Manage Challenge Cache
+```bash
+gittype cache <COMMAND>
+```
 
-### Controls
+#### Cache Commands:
+- `gittype cache stats` - Show cache statistics
+- `gittype cache clear` - Clear all cached challenges
+- `gittype cache list` - List cached repository keys
 
-- **Type**: Simply start typing to begin
-- **Ctrl+C**: Exit current session
-- **Tab**: Skip current challenge (if available)
-- **Enter**: Confirm completion
+### Manage Repositories
+```bash
+gittype repo <COMMAND>
+```
 
-### Scoring
-
-- **Accuracy**: Percentage of correct characters
-- **WPM**: Words per minute (based on 5 characters per word)
-- **CPM**: Characters per minute
-- **Mistakes**: Number of incorrect keystrokes
-
-### Challenge Flow
-
-1. **Title Screen**: Welcome and instructions
-2. **Loading Screen**: Extracting code chunks
-3. **Countdown**: 3-2-1 start
-4. **Typing Challenge**: Type the displayed code
-5. **Results**: View performance metrics
-6. **Next Challenge**: Continue to next stage
+#### Repository Commands:
+- `gittype repo list` - List all cached repositories
+- `gittype repo clear [--force]` - Clear all cached repositories
+- `gittype repo play` - Play a cached repository interactively
