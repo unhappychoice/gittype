@@ -21,7 +21,7 @@ const DIFFICULTIES: [(&str, DifficultyLevel); 5] = [
 #[derive(Clone, Debug)]
 pub enum TitleAction {
     Start(DifficultyLevel),
-    History,
+    Records,
     Analytics,
     Quit,
 }
@@ -114,12 +114,10 @@ impl Screen for TitleScreen {
                 self.action_result = Some(TitleAction::Quit);
                 Ok(ScreenTransition::Exit)
             }
-            KeyCode::Char('i') | KeyCode::Char('?') => {
-                Ok(ScreenTransition::Push(ScreenType::InfoDialog))
-            }
+            KeyCode::Char('i') | KeyCode::Char('?') => Ok(ScreenTransition::Push(ScreenType::Help)),
             KeyCode::Char('r') | KeyCode::Char('R') => {
-                self.action_result = Some(TitleAction::History);
-                Ok(ScreenTransition::Replace(ScreenType::History))
+                self.action_result = Some(TitleAction::Records);
+                Ok(ScreenTransition::Replace(ScreenType::Records))
             }
             KeyCode::Char('a') | KeyCode::Char('A') => {
                 self.action_result = Some(TitleAction::Analytics);
