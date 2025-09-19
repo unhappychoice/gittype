@@ -459,6 +459,10 @@ impl SessionManager {
     fn current_stage(&self) -> usize {
         match self.state {
             SessionState::InProgress { current_stage, .. } => current_stage,
+            SessionState::Completed { .. } => {
+                // For completed sessions, return the number of stages actually completed
+                self.stage_results.len().max(1)
+            }
             _ => 0,
         }
     }
