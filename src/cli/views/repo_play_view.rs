@@ -34,7 +34,7 @@ pub fn render_repo_play_ui(
 
     let result: Result<Option<usize>> = loop {
         terminal.draw(|f| {
-            // Add horizontal padding like history_screen
+            // Add horizontal padding like record_screen
             let outer_chunks = Layout::default()
                 .direction(Direction::Horizontal)
                 .constraints([
