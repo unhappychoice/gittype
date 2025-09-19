@@ -101,4 +101,29 @@ impl Colors {
             Color::Indexed(i) => crossterm::style::Color::AnsiValue(i),
         }
     }
+
+    /// Convert crossterm Color to ratatui Color
+    pub fn from_crossterm(color: crossterm::style::Color) -> Color {
+        match color {
+            crossterm::style::Color::Reset => Color::Reset,
+            crossterm::style::Color::Black => Color::Black,
+            crossterm::style::Color::DarkGrey => Color::DarkGray,
+            crossterm::style::Color::Red => Color::Red,
+            crossterm::style::Color::DarkRed => Color::LightRed,
+            crossterm::style::Color::Green => Color::Green,
+            crossterm::style::Color::DarkGreen => Color::LightGreen,
+            crossterm::style::Color::Yellow => Color::Yellow,
+            crossterm::style::Color::DarkYellow => Color::LightYellow,
+            crossterm::style::Color::Blue => Color::Blue,
+            crossterm::style::Color::DarkBlue => Color::LightBlue,
+            crossterm::style::Color::Magenta => Color::Magenta,
+            crossterm::style::Color::DarkMagenta => Color::LightMagenta,
+            crossterm::style::Color::Cyan => Color::Cyan,
+            crossterm::style::Color::DarkCyan => Color::LightCyan,
+            crossterm::style::Color::White => Color::White,
+            crossterm::style::Color::Grey => Color::Gray,
+            crossterm::style::Color::Rgb { r, g, b } => Color::Rgb(r, g, b),
+            crossterm::style::Color::AnsiValue(i) => Color::Indexed(i),
+        }
+    }
 }
