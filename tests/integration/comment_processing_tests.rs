@@ -77,7 +77,7 @@ mod byte_char_position_bugs {
         let content = std::fs::read_to_string(options_path).unwrap();
         let tree = gittype::extractor::parsers::parse_with_thread_local("rust", &content).unwrap();
         let comment_ranges =
-            CommonExtractor::extract_comment_ranges(&tree, &content, "rust", &vec![]).unwrap();
+            CommonExtractor::extract_comment_ranges(&tree, &content, "rust", &[]).unwrap();
 
         println!("=== Real models/options.rs Test ===");
         println!("Found {} chunks", chunks.len());

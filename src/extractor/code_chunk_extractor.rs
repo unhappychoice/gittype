@@ -98,7 +98,7 @@ impl CodeChunkExtractor {
                 return Ok(Vec::new());
             }
         }
-        
+
         CommonExtractor::extract_from_file(file_path, language.name())
     }
 }

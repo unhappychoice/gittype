@@ -79,7 +79,7 @@ fn test_chunk_start_indentation_patterns() {
             .expect("Should parse successfully");
 
         // Extract comment ranges
-        let comment_ranges = CommonExtractor::extract_comment_ranges(&tree, code, "rust", &vec![])
+        let comment_ranges = CommonExtractor::extract_comment_ranges(&tree, code, "rust", &[])
             .expect("Should extract comment ranges");
 
         println!("Comment ranges: {:?}", comment_ranges);
@@ -199,7 +199,7 @@ fn test_multibyte_indent_treesitter() {
         let tree = gittype::extractor::parsers::parse_with_thread_local("rust", code)
             .expect("Should parse successfully");
 
-        let comment_ranges = CommonExtractor::extract_comment_ranges(&tree, code, "rust", &vec![])
+        let comment_ranges = CommonExtractor::extract_comment_ranges(&tree, code, "rust", &[])
             .expect("Should extract comment ranges");
 
         println!("Comment ranges: {:?}", comment_ranges);

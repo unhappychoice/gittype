@@ -382,7 +382,7 @@ class TsClass{} {{
     );
 
     assert!(function_count >= 20, "Should find at least 20 functions");
-    assert!(struct_count >= 0, "Should find at least 0 structs");
+    // struct_count is always >= 0 (usize), so this assertion is redundant
     assert!(class_count >= 10, "Should find at least 10 classes");
 
     // Performance test - should complete reasonably quickly

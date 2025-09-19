@@ -106,7 +106,7 @@ pub fn run_typing_core_test(test_case: TypingCoreTestCase) {
 /// Find comment ranges using the same parser as CodeChunk extraction
 pub fn find_comment_ranges_with_parser(code: &str, language: &str) -> Vec<(usize, usize)> {
     if let Some(tree) = parse_with_thread_local(language, code) {
-        CommonExtractor::extract_comment_ranges(&tree, code, language, &vec![]).unwrap_or_default()
+        CommonExtractor::extract_comment_ranges(&tree, code, language, &[]).unwrap_or_default()
     } else {
         Vec::new()
     }

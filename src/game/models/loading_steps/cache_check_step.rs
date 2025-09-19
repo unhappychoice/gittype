@@ -106,7 +106,10 @@ impl Step for CacheCheckStep {
 
         // Mark that cache was used so other steps can skip
         context.cache_used = true;
-        log::info!("Cache hit: {} challenges loaded from cache", challenge_count);
+        log::info!(
+            "Cache hit: {} challenges loaded from cache",
+            challenge_count
+        );
 
         Ok(StepResult::Skipped)
     }

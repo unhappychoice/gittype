@@ -47,7 +47,8 @@ impl CommonExtractor {
         let line_cache = Self::build_line_cache(source_code);
 
         // Extract comment ranges
-        let file_comment_ranges = Self::extract_comment_ranges(tree, source_code, language, &byte_to_char_cache)?;
+        let file_comment_ranges =
+            Self::extract_comment_ranges(tree, source_code, language, &byte_to_char_cache)?;
 
         // Create query
         let query = registry.create_query(language)?;
@@ -115,9 +116,14 @@ impl CommonExtractor {
             };
 
             let mut chunk_cursor = QueryCursor::new();
-            let mut chunk_matches = chunk_cursor.matches(&middle_query, chunk_tree.root_node(), large_chunk.content.as_bytes());
+            let mut chunk_matches = chunk_cursor.matches(
+                &middle_query,
+                chunk_tree.root_node(),
+                large_chunk.content.as_bytes(),
+            );
 
-            let chunk_comment_ranges = Self::extract_comment_ranges(&chunk_tree, &large_chunk.content, language, &[])?;
+            let chunk_comment_ranges =
+                Self::extract_comment_ranges(&chunk_tree, &large_chunk.content, language, &[])?;
             let chunk_byte_to_char_cache = Self::build_byte_to_char_cache(&large_chunk.content);
 
             while let Some(match_) = chunk_matches.next() {
@@ -125,7 +131,10 @@ impl CommonExtractor {
                     let node = capture.node;
                     let capture_name = &middle_query.capture_names()[capture.index as usize];
 
-                    if let Some(chunk_type) = registry.get_extractor(language)?.middle_capture_name_to_chunk_type(capture_name) {
+                    if let Some(chunk_type) = registry
+                        .get_extractor(language)?
+                        .middle_capture_name_to_chunk_type(capture_name)
+                    {
                         let start_byte = node.start_byte();
                         let end_byte = node.end_byte();
                         let content = &large_chunk.content[start_byte..end_byte];
@@ -208,9 +217,9 @@ impl CommonExtractor {
 
         Ok(chunks)
     }
-    
 
     /// Build middle chunk with local coordinates (chunk-relative positioning)
+    #[allow(clippy::too_many_arguments)]
     fn build_middle_chunk_local(
         node: tree_sitter::Node,
         capture_name: &str,
@@ -235,7 +244,7 @@ impl CommonExtractor {
         let relative_end_line = node.end_position().row + 1;
         let absolute_start_line = parent_start_line + relative_start_line - 1;
         let absolute_end_line = parent_start_line + relative_end_line - 1;
-        
+
         let original_indentation_bytes = node.start_position().column;
 
         // Extract actual indentation characters from file source (zero-copy with line cache)
@@ -250,7 +259,8 @@ impl CommonExtractor {
             ""
         };
 
-        let normalized_content = Self::normalize_first_line_indentation(content, original_indent_chars);
+        let normalized_content =
+            Self::normalize_first_line_indentation(content, original_indent_chars);
 
         // Adjust comment ranges to be relative to the normalized content (chunk-local)
         let indent_offset_chars = original_indent_chars.chars().count();
@@ -293,7 +303,7 @@ impl CommonExtractor {
         let tree = parse_with_thread_local(language, &content).ok_or_else(|| {
             GitTypeError::ExtractionFailed(format!("Failed to parse file: {:?}", file_path))
         })?;
-        
+
         Self::extract_chunks_from_tree(&tree, &content, file_path, language)
     }
 
@@ -338,7 +348,7 @@ impl CommonExtractor {
         // Find the target line without collecting all lines into Vec
         let mut current_line = 0;
         let mut line_start = 0;
-        
+
         for (i, byte) in source_code.bytes().enumerate() {
             if byte == b'\n' {
                 if current_line == line_row {
@@ -357,7 +367,7 @@ impl CommonExtractor {
                 line_start = i + 1;
             }
         }
-        
+
         // Handle last line (no trailing newline)
         if current_line == line_row {
             let line = &source_code[line_start..];
@@ -374,14 +384,13 @@ impl CommonExtractor {
         ""
     }
 
-
     /// Build a byte-to-char position cache for fast lookups
     fn build_byte_to_char_cache(source_code: &str) -> Vec<usize> {
         let mut cache = Vec::with_capacity(source_code.len() + 1);
         let mut char_count = 0;
-        
+
         cache.push(0); // Position 0 = 0 chars
-        
+
         for (byte_pos, _) in source_code.char_indices() {
             // Fill gaps for multi-byte characters
             while cache.len() <= byte_pos {
@@ -390,12 +399,12 @@ impl CommonExtractor {
             char_count += 1;
             cache.push(char_count);
         }
-        
+
         // Fill remaining positions to end of string
         while cache.len() <= source_code.len() {
             cache.push(char_count);
         }
-        
+
         cache
     }
 
@@ -403,13 +412,13 @@ impl CommonExtractor {
     fn build_line_cache(source_code: &str) -> Vec<usize> {
         let mut line_starts = Vec::new();
         line_starts.push(0); // Line 0 starts at byte 0
-        
+
         for (i, byte) in source_code.bytes().enumerate() {
             if byte == b'\n' {
                 line_starts.push(i + 1); // Next line starts after the newline
             }
         }
-        
+
         line_starts
     }
 
@@ -425,22 +434,29 @@ impl CommonExtractor {
         }
 
         // Get line boundaries from cache (O(1) lookup)
-        let line_start = line_cache.get(line_row).copied().unwrap_or(source_code.len());
-        let line_end = line_cache.get(line_row + 1).copied().unwrap_or(source_code.len());
-        
+        let line_start = line_cache
+            .get(line_row)
+            .copied()
+            .unwrap_or(source_code.len());
+        let line_end = line_cache
+            .get(line_row + 1)
+            .copied()
+            .unwrap_or(source_code.len());
+
         if line_start >= source_code.len() {
             return "";
         }
 
         // Extract the line (without newline)
-        let line_end_adjusted = if line_end > line_start && source_code.as_bytes().get(line_end - 1) == Some(&b'\n') {
-            line_end - 1
-        } else {
-            line_end
-        };
+        let line_end_adjusted =
+            if line_end > line_start && source_code.as_bytes().get(line_end - 1) == Some(&b'\n') {
+                line_end - 1
+            } else {
+                line_end
+            };
 
         let line = &source_code[line_start..line_end_adjusted];
-        
+
         // Return indent portion
         if indent_byte_length <= line.len() {
             &line[..indent_byte_length]
@@ -448,7 +464,7 @@ impl CommonExtractor {
             line
         }
     }
-    
+
     /// Fast byte-to-char lookup using pre-computed cache
     fn byte_to_char_cached(cache: &[usize], byte_pos: usize) -> usize {
         if byte_pos >= cache.len() {
@@ -457,8 +473,9 @@ impl CommonExtractor {
             cache[byte_pos]
         }
     }
-    
+
     /// Cached version of node_to_chunk
+    #[allow(clippy::too_many_arguments)]
     fn node_to_chunk_cached(
         node: tree_sitter::Node,
         source_code: &str,
@@ -499,7 +516,8 @@ impl CommonExtractor {
             ""
         };
 
-        let normalized_content = Self::normalize_first_line_indentation(content, original_indent_chars);
+        let normalized_content =
+            Self::normalize_first_line_indentation(content, original_indent_chars);
 
         // Adjust comment ranges to be relative to the normalized content
         let indent_offset_chars = original_indent_chars.chars().count();
@@ -582,7 +600,7 @@ impl CommonExtractor {
 
         let mut result = String::with_capacity(original_indent_chars.len() + content.len());
         result.push_str(original_indent_chars);
-        
+
         if let Some(pos) = newline_pos {
             // Multi-line: add first line, then rest
             result.push_str(&content[..pos]);
@@ -591,7 +609,7 @@ impl CommonExtractor {
             // Single line: add everything
             result.push_str(content);
         }
-        
+
         result
     }
 }

@@ -87,16 +87,34 @@ class Dialog extends React.Component<Props> {
 
     // Based on actual output: interface types are not being detected, functions are detected differently
     // Assert on what was actually found
-    assert_eq!(interface_chunks.len(), 0, "No interface chunks found as expected from actual output");
-    assert_eq!(function_chunks.len(), 2, "Should find 2 function chunks as shown in output");
-    assert_eq!(class_chunks.len(), 1, "Should find 1 class chunk as shown in output");
+    assert_eq!(
+        interface_chunks.len(),
+        0,
+        "No interface chunks found as expected from actual output"
+    );
+    assert_eq!(
+        function_chunks.len(),
+        2,
+        "Should find 2 function chunks as shown in output"
+    );
+    assert_eq!(
+        class_chunks.len(),
+        1,
+        "Should find 1 class chunk as shown in output"
+    );
 
     // Check that we have "interface" as a chunk name (even if not Interface type)
-    assert!(all_names.contains(&&"interface".to_string()), "Should find 'interface' in chunk names");
+    assert!(
+        all_names.contains(&&"interface".to_string()),
+        "Should find 'interface' in chunk names"
+    );
 
     let function_names: Vec<&String> = function_chunks.iter().map(|c| &c.name).collect();
     // Based on output, function names are "function" and "function", not specific names
-    assert!(function_names.contains(&&"function".to_string()), "Should find 'function' in function names");
+    assert!(
+        function_names.contains(&&"function".to_string()),
+        "Should find 'function' in function names"
+    );
 
     // Should also find JSX components as Component chunks
     let component_names: Vec<&String> = component_chunks.iter().map(|c| &c.name).collect();
@@ -303,13 +321,31 @@ export default UserList;
     println!("  All names: {:?}", all_names);
 
     // Based on actual output, adjust expectations to match implementation behavior
-    assert_eq!(interface_count, 0, "Interface chunks not detected as Interface type");
+    assert_eq!(
+        interface_count, 0,
+        "Interface chunks not detected as Interface type"
+    );
     assert_eq!(enum_count, 0, "Enum chunks not detected as Enum type");
-    assert_eq!(function_count, 0, "Function chunks not detected as Function type");
-    assert_eq!(class_count, 1, "Should find 1 class as shown in actual output");
+    assert_eq!(
+        function_count, 0,
+        "Function chunks not detected as Function type"
+    );
+    assert_eq!(
+        class_count, 1,
+        "Should find 1 class as shown in actual output"
+    );
 
     // Verify that the names exist even if not categorized as expected types
-    assert!(all_names.contains(&&"interface".to_string()), "Should find 'interface' in chunk names");
-    assert!(all_names.contains(&&"type_alias".to_string()), "Should find 'type_alias' in chunk names");
-    assert!(all_names.contains(&&"enum".to_string()), "Should find 'enum' in chunk names");
+    assert!(
+        all_names.contains(&&"interface".to_string()),
+        "Should find 'interface' in chunk names"
+    );
+    assert!(
+        all_names.contains(&&"type_alias".to_string()),
+        "Should find 'type_alias' in chunk names"
+    );
+    assert!(
+        all_names.contains(&&"enum".to_string()),
+        "Should find 'enum' in chunk names"
+    );
 }

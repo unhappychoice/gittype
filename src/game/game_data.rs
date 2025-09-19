@@ -126,7 +126,8 @@ impl GameData {
     where
         F: FnOnce(&Vec<Challenge>) -> R,
     {
-        GLOBAL_GAME_DATA.get()
+        GLOBAL_GAME_DATA
+            .get()
             .and_then(|game_data| game_data.lock().ok())
             .and_then(|data| data.challenges.as_ref().map(f))
     }

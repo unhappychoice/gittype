@@ -40,12 +40,13 @@ impl ChallengeConverter {
         let language = chunk.language;
         let file_path = chunk.file_path.to_string_lossy().into_owned();
 
-        Some(Challenge::new(id, chunk.content)
-            .with_source_info(file_path, chunk.start_line, chunk.end_line)
-            .with_language(language)
-            .with_comment_ranges(chunk.comment_ranges))
+        Some(
+            Challenge::new(id, chunk.content)
+                .with_source_info(file_path, chunk.start_line, chunk.end_line)
+                .with_language(language)
+                .with_comment_ranges(chunk.comment_ranges),
+        )
     }
-
 
     pub fn convert_chunks_and_files_to_challenges_with_progress(
         &self,
@@ -81,7 +82,8 @@ impl ChallengeConverter {
                 .par_iter()
                 .enumerate()
                 .map(|(idx, chunk)| {
-                    let code_chars = self.count_code_characters(&chunk.content, &chunk.comment_ranges);
+                    let code_chars =
+                        self.count_code_characters(&chunk.content, &chunk.comment_ranges);
                     (idx, code_chars)
                 })
                 .collect();
@@ -104,7 +106,11 @@ impl ChallengeConverter {
                     let mut local = Vec::with_capacity(applicable_difficulties.len());
 
                     for difficulty in applicable_difficulties {
-                        let split = self.split_chunk_by_difficulty_cached(chunk, difficulty, code_char_count);
+                        let split = self.split_chunk_by_difficulty_cached(
+                            chunk,
+                            difficulty,
+                            code_char_count,
+                        );
                         local.extend(split);
                     }
 
@@ -171,7 +177,11 @@ impl ChallengeConverter {
         use crate::game::DifficultyLevel;
 
         // Helper function to create challenge with string borrowing optimization
-        let create_challenge = |content: Cow<'_, str>, start_line: usize, end_line: usize, comment_ranges: &[(usize, usize)]| -> Challenge {
+        let create_challenge = |content: Cow<'_, str>,
+                                start_line: usize,
+                                end_line: usize,
+                                comment_ranges: &[(usize, usize)]|
+         -> Challenge {
             let id = Uuid::new_v4().to_string();
             let language = &chunk.language;
             let file_path = chunk.file_path.to_string_lossy();
@@ -189,7 +199,7 @@ impl ChallengeConverter {
                 Cow::Borrowed(&chunk.content),
                 chunk.start_line,
                 chunk.end_line,
-                &chunk.comment_ranges
+                &chunk.comment_ranges,
             );
             return vec![challenge];
         }
@@ -200,7 +210,7 @@ impl ChallengeConverter {
                 Cow::Borrowed(&chunk.content),
                 chunk.start_line,
                 chunk.end_line,
-                &chunk.comment_ranges
+                &chunk.comment_ranges,
             );
             return vec![challenge];
         }
@@ -213,13 +223,14 @@ impl ChallengeConverter {
                 Cow::Borrowed(&chunk.content),
                 chunk.start_line,
                 chunk.end_line,
-                &chunk.comment_ranges
+                &chunk.comment_ranges,
             );
             return vec![challenge];
         }
 
         // Find the best natural break point that keeps us under max_chars
-        let break_point = self.find_optimal_break_point(&chunk.content, &chunk.comment_ranges, max_chars);
+        let break_point =
+            self.find_optimal_break_point(&chunk.content, &chunk.comment_ranges, max_chars);
 
         if break_point > 0 {
             let lines: Vec<&str> = chunk.content.lines().collect();
@@ -248,7 +259,7 @@ impl ChallengeConverter {
                             Cow::Owned(truncated_content.to_string()),
                             chunk.start_line,
                             chunk.start_line + break_point - 1,
-                            &adjusted_comment_ranges
+                            &adjusted_comment_ranges,
                         );
                         return vec![challenge];
                     }
@@ -259,7 +270,6 @@ impl ChallengeConverter {
         // Don't generate challenge if it doesn't fit within the difficulty range
         vec![]
     }
-
 
     fn count_code_characters(&self, content: &str, comment_ranges: &[(usize, usize)]) -> usize {
         // Early return for empty content

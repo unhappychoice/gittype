@@ -528,10 +528,10 @@ impl SessionManager {
         }
 
         // 4. Collect data before borrowing conflicts - move tracker out to avoid borrowing issues
-        let tracker_clone = self.current_stage_tracker.as_ref().map(|t| t.clone());
+        let tracker_clone = self.current_stage_tracker.clone();
         let current_challenge = self.get_current_challenge();
         let stage_name = format!("Stage {}", self.current_stage());
-        
+
         // Clear current stage tracker to avoid borrow issues
         let stage_result = if let Some(tracker) = self.current_stage_tracker.take() {
             StageCalculator::calculate(&tracker)
@@ -758,7 +758,7 @@ impl SessionManager {
                     }
 
                     // Collect data before borrowing conflicts - move tracker out
-                    let tracker_clone = manager.current_stage_tracker.as_ref().map(|t| t.clone());
+                    let tracker_clone = manager.current_stage_tracker.clone();
                     let current_challenge = manager.get_current_challenge();
                     let stage_name = format!("Stage {}", manager.current_stage());
 

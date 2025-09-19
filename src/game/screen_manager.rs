@@ -37,7 +37,6 @@ use crate::game::screens::session_detail_screen::SessionDetailScreen;
 use crate::game::screens::stage_summary_screen::StageSummaryScreen;
 use crate::game::screens::total_summary_share_screen::TotalSummaryShareScreen;
 use crate::game::session_manager::SessionManager;
-use crate::game::stage_repository::StageRepository;
 use crate::scoring::TotalCalculator;
 use crate::scoring::GLOBAL_TOTAL_TRACKER;
 use crate::Result;
@@ -978,19 +977,6 @@ impl ScreenManager {
         }
 
         let _ = stdout().flush();
-    }
-
-    /// Update TitleScreen with challenge data after loading completion
-    fn update_title_screen_with_data(&mut self) -> Result<()> {
-        log::info!("Updating TitleScreen with loaded data");
-
-        // Update title screen with challenge counts and git repository info
-        let stage_repo = StageRepository::instance();
-        if let Ok(repo) = stage_repo.lock() {
-            repo.update_title_screen_data(self)?;
-        }
-
-        Ok(())
     }
 
     /// Show session summary on interrupt (Ctrl+C handler)

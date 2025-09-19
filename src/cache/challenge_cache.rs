@@ -128,7 +128,7 @@ impl ChallengeCache {
             })
             .collect();
 
-        let challenges: Vec<Challenge> = results.into_iter().filter_map(|r| r).collect();
+        let challenges: Vec<Challenge> = results.into_iter().flatten().collect();
 
         if challenges.is_empty() {
             return None;
@@ -214,10 +214,13 @@ impl ChallengeCache {
         let file_path = pointer.source_file_path.as_ref()?;
         let absolute_path = repo_root.join(file_path);
 
-        let absolute_path = absolute_path.canonicalize().map_err(|e| {
-            log::debug!("Failed to canonicalize {}: {}", file_path, e);
-            e
-        }).ok()?;
+        let absolute_path = absolute_path
+            .canonicalize()
+            .map_err(|e| {
+                log::debug!("Failed to canonicalize {}: {}", file_path, e);
+                e
+            })
+            .ok()?;
 
         let repo_root = repo_root.canonicalize().ok()?;
         if !absolute_path.starts_with(&repo_root) {
@@ -226,10 +229,12 @@ impl ChallengeCache {
         }
 
         // Read file content
-        let file_content = fs::read_to_string(&absolute_path).map_err(|e| {
-            log::debug!("Failed to read file {}: {}", file_path, e);
-            e
-        }).ok()?;
+        let file_content = fs::read_to_string(&absolute_path)
+            .map_err(|e| {
+                log::debug!("Failed to read file {}: {}", file_path, e);
+                e
+            })
+            .ok()?;
 
         let lines: Vec<&str> = file_content.lines().collect();
 
@@ -239,8 +244,13 @@ impl ChallengeCache {
                 if start <= lines.len() && end <= lines.len() && start <= end {
                     lines[start.saturating_sub(1)..end].join("\n")
                 } else {
-                    log::debug!("Line number mismatch in {}: start={}, end={}, file_lines={}",
-                        file_path, start, end, lines.len());
+                    log::debug!(
+                        "Line number mismatch in {}: start={}, end={}, file_lines={}",
+                        file_path,
+                        start,
+                        end,
+                        lines.len()
+                    );
                     return None;
                 }
             }

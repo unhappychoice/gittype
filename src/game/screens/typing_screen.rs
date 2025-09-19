@@ -10,7 +10,7 @@ use crate::scoring::StageInput;
 use crate::{models::GitRepository, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use std::io::Stdout;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 pub struct TypingScreen {
     countdown: Countdown,

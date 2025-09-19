@@ -93,7 +93,6 @@ impl Step for FinalizingStep {
         SessionTracker::initialize_global_instance(SessionTracker::new());
         TotalTracker::initialize_global_instance(TotalTracker::new());
 
-
         Ok(StepResult::Skipped)
     }
 }

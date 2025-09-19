@@ -130,7 +130,7 @@ impl TypingCore {
             0
         };
 
-        let result = Self {
+        Self {
             text_to_type,
             current_position_to_type: initial_position_to_type,
             mapping_to_type: text_mapping_to_type,
@@ -141,9 +141,7 @@ impl TypingCore {
             comment_ranges: normalized_ranges,
             mistakes: 0,
             current_mistake_position: None,
-        };
-
-        result
+        }
     }
 
     pub fn from_challenge(challenge: &Challenge, options: Option<ProcessingOptions>) -> Self {

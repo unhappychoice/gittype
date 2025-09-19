@@ -7,7 +7,6 @@ use rand::rngs::StdRng;
 use rand::seq::SliceRandom;
 use rand::{Rng, SeedableRng};
 use std::sync::{Arc, Mutex};
-use std::time::Instant;
 
 #[derive(Debug, Clone)]
 pub enum GameMode {
@@ -298,11 +297,26 @@ impl StageRepository {
         // Use cached indices for O(1) counting
         if self.indices_cached {
             let mut counts = [0; 5];
-            counts[0] = self.difficulty_indices.get(&DifficultyLevel::Easy).map_or(0, |v| v.len());
-            counts[1] = self.difficulty_indices.get(&DifficultyLevel::Normal).map_or(0, |v| v.len());
-            counts[2] = self.difficulty_indices.get(&DifficultyLevel::Hard).map_or(0, |v| v.len());
-            counts[3] = self.difficulty_indices.get(&DifficultyLevel::Wild).map_or(0, |v| v.len());
-            counts[4] = self.difficulty_indices.get(&DifficultyLevel::Zen).map_or(0, |v| v.len());
+            counts[0] = self
+                .difficulty_indices
+                .get(&DifficultyLevel::Easy)
+                .map_or(0, |v| v.len());
+            counts[1] = self
+                .difficulty_indices
+                .get(&DifficultyLevel::Normal)
+                .map_or(0, |v| v.len());
+            counts[2] = self
+                .difficulty_indices
+                .get(&DifficultyLevel::Hard)
+                .map_or(0, |v| v.len());
+            counts[3] = self
+                .difficulty_indices
+                .get(&DifficultyLevel::Wild)
+                .map_or(0, |v| v.len());
+            counts[4] = self
+                .difficulty_indices
+                .get(&DifficultyLevel::Zen)
+                .map_or(0, |v| v.len());
             counts
         } else {
             // Fallback to GameData access (should only happen during initialization)
@@ -394,7 +408,10 @@ impl StageRepository {
         // Don't rebuild stages/indices - just update config
         // Indices are already cached and difficulty filtering happens at runtime
         repo.current_index = 0;
-        log::info!("✅ StageRepository: Difficulty set to {:?} (keeping cached indices)", difficulty);
+        log::info!(
+            "✅ StageRepository: Difficulty set to {:?} (keeping cached indices)",
+            difficulty
+        );
         Ok(())
     }
 
@@ -447,7 +464,10 @@ impl StageRepository {
     }
 
     /// Get a single challenge for specific difficulty (optimized with cached data)
-    pub fn get_challenge_for_difficulty(&mut self, difficulty: DifficultyLevel) -> Option<Challenge> {
+    pub fn get_challenge_for_difficulty(
+        &mut self,
+        difficulty: DifficultyLevel,
+    ) -> Option<Challenge> {
         // Ensure indices are built
         self.build_difficulty_indices();
 
@@ -504,7 +524,9 @@ impl StageRepository {
     pub fn update_global_title_screen_data() -> Result<()> {
         // This will be called from finalizing step with proper screen manager access
         // For now, just log that it's ready
-        log::info!("✅ StageRepository: Title screen data ready (will be updated by ScreenManager)");
+        log::info!(
+            "✅ StageRepository: Title screen data ready (will be updated by ScreenManager)"
+        );
         Ok(())
     }
 
@@ -515,7 +537,8 @@ impl StageRepository {
         }
 
         // Create temporary indices map
-        let mut temp_indices: std::collections::HashMap<DifficultyLevel, Vec<usize>> = std::collections::HashMap::new();
+        let mut temp_indices: std::collections::HashMap<DifficultyLevel, Vec<usize>> =
+            std::collections::HashMap::new();
 
         // Initialize all difficulty levels
         temp_indices.insert(DifficultyLevel::Easy, Vec::new());
@@ -529,7 +552,9 @@ impl StageRepository {
             let cached_challenges = available_challenges.clone();
 
             for (index, challenge) in available_challenges.iter().enumerate() {
-                let difficulty = challenge.difficulty_level.unwrap_or(DifficultyLevel::Normal);
+                let difficulty = challenge
+                    .difficulty_level
+                    .unwrap_or(DifficultyLevel::Normal);
                 if let Some(indices) = temp_indices.get_mut(&difficulty) {
                     indices.push(index);
                 }
