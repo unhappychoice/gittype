@@ -10,7 +10,7 @@ use crate::scoring::StageInput;
 use crate::{models::GitRepository, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use std::io::Stdout;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 pub struct TypingScreen {
     countdown: Countdown,
@@ -60,10 +60,11 @@ impl TypingScreen {
                 ..Default::default()
             };
 
-            self.countdown = Countdown::new();
             self.typing_core = TypingCore::new(&challenge.code_content, comment_ranges, options);
-            self.challenge = Some(challenge.clone());
             self.code_context = context_loader::load_context_for_challenge(&challenge, 4)?;
+
+            self.countdown = Countdown::new();
+            self.challenge = Some(challenge.clone());
             // Update git_repository from GameData
             self.git_repository = GameData::get_git_repository();
             self.waiting_to_start = true;

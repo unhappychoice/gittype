@@ -577,6 +577,7 @@ impl ScreenManager {
                 }
             }
         }
+
         Ok(())
     }
 
@@ -662,8 +663,7 @@ impl ScreenManager {
                     // LoadingScreen completed, transition to Title
                     use crate::game::GameData;
                     if GameData::is_loading_completed() {
-                        // Initialize TitleScreen with challenge data
-                        self.update_title_screen_with_data()?;
+                        // TitleScreen data will be updated during finalizing step
                         self.handle_transition(ScreenTransition::Replace(ScreenType::Title))?;
                         return Ok(());
                     } else if GameData::is_loading_failed() {

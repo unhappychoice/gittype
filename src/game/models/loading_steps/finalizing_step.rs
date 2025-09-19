@@ -68,10 +68,14 @@ impl Step for FinalizingStep {
             ));
         }
 
-        log::info!("Finalizing with {} challenges", challenge_count);
-
         // Initialize StageRepository (no longer requires challenges ownership)
         StageRepository::initialize_global(git_repository.clone())?;
+
+        // Build difficulty indices for optimal performance
+        StageRepository::build_global_difficulty_indices()?;
+
+        // Update title screen with challenge data (done once during initialization)
+        StageRepository::update_global_title_screen_data()?;
 
         // Initialize SessionManager
         SessionManager::reset_global_session()?;
@@ -89,7 +93,6 @@ impl Step for FinalizingStep {
         SessionTracker::initialize_global_instance(SessionTracker::new());
         TotalTracker::initialize_global_instance(TotalTracker::new());
 
-        log::info!("StageRepository, SessionManager, and trackers initialized successfully");
 
         Ok(StepResult::Skipped)
     }
