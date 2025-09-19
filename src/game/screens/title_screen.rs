@@ -82,6 +82,13 @@ impl Screen for TitleScreen {
     fn init(&mut self) -> Result<()> {
         self.action_result = None;
         self.needs_render = true;
+
+        // Update challenge counts from StageRepository when initializing
+        if let Ok(stage_repo) = crate::game::stage_repository::StageRepository::instance().lock() {
+            let challenge_counts = stage_repo.count_challenges_by_difficulty();
+            self.challenge_counts = challenge_counts;
+        }
+
         Ok(())
     }
 

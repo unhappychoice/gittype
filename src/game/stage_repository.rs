@@ -277,7 +277,6 @@ impl StageRepository {
     pub fn update_title_screen_data(&self, manager: &mut ScreenManager) -> Result<()> {
         // Only update if indices are cached to avoid GameData access during screen transitions
         if !self.indices_cached {
-            log::info!("🔄 StageRepository: Skipping title screen update - indices not yet cached");
             return Ok(());
         }
 
