@@ -66,7 +66,7 @@ impl CodeChunkExtractor {
                     10 // Update every 10 files normally
                 };
 
-                if current % progress_threshold == 0 || current == total_files {
+                if current.is_multiple_of(progress_threshold) || current == total_files {
                     progress.set_file_counts(StepType::Extracting, current, total_files, None);
                 }
 

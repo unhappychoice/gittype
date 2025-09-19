@@ -116,7 +116,7 @@ impl ChallengeConverter {
 
                     // Update progress atomically - reduce frequency of updates
                     let current = processed_total.fetch_add(1, Ordering::Relaxed) + 1;
-                    if current % 10 == 0 || current == total_work {
+                    if current.is_multiple_of(10) || current == total_work {
                         progress.set_file_counts(StepType::Generating, current, total_work, None);
                     }
 
