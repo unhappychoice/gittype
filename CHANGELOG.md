@@ -5,6 +5,86 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2025-09-19
+
+### ✨ Features
+
+- feat: add crossterm to ratatui color conversion utility ([29f4058](https://github.com/unhappychoice/gittype/commit/29f4058))
+- feat: update title screen to use help screen and rename history to records ([9e3aa4e](https://github.com/unhappychoice/gittype/commit/9e3aa4e))
+- feat: integrate help screen into screen management system ([0873eb7](https://github.com/unhappychoice/gittype/commit/0873eb7))
+- feat: implement comprehensive help screen to replace basic info dialog ([08aa7f3](https://github.com/unhappychoice/gittype/commit/08aa7f3))
+- feat: add basic repository management commands ([1618953](https://github.com/unhappychoice/gittype/commit/1618953))
+- feat: implement Zen mode comment exclusion ([5e97c75](https://github.com/unhappychoice/gittype/commit/5e97c75))
+- feat: add File chunk type for Zen mode ([04fb821](https://github.com/unhappychoice/gittype/commit/04fb821))
+- feat: implement middle code chunk extraction for issue #199 ([03dd376](https://github.com/unhappychoice/gittype/commit/03dd376))
+- feat: add BestStatus struct for accurate session comparison ([51ce784](https://github.com/unhappychoice/gittype/commit/51ce784))
+- feat: use display_name for language names in Analytics Screen ([fcd65df](https://github.com/unhappychoice/gittype/commit/fcd65df))
+- feat: add color-coded language display in typing interface ([bab7971](https://github.com/unhappychoice/gittype/commit/bab7971))
+- feat: implement challenge caching system ([730ced1](https://github.com/unhappychoice/gittype/commit/730ced1))
+
+### 🐛 Bug Fixes
+
+- fix: correct stage number display in StageSummary ([3619480](https://github.com/unhappychoice/gittype/commit/3619480))
+- fix: restore difficulty challenge count display on title screen ([6ab9f77](https://github.com/unhappychoice/gittype/commit/6ab9f77))
+- fix: improve cache reliability and error handling for issue #244 ([34c248c](https://github.com/unhappychoice/gittype/commit/34c248c))
+- fix: improve Git URL parsing robustness for multi-host support ([15c1c3e](https://github.com/unhappychoice/gittype/commit/15c1c3e))
+- fix: center typing line in viewport and fix scroll bug ([4883150](https://github.com/unhappychoice/gittype/commit/4883150))
+- fix(extractor): correct Haskell type_synomym usage and JS/TS arrow function mapping ([3ab668b](https://github.com/unhappychoice/gittype/commit/3ab668b))
+- fix: update bincode API calls for v2.0 compatibility ([cbc85f9](https://github.com/unhappychoice/gittype/commit/cbc85f9))
+- fix: add vendored-libgit2 feature for cross-compilation ([a6bfb5a](https://github.com/unhappychoice/gittype/commit/a6bfb5a))
+- fix: correct score comparison logic in ScoreView ([156d7fa](https://github.com/unhappychoice/gittype/commit/156d7fa))
+- fix: capture best records at session start consistently ([4d7e85e](https://github.com/unhappychoice/gittype/commit/4d7e85e))
+- fix: improve session details dialog layout and sizing ([c0a27f0](https://github.com/unhappychoice/gittype/commit/c0a27f0))
+- fix: address security vulnerabilities in cache implementation ([7f9cb9e](https://github.com/unhappychoice/gittype/commit/7f9cb9e))
+- fix: respect update notification exit ([dff6c2b](https://github.com/unhappychoice/gittype/commit/dff6c2b))
+- fix: invalidate version cache when current version changes ([149d003](https://github.com/unhappychoice/gittype/commit/149d003))
+
+### 📝 Other Changes
+
+- chore: bump version to v0.7.0 ([1477551](https://github.com/unhappychoice/gittype/commit/1477551))
+- docs: add updated screenshots and new analytics images ([0f598d2](https://github.com/unhappychoice/gittype/commit/0f598d2))
+- docs: update documentation structure and language support ([52d6428](https://github.com/unhappychoice/gittype/commit/52d6428))
+- Update src/game/session_manager.rs ([8278d20](https://github.com/unhappychoice/gittype/commit/8278d20))
+- refactor: remove old history_screen.rs file ([f0bcf30](https://github.com/unhappychoice/gittype/commit/f0bcf30))
+- refactor: update screen transitions to use Records instead of History ([3341c8d](https://github.com/unhappychoice/gittype/commit/3341c8d))
+- refactor: rename history_screen.rs to records_screen.rs for consistency ([9686baf](https://github.com/unhappychoice/gittype/commit/9686baf))
+- lint: fix manual_is_multiple_of clippy warnings ([9086e9a](https://github.com/unhappychoice/gittype/commit/9086e9a))
+- lint: fix clippy warnings and apply cargo fmt ([437bbad](https://github.com/unhappychoice/gittype/commit/437bbad))
+- perf: remove performance logging code for issue #244 ([8f359d7](https://github.com/unhappychoice/gittype/commit/8f359d7))
+- perf: optimize generating step performance with caching and filtering ([fc047b7](https://github.com/unhappychoice/gittype/commit/fc047b7))
+- perf: optimize ExtractingStep performance for issue #244 ([e57177a](https://github.com/unhappychoice/gittype/commit/e57177a))
+- test: fix failing language extraction tests expectations ([c31f589](https://github.com/unhappychoice/gittype/commit/c31f589))
+- perf: eliminate excessive clone() calls for issue #244 item 2 ([9bc5c7c](https://github.com/unhappychoice/gittype/commit/9bc5c7c))
+- perf: reduce typing screen frame rate from 60 FPS to 30 FPS ([9a13979](https://github.com/unhappychoice/gittype/commit/9a13979))
+- refactor: update screens to use new repo commands integration ([5bc2790](https://github.com/unhappychoice/gittype/commit/5bc2790))
+- ui: improve repo list display with ratatui and better formatting ([ba92b3c](https://github.com/unhappychoice/gittype/commit/ba92b3c))
+- test: update snapshots and integration tests for File chunk ([a72977a](https://github.com/unhappychoice/gittype/commit/a72977a))
+- refactor: simplify git repository extractor tests ([eca4f27](https://github.com/unhappychoice/gittype/commit/eca4f27))
+- test: fix tests affected by File chunk addition ([d8c069e](https://github.com/unhappychoice/gittype/commit/d8c069e))
+- test: add insta snapshots for middle chunk extraction tests ([49b2d4f](https://github.com/unhappychoice/gittype/commit/49b2d4f))
+- test: add comprehensive test cases for middle chunk extraction ([a4cf86c](https://github.com/unhappychoice/gittype/commit/a4cf86c))
+- chore(deps): bump bincode from 1.3.3 to 2.0.1 ([649b886](https://github.com/unhappychoice/gittype/commit/649b886))
+- chore: remove unused screen configuration methods ([326b6db](https://github.com/unhappychoice/gittype/commit/326b6db))
+- refactor: optimize SessionDetailsDialog best status handling ([dbe86bc](https://github.com/unhappychoice/gittype/commit/dbe86bc))
+- refactor: improve stage results display format ([46fc4ad](https://github.com/unhappychoice/gittype/commit/46fc4ad))
+- chore(deps): bump git2 from 0.18.3 to 0.20.2 ([1ac1df8](https://github.com/unhappychoice/gittype/commit/1ac1df8))
+- chore: satisfy clippy lint in game tests ([43920e7](https://github.com/unhappychoice/gittype/commit/43920e7))
+- style: format tests ([8c0a909](https://github.com/unhappychoice/gittype/commit/8c0a909))
+- test: assert database error helper ([cc5ab96](https://github.com/unhappychoice/gittype/commit/cc5ab96))
+- refactor: add countdown test helper ([384d042](https://github.com/unhappychoice/gittype/commit/384d042))
+- test: cover game data state management ([aedc39d](https://github.com/unhappychoice/gittype/commit/aedc39d))
+- test: add storage, ui, and sharing suites ([909cc83](https://github.com/unhappychoice/gittype/commit/909cc83))
+- test: assert rank calculator extremes ([be0434d](https://github.com/unhappychoice/gittype/commit/be0434d))
+- test: broaden model coverage ([12b5d00](https://github.com/unhappychoice/gittype/commit/12b5d00))
+- test: document difficulty level metadata ([9330ec6](https://github.com/unhappychoice/gittype/commit/9330ec6))
+- test: validate language registry helpers ([7d6bb8e](https://github.com/unhappychoice/gittype/commit/7d6bb8e))
+- test: extend repository manager coverage ([57608e7](https://github.com/unhappychoice/gittype/commit/57608e7))
+- test: cover version cache validity ([d473abd](https://github.com/unhappychoice/gittype/commit/d473abd))
+- chore(deps): bump serde from 1.0.223 to 1.0.225 ([3266fb6](https://github.com/unhappychoice/gittype/commit/3266fb6))
+- chore(deps): bump serde from 1.0.219 to 1.0.223 ([b63a29f](https://github.com/unhappychoice/gittype/commit/b63a29f))
+- chore(deps): bump serde_json from 1.0.143 to 1.0.145 ([5e00b3e](https://github.com/unhappychoice/gittype/commit/5e00b3e))
+
+
 ## [0.6.2] - 2025-09-13
 
 ### 🐛 Bug Fixes
@@ -13,7 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📝 Other Changes
 
-- chore: bump version to v0.6.2 ([d86e17f](https://github.com/unhappychoice/gittype/commit/d86e17f))
+- chore: bump version to v0.6.2 ([d1ebea1](https://github.com/unhappychoice/gittype/commit/d1ebea1))
 
 
 ## [0.6.1] - 2025-09-12
