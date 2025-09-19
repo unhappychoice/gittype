@@ -664,8 +664,16 @@ impl ScreenManager {
                     // LoadingScreen completed, transition to Title
                     use crate::game::GameData;
                     if GameData::is_loading_completed() {
-                        // TitleScreen data will be updated during finalizing step
+                        // Update TitleScreen data with challenge counts after loading is complete
                         self.handle_transition(ScreenTransition::Replace(ScreenType::Title))?;
+
+                        // Update title screen with challenge counts from StageRepository
+                        let stage_repo_instance =
+                            crate::game::stage_repository::StageRepository::instance();
+                        if let Ok(repo) = stage_repo_instance.lock() {
+                            let _ = repo.update_title_screen_data(self);
+                        }
+
                         return Ok(());
                     } else if GameData::is_loading_failed() {
                         // Could transition to an error screen or back to title
