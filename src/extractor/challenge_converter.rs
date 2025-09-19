@@ -74,13 +74,14 @@ impl ChallengeConverter {
             let mut sorted_chunks = chunks;
             sorted_chunks.sort_by(|a, b| b.content.len().cmp(&a.content.len()));
 
-            // Capture Arc without cloning
+            // Use par_iter to maintain sort order (unlike into_par_iter)
             let chunk_challenges: Vec<Challenge> = sorted_chunks
-                .into_par_iter()
-                .map(|chunk| {
+                .par_iter()
+                .flat_map(|chunk| {
                     let mut local = Vec::new();
+
                     for difficulty in &difficulties {
-                        let split = self.split_chunk_by_difficulty(&chunk, difficulty);
+                        let split = self.split_chunk_by_difficulty(chunk, difficulty);
                         local.extend(split);
                     }
 
@@ -92,7 +93,6 @@ impl ChallengeConverter {
 
                     local
                 })
-                .flatten()
                 .collect();
 
             all_challenges.extend(chunk_challenges);

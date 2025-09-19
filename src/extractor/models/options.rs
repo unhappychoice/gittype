@@ -3,6 +3,8 @@ pub struct ExtractionOptions {
     pub include_patterns: Vec<String>,
     pub exclude_patterns: Vec<String>,
     pub languages: Option<Vec<String>>,
+    /// Maximum file size in bytes to process (default: 2MB)
+    pub max_file_size_bytes: u64,
 }
 
 impl Default for ExtractionOptions {
@@ -86,8 +88,12 @@ impl Default for ExtractionOptions {
                 "**/.cache/**".to_string(),
                 "**/logs/**".to_string(),
                 "**/*.log".to_string(),
+                // === Performance test files (large generated files) ===
+                "**/colorize-fixtures/**".to_string(),
+                "**/perf-tests/**".to_string(),
             ],
             languages: None,
+            max_file_size_bytes: 1024 * 1024, // 1MB limit
         }
     }
 }
