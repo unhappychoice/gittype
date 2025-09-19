@@ -76,15 +76,25 @@ impl Screen for StageSummaryScreen {
         _total_result: Option<&crate::scoring::TotalResult>,
     ) -> Result<()> {
         if let Some(ref stage_result) = self.stage_result {
-            let (current_stage, total_stages) =
+            let (session_current_stage, total_stages) =
                 SessionManager::get_global_stage_info().unwrap_or((1, 3));
             let is_completed = SessionManager::is_global_session_completed().unwrap_or(true);
+
+            // Calculate the stage number that was just completed
+            let completed_stage = if is_completed {
+                // If session is completed, show the total number of stages completed
+                session_current_stage
+            } else {
+                // If session is in progress, the current stage has been incremented
+                // so we need to show the previous stage number
+                session_current_stage.saturating_sub(1).max(1)
+            };
 
             let has_next = !is_completed;
 
             StageCompletionView::render_complete(
                 stage_result,
-                current_stage,
+                completed_stage,
                 total_stages,
                 has_next,
                 stage_result.keystrokes,
