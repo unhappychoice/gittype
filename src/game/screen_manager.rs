@@ -110,8 +110,8 @@ impl ScreenManager {
     pub fn initialize_all_screens(&mut self) -> Result<()> {
         use crate::game::screens::{
             analytics_screen::AnalyticsScreen, animation_screen::AnimationScreen,
-            history_screen::HistoryScreen, info_dialog::InfoDialogScreen,
-            loading_screen::LoadingScreen, panic_screen::PanicScreen,
+            help_screen::HelpScreen, info_dialog::InfoDialogScreen, loading_screen::LoadingScreen,
+            panic_screen::PanicScreen, records_screen::RecordsScreen,
             session_detail_screen::SessionDetailScreen,
             session_details_dialog::SessionDetailsDialog as DetailsDialogScreenState,
             session_failure_screen::SessionFailureScreen as FailureScreenState,
@@ -170,6 +170,7 @@ impl ScreenManager {
             ),
         );
         self.register_screen(ScreenType::InfoDialog, Box::new(InfoDialogScreen::new()));
+        self.register_screen(ScreenType::Help, Box::new(HelpScreen::new()));
         self.register_screen(
             ScreenType::DetailsDialog,
             Box::new(DetailsDialogScreenState::new()),
@@ -177,8 +178,8 @@ impl ScreenManager {
         self.register_screen(ScreenType::Panic, Box::new(PanicScreen::new()));
 
         // Register History and Analytics screens
-        if let Ok(history_screen) = HistoryScreen::new_for_screen_manager() {
-            self.register_screen(ScreenType::History, Box::new(history_screen));
+        if let Ok(records_screen) = RecordsScreen::new_for_screen_manager() {
+            self.register_screen(ScreenType::Records, Box::new(records_screen));
         }
         if let Ok(analytics_screen) = AnalyticsScreen::new_for_screen_manager() {
             self.register_screen(ScreenType::Analytics, Box::new(analytics_screen));
@@ -329,10 +330,11 @@ impl ScreenManager {
 
         // Set appropriate render backend for the screen
         match screen_type {
-            ScreenType::History
+            ScreenType::Records
             | ScreenType::Analytics
             | ScreenType::DetailsDialog
             | ScreenType::InfoDialog
+            | ScreenType::Help
             | ScreenType::Loading
             | ScreenType::SessionDetail
             | ScreenType::Typing
@@ -583,12 +585,12 @@ impl ScreenManager {
     fn configure_session_detail_from_history(&mut self) -> Result<()> {
         // Get the selected session data from History screen
         let session_data_to_use =
-            if let Some(history_screen) = self.screens.get(&ScreenType::History) {
-                if let Some(history) = history_screen
+            if let Some(records_screen) = self.screens.get(&ScreenType::Records) {
+                if let Some(records) = records_screen
                     .as_any()
-                    .downcast_ref::<crate::game::screens::history_screen::HistoryScreen>(
+                    .downcast_ref::<crate::game::screens::records_screen::RecordsScreen>(
                 ) {
-                    history.get_selected_session_for_detail().clone()
+                    records.get_selected_session_for_detail().clone()
                 } else {
                     None
                 }

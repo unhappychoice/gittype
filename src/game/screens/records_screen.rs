@@ -95,22 +95,22 @@ impl Default for FilterState {
 }
 
 #[derive(Clone)]
-pub enum HistoryAction {
+pub enum RecordsAction {
     Return,
     ViewDetails(i64),
 }
 
-pub struct HistoryScreen {
+pub struct RecordsScreen {
     sessions: Vec<SessionDisplayData>,
     repositories: Vec<StoredRepository>,
     filter_state: FilterState,
     list_state: ListState,
     scroll_state: ScrollbarState,
-    action_result: Option<HistoryAction>,
+    action_result: Option<RecordsAction>,
     selected_session_for_detail: Option<SessionDisplayData>,
 }
 
-impl HistoryScreen {
+impl RecordsScreen {
     pub fn new_for_screen_manager() -> Result<Self> {
         Self::new()
     }
@@ -166,7 +166,7 @@ impl HistoryScreen {
             Line::from(vec![
                 Span::raw("  "), // Left padding
                 Span::styled(
-                    "History - Typing Session Records",
+                    "Records - Typing Session Records",
                     Style::default()
                         .fg(Colors::INFO)
                         .add_modifier(Modifier::BOLD),
@@ -195,7 +195,7 @@ impl HistoryScreen {
             Block::default()
                 .borders(Borders::ALL)
                 .border_style(Style::default().fg(Colors::BORDER))
-                .title("Session History"),
+                .title("Session Records"),
         );
         f.render_widget(header, chunks[0]);
 
@@ -203,7 +203,7 @@ impl HistoryScreen {
         if self.sessions.is_empty() {
             let empty_msg = vec![
                 Line::from("No typing sessions found for the selected time period."),
-                Line::from("Start typing to build your history!"),
+                Line::from("Start typing to build your records!"),
             ];
             let empty_paragraph = Paragraph::new(empty_msg)
                 .style(Style::default().fg(Colors::MUTED))
@@ -453,7 +453,7 @@ impl SessionResultExt for crate::storage::Database {
     }
 }
 
-impl Screen for HistoryScreen {
+impl Screen for RecordsScreen {
     fn init(&mut self) -> Result<()> {
         self.action_result = None;
         self.refresh_sessions()?;
@@ -468,14 +468,14 @@ impl Screen for HistoryScreen {
 
         match key_event.code {
             KeyCode::Esc => {
-                self.action_result = Some(HistoryAction::Return);
+                self.action_result = Some(RecordsAction::Return);
                 // Return to Title screen
                 Ok(ScreenTransition::Replace(
                     crate::game::models::ScreenType::Title,
                 ))
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.action_result = Some(HistoryAction::Return);
+                self.action_result = Some(RecordsAction::Return);
                 Ok(ScreenTransition::Exit)
             }
             KeyCode::Up | KeyCode::Char('k') => {
@@ -531,7 +531,7 @@ impl Screen for HistoryScreen {
     ) -> Result<()> {
         // NOTE: History screen should use render_ratatui() instead
         // This render_crossterm_with_data() should not be used
-        eprintln!("Warning: History screen render_crossterm_with_data() called - this should use ratatui backend");
+        eprintln!("Warning: Records screen render_crossterm_with_data() called - this should use ratatui backend");
         Ok(())
     }
 
@@ -562,8 +562,8 @@ impl Screen for HistoryScreen {
     }
 }
 
-impl HistoryScreen {
-    pub fn get_action_result(&self) -> Option<HistoryAction> {
+impl RecordsScreen {
+    pub fn get_action_result(&self) -> Option<RecordsAction> {
         self.action_result.clone()
     }
 

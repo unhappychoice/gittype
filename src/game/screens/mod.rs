@@ -1,9 +1,10 @@
 pub mod analytics_screen;
 pub mod animation_screen;
-pub mod history_screen;
+pub mod help_screen;
 pub mod info_dialog;
 pub mod loading_screen;
 pub mod panic_screen;
+pub mod records_screen;
 pub mod session_detail_screen;
 pub mod session_details_dialog;
 pub mod session_failure_screen;
@@ -18,10 +19,11 @@ pub mod version_check_screen;
 
 pub use analytics_screen::{AnalyticsAction, AnalyticsScreen};
 pub use animation_screen::AnimationScreen;
-pub use history_screen::{HistoryAction, HistoryScreen};
+pub use help_screen::HelpScreen;
 pub use info_dialog::{InfoAction, InfoDialogScreen};
 pub use loading_screen::LoadingScreen;
 pub use panic_screen::PanicScreen;
+pub use records_screen::{RecordsAction, RecordsScreen};
 pub use session_detail_screen::{SessionDetailAction, SessionDetailScreen};
 pub use session_details_dialog::SessionDetailsDialog;
 pub use session_failure_screen::SessionFailureScreen;

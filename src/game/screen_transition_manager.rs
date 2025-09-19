@@ -15,7 +15,7 @@ impl ScreenTransitionManager {
             (ScreenType::Title, ScreenType::Typing) => {
                 Self::handle_start_game_transition()?;
             }
-            (ScreenType::Title, ScreenType::History) => {}
+            (ScreenType::Title, ScreenType::Records) => {}
             (ScreenType::Title, ScreenType::Analytics) => {}
             (ScreenType::Title, ScreenType::TotalSummary) => {}
             (ScreenType::Title, ScreenType::VersionCheck) => {}
@@ -51,7 +51,7 @@ impl ScreenTransitionManager {
                 // Reset session when going back to title
                 Self::handle_session_reset()?;
             }
-            (ScreenType::SessionSummary, ScreenType::History) => {}
+            (ScreenType::SessionSummary, ScreenType::Records) => {}
             (ScreenType::SessionSummary, ScreenType::Analytics) => {}
             (ScreenType::SessionSummary, ScreenType::SessionSharing) => {}
             (ScreenType::SessionSummary, ScreenType::TotalSummary) => {}
@@ -73,17 +73,17 @@ impl ScreenTransitionManager {
             }
             (ScreenType::SessionFailure, ScreenType::TotalSummary) => {}
 
-            // From History
-            (ScreenType::History, ScreenType::Title) => {}
-            (ScreenType::History, ScreenType::SessionDetail) => {}
-            (ScreenType::History, ScreenType::TotalSummary) => {}
+            // From Records
+            (ScreenType::Records, ScreenType::Title) => {}
+            (ScreenType::Records, ScreenType::SessionDetail) => {}
+            (ScreenType::Records, ScreenType::TotalSummary) => {}
 
             // From Analytics
             (ScreenType::Analytics, ScreenType::Title) => {}
             (ScreenType::Analytics, ScreenType::TotalSummary) => {}
 
             // From SessionDetail
-            (ScreenType::SessionDetail, ScreenType::History) => {}
+            (ScreenType::SessionDetail, ScreenType::Records) => {}
             (ScreenType::SessionDetail, ScreenType::TotalSummary) => {}
 
             // From Sharing
