@@ -20,10 +20,13 @@ extension Drawable {
 
 # text_to_type
 protocol Drawable {
+// Draw the object
 func draw()
+// Get the area
 var area: Double { get }
 }
 extension Drawable {
+// Default implementation
 func description() -> String {
 return "A drawable object with area \(area)"
 }
@@ -31,15 +34,15 @@ return "A drawable object with area \(area)"
 
 # text_to_display
 protocol Drawable {↵
-    // Draw the object
+    // Draw the object↵
     func draw()↵
     
-    // Get the area
+    // Get the area↵
     var area: Double { get }↵
 }↵
 
 extension Drawable {↵
-    // Default implementation
+    // Default implementation↵
     func description() -> String {↵
         return "A drawable object with area \(area)"↵
     }↵

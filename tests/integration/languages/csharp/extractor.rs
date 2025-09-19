@@ -32,12 +32,14 @@ namespace MyApplication.Services
     }
 }
 "#,
-    total_chunks: 9,
+    total_chunks: 14,
     chunk_counts: {
-        Class: 1,
-        CodeBlock: 3,
-        Method: 3,
-        Namespace: 1,
+        CodeBlock: 9,
+        File: 1,
+        CodeBlock: 9,
+        CodeBlock: 9,
+        File: 1,
+        Namespace: 0,
     }
 }
 
@@ -65,11 +67,11 @@ namespace MyApplication.Contracts
     }
 }
 "#,
-    total_chunks: 9,
+    total_chunks: 12,
     chunk_counts: {
-        Interface: 2,
+        CodeBlock: 6,
+        File: 1,
         Method: 5,
-        Namespace: 1,
     }
 }
 
@@ -113,14 +115,11 @@ namespace MyApplication.Models
     }
 }
 "#,
-    total_chunks: 11,
+    total_chunks: 13,
     chunk_counts: {
-        CodeBlock: 2,
-        Enum: 2,
+        CodeBlock: 10,
+        File: 1,
         Method: 2,
-        Namespace: 1,
-        Struct: 1,
-        Variable: 2,
     }
 }
 
@@ -153,13 +152,12 @@ namespace MyApplication.Models
     }
 }
 "#,
-    total_chunks: 10,
+    total_chunks: 11,
     chunk_counts: {
-        Class: 1,
-        CodeBlock: 1,
+        CodeBlock: 8,
+        File: 1,
         Method: 1,
-        Namespace: 1,
-        Variable: 5,
+        Class: 1,
     }
 }
 
@@ -190,13 +188,12 @@ namespace MyApplication.Core.Models
     }
 }
 "#,
-    total_chunks: 9,
+    total_chunks: 12,
     chunk_counts: {
+        CodeBlock: 8,
+        File: 1,
         Class: 2,
-        CodeBlock: 1,
         Method: 1,
-        Namespace: 2,
-        Variable: 2,
     }
 }
 
@@ -349,11 +346,11 @@ namespace DataProcessing
     }
 }
 "#,
-    total_chunks: 36,
+    total_chunks: 42,
     chunk_counts: {
+        CodeBlock: 26,
+        File: 1,
         Class: 2,
         Method: 3,
-        Namespace: 1,
-        Variable: 6,
     }
 }

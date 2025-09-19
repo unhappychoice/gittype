@@ -20,9 +20,19 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "String greet(String name) {\n  return 'Hello, $name!';\n}",
       "end_line": 4,
       "language": "dart",
-      "name": "greet",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 2
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "int calculateSum",
+      "end_line": 6,
+      "language": "dart",
+      "name": "name",
+      "original_indentation": 4,
+      "start_line": 6
     },
     {
       "chunk_type": "Function",
@@ -30,9 +40,19 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "int calculateSum(int a, int b) {\n  return a + b;\n}",
       "end_line": 8,
       "language": "dart",
-      "name": "calculateSum",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 6
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "void processData",
+      "end_line": 10,
+      "language": "dart",
+      "name": "name",
+      "original_indentation": 5,
+      "start_line": 10
     },
     {
       "chunk_type": "Function",
@@ -40,12 +60,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "void processData(List<String> data) {\n  data.forEach(print);\n}",
       "end_line": 12,
       "language": "dart",
-      "name": "processData",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 10
     }
   ],
   "source_code": "\nString greet(String name) {\n  return 'Hello, $name!';\n}\n\nint calculateSum(int a, int b) {\n  return a + b;\n}\n\nvoid processData(List<String> data) {\n  data.forEach(print);\n}\n",
   "test_name": "test_dart_function_extraction",
-  "total_chunks": 4
+  "total_chunks": 6
 }

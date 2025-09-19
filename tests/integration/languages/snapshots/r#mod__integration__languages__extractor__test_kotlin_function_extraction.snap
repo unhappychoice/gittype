@@ -20,7 +20,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "fun greet(name: String): String {\n    return \"Hello, $name!\"\n}",
       "end_line": 4,
       "language": "kotlin",
-      "name": "greet",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -30,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "fun calculateSum(a: Int, b: Int): Int {\n    return a + b\n}",
       "end_line": 8,
       "language": "kotlin",
-      "name": "calculateSum",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 6
     },
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "fun processData(data: List<String>) {\n    data.forEach { println(it) }\n}",
       "end_line": 12,
       "language": "kotlin",
-      "name": "processData",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 10
     }

@@ -15,22 +15,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "Struct",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "type Person struct {\n    Name string\n    Age  int\n}",
       "end_line": 6,
       "language": "go",
-      "name": "Person",
+      "name": "struct",
       "original_indentation": 5,
       "start_line": 3
     },
     {
-      "chunk_type": "Struct",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "type Address struct {\n    Street string\n    City   string\n    Zip    string\n}",
       "end_line": 12,
       "language": "go",
-      "name": "Address",
+      "name": "struct",
       "original_indentation": 5,
       "start_line": 8
     },
@@ -40,9 +40,19 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "func (p Person) GetName() string {\n    return p.Name\n}",
       "end_line": 16,
       "language": "go",
-      "name": "GetName",
+      "name": "method",
       "original_indentation": 0,
       "start_line": 14
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "func (a *Address) GetFullAddress",
+      "end_line": 18,
+      "language": "go",
+      "name": "name",
+      "original_indentation": 18,
+      "start_line": 18
     },
     {
       "chunk_type": "Method",
@@ -50,12 +60,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "func (a *Address) GetFullAddress() string {\n    return a.Street + \", \" + a.City + \" \" + a.Zip\n}",
       "end_line": 20,
       "language": "go",
-      "name": "GetFullAddress",
+      "name": "method",
       "original_indentation": 0,
       "start_line": 18
     }
   ],
   "source_code": "package main\n\ntype Person struct {\n    Name string\n    Age  int\n}\n\ntype Address struct {\n    Street string\n    City   string\n    Zip    string\n}\n\nfunc (p Person) GetName() string {\n    return p.Name\n}\n\nfunc (a *Address) GetFullAddress() string {\n    return a.Street + \", \" + a.City + \" \" + a.Zip\n}\n",
   "test_name": "test_go_struct_extraction",
-  "total_chunks": 5
+  "total_chunks": 6
 }

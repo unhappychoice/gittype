@@ -15,17 +15,18 @@ def value(self, val):
 # text_to_type
 @property
 def value(self):
+# Return the stored value
 return self._value
 @value.setter
 def value(self, val):
-self._value = val
+self._value = val  # Store the value
 
 # text_to_display
 @property↵
 def value(self):↵
-    # Return the stored value
+    # Return the stored value↵
     return self._value↵
 
 @value.setter↵
 def value(self, val):↵
-    self._value = val↵  # Store the value
+    self._value = val  # Store the value↵

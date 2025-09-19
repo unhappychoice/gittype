@@ -48,7 +48,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
           4555
         ]
       ],
-      "content": "\nimport 'dart:async';\nimport 'dart:math';\n\nclass ProcessedItem {\n  final int id;\n  final int originalValue;\n  final int transformedValue;\n  final String category;\n  final DateTime timestamp;\n  final Map<String, dynamic> metadata;\n\n  ProcessedItem({\n    required this.id,\n    required this.originalValue,\n    required this.transformedValue,\n    required this.category,\n    required this.timestamp,\n    required this.metadata,\n  });\n}\n\nclass DataProcessor {\n  final Map<String, ProcessedItem> _cache = {};\n  final List<ProcessedItem> _processingLog = [];\n  final int _threshold;\n\n  DataProcessor(this._threshold);\n\n  Future<List<ProcessedItem>> processComplexData(List<int> input) async {\n    final results = <ProcessedItem>[];\n    var processedCount = 0;\n\n    // Main processing algorithm - extractable middle chunk\n    for (var i = 0; i < input.length; i++) {\n      final value = input[i];\n      final cacheKey = 'item_${i}_$value';\n\n      if (_cache.containsKey(cacheKey)) {\n        final cachedItem = _cache[cacheKey]!;\n        results.add(cachedItem);\n        continue;\n      }\n\n      late ProcessedItem processedItem;\n      if (value > _threshold) {\n        final transformedValue = value * 2;\n        final category = transformedValue > _threshold * 3 ? 'HIGH' : 'MEDIUM';\n\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: transformedValue,\n          category: category,\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'multiplier': 2,\n            'processor': 'enhanced',\n          },\n        );\n\n        processedCount++;\n\n        // Additional processing for high values\n        if (transformedValue > 100) {\n          processedItem = ProcessedItem(\n            id: processedItem.id,\n            originalValue: processedItem.originalValue,\n            transformedValue: processedItem.transformedValue + 10,\n            category: processedItem.category,\n            timestamp: processedItem.timestamp,\n            metadata: {...processedItem.metadata, 'bonus': true},\n          );\n        }\n      } else if (value > 0) {\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: value + _threshold,\n          category: 'LOW',\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'adjusted': true,\n            'processor': 'basic',\n          },\n        );\n      } else {\n        continue; // skip negative values\n      }\n\n      _cache[cacheKey] = processedItem;\n      _processingLog.add(processedItem);\n      results.add(processedItem);\n\n      // Simulate async work\n      if (i % 10 == 0) {\n        await Future.delayed(Duration(milliseconds: 1));\n      }\n    }\n\n    // Finalization logic\n    if (processedCount > 0) {\n      final average = results.map((r) => r.transformedValue).reduce((a, b) => a + b) / results.length;\n      print('Processing complete. Average: ${average.toStringAsFixed(2)}');\n\n      // Add processing statistics\n      for (final item in results) {\n        item.metadata['processing_average'] = average;\n      }\n    }\n\n    return results;\n  }\n\n  Map<String, dynamic> analyzePatterns(List<ProcessedItem> items) {\n    final analysis = <String, dynamic>{};\n    final categoryGroups = <String, List<ProcessedItem>>{};\n\n    // Group items by category\n    for (final item in items) {\n      categoryGroups.putIfAbsent(item.category, () => []).add(item);\n    }\n\n    // Pattern analysis logic - extractable middle chunk\n    for (final entry in categoryGroups.entries) {\n      final category = entry.key;\n      final categoryItems = entry.value;\n\n      final values = categoryItems.map((i) => i.transformedValue);\n      final categoryAnalysis = {\n        'count': categoryItems.length,\n        'percentage': (categoryItems.length / items.length) * 100,\n        'avg_value': values.reduce((a, b) => a + b) / values.length,\n        'min_value': values.reduce(min),\n        'max_value': values.reduce(max),\n      };\n\n      // Time-based analysis\n      final now = DateTime.now();\n      final recentItems = categoryItems.where((i) =>\n        now.difference(i.timestamp).inMinutes < 1\n      ).toList();\n\n      if (recentItems.isNotEmpty) {\n        final recentValues = recentItems.map((i) => i.transformedValue);\n        categoryAnalysis['recent_count'] = recentItems.length;\n        categoryAnalysis['recent_avg'] = recentValues.reduce((a, b) => a + b) / recentValues.length;\n      }\n\n      // High-value analysis\n      final highValueItems = categoryItems.where((i) => i.transformedValue > 1000);\n      if (highValueItems.isNotEmpty) {\n        categoryAnalysis['high_value_count'] = highValueItems.length;\n      }\n\n      analysis[category] = categoryAnalysis;\n    }\n\n    analysis['total_items'] = items.length;\n    analysis['processing_time'] = DateTime.now().toIso8601String();\n\n    return analysis;\n  }\n}\n",
+      "content": "\nimport 'dart:async';\nimport 'dart:math';\n\nclass ProcessedItem {\n  final int id;\n  final int originalValue;\n  final int transformedValue;\n  final String category;\n  final DateTime timestamp;\n  final Map<String, dynamic> metadata;\n\n  ProcessedItem({\n    required this.id,\n    required this.originalValue,\n    required this.transformedValue,\n    required this.category,\n    required this.timestamp,\n    required this.metadata,\n  });\n}\n\nclass DataProcessor {\n  final Map<String, ProcessedItem> _cache = {};\n  final List<ProcessedItem> _processingLog = [];\n  final int _threshold;\n\n  DataProcessor(this._threshold);\n\n  Future<List<ProcessedItem>> processComplexData(List<int> input) async {\n    final results = <ProcessedItem>[];\n    var processedCount = 0;\n\n    // Main processing algorithm - extractable middle chunk\n    for (var i = 0; i < input.length; i++) {\n      final value = input[i];\n      final cacheKey = 'item_${i}_$value';\n\n      if (_cache.containsKey(cacheKey)) {\n        final cachedItem = _cache[cacheKey]!;\n        results.add(cachedItem);\n        continue;\n      }\n\n      late ProcessedItem processedItem;\n      if (value > _threshold) {\n        final transformedValue = value * 2;\n        final category = transformedValue > _threshold * 3 ? 'HIGH' : 'MEDIUM';\n\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: transformedValue,\n          category: category,\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'multiplier': 0,\n            'processor': 'enhanced',\n          },\n        );\n\n        processedCount++;\n\n        // Additional processing for high values\n        if (transformedValue > 100) {\n          processedItem = ProcessedItem(\n            id: processedItem.id,\n            originalValue: processedItem.originalValue,\n            transformedValue: processedItem.transformedValue + 10,\n            category: processedItem.category,\n            timestamp: processedItem.timestamp,\n            metadata: {...processedItem.metadata, 'bonus': true},\n          );\n        }\n      } else if (value > 0) {\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: value + _threshold,\n          category: 'LOW',\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'adjusted': true,\n            'processor': 'basic',\n          },\n        );\n      } else {\n        continue; // skip negative values\n      }\n\n      _cache[cacheKey] = processedItem;\n      _processingLog.add(processedItem);\n      results.add(processedItem);\n\n      // Simulate async work\n      if (i % 10 == 0) {\n        await Future.delayed(Duration(milliseconds: 1));\n      }\n    }\n\n    // Finalization logic\n    if (processedCount > 0) {\n      final average = results.map((r) => r.transformedValue).reduce((a, b) => a + b) / results.length;\n      print('Processing complete. Average: ${average.toStringAsFixed(2)}');\n\n      // Add processing statistics\n      for (final item in results) {\n        item.metadata['processing_average'] = average;\n      }\n    }\n\n    return results;\n  }\n\n  Map<String, dynamic> analyzePatterns(List<ProcessedItem> items) {\n    final analysis = <String, dynamic>{};\n    final categoryGroups = <String, List<ProcessedItem>>{};\n\n    // Group items by category\n    for (final item in items) {\n      categoryGroups.putIfAbsent(item.category, () => []).add(item);\n    }\n\n    // Pattern analysis logic - extractable middle chunk\n    for (final entry in categoryGroups.entries) {\n      final category = entry.key;\n      final categoryItems = entry.value;\n\n      final values = categoryItems.map((i) => i.transformedValue);\n      final categoryAnalysis = {\n        'count': categoryItems.length,\n        'percentage': (categoryItems.length / items.length) * 100,\n        'avg_value': values.reduce((a, b) => a + b) / values.length,\n        'min_value': values.reduce(min),\n        'max_value': values.reduce(max),\n      };\n\n      // Time-based analysis\n      final now = DateTime.now();\n      final recentItems = categoryItems.where((i) =>\n        now.difference(i.timestamp).inMinutes < 1\n      ).toList();\n\n      if (recentItems.isNotEmpty) {\n        final recentValues = recentItems.map((i) => i.transformedValue);\n        categoryAnalysis['recent_count'] = recentItems.length;\n        categoryAnalysis['recent_avg'] = recentValues.reduce((a, b) => a + b) / recentValues.length;\n      }\n\n      // High-value analysis\n      final highValueItems = categoryItems.where((i) => i.transformedValue > 1000);\n      if (highValueItems.isNotEmpty) {\n        categoryAnalysis['high_value_count'] = highValueItems.length;\n      }\n\n      analysis[category] = categoryAnalysis;\n    }\n\n    analysis['total_items'] = items.length;\n    analysis['processing_time'] = DateTime.now().toIso8601String();\n\n    return analysis;\n  }\n}\n",
       "end_line": 166,
       "language": "dart",
       "name": "entire_file",
@@ -56,14 +56,34 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "class ProcessedItem",
+      "end_line": 5,
+      "language": "dart",
+      "name": "name",
+      "original_indentation": 6,
+      "start_line": 5
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "class ProcessedItem {\n  final int id;\n  final int originalValue;\n  final int transformedValue;\n  final String category;\n  final DateTime timestamp;\n  final Map<String, dynamic> metadata;\n\n  ProcessedItem({\n    required this.id,\n    required this.originalValue,\n    required this.transformedValue,\n    required this.category,\n    required this.timestamp,\n    required this.metadata,\n  });\n}",
       "end_line": 21,
       "language": "dart",
-      "name": "ProcessedItem",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 5
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "class DataProcessor",
+      "end_line": 23,
+      "language": "dart",
+      "name": "name",
+      "original_indentation": 6,
+      "start_line": 23
     },
     {
       "chunk_type": "Class",
@@ -109,70 +129,57 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
           4121
         ]
       ],
-      "content": "class DataProcessor {\n  final Map<String, ProcessedItem> _cache = {};\n  final List<ProcessedItem> _processingLog = [];\n  final int _threshold;\n\n  DataProcessor(this._threshold);\n\n  Future<List<ProcessedItem>> processComplexData(List<int> input) async {\n    final results = <ProcessedItem>[];\n    var processedCount = 0;\n\n    // Main processing algorithm - extractable middle chunk\n    for (var i = 0; i < input.length; i++) {\n      final value = input[i];\n      final cacheKey = 'item_${i}_$value';\n\n      if (_cache.containsKey(cacheKey)) {\n        final cachedItem = _cache[cacheKey]!;\n        results.add(cachedItem);\n        continue;\n      }\n\n      late ProcessedItem processedItem;\n      if (value > _threshold) {\n        final transformedValue = value * 2;\n        final category = transformedValue > _threshold * 3 ? 'HIGH' : 'MEDIUM';\n\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: transformedValue,\n          category: category,\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'multiplier': 2,\n            'processor': 'enhanced',\n          },\n        );\n\n        processedCount++;\n\n        // Additional processing for high values\n        if (transformedValue > 100) {\n          processedItem = ProcessedItem(\n            id: processedItem.id,\n            originalValue: processedItem.originalValue,\n            transformedValue: processedItem.transformedValue + 10,\n            category: processedItem.category,\n            timestamp: processedItem.timestamp,\n            metadata: {...processedItem.metadata, 'bonus': true},\n          );\n        }\n      } else if (value > 0) {\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: value + _threshold,\n          category: 'LOW',\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'adjusted': true,\n            'processor': 'basic',\n          },\n        );\n      } else {\n        continue; // skip negative values\n      }\n\n      _cache[cacheKey] = processedItem;\n      _processingLog.add(processedItem);\n      results.add(processedItem);\n\n      // Simulate async work\n      if (i % 10 == 0) {\n        await Future.delayed(Duration(milliseconds: 1));\n      }\n    }\n\n    // Finalization logic\n    if (processedCount > 0) {\n      final average = results.map((r) => r.transformedValue).reduce((a, b) => a + b) / results.length;\n      print('Processing complete. Average: ${average.toStringAsFixed(2)}');\n\n      // Add processing statistics\n      for (final item in results) {\n        item.metadata['processing_average'] = average;\n      }\n    }\n\n    return results;\n  }\n\n  Map<String, dynamic> analyzePatterns(List<ProcessedItem> items) {\n    final analysis = <String, dynamic>{};\n    final categoryGroups = <String, List<ProcessedItem>>{};\n\n    // Group items by category\n    for (final item in items) {\n      categoryGroups.putIfAbsent(item.category, () => []).add(item);\n    }\n\n    // Pattern analysis logic - extractable middle chunk\n    for (final entry in categoryGroups.entries) {\n      final category = entry.key;\n      final categoryItems = entry.value;\n\n      final values = categoryItems.map((i) => i.transformedValue);\n      final categoryAnalysis = {\n        'count': categoryItems.length,\n        'percentage': (categoryItems.length / items.length) * 100,\n        'avg_value': values.reduce((a, b) => a + b) / values.length,\n        'min_value': values.reduce(min),\n        'max_value': values.reduce(max),\n      };\n\n      // Time-based analysis\n      final now = DateTime.now();\n      final recentItems = categoryItems.where((i) =>\n        now.difference(i.timestamp).inMinutes < 1\n      ).toList();\n\n      if (recentItems.isNotEmpty) {\n        final recentValues = recentItems.map((i) => i.transformedValue);\n        categoryAnalysis['recent_count'] = recentItems.length;\n        categoryAnalysis['recent_avg'] = recentValues.reduce((a, b) => a + b) / recentValues.length;\n      }\n\n      // High-value analysis\n      final highValueItems = categoryItems.where((i) => i.transformedValue > 1000);\n      if (highValueItems.isNotEmpty) {\n        categoryAnalysis['high_value_count'] = highValueItems.length;\n      }\n\n      analysis[category] = categoryAnalysis;\n    }\n\n    analysis['total_items'] = items.length;\n    analysis['processing_time'] = DateTime.now().toIso8601String();\n\n    return analysis;\n  }\n}",
+      "content": "class DataProcessor {\n  final Map<String, ProcessedItem> _cache = {};\n  final List<ProcessedItem> _processingLog = [];\n  final int _threshold;\n\n  DataProcessor(this._threshold);\n\n  Future<List<ProcessedItem>> processComplexData(List<int> input) async {\n    final results = <ProcessedItem>[];\n    var processedCount = 0;\n\n    // Main processing algorithm - extractable middle chunk\n    for (var i = 0; i < input.length; i++) {\n      final value = input[i];\n      final cacheKey = 'item_${i}_$value';\n\n      if (_cache.containsKey(cacheKey)) {\n        final cachedItem = _cache[cacheKey]!;\n        results.add(cachedItem);\n        continue;\n      }\n\n      late ProcessedItem processedItem;\n      if (value > _threshold) {\n        final transformedValue = value * 2;\n        final category = transformedValue > _threshold * 3 ? 'HIGH' : 'MEDIUM';\n\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: transformedValue,\n          category: category,\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'multiplier': 0,\n            'processor': 'enhanced',\n          },\n        );\n\n        processedCount++;\n\n        // Additional processing for high values\n        if (transformedValue > 100) {\n          processedItem = ProcessedItem(\n            id: processedItem.id,\n            originalValue: processedItem.originalValue,\n            transformedValue: processedItem.transformedValue + 10,\n            category: processedItem.category,\n            timestamp: processedItem.timestamp,\n            metadata: {...processedItem.metadata, 'bonus': true},\n          );\n        }\n      } else if (value > 0) {\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: value + _threshold,\n          category: 'LOW',\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'adjusted': true,\n            'processor': 'basic',\n          },\n        );\n      } else {\n        continue; // skip negative values\n      }\n\n      _cache[cacheKey] = processedItem;\n      _processingLog.add(processedItem);\n      results.add(processedItem);\n\n      // Simulate async work\n      if (i % 10 == 0) {\n        await Future.delayed(Duration(milliseconds: 1));\n      }\n    }\n\n    // Finalization logic\n    if (processedCount > 0) {\n      final average = results.map((r) => r.transformedValue).reduce((a, b) => a + b) / results.length;\n      print('Processing complete. Average: ${average.toStringAsFixed(2)}');\n\n      // Add processing statistics\n      for (final item in results) {\n        item.metadata['processing_average'] = average;\n      }\n    }\n\n    return results;\n  }\n\n  Map<String, dynamic> analyzePatterns(List<ProcessedItem> items) {\n    final analysis = <String, dynamic>{};\n    final categoryGroups = <String, List<ProcessedItem>>{};\n\n    // Group items by category\n    for (final item in items) {\n      categoryGroups.putIfAbsent(item.category, () => []).add(item);\n    }\n\n    // Pattern analysis logic - extractable middle chunk\n    for (final entry in categoryGroups.entries) {\n      final category = entry.key;\n      final categoryItems = entry.value;\n\n      final values = categoryItems.map((i) => i.transformedValue);\n      final categoryAnalysis = {\n        'count': categoryItems.length,\n        'percentage': (categoryItems.length / items.length) * 100,\n        'avg_value': values.reduce((a, b) => a + b) / values.length,\n        'min_value': values.reduce(min),\n        'max_value': values.reduce(max),\n      };\n\n      // Time-based analysis\n      final now = DateTime.now();\n      final recentItems = categoryItems.where((i) =>\n        now.difference(i.timestamp).inMinutes < 1\n      ).toList();\n\n      if (recentItems.isNotEmpty) {\n        final recentValues = recentItems.map((i) => i.transformedValue);\n        categoryAnalysis['recent_count'] = recentItems.length;\n        categoryAnalysis['recent_avg'] = recentValues.reduce((a, b) => a + b) / recentValues.length;\n      }\n\n      // High-value analysis\n      final highValueItems = categoryItems.where((i) => i.transformedValue > 1000);\n      if (highValueItems.isNotEmpty) {\n        categoryAnalysis['high_value_count'] = highValueItems.length;\n      }\n\n      analysis[category] = categoryAnalysis;\n    }\n\n    analysis['total_items'] = items.length;\n    analysis['processing_time'] = DateTime.now().toIso8601String();\n\n    return analysis;\n  }\n}",
       "end_line": 166,
       "language": "dart",
-      "name": "DataProcessor",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 23
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "Method",
       "comment_ranges": [],
       "content": "  Future<List<ProcessedItem>> processComplexData(List<int> input)",
       "end_line": 30,
       "language": "dart",
-      "name": "processComplexData",
+      "name": "method",
       "original_indentation": 2,
       "start_line": 30
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "    final results = <ProcessedItem>[];",
       "end_line": 31,
       "language": "dart",
-      "name": "results",
+      "name": "variable",
       "original_indentation": 4,
       "start_line": 31
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "    var processedCount = 0;",
       "end_line": 32,
       "language": "dart",
-      "name": "processedCount",
+      "name": "variable",
       "original_indentation": 4,
       "start_line": 32
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "    for (var i = 0;",
       "end_line": 35,
       "language": "dart",
-      "name": "i",
+      "name": "variable",
       "original_indentation": 9,
       "start_line": 35
     },
     {
       "chunk_type": "Loop",
-      "comment_ranges": [
-        [
-          844,
-          884
-        ],
-        [
-          1708,
-          1731
-        ],
-        [
-          1863,
-          1885
-        ]
-      ],
-      "content": "    for (var i = 0; i < input.length; i++) {\n      final value = input[i];\n      final cacheKey = 'item_${i}_$value';\n\n      if (_cache.containsKey(cacheKey)) {\n        final cachedItem = _cache[cacheKey]!;\n        results.add(cachedItem);\n        continue;\n      }\n\n      late ProcessedItem processedItem;\n      if (value > _threshold) {\n        final transformedValue = value * 2;\n        final category = transformedValue > _threshold * 3 ? 'HIGH' : 'MEDIUM';\n\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: transformedValue,\n          category: category,\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'multiplier': 2,\n            'processor': 'enhanced',\n          },\n        );\n\n        processedCount++;\n\n        // Additional processing for high values\n        if (transformedValue > 100) {\n          processedItem = ProcessedItem(\n            id: processedItem.id,\n            originalValue: processedItem.originalValue,\n            transformedValue: processedItem.transformedValue + 10,\n            category: processedItem.category,\n            timestamp: processedItem.timestamp,\n            metadata: {...processedItem.metadata, 'bonus': true},\n          );\n        }\n      } else if (value > 0) {\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: value + _threshold,\n          category: 'LOW',\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'adjusted': true,\n            'processor': 'basic',\n          },\n        );\n      } else {\n        continue; // skip negative values\n      }\n\n      _cache[cacheKey] = processedItem;\n      _processingLog.add(processedItem);\n      results.add(processedItem);\n\n      // Simulate async work\n      if (i % 10 == 0) {\n        await Future.delayed(Duration(milliseconds: 1));\n      }\n    }",
+      "comment_ranges": [],
+      "content": "    for (var i = 0; i < input.length; i++) {\n      final value = input[i];\n      final cacheKey = 'item_${i}_$value';\n\n      if (_cache.containsKey(cacheKey)) {\n        final cachedItem = _cache[cacheKey]!;\n        results.add(cachedItem);\n        continue;\n      }\n\n      late ProcessedItem processedItem;\n      if (value > _threshold) {\n        final transformedValue = value * 2;\n        final category = transformedValue > _threshold * 3 ? 'HIGH' : 'MEDIUM';\n\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: transformedValue,\n          category: category,\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'multiplier': 0,\n            'processor': 'enhanced',\n          },\n        );\n\n        processedCount++;\n\n        // Additional processing for high values\n        if (transformedValue > 100) {\n          processedItem = ProcessedItem(\n            id: processedItem.id,\n            originalValue: processedItem.originalValue,\n            transformedValue: processedItem.transformedValue + 10,\n            category: processedItem.category,\n            timestamp: processedItem.timestamp,\n            metadata: {...processedItem.metadata, 'bonus': true},\n          );\n        }\n      } else if (value > 0) {\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: value + _threshold,\n          category: 'LOW',\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'adjusted': true,\n            'processor': 'basic',\n          },\n        );\n      } else {\n        continue; // skip negative values\n      }\n\n      _cache[cacheKey] = processedItem;\n      _processingLog.add(processedItem);\n      results.add(processedItem);\n\n      // Simulate async work\n      if (i % 10 == 0) {\n        await Future.delayed(Duration(milliseconds: 1));\n      }\n    }",
       "end_line": 101,
       "language": "dart",
       "name": "for_loop",
@@ -180,22 +187,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 35
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "      final value = input[i];",
       "end_line": 36,
       "language": "dart",
-      "name": "value",
+      "name": "variable",
       "original_indentation": 6,
       "start_line": 36
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "      final cacheKey = 'item_${i}_$value';",
       "end_line": 37,
       "language": "dart",
-      "name": "cacheKey",
+      "name": "variable",
       "original_indentation": 6,
       "start_line": 37
     },
@@ -210,34 +217,29 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 39
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "        final cachedItem = _cache[cacheKey]!;",
       "end_line": 40,
       "language": "dart",
-      "name": "cachedItem",
+      "name": "variable",
       "original_indentation": 8,
       "start_line": 40
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "      late ProcessedItem processedItem;",
       "end_line": 45,
       "language": "dart",
-      "name": "processedItem",
+      "name": "variable",
       "original_indentation": 6,
       "start_line": 45
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [
-        [
-          537,
-          577
-        ]
-      ],
-      "content": "      if (value > _threshold) {\n        final transformedValue = value * 2;\n        final category = transformedValue > _threshold * 3 ? 'HIGH' : 'MEDIUM';\n\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: transformedValue,\n          category: category,\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'multiplier': 2,\n            'processor': 'enhanced',\n          },\n        );\n\n        processedCount++;\n\n        // Additional processing for high values\n        if (transformedValue > 100) {\n          processedItem = ProcessedItem(\n            id: processedItem.id,\n            originalValue: processedItem.originalValue,\n            transformedValue: processedItem.transformedValue + 10,\n            category: processedItem.category,\n            timestamp: processedItem.timestamp,\n            metadata: {...processedItem.metadata, 'bonus': true},\n          );\n        }\n      }",
+      "comment_ranges": [],
+      "content": "      if (value > _threshold) {\n        final transformedValue = value * 2;\n        final category = transformedValue > _threshold * 3 ? 'HIGH' : 'MEDIUM';\n\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: transformedValue,\n          category: category,\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'multiplier': 0,\n            'processor': 'enhanced',\n          },\n        );\n\n        processedCount++;\n\n        // Additional processing for high values\n        if (transformedValue > 100) {\n          processedItem = ProcessedItem(\n            id: processedItem.id,\n            originalValue: processedItem.originalValue,\n            transformedValue: processedItem.transformedValue + 10,\n            category: processedItem.category,\n            timestamp: processedItem.timestamp,\n            metadata: {...processedItem.metadata, 'bonus': true},\n          );\n        }\n      }",
       "end_line": 76,
       "language": "dart",
       "name": "code_block",
@@ -246,17 +248,8 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [
-        [
-          537,
-          577
-        ],
-        [
-          1401,
-          1424
-        ]
-      ],
-      "content": "      if (value > _threshold) {\n        final transformedValue = value * 2;\n        final category = transformedValue > _threshold * 3 ? 'HIGH' : 'MEDIUM';\n\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: transformedValue,\n          category: category,\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'multiplier': 2,\n            'processor': 'enhanced',\n          },\n        );\n\n        processedCount++;\n\n        // Additional processing for high values\n        if (transformedValue > 100) {\n          processedItem = ProcessedItem(\n            id: processedItem.id,\n            originalValue: processedItem.originalValue,\n            transformedValue: processedItem.transformedValue + 10,\n            category: processedItem.category,\n            timestamp: processedItem.timestamp,\n            metadata: {...processedItem.metadata, 'bonus': true},\n          );\n        }\n      } else if (value > 0) {\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: value + _threshold,\n          category: 'LOW',\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'adjusted': true,\n            'processor': 'basic',\n          },\n        );\n      } else {\n        continue; // skip negative values\n      }",
+      "comment_ranges": [],
+      "content": "      if (value > _threshold) {\n        final transformedValue = value * 2;\n        final category = transformedValue > _threshold * 3 ? 'HIGH' : 'MEDIUM';\n\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: transformedValue,\n          category: category,\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'multiplier': 0,\n            'processor': 'enhanced',\n          },\n        );\n\n        processedCount++;\n\n        // Additional processing for high values\n        if (transformedValue > 100) {\n          processedItem = ProcessedItem(\n            id: processedItem.id,\n            originalValue: processedItem.originalValue,\n            transformedValue: processedItem.transformedValue + 10,\n            category: processedItem.category,\n            timestamp: processedItem.timestamp,\n            metadata: {...processedItem.metadata, 'bonus': true},\n          );\n        }\n      } else if (value > 0) {\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: value + _threshold,\n          category: 'LOW',\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'adjusted': true,\n            'processor': 'basic',\n          },\n        );\n      } else {\n        continue; // skip negative values\n      }",
       "end_line": 91,
       "language": "dart",
       "name": "if_block",
@@ -264,22 +257,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 46
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "        final transformedValue = value * 2;",
       "end_line": 47,
       "language": "dart",
-      "name": "transformedValue",
+      "name": "variable",
       "original_indentation": 8,
       "start_line": 47
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "        final category = transformedValue > _threshold * 3 ? 'HIGH' : 'MEDIUM';",
       "end_line": 48,
       "language": "dart",
-      "name": "category",
+      "name": "variable",
       "original_indentation": 8,
       "start_line": 48
     },
@@ -305,12 +298,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [
-        [
-          404,
-          427
-        ]
-      ],
+      "comment_ranges": [],
       "content": "      } else if (value > 0) {\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: value + _threshold,\n          category: 'LOW',\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'adjusted': true,\n            'processor': 'basic',\n          },\n        );\n      } else {\n        continue; // skip negative values\n      }",
       "end_line": 91,
       "language": "dart",
@@ -320,12 +308,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [
-        [
-          33,
-          56
-        ]
-      ],
+      "comment_ranges": [],
       "content": "      } else {\n        continue; // skip negative values\n      }",
       "end_line": 91,
       "language": "dart",
@@ -345,12 +328,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [
-        [
-          216,
-          244
-        ]
-      ],
+      "comment_ranges": [],
       "content": "    if (processedCount > 0) {\n      final average = results.map((r) => r.transformedValue).reduce((a, b) => a + b) / results.length;\n      print('Processing complete. Average: ${average.toStringAsFixed(2)}');\n\n      // Add processing statistics\n      for (final item in results) {\n        item.metadata['processing_average'] = average;\n      }\n    }",
       "end_line": 112,
       "language": "dart",
@@ -359,12 +337,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 104
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "      final average = results.map((r) => r.transformedValue).reduce((a, b) => a + b) / results.length;",
       "end_line": 105,
       "language": "dart",
-      "name": "average",
+      "name": "variable",
       "original_indentation": 6,
       "start_line": 105
     },
@@ -379,35 +357,18 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 109
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "Method",
       "comment_ranges": [],
       "content": "  Map<String, dynamic> analyzePatterns(List<ProcessedItem> items)",
       "end_line": 117,
       "language": "dart",
-      "name": "analyzePatterns",
+      "name": "method",
       "original_indentation": 2,
       "start_line": 117
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [
-        [
-          175,
-          201
-        ],
-        [
-          314,
-          366
-        ],
-        [
-          866,
-          888
-        ],
-        [
-          1333,
-          1355
-        ]
-      ],
+      "comment_ranges": [],
       "content": "  Map<String, dynamic> analyzePatterns(List<ProcessedItem> items) {\n    final analysis = <String, dynamic>{};\n    final categoryGroups = <String, List<ProcessedItem>>{};\n\n    // Group items by category\n    for (final item in items) {\n      categoryGroups.putIfAbsent(item.category, () => []).add(item);\n    }\n\n    // Pattern analysis logic - extractable middle chunk\n    for (final entry in categoryGroups.entries) {\n      final category = entry.key;\n      final categoryItems = entry.value;\n\n      final values = categoryItems.map((i) => i.transformedValue);\n      final categoryAnalysis = {\n        'count': categoryItems.length,\n        'percentage': (categoryItems.length / items.length) * 100,\n        'avg_value': values.reduce((a, b) => a + b) / values.length,\n        'min_value': values.reduce(min),\n        'max_value': values.reduce(max),\n      };\n\n      // Time-based analysis\n      final now = DateTime.now();\n      final recentItems = categoryItems.where((i) =>\n        now.difference(i.timestamp).inMinutes < 1\n      ).toList();\n\n      if (recentItems.isNotEmpty) {\n        final recentValues = recentItems.map((i) => i.transformedValue);\n        categoryAnalysis['recent_count'] = recentItems.length;\n        categoryAnalysis['recent_avg'] = recentValues.reduce((a, b) => a + b) / recentValues.length;\n      }\n\n      // High-value analysis\n      final highValueItems = categoryItems.where((i) => i.transformedValue > 1000);\n      if (highValueItems.isNotEmpty) {\n        categoryAnalysis['high_value_count'] = highValueItems.length;\n      }\n\n      analysis[category] = categoryAnalysis;\n    }\n\n    analysis['total_items'] = items.length;\n    analysis['processing_time'] = DateTime.now().toIso8601String();\n\n    return analysis;\n  }",
       "end_line": 165,
       "language": "dart",
@@ -416,22 +377,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 117
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "    final analysis = <String, dynamic>{};",
       "end_line": 118,
       "language": "dart",
-      "name": "analysis",
+      "name": "variable",
       "original_indentation": 4,
       "start_line": 118
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "    final categoryGroups = <String, List<ProcessedItem>>{};",
       "end_line": 119,
       "language": "dart",
-      "name": "categoryGroups",
+      "name": "variable",
       "original_indentation": 4,
       "start_line": 119
     },
@@ -447,16 +408,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Loop",
-      "comment_ranges": [
-        [
-          499,
-          521
-        ],
-        [
-          966,
-          988
-        ]
-      ],
+      "comment_ranges": [],
       "content": "    for (final entry in categoryGroups.entries) {\n      final category = entry.key;\n      final categoryItems = entry.value;\n\n      final values = categoryItems.map((i) => i.transformedValue);\n      final categoryAnalysis = {\n        'count': categoryItems.length,\n        'percentage': (categoryItems.length / items.length) * 100,\n        'avg_value': values.reduce((a, b) => a + b) / values.length,\n        'min_value': values.reduce(min),\n        'max_value': values.reduce(max),\n      };\n\n      // Time-based analysis\n      final now = DateTime.now();\n      final recentItems = categoryItems.where((i) =>\n        now.difference(i.timestamp).inMinutes < 1\n      ).toList();\n\n      if (recentItems.isNotEmpty) {\n        final recentValues = recentItems.map((i) => i.transformedValue);\n        categoryAnalysis['recent_count'] = recentItems.length;\n        categoryAnalysis['recent_avg'] = recentValues.reduce((a, b) => a + b) / recentValues.length;\n      }\n\n      // High-value analysis\n      final highValueItems = categoryItems.where((i) => i.transformedValue > 1000);\n      if (highValueItems.isNotEmpty) {\n        categoryAnalysis['high_value_count'] = highValueItems.length;\n      }\n\n      analysis[category] = categoryAnalysis;\n    }",
       "end_line": 159,
       "language": "dart",
@@ -465,62 +417,82 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 127
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "      final category = entry.key;",
       "end_line": 128,
       "language": "dart",
-      "name": "category",
+      "name": "variable",
       "original_indentation": 6,
       "start_line": 128
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "      final categoryItems = entry.value;",
       "end_line": 129,
       "language": "dart",
-      "name": "categoryItems",
+      "name": "variable",
       "original_indentation": 6,
       "start_line": 129
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "      final values = categoryItems.map((i) => i.transformedValue);",
       "end_line": 131,
       "language": "dart",
-      "name": "values",
+      "name": "variable",
       "original_indentation": 6,
       "start_line": 131
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "      final categoryAnalysis",
+      "end_line": 132,
+      "language": "dart",
+      "name": "name",
+      "original_indentation": 12,
+      "start_line": 132
+    },
+    {
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "      final categoryAnalysis = {\n        'count': categoryItems.length,\n        'percentage': (categoryItems.length / items.length) * 100,\n        'avg_value': values.reduce((a, b) => a + b) / values.length,\n        'min_value': values.reduce(min),\n        'max_value': values.reduce(max),\n      };",
       "end_line": 138,
       "language": "dart",
-      "name": "categoryAnalysis",
+      "name": "variable",
       "original_indentation": 6,
       "start_line": 132
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "      final now = DateTime.now();",
       "end_line": 141,
       "language": "dart",
-      "name": "now",
+      "name": "variable",
       "original_indentation": 6,
       "start_line": 141
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "      final recentItems",
+      "end_line": 142,
+      "language": "dart",
+      "name": "name",
+      "original_indentation": 12,
+      "start_line": 142
+    },
+    {
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "      final recentItems = categoryItems.where((i) =>\n        now.difference(i.timestamp).inMinutes < 1\n      ).toList();",
       "end_line": 144,
       "language": "dart",
-      "name": "recentItems",
+      "name": "variable",
       "original_indentation": 6,
       "start_line": 142
     },
@@ -535,22 +507,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 146
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "        final recentValues = recentItems.map((i) => i.transformedValue);",
       "end_line": 147,
       "language": "dart",
-      "name": "recentValues",
+      "name": "variable",
       "original_indentation": 8,
       "start_line": 147
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "      final highValueItems = categoryItems.where((i) => i.transformedValue > 1000);",
       "end_line": 153,
       "language": "dart",
-      "name": "highValueItems",
+      "name": "variable",
       "original_indentation": 6,
       "start_line": 153
     },
@@ -565,7 +537,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 154
     }
   ],
-  "source_code": "\nimport 'dart:async';\nimport 'dart:math';\n\nclass ProcessedItem {\n  final int id;\n  final int originalValue;\n  final int transformedValue;\n  final String category;\n  final DateTime timestamp;\n  final Map<String, dynamic> metadata;\n\n  ProcessedItem({\n    required this.id,\n    required this.originalValue,\n    required this.transformedValue,\n    required this.category,\n    required this.timestamp,\n    required this.metadata,\n  });\n}\n\nclass DataProcessor {\n  final Map<String, ProcessedItem> _cache = {};\n  final List<ProcessedItem> _processingLog = [];\n  final int _threshold;\n\n  DataProcessor(this._threshold);\n\n  Future<List<ProcessedItem>> processComplexData(List<int> input) async {\n    final results = <ProcessedItem>[];\n    var processedCount = 0;\n\n    // Main processing algorithm - extractable middle chunk\n    for (var i = 0; i < input.length; i++) {\n      final value = input[i];\n      final cacheKey = 'item_${i}_$value';\n\n      if (_cache.containsKey(cacheKey)) {\n        final cachedItem = _cache[cacheKey]!;\n        results.add(cachedItem);\n        continue;\n      }\n\n      late ProcessedItem processedItem;\n      if (value > _threshold) {\n        final transformedValue = value * 2;\n        final category = transformedValue > _threshold * 3 ? 'HIGH' : 'MEDIUM';\n\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: transformedValue,\n          category: category,\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'multiplier': 2,\n            'processor': 'enhanced',\n          },\n        );\n\n        processedCount++;\n\n        // Additional processing for high values\n        if (transformedValue > 100) {\n          processedItem = ProcessedItem(\n            id: processedItem.id,\n            originalValue: processedItem.originalValue,\n            transformedValue: processedItem.transformedValue + 10,\n            category: processedItem.category,\n            timestamp: processedItem.timestamp,\n            metadata: {...processedItem.metadata, 'bonus': true},\n          );\n        }\n      } else if (value > 0) {\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: value + _threshold,\n          category: 'LOW',\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'adjusted': true,\n            'processor': 'basic',\n          },\n        );\n      } else {\n        continue; // skip negative values\n      }\n\n      _cache[cacheKey] = processedItem;\n      _processingLog.add(processedItem);\n      results.add(processedItem);\n\n      // Simulate async work\n      if (i % 10 == 0) {\n        await Future.delayed(Duration(milliseconds: 1));\n      }\n    }\n\n    // Finalization logic\n    if (processedCount > 0) {\n      final average = results.map((r) => r.transformedValue).reduce((a, b) => a + b) / results.length;\n      print('Processing complete. Average: ${average.toStringAsFixed(2)}');\n\n      // Add processing statistics\n      for (final item in results) {\n        item.metadata['processing_average'] = average;\n      }\n    }\n\n    return results;\n  }\n\n  Map<String, dynamic> analyzePatterns(List<ProcessedItem> items) {\n    final analysis = <String, dynamic>{};\n    final categoryGroups = <String, List<ProcessedItem>>{};\n\n    // Group items by category\n    for (final item in items) {\n      categoryGroups.putIfAbsent(item.category, () => []).add(item);\n    }\n\n    // Pattern analysis logic - extractable middle chunk\n    for (final entry in categoryGroups.entries) {\n      final category = entry.key;\n      final categoryItems = entry.value;\n\n      final values = categoryItems.map((i) => i.transformedValue);\n      final categoryAnalysis = {\n        'count': categoryItems.length,\n        'percentage': (categoryItems.length / items.length) * 100,\n        'avg_value': values.reduce((a, b) => a + b) / values.length,\n        'min_value': values.reduce(min),\n        'max_value': values.reduce(max),\n      };\n\n      // Time-based analysis\n      final now = DateTime.now();\n      final recentItems = categoryItems.where((i) =>\n        now.difference(i.timestamp).inMinutes < 1\n      ).toList();\n\n      if (recentItems.isNotEmpty) {\n        final recentValues = recentItems.map((i) => i.transformedValue);\n        categoryAnalysis['recent_count'] = recentItems.length;\n        categoryAnalysis['recent_avg'] = recentValues.reduce((a, b) => a + b) / recentValues.length;\n      }\n\n      // High-value analysis\n      final highValueItems = categoryItems.where((i) => i.transformedValue > 1000);\n      if (highValueItems.isNotEmpty) {\n        categoryAnalysis['high_value_count'] = highValueItems.length;\n      }\n\n      analysis[category] = categoryAnalysis;\n    }\n\n    analysis['total_items'] = items.length;\n    analysis['processing_time'] = DateTime.now().toIso8601String();\n\n    return analysis;\n  }\n}\n",
+  "source_code": "\nimport 'dart:async';\nimport 'dart:math';\n\nclass ProcessedItem {\n  final int id;\n  final int originalValue;\n  final int transformedValue;\n  final String category;\n  final DateTime timestamp;\n  final Map<String, dynamic> metadata;\n\n  ProcessedItem({\n    required this.id,\n    required this.originalValue,\n    required this.transformedValue,\n    required this.category,\n    required this.timestamp,\n    required this.metadata,\n  });\n}\n\nclass DataProcessor {\n  final Map<String, ProcessedItem> _cache = {};\n  final List<ProcessedItem> _processingLog = [];\n  final int _threshold;\n\n  DataProcessor(this._threshold);\n\n  Future<List<ProcessedItem>> processComplexData(List<int> input) async {\n    final results = <ProcessedItem>[];\n    var processedCount = 0;\n\n    // Main processing algorithm - extractable middle chunk\n    for (var i = 0; i < input.length; i++) {\n      final value = input[i];\n      final cacheKey = 'item_${i}_$value';\n\n      if (_cache.containsKey(cacheKey)) {\n        final cachedItem = _cache[cacheKey]!;\n        results.add(cachedItem);\n        continue;\n      }\n\n      late ProcessedItem processedItem;\n      if (value > _threshold) {\n        final transformedValue = value * 2;\n        final category = transformedValue > _threshold * 3 ? 'HIGH' : 'MEDIUM';\n\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: transformedValue,\n          category: category,\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'multiplier': 0,\n            'processor': 'enhanced',\n          },\n        );\n\n        processedCount++;\n\n        // Additional processing for high values\n        if (transformedValue > 100) {\n          processedItem = ProcessedItem(\n            id: processedItem.id,\n            originalValue: processedItem.originalValue,\n            transformedValue: processedItem.transformedValue + 10,\n            category: processedItem.category,\n            timestamp: processedItem.timestamp,\n            metadata: {...processedItem.metadata, 'bonus': true},\n          );\n        }\n      } else if (value > 0) {\n        processedItem = ProcessedItem(\n          id: i,\n          originalValue: value,\n          transformedValue: value + _threshold,\n          category: 'LOW',\n          timestamp: DateTime.now(),\n          metadata: {\n            'processed': true,\n            'adjusted': true,\n            'processor': 'basic',\n          },\n        );\n      } else {\n        continue; // skip negative values\n      }\n\n      _cache[cacheKey] = processedItem;\n      _processingLog.add(processedItem);\n      results.add(processedItem);\n\n      // Simulate async work\n      if (i % 10 == 0) {\n        await Future.delayed(Duration(milliseconds: 1));\n      }\n    }\n\n    // Finalization logic\n    if (processedCount > 0) {\n      final average = results.map((r) => r.transformedValue).reduce((a, b) => a + b) / results.length;\n      print('Processing complete. Average: ${average.toStringAsFixed(2)}');\n\n      // Add processing statistics\n      for (final item in results) {\n        item.metadata['processing_average'] = average;\n      }\n    }\n\n    return results;\n  }\n\n  Map<String, dynamic> analyzePatterns(List<ProcessedItem> items) {\n    final analysis = <String, dynamic>{};\n    final categoryGroups = <String, List<ProcessedItem>>{};\n\n    // Group items by category\n    for (final item in items) {\n      categoryGroups.putIfAbsent(item.category, () => []).add(item);\n    }\n\n    // Pattern analysis logic - extractable middle chunk\n    for (final entry in categoryGroups.entries) {\n      final category = entry.key;\n      final categoryItems = entry.value;\n\n      final values = categoryItems.map((i) => i.transformedValue);\n      final categoryAnalysis = {\n        'count': categoryItems.length,\n        'percentage': (categoryItems.length / items.length) * 100,\n        'avg_value': values.reduce((a, b) => a + b) / values.length,\n        'min_value': values.reduce(min),\n        'max_value': values.reduce(max),\n      };\n\n      // Time-based analysis\n      final now = DateTime.now();\n      final recentItems = categoryItems.where((i) =>\n        now.difference(i.timestamp).inMinutes < 1\n      ).toList();\n\n      if (recentItems.isNotEmpty) {\n        final recentValues = recentItems.map((i) => i.transformedValue);\n        categoryAnalysis['recent_count'] = recentItems.length;\n        categoryAnalysis['recent_avg'] = recentValues.reduce((a, b) => a + b) / recentValues.length;\n      }\n\n      // High-value analysis\n      final highValueItems = categoryItems.where((i) => i.transformedValue > 1000);\n      if (highValueItems.isNotEmpty) {\n        categoryAnalysis['high_value_count'] = highValueItems.length;\n      }\n\n      analysis[category] = categoryAnalysis;\n    }\n\n    analysis['total_items'] = items.length;\n    analysis['processing_time'] = DateTime.now().toIso8601String();\n\n    return analysis;\n  }\n}\n",
   "test_name": "test_dart_complex_algorithm_extraction",
-  "total_chunks": 41
+  "total_chunks": 45
 }

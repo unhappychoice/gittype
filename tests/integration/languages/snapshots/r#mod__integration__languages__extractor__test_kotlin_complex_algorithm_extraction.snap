@@ -49,7 +49,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "data class ProcessedItem(\n    val id: Int,\n    val originalValue: Int,\n    val transformedValue: Int,\n    val category: String,\n    val timestamp: Long = System.currentTimeMillis(),\n    val metadata: MutableMap<String, Any> = mutableMapOf()\n)",
       "end_line": 9,
       "language": "kotlin",
-      "name": "ProcessedItem",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -88,27 +88,27 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class DataProcessor(private val threshold: Int) {\n    private val cache = mutableMapOf<String, ProcessedItem>()\n    private val processingLog = mutableListOf<ProcessedItem>()\n\n    fun processComplexData(input: List<Int>): List<ProcessedItem> {\n        val results = mutableListOf<ProcessedItem>()\n        var processedCount = 0\n\n        // Main processing algorithm - extractable middle chunk\n        input.forEachIndexed { index, value ->\n            val cacheKey = \"item_${index}_$value\"\n\n            cache[cacheKey]?.let { cachedItem ->\n                results.add(cachedItem)\n                return@forEachIndexed\n            }\n\n            val processedItem = when {\n                value > threshold -> {\n                    val transformedValue = value * 2\n                    val category = if (transformedValue > threshold * 3) \"HIGH\" else \"MEDIUM\"\n                    val bonusValue = if (transformedValue > 100) transformedValue + 10 else transformedValue\n\n                    ProcessedItem(\n                        id = index,\n                        originalValue = value,\n                        transformedValue = bonusValue,\n                        category = category,\n                        metadata = mutableMapOf(\n                            \"processed\" to true,\n                            \"multiplier\" to 2,\n                            \"processor\" to \"enhanced\"\n                        )\n                    ).also { processedCount++ }\n                }\n                value > 0 -> ProcessedItem(\n                    id = index,\n                    originalValue = value,\n                    transformedValue = value + threshold,\n                    category = \"LOW\",\n                    metadata = mutableMapOf(\n                        \"processed\" to true,\n                        \"adjusted\" to true,\n                        \"processor\" to \"basic\"\n                    )\n                )\n                else -> return@forEachIndexed // skip negative values\n            }\n\n            cache[cacheKey] = processedItem\n            processingLog.add(processedItem)\n            results.add(processedItem)\n        }\n\n        // Finalization logic\n        if (processedCount > 0) {\n            val average = results.map { it.transformedValue }.average()\n            println(\"Processing complete. Average: %.2f\".format(average))\n\n            results.forEach { item ->\n                item.metadata[\"processing_average\"] = average\n            }\n        }\n\n        return results\n    }\n\n    fun analyzePatterns(items: List<ProcessedItem>): Map<String, Map<String, Any>> {\n        val analysis = mutableMapOf<String, Map<String, Any>>()\n        val categoryGroups = items.groupBy { it.category }\n\n        // Pattern analysis logic - extractable middle chunk\n        categoryGroups.forEach { (category, categoryItems) ->\n            val values = categoryItems.map { it.transformedValue.toDouble() }\n            val categoryAnalysis = mapOf(\n                \"count\" to categoryItems.size,\n                \"percentage\" to (categoryItems.size.toDouble() / items.size * 100),\n                \"avg_value\" to values.average(),\n                \"min_value\" to values.minOrNull(),\n                \"max_value\" to values.maxOrNull()\n            ).toMutableMap()\n\n            // Time-based analysis\n            val currentTime = System.currentTimeMillis()\n            val recentItems = categoryItems.filter { currentTime - it.timestamp < 60000 } // last minute\n            if (recentItems.isNotEmpty()) {\n                categoryAnalysis[\"recent_count\"] = recentItems.size\n                categoryAnalysis[\"recent_avg\"] = recentItems.map { it.transformedValue.toDouble() }.average()\n            }\n\n            // High-value analysis\n            val highValueItems = categoryItems.filter { it.transformedValue > 1000 }\n            if (highValueItems.isNotEmpty()) {\n                categoryAnalysis[\"high_value_count\"] = highValueItems.size\n            }\n\n            analysis[category] = categoryAnalysis\n        }\n\n        return analysis + mapOf(\n            \"total_items\" to items.size,\n            \"processing_time\" to System.currentTimeMillis()\n        )\n    }\n}",
       "end_line": 115,
       "language": "kotlin",
-      "name": "DataProcessor",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 11
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "    private val cache = mutableMapOf<String, ProcessedItem>()",
       "end_line": 12,
       "language": "kotlin",
-      "name": "unknown",
+      "name": "property",
       "original_indentation": 4,
       "start_line": 12
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "    private val processingLog = mutableListOf<ProcessedItem>()",
       "end_line": 13,
       "language": "kotlin",
-      "name": "unknown",
+      "name": "property",
       "original_indentation": 4,
       "start_line": 13
     },
@@ -131,38 +131,33 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    fun processComplexData(input: List<Int>): List<ProcessedItem> {\n        val results = mutableListOf<ProcessedItem>()\n        var processedCount = 0\n\n        // Main processing algorithm - extractable middle chunk\n        input.forEachIndexed { index, value ->\n            val cacheKey = \"item_${index}_$value\"\n\n            cache[cacheKey]?.let { cachedItem ->\n                results.add(cachedItem)\n                return@forEachIndexed\n            }\n\n            val processedItem = when {\n                value > threshold -> {\n                    val transformedValue = value * 2\n                    val category = if (transformedValue > threshold * 3) \"HIGH\" else \"MEDIUM\"\n                    val bonusValue = if (transformedValue > 100) transformedValue + 10 else transformedValue\n\n                    ProcessedItem(\n                        id = index,\n                        originalValue = value,\n                        transformedValue = bonusValue,\n                        category = category,\n                        metadata = mutableMapOf(\n                            \"processed\" to true,\n                            \"multiplier\" to 2,\n                            \"processor\" to \"enhanced\"\n                        )\n                    ).also { processedCount++ }\n                }\n                value > 0 -> ProcessedItem(\n                    id = index,\n                    originalValue = value,\n                    transformedValue = value + threshold,\n                    category = \"LOW\",\n                    metadata = mutableMapOf(\n                        \"processed\" to true,\n                        \"adjusted\" to true,\n                        \"processor\" to \"basic\"\n                    )\n                )\n                else -> return@forEachIndexed // skip negative values\n            }\n\n            cache[cacheKey] = processedItem\n            processingLog.add(processedItem)\n            results.add(processedItem)\n        }\n\n        // Finalization logic\n        if (processedCount > 0) {\n            val average = results.map { it.transformedValue }.average()\n            println(\"Processing complete. Average: %.2f\".format(average))\n\n            results.forEach { item ->\n                item.metadata[\"processing_average\"] = average\n            }\n        }\n\n        return results\n    }",
       "end_line": 76,
       "language": "kotlin",
-      "name": "processComplexData",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 15
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "        val results = mutableListOf<ProcessedItem>()",
       "end_line": 16,
       "language": "kotlin",
-      "name": "unknown",
+      "name": "property",
       "original_indentation": 8,
       "start_line": 16
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "        var processedCount = 0",
       "end_line": 17,
       "language": "kotlin",
-      "name": "unknown",
+      "name": "property",
       "original_indentation": 8,
       "start_line": 17
     },
     {
       "chunk_type": "FunctionCall",
-      "comment_ranges": [
-        [
-          1566,
-          1589
-        ]
-      ],
+      "comment_ranges": [],
       "content": "        input.forEachIndexed { index, value ->\n            val cacheKey = \"item_${index}_$value\"\n\n            cache[cacheKey]?.let { cachedItem ->\n                results.add(cachedItem)\n                return@forEachIndexed\n            }\n\n            val processedItem = when {\n                value > threshold -> {\n                    val transformedValue = value * 2\n                    val category = if (transformedValue > threshold * 3) \"HIGH\" else \"MEDIUM\"\n                    val bonusValue = if (transformedValue > 100) transformedValue + 10 else transformedValue\n\n                    ProcessedItem(\n                        id = index,\n                        originalValue = value,\n                        transformedValue = bonusValue,\n                        category = category,\n                        metadata = mutableMapOf(\n                            \"processed\" to true,\n                            \"multiplier\" to 2,\n                            \"processor\" to \"enhanced\"\n                        )\n                    ).also { processedCount++ }\n                }\n                value > 0 -> ProcessedItem(\n                    id = index,\n                    originalValue = value,\n                    transformedValue = value + threshold,\n                    category = \"LOW\",\n                    metadata = mutableMapOf(\n                        \"processed\" to true,\n                        \"adjusted\" to true,\n                        \"processor\" to \"basic\"\n                    )\n                )\n                else -> return@forEachIndexed // skip negative values\n            }\n\n            cache[cacheKey] = processedItem\n            processingLog.add(processedItem)\n            results.add(processedItem)\n        }",
       "end_line": 63,
       "language": "kotlin",
@@ -171,12 +166,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 20
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "            val cacheKey = \"item_${index}_$value\"",
       "end_line": 21,
       "language": "kotlin",
-      "name": "unknown",
+      "name": "property",
       "original_indentation": 12,
       "start_line": 21
     },
@@ -191,54 +186,49 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 23
     },
     {
-      "chunk_type": "Variable",
-      "comment_ranges": [
-        [
-          1326,
-          1349
-        ]
-      ],
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
       "content": "            val processedItem = when {\n                value > threshold -> {\n                    val transformedValue = value * 2\n                    val category = if (transformedValue > threshold * 3) \"HIGH\" else \"MEDIUM\"\n                    val bonusValue = if (transformedValue > 100) transformedValue + 10 else transformedValue\n\n                    ProcessedItem(\n                        id = index,\n                        originalValue = value,\n                        transformedValue = bonusValue,\n                        category = category,\n                        metadata = mutableMapOf(\n                            \"processed\" to true,\n                            \"multiplier\" to 2,\n                            \"processor\" to \"enhanced\"\n                        )\n                    ).also { processedCount++ }\n                }\n                value > 0 -> ProcessedItem(\n                    id = index,\n                    originalValue = value,\n                    transformedValue = value + threshold,\n                    category = \"LOW\",\n                    metadata = mutableMapOf(\n                        \"processed\" to true,\n                        \"adjusted\" to true,\n                        \"processor\" to \"basic\"\n                    )\n                )\n                else -> return@forEachIndexed // skip negative values\n            }",
       "end_line": 58,
       "language": "kotlin",
-      "name": "unknown",
-      "original_indentation": 12,
+      "name": "when_block",
+      "original_indentation": 32,
       "start_line": 28
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "                    val transformedValue = value * 2",
       "end_line": 30,
       "language": "kotlin",
-      "name": "unknown",
+      "name": "property",
       "original_indentation": 20,
       "start_line": 30
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "                    val category = if (transformedValue > threshold * 3) \"HIGH\" else \"MEDIUM\"",
       "end_line": 31,
       "language": "kotlin",
-      "name": "unknown",
+      "name": "property",
       "original_indentation": 20,
       "start_line": 31
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "                    val bonusValue = if (transformedValue > 100) transformedValue + 10 else transformedValue",
       "end_line": 32,
       "language": "kotlin",
-      "name": "unknown",
+      "name": "property",
       "original_indentation": 20,
       "start_line": 32
     },
     {
       "chunk_type": "FunctionCall",
       "comment_ranges": [],
-      "content": "                    ProcessedItem(\n                        id = index,\n                        originalValue = value,\n                        transformedValue = bonusValue,\n                        category = category,\n                        metadata = mutableMapOf(\n                            \"processed\" to true,\n                            \"multiplier\" to 2,\n                            \"processor\" to \"enhanced\"\n                        )\n                    )",
+      "content": "                    ProcessedItem(\n                        id = index,\n                        originalValue = value,\n                        transformedValue = bonusValue,\n                        category = category,\n                        metadata = mutableMapOf(\n                            \"processed\" to true,\n                            \"multiplier\" to 2,\n                            \"processor\" to \"enhanced\"\n                        )\n                    ).also { processedCount++ }",
       "end_line": 44,
       "language": "kotlin",
       "name": "function_call",
@@ -286,12 +276,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 66
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "            val average = results.map { it.transformedValue }.average()",
       "end_line": 67,
       "language": "kotlin",
-      "name": "unknown",
+      "name": "property",
       "original_indentation": 12,
       "start_line": 67
     },
@@ -328,46 +318,33 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    fun analyzePatterns(items: List<ProcessedItem>): Map<String, Map<String, Any>> {\n        val analysis = mutableMapOf<String, Map<String, Any>>()\n        val categoryGroups = items.groupBy { it.category }\n\n        // Pattern analysis logic - extractable middle chunk\n        categoryGroups.forEach { (category, categoryItems) ->\n            val values = categoryItems.map { it.transformedValue.toDouble() }\n            val categoryAnalysis = mapOf(\n                \"count\" to categoryItems.size,\n                \"percentage\" to (categoryItems.size.toDouble() / items.size * 100),\n                \"avg_value\" to values.average(),\n                \"min_value\" to values.minOrNull(),\n                \"max_value\" to values.maxOrNull()\n            ).toMutableMap()\n\n            // Time-based analysis\n            val currentTime = System.currentTimeMillis()\n            val recentItems = categoryItems.filter { currentTime - it.timestamp < 60000 } // last minute\n            if (recentItems.isNotEmpty()) {\n                categoryAnalysis[\"recent_count\"] = recentItems.size\n                categoryAnalysis[\"recent_avg\"] = recentItems.map { it.transformedValue.toDouble() }.average()\n            }\n\n            // High-value analysis\n            val highValueItems = categoryItems.filter { it.transformedValue > 1000 }\n            if (highValueItems.isNotEmpty()) {\n                categoryAnalysis[\"high_value_count\"] = highValueItems.size\n            }\n\n            analysis[category] = categoryAnalysis\n        }\n\n        return analysis + mapOf(\n            \"total_items\" to items.size,\n            \"processing_time\" to System.currentTimeMillis()\n        )\n    }",
       "end_line": 114,
       "language": "kotlin",
-      "name": "analyzePatterns",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 78
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "        val analysis = mutableMapOf<String, Map<String, Any>>()",
       "end_line": 79,
       "language": "kotlin",
-      "name": "unknown",
+      "name": "property",
       "original_indentation": 8,
       "start_line": 79
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "        val categoryGroups = items.groupBy { it.category }",
       "end_line": 80,
       "language": "kotlin",
-      "name": "unknown",
+      "name": "property",
       "original_indentation": 8,
       "start_line": 80
     },
     {
       "chunk_type": "FunctionCall",
-      "comment_ranges": [
-        [
-          505,
-          527
-        ],
-        [
-          675,
-          689
-        ],
-        [
-          939,
-          961
-        ]
-      ],
+      "comment_ranges": [],
       "content": "        categoryGroups.forEach { (category, categoryItems) ->\n            val values = categoryItems.map { it.transformedValue.toDouble() }\n            val categoryAnalysis = mapOf(\n                \"count\" to categoryItems.size,\n                \"percentage\" to (categoryItems.size.toDouble() / items.size * 100),\n                \"avg_value\" to values.average(),\n                \"min_value\" to values.minOrNull(),\n                \"max_value\" to values.maxOrNull()\n            ).toMutableMap()\n\n            // Time-based analysis\n            val currentTime = System.currentTimeMillis()\n            val recentItems = categoryItems.filter { currentTime - it.timestamp < 60000 } // last minute\n            if (recentItems.isNotEmpty()) {\n                categoryAnalysis[\"recent_count\"] = recentItems.size\n                categoryAnalysis[\"recent_avg\"] = recentItems.map { it.transformedValue.toDouble() }.average()\n            }\n\n            // High-value analysis\n            val highValueItems = categoryItems.filter { it.transformedValue > 1000 }\n            if (highValueItems.isNotEmpty()) {\n                categoryAnalysis[\"high_value_count\"] = highValueItems.size\n            }\n\n            analysis[category] = categoryAnalysis\n        }",
       "end_line": 108,
       "language": "kotlin",
@@ -376,42 +353,42 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 83
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "            val values = categoryItems.map { it.transformedValue.toDouble() }",
       "end_line": 84,
       "language": "kotlin",
-      "name": "unknown",
+      "name": "property",
       "original_indentation": 12,
       "start_line": 84
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "FunctionCall",
       "comment_ranges": [],
       "content": "            val categoryAnalysis = mapOf(\n                \"count\" to categoryItems.size,\n                \"percentage\" to (categoryItems.size.toDouble() / items.size * 100),\n                \"avg_value\" to values.average(),\n                \"min_value\" to values.minOrNull(),\n                \"max_value\" to values.maxOrNull()\n            ).toMutableMap()",
       "end_line": 91,
       "language": "kotlin",
-      "name": "unknown",
-      "original_indentation": 12,
+      "name": "function_call",
+      "original_indentation": 35,
       "start_line": 85
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "            val currentTime = System.currentTimeMillis()",
       "end_line": 94,
       "language": "kotlin",
-      "name": "unknown",
+      "name": "property",
       "original_indentation": 12,
       "start_line": 94
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "            val recentItems = categoryItems.filter { currentTime - it.timestamp < 60000 }",
       "end_line": 95,
       "language": "kotlin",
-      "name": "unknown",
+      "name": "property",
       "original_indentation": 12,
       "start_line": 95
     },
@@ -426,12 +403,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 96
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "            val highValueItems = categoryItems.filter { it.transformedValue > 1000 }",
       "end_line": 102,
       "language": "kotlin",
-      "name": "unknown",
+      "name": "property",
       "original_indentation": 12,
       "start_line": 102
     },

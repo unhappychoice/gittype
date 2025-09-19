@@ -15,22 +15,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "Enum",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "pub enum Result<T, E> {\n    Ok(T),\n    Err(E),\n}",
       "end_line": 5,
       "language": "rust",
-      "name": "Result",
+      "name": "enum",
       "original_indentation": 0,
       "start_line": 2
     },
     {
-      "chunk_type": "Enum",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "enum Color {\n    Red,\n    Green,\n    Blue,\n}",
       "end_line": 11,
       "language": "rust",
-      "name": "Color",
+      "name": "enum",
       "original_indentation": 0,
       "start_line": 7
     }

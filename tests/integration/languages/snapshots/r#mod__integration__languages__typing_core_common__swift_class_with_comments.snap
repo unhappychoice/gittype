@@ -18,26 +18,26 @@ class Calculator {
 
 # text_to_type
 class Calculator {
-private var result: Int = 0
-func add(_ value: Int) -> Calculator {
+private var result: Int = 0 // Store result
+func add(_ value: Int) -> Calculator { // Add method
 result += value
 return self
 }
 func getResult() -> Int {
-return result
+return result // Return current result
 }
 }
 
 # text_to_display
 class Calculator {↵
-    private var result: Int = 0↵ // Store result
+    private var result: Int = 0 // Store result↵
     
-    func add(_ value: Int) -> Calculator {↵ // Add method
+    func add(_ value: Int) -> Calculator { // Add method↵
         result += value↵
         return self↵
     }↵
     
     func getResult() -> Int {↵
-        return result↵ // Return current result
+        return result // Return current result↵
     }↵
 }↵

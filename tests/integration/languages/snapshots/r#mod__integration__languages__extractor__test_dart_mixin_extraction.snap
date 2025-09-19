@@ -15,42 +15,42 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "Class",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "mixin Flyable {\n  void fly() {\n    print('Flying...');\n  }\n}",
       "end_line": 6,
       "language": "dart",
-      "name": "Flyable",
+      "name": "mixin",
       "original_indentation": 0,
       "start_line": 2
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "Method",
       "comment_ranges": [],
       "content": "  void fly()",
       "end_line": 3,
       "language": "dart",
-      "name": "fly",
+      "name": "method",
       "original_indentation": 2,
       "start_line": 3
     },
     {
-      "chunk_type": "Class",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "mixin Swimmable {\n  void swim() {\n    print('Swimming...');\n  }\n}",
       "end_line": 12,
       "language": "dart",
-      "name": "Swimmable",
+      "name": "mixin",
       "original_indentation": 0,
       "start_line": 8
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "Method",
       "comment_ranges": [],
       "content": "  void swim()",
       "end_line": 9,
       "language": "dart",
-      "name": "swim",
+      "name": "method",
       "original_indentation": 2,
       "start_line": 9
     },
@@ -70,17 +70,17 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class Duck with Flyable, Swimmable {\n  void quack() {\n    print('Quack!');\n  }\n}",
       "end_line": 18,
       "language": "dart",
-      "name": "Duck",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 14
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "Method",
       "comment_ranges": [],
       "content": "  void quack()",
       "end_line": 15,
       "language": "dart",
-      "name": "quack",
+      "name": "method",
       "original_indentation": 2,
       "start_line": 15
     }

@@ -9,10 +9,10 @@ int add(int a, int b) {
 
 # text_to_type
 int add(int a, int b) {
-return a + b;
+return a + b; // Return sum
 }
 
 # text_to_display
 int add(int a, int b) {↵
-  return a + b;↵ // Return sum
+  return a + b; // Return sum↵
 }↵

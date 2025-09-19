@@ -28,12 +28,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "Struct",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "pub struct DataCache<T> {\n    cache: HashMap<String, T>,\n    max_size: usize,\n    access_count: HashMap<String, usize>,\n}",
       "end_line": 7,
       "language": "rust",
-      "name": "DataCache",
+      "name": "struct",
       "original_indentation": 0,
       "start_line": 3
     },
@@ -43,9 +43,19 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    pub fn new(max_size: usize) -> Self {\n        Self {\n            cache: HashMap::new(),\n            max_size,\n            access_count: HashMap::new(),\n        }\n    }",
       "end_line": 16,
       "language": "rust",
-      "name": "new",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 10
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    pub fn get_or_insert",
+      "end_line": 18,
+      "language": "rust",
+      "name": "name",
+      "original_indentation": 11,
+      "start_line": 18
     },
     {
       "chunk_type": "Function",
@@ -62,22 +72,13 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    pub fn get_or_insert<F>(&mut self, key: &str, compute: F) -> T\n    where\n        F: FnOnce() -> T,\n    {\n        // Cache management logic - extractable middle chunk\n        if let Some(value) = self.cache.get(key) {\n            *self.access_count.entry(key.to_string()).or_insert(0) += 1;\n            return value.clone();\n        }\n\n        // Check if cache is full and evict least used item\n        if self.cache.len() >= self.max_size {\n            if let Some(lru_key) = self.find_least_used_key() {\n                self.cache.remove(&lru_key);\n                self.access_count.remove(&lru_key);\n            }\n        }\n\n        let computed_value = compute();\n        self.cache.insert(key.to_string(), computed_value.clone());\n        self.access_count.insert(key.to_string(), 1);\n        computed_value\n    }",
       "end_line": 40,
       "language": "rust",
-      "name": "get_or_insert",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 18
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [
-        [
-          14,
-          66
-        ],
-        [
-          244,
-          295
-        ]
-      ],
+      "comment_ranges": [],
       "content": "    {\n        // Cache management logic - extractable middle chunk\n        if let Some(value) = self.cache.get(key) {\n            *self.access_count.entry(key.to_string()).or_insert(0) += 1;\n            return value.clone();\n        }\n\n        // Check if cache is full and evict least used item\n        if self.cache.len() >= self.max_size {\n            if let Some(lru_key) = self.find_least_used_key() {\n                self.cache.remove(&lru_key);\n                self.access_count.remove(&lru_key);\n            }\n        }\n\n        let computed_value = compute();\n        self.cache.insert(key.to_string(), computed_value.clone());\n        self.access_count.insert(key.to_string(), 1);\n        computed_value\n    }",
       "end_line": 40,
       "language": "rust",
@@ -116,12 +117,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 30
     },
     {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    fn find_least_used_key",
+      "end_line": 42,
+      "language": "rust",
+      "name": "name",
+      "original_indentation": 7,
+      "start_line": 42
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [],
       "content": "    fn find_least_used_key(&self) -> Option<String> {\n        self.access_count\n            .iter()\n            .min_by_key(|(_, &count)| count)\n            .map(|(key, _)| key.clone())\n    }",
       "end_line": 47,
       "language": "rust",
-      "name": "find_least_used_key",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 42
     },
@@ -156,6 +167,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 43
     },
     {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    pub fn clear_stale_entries",
+      "end_line": 49,
+      "language": "rust",
+      "name": "name",
+      "original_indentation": 11,
+      "start_line": 49
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [
         [
@@ -166,7 +187,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    pub fn clear_stale_entries(&mut self, max_access_count: usize) {\n        // Cleanup logic - extractable middle chunk\n        let stale_keys: Vec<String> = self\n            .access_count\n            .iter()\n            .filter(|(_, &count)| count > max_access_count)\n            .map(|(key, _)| key.clone())\n            .collect();\n\n        for key in stale_keys {\n            self.cache.remove(&key);\n            self.access_count.remove(&key);\n        }\n    }",
       "end_line": 62,
       "language": "rust",
-      "name": "clear_stale_entries",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 49
     },
@@ -223,5 +244,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\n#[derive(Debug, Clone)]\npub struct DataCache<T> {\n    cache: HashMap<String, T>,\n    max_size: usize,\n    access_count: HashMap<String, usize>,\n}\n\nimpl<T: Clone> DataCache<T> {\n    pub fn new(max_size: usize) -> Self {\n        Self {\n            cache: HashMap::new(),\n            max_size,\n            access_count: HashMap::new(),\n        }\n    }\n\n    pub fn get_or_insert<F>(&mut self, key: &str, compute: F) -> T\n    where\n        F: FnOnce() -> T,\n    {\n        // Cache management logic - extractable middle chunk\n        if let Some(value) = self.cache.get(key) {\n            *self.access_count.entry(key.to_string()).or_insert(0) += 1;\n            return value.clone();\n        }\n\n        // Check if cache is full and evict least used item\n        if self.cache.len() >= self.max_size {\n            if let Some(lru_key) = self.find_least_used_key() {\n                self.cache.remove(&lru_key);\n                self.access_count.remove(&lru_key);\n            }\n        }\n\n        let computed_value = compute();\n        self.cache.insert(key.to_string(), computed_value.clone());\n        self.access_count.insert(key.to_string(), 1);\n        computed_value\n    }\n\n    fn find_least_used_key(&self) -> Option<String> {\n        self.access_count\n            .iter()\n            .min_by_key(|(_, &count)| count)\n            .map(|(key, _)| key.clone())\n    }\n\n    pub fn clear_stale_entries(&mut self, max_access_count: usize) {\n        // Cleanup logic - extractable middle chunk\n        let stale_keys: Vec<String> = self\n            .access_count\n            .iter()\n            .filter(|(_, &count)| count > max_access_count)\n            .map(|(key, _)| key.clone())\n            .collect();\n\n        for key in stale_keys {\n            self.cache.remove(&key);\n            self.access_count.remove(&key);\n        }\n    }\n}\n",
   "test_name": "test_rust_struct_with_complex_impl",
-  "total_chunks": 18
+  "total_chunks": 21
 }

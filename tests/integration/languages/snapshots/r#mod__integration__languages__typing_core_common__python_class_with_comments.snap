@@ -14,16 +14,16 @@ class Calculator:
 # text_to_type
 class Calculator:
 def __init__(self):
-self.result = 0
-def add(self, value):
+self.result = 0  # Initialize result
+def add(self, value):  # Add method
 self.result += value
 return self
 
 # text_to_display
 class Calculator:↵
     def __init__(self):↵
-        self.result = 0↵  # Initialize result
+        self.result = 0  # Initialize result↵
     
-    def add(self, value):↵  # Add method
+    def add(self, value):  # Add method↵
         self.result += value↵
         return self↵

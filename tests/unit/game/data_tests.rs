@@ -34,6 +34,7 @@ fn processing_parameters_roundtrip() {
         include_patterns: vec!["**/*.rs".into()],
         exclude_patterns: vec!["target".into()],
         languages: Some(vec!["rust".into()]),
+        max_file_size_bytes: 1024 * 1024, // 1MB
     };
 
     let repo_path = PathBuf::from("/tmp/repo");

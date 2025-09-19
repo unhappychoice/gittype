@@ -18,9 +18,13 @@ object StringExtensions {
 
 # text_to_type
 object StringExtensions {
+// Implicit class to extend String functionality
 implicit class RichString(s: String) {
+// Check if string is palindrome
 def isPalindrome: Boolean = {
 val cleaned = s.toLowerCase.replaceAll("[^a-z]", "")
+/* Compare string with its reverse
+Returns true if they match */
 cleaned == cleaned.reverse
 }
 }
@@ -28,13 +32,13 @@ cleaned == cleaned.reverse
 
 # text_to_display
 object StringExtensions {↵
-    // Implicit class to extend String functionality
+    // Implicit class to extend String functionality↵
     implicit class RichString(s: String) {↵
-        // Check if string is palindrome
+        // Check if string is palindrome↵
         def isPalindrome: Boolean = {↵
             val cleaned = s.toLowerCase.replaceAll("[^a-z]", "")↵
-            /* Compare string with its reverse
-               Returns true if they match */
+            /* Compare string with its reverse↵
+               Returns true if they match */↵
             cleaned == cleaned.reverse↵
         }↵
     }↵

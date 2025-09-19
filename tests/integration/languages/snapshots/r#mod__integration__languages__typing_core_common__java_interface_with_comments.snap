@@ -13,15 +13,17 @@ public interface Drawable {
 
 # text_to_type
 public interface Drawable {
+// Draw the object
 void draw();
+// Get the area
 double getArea();
 }
 
 # text_to_display
 public interface Drawable {↵
-    // Draw the object
+    // Draw the object↵
     void draw();↵
     
-    // Get the area
+    // Get the area↵
     double getArea();↵
 }↵

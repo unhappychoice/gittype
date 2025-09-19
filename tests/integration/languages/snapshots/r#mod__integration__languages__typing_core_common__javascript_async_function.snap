@@ -15,19 +15,19 @@ async function fetchData(url) {
 # text_to_type
 async function fetchData(url) {
 try {
-const response = await fetch(url);
+const response = await fetch(url); // Fetch data
 return response.json();
 } catch (error) {
-console.error(error);
+console.error(error); // Log error
 }
 }
 
 # text_to_display
 async function fetchData(url) {↵
     try {↵
-        const response = await fetch(url);↵ // Fetch data
+        const response = await fetch(url); // Fetch data↵
         return response.json();↵
     } catch (error) {↵
-        console.error(error);↵ // Log error
+        console.error(error); // Log error↵
     }↵
 }↵

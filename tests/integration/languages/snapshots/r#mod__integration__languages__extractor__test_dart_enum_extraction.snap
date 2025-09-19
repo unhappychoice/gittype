@@ -15,47 +15,27 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "Enum",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "enum Color {\n  red,\n  green,\n  blue;\n\n  String",
       "end_line": 7,
       "language": "dart",
-      "name": "Color",
+      "name": "enum",
       "original_indentation": 0,
       "start_line": 2
     },
     {
       "chunk_type": "CodeBlock",
       "comment_ranges": [],
-      "content": "  String get name {\n    switch (this) {\n      case Color.red:\n        return 'Red';\n      case Color.green:\n        return 'Green';\n      case Color.blue:\n        return 'Blue';\n    }\n  }",
-      "end_line": 16,
-      "language": "dart",
-      "name": "code_block",
-      "original_indentation": 18,
-      "start_line": 7
-    },
-    {
-      "chunk_type": "Conditional",
-      "comment_ranges": [],
-      "content": "    switch (this) {\n      case Color.red:\n        return 'Red';\n      case Color.green:\n        return 'Green';\n      case Color.blue:\n        return 'Blue';\n    }",
-      "end_line": 15,
-      "language": "dart",
-      "name": "switch_block",
-      "original_indentation": 4,
-      "start_line": 8
-    },
-    {
-      "chunk_type": "Enum",
-      "comment_ranges": [],
       "content": "enum Status { pending, completed, failed }",
       "end_line": 19,
       "language": "dart",
-      "name": "Status",
+      "name": "enum",
       "original_indentation": 0,
       "start_line": 19
     }
   ],
   "source_code": "\nenum Color {\n  red,\n  green,\n  blue;\n\n  String get name {\n    switch (this) {\n      case Color.red:\n        return 'Red';\n      case Color.green:\n        return 'Green';\n      case Color.blue:\n        return 'Blue';\n    }\n  }\n}\n\nenum Status { pending, completed, failed }\n",
   "test_name": "test_dart_enum_extraction",
-  "total_chunks": 5
+  "total_chunks": 3
 }

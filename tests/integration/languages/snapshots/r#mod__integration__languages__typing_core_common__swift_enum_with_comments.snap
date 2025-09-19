@@ -20,8 +20,9 @@ enum Result<T, E> {
 
 # text_to_type
 enum Result<T, E> {
-case success(T)
-case failure(E)
+case success(T) // Success case
+case failure(E) // Failure case
+/* Check if result is successful */
 var isSuccess: Bool {
 switch self {
 case .success:
@@ -34,10 +35,10 @@ return false
 
 # text_to_display
 enum Result<T, E> {↵
-    case success(T)↵ // Success case
-    case failure(E)↵ // Failure case
+    case success(T) // Success case↵
+    case failure(E) // Failure case↵
     
-    /* Check if result is successful */
+    /* Check if result is successful */↵
     var isSuccess: Bool {↵
         switch self {↵
         case .success:↵

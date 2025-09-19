@@ -10,13 +10,15 @@ factorial 0 = 1
 factorial n = n * factorial (n - 1)
 
 # text_to_type
+{- A multi-line comment
+describing the function below -}
 factorial :: Integer -> Integer
 factorial 0 = 1
 factorial n = n * factorial (n - 1)
 
 # text_to_display
-{- A multi-line comment
-   describing the function below -}
+{- A multi-line comment↵
+   describing the function below -}↵
 factorial :: Integer -> Integer↵
 factorial 0 = 1↵
 factorial n = n * factorial (n - 1)↵

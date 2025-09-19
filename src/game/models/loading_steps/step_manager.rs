@@ -63,6 +63,10 @@ impl StepManager {
 
             // Skip remaining steps if cache was used (except finalization)
             if context.cache_used && step.step_type() != super::StepType::Finalizing {
+                log::debug!(
+                    "Skipping step {:?} because cache was used",
+                    step.step_type()
+                );
                 continue;
             }
 

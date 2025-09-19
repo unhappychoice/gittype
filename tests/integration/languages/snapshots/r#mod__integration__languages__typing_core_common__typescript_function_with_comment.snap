@@ -9,10 +9,10 @@ function add(a: number, b: number): number {
 
 # text_to_type
 function add(a: number, b: number): number {
-return a + b;
+return a + b; // Return sum
 }
 
 # text_to_display
 function add(a: number, b: number): number {↵
-    return a + b;↵ // Return sum
+    return a + b; // Return sum↵
 }↵

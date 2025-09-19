@@ -12,13 +12,13 @@ public struct Point
 # text_to_type
 public struct Point
 {
-public int X;
-public int Y;
+public int X; // X-coordinate
+public int Y; // Y-coordinate
 }
 
 # text_to_display
 public struct Point↵
 {↵
-    public int X;↵ // X-coordinate
-    public int Y;↵ // Y-coordinate
+    public int X; // X-coordinate↵
+    public int Y; // Y-coordinate↵
 }↵

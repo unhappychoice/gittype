@@ -93,7 +93,8 @@ impl ChallengeCache {
         let cache_data: CacheData = GzipStorage::load(&cache_file)?;
 
         // Check if commit hash matches
-        if cache_data.commit_hash != repo.commit_hash.as_deref().unwrap_or("") {
+        let current_commit = repo.commit_hash.as_deref().unwrap_or("");
+        if cache_data.commit_hash != current_commit {
             return None;
         }
 
@@ -127,10 +128,11 @@ impl ChallengeCache {
             })
             .collect();
 
-        if results.iter().any(|r| r.is_none()) {
+        let challenges: Vec<Challenge> = results.into_iter().flatten().collect();
+
+        if challenges.is_empty() {
             return None;
         }
-        let challenges: Vec<Challenge> = results.into_iter().map(Option::unwrap).collect();
         Some(challenges)
     }
 
@@ -211,14 +213,29 @@ impl ChallengeCache {
     ) -> Option<Challenge> {
         let file_path = pointer.source_file_path.as_ref()?;
         let absolute_path = repo_root.join(file_path);
-        let absolute_path = absolute_path.canonicalize().ok()?;
+
+        let absolute_path = absolute_path
+            .canonicalize()
+            .map_err(|e| {
+                log::debug!("Failed to canonicalize {}: {}", file_path, e);
+                e
+            })
+            .ok()?;
+
         let repo_root = repo_root.canonicalize().ok()?;
         if !absolute_path.starts_with(&repo_root) {
+            log::debug!("Path security check failed: {}", file_path);
             return None;
         }
 
         // Read file content
-        let file_content = fs::read_to_string(&absolute_path).ok()?;
+        let file_content = fs::read_to_string(&absolute_path)
+            .map_err(|e| {
+                log::debug!("Failed to read file {}: {}", file_path, e);
+                e
+            })
+            .ok()?;
+
         let lines: Vec<&str> = file_content.lines().collect();
 
         // Extract code content based on line numbers
@@ -227,6 +244,13 @@ impl ChallengeCache {
                 if start <= lines.len() && end <= lines.len() && start <= end {
                     lines[start.saturating_sub(1)..end].join("\n")
                 } else {
+                    log::debug!(
+                        "Line number mismatch in {}: start={}, end={}, file_lines={}",
+                        file_path,
+                        start,
+                        end,
+                        lines.len()
+                    );
                     return None;
                 }
             }

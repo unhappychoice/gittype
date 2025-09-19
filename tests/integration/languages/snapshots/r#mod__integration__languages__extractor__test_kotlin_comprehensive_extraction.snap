@@ -60,12 +60,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "Class",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "typealias StringList = List<String>",
       "end_line": 8,
       "language": "kotlin",
-      "name": "StringList",
+      "name": "type_alias",
       "original_indentation": 0,
       "start_line": 8
     },
@@ -75,7 +75,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "interface TestInterface {\n    fun interfaceMethod(): String\n}",
       "end_line": 13,
       "language": "kotlin",
-      "name": "TestInterface",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 11
     },
@@ -85,7 +85,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    fun interfaceMethod(): String",
       "end_line": 12,
       "language": "kotlin",
-      "name": "interfaceMethod",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 12
     },
@@ -95,7 +95,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "fun regularFunction(param: String): String {\n    return \"Hello $param\"\n}",
       "end_line": 18,
       "language": "kotlin",
-      "name": "regularFunction",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 16
     },
@@ -105,7 +105,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "val anonymousFunc = fun(x: Int): Int { return x * 2 }",
       "end_line": 21,
       "language": "kotlin",
-      "name": "unknown",
+      "name": "function",
       "original_indentation": 20,
       "start_line": 21
     },
@@ -115,7 +115,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class RegularClass(private val name: String) {\n    fun method(): String = name\n}",
       "end_line": 26,
       "language": "kotlin",
-      "name": "RegularClass",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 24
     },
@@ -125,7 +125,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    fun method(): String = name",
       "end_line": 25,
       "language": "kotlin",
-      "name": "method",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 25
     },
@@ -135,7 +135,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "data class DataClass(val id: Int, val name: String)",
       "end_line": 29,
       "language": "kotlin",
-      "name": "DataClass",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 29
     },
@@ -145,57 +145,27 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "enum class Color {\n    RED,\n    GREEN,\n    BLUE\n}",
       "end_line": 36,
       "language": "kotlin",
-      "name": "Color",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 32
     },
     {
-      "chunk_type": "Const",
-      "comment_ranges": [],
-      "content": "    RED",
-      "end_line": 33,
-      "language": "kotlin",
-      "name": "RED",
-      "original_indentation": 4,
-      "start_line": 33
-    },
-    {
-      "chunk_type": "Const",
-      "comment_ranges": [],
-      "content": "    GREEN",
-      "end_line": 34,
-      "language": "kotlin",
-      "name": "GREEN",
-      "original_indentation": 4,
-      "start_line": 34
-    },
-    {
-      "chunk_type": "Const",
-      "comment_ranges": [],
-      "content": "    BLUE",
-      "end_line": 35,
-      "language": "kotlin",
-      "name": "BLUE",
-      "original_indentation": 4,
-      "start_line": 35
-    },
-    {
-      "chunk_type": "Class",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "object SingletonObject {\n    const val CONSTANT = \"constant_value\"\n\n    fun objectMethod(): String = \"object method\"\n}",
       "end_line": 43,
       "language": "kotlin",
-      "name": "SingletonObject",
+      "name": "object",
       "original_indentation": 0,
       "start_line": 39
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "    const val CONSTANT = \"constant_value\"",
       "end_line": 40,
       "language": "kotlin",
-      "name": "unknown",
+      "name": "property",
       "original_indentation": 4,
       "start_line": 40
     },
@@ -205,7 +175,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    fun objectMethod(): String = \"object method\"",
       "end_line": 42,
       "language": "kotlin",
-      "name": "objectMethod",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 42
     },
@@ -215,27 +185,27 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class ClassWithCompanion {\n    companion object {\n        const val COMPANION_CONSTANT = \"companion_constant\"\n\n        fun companionMethod(): String = \"companion method\"\n    }\n}",
       "end_line": 52,
       "language": "kotlin",
-      "name": "ClassWithCompanion",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 46
     },
     {
-      "chunk_type": "Class",
+      "chunk_type": "Lambda",
       "comment_ranges": [],
       "content": "    companion object {\n        const val COMPANION_CONSTANT = \"companion_constant\"\n\n        fun companionMethod(): String = \"companion method\"\n    }",
       "end_line": 51,
       "language": "kotlin",
-      "name": "companion object",
-      "original_indentation": 4,
+      "name": "lambda",
+      "original_indentation": 21,
       "start_line": 47
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "        const val COMPANION_CONSTANT = \"companion_constant\"",
       "end_line": 48,
       "language": "kotlin",
-      "name": "unknown",
+      "name": "property",
       "original_indentation": 8,
       "start_line": 48
     },
@@ -245,32 +215,32 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        fun companionMethod(): String = \"companion method\"",
       "end_line": 50,
       "language": "kotlin",
-      "name": "companionMethod",
+      "name": "function",
       "original_indentation": 8,
       "start_line": 50
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "val globalVal: String = \"global val\"",
       "end_line": 55,
       "language": "kotlin",
-      "name": "unknown",
+      "name": "property",
       "original_indentation": 0,
       "start_line": 55
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "var globalVar: String = \"global var\"",
       "end_line": 56,
       "language": "kotlin",
-      "name": "unknown",
+      "name": "property",
       "original_indentation": 0,
       "start_line": 56
     }
   ],
   "source_code": "\n// Line comment\n/* Block comment */\n\npackage com.example.test\n\n// Type alias\ntypealias StringList = List<String>\n\n// Interface declaration\ninterface TestInterface {\n    fun interfaceMethod(): String\n}\n\n// Regular function\nfun regularFunction(param: String): String {\n    return \"Hello $param\"\n}\n\n// Anonymous function\nval anonymousFunc = fun(x: Int): Int { return x * 2 }\n\n// Regular class\nclass RegularClass(private val name: String) {\n    fun method(): String = name\n}\n\n// Data class\ndata class DataClass(val id: Int, val name: String)\n\n// Enum class\nenum class Color {\n    RED,\n    GREEN,\n    BLUE\n}\n\n// Object declaration\nobject SingletonObject {\n    const val CONSTANT = \"constant_value\"\n\n    fun objectMethod(): String = \"object method\"\n}\n\n// Class with companion object\nclass ClassWithCompanion {\n    companion object {\n        const val COMPANION_CONSTANT = \"companion_constant\"\n\n        fun companionMethod(): String = \"companion method\"\n    }\n}\n\n// Properties\nval globalVal: String = \"global val\"\nvar globalVar: String = \"global var\"\n",
   "test_name": "test_kotlin_comprehensive_extraction",
-  "total_chunks": 22
+  "total_chunks": 19
 }

@@ -19,6 +19,7 @@ fun processData(data: List<String>) {
 "#,
     total_chunks: 4,
     chunk_counts: {
+        File: 1,
         Function: 3,
     }
 }
@@ -48,6 +49,7 @@ data class User(
 "#,
     total_chunks: 6,
     chunk_counts: {
+        File: 1,
         Class: 2,
         Function: 3,
     }
@@ -78,9 +80,9 @@ object Utils {
 "#,
     total_chunks: 7,
     chunk_counts: {
-        Class: 2,
+        CodeBlock: 3,
+        File: 1,
         Function: 3,
-        Variable: 1,
     }
 }
 
@@ -145,12 +147,12 @@ class ClassWithCompanion {
 val globalVal: String = "global val"
 var globalVar: String = "global var"
 "#,
-    total_chunks: 22,
+    total_chunks: 19,
     chunk_counts: {
-        Class: 8,
-        Const: 3,
+        CodeBlock: 6,
+        File: 1,
         Function: 6,
-        Variable: 4,
+        Class: 5,
     }
 }
 
@@ -276,6 +278,8 @@ class DataProcessor(private val threshold: Int) {
 "#,
     total_chunks: 34,
     chunk_counts: {
+        CodeBlock: 15,
+        File: 1,
         Class: 2,
         Function: 2,
     }

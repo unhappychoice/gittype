@@ -15,14 +15,34 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "class UserManager",
+      "end_line": 4,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 6,
+      "start_line": 4
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "class UserManager {\n    constructor(apiKey) {\n        this.apiKey = apiKey;\n        this.users = [];\n    }\n\n    async loadUsers() {\n        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }\n    }\n\n    findUser = (id) => {\n        return this.users.find(user => user.id === id);\n    };\n}",
       "end_line": 26,
       "language": "javascript",
-      "name": "UserManager",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 4
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    constructor",
+      "end_line": 5,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 4,
+      "start_line": 5
     },
     {
       "chunk_type": "Method",
@@ -30,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    constructor(apiKey) {\n        this.apiKey = apiKey;\n        this.users = [];\n    }",
       "end_line": 8,
       "language": "javascript",
-      "name": "constructor",
+      "name": "method",
       "original_indentation": 4,
       "start_line": 5
     },
@@ -40,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    async loadUsers() {\n        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }\n    }",
       "end_line": 21,
       "language": "javascript",
-      "name": "loadUsers",
+      "name": "method",
       "original_indentation": 4,
       "start_line": 10
     },
@@ -95,34 +115,54 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 23
     },
     {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "function processUsers",
+      "end_line": 28,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 9,
+      "start_line": 28
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [],
       "content": "function processUsers(users) {\n    return users.map(user => ({\n        ...user,\n        displayName: `${user.firstName} ${user.lastName}`\n    }));\n}",
       "end_line": 33,
       "language": "javascript",
-      "name": "processUsers",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 28
     },
     {
-      "chunk_type": "Lambda",
+      "chunk_type": "FunctionCall",
       "comment_ranges": [],
-      "content": "    return users.map(user => ({\n        ...user,\n        displayName: `${user.firstName} ${user.lastName}`\n    })",
+      "content": "    return users.map(user => ({\n        ...user,\n        displayName: `${user.firstName} ${user.lastName}`\n    }))",
       "end_line": 32,
       "language": "javascript",
-      "name": "arrow_lambda",
-      "original_indentation": 21,
+      "name": "function_call",
+      "original_indentation": 11,
       "start_line": 29
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "Lambda",
       "comment_ranges": [],
       "content": "const filterActiveUsers = (users) => {\n    return users.filter(user => user.isActive);\n}",
       "end_line": 37,
       "language": "javascript",
-      "name": "filterActiveUsers",
-      "original_indentation": 6,
+      "name": "arrow_lambda",
+      "original_indentation": 26,
       "start_line": 35
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    async createUser",
+      "end_line": 40,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 10,
+      "start_line": 40
     },
     {
       "chunk_type": "Method",
@@ -130,7 +170,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    async createUser(userData) {\n        const response = await fetch('/api/users', {\n            method: 'POST',\n            headers: { 'Content-Type': 'application/json' },\n            body: JSON.stringify(userData)\n        });\n        return response.json();\n    }",
       "end_line": 47,
       "language": "javascript",
-      "name": "createUser",
+      "name": "method",
       "original_indentation": 4,
       "start_line": 40
     },
@@ -147,5 +187,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nimport { fetchData } from './api.js';\n\nclass UserManager {\n    constructor(apiKey) {\n        this.apiKey = apiKey;\n        this.users = [];\n    }\n\n    async loadUsers() {\n        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }\n    }\n\n    findUser = (id) => {\n        return this.users.find(user => user.id === id);\n    };\n}\n\nfunction processUsers(users) {\n    return users.map(user => ({\n        ...user,\n        displayName: `${user.firstName} ${user.lastName}`\n    }));\n}\n\nconst filterActiveUsers = (users) => {\n    return users.filter(user => user.isActive);\n};\n\nconst userService = {\n    async createUser(userData) {\n        const response = await fetch('/api/users', {\n            method: 'POST',\n            headers: { 'Content-Type': 'application/json' },\n            body: JSON.stringify(userData)\n        });\n        return response.json();\n    }\n};\n\nexport default UserManager;\n",
   "test_name": "test_javascript_mixed_patterns",
-  "total_chunks": 14
+  "total_chunks": 18
 }

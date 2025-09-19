@@ -20,7 +20,7 @@ pub enum GameMode {
     },
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum DifficultyLevel {
     Easy,   // ~100 characters
     Normal, // ~200 characters
@@ -84,6 +84,11 @@ pub struct StageRepository {
     config: StageConfig,
     built_stages: Vec<Challenge>,
     current_index: usize,
+    // Performance optimization: difficulty-based challenge indices
+    difficulty_indices: std::collections::HashMap<DifficultyLevel, Vec<usize>>,
+    indices_cached: bool,
+    // Cache challenges for direct access (eliminates GameData dependency)
+    cached_challenges: Option<Vec<Challenge>>,
 }
 
 /// Global StageRepository instance
@@ -98,6 +103,9 @@ impl StageRepository {
             config: StageConfig::default(),
             built_stages: Vec::new(),
             current_index: 0,
+            difficulty_indices: std::collections::HashMap::new(),
+            indices_cached: false,
+            cached_challenges: None,
         }
     }
 
@@ -108,6 +116,9 @@ impl StageRepository {
             config: StageConfig::default(),
             built_stages: Vec::new(),
             current_index: 0,
+            difficulty_indices: std::collections::HashMap::new(),
+            indices_cached: false,
+            cached_challenges: None,
         }
     }
 
@@ -117,6 +128,9 @@ impl StageRepository {
             config,
             built_stages: Vec::new(),
             current_index: 0,
+            difficulty_indices: std::collections::HashMap::new(),
+            indices_cached: false,
+            cached_challenges: None,
         }
     }
 
@@ -261,6 +275,12 @@ impl StageRepository {
     }
 
     pub fn update_title_screen_data(&self, manager: &mut ScreenManager) -> Result<()> {
+        // Only update if indices are cached to avoid GameData access during screen transitions
+        if !self.indices_cached {
+            log::info!("🔄 StageRepository: Skipping title screen update - indices not yet cached");
+            return Ok(());
+        }
+
         let challenge_counts = self.count_challenges_by_difficulty();
 
         // Get the title screen and update its data
@@ -274,26 +294,53 @@ impl StageRepository {
     }
 
     pub fn count_challenges_by_difficulty(&self) -> [usize; 5] {
-        self.with_challenges(|available_challenges| {
+        // Use cached indices for O(1) counting
+        if self.indices_cached {
             let mut counts = [0; 5];
-            for challenge in available_challenges {
-                let difficulty_index = match challenge.difficulty_level {
-                    Some(ref diff) => match diff {
-                        DifficultyLevel::Easy => 0,
-                        DifficultyLevel::Normal => 1,
-                        DifficultyLevel::Hard => 2,
-                        DifficultyLevel::Wild => 3,
-                        DifficultyLevel::Zen => 4,
-                    },
-                    None => 0, // Default to easy
-                };
-                if difficulty_index < 5 {
-                    counts[difficulty_index] += 1;
-                }
-            }
+            counts[0] = self
+                .difficulty_indices
+                .get(&DifficultyLevel::Easy)
+                .map_or(0, |v| v.len());
+            counts[1] = self
+                .difficulty_indices
+                .get(&DifficultyLevel::Normal)
+                .map_or(0, |v| v.len());
+            counts[2] = self
+                .difficulty_indices
+                .get(&DifficultyLevel::Hard)
+                .map_or(0, |v| v.len());
+            counts[3] = self
+                .difficulty_indices
+                .get(&DifficultyLevel::Wild)
+                .map_or(0, |v| v.len());
+            counts[4] = self
+                .difficulty_indices
+                .get(&DifficultyLevel::Zen)
+                .map_or(0, |v| v.len());
             counts
-        })
-        .unwrap_or([0; 5])
+        } else {
+            // Fallback to GameData access (should only happen during initialization)
+            self.with_challenges(|available_challenges| {
+                let mut counts = [0; 5];
+                for challenge in available_challenges {
+                    let difficulty_index = match challenge.difficulty_level {
+                        Some(ref diff) => match diff {
+                            DifficultyLevel::Easy => 0,
+                            DifficultyLevel::Normal => 1,
+                            DifficultyLevel::Hard => 2,
+                            DifficultyLevel::Wild => 3,
+                            DifficultyLevel::Zen => 4,
+                        },
+                        None => 0, // Default to easy
+                    };
+                    if difficulty_index < 5 {
+                        counts[difficulty_index] += 1;
+                    }
+                }
+                counts
+            })
+            .unwrap_or([0; 5])
+        }
     }
 }
 
@@ -358,8 +405,13 @@ impl StageRepository {
         };
 
         repo.config = config;
-        repo.build_and_store_stages();
+        // Don't rebuild stages/indices - just update config
+        // Indices are already cached and difficulty filtering happens at runtime
         repo.current_index = 0;
+        log::info!(
+            "✅ StageRepository: Difficulty set to {:?} (keeping cached indices)",
+            difficulty
+        );
         Ok(())
     }
 
@@ -411,37 +463,41 @@ impl StageRepository {
         self.current_index = 0;
     }
 
-    /// Get a single challenge for specific difficulty
-    pub fn get_challenge_for_difficulty(&self, difficulty: DifficultyLevel) -> Option<Challenge> {
-        self.with_challenges(|available_challenges| {
-            // Filter challenges by difficulty level
-            let filtered_challenges: Vec<&Challenge> = available_challenges
-                .iter()
-                .filter(|challenge| {
-                    match &challenge.difficulty_level {
-                        Some(challenge_difficulty) => challenge_difficulty == &difficulty,
-                        None => difficulty == DifficultyLevel::Normal, // Default to normal if no difficulty set
-                    }
-                })
-                .collect();
+    /// Get a single challenge for specific difficulty (optimized with cached data)
+    pub fn get_challenge_for_difficulty(
+        &mut self,
+        difficulty: DifficultyLevel,
+    ) -> Option<Challenge> {
+        // Ensure indices are built
+        self.build_difficulty_indices();
 
-            if filtered_challenges.is_empty() {
-                return None;
+        if let Some(indices) = self.difficulty_indices.get(&difficulty) {
+            if indices.is_empty() {
+                None
+            } else if let Some(ref cached_challenges) = self.cached_challenges {
+                // O(1) lookup using cached challenges (no GameData access!)
+                let mut rng = self.create_rng();
+                let random_index_pos = rng.random_range(0..indices.len());
+                let challenge_index = indices[random_index_pos];
+
+                if challenge_index < cached_challenges.len() {
+                    Some(cached_challenges[challenge_index].clone())
+                } else {
+                    None
+                }
+            } else {
+                None
             }
-
-            // Random selection from filtered challenges
-            let mut rng = self.create_rng();
-            let selected_index = rng.random_range(0..filtered_challenges.len());
-            Some(filtered_challenges[selected_index].clone())
-        })
-        .flatten()
+        } else {
+            None
+        }
     }
 
     /// Get challenge for specific difficulty (static version for global instance)
     pub fn get_global_challenge_for_difficulty(
         difficulty: DifficultyLevel,
     ) -> Result<Option<Challenge>> {
-        let repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
+        let mut repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
             crate::GitTypeError::TerminalError(format!(
                 "Failed to lock global StageRepository: {}",
                 e
@@ -449,5 +505,69 @@ impl StageRepository {
         })?;
 
         Ok(repo.get_challenge_for_difficulty(difficulty))
+    }
+
+    /// Build difficulty indices for global repository
+    pub fn build_global_difficulty_indices() -> Result<()> {
+        let mut repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
+            crate::GitTypeError::TerminalError(format!(
+                "Failed to lock global StageRepository: {}",
+                e
+            ))
+        })?;
+
+        repo.build_difficulty_indices();
+        Ok(())
+    }
+
+    /// Update title screen data globally (called once during initialization)
+    pub fn update_global_title_screen_data() -> Result<()> {
+        // This will be called from finalizing step with proper screen manager access
+        // For now, just log that it's ready
+        log::info!(
+            "✅ StageRepository: Title screen data ready (will be updated by ScreenManager)"
+        );
+        Ok(())
+    }
+
+    /// Build difficulty indices for O(1) challenge lookup
+    fn build_difficulty_indices(&mut self) {
+        if self.indices_cached {
+            return;
+        }
+
+        // Create temporary indices map
+        let mut temp_indices: std::collections::HashMap<DifficultyLevel, Vec<usize>> =
+            std::collections::HashMap::new();
+
+        // Initialize all difficulty levels
+        temp_indices.insert(DifficultyLevel::Easy, Vec::new());
+        temp_indices.insert(DifficultyLevel::Normal, Vec::new());
+        temp_indices.insert(DifficultyLevel::Hard, Vec::new());
+        temp_indices.insert(DifficultyLevel::Wild, Vec::new());
+        temp_indices.insert(DifficultyLevel::Zen, Vec::new());
+
+        let result = self.with_challenges(|available_challenges| {
+            // Store challenges for caching outside the closure
+            let cached_challenges = available_challenges.clone();
+
+            for (index, challenge) in available_challenges.iter().enumerate() {
+                let difficulty = challenge
+                    .difficulty_level
+                    .unwrap_or(DifficultyLevel::Normal);
+                if let Some(indices) = temp_indices.get_mut(&difficulty) {
+                    indices.push(index);
+                }
+            }
+
+            cached_challenges
+        });
+
+        if let Some(cached_challenges) = result {
+            // Replace the actual indices with the temporary ones
+            self.difficulty_indices = temp_indices;
+            self.cached_challenges = Some(cached_challenges);
+            self.indices_cached = true;
+        }
     }
 }

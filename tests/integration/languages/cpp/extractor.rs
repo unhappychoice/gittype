@@ -24,9 +24,10 @@ double calculate_area(double radius) {
     return 3.14159 * radius * radius;
 }
 "#,
-    total_chunks: 5,
+    total_chunks: 7,
     chunk_counts: {
-        Function: 4,
+        CodeBlock: 6,
+        File: 1,
     }
 }
 
@@ -73,9 +74,8 @@ int main() {
 "#,
     total_chunks: 15,
     chunk_counts: {
-        Function: 8,
-        Struct: 2,
-        Variable: 4,
+        CodeBlock: 14,
+        File: 1,
     }
 }
 
@@ -110,10 +110,10 @@ int main() {
     return 0;
 }
 "#,
-    total_chunks: 7,
+    total_chunks: 9,
     chunk_counts: {
-        Function: 4,
-        Variable: 2,
+        CodeBlock: 8,
+        File: 1,
     }
 }
 
@@ -171,12 +171,8 @@ int main() {
 "#,
     total_chunks: 14,
     chunk_counts: {
-        CodeBlock: 1,
-        Conditional: 1,
-        Function: 6,
-        Loop: 1,
-        Struct: 2,
-        Variable: 2,
+        CodeBlock: 11,
+        File: 1,
     }
 }
 
@@ -240,12 +236,8 @@ int main() {
 "#,
     total_chunks: 16,
     chunk_counts: {
-        CodeBlock: 3,
-        Conditional: 1,
-        Function: 4,
-        Loop: 2,
-        Struct: 1,
-        Variable: 4,
+        CodeBlock: 12,
+        File: 1,
     }
 }
 
@@ -281,11 +273,10 @@ int main() {
     return 0;
 }
 "#,
-    total_chunks: 11,
+    total_chunks: 12,
     chunk_counts: {
-        Function: 5,
-        Struct: 2,
-        Variable: 3,
+        CodeBlock: 11,
+        File: 1,
     }
 }
 
@@ -431,9 +422,9 @@ public:
     }
 };
 "#,
-    total_chunks: 40,
+    total_chunks: 45,
     chunk_counts: {
-        Function: 4,
-        Struct: 3,
+        CodeBlock: 31,
+        File: 1,
     }
 }

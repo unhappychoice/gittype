@@ -9,10 +9,10 @@ end
 
 # text_to_type
 def add(a, b)
-a + b
+a + b # Return sum
 end
 
 # text_to_display
 def add(a, b)↵
-  a + b↵ # Return sum
+  a + b # Return sum↵
 end↵

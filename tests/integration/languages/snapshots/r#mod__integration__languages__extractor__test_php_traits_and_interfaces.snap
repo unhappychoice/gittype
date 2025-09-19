@@ -15,42 +15,52 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "Class",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "interface Drawable {\n    public function draw();\n}",
       "end_line": 5,
       "language": "php",
-      "name": "Drawable",
+      "name": "interface",
       "original_indentation": 0,
       "start_line": 3
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "Method",
       "comment_ranges": [],
       "content": "    public function draw();",
       "end_line": 4,
       "language": "php",
-      "name": "draw",
+      "name": "method",
       "original_indentation": 4,
       "start_line": 4
     },
     {
-      "chunk_type": "Class",
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "trait Timestampable",
+      "end_line": 7,
+      "language": "php",
+      "name": "name",
+      "original_indentation": 6,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "trait Timestampable {\n    private $created_at;\n    private $updated_at;\n\n    public function touch() {\n        $this->updated_at = time();\n    }\n}",
       "end_line": 14,
       "language": "php",
-      "name": "Timestampable",
+      "name": "trait",
       "original_indentation": 0,
       "start_line": 7
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "Method",
       "comment_ranges": [],
       "content": "    public function touch() {\n        $this->updated_at = time();\n    }",
       "end_line": 13,
       "language": "php",
-      "name": "touch",
+      "name": "method",
       "original_indentation": 4,
       "start_line": 11
     },
@@ -60,32 +70,42 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class Shape implements Drawable {\n    use Timestampable;\n\n    protected $color;\n\n    public function __construct($color) {\n        $this->color = $color;\n        $this->created_at = time();\n        $this->updated_at = time();\n    }\n\n    public function draw() {\n        return \"Drawing a shape in \" . $this->color;\n    }\n}",
       "end_line": 30,
       "language": "php",
-      "name": "Shape",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 16
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    public function __construct",
+      "end_line": 21,
+      "language": "php",
+      "name": "name",
+      "original_indentation": 20,
+      "start_line": 21
+    },
+    {
+      "chunk_type": "Method",
       "comment_ranges": [],
       "content": "    public function __construct($color) {\n        $this->color = $color;\n        $this->created_at = time();\n        $this->updated_at = time();\n    }",
       "end_line": 25,
       "language": "php",
-      "name": "__construct",
+      "name": "method",
       "original_indentation": 4,
       "start_line": 21
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "Method",
       "comment_ranges": [],
       "content": "    public function draw() {\n        return \"Drawing a shape in \" . $this->color;\n    }",
       "end_line": 29,
       "language": "php",
-      "name": "draw",
+      "name": "method",
       "original_indentation": 4,
       "start_line": 27
     }
   ],
   "source_code": "<?php\n\ninterface Drawable {\n    public function draw();\n}\n\ntrait Timestampable {\n    private $created_at;\n    private $updated_at;\n\n    public function touch() {\n        $this->updated_at = time();\n    }\n}\n\nclass Shape implements Drawable {\n    use Timestampable;\n\n    protected $color;\n\n    public function __construct($color) {\n        $this->color = $color;\n        $this->created_at = time();\n        $this->updated_at = time();\n    }\n\n    public function draw() {\n        return \"Drawing a shape in \" . $this->color;\n    }\n}\n\n?>",
   "test_name": "test_php_traits_and_interfaces",
-  "total_chunks": 8
+  "total_chunks": 10
 }

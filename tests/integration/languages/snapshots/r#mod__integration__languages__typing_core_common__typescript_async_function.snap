@@ -16,10 +16,10 @@ async function fetchUser(id: number): Promise<User | null> {
 # text_to_type
 async function fetchUser(id: number): Promise<User | null> {
 try {
-const response = await fetch(`/api/users/${id}`);
+const response = await fetch(`/api/users/${id}`); // Fetch user
 return await response.json();
 } catch (error) {
-console.error(error);
+console.error(error); // Log error
 return null;
 }
 }
@@ -27,10 +27,10 @@ return null;
 # text_to_display
 async function fetchUser(id: number): Promise<User | null> {↵
     try {↵
-        const response = await fetch(`/api/users/${id}`);↵ // Fetch user
+        const response = await fetch(`/api/users/${id}`); // Fetch user↵
         return await response.json();↵
     } catch (error) {↵
-        console.error(error);↵ // Log error
+        console.error(error); // Log error↵
         return null;↵
     }↵
 }↵

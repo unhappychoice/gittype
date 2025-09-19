@@ -126,12 +126,10 @@ impl GameData {
     where
         F: FnOnce(&Vec<Challenge>) -> R,
     {
-        if let Some(game_data) = GLOBAL_GAME_DATA.get() {
-            let data = game_data.lock().unwrap();
-            data.challenges.as_ref().map(f)
-        } else {
-            None
-        }
+        GLOBAL_GAME_DATA
+            .get()
+            .and_then(|game_data| game_data.lock().ok())
+            .and_then(|data| data.challenges.as_ref().map(f))
     }
 
     /// Take the challenges (move out of GameData)

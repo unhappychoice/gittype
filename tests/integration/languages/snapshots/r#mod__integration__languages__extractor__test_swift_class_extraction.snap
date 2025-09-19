@@ -15,12 +15,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "class Calculator",
+      "end_line": 2,
+      "language": "swift",
+      "name": "name",
+      "original_indentation": 6,
+      "start_line": 2
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "class Calculator {\n    private var value: Int = 0\n\n    init() {\n        self.value = 0\n    }\n\n    deinit {\n        print(\"Calculator deallocated\")\n    }\n\n    func add(_ number: Int) -> Int {\n        value += number\n        return value\n    }\n\n    func multiply(_ number: Int) -> Int {\n        value *= number\n        return value\n    }\n}",
       "end_line": 22,
       "language": "swift",
-      "name": "Calculator",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -40,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    func add(_ number: Int) -> Int {\n        value += number\n        return value\n    }",
       "end_line": 16,
       "language": "swift",
-      "name": "add",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 13
     },
@@ -60,7 +70,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    func multiply(_ number: Int) -> Int {\n        value *= number\n        return value\n    }",
       "end_line": 21,
       "language": "swift",
-      "name": "multiply",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 18
     },
@@ -80,7 +90,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class Person {\n    let name: String\n    let age: Int\n\n    init(name: String, age: Int) {\n        self.name = name\n        self.age = age\n    }\n\n    func greet() -> String {\n        return \"Hello, I'm \\(name)!\"\n    }\n}",
       "end_line": 36,
       "language": "swift",
-      "name": "Person",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 24
     },
@@ -100,7 +110,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    func greet() -> String {\n        return \"Hello, I'm \\(name)!\"\n    }",
       "end_line": 35,
       "language": "swift",
-      "name": "greet",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 33
     },
@@ -117,5 +127,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nclass Calculator {\n    private var value: Int = 0\n\n    init() {\n        self.value = 0\n    }\n\n    deinit {\n        print(\"Calculator deallocated\")\n    }\n\n    func add(_ number: Int) -> Int {\n        value += number\n        return value\n    }\n\n    func multiply(_ number: Int) -> Int {\n        value *= number\n        return value\n    }\n}\n\nclass Person {\n    let name: String\n    let age: Int\n\n    init(name: String, age: Int) {\n        self.name = name\n        self.age = age\n    }\n\n    func greet() -> String {\n        return \"Hello, I'm \\(name)!\"\n    }\n}\n",
   "test_name": "test_swift_class_extraction",
-  "total_chunks": 11
+  "total_chunks": 12
 }

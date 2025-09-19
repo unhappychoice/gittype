@@ -8,10 +8,11 @@ add :: Int -> Int -> Int
 add x y = x + y -- Returns the sum
 
 # text_to_type
+-- Function to add two numbers
 add :: Int -> Int -> Int
-add x y = x + y
+add x y = x + y -- Returns the sum
 
 # text_to_display
--- Function to add two numbers
+-- Function to add two numbers↵
 add :: Int -> Int -> Int↵
-add x y = x + y↵ -- Returns the sum
+add x y = x + y -- Returns the sum↵

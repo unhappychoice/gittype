@@ -77,7 +77,7 @@ mod byte_char_position_bugs {
         let content = std::fs::read_to_string(options_path).unwrap();
         let tree = gittype::extractor::parsers::parse_with_thread_local("rust", &content).unwrap();
         let comment_ranges =
-            CommonExtractor::extract_comment_ranges(&tree, &content, "rust").unwrap();
+            CommonExtractor::extract_comment_ranges(&tree, &content, "rust", &[]).unwrap();
 
         println!("=== Real models/options.rs Test ===");
         println!("Found {} chunks", chunks.len());
@@ -163,13 +163,15 @@ mod byte_char_position_bugs {
 
                 // Convert to Challenge
                 let converter = ChallengeConverter::new();
-                let challenge = converter.convert_chunk_to_challenge(chunk.clone());
+                let challenge = converter.convert_chunk_to_challenge(chunk.clone()).unwrap();
                 println!("Challenge created successfully");
                 println!("Challenge comment ranges: {:?}", challenge.comment_ranges);
 
                 // Debug: print the actual original comment vs display text around the problematic area
                 let original_chars: Vec<char> = challenge.code_content.chars().collect();
-                let problematic_comment = &original_chars[317..338];
+                let end_idx = std::cmp::min(338, original_chars.len());
+                let start_idx = std::cmp::min(317, end_idx);
+                let problematic_comment = &original_chars[start_idx..end_idx];
                 println!(
                     "Original comment (317-338): {:?}",
                     problematic_comment.iter().collect::<String>()
@@ -179,11 +181,15 @@ mod byte_char_position_bugs {
                 let typing_core = TypingCore::from_challenge(&challenge, None);
 
                 // Also check what's actually in the display text around that range
-                println!(
-                    "Display text around 330-360: {:?}",
-                    &typing_core.text_to_display()
-                        [330..360.min(typing_core.text_to_display().len())]
-                );
+                let display_text = typing_core.text_to_display();
+                let start_idx = std::cmp::min(330, display_text.len());
+                let end_idx = std::cmp::min(360, display_text.len());
+                if start_idx < end_idx {
+                    println!(
+                        "Display text around 330-360: {:?}",
+                        &display_text[start_idx..end_idx]
+                    );
+                }
                 let display_text = typing_core.text_to_display();
                 let display_ranges = typing_core.display_comment_ranges();
 

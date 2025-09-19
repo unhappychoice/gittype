@@ -60,10 +60,11 @@ impl TypingScreen {
                 ..Default::default()
             };
 
-            self.countdown = Countdown::new();
             self.typing_core = TypingCore::new(&challenge.code_content, comment_ranges, options);
-            self.challenge = Some(challenge.clone());
             self.code_context = context_loader::load_context_for_challenge(&challenge, 4)?;
+
+            self.countdown = Countdown::new();
+            self.challenge = Some(challenge.clone());
             // Update git_repository from GameData
             self.git_repository = GameData::get_git_repository();
             self.waiting_to_start = true;
@@ -388,7 +389,7 @@ impl Screen for TypingScreen {
             UpdateStrategy::InputOnly
         } else {
             UpdateStrategy::Hybrid {
-                interval: Duration::from_millis(16), // ~60 FPS for smooth typing display
+                interval: Duration::from_millis(33), // ~30 FPS for efficient typing display
                 input_priority: true,
             }
         }

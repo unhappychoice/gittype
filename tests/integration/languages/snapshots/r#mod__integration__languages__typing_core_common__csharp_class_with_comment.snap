@@ -15,18 +15,19 @@ public class Greeter
 # text_to_type
 public class Greeter
 {
+// Method to greet
 public string SayHello(string name)
 {
-return $"Hello, {name}!";
+return $"Hello, {name}!"; // Returns a greeting
 }
 }
 
 # text_to_display
 public class Greeter↵
 {↵
-    // Method to greet
+    // Method to greet↵
     public string SayHello(string name)↵
     {↵
-        return $"Hello, {name}!";↵ // Returns a greeting
+        return $"Hello, {name}!"; // Returns a greeting↵
     }↵
 }↵

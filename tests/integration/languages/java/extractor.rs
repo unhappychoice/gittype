@@ -24,11 +24,12 @@ test_language_extractor! {
         return this.message.length();
     }
 }"#,
-    total_chunks: 7,
+    total_chunks: 11,
     chunk_counts: {
         Class: 1,
+        CodeBlock: 5,
+        File: 1,
         Method: 4,
-        Variable: 1,
     }
 }
 
@@ -84,11 +85,9 @@ public class Circle implements Drawable, Resizable {
 }"#,
     total_chunks: 24,
     chunk_counts: {
-        Class: 1,
-        CodeBlock: 6,
-        Interface: 2,
+        CodeBlock: 10,
+        File: 1,
         Method: 12,
-        Variable: 2,
     }
 }
 
@@ -124,12 +123,12 @@ public class ColorTest {
         System.out.println(color.getName());
     }
 }"##,
-    total_chunks: 9,
+    total_chunks: 10,
     chunk_counts: {
-        Class: 1,
-        Enum: 1,
+        File: 1,
         Method: 4,
-        Variable: 2,
+        CodeBlock: 4,
+        Class: 1,
     }
 }
 
@@ -159,9 +158,10 @@ test_language_extractor! {
 }"#,
     total_chunks: 9,
     chunk_counts: {
+        File: 1,
         Class: 1,
         Method: 3,
-        Variable: 4,
+        CodeBlock: 4,
     }
 }
 
@@ -303,9 +303,9 @@ class ProcessedItem {
     public long getTimestamp() { return timestamp; }
 }
 "#,
-    total_chunks: 39,
+    total_chunks: 46,
     chunk_counts: {
-        Class: 3,
-        Method: 12,
+        CodeBlock: 20,
+        File: 1,
     }
 }

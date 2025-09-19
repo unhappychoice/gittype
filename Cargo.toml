@@ -68,6 +68,7 @@ git2 = { version = "0.20", features = ["vendored-openssl", "vendored-libgit2"] }
 streaming-iterator = "0.1"
 log = "0.4"
 log4rs = "1.4"
+env_logger = "0.11"
 tempfile = "3.22"
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 reqwest = { version = "0.12", features = ["json"] }

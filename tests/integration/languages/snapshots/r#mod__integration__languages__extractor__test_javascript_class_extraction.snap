@@ -15,14 +15,34 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "class UserManager",
+      "end_line": 2,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 6,
+      "start_line": 2
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "class UserManager {\n    constructor(apiKey) {\n        this.apiKey = apiKey;\n        this.users = [];\n    }\n\n    async loadUsers() {\n        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }\n    }\n\n    findUser = (id) => {\n        return this.users.find(user => user.id === id);\n    };\n}",
       "end_line": 24,
       "language": "javascript",
-      "name": "UserManager",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 2
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    constructor",
+      "end_line": 3,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 4,
+      "start_line": 3
     },
     {
       "chunk_type": "Method",
@@ -30,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    constructor(apiKey) {\n        this.apiKey = apiKey;\n        this.users = [];\n    }",
       "end_line": 6,
       "language": "javascript",
-      "name": "constructor",
+      "name": "method",
       "original_indentation": 4,
       "start_line": 3
     },
@@ -40,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    async loadUsers() {\n        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }\n    }",
       "end_line": 19,
       "language": "javascript",
-      "name": "loadUsers",
+      "name": "method",
       "original_indentation": 4,
       "start_line": 8
     },
@@ -95,14 +115,34 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 21
     },
     {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "class EventEmitter",
+      "end_line": 26,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 6,
+      "start_line": 26
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "class EventEmitter {\n    constructor() {\n        this.events = {};\n    }\n\n    on(eventName, callback) {\n        if (!this.events[eventName]) {\n            this.events[eventName] = [];\n        }\n        this.events[eventName].push(callback);\n    }\n\n    emit(eventName, data) {\n        if (this.events[eventName]) {\n            this.events[eventName].forEach(callback => callback(data));\n        }\n    }\n}",
       "end_line": 43,
       "language": "javascript",
-      "name": "EventEmitter",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 26
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    constructor",
+      "end_line": 27,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 4,
+      "start_line": 27
     },
     {
       "chunk_type": "Method",
@@ -110,7 +150,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    constructor() {\n        this.events = {};\n    }",
       "end_line": 29,
       "language": "javascript",
-      "name": "constructor",
+      "name": "method",
       "original_indentation": 4,
       "start_line": 27
     },
@@ -120,7 +160,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    on(eventName, callback) {\n        if (!this.events[eventName]) {\n            this.events[eventName] = [];\n        }\n        this.events[eventName].push(callback);\n    }",
       "end_line": 36,
       "language": "javascript",
-      "name": "on",
+      "name": "method",
       "original_indentation": 4,
       "start_line": 31
     },
@@ -140,7 +180,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    emit(eventName, data) {\n        if (this.events[eventName]) {\n            this.events[eventName].forEach(callback => callback(data));\n        }\n    }",
       "end_line": 42,
       "language": "javascript",
-      "name": "emit",
+      "name": "method",
       "original_indentation": 4,
       "start_line": 38
     },
@@ -157,5 +197,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nclass UserManager {\n    constructor(apiKey) {\n        this.apiKey = apiKey;\n        this.users = [];\n    }\n\n    async loadUsers() {\n        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }\n    }\n\n    findUser = (id) => {\n        return this.users.find(user => user.id === id);\n    };\n}\n\nclass EventEmitter {\n    constructor() {\n        this.events = {};\n    }\n\n    on(eventName, callback) {\n        if (!this.events[eventName]) {\n            this.events[eventName] = [];\n        }\n        this.events[eventName].push(callback);\n    }\n\n    emit(eventName, data) {\n        if (this.events[eventName]) {\n            this.events[eventName].forEach(callback => callback(data));\n        }\n    }\n}\n",
   "test_name": "test_javascript_class_extraction",
-  "total_chunks": 15
+  "total_chunks": 19
 }

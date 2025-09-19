@@ -14,19 +14,19 @@ void greet(struct person *p) {
 
 # text_to_type
 struct person {
-char name[50];
-int age;
+char name[50]; // Person's name
+int age;       // Person's age
 };
 void greet(struct person *p) {
-printf("Hello, %s\n", p->name);
+printf("Hello, %s\n", p->name); // Print greeting
 }
 
 # text_to_display
 struct person {↵
-    char name[50];↵ // Person's name
-    int age;↵       // Person's age
+    char name[50]; // Person's name↵
+    int age;       // Person's age↵
 };↵
 
 void greet(struct person *p) {↵
-    printf("Hello, %s\n", p->name);↵ // Print greeting
+    printf("Hello, %s\n", p->name); // Print greeting↵
 }↵

@@ -25,7 +25,9 @@ class User extends Model {
 namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 class User extends Model {
+// Table name
 protected $table = 'users';
+// Fillable fields
 protected $fillable = [
 'name',
 'email',
@@ -40,10 +42,10 @@ namespace App\Models;↵
 use Illuminate\Database\Eloquent\Model;↵
 
 class User extends Model {↵
-    // Table name
+    // Table name↵
     protected $table = 'users';↵
     
-    // Fillable fields
+    // Fillable fields↵
     protected $fillable = [↵
         'name',↵
         'email',↵

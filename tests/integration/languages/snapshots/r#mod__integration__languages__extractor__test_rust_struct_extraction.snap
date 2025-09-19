@@ -15,22 +15,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "Struct",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "struct Person {\n    name: String,\n    age: u32,\n}",
       "end_line": 5,
       "language": "rust",
-      "name": "Person",
+      "name": "struct",
       "original_indentation": 0,
       "start_line": 2
     },
     {
-      "chunk_type": "Struct",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "pub struct Config {\n    debug: bool,\n}",
       "end_line": 9,
       "language": "rust",
-      "name": "Config",
+      "name": "struct",
       "original_indentation": 0,
       "start_line": 7
     }

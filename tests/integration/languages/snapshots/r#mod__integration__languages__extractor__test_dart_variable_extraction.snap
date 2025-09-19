@@ -15,82 +15,82 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "const String APP_NAME = 'MyApp';",
       "end_line": 2,
       "language": "dart",
-      "name": "APP_NAME",
+      "name": "variable",
       "original_indentation": 0,
       "start_line": 2
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "const int VERSION = 1;",
       "end_line": 3,
       "language": "dart",
-      "name": "VERSION",
+      "name": "variable",
       "original_indentation": 0,
       "start_line": 3
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "final String sessionId = generateId();",
       "end_line": 5,
       "language": "dart",
-      "name": "sessionId",
+      "name": "variable",
       "original_indentation": 0,
       "start_line": 5
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "final List<String> items = [];",
       "end_line": 6,
       "language": "dart",
-      "name": "items",
+      "name": "variable",
       "original_indentation": 0,
       "start_line": 6
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "var globalCounter = 0;",
       "end_line": 8,
       "language": "dart",
-      "name": "globalCounter",
+      "name": "variable",
       "original_indentation": 0,
       "start_line": 8
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "var isLoggedIn = false;",
       "end_line": 9,
       "language": "dart",
-      "name": "isLoggedIn",
+      "name": "variable",
       "original_indentation": 0,
       "start_line": 9
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "late String userId;",
       "end_line": 11,
       "language": "dart",
-      "name": "userId",
+      "name": "variable",
       "original_indentation": 0,
       "start_line": 11
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "late DatabaseConnection db;",
       "end_line": 12,
       "language": "dart",
-      "name": "db",
+      "name": "variable",
       "original_indentation": 0,
       "start_line": 12
     }

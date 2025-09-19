@@ -42,7 +42,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "def calculateSum(a: Int, b: Int): Int = {\n    val result = a + b // Add the numbers\n    /*\n     * Return the result\n     */\n    result\n}",
       "end_line": 8,
       "language": "scala",
-      "name": "calculateSum",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 2
     }

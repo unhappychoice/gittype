@@ -15,42 +15,52 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "Namespace",
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "namespace MyApplication.Models",
+      "end_line": 2,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 10,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "namespace MyApplication.Models\n{\n    public struct Point\n    {\n        public int X { get; set; }\n        public int Y { get; set; }\n\n        public Point(int x, int y)\n        {\n            X = x;\n            Y = y;\n        }\n\n        public double DistanceToOrigin()\n        {\n            return Math.Sqrt(X * X + Y * Y);\n        }\n    }\n\n    public enum UserRole\n    {\n        Guest,\n        User,\n        Moderator,\n        Administrator\n    }\n\n    public enum Status\n    {\n        Active = 1,\n        Inactive = 0,\n        Pending = 2\n    }\n}",
       "end_line": 35,
       "language": "csharp",
-      "name": "MyApplication.Models",
+      "name": "namespace",
       "original_indentation": 0,
       "start_line": 2
     },
     {
-      "chunk_type": "Struct",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "    public struct Point\n    {\n        public int X { get; set; }\n        public int Y { get; set; }\n\n        public Point(int x, int y)\n        {\n            X = x;\n            Y = y;\n        }\n\n        public double DistanceToOrigin()\n        {\n            return Math.Sqrt(X * X + Y * Y);\n        }\n    }",
       "end_line": 19,
       "language": "csharp",
-      "name": "Point",
+      "name": "struct",
       "original_indentation": 4,
       "start_line": 4
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "        public int X { get; set; }",
       "end_line": 6,
       "language": "csharp",
-      "name": "X",
+      "name": "property",
       "original_indentation": 8,
       "start_line": 6
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "        public int Y { get; set; }",
       "end_line": 7,
       "language": "csharp",
-      "name": "Y",
+      "name": "property",
       "original_indentation": 8,
       "start_line": 7
     },
@@ -60,7 +70,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        public Point(int x, int y)\n        {\n            X = x;\n            Y = y;\n        }",
       "end_line": 13,
       "language": "csharp",
-      "name": "Point",
+      "name": "method",
       "original_indentation": 8,
       "start_line": 9
     },
@@ -75,12 +85,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 10
     },
     {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        public double DistanceToOrigin",
+      "end_line": 15,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 22,
+      "start_line": 15
+    },
+    {
       "chunk_type": "Method",
       "comment_ranges": [],
       "content": "        public double DistanceToOrigin()\n        {\n            return Math.Sqrt(X * X + Y * Y);\n        }",
       "end_line": 18,
       "language": "csharp",
-      "name": "DistanceToOrigin",
+      "name": "method",
       "original_indentation": 8,
       "start_line": 15
     },
@@ -95,27 +115,27 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 16
     },
     {
-      "chunk_type": "Enum",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "    public enum UserRole\n    {\n        Guest,\n        User,\n        Moderator,\n        Administrator\n    }",
       "end_line": 27,
       "language": "csharp",
-      "name": "UserRole",
+      "name": "enum",
       "original_indentation": 4,
       "start_line": 21
     },
     {
-      "chunk_type": "Enum",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "    public enum Status\n    {\n        Active = 1,\n        Inactive = 0,\n        Pending = 2\n    }",
       "end_line": 34,
       "language": "csharp",
-      "name": "Status",
+      "name": "enum",
       "original_indentation": 4,
       "start_line": 29
     }
   ],
   "source_code": "\nnamespace MyApplication.Models\n{\n    public struct Point\n    {\n        public int X { get; set; }\n        public int Y { get; set; }\n\n        public Point(int x, int y)\n        {\n            X = x;\n            Y = y;\n        }\n\n        public double DistanceToOrigin()\n        {\n            return Math.Sqrt(X * X + Y * Y);\n        }\n    }\n\n    public enum UserRole\n    {\n        Guest,\n        User,\n        Moderator,\n        Administrator\n    }\n\n    public enum Status\n    {\n        Active = 1,\n        Inactive = 0,\n        Pending = 2\n    }\n}\n",
   "test_name": "test_csharp_struct_and_enum_extraction",
-  "total_chunks": 11
+  "total_chunks": 13
 }

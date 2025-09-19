@@ -24,39 +24,39 @@ extension StatusExtension on Status {
 
 # text_to_type
 enum Status {
-loading,
-success,
-error,
+loading,  // Loading state
+success,  // Success state
+error,    // Error state
 }
 extension StatusExtension on Status {
 String get message {
 switch (this) {
 case Status.loading:
-return 'Loading...';
+return 'Loading...';      // Loading message
 case Status.success:
-return 'Success!';
+return 'Success!';        // Success message
 case Status.error:
-return 'Error occurred';
+return 'Error occurred';  // Error message
 }
 }
 }
 
 # text_to_display
 enum Status {↵
-  loading,↵  // Loading state
-  success,↵  // Success state
-  error,↵    // Error state
+  loading,  // Loading state↵
+  success,  // Success state↵
+  error,    // Error state↵
 }↵
 
 extension StatusExtension on Status {↵
   String get message {↵
     switch (this) {↵
       case Status.loading:↵
-        return 'Loading...';↵      // Loading message
+        return 'Loading...';      // Loading message↵
       case Status.success:↵
-        return 'Success!';↵        // Success message
+        return 'Success!';        // Success message↵
       case Status.error:↵
-        return 'Error occurred';↵  // Error message
+        return 'Error occurred';  // Error message↵
     }↵
   }↵
 }↵

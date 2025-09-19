@@ -9,10 +9,10 @@ public void greet(String name) {
 
 # text_to_type
 public void greet(String name) {
-System.out.println("Hello " + name);
+System.out.println("Hello " + name); // Print greeting
 }
 
 # text_to_display
 public void greet(String name) {↵
-    System.out.println("Hello " + name);↵ // Print greeting
+    System.out.println("Hello " + name); // Print greeting↵
 }↵

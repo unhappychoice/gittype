@@ -20,37 +20,37 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class Product\n  attr_accessor :name, :price\n  attr_reader :id\n  attr_writer :description\nend",
       "end_line": 6,
       "language": "ruby",
-      "name": "Product",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 2
     },
     {
-      "chunk_type": "Method",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "  attr_accessor :name, :price",
       "end_line": 3,
       "language": "ruby",
-      "name": "name, price (2)",
+      "name": "attr_accessor",
       "original_indentation": 2,
       "start_line": 3
     },
     {
-      "chunk_type": "Method",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "  attr_reader :id",
       "end_line": 4,
       "language": "ruby",
-      "name": "id (1)",
+      "name": "attr_accessor",
       "original_indentation": 2,
       "start_line": 4
     },
     {
-      "chunk_type": "Method",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "  attr_writer :description",
       "end_line": 5,
       "language": "ruby",
-      "name": "description (1)",
+      "name": "attr_accessor",
       "original_indentation": 2,
       "start_line": 5
     }

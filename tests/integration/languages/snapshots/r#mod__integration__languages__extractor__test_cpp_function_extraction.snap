@@ -15,47 +15,67 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "int main() {\n    std::cout << \"Hello, world!\" << std::endl;\n    return 0;\n}",
       "end_line": 7,
       "language": "cpp",
-      "name": "main",
+      "name": "function.definition",
       "original_indentation": 0,
       "start_line": 4
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "int add(int a, int b) {\n    return a + b;\n}",
       "end_line": 11,
       "language": "cpp",
-      "name": "add",
+      "name": "function.definition",
       "original_indentation": 0,
       "start_line": 9
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "void print_number",
+      "end_line": 13,
+      "language": "cpp",
+      "name": "function.name",
+      "original_indentation": 5,
+      "start_line": 13
+    },
+    {
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "void print_number(int num) {\n    std::cout << num << std::endl;\n}",
       "end_line": 15,
       "language": "cpp",
-      "name": "print_number",
+      "name": "function.definition",
       "original_indentation": 0,
       "start_line": 13
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "double calculate_area",
+      "end_line": 17,
+      "language": "cpp",
+      "name": "function.name",
+      "original_indentation": 7,
+      "start_line": 17
+    },
+    {
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "double calculate_area(double radius) {\n    return 3.14159 * radius * radius;\n}",
       "end_line": 19,
       "language": "cpp",
-      "name": "calculate_area",
+      "name": "function.definition",
       "original_indentation": 0,
       "start_line": 17
     }
   ],
   "source_code": "\n#include <iostream>\n\nint main() {\n    std::cout << \"Hello, world!\" << std::endl;\n    return 0;\n}\n\nint add(int a, int b) {\n    return a + b;\n}\n\nvoid print_number(int num) {\n    std::cout << num << std::endl;\n}\n\ndouble calculate_area(double radius) {\n    return 3.14159 * radius * radius;\n}\n",
   "test_name": "test_cpp_function_extraction",
-  "total_chunks": 5
+  "total_chunks": 7
 }

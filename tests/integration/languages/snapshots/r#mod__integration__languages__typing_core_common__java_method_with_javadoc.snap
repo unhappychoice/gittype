@@ -14,18 +14,23 @@ public int factorial(int n) {
 }
 
 # text_to_type
+/**
+* Calculates the factorial of a number
+* @param n the number
+* @return the factorial
+*/
 public int factorial(int n) {
 if (n <= 1) return 1;
-return n * factorial(n - 1);
+return n * factorial(n - 1); // Recursive call
 }
 
 # text_to_display
-/**
- * Calculates the factorial of a number
- * @param n the number
- * @return the factorial
- */
+/**↵
+ * Calculates the factorial of a number↵
+ * @param n the number↵
+ * @return the factorial↵
+ */↵
 public int factorial(int n) {↵
     if (n <= 1) return 1;↵
-    return n * factorial(n - 1);↵ // Recursive call
+    return n * factorial(n - 1); // Recursive call↵
 }↵

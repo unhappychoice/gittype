@@ -14,17 +14,20 @@ def processData[T](data: List[T], processor: T => String): List[String] = {
 
 # text_to_type
 def processData[T](data: List[T], processor: T => String): List[String] = {
+// Apply processor function to each element
 data.map { item =>
+/* Process each item individually
+Using the provided processor function */
 processor(item)
-}.filter(_.nonEmpty)
+}.filter(_.nonEmpty) // Filter out empty results
 }
 
 # text_to_display
 def processData[T](data: List[T], processor: T => String): List[String] = {↵
-    // Apply processor function to each element
+    // Apply processor function to each element↵
     data.map { item =>↵
-        /* Process each item individually
-           Using the provided processor function */
+        /* Process each item individually↵
+           Using the provided processor function */↵
         processor(item)↵
-    }.filter(_.nonEmpty)↵ // Filter out empty results
+    }.filter(_.nonEmpty) // Filter out empty results↵
 }↵

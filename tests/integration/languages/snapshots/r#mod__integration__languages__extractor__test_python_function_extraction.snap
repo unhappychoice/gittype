@@ -15,14 +15,34 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "def hello_world",
+      "end_line": 2,
+      "language": "python",
+      "name": "name",
+      "original_indentation": 4,
+      "start_line": 2
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [],
       "content": "def hello_world():\n    print(\"Hello, world!\")",
       "end_line": 3,
       "language": "python",
-      "name": "hello_world",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 2
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "def calculate_sum",
+      "end_line": 5,
+      "language": "python",
+      "name": "name",
+      "original_indentation": 4,
+      "start_line": 5
     },
     {
       "chunk_type": "Function",
@@ -30,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "def calculate_sum(a, b):\n    return a + b",
       "end_line": 6,
       "language": "python",
-      "name": "calculate_sum",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 5
     },
@@ -40,12 +60,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "def fibonacci(n):\n    if n <= 1:\n        return n\n    return fibonacci(n-1) + fibonacci(n-2)",
       "end_line": 11,
       "language": "python",
-      "name": "fibonacci",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 8
     }
   ],
   "source_code": "\ndef hello_world():\n    print(\"Hello, world!\")\n\ndef calculate_sum(a, b):\n    return a + b\n\ndef fibonacci(n):\n    if n <= 1:\n        return n\n    return fibonacci(n-1) + fibonacci(n-2)\n",
   "test_name": "test_python_function_extraction",
-  "total_chunks": 4
+  "total_chunks": 6
 }
