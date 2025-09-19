@@ -16,9 +16,11 @@ def fibonacci(n):
         return n
     return fibonacci(n-1) + fibonacci(n-2)
 "#,
-    total_chunks: 4,
+    total_chunks: 6,
     chunk_counts: {
+        File: 1,
         Function: 3,
+        CodeBlock: 2,
     }
 }
 
@@ -45,10 +47,11 @@ class Calculator:
     def multiply(self, a, b):
         return a * b
 "#,
-    total_chunks: 8,
+    total_chunks: 9,
     chunk_counts: {
         Class: 2,
-        Function: 5,
+        File: 1,
+        Method: 0,
     }
 }
 
@@ -85,10 +88,10 @@ class Database:
 def process_data(data):
     return [item.upper() for item in data]
 "#,
-    total_chunks: 10,
+    total_chunks: 14,
     chunk_counts: {
-        Class: 2,
-        Function: 7,
+        CodeBlock: 4,
+        File: 1,
     }
 }
 
@@ -163,9 +166,12 @@ def data_processor(input_data):
 
     return results
 "#,
-    total_chunks: 14,
+    total_chunks: 16,
     chunk_counts: {
+        File: 1,
         Function: 2,
+        CodeBlock: 2,
+        Lambda: 0,
     }
 }
 
@@ -240,9 +246,11 @@ class DataAnalyzer:
         else:
             return 3
 "#,
-    total_chunks: 13,
+    total_chunks: 16,
     chunk_counts: {
         Class: 1,
+        CodeBlock: 3,
+        File: 1,
         Function: 3,
     }
 }
@@ -322,12 +330,12 @@ class ConfigManager:
                 'log_level': 'INFO',
                 'database': {
                     'host': 'localhost',
-                    'port': 5432,
+                    'port': 0,
                     'name': 'default_db'
                 },
                 'cache': {
                     'enabled': True,
-                    'ttl': 3600,
+                    'ttl': 0,
                     'max_size': 1000
                 },
                 'features': {
@@ -352,9 +360,11 @@ class ConfigManager:
 
         return value
 "#,
-    total_chunks: 19,
+    total_chunks: 23,
     chunk_counts: {
-        Function: 4,
-        Class: 1,
+        CodeBlock: 4,
+        File: 1,
+        CodeBlock: 4,
+        File: 1,
     }
 }

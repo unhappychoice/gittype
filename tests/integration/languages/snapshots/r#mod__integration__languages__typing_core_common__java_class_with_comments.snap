@@ -14,8 +14,8 @@ public class Calculator {
 
 # text_to_type
 public class Calculator {
-private int result = 0;
-public Calculator add(int value) {
+private int result = 0; // Initialize result
+public Calculator add(int value) { // Add method
 this.result += value;
 return this;
 }
@@ -23,9 +23,9 @@ return this;
 
 # text_to_display
 public class Calculator {↵
-    private int result = 0;↵ // Initialize result
+    private int result = 0; // Initialize result↵
     
-    public Calculator add(int value) {↵ // Add method
+    public Calculator add(int value) { // Add method↵
         this.result += value;↵
         return this;↵
     }↵

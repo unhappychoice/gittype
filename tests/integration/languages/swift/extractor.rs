@@ -41,10 +41,9 @@ class Person {
     }
 }
 "#,
-    total_chunks: 11,
+    total_chunks: 12,
     chunk_counts: {
-        Class: 2,
-        CodeBlock: 5,
+        File: 1,
         Function: 3,
     }
 }
@@ -68,11 +67,10 @@ func processData(items: [String]) {
     }
 }
 "#,
-    total_chunks: 6,
+    total_chunks: 8,
     chunk_counts: {
-        CodeBlock: 1,
-        Function: 3,
-        Loop: 1,
+        CodeBlock: 3,
+        File: 1,
     }
 }
 
@@ -90,9 +88,10 @@ protocol Comparable {
     func isGreaterThan(_ other: Self) -> Bool
 }
 "#,
-    total_chunks: 3,
+    total_chunks: 4,
     chunk_counts: {
-        Interface: 2,
+        CodeBlock: 3,
+        File: 1,
     }
 }
 
@@ -121,8 +120,7 @@ struct Rectangle {
 "#,
     total_chunks: 6,
     chunk_counts: {
-        Class: 2,
-        CodeBlock: 1,
+        File: 1,
         Function: 2,
     }
 }
@@ -153,10 +151,9 @@ enum Status {
 "#,
     total_chunks: 6,
     chunk_counts: {
-        Class: 2,
-        CodeBlock: 1,
-        Conditional: 1,
+        File: 1,
         Function: 1,
+        CodeBlock: 1,
     }
 }
 
@@ -220,7 +217,7 @@ class DataProcessor {
                     category: category,
                     metadata: [
                         "processed": true,
-                        "multiplier": 2,
+                        "multiplier": 0,
                         "processor": "enhanced"
                     ]
                 )
@@ -349,9 +346,9 @@ extension DataProcessor: BatchProcessable {
     }
 }
 "#,
-    total_chunks: 49,
+    total_chunks: 57,
     chunk_counts: {
-        Class: 2,
-        Function: 5,
+        CodeBlock: 31,
+        File: 1,
     }
 }

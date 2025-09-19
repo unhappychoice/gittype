@@ -15,22 +15,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "Class",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "object DatabaseHelper {\n    const val DB_NAME = \"app.db\"\n\n    fun connect(): String {\n        return \"Connected to $DB_NAME\"\n    }\n\n    fun disconnect() {\n        println(\"Disconnected from database\")\n    }\n}",
       "end_line": 12,
       "language": "kotlin",
-      "name": "DatabaseHelper",
+      "name": "object",
       "original_indentation": 0,
       "start_line": 2
     },
     {
-      "chunk_type": "Variable",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "    const val DB_NAME = \"app.db\"",
       "end_line": 3,
       "language": "kotlin",
-      "name": "unknown",
+      "name": "property",
       "original_indentation": 4,
       "start_line": 3
     },
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    fun connect(): String {\n        return \"Connected to $DB_NAME\"\n    }",
       "end_line": 7,
       "language": "kotlin",
-      "name": "connect",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 5
     },
@@ -50,17 +50,17 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    fun disconnect() {\n        println(\"Disconnected from database\")\n    }",
       "end_line": 11,
       "language": "kotlin",
-      "name": "disconnect",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 9
     },
     {
-      "chunk_type": "Class",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "object Utils {\n    fun formatName(name: String): String {\n        return name.trim().lowercase()\n    }\n}",
       "end_line": 18,
       "language": "kotlin",
-      "name": "Utils",
+      "name": "object",
       "original_indentation": 0,
       "start_line": 14
     },
@@ -70,7 +70,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    fun formatName(name: String): String {\n        return name.trim().lowercase()\n    }",
       "end_line": 17,
       "language": "kotlin",
-      "name": "formatName",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 15
     }

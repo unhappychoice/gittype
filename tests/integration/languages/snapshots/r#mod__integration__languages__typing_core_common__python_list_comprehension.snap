@@ -12,14 +12,16 @@ def process_numbers(numbers):
 
 # text_to_type
 def process_numbers(numbers):
+# Filter even numbers
 evens = [n for n in numbers if n % 2 == 0]
+# Square them
 squared = [n ** 2 for n in evens]
 return squared
 
 # text_to_display
 def process_numbers(numbers):↵
-    # Filter even numbers
+    # Filter even numbers↵
     evens = [n for n in numbers if n % 2 == 0]↵
-    # Square them
+    # Square them↵
     squared = [n ** 2 for n in evens]↵
     return squared↵

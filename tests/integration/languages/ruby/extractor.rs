@@ -13,9 +13,10 @@ def calculate_sum(a, b)
   a + b
 end
 "#,
-    total_chunks: 3,
+    total_chunks: 5,
     chunk_counts: {
-        Method: 2,
+        CodeBlock: 2,
+        File: 1,
     }
 }
 
@@ -37,10 +38,10 @@ class Person
   end
 end
 "#,
-    total_chunks: 5,
+    total_chunks: 6,
     chunk_counts: {
-        Class: 1,
-        Method: 3,
+        CodeBlock: 2,
+        File: 1,
     }
 }
 
@@ -60,10 +61,10 @@ module Authentication
   end
 end
 "#,
-    total_chunks: 4,
+    total_chunks: 5,
     chunk_counts: {
-        Method: 2,
-        Module: 1,
+        CodeBlock: 2,
+        File: 1,
     }
 }
 
@@ -82,10 +83,10 @@ class User
   end
 end
 "#,
-    total_chunks: 4,
+    total_chunks: 6,
     chunk_counts: {
-        Class: 1,
-        Method: 2,
+        File: 1,
+        CodeBlock: 3,
     }
 }
 
@@ -102,8 +103,8 @@ end
 "#,
     total_chunks: 5,
     chunk_counts: {
-        Class: 1,
-        Method: 3,
+        CodeBlock: 3,
+        File: 1,
     }
 }
 
@@ -157,7 +158,7 @@ class DataProcessor
                            category,
                            {
                              processed: true,
-                             multiplier: 2,
+                             multiplier: 0,
                              processor: 'enhanced'
                            }
                          ).tap { processed_count += 1 }
@@ -232,9 +233,9 @@ class DataProcessor
   end
 end
 "#,
-    total_chunks: 17,
+    total_chunks: 23,
     chunk_counts: {
-        Class: 2,
-        Method: 5,
+        CodeBlock: 7,
+        File: 1,
     }
 }

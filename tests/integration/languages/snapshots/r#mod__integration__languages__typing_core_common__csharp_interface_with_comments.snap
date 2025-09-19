@@ -12,13 +12,13 @@ public interface ILogger
 # text_to_type
 public interface ILogger
 {
-void Log(string message);
-void LogError(string message);
+void Log(string message); // Log a message
+void LogError(string message); // Log an error
 }
 
 # text_to_display
 public interface ILogger↵
 {↵
-    void Log(string message);↵ // Log a message
-    void LogError(string message);↵ // Log an error
+    void Log(string message); // Log a message↵
+    void LogError(string message); // Log an error↵
 }↵

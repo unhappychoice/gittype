@@ -20,7 +20,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class Person(val name: String, val age: Int) {\n    def greet(): String = s\"Hello, I'm $name\"\n}",
       "end_line": 4,
       "language": "scala",
-      "name": "Person",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -30,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def greet(): String = s\"Hello, I'm $name\"",
       "end_line": 3,
       "language": "scala",
-      "name": "greet",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 3
     },
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "case class Point(x: Double, y: Double) {\n    def distance(other: Point): Double = {\n        math.sqrt(math.pow(x - other.x, 2) + math.pow(y - other.y, 2))\n    }\n}",
       "end_line": 10,
       "language": "scala",
-      "name": "Point",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 6
     },
@@ -50,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def distance(other: Point): Double = {\n        math.sqrt(math.pow(x - other.x, 2) + math.pow(y - other.y, 2))\n    }",
       "end_line": 9,
       "language": "scala",
-      "name": "distance",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 7
     },
@@ -60,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "abstract class Animal {\n    def speak(): String\n}",
       "end_line": 14,
       "language": "scala",
-      "name": "Animal",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 12
     }

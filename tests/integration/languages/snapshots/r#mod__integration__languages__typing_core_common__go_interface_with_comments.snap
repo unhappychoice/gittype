@@ -12,14 +12,16 @@ type Shape interface {
 
 # text_to_type
 type Shape interface {
+// Get the area
 Area() float64
+// Get the perimeter
 Perimeter() float64
 }
 
 # text_to_display
 type Shape interface {↵
-    // Get the area
+    // Get the area↵
     Area() float64↵
-    // Get the perimeter
+    // Get the perimeter↵
     Perimeter() float64↵
 }↵

@@ -52,7 +52,7 @@ pub fn extract_chunks_for_test(
     let files_to_process = collect_files_with_languages(repo_path);
     extractor.extract_chunks_from_files_with_progress(
         files_to_process,
-        options,
+        &options,
         &NoOpProgressReporter,
     )
 }
@@ -71,7 +71,7 @@ pub fn extract_challenges_for_test(
     // Step 2: Extract chunks from files
     let chunks = repo_extractor.extract_chunks_from_scanned_files_with_progress(
         &files,
-        options,
+        &options,
         &NoOpProgressReporter,
     )?;
 

@@ -14,20 +14,20 @@ data class Person(
 
 # text_to_type
 data class Person(
-val name: String,
-val age: Int
+val name: String, // Person's name
+val age: Int      // Person's age
 ) {
 fun greet() {
-println("Hello, I'm $name")
+println("Hello, I'm $name") // Print greeting
 }
 }
 
 # text_to_display
 data class Person(↵
-    val name: String,↵ // Person's name
-    val age: Int↵      // Person's age
+    val name: String, // Person's name↵
+    val age: Int      // Person's age↵
 ) {↵
     fun greet() {↵
-        println("Hello, I'm $name")↵ // Print greeting
+        println("Hello, I'm $name") // Print greeting↵
     }↵
 }↵

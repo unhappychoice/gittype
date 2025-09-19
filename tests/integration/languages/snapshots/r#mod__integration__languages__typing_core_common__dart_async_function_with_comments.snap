@@ -16,22 +16,24 @@ Future<String> fetchData(String url) async {
 
 # text_to_type
 Future<String> fetchData(String url) async {
+/* Fetch data from URL
+and return response */
 try {
 final response = await http.get(Uri.parse(url));
-return response.body;
+return response.body; // Return response body
 } catch (e) {
-return 'Error: $e';
+return 'Error: $e'; // Return error message
 }
 }
 
 # text_to_display
 Future<String> fetchData(String url) async {↵
-  /* Fetch data from URL
-     and return response */
+  /* Fetch data from URL↵
+     and return response */↵
   try {↵
     final response = await http.get(Uri.parse(url));↵
-    return response.body;↵ // Return response body
+    return response.body; // Return response body↵
   } catch (e) {↵
-    return 'Error: $e';↵ // Return error message
+    return 'Error: $e'; // Return error message↵
   }↵
 }↵

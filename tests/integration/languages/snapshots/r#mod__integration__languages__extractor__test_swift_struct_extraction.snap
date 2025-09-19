@@ -20,7 +20,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "struct Point {\n    let x: Double\n    let y: Double\n\n    func distance(to other: Point) -> Double {\n        return sqrt(pow(x - other.x, 2) + pow(y - other.y, 2))\n    }\n}",
       "end_line": 9,
       "language": "swift",
-      "name": "Point",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -30,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    func distance(to other: Point) -> Double {\n        return sqrt(pow(x - other.x, 2) + pow(y - other.y, 2))\n    }",
       "end_line": 8,
       "language": "swift",
-      "name": "distance",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 6
     },
@@ -50,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "struct Rectangle {\n    let width: Double\n    let height: Double\n\n    func area() -> Double {\n        return width * height\n    }\n}",
       "end_line": 18,
       "language": "swift",
-      "name": "Rectangle",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 11
     },
@@ -60,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    func area() -> Double {\n        return width * height\n    }",
       "end_line": 17,
       "language": "swift",
-      "name": "area",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 15
     }

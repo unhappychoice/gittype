@@ -28,6 +28,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "fn calculate_sum",
+      "end_line": 2,
+      "language": "rust",
+      "name": "name",
+      "original_indentation": 3,
+      "start_line": 2
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [
         [
@@ -42,12 +52,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "fn calculate_sum(a: i32, b: i32) -> i32 {\n    let result = a + b; // Add the numbers\n    /*\n     * Return the result\n     */\n    result\n}",
       "end_line": 8,
       "language": "rust",
-      "name": "calculate_sum",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 2
     }
   ],
   "source_code": "// Sample function with comments\nfn calculate_sum(a: i32, b: i32) -> i32 {\n    let result = a + b; // Add the numbers\n    /*\n     * Return the result\n     */\n    result\n}\n",
   "test_name": "test_comment_ranges_in_real_challenge",
-  "total_chunks": 2
+  "total_chunks": 3
 }

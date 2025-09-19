@@ -16,8 +16,10 @@ namespace math {
 
 # text_to_type
 namespace math {
+// Constants
 const double PI = 3.14159;
 const double E = 2.71828;
+// Calculate circle area
 double circleArea(double radius) {
 return PI * radius * radius;
 }
@@ -25,11 +27,11 @@ return PI * radius * radius;
 
 # text_to_display
 namespace math {↵
-    // Constants
+    // Constants↵
     const double PI = 3.14159;↵
     const double E = 2.71828;↵
     
-    // Calculate circle area
+    // Calculate circle area↵
     double circleArea(double radius) {↵
         return PI * radius * radius;↵
     }↵

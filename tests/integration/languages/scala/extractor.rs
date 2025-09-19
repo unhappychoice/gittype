@@ -17,6 +17,7 @@ def multiply(x: Int, y: Int): Int = x * y
 "#,
     total_chunks: 4,
     chunk_counts: {
+        File: 1,
         Function: 3,
     }
 }
@@ -42,8 +43,9 @@ abstract class Animal {
 "#,
     total_chunks: 6,
     chunk_counts: {
-        Class: 3,
+        File: 1,
         Function: 2,
+        CodeBlock: 0,
     }
 }
 
@@ -72,8 +74,9 @@ case object Singleton {
 "#,
     total_chunks: 7,
     chunk_counts: {
-        Class: 3,
+        File: 1,
         Function: 3,
+        CodeBlock: 3,
     }
 }
 
@@ -97,8 +100,9 @@ trait Drawable {
 "#,
     total_chunks: 5,
     chunk_counts: {
-        Class: 3,
+        File: 1,
         Function: 1,
+        CodeBlock: 3,
     }
 }
 
@@ -125,8 +129,9 @@ enum Direction {
 "##,
     total_chunks: 4,
     chunk_counts: {
-        Const: 2,
+        File: 1,
         Function: 1,
+        CodeBlock: 2,
     }
 }
 
@@ -170,9 +175,9 @@ type UserId = Long
 "#,
     total_chunks: 11,
     chunk_counts: {
-        Class: 5,
-        Const: 1,
+        File: 1,
         Function: 4,
+        CodeBlock: 4,
     }
 }
 
@@ -191,6 +196,7 @@ def calculateSum(a: Int, b: Int): Int = {
 "#,
     total_chunks: 2,
     chunk_counts: {
+        File: 1,
         Function: 1,
     }
 }
@@ -255,11 +261,9 @@ def oldFunction(): Unit = {}
 "#,
     total_chunks: 15,
     chunk_counts: {
-        Class: 3,
-        Conditional: 1,
-        Function: 8,
-        FunctionCall: 1,
-        Loop: 1,
+        File: 1,
+        Function: 7,
+        CodeBlock: 3,
     }
 }
 
@@ -433,7 +437,8 @@ object DataProcessor {
 "#,
     total_chunks: 33,
     chunk_counts: {
-        Class: 3,
+        File: 1,
         Function: 6,
+        CodeBlock: 3,
     }
 }

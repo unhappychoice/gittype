@@ -5,12 +5,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
-      "chunk_type": "Module",
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "mod calculator",
+      "end_line": 1,
+      "language": "rust",
+      "name": "name",
+      "original_indentation": 4,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "mod calculator {\n    pub struct Calculator;\n\n    impl Calculator {\n        pub fn new() -> Self { Self }\n\n        pub fn complex_calculation(&self, values: &[i32]) -> i32 {\n            values.iter().sum()\n        }\n    }\n\n    impl Default for Calculator {\n        fn default() -> Self {\n            Self::new()\n        }\n    }\n\n    mod advanced {\n        use super::Calculator;\n\n        impl Calculator {\n            pub fn advanced_method(&self) -> String {\n                \"advanced\".to_string()\n            }\n        }\n    }\n}",
       "end_line": 27,
       "language": "rust",
-      "name": "calculator",
+      "name": "module",
       "original_indentation": 0,
       "start_line": 1
     },
@@ -25,22 +35,32 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "Struct",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "    pub struct Calculator;",
       "end_line": 2,
       "language": "rust",
-      "name": "Calculator",
+      "name": "struct",
       "original_indentation": 4,
       "start_line": 2
     },
     {
-      "chunk_type": "Class",
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    impl Calculator",
+      "end_line": 4,
+      "language": "rust",
+      "name": "name",
+      "original_indentation": 9,
+      "start_line": 4
+    },
+    {
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "    impl Calculator {\n        pub fn new() -> Self { Self }\n\n        pub fn complex_calculation(&self, values: &[i32]) -> i32 {\n            values.iter().sum()\n        }\n    }",
       "end_line": 10,
       "language": "rust",
-      "name": "Calculator",
+      "name": "impl",
       "original_indentation": 4,
       "start_line": 4
     },
@@ -50,9 +70,19 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        pub fn new() -> Self { Self }",
       "end_line": 5,
       "language": "rust",
-      "name": "new",
+      "name": "function",
       "original_indentation": 8,
       "start_line": 5
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        pub fn complex_calculation",
+      "end_line": 7,
+      "language": "rust",
+      "name": "name",
+      "original_indentation": 15,
+      "start_line": 7
     },
     {
       "chunk_type": "Function",
@@ -60,17 +90,27 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        pub fn complex_calculation(&self, values: &[i32]) -> i32 {\n            values.iter().sum()\n        }",
       "end_line": 9,
       "language": "rust",
-      "name": "complex_calculation",
+      "name": "function",
       "original_indentation": 8,
       "start_line": 7
     },
     {
-      "chunk_type": "Class",
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    impl Default for Calculator",
+      "end_line": 12,
+      "language": "rust",
+      "name": "name",
+      "original_indentation": 21,
+      "start_line": 12
+    },
+    {
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "    impl Default for Calculator {\n        fn default() -> Self {\n            Self::new()\n        }\n    }",
       "end_line": 16,
       "language": "rust",
-      "name": "Default",
+      "name": "impl",
       "original_indentation": 4,
       "start_line": 12
     },
@@ -80,29 +120,49 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        fn default() -> Self {\n            Self::new()\n        }",
       "end_line": 15,
       "language": "rust",
-      "name": "default",
+      "name": "function",
       "original_indentation": 8,
       "start_line": 13
     },
     {
-      "chunk_type": "Module",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "    mod advanced {\n        use super::Calculator;\n\n        impl Calculator {\n            pub fn advanced_method(&self) -> String {\n                \"advanced\".to_string()\n            }\n        }\n    }",
       "end_line": 26,
       "language": "rust",
-      "name": "advanced",
+      "name": "module",
       "original_indentation": 4,
       "start_line": 18
     },
     {
-      "chunk_type": "Class",
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        impl Calculator",
+      "end_line": 21,
+      "language": "rust",
+      "name": "name",
+      "original_indentation": 13,
+      "start_line": 21
+    },
+    {
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "        impl Calculator {\n            pub fn advanced_method(&self) -> String {\n                \"advanced\".to_string()\n            }\n        }",
       "end_line": 25,
       "language": "rust",
-      "name": "Calculator",
+      "name": "impl",
       "original_indentation": 8,
       "start_line": 21
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "            pub fn advanced_method",
+      "end_line": 22,
+      "language": "rust",
+      "name": "name",
+      "original_indentation": 19,
+      "start_line": 22
     },
     {
       "chunk_type": "Function",
@@ -110,12 +170,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "            pub fn advanced_method(&self) -> String {\n                \"advanced\".to_string()\n            }",
       "end_line": 24,
       "language": "rust",
-      "name": "advanced_method",
+      "name": "function",
       "original_indentation": 12,
       "start_line": 22
     }
   ],
   "source_code": "mod calculator {\n    pub struct Calculator;\n\n    impl Calculator {\n        pub fn new() -> Self { Self }\n\n        pub fn complex_calculation(&self, values: &[i32]) -> i32 {\n            values.iter().sum()\n        }\n    }\n\n    impl Default for Calculator {\n        fn default() -> Self {\n            Self::new()\n        }\n    }\n\n    mod advanced {\n        use super::Calculator;\n\n        impl Calculator {\n            pub fn advanced_method(&self) -> String {\n                \"advanced\".to_string()\n            }\n        }\n    }\n}\n",
   "test_name": "test_nested_and_oneline_structures",
-  "total_chunks": 11
+  "total_chunks": 17
 }

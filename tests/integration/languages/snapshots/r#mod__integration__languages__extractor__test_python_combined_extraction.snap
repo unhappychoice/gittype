@@ -32,12 +32,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "def calculate_total",
+      "end_line": 3,
+      "language": "python",
+      "name": "name",
+      "original_indentation": 4,
+      "start_line": 3
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [],
       "content": "def calculate_total(items):\n    return sum(items)",
       "end_line": 4,
       "language": "python",
-      "name": "calculate_total",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 3
     },
@@ -47,7 +57,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class User:\n    def __init__(self, name, email):\n        self.name = name\n        self.email = email\n\n    def get_display_name(self):\n        return f\"{self.name} ({self.email})\"",
       "end_line": 13,
       "language": "python",
-      "name": "User",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 7
     },
@@ -57,9 +67,19 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def __init__(self, name, email):\n        self.name = name\n        self.email = email",
       "end_line": 10,
       "language": "python",
-      "name": "__init__",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 8
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    def get_display_name",
+      "end_line": 12,
+      "language": "python",
+      "name": "name",
+      "original_indentation": 8,
+      "start_line": 12
     },
     {
       "chunk_type": "Function",
@@ -67,7 +87,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def get_display_name(self):\n        return f\"{self.name} ({self.email})\"",
       "end_line": 13,
       "language": "python",
-      "name": "get_display_name",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 12
     },
@@ -77,7 +97,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class Database:\n    def __init__(self):\n        self.connections = []\n\n    def connect(self):\n        return \"Connected\"\n\n    def disconnect(self):\n        print(\"Disconnected\")",
       "end_line": 24,
       "language": "python",
-      "name": "Database",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 16
     },
@@ -87,7 +107,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def __init__(self):\n        self.connections = []",
       "end_line": 18,
       "language": "python",
-      "name": "__init__",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 17
     },
@@ -97,9 +117,19 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def connect(self):\n        return \"Connected\"",
       "end_line": 21,
       "language": "python",
-      "name": "connect",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 20
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    def disconnect",
+      "end_line": 23,
+      "language": "python",
+      "name": "name",
+      "original_indentation": 8,
+      "start_line": 23
     },
     {
       "chunk_type": "Function",
@@ -107,9 +137,19 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def disconnect(self):\n        print(\"Disconnected\")",
       "end_line": 24,
       "language": "python",
-      "name": "disconnect",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 23
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "def process_data",
+      "end_line": 27,
+      "language": "python",
+      "name": "name",
+      "original_indentation": 4,
+      "start_line": 27
     },
     {
       "chunk_type": "Function",
@@ -117,12 +157,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "def process_data(data):\n    return [item.upper() for item in data]",
       "end_line": 28,
       "language": "python",
-      "name": "process_data",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 27
     }
   ],
   "source_code": "\n# Module-level function\ndef calculate_total(items):\n    return sum(items)\n\n# Class definition\nclass User:\n    def __init__(self, name, email):\n        self.name = name\n        self.email = email\n\n    def get_display_name(self):\n        return f\"{self.name} ({self.email})\"\n\n# Another class\nclass Database:\n    def __init__(self):\n        self.connections = []\n\n    def connect(self):\n        return \"Connected\"\n\n    def disconnect(self):\n        print(\"Disconnected\")\n\n# Another function\ndef process_data(data):\n    return [item.upper() for item in data]\n",
   "test_name": "test_python_combined_extraction",
-  "total_chunks": 10
+  "total_chunks": 14
 }

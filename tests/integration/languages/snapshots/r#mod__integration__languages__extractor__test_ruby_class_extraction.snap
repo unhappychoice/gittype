@@ -20,19 +20,29 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class Person\n  attr_accessor :name, :age\n\n  def initialize(name, age)\n    @name = name\n    @age = age\n  end\n\n  def greet\n    puts \"Hello, I'm #{@name}!\"\n  end\nend",
       "end_line": 13,
       "language": "ruby",
-      "name": "Person",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 2
     },
     {
-      "chunk_type": "Method",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "  attr_accessor :name, :age",
       "end_line": 3,
       "language": "ruby",
-      "name": "name, age (2)",
+      "name": "attr_accessor",
       "original_indentation": 2,
       "start_line": 3
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "  def initialize",
+      "end_line": 5,
+      "language": "ruby",
+      "name": "name",
+      "original_indentation": 6,
+      "start_line": 5
     },
     {
       "chunk_type": "Method",
@@ -40,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "  def initialize(name, age)\n    @name = name\n    @age = age\n  end",
       "end_line": 8,
       "language": "ruby",
-      "name": "initialize",
+      "name": "method",
       "original_indentation": 2,
       "start_line": 5
     },
@@ -50,12 +60,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "  def greet\n    puts \"Hello, I'm #{@name}!\"\n  end",
       "end_line": 12,
       "language": "ruby",
-      "name": "greet",
+      "name": "method",
       "original_indentation": 2,
       "start_line": 10
     }
   ],
   "source_code": "\nclass Person\n  attr_accessor :name, :age\n\n  def initialize(name, age)\n    @name = name\n    @age = age\n  end\n\n  def greet\n    puts \"Hello, I'm #{@name}!\"\n  end\nend\n",
   "test_name": "test_ruby_class_extraction",
-  "total_chunks": 5
+  "total_chunks": 6
 }

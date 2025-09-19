@@ -15,12 +15,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "Module",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "pub mod utils {\n    pub fn helper() -> i32 {\n        42\n    }\n\n    pub struct Config {\n        value: String,\n    }\n}",
       "end_line": 10,
       "language": "rust",
-      "name": "utils",
+      "name": "module",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -30,27 +30,37 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    pub fn helper() -> i32 {\n        42\n    }",
       "end_line": 5,
       "language": "rust",
-      "name": "helper",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 3
     },
     {
-      "chunk_type": "Struct",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "    pub struct Config {\n        value: String,\n    }",
       "end_line": 9,
       "language": "rust",
-      "name": "Config",
+      "name": "struct",
       "original_indentation": 4,
       "start_line": 7
     },
     {
-      "chunk_type": "Module",
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "mod private_utils",
+      "end_line": 12,
+      "language": "rust",
+      "name": "name",
+      "original_indentation": 4,
+      "start_line": 12
+    },
+    {
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "mod private_utils {\n    fn internal_function() {}\n}",
       "end_line": 14,
       "language": "rust",
-      "name": "private_utils",
+      "name": "module",
       "original_indentation": 0,
       "start_line": 12
     },
@@ -60,12 +70,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    fn internal_function() {}",
       "end_line": 13,
       "language": "rust",
-      "name": "internal_function",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 13
     }
   ],
   "source_code": "\npub mod utils {\n    pub fn helper() -> i32 {\n        42\n    }\n\n    pub struct Config {\n        value: String,\n    }\n}\n\nmod private_utils {\n    fn internal_function() {}\n}\n",
   "test_name": "test_rust_module_extraction",
-  "total_chunks": 6
+  "total_chunks": 7
 }

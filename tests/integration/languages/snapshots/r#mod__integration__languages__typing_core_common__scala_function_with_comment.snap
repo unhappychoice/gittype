@@ -9,10 +9,10 @@ def main(): Unit = {
 
 # text_to_type
 def main(): Unit = {
-println("Hello")
+println("Hello") // This is a comment
 }
 
 # text_to_display
 def main(): Unit = {↵
-    println("Hello")↵ // This is a comment
+    println("Hello") // This is a comment↵
 }↵

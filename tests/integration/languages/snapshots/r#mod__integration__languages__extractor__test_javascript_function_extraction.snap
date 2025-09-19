@@ -15,12 +15,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "function calculateSum",
+      "end_line": 2,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 9,
+      "start_line": 2
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [],
       "content": "function calculateSum(a, b) {\n    return a + b;\n}",
       "end_line": 4,
       "language": "javascript",
-      "name": "calculateSum",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -30,9 +40,19 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "function greetUser(name) {\n    return `Hello, ${name}!`;\n}",
       "end_line": 8,
       "language": "javascript",
-      "name": "greetUser",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 6
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "async function fetchUserData",
+      "end_line": 10,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 15,
+      "start_line": 10
     },
     {
       "chunk_type": "Function",
@@ -40,12 +60,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "async function fetchUserData(userId) {\n    const response = await fetch(`/api/users/${userId}`);\n    return response.json();\n}",
       "end_line": 13,
       "language": "javascript",
-      "name": "fetchUserData",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 10
     }
   ],
   "source_code": "\nfunction calculateSum(a, b) {\n    return a + b;\n}\n\nfunction greetUser(name) {\n    return `Hello, ${name}!`;\n}\n\nasync function fetchUserData(userId) {\n    const response = await fetch(`/api/users/${userId}`);\n    return response.json();\n}\n",
   "test_name": "test_javascript_function_extraction",
-  "total_chunks": 4
+  "total_chunks": 6
 }

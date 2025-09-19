@@ -11,11 +11,11 @@ function add($a, $b) {
 # text_to_type
 <?php
 function add($a, $b) {
-return $a + $b;
+return $a + $b; // Return sum
 }
 
 # text_to_display
 <?php↵
 function add($a, $b) {↵
-    return $a + $b;↵ // Return sum
+    return $a + $b; // Return sum↵
 }↵

@@ -20,9 +20,19 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "func greet(name: String) -> String {\n    return \"Hello, \\(name)!\"\n}",
       "end_line": 4,
       "language": "swift",
-      "name": "greet",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 2
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "func calculateSum",
+      "end_line": 6,
+      "language": "swift",
+      "name": "name",
+      "original_indentation": 5,
+      "start_line": 6
     },
     {
       "chunk_type": "Function",
@@ -30,9 +40,19 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "func calculateSum(a: Int, b: Int) -> Int {\n    return a + b\n}",
       "end_line": 8,
       "language": "swift",
-      "name": "calculateSum",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 6
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "func processData",
+      "end_line": 10,
+      "language": "swift",
+      "name": "name",
+      "original_indentation": 5,
+      "start_line": 10
     },
     {
       "chunk_type": "Function",
@@ -40,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "func processData(items: [String]) {\n    for item in items {\n        print(item)\n    }\n}",
       "end_line": 14,
       "language": "swift",
-      "name": "processData",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 10
     },
@@ -57,7 +77,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     {
       "chunk_type": "CodeBlock",
       "comment_ranges": [],
-      "content": "    for item in items {\n        print(item)\n    }",
+      "content": "    for item in items {\n        print(item)\n    }\n",
       "end_line": 14,
       "language": "swift",
       "name": "code_block",
@@ -67,5 +87,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nfunc greet(name: String) -> String {\n    return \"Hello, \\(name)!\"\n}\n\nfunc calculateSum(a: Int, b: Int) -> Int {\n    return a + b\n}\n\nfunc processData(items: [String]) {\n    for item in items {\n        print(item)\n    }\n}\n",
   "test_name": "test_swift_function_extraction",
-  "total_chunks": 6
+  "total_chunks": 8
 }

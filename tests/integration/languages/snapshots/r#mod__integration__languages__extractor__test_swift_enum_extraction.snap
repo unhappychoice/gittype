@@ -20,7 +20,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "enum Direction {\n    case north, south, east, west\n\n    func opposite() -> Direction {\n        switch self {\n        case .north: return .south\n        case .south: return .north\n        case .east: return .west\n        case .west: return .east\n        }\n    }\n}",
       "end_line": 13,
       "language": "swift",
-      "name": "Direction",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -30,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    func opposite() -> Direction {\n        switch self {\n        case .north: return .south\n        case .south: return .north\n        case .east: return .west\n        case .west: return .east\n        }\n    }",
       "end_line": 12,
       "language": "swift",
-      "name": "opposite",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 5
     },
@@ -60,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "enum Status {\n    case pending\n    case completed\n    case failed\n}",
       "end_line": 19,
       "language": "swift",
-      "name": "Status",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 15
     }

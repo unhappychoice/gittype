@@ -15,12 +15,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "fn hello_world",
+      "end_line": 2,
+      "language": "rust",
+      "name": "name",
+      "original_indentation": 3,
+      "start_line": 2
+    },
+    {
       "chunk_type": "Function",
       "comment_ranges": [],
       "content": "fn hello_world() {\n    println!(\"Hello, world!\");\n}",
       "end_line": 4,
       "language": "rust",
-      "name": "hello_world",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -30,12 +40,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "pub fn add(a: i32, b: i32) -> i32 {\n    a + b\n}",
       "end_line": 8,
       "language": "rust",
-      "name": "add",
+      "name": "function",
       "original_indentation": 0,
       "start_line": 6
     }
   ],
   "source_code": "\nfn hello_world() {\n    println!(\"Hello, world!\");\n}\n\npub fn add(a: i32, b: i32) -> i32 {\n    a + b\n}\n",
   "test_name": "test_rust_function_extraction",
-  "total_chunks": 3
+  "total_chunks": 4
 }

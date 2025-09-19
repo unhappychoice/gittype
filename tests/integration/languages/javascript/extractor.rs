@@ -18,8 +18,9 @@ async function fetchUserData(userId) {
     return response.json();
 }
 "#,
-    total_chunks: 4,
+    total_chunks: 6,
     chunk_counts: {
+        File: 1,
         Function: 3,
     }
 }
@@ -42,7 +43,9 @@ const processData = async (data) => {
 "#,
     total_chunks: 4,
     chunk_counts: {
-        Function: 3,
+        File: 1,
+        CodeBlock: 1,
+        Lambda: 2,
     }
 }
 
@@ -94,15 +97,13 @@ class EventEmitter {
     }
 }
 "#,
-    total_chunks: 15,
+    total_chunks: 19,
     chunk_counts: {
-        Class: 2,
-        CodeBlock: 2,
-        Conditional: 2,
-        ErrorHandling: 1,
-        FunctionCall: 1,
-        Lambda: 1,
+        CodeBlock: 6,
+        File: 1,
         Method: 5,
+        Class: 2,
+        Struct: 0,
     }
 }
 
@@ -142,11 +143,11 @@ export default class UserService {
     }
 }
 "#,
-    total_chunks: 8,
+    total_chunks: 12,
     chunk_counts: {
-        Class: 2,
+        File: 1,
         Function: 1,
-        Method: 4,
+        CodeBlock: 4,
     }
 }
 
@@ -184,12 +185,12 @@ const eventHandlers = {
     }
 };
 "#,
-    total_chunks: 9,
+    total_chunks: 1,
     chunk_counts: {
-        CodeBlock: 2,
-        ErrorHandling: 1,
-        FunctionCall: 1,
-        Lambda: 4,
+        File: 1,
+        CodeBlock: 0,
+        ErrorHandling: 0,
+        Lambda: 0,
     }
 }
 
@@ -248,15 +249,16 @@ const userService = {
 
 export default UserManager;
 "#,
-    total_chunks: 14,
+    total_chunks: 18,
     chunk_counts: {
+        File: 1,
+        CodeBlock: 6,
         Class: 1,
-        CodeBlock: 2,
-        ErrorHandling: 1,
-        Function: 2,
-        FunctionCall: 2,
-        Lambda: 2,
         Method: 3,
+        Function: 1,
+        FunctionCall: 3,
+        Lambda: 2,
+        ErrorHandling: 1,
     }
 }
 
@@ -389,9 +391,10 @@ const dataAnalyzer = {
     }
 };
 "#,
-    total_chunks: 19,
+    total_chunks: 21,
     chunk_counts: {
+        File: 1,
         Function: 1,
-        Method: 1,
+        CodeBlock: 6,
     }
 }

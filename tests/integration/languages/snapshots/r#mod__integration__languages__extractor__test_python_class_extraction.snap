@@ -20,7 +20,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class Person:\n    def __init__(self, name, age):\n        self.name = name\n        self.age = age\n\n    def greet(self):\n        return f\"Hello, I'm {self.name}!\"\n\n    def get_age(self):\n        return self.age",
       "end_line": 11,
       "language": "python",
-      "name": "Person",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -30,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def __init__(self, name, age):\n        self.name = name\n        self.age = age",
       "end_line": 5,
       "language": "python",
-      "name": "__init__",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 3
     },
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def greet(self):\n        return f\"Hello, I'm {self.name}!\"",
       "end_line": 8,
       "language": "python",
-      "name": "greet",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 7
     },
@@ -50,9 +50,19 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def get_age(self):\n        return self.age",
       "end_line": 11,
       "language": "python",
-      "name": "get_age",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 10
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "class Calculator",
+      "end_line": 13,
+      "language": "python",
+      "name": "name",
+      "original_indentation": 6,
+      "start_line": 13
     },
     {
       "chunk_type": "Class",
@@ -60,7 +70,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class Calculator:\n    def add(self, a, b):\n        return a + b\n\n    def multiply(self, a, b):\n        return a * b",
       "end_line": 18,
       "language": "python",
-      "name": "Calculator",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 13
     },
@@ -70,7 +80,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def add(self, a, b):\n        return a + b",
       "end_line": 15,
       "language": "python",
-      "name": "add",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 14
     },
@@ -80,12 +90,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def multiply(self, a, b):\n        return a * b",
       "end_line": 18,
       "language": "python",
-      "name": "multiply",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 17
     }
   ],
   "source_code": "\nclass Person:\n    def __init__(self, name, age):\n        self.name = name\n        self.age = age\n\n    def greet(self):\n        return f\"Hello, I'm {self.name}!\"\n\n    def get_age(self):\n        return self.age\n\nclass Calculator:\n    def add(self, a, b):\n        return a + b\n\n    def multiply(self, a, b):\n        return a * b\n",
   "test_name": "test_python_class_extraction",
-  "total_chunks": 8
+  "total_chunks": 9
 }

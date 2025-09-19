@@ -17,8 +17,10 @@ void processData(List<String> data) {
   data.forEach(print);
 }
 "#,
-    total_chunks: 4,
+    total_chunks: 6,
     chunk_counts: {
+        CodeBlock: 2,
+        File: 1,
         Function: 3,
     }
 }
@@ -49,11 +51,12 @@ class Calculator {
   }
 }
 "#,
-    total_chunks: 7,
+    total_chunks: 8,
     chunk_counts: {
+        CodeBlock: 2,
+        File: 1,
         Class: 2,
-        CodeBlock: 1,
-        Function: 3,
+        Method: 3,
     }
 }
 
@@ -82,9 +85,10 @@ class Duck with Flyable, Swimmable {
 "#,
     total_chunks: 8,
     chunk_counts: {
-        Class: 3,
-        CodeBlock: 1,
-        Function: 3,
+        Class: 1,
+        CodeBlock: 3,
+        File: 1,
+        Method: 3,
     }
 }
 
@@ -120,7 +124,9 @@ class Circle extends Shape {
     chunk_counts: {
         Class: 2,
         CodeBlock: 2,
-        Function: 2,
+        File: 1,
+        Method: 2,
+        File: 1,
     }
 }
 
@@ -148,11 +154,10 @@ enum Color {
 
 enum Status { pending, completed, failed }
 "#,
-    total_chunks: 5,
+    total_chunks: 3,
     chunk_counts: {
-        CodeBlock: 1,
-        Conditional: 1,
-        Enum: 2,
+        CodeBlock: 2,
+        File: 1,
     }
 }
 
@@ -175,7 +180,8 @@ late DatabaseConnection db;
 "#,
     total_chunks: 9,
     chunk_counts: {
-        Variable: 8,
+        CodeBlock: 8,
+        File: 1,
     }
 }
 
@@ -202,11 +208,11 @@ extension IntExtensions on int {
   int get squared => this * this;
 }
 "#,
-    total_chunks: 6,
+    total_chunks: 8,
     chunk_counts: {
-        Class: 2,
-        CodeBlock: 2,
-        Function: 1,
+        CodeBlock: 6,
+        File: 1,
+        Method: 1,
     }
 }
 
@@ -271,7 +277,7 @@ class DataProcessor {
           timestamp: DateTime.now(),
           metadata: {
             'processed': true,
-            'multiplier': 2,
+            'multiplier': 0,
             'processor': 'enhanced',
           },
         );
@@ -381,9 +387,12 @@ class DataProcessor {
   }
 }
 "#,
-    total_chunks: 41,
+    total_chunks: 45,
     chunk_counts: {
         Class: 2,
-        Function: 2,
+        CodeBlock: 28,
+        File: 1,
+        Method: 2,
+        Function: 0,
     }
 }

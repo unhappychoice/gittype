@@ -52,24 +52,54 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "class ProcessedItem",
+      "end_line": 4,
+      "language": "php",
+      "name": "name",
+      "original_indentation": 6,
+      "start_line": 4
+    },
+    {
       "chunk_type": "Class",
       "comment_ranges": [],
       "content": "class ProcessedItem {\n    public $id;\n    public $originalValue;\n    public $transformedValue;\n    public $category;\n    public $timestamp;\n    public $metadata;\n\n    public function __construct($id, $originalValue, $transformedValue, $category, $metadata = []) {\n        $this->id = $id;\n        $this->originalValue = $originalValue;\n        $this->transformedValue = $transformedValue;\n        $this->category = $category;\n        $this->timestamp = time();\n        $this->metadata = $metadata;\n    }\n}",
       "end_line": 20,
       "language": "php",
-      "name": "ProcessedItem",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 4
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    public function __construct",
+      "end_line": 12,
+      "language": "php",
+      "name": "name",
+      "original_indentation": 20,
+      "start_line": 12
+    },
+    {
+      "chunk_type": "Method",
       "comment_ranges": [],
       "content": "    public function __construct($id, $originalValue, $transformedValue, $category, $metadata = []) {\n        $this->id = $id;\n        $this->originalValue = $originalValue;\n        $this->transformedValue = $transformedValue;\n        $this->category = $category;\n        $this->timestamp = time();\n        $this->metadata = $metadata;\n    }",
       "end_line": 19,
       "language": "php",
-      "name": "__construct",
+      "name": "method",
       "original_indentation": 4,
       "start_line": 12
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "class DataProcessor",
+      "end_line": 22,
+      "language": "php",
+      "name": "name",
+      "original_indentation": 6,
+      "start_line": 22
     },
     {
       "chunk_type": "Class",
@@ -114,22 +144,42 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class DataProcessor {\n    private $cache = [];\n    private $processingLog = [];\n    private $threshold;\n\n    public function __construct($threshold) {\n        $this->threshold = $threshold;\n    }\n\n    public function processComplexData($input) {\n        $results = [];\n        $processedCount = 0;\n\n        // Main processing algorithm - extractable middle chunk\n        foreach ($input as $index => $value) {\n            $cacheKey = \"item_{$index}_{$value}\";\n\n            if (isset($this->cache[$cacheKey])) {\n                $results[] = $this->cache[$cacheKey];\n                continue;\n            }\n\n            $processedItem = null;\n            if ($value > $this->threshold) {\n                $transformedValue = $value * 2;\n                $category = $transformedValue > $this->threshold * 3 ? 'HIGH' : 'MEDIUM';\n                $bonusValue = $transformedValue > 100 ? $transformedValue + 10 : $transformedValue;\n\n                $processedItem = new ProcessedItem(\n                    $index,\n                    $value,\n                    $bonusValue,\n                    $category,\n                    [\n                        'processed' => true,\n                        'multiplier' => 2,\n                        'processor' => 'enhanced'\n                    ]\n                );\n                $processedCount++;\n            } elseif ($value > 0) {\n                $processedItem = new ProcessedItem(\n                    $index,\n                    $value,\n                    $value + $this->threshold,\n                    'LOW',\n                    [\n                        'processed' => true,\n                        'adjusted' => true,\n                        'processor' => 'basic'\n                    ]\n                );\n            } else {\n                continue; // skip negative values\n            }\n\n            $this->cache[$cacheKey] = $processedItem;\n            $this->processingLog[] = $processedItem;\n            $results[] = $processedItem;\n        }\n\n        // Finalization logic\n        if ($processedCount > 0) {\n            $total = array_sum(array_map(function($item) {\n                return $item->transformedValue;\n            }, $results));\n            $average = $total / count($results);\n\n            echo \"Processing complete. Average: \" . number_format($average, 2) . \"\\n\";\n\n            // Add processing statistics\n            foreach ($results as $item) {\n                $item->metadata['processing_average'] = $average;\n            }\n        }\n\n        return $results;\n    }\n\n    public function analyzePatterns($items) {\n        $analysis = [];\n        $categoryGroups = [];\n\n        // Group items by category\n        foreach ($items as $item) {\n            $categoryGroups[$item->category][] = $item;\n        }\n\n        // Pattern analysis logic - extractable middle chunk\n        foreach ($categoryGroups as $category => $categoryItems) {\n            $values = array_map(function($item) {\n                return $item->transformedValue;\n            }, $categoryItems);\n\n            $categoryAnalysis = [\n                'count' => count($categoryItems),\n                'percentage' => (count($categoryItems) / count($items)) * 100,\n                'avg_value' => array_sum($values) / count($values),\n                'min_value' => min($values),\n                'max_value' => max($values)\n            ];\n\n            // Time-based analysis\n            $currentTime = time();\n            $recentItems = array_filter($categoryItems, function($item) use ($currentTime) {\n                return ($currentTime - $item->timestamp) < 60; // last minute\n            });\n\n            if (count($recentItems) > 0) {\n                $recentValues = array_map(function($item) {\n                    return $item->transformedValue;\n                }, $recentItems);\n                $categoryAnalysis['recent_count'] = count($recentItems);\n                $categoryAnalysis['recent_avg'] = array_sum($recentValues) / count($recentValues);\n            }\n\n            // High-value analysis\n            $highValueItems = array_filter($categoryItems, function($item) {\n                return $item->transformedValue > 1000;\n            });\n\n            if (count($highValueItems) > 0) {\n                $categoryAnalysis['high_value_count'] = count($highValueItems);\n            }\n\n            $analysis[$category] = $categoryAnalysis;\n        }\n\n        $analysis['total_items'] = count($items);\n        $analysis['processing_time'] = time();\n\n        return $analysis;\n    }\n}",
       "end_line": 155,
       "language": "php",
-      "name": "DataProcessor",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 22
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    public function __construct",
+      "end_line": 27,
+      "language": "php",
+      "name": "name",
+      "original_indentation": 20,
+      "start_line": 27
+    },
+    {
+      "chunk_type": "Method",
       "comment_ranges": [],
       "content": "    public function __construct($threshold) {\n        $this->threshold = $threshold;\n    }",
       "end_line": 29,
       "language": "php",
-      "name": "__construct",
+      "name": "method",
       "original_indentation": 4,
       "start_line": 27
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    public function processComplexData",
+      "end_line": 31,
+      "language": "php",
+      "name": "name",
+      "original_indentation": 20,
+      "start_line": 31
+    },
+    {
+      "chunk_type": "Method",
       "comment_ranges": [
         [
           110,
@@ -151,122 +201,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    public function processComplexData($input) {\n        $results = [];\n        $processedCount = 0;\n\n        // Main processing algorithm - extractable middle chunk\n        foreach ($input as $index => $value) {\n            $cacheKey = \"item_{$index}_{$value}\";\n\n            if (isset($this->cache[$cacheKey])) {\n                $results[] = $this->cache[$cacheKey];\n                continue;\n            }\n\n            $processedItem = null;\n            if ($value > $this->threshold) {\n                $transformedValue = $value * 2;\n                $category = $transformedValue > $this->threshold * 3 ? 'HIGH' : 'MEDIUM';\n                $bonusValue = $transformedValue > 100 ? $transformedValue + 10 : $transformedValue;\n\n                $processedItem = new ProcessedItem(\n                    $index,\n                    $value,\n                    $bonusValue,\n                    $category,\n                    [\n                        'processed' => true,\n                        'multiplier' => 2,\n                        'processor' => 'enhanced'\n                    ]\n                );\n                $processedCount++;\n            } elseif ($value > 0) {\n                $processedItem = new ProcessedItem(\n                    $index,\n                    $value,\n                    $value + $this->threshold,\n                    'LOW',\n                    [\n                        'processed' => true,\n                        'adjusted' => true,\n                        'processor' => 'basic'\n                    ]\n                );\n            } else {\n                continue; // skip negative values\n            }\n\n            $this->cache[$cacheKey] = $processedItem;\n            $this->processingLog[] = $processedItem;\n            $results[] = $processedItem;\n        }\n\n        // Finalization logic\n        if ($processedCount > 0) {\n            $total = array_sum(array_map(function($item) {\n                return $item->transformedValue;\n            }, $results));\n            $average = $total / count($results);\n\n            echo \"Processing complete. Average: \" . number_format($average, 2) . \"\\n\";\n\n            // Add processing statistics\n            foreach ($results as $item) {\n                $item->metadata['processing_average'] = $average;\n            }\n        }\n\n        return $results;\n    }",
       "end_line": 99,
       "language": "php",
-      "name": "processComplexData",
+      "name": "method",
       "original_indentation": 4,
       "start_line": 31
     },
     {
-      "chunk_type": "Loop",
-      "comment_ranges": [
-        [
-          1434,
-          1457
-        ]
-      ],
-      "content": "        foreach ($input as $index => $value) {\n            $cacheKey = \"item_{$index}_{$value}\";\n\n            if (isset($this->cache[$cacheKey])) {\n                $results[] = $this->cache[$cacheKey];\n                continue;\n            }\n\n            $processedItem = null;\n            if ($value > $this->threshold) {\n                $transformedValue = $value * 2;\n                $category = $transformedValue > $this->threshold * 3 ? 'HIGH' : 'MEDIUM';\n                $bonusValue = $transformedValue > 100 ? $transformedValue + 10 : $transformedValue;\n\n                $processedItem = new ProcessedItem(\n                    $index,\n                    $value,\n                    $bonusValue,\n                    $category,\n                    [\n                        'processed' => true,\n                        'multiplier' => 2,\n                        'processor' => 'enhanced'\n                    ]\n                );\n                $processedCount++;\n            } elseif ($value > 0) {\n                $processedItem = new ProcessedItem(\n                    $index,\n                    $value,\n                    $value + $this->threshold,\n                    'LOW',\n                    [\n                        'processed' => true,\n                        'adjusted' => true,\n                        'processor' => 'basic'\n                    ]\n                );\n            } else {\n                continue; // skip negative values\n            }\n\n            $this->cache[$cacheKey] = $processedItem;\n            $this->processingLog[] = $processedItem;\n            $results[] = $processedItem;\n        }",
-      "end_line": 81,
-      "language": "php",
-      "name": "foreach_loop",
-      "original_indentation": 8,
-      "start_line": 36
-    },
-    {
-      "chunk_type": "Conditional",
-      "comment_ranges": [],
-      "content": "            if (isset($this->cache[$cacheKey])) {\n                $results[] = $this->cache[$cacheKey];\n                continue;\n            }",
-      "end_line": 42,
-      "language": "php",
-      "name": "if_block",
-      "original_indentation": 12,
-      "start_line": 39
-    },
-    {
       "chunk_type": "CodeBlock",
       "comment_ranges": [],
-      "content": "            if ($value > $this->threshold) {\n                $transformedValue = $value * 2;\n                $category = $transformedValue > $this->threshold * 3 ? 'HIGH' : 'MEDIUM';\n                $bonusValue = $transformedValue > 100 ? $transformedValue + 10 : $transformedValue;\n\n                $processedItem = new ProcessedItem(\n                    $index,\n                    $value,\n                    $bonusValue,\n                    $category,\n                    [\n                        'processed' => true,\n                        'multiplier' => 2,\n                        'processor' => 'enhanced'\n                    ]\n                );\n                $processedCount++;\n            }",
-      "end_line": 62,
+      "content": "    public function analyzePatterns",
+      "end_line": 101,
       "language": "php",
-      "name": "code_block",
-      "original_indentation": 43,
-      "start_line": 45
+      "name": "name",
+      "original_indentation": 20,
+      "start_line": 101
     },
     {
-      "chunk_type": "Conditional",
-      "comment_ranges": [
-        [
-          1156,
-          1179
-        ]
-      ],
-      "content": "            if ($value > $this->threshold) {\n                $transformedValue = $value * 2;\n                $category = $transformedValue > $this->threshold * 3 ? 'HIGH' : 'MEDIUM';\n                $bonusValue = $transformedValue > 100 ? $transformedValue + 10 : $transformedValue;\n\n                $processedItem = new ProcessedItem(\n                    $index,\n                    $value,\n                    $bonusValue,\n                    $category,\n                    [\n                        'processed' => true,\n                        'multiplier' => 2,\n                        'processor' => 'enhanced'\n                    ]\n                );\n                $processedCount++;\n            } elseif ($value > 0) {\n                $processedItem = new ProcessedItem(\n                    $index,\n                    $value,\n                    $value + $this->threshold,\n                    'LOW',\n                    [\n                        'processed' => true,\n                        'adjusted' => true,\n                        'processor' => 'basic'\n                    ]\n                );\n            } else {\n                continue; // skip negative values\n            }",
-      "end_line": 76,
-      "language": "php",
-      "name": "if_block",
-      "original_indentation": 12,
-      "start_line": 45
-    },
-    {
-      "chunk_type": "CodeBlock",
-      "comment_ranges": [],
-      "content": "            } elseif ($value > 0) {\n                $processedItem = new ProcessedItem(\n                    $index,\n                    $value,\n                    $value + $this->threshold,\n                    'LOW',\n                    [\n                        'processed' => true,\n                        'adjusted' => true,\n                        'processor' => 'basic'\n                    ]\n                );\n            }",
-      "end_line": 74,
-      "language": "php",
-      "name": "code_block",
-      "original_indentation": 34,
-      "start_line": 62
-    },
-    {
-      "chunk_type": "CodeBlock",
-      "comment_ranges": [
-        [
-          47,
-          70
-        ]
-      ],
-      "content": "            } else {\n                continue; // skip negative values\n            }",
-      "end_line": 76,
-      "language": "php",
-      "name": "code_block",
-      "original_indentation": 19,
-      "start_line": 74
-    },
-    {
-      "chunk_type": "Conditional",
-      "comment_ranges": [
-        [
-          319,
-          347
-        ]
-      ],
-      "content": "        if ($processedCount > 0) {\n            $total = array_sum(array_map(function($item) {\n                return $item->transformedValue;\n            }, $results));\n            $average = $total / count($results);\n\n            echo \"Processing complete. Average: \" . number_format($average, 2) . \"\\n\";\n\n            // Add processing statistics\n            foreach ($results as $item) {\n                $item->metadata['processing_average'] = $average;\n            }\n        }",
-      "end_line": 96,
-      "language": "php",
-      "name": "if_block",
-      "original_indentation": 8,
-      "start_line": 84
-    },
-    {
-      "chunk_type": "FunctionCall",
-      "comment_ranges": [],
-      "content": "            $total = array_sum(array_map(function($item) {\n                return $item->transformedValue;\n            }, $results)",
-      "end_line": 87,
-      "language": "php",
-      "name": "function_call",
-      "original_indentation": 31,
-      "start_line": 85
-    },
-    {
-      "chunk_type": "Loop",
-      "comment_ranges": [],
-      "content": "            foreach ($results as $item) {\n                $item->metadata['processing_average'] = $average;\n            }",
-      "end_line": 95,
-      "language": "php",
-      "name": "foreach_loop",
-      "original_indentation": 12,
-      "start_line": 93
-    },
-    {
-      "chunk_type": "Function",
+      "chunk_type": "Method",
       "comment_ranges": [
         [
           109,
@@ -292,110 +242,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    public function analyzePatterns($items) {\n        $analysis = [];\n        $categoryGroups = [];\n\n        // Group items by category\n        foreach ($items as $item) {\n            $categoryGroups[$item->category][] = $item;\n        }\n\n        // Pattern analysis logic - extractable middle chunk\n        foreach ($categoryGroups as $category => $categoryItems) {\n            $values = array_map(function($item) {\n                return $item->transformedValue;\n            }, $categoryItems);\n\n            $categoryAnalysis = [\n                'count' => count($categoryItems),\n                'percentage' => (count($categoryItems) / count($items)) * 100,\n                'avg_value' => array_sum($values) / count($values),\n                'min_value' => min($values),\n                'max_value' => max($values)\n            ];\n\n            // Time-based analysis\n            $currentTime = time();\n            $recentItems = array_filter($categoryItems, function($item) use ($currentTime) {\n                return ($currentTime - $item->timestamp) < 60; // last minute\n            });\n\n            if (count($recentItems) > 0) {\n                $recentValues = array_map(function($item) {\n                    return $item->transformedValue;\n                }, $recentItems);\n                $categoryAnalysis['recent_count'] = count($recentItems);\n                $categoryAnalysis['recent_avg'] = array_sum($recentValues) / count($recentValues);\n            }\n\n            // High-value analysis\n            $highValueItems = array_filter($categoryItems, function($item) {\n                return $item->transformedValue > 1000;\n            });\n\n            if (count($highValueItems) > 0) {\n                $categoryAnalysis['high_value_count'] = count($highValueItems);\n            }\n\n            $analysis[$category] = $categoryAnalysis;\n        }\n\n        $analysis['total_items'] = count($items);\n        $analysis['processing_time'] = time();\n\n        return $analysis;\n    }",
       "end_line": 154,
       "language": "php",
-      "name": "analyzePatterns",
+      "name": "method",
       "original_indentation": 4,
       "start_line": 101
-    },
-    {
-      "chunk_type": "Loop",
-      "comment_ranges": [],
-      "content": "        foreach ($items as $item) {\n            $categoryGroups[$item->category][] = $item;\n        }",
-      "end_line": 108,
-      "language": "php",
-      "name": "foreach_loop",
-      "original_indentation": 8,
-      "start_line": 106
-    },
-    {
-      "chunk_type": "Loop",
-      "comment_ranges": [
-        [
-          546,
-          568
-        ],
-        [
-          760,
-          774
-        ],
-        [
-          1180,
-          1202
-        ]
-      ],
-      "content": "        foreach ($categoryGroups as $category => $categoryItems) {\n            $values = array_map(function($item) {\n                return $item->transformedValue;\n            }, $categoryItems);\n\n            $categoryAnalysis = [\n                'count' => count($categoryItems),\n                'percentage' => (count($categoryItems) / count($items)) * 100,\n                'avg_value' => array_sum($values) / count($values),\n                'min_value' => min($values),\n                'max_value' => max($values)\n            ];\n\n            // Time-based analysis\n            $currentTime = time();\n            $recentItems = array_filter($categoryItems, function($item) use ($currentTime) {\n                return ($currentTime - $item->timestamp) < 60; // last minute\n            });\n\n            if (count($recentItems) > 0) {\n                $recentValues = array_map(function($item) {\n                    return $item->transformedValue;\n                }, $recentItems);\n                $categoryAnalysis['recent_count'] = count($recentItems);\n                $categoryAnalysis['recent_avg'] = array_sum($recentValues) / count($recentValues);\n            }\n\n            // High-value analysis\n            $highValueItems = array_filter($categoryItems, function($item) {\n                return $item->transformedValue > 1000;\n            });\n\n            if (count($highValueItems) > 0) {\n                $categoryAnalysis['high_value_count'] = count($highValueItems);\n            }\n\n            $analysis[$category] = $categoryAnalysis;\n        }",
-      "end_line": 148,
-      "language": "php",
-      "name": "foreach_loop",
-      "original_indentation": 8,
-      "start_line": 111
-    },
-    {
-      "chunk_type": "FunctionCall",
-      "comment_ranges": [],
-      "content": "            $values = array_map(function($item) {\n                return $item->transformedValue;\n            }, $categoryItems)",
-      "end_line": 114,
-      "language": "php",
-      "name": "function_call",
-      "original_indentation": 22,
-      "start_line": 112
-    },
-    {
-      "chunk_type": "FunctionCall",
-      "comment_ranges": [
-        [
-          156,
-          170
-        ]
-      ],
-      "content": "            $recentItems = array_filter($categoryItems, function($item) use ($currentTime) {\n                return ($currentTime - $item->timestamp) < 60; // last minute\n            })",
-      "end_line": 128,
-      "language": "php",
-      "name": "function_call",
-      "original_indentation": 27,
-      "start_line": 126
-    },
-    {
-      "chunk_type": "Conditional",
-      "comment_ranges": [],
-      "content": "            if (count($recentItems) > 0) {\n                $recentValues = array_map(function($item) {\n                    return $item->transformedValue;\n                }, $recentItems);\n                $categoryAnalysis['recent_count'] = count($recentItems);\n                $categoryAnalysis['recent_avg'] = array_sum($recentValues) / count($recentValues);\n            }",
-      "end_line": 136,
-      "language": "php",
-      "name": "if_block",
-      "original_indentation": 12,
-      "start_line": 130
-    },
-    {
-      "chunk_type": "FunctionCall",
-      "comment_ranges": [],
-      "content": "                $recentValues = array_map(function($item) {\n                    return $item->transformedValue;\n                }, $recentItems)",
-      "end_line": 133,
-      "language": "php",
-      "name": "function_call",
-      "original_indentation": 32,
-      "start_line": 131
-    },
-    {
-      "chunk_type": "FunctionCall",
-      "comment_ranges": [],
-      "content": "            $highValueItems = array_filter($categoryItems, function($item) {\n                return $item->transformedValue > 1000;\n            })",
-      "end_line": 141,
-      "language": "php",
-      "name": "function_call",
-      "original_indentation": 30,
-      "start_line": 139
-    },
-    {
-      "chunk_type": "Conditional",
-      "comment_ranges": [],
-      "content": "            if (count($highValueItems) > 0) {\n                $categoryAnalysis['high_value_count'] = count($highValueItems);\n            }",
-      "end_line": 145,
-      "language": "php",
-      "name": "if_block",
-      "original_indentation": 12,
-      "start_line": 143
     }
   ],
   "source_code": "\n<?php\n\nclass ProcessedItem {\n    public $id;\n    public $originalValue;\n    public $transformedValue;\n    public $category;\n    public $timestamp;\n    public $metadata;\n\n    public function __construct($id, $originalValue, $transformedValue, $category, $metadata = []) {\n        $this->id = $id;\n        $this->originalValue = $originalValue;\n        $this->transformedValue = $transformedValue;\n        $this->category = $category;\n        $this->timestamp = time();\n        $this->metadata = $metadata;\n    }\n}\n\nclass DataProcessor {\n    private $cache = [];\n    private $processingLog = [];\n    private $threshold;\n\n    public function __construct($threshold) {\n        $this->threshold = $threshold;\n    }\n\n    public function processComplexData($input) {\n        $results = [];\n        $processedCount = 0;\n\n        // Main processing algorithm - extractable middle chunk\n        foreach ($input as $index => $value) {\n            $cacheKey = \"item_{$index}_{$value}\";\n\n            if (isset($this->cache[$cacheKey])) {\n                $results[] = $this->cache[$cacheKey];\n                continue;\n            }\n\n            $processedItem = null;\n            if ($value > $this->threshold) {\n                $transformedValue = $value * 2;\n                $category = $transformedValue > $this->threshold * 3 ? 'HIGH' : 'MEDIUM';\n                $bonusValue = $transformedValue > 100 ? $transformedValue + 10 : $transformedValue;\n\n                $processedItem = new ProcessedItem(\n                    $index,\n                    $value,\n                    $bonusValue,\n                    $category,\n                    [\n                        'processed' => true,\n                        'multiplier' => 2,\n                        'processor' => 'enhanced'\n                    ]\n                );\n                $processedCount++;\n            } elseif ($value > 0) {\n                $processedItem = new ProcessedItem(\n                    $index,\n                    $value,\n                    $value + $this->threshold,\n                    'LOW',\n                    [\n                        'processed' => true,\n                        'adjusted' => true,\n                        'processor' => 'basic'\n                    ]\n                );\n            } else {\n                continue; // skip negative values\n            }\n\n            $this->cache[$cacheKey] = $processedItem;\n            $this->processingLog[] = $processedItem;\n            $results[] = $processedItem;\n        }\n\n        // Finalization logic\n        if ($processedCount > 0) {\n            $total = array_sum(array_map(function($item) {\n                return $item->transformedValue;\n            }, $results));\n            $average = $total / count($results);\n\n            echo \"Processing complete. Average: \" . number_format($average, 2) . \"\\n\";\n\n            // Add processing statistics\n            foreach ($results as $item) {\n                $item->metadata['processing_average'] = $average;\n            }\n        }\n\n        return $results;\n    }\n\n    public function analyzePatterns($items) {\n        $analysis = [];\n        $categoryGroups = [];\n\n        // Group items by category\n        foreach ($items as $item) {\n            $categoryGroups[$item->category][] = $item;\n        }\n\n        // Pattern analysis logic - extractable middle chunk\n        foreach ($categoryGroups as $category => $categoryItems) {\n            $values = array_map(function($item) {\n                return $item->transformedValue;\n            }, $categoryItems);\n\n            $categoryAnalysis = [\n                'count' => count($categoryItems),\n                'percentage' => (count($categoryItems) / count($items)) * 100,\n                'avg_value' => array_sum($values) / count($values),\n                'min_value' => min($values),\n                'max_value' => max($values)\n            ];\n\n            // Time-based analysis\n            $currentTime = time();\n            $recentItems = array_filter($categoryItems, function($item) use ($currentTime) {\n                return ($currentTime - $item->timestamp) < 60; // last minute\n            });\n\n            if (count($recentItems) > 0) {\n                $recentValues = array_map(function($item) {\n                    return $item->transformedValue;\n                }, $recentItems);\n                $categoryAnalysis['recent_count'] = count($recentItems);\n                $categoryAnalysis['recent_avg'] = array_sum($recentValues) / count($recentValues);\n            }\n\n            // High-value analysis\n            $highValueItems = array_filter($categoryItems, function($item) {\n                return $item->transformedValue > 1000;\n            });\n\n            if (count($highValueItems) > 0) {\n                $categoryAnalysis['high_value_count'] = count($highValueItems);\n            }\n\n            $analysis[$category] = $categoryAnalysis;\n        }\n\n        $analysis['total_items'] = count($items);\n        $analysis['processing_time'] = time();\n\n        return $analysis;\n    }\n}\n\n?>\n",
   "test_name": "test_php_complex_algorithm_extraction",
-  "total_chunks": 24
+  "total_chunks": 13
 }

@@ -15,12 +15,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "Class",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "trait Animal {\n    def speak(): String\n    def move(): Unit = println(\"Moving...\")\n}",
       "end_line": 5,
       "language": "scala",
-      "name": "Animal",
+      "name": "trait",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -30,27 +30,27 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def move(): Unit = println(\"Moving...\")",
       "end_line": 4,
       "language": "scala",
-      "name": "move",
+      "name": "function",
       "original_indentation": 4,
       "start_line": 4
     },
     {
-      "chunk_type": "Class",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "sealed trait Result[+T] {\n    def map[U](f: T => U): Result[U]\n}",
       "end_line": 9,
       "language": "scala",
-      "name": "Result",
+      "name": "trait",
       "original_indentation": 0,
       "start_line": 7
     },
     {
-      "chunk_type": "Class",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "trait Drawable {\n    def draw(): Unit\n}",
       "end_line": 13,
       "language": "scala",
-      "name": "Drawable",
+      "name": "trait",
       "original_indentation": 0,
       "start_line": 11
     }

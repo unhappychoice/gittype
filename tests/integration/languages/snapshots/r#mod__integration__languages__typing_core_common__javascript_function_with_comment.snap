@@ -10,12 +10,12 @@ function greet(name) {
 
 # text_to_type
 function greet(name) {
-console.log("Hello " + name);
+console.log("Hello " + name); // Print greeting
 return name;
 }
 
 # text_to_display
 function greet(name) {↵
-    console.log("Hello " + name);↵ // Print greeting
+    console.log("Hello " + name); // Print greeting↵
     return name;↵
 }↵

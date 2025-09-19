@@ -9,10 +9,10 @@ fn main() {
 
 # text_to_type
 fn main() {
-println!("Hello");
+println!("Hello"); // This is a comment
 }
 
 # text_to_display
 fn main() {↵
-    println!("Hello");↵ // This is a comment
+    println!("Hello"); // This is a comment↵
 }↵

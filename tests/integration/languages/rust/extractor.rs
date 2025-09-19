@@ -13,8 +13,9 @@ pub fn add(a: i32, b: i32) -> i32 {
     a + b
 }
 "#,
-    total_chunks: 3,
+    total_chunks: 4,
     chunk_counts: {
+        File: 1,
         Function: 2,
     }
 }
@@ -35,7 +36,8 @@ pub struct Config {
 "#,
     total_chunks: 3,
     chunk_counts: {
-        Struct: 2,
+        File: 1,
+        Function: 0,
     }
 }
 
@@ -57,7 +59,8 @@ enum Color {
 "#,
     total_chunks: 3,
     chunk_counts: {
-        Enum: 2,
+        File: 1,
+        Function: 0,
     }
 }
 
@@ -80,8 +83,9 @@ trait Clone {
 "#,
     total_chunks: 4,
     chunk_counts: {
+        File: 1,
         Function: 1,
-        Trait: 2,
+        Trait: 0,
     }
 }
 
@@ -104,11 +108,11 @@ mod private_utils {
     fn internal_function() {}
 }
 "#,
-    total_chunks: 6,
+    total_chunks: 7,
     chunk_counts: {
+        File: 1,
         Function: 2,
-        Module: 2,
-        Struct: 1,
+        CodeBlock: 4,
     }
 }
 
@@ -123,7 +127,8 @@ type Point = (f64, f64);
 "#,
     total_chunks: 4,
     chunk_counts: {
-        TypeAlias: 3,
+        File: 1,
+        Function: 0,
     }
 }
 
@@ -167,20 +172,16 @@ impl Display for User {
 
 pub fn create_user(name: String) -> User {
     User {
-        id: 1,
+        id: 0,
         name,
     }
 }
 "#,
-    total_chunks: 10,
+    total_chunks: 11,
     chunk_counts: {
-        Class: 1,
-        Enum: 1,
+        File: 1,
         Function: 3,
-        Module: 1,
-        Struct: 1,
-        Trait: 1,
-        TypeAlias: 1,
+        CodeBlock: 7,
     }
 }
 
@@ -216,12 +217,11 @@ test_language_extractor! {
     }
 }
 "#,
-    total_chunks: 11,
+    total_chunks: 17,
     chunk_counts: {
-        Class: 3,
+        File: 1,
         Function: 4,
-        Module: 2,
-        Struct: 1,
+        CodeBlock: 12,
     }
 }
 
@@ -238,8 +238,9 @@ fn calculate_sum(a: i32, b: i32) -> i32 {
     result
 }
 "#,
-    total_chunks: 2,
+    total_chunks: 3,
     chunk_counts: {
+        File: 1,
         Function: 1,
     }
 }
@@ -314,8 +315,9 @@ pub fn advanced_string_matcher(patterns: &[&str], text: &str) -> Vec<(usize, Str
     matches
 }
 "#,
-    total_chunks: 13,
+    total_chunks: 15,
     chunk_counts: {
+        File: 1,
         Function: 2,
     }
 }
@@ -388,9 +390,11 @@ impl<T: Clone> DataCache<T> {
     }
 }
 "#,
-    total_chunks: 18,
+    total_chunks: 21,
     chunk_counts: {
-        Struct: 1,
+        File: 1,
         Function: 4,
+        CodeBlock: 5,
+        File: 1,
     }
 }

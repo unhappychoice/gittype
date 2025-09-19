@@ -22,6 +22,7 @@ func multiply(x int, y int) int {
 "#,
     total_chunks: 4,
     chunk_counts: {
+        File: 1,
         Function: 3,
     }
 }
@@ -51,10 +52,11 @@ func (a *Address) GetFullAddress() string {
     return a.Street + ", " + a.City + " " + a.Zip
 }
 "#,
-    total_chunks: 5,
+    total_chunks: 6,
     chunk_counts: {
+        CodeBlock: 3,
+        File: 1,
         Method: 2,
-        Struct: 2,
     }
 }
 
@@ -81,10 +83,11 @@ func process(rw ReadWriter) {
     // Implementation here
 }
 "#,
-    total_chunks: 5,
+    total_chunks: 6,
     chunk_counts: {
+        CodeBlock: 4,
+        File: 1,
         Function: 1,
-        Interface: 3,
     }
 }
 
@@ -126,11 +129,9 @@ func main() {}
 "#,
     total_chunks: 9,
     chunk_counts: {
-        Const: 2,
+        CodeBlock: 7,
+        File: 1,
         Function: 1,
-        Struct: 1,
-        TypeAlias: 2,
-        Variable: 2,
     }
 }
 
@@ -295,9 +296,11 @@ func (dp *DataProcessor) AnalyzePatterns(items []ProcessedItem) map[string]inter
     return analysis
 }
 "#,
-    total_chunks: 25,
+    total_chunks: 31,
     chunk_counts: {
+        CodeBlock: 17,
+        File: 1,
         Function: 1,
-        Struct: 3,
+        Method: 2,
     }
 }

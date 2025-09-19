@@ -14,19 +14,19 @@ struct Person {
 
 # text_to_type
 struct Person {
-let name: String
-let age: Int
+let name: String // Person's name
+let age: Int     // Person's age
 func greet() {
-print("Hello, I'm \(name)")
+print("Hello, I'm \(name)") // Print greeting
 }
 }
 
 # text_to_display
 struct Person {↵
-    let name: String↵ // Person's name
-    let age: Int↵     // Person's age
+    let name: String // Person's name↵
+    let age: Int     // Person's age↵
     
     func greet() {↵
-        print("Hello, I'm \(name)")↵ // Print greeting
+        print("Hello, I'm \(name)") // Print greeting↵
     }↵
 }↵

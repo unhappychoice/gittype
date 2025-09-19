@@ -15,32 +15,32 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "Class",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "data Person = Person String Int",
       "end_line": 2,
       "language": "haskell",
-      "name": "unknown",
+      "name": "data",
       "original_indentation": 0,
       "start_line": 2
     },
     {
-      "chunk_type": "Class",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "data Maybe a = Nothing | Just a",
       "end_line": 4,
       "language": "haskell",
-      "name": "unknown",
+      "name": "data",
       "original_indentation": 0,
       "start_line": 4
     },
     {
-      "chunk_type": "Class",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "data Tree a = Leaf a | Node (Tree a) (Tree a)",
       "end_line": 6,
       "language": "haskell",
-      "name": "unknown",
+      "name": "data",
       "original_indentation": 0,
       "start_line": 6
     }

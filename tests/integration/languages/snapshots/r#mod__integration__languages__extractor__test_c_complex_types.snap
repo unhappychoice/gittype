@@ -15,52 +15,52 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "Struct",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "typedef struct {\n    int id;\n    char name[32];\n} User;",
       "end_line": 5,
       "language": "c",
-      "name": "User",
+      "name": "type.definition",
       "original_indentation": 0,
       "start_line": 2
     },
     {
-      "chunk_type": "Struct",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "typedef union {\n    int i;\n    float f;\n    char c[4];\n} Value;",
       "end_line": 11,
       "language": "c",
-      "name": "Value",
+      "name": "type.definition",
       "original_indentation": 0,
       "start_line": 7
     },
     {
-      "chunk_type": "Struct",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "enum Status {\n    SUCCESS,\n    ERROR,\n    PENDING\n}",
       "end_line": 17,
       "language": "c",
-      "name": "Status",
+      "name": "enum.definition",
       "original_indentation": 0,
       "start_line": 13
     },
     {
-      "chunk_type": "Struct",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "int process_user(User *user, enum Status",
       "end_line": 19,
       "language": "c",
-      "name": "Status",
+      "name": "enum.definition",
       "original_indentation": 29,
       "start_line": 19
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "int process_user(User *user, enum Status *status) {\n    if (!user || !status) return -1;\n    *status = SUCCESS;\n    return user->id;\n}",
       "end_line": 23,
       "language": "c",
-      "name": "process_user",
+      "name": "function.definition",
       "original_indentation": 0,
       "start_line": 19
     }

@@ -65,7 +65,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "case class ProcessedItem(\n  id: Int,\n  originalValue: Int,\n  transformedValue: Int,\n  category: String,\n  timestamp: Instant = Instant.now(),\n  metadata: mutable.Map[String, Any] = mutable.Map.empty\n)",
       "end_line": 13,
       "language": "scala",
-      "name": "ProcessedItem",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 6
     },
@@ -104,7 +104,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class DataProcessor(threshold: Int) {\n  private val cache = mutable.Map[String, ProcessedItem]()\n  private val processingLog = mutable.ListBuffer[ProcessedItem]()\n\n  def processComplexData(input: List[Int]): List[ProcessedItem] = {\n    val results = mutable.ListBuffer[ProcessedItem]()\n    var processedCount = 0\n\n    // Main processing algorithm - extractable middle chunk\n    input.zipWithIndex.foreach { case (value, index) =>\n      val cacheKey = s\"item_${index}_$value\"\n\n      cache.get(cacheKey) match {\n        case Some(cachedItem) =>\n          results += cachedItem\n        case None =>\n          val processedItem = value match {\n            case v if v > threshold =>\n              val transformedValue = v * 2\n              val category = if (transformedValue > threshold * 3) \"HIGH\" else \"MEDIUM\"\n              val bonusValue = if (transformedValue > 100) transformedValue + 10 else transformedValue\n\n              processedCount += 1\n              ProcessedItem(\n                id = index,\n                originalValue = v,\n                transformedValue = bonusValue,\n                category = category,\n                metadata = mutable.Map(\n                  \"processed\" -> true,\n                  \"multiplier\" -> 2,\n                  \"processor\" -> \"enhanced\"\n                )\n              )\n\n            case v if v > 0 =>\n              ProcessedItem(\n                id = index,\n                originalValue = v,\n                transformedValue = v + threshold,\n                category = \"LOW\",\n                metadata = mutable.Map(\n                  \"processed\" -> true,\n                  \"adjusted\" -> true,\n                  \"processor\" -> \"basic\"\n                )\n              )\n\n            case _ => // skip negative values\n              null\n          }\n\n          if (processedItem != null) {\n            cache(cacheKey) = processedItem\n            processingLog += processedItem\n            results += processedItem\n          }\n      }\n    }\n\n    // Finalization logic\n    if (processedCount > 0) {\n      val average = results.map(_.transformedValue).sum.toDouble / results.size\n      println(f\"Processing complete. Average: $average%.2f\")\n\n      // Add processing statistics\n      results.foreach(_.metadata(\"processing_average\") = average)\n    }\n\n    results.toList\n  }\n\n  def analyzePatterns(items: List[ProcessedItem]): Map[String, Map[String, Any]] = {\n    val categoryGroups = items.groupBy(_.category)\n\n    // Pattern analysis logic - extractable middle chunk\n    val analysis = categoryGroups.map { case (category, categoryItems) =>\n      val values = categoryItems.map(_.transformedValue)\n      val categoryAnalysis = Map(\n        \"count\" -> categoryItems.size,\n        \"percentage\" -> (categoryItems.size.toDouble / items.size * 100),\n        \"avg_value\" -> (values.sum.toDouble / values.size),\n        \"min_value\" -> values.min,\n        \"max_value\" -> values.max\n      ) ++ {\n        // Time-based analysis\n        val currentTime = Instant.now()\n        val recentItems = categoryItems.filter { item =>\n          java.time.Duration.between(item.timestamp, currentTime).getSeconds < 60\n        }\n\n        if (recentItems.nonEmpty) {\n          val recentValues = recentItems.map(_.transformedValue)\n          Map(\n            \"recent_count\" -> recentItems.size,\n            \"recent_avg\" -> (recentValues.sum.toDouble / recentValues.size)\n          )\n        } else Map.empty\n      } ++ {\n        // High-value analysis\n        val highValueItems = categoryItems.filter(_.transformedValue > 1000)\n        if (highValueItems.nonEmpty) {\n          Map(\"high_value_count\" -> highValueItems.size)\n        } else Map.empty\n      }\n\n      category -> categoryAnalysis\n    }\n\n    analysis ++ Map(\n      \"total_items\" -> items.size,\n      \"processing_time\" -> Instant.now().toString\n    )\n  }\n}",
       "end_line": 129,
       "language": "scala",
-      "name": "DataProcessor",
+      "name": "class",
       "original_indentation": 0,
       "start_line": 15
     },
@@ -131,18 +131,13 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "  def processComplexData(input: List[Int]): List[ProcessedItem] = {\n    val results = mutable.ListBuffer[ProcessedItem]()\n    var processedCount = 0\n\n    // Main processing algorithm - extractable middle chunk\n    input.zipWithIndex.foreach { case (value, index) =>\n      val cacheKey = s\"item_${index}_$value\"\n\n      cache.get(cacheKey) match {\n        case Some(cachedItem) =>\n          results += cachedItem\n        case None =>\n          val processedItem = value match {\n            case v if v > threshold =>\n              val transformedValue = v * 2\n              val category = if (transformedValue > threshold * 3) \"HIGH\" else \"MEDIUM\"\n              val bonusValue = if (transformedValue > 100) transformedValue + 10 else transformedValue\n\n              processedCount += 1\n              ProcessedItem(\n                id = index,\n                originalValue = v,\n                transformedValue = bonusValue,\n                category = category,\n                metadata = mutable.Map(\n                  \"processed\" -> true,\n                  \"multiplier\" -> 2,\n                  \"processor\" -> \"enhanced\"\n                )\n              )\n\n            case v if v > 0 =>\n              ProcessedItem(\n                id = index,\n                originalValue = v,\n                transformedValue = v + threshold,\n                category = \"LOW\",\n                metadata = mutable.Map(\n                  \"processed\" -> true,\n                  \"adjusted\" -> true,\n                  \"processor\" -> \"basic\"\n                )\n              )\n\n            case _ => // skip negative values\n              null\n          }\n\n          if (processedItem != null) {\n            cache(cacheKey) = processedItem\n            processingLog += processedItem\n            results += processedItem\n          }\n      }\n    }\n\n    // Finalization logic\n    if (processedCount > 0) {\n      val average = results.map(_.transformedValue).sum.toDouble / results.size\n      println(f\"Processing complete. Average: $average%.2f\")\n\n      // Add processing statistics\n      results.foreach(_.metadata(\"processing_average\") = average)\n    }\n\n    results.toList\n  }",
       "end_line": 85,
       "language": "scala",
-      "name": "processComplexData",
+      "name": "function",
       "original_indentation": 2,
       "start_line": 19
     },
     {
       "chunk_type": "FunctionCall",
-      "comment_ranges": [
-        [
-          1367,
-          1390
-        ]
-      ],
+      "comment_ranges": [],
       "content": "    input.zipWithIndex.foreach { case (value, index) =>\n      val cacheKey = s\"item_${index}_$value\"\n\n      cache.get(cacheKey) match {\n        case Some(cachedItem) =>\n          results += cachedItem\n        case None =>\n          val processedItem = value match {\n            case v if v > threshold =>\n              val transformedValue = v * 2\n              val category = if (transformedValue > threshold * 3) \"HIGH\" else \"MEDIUM\"\n              val bonusValue = if (transformedValue > 100) transformedValue + 10 else transformedValue\n\n              processedCount += 1\n              ProcessedItem(\n                id = index,\n                originalValue = v,\n                transformedValue = bonusValue,\n                category = category,\n                metadata = mutable.Map(\n                  \"processed\" -> true,\n                  \"multiplier\" -> 2,\n                  \"processor\" -> \"enhanced\"\n                )\n              )\n\n            case v if v > 0 =>\n              ProcessedItem(\n                id = index,\n                originalValue = v,\n                transformedValue = v + threshold,\n                category = \"LOW\",\n                metadata = mutable.Map(\n                  \"processed\" -> true,\n                  \"adjusted\" -> true,\n                  \"processor\" -> \"basic\"\n                )\n              )\n\n            case _ => // skip negative values\n              null\n          }\n\n          if (processedItem != null) {\n            cache(cacheKey) = processedItem\n            processingLog += processedItem\n            results += processedItem\n          }\n      }\n    }",
       "end_line": 73,
       "language": "scala",
@@ -152,12 +147,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [
-        [
-          1265,
-          1288
-        ]
-      ],
+      "comment_ranges": [],
       "content": "      cache.get(cacheKey) match {\n        case Some(cachedItem) =>\n          results += cachedItem\n        case None =>\n          val processedItem = value match {\n            case v if v > threshold =>\n              val transformedValue = v * 2\n              val category = if (transformedValue > threshold * 3) \"HIGH\" else \"MEDIUM\"\n              val bonusValue = if (transformedValue > 100) transformedValue + 10 else transformedValue\n\n              processedCount += 1\n              ProcessedItem(\n                id = index,\n                originalValue = v,\n                transformedValue = bonusValue,\n                category = category,\n                metadata = mutable.Map(\n                  \"processed\" -> true,\n                  \"multiplier\" -> 2,\n                  \"processor\" -> \"enhanced\"\n                )\n              )\n\n            case v if v > 0 =>\n              ProcessedItem(\n                id = index,\n                originalValue = v,\n                transformedValue = v + threshold,\n                category = \"LOW\",\n                metadata = mutable.Map(\n                  \"processed\" -> true,\n                  \"adjusted\" -> true,\n                  \"processor\" -> \"basic\"\n                )\n              )\n\n            case _ => // skip negative values\n              null\n          }\n\n          if (processedItem != null) {\n            cache(cacheKey) = processedItem\n            processingLog += processedItem\n            results += processedItem\n          }\n      }",
       "end_line": 72,
       "language": "scala",
@@ -167,12 +157,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [
-        [
-          1145,
-          1168
-        ]
-      ],
+      "comment_ranges": [],
       "content": "          val processedItem = value match {\n            case v if v > threshold =>\n              val transformedValue = v * 2\n              val category = if (transformedValue > threshold * 3) \"HIGH\" else \"MEDIUM\"\n              val bonusValue = if (transformedValue > 100) transformedValue + 10 else transformedValue\n\n              processedCount += 1\n              ProcessedItem(\n                id = index,\n                originalValue = v,\n                transformedValue = bonusValue,\n                category = category,\n                metadata = mutable.Map(\n                  \"processed\" -> true,\n                  \"multiplier\" -> 2,\n                  \"processor\" -> \"enhanced\"\n                )\n              )\n\n            case v if v > 0 =>\n              ProcessedItem(\n                id = index,\n                originalValue = v,\n                transformedValue = v + threshold,\n                category = \"LOW\",\n                metadata = mutable.Map(\n                  \"processed\" -> true,\n                  \"adjusted\" -> true,\n                  \"processor\" -> \"basic\"\n                )\n              )\n\n            case _ => // skip negative values\n              null\n          }",
       "end_line": 65,
       "language": "scala",
@@ -232,12 +217,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [
-        [
-          178,
-          206
-        ]
-      ],
+      "comment_ranges": [],
       "content": "    if (processedCount > 0) {\n      val average = results.map(_.transformedValue).sum.toDouble / results.size\n      println(f\"Processing complete. Average: $average%.2f\")\n\n      // Add processing statistics\n      results.foreach(_.metadata(\"processing_average\") = average)\n    }",
       "end_line": 82,
       "language": "scala",
@@ -264,22 +244,13 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "  def analyzePatterns(items: List[ProcessedItem]): Map[String, Map[String, Any]] = {\n    val categoryGroups = items.groupBy(_.category)\n\n    // Pattern analysis logic - extractable middle chunk\n    val analysis = categoryGroups.map { case (category, categoryItems) =>\n      val values = categoryItems.map(_.transformedValue)\n      val categoryAnalysis = Map(\n        \"count\" -> categoryItems.size,\n        \"percentage\" -> (categoryItems.size.toDouble / items.size * 100),\n        \"avg_value\" -> (values.sum.toDouble / values.size),\n        \"min_value\" -> values.min,\n        \"max_value\" -> values.max\n      ) ++ {\n        // Time-based analysis\n        val currentTime = Instant.now()\n        val recentItems = categoryItems.filter { item =>\n          java.time.Duration.between(item.timestamp, currentTime).getSeconds < 60\n        }\n\n        if (recentItems.nonEmpty) {\n          val recentValues = recentItems.map(_.transformedValue)\n          Map(\n            \"recent_count\" -> recentItems.size,\n            \"recent_avg\" -> (recentValues.sum.toDouble / recentValues.size)\n          )\n        } else Map.empty\n      } ++ {\n        // High-value analysis\n        val highValueItems = categoryItems.filter(_.transformedValue > 1000)\n        if (highValueItems.nonEmpty) {\n          Map(\"high_value_count\" -> highValueItems.size)\n        } else Map.empty\n      }\n\n      category -> categoryAnalysis\n    }\n\n    analysis ++ Map(\n      \"total_items\" -> items.size,\n      \"processing_time\" -> Instant.now().toString\n    )\n  }",
       "end_line": 128,
       "language": "scala",
-      "name": "analyzePatterns",
+      "name": "function",
       "original_indentation": 2,
       "start_line": 87
     },
     {
       "chunk_type": "FunctionCall",
-      "comment_ranges": [
-        [
-          428,
-          450
-        ],
-        [
-          939,
-          961
-        ]
-      ],
+      "comment_ranges": [],
       "content": "    val analysis = categoryGroups.map { case (category, categoryItems) =>\n      val values = categoryItems.map(_.transformedValue)\n      val categoryAnalysis = Map(\n        \"count\" -> categoryItems.size,\n        \"percentage\" -> (categoryItems.size.toDouble / items.size * 100),\n        \"avg_value\" -> (values.sum.toDouble / values.size),\n        \"min_value\" -> values.min,\n        \"max_value\" -> values.max\n      ) ++ {\n        // Time-based analysis\n        val currentTime = Instant.now()\n        val recentItems = categoryItems.filter { item =>\n          java.time.Duration.between(item.timestamp, currentTime).getSeconds < 60\n        }\n\n        if (recentItems.nonEmpty) {\n          val recentValues = recentItems.map(_.transformedValue)\n          Map(\n            \"recent_count\" -> recentItems.size,\n            \"recent_avg\" -> (recentValues.sum.toDouble / recentValues.size)\n          )\n        } else Map.empty\n      } ++ {\n        // High-value analysis\n        val highValueItems = categoryItems.filter(_.transformedValue > 1000)\n        if (highValueItems.nonEmpty) {\n          Map(\"high_value_count\" -> highValueItems.size)\n        } else Map.empty\n      }\n\n      category -> categoryAnalysis\n    }",
       "end_line": 122,
       "language": "scala",
@@ -299,12 +270,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [
-        [
-          21,
-          43
-        ]
-      ],
+      "comment_ranges": [],
       "content": "      ) ++ {\n        // Time-based analysis\n        val currentTime = Instant.now()\n        val recentItems = categoryItems.filter { item =>\n          java.time.Duration.between(item.timestamp, currentTime).getSeconds < 60\n        }\n\n        if (recentItems.nonEmpty) {\n          val recentValues = recentItems.map(_.transformedValue)\n          Map(\n            \"recent_count\" -> recentItems.size,\n            \"recent_avg\" -> (recentValues.sum.toDouble / recentValues.size)\n          )\n        } else Map.empty\n      }",
       "end_line": 113,
       "language": "scala",
@@ -313,13 +279,13 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 99
     },
     {
-      "chunk_type": "Lambda",
+      "chunk_type": "FunctionCall",
       "comment_ranges": [],
-      "content": "        val recentItems = categoryItems.filter { item =>\n          java.time.Duration.between(item.timestamp, currentTime).getSeconds < 60\n        ",
+      "content": "        val recentItems = categoryItems.filter { item =>\n          java.time.Duration.between(item.timestamp, currentTime).getSeconds < 60\n        }",
       "end_line": 104,
       "language": "scala",
-      "name": "lambda",
-      "original_indentation": 49,
+      "name": "function_call",
+      "original_indentation": 26,
       "start_line": 102
     },
     {
@@ -344,12 +310,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [
-        [
-          21,
-          43
-        ]
-      ],
+      "comment_ranges": [],
       "content": "      } ++ {\n        // High-value analysis\n        val highValueItems = categoryItems.filter(_.transformedValue > 1000)\n        if (highValueItems.nonEmpty) {\n          Map(\"high_value_count\" -> highValueItems.size)\n        } else Map.empty\n      }",
       "end_line": 119,
       "language": "scala",
@@ -378,7 +339,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 124
     },
     {
-      "chunk_type": "Class",
+      "chunk_type": "CodeBlock",
       "comment_ranges": [
         [
           110,
@@ -396,7 +357,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "object DataProcessor {\n  def createProcessor(threshold: Int): DataProcessor = new DataProcessor(threshold)\n\n  // Complex transformation function with pattern matching\n  def complexTransform(item: ProcessedItem): ProcessedItem = {\n    val newValue = item.category match {\n      case \"HIGH\" => item.transformedValue * 2\n      case \"MEDIUM\" => item.transformedValue + 50\n      case \"LOW\" => item.transformedValue + 10\n      case _ => item.transformedValue\n    }\n\n    item.copy(transformedValue = newValue)\n  }\n\n  // Functional approach to filtering and sorting\n  def filterAndSort(items: List[ProcessedItem], targetCategory: String): List[ProcessedItem] = {\n    items\n      .filter(_.category == targetCategory)\n      .sortBy(_.transformedValue)(Ordering[Int].reverse)\n  }\n\n  // Batch processing with error handling\n  def batchProcess(batches: List[List[Int]], threshold: Int): List[Try[List[ProcessedItem]]] = {\n    batches.map { batch =>\n      Try {\n        val processor = new DataProcessor(threshold)\n        processor.processComplexData(batch)\n      }\n    }\n  }\n}",
       "end_line": 163,
       "language": "scala",
-      "name": "DataProcessor",
+      "name": "object",
       "original_indentation": 0,
       "start_line": 132
     },
@@ -406,7 +367,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "  def createProcessor(threshold: Int): DataProcessor = new DataProcessor(threshold)",
       "end_line": 133,
       "language": "scala",
-      "name": "createProcessor",
+      "name": "function",
       "original_indentation": 2,
       "start_line": 133
     },
@@ -416,7 +377,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "  def complexTransform(item: ProcessedItem): ProcessedItem = {\n    val newValue = item.category match {\n      case \"HIGH\" => item.transformedValue * 2\n      case \"MEDIUM\" => item.transformedValue + 50\n      case \"LOW\" => item.transformedValue + 10\n      case _ => item.transformedValue\n    }\n\n    item.copy(transformedValue = newValue)\n  }",
       "end_line": 145,
       "language": "scala",
-      "name": "complexTransform",
+      "name": "function",
       "original_indentation": 2,
       "start_line": 136
     },
@@ -436,7 +397,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "  def filterAndSort(items: List[ProcessedItem], targetCategory: String): List[ProcessedItem] = {\n    items\n      .filter(_.category == targetCategory)\n      .sortBy(_.transformedValue)(Ordering[Int].reverse)\n  }",
       "end_line": 152,
       "language": "scala",
-      "name": "filterAndSort",
+      "name": "function",
       "original_indentation": 2,
       "start_line": 148
     },
@@ -453,7 +414,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     {
       "chunk_type": "FunctionCall",
       "comment_ranges": [],
-      "content": "    items\n      .filter(_.category == targetCategory)\n      .sortBy(_.transformedValue)",
+      "content": "    items\n      .filter(_.category == targetCategory)\n      .sortBy(_.transformedValue)(Ordering[Int].reverse)",
       "end_line": 151,
       "language": "scala",
       "name": "function_call",
@@ -466,18 +427,18 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "  def batchProcess(batches: List[List[Int]], threshold: Int): List[Try[List[ProcessedItem]]] = {\n    batches.map { batch =>\n      Try {\n        val processor = new DataProcessor(threshold)\n        processor.processComplexData(batch)\n      }\n    }\n  }",
       "end_line": 162,
       "language": "scala",
-      "name": "batchProcess",
+      "name": "function",
       "original_indentation": 2,
       "start_line": 155
     },
     {
-      "chunk_type": "Lambda",
+      "chunk_type": "FunctionCall",
       "comment_ranges": [],
-      "content": "    batches.map { batch =>\n      Try {\n        val processor = new DataProcessor(threshold)\n        processor.processComplexData(batch)\n      }\n    ",
+      "content": "    batches.map { batch =>\n      Try {\n        val processor = new DataProcessor(threshold)\n        processor.processComplexData(batch)\n      }\n    }",
       "end_line": 161,
       "language": "scala",
-      "name": "lambda",
-      "original_indentation": 18,
+      "name": "function_call",
+      "original_indentation": 4,
       "start_line": 156
     },
     {

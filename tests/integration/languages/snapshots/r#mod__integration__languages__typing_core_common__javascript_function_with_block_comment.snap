@@ -11,12 +11,14 @@ function calculate(x, y) {
 
 # text_to_type
 function calculate(x, y) {
+/* This calculates the sum
+of two numbers */
 return x + y;
 }
 
 # text_to_display
 function calculate(x, y) {↵
-    /* This calculates the sum
-       of two numbers */
+    /* This calculates the sum↵
+       of two numbers */↵
     return x + y;↵
 }↵

@@ -18,26 +18,26 @@ class Calculator {
 
 # text_to_type
 class Calculator {
-private result: number = 0;
-public add(value: number): Calculator {
+private result: number = 0; // Store result
+public add(value: number): Calculator { // Add method
 this.result += value;
 return this;
 }
 public getResult(): number {
-return this.result;
+return this.result; // Return current result
 }
 }
 
 # text_to_display
 class Calculator {↵
-    private result: number = 0;↵ // Store result
+    private result: number = 0; // Store result↵
     
-    public add(value: number): Calculator {↵ // Add method
+    public add(value: number): Calculator { // Add method↵
         this.result += value;↵
         return this;↵
     }↵
     
     public getResult(): number {↵
-        return this.result;↵ // Return current result
+        return this.result; // Return current result↵
     }↵
 }↵

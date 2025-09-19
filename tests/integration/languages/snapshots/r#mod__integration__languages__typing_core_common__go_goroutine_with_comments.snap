@@ -22,14 +22,14 @@ func main() {
 func processData(data []int, ch chan int) {
 result := 0
 for _, v := range data {
-result += v
+result += v // Add each value
 }
-ch <- result
+ch <- result // Send result
 }
 func main() {
 ch := make(chan int)
-go processData([]int{1, 2, 3}, ch)
-result := <-ch
+go processData([]int{1, 2, 3}, ch) // Start goroutine
+result := <-ch // Receive result
 fmt.Println(result)
 }
 
@@ -37,14 +37,14 @@ fmt.Println(result)
 func processData(data []int, ch chan int) {↵
     result := 0↵
     for _, v := range data {↵
-        result += v↵ // Add each value
+        result += v // Add each value↵
     }↵
-    ch <- result↵ // Send result
+    ch <- result // Send result↵
 }↵
 
 func main() {↵
     ch := make(chan int)↵
-    go processData([]int{1, 2, 3}, ch)↵ // Start goroutine
-    result := <-ch↵ // Receive result
+    go processData([]int{1, 2, 3}, ch) // Start goroutine↵
+    result := <-ch // Receive result↵
     fmt.Println(result)↵
 }↵

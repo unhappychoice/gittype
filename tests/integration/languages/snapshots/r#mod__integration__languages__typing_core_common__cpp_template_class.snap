@@ -22,13 +22,13 @@ public:
 template<typename T>
 class Container {
 private:
-T data;
+T data; // The data
 public:
 void set(const T& value) {
-data = value;
+data = value; // Store value
 }
 T get() const {
-return data;
+return data; // Return data
 }
 };
 
@@ -36,14 +36,14 @@ return data;
 template<typename T>↵
 class Container {↵
 private:↵
-    T data;↵ // The data
+    T data; // The data↵
     
 public:↵
     void set(const T& value) {↵
-        data = value;↵ // Store value
+        data = value; // Store value↵
     }↵
     
     T get() const {↵
-        return data;↵ // Return data
+        return data; // Return data↵
     }↵
 };↵

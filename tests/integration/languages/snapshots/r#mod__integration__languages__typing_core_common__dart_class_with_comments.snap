@@ -18,26 +18,26 @@ class Calculator {
 
 # text_to_type
 class Calculator {
-int _result = 0;
-Calculator add(int value) {
+int _result = 0; // Store result
+Calculator add(int value) { // Add method
 _result += value;
 return this;
 }
 int get result {
-return _result;
+return _result; // Return current result
 }
 }
 
 # text_to_display
 class Calculator {↵
-  int _result = 0;↵ // Store result
+  int _result = 0; // Store result↵
   
-  Calculator add(int value) {↵ // Add method
+  Calculator add(int value) { // Add method↵
     _result += value;↵
     return this;↵
   }↵
   
   int get result {↵
-    return _result;↵ // Return current result
+    return _result; // Return current result↵
   }↵
 }↵

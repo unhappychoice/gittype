@@ -15,14 +15,34 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "def hello_world",
+      "end_line": 2,
+      "language": "ruby",
+      "name": "name",
+      "original_indentation": 4,
+      "start_line": 2
+    },
+    {
       "chunk_type": "Method",
       "comment_ranges": [],
       "content": "def hello_world\n  puts \"Hello, world!\"\nend",
       "end_line": 4,
       "language": "ruby",
-      "name": "hello_world",
+      "name": "method",
       "original_indentation": 0,
       "start_line": 2
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "def calculate_sum",
+      "end_line": 6,
+      "language": "ruby",
+      "name": "name",
+      "original_indentation": 4,
+      "start_line": 6
     },
     {
       "chunk_type": "Method",
@@ -30,12 +50,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "def calculate_sum(a, b)\n  a + b\nend",
       "end_line": 8,
       "language": "ruby",
-      "name": "calculate_sum",
+      "name": "method",
       "original_indentation": 0,
       "start_line": 6
     }
   ],
   "source_code": "\ndef hello_world\n  puts \"Hello, world!\"\nend\n\ndef calculate_sum(a, b)\n  a + b\nend\n",
   "test_name": "test_ruby_function_extraction",
-  "total_chunks": 3
+  "total_chunks": 5
 }
