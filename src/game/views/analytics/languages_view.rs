@@ -60,13 +60,13 @@ impl LanguagesView {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::BORDER))
+                    .border_style(Style::default().fg(Colors::border()))
                     .title("Languages"),
             )
-            .style(Style::default().fg(Colors::TEXT))
+            .style(Style::default().fg(Colors::text()))
             .highlight_style(
                 Style::default()
-                    .bg(Colors::MUTED)
+                    .bg(Colors::muted())
                     .add_modifier(Modifier::BOLD),
             )
             .highlight_symbol("► ");
@@ -116,11 +116,11 @@ impl LanguagesView {
             let mut lines = vec![
                 Line::from(vec![
                     Span::raw("  "),
-                    Span::styled("Language: ", Style::default().fg(Colors::TEXT)),
+                    Span::styled("Language: ", Style::default().fg(Colors::text())),
                     Span::styled(
                         display_name,
                         Style::default()
-                            .fg(Colors::INFO)
+                            .fg(Colors::info())
                             .add_modifier(Modifier::BOLD),
                     ),
                 ]),
@@ -134,32 +134,32 @@ impl LanguagesView {
                         Span::styled(
                             "📈 Speed Metrics:",
                             Style::default()
-                                .fg(Colors::TEXT)
+                                .fg(Colors::text())
                                 .add_modifier(Modifier::BOLD),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Average CPM: ", Style::default().fg(Colors::CPM_WPM)),
+                        Span::styled("• Average CPM: ", Style::default().fg(Colors::cpm_wpm())),
                         Span::styled(
                             format!("{:.1}", stats.avg_cpm),
-                            Style::default().fg(Colors::TEXT),
+                            Style::default().fg(Colors::text()),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Average WPM: ", Style::default().fg(Colors::CPM_WPM)),
+                        Span::styled("• Average WPM: ", Style::default().fg(Colors::cpm_wpm())),
                         Span::styled(
                             format!("{:.1}", stats.avg_wpm),
-                            Style::default().fg(Colors::TEXT),
+                            Style::default().fg(Colors::text()),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Best CPM: ", Style::default().fg(Colors::CPM_WPM)),
+                        Span::styled("• Best CPM: ", Style::default().fg(Colors::cpm_wpm())),
                         Span::styled(
                             format!("{:.1}", stats.best_cpm),
-                            Style::default().fg(Colors::TEXT),
+                            Style::default().fg(Colors::text()),
                         ),
                     ]),
                     Line::from(""),
@@ -168,7 +168,7 @@ impl LanguagesView {
                         Span::styled(
                             "🎯 Accuracy & Quality:",
                             Style::default()
-                                .fg(Colors::TEXT)
+                                .fg(Colors::text())
                                 .add_modifier(Modifier::BOLD),
                         ),
                     ]),
@@ -176,27 +176,27 @@ impl LanguagesView {
                         Span::raw("    "),
                         Span::styled(
                             "• Average Accuracy: ",
-                            Style::default().fg(Colors::ACCURACY),
+                            Style::default().fg(Colors::accuracy()),
                         ),
                         Span::styled(
                             format!("{:.1}%", stats.avg_accuracy),
-                            Style::default().fg(Colors::TEXT),
+                            Style::default().fg(Colors::text()),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Best Accuracy: ", Style::default().fg(Colors::ACCURACY)),
+                        Span::styled("• Best Accuracy: ", Style::default().fg(Colors::accuracy())),
                         Span::styled(
                             format!("{:.1}%", stats.best_accuracy),
-                            Style::default().fg(Colors::TEXT),
+                            Style::default().fg(Colors::text()),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Total Mistakes: ", Style::default().fg(Colors::ERROR)),
+                        Span::styled("• Total Mistakes: ", Style::default().fg(Colors::error())),
                         Span::styled(
                             format!("{}", stats.total_mistakes),
-                            Style::default().fg(Colors::TEXT),
+                            Style::default().fg(Colors::text()),
                         ),
                     ]),
                     Line::from(""),
@@ -205,7 +205,7 @@ impl LanguagesView {
                         Span::styled(
                             "📊 Volume & Activity:",
                             Style::default()
-                                .fg(Colors::TEXT)
+                                .fg(Colors::text())
                                 .add_modifier(Modifier::BOLD),
                         ),
                     ]),
@@ -213,34 +213,34 @@ impl LanguagesView {
                         Span::raw("    "),
                         Span::styled(
                             "• Total Sessions: ",
-                            Style::default().fg(Colors::STAGE_INFO),
+                            Style::default().fg(Colors::stage_info()),
                         ),
                         Span::styled(
                             format!("{}", stats.total_sessions),
-                            Style::default().fg(Colors::TEXT),
+                            Style::default().fg(Colors::text()),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled(
                             "• Total Keystrokes: ",
-                            Style::default().fg(Colors::STAGE_INFO),
+                            Style::default().fg(Colors::stage_info()),
                         ),
                         Span::styled(
                             format!("{}", stats.total_keystrokes),
-                            Style::default().fg(Colors::TEXT),
+                            Style::default().fg(Colors::text()),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Total Time: ", Style::default().fg(Colors::DURATION)),
+                        Span::styled("• Total Time: ", Style::default().fg(Colors::duration())),
                         Span::styled(
                             format!(
                                 "{}h {}m",
                                 stats.total_duration_ms / 3600000,
                                 (stats.total_duration_ms % 3600000) / 60000
                             ),
-                            Style::default().fg(Colors::TEXT),
+                            Style::default().fg(Colors::text()),
                         ),
                     ]),
                     Line::from(""),
@@ -249,27 +249,27 @@ impl LanguagesView {
                         Span::styled(
                             "🏆 Progress:",
                             Style::default()
-                                .fg(Colors::TEXT)
+                                .fg(Colors::text())
                                 .add_modifier(Modifier::BOLD),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Average Score: ", Style::default().fg(Colors::SCORE)),
+                        Span::styled("• Average Score: ", Style::default().fg(Colors::score())),
                         Span::styled(
                             format!("{:.0}", stats.avg_score),
-                            Style::default().fg(Colors::TEXT),
+                            Style::default().fg(Colors::text()),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Total Stages: ", Style::default().fg(Colors::STAGE_INFO)),
+                        Span::styled("• Total Stages: ", Style::default().fg(Colors::stage_info())),
                         Span::styled(
                             format!(
                                 "{}/{} completed",
                                 stats.stages_completed, stats.stages_attempted
                             ),
-                            Style::default().fg(Colors::TEXT),
+                            Style::default().fg(Colors::text()),
                         ),
                     ]),
                 ]);
@@ -277,26 +277,26 @@ impl LanguagesView {
                 lines.extend_from_slice(&[
                     Line::from(vec![
                         Span::raw("  "),
-                        Span::styled("• Average CPM: ", Style::default().fg(Colors::TEXT)),
+                        Span::styled("• Average CPM: ", Style::default().fg(Colors::text())),
                         Span::styled(
                             format!("{:.1}", lang_data.1),
-                            Style::default().fg(Colors::CPM_WPM),
+                            Style::default().fg(Colors::cpm_wpm()),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("  "),
-                        Span::styled("• WPM Equivalent: ", Style::default().fg(Colors::TEXT)),
+                        Span::styled("• WPM Equivalent: ", Style::default().fg(Colors::text())),
                         Span::styled(
                             format!("{:.1}", lang_data.1 / 5.0),
-                            Style::default().fg(Colors::CPM_WPM),
+                            Style::default().fg(Colors::cpm_wpm()),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("  "),
-                        Span::styled("• Session Count: ", Style::default().fg(Colors::STAGE_INFO)),
+                        Span::styled("• Session Count: ", Style::default().fg(Colors::stage_info())),
                         Span::styled(
                             format!("{}", lang_data.2),
-                            Style::default().fg(Colors::TEXT),
+                            Style::default().fg(Colors::text()),
                         ),
                     ]),
                 ]);
@@ -309,15 +309,15 @@ impl LanguagesView {
                     Span::styled(
                         "Navigation:",
                         Style::default()
-                            .fg(Colors::TEXT)
+                            .fg(Colors::text())
                             .add_modifier(Modifier::BOLD),
                     ),
                 ]),
                 Line::from(vec![
                     Span::raw("  "),
-                    Span::styled("Use ", Style::default().fg(Colors::MUTED)),
-                    Span::styled("↑↓ / JK", Style::default().fg(Colors::ACCURACY)),
-                    Span::styled(" to navigate languages", Style::default().fg(Colors::MUTED)),
+                    Span::styled("Use ", Style::default().fg(Colors::muted())),
+                    Span::styled("↑↓ / JK", Style::default().fg(Colors::accuracy())),
+                    Span::styled(" to navigate languages", Style::default().fg(Colors::muted())),
                 ]),
             ]);
 
@@ -327,7 +327,7 @@ impl LanguagesView {
                 Line::from(""),
                 Line::from(vec![
                     Span::raw("  "),
-                    Span::styled("No Language Selected", Style::default().fg(Colors::MUTED)),
+                    Span::styled("No Language Selected", Style::default().fg(Colors::muted())),
                 ]),
                 Line::from(""),
                 Line::from(vec![
@@ -342,7 +342,7 @@ impl LanguagesView {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::BORDER))
+                    .border_style(Style::default().fg(Colors::border()))
                     .title("Language Details (Last 90 Days)"),
             );
         f.render_widget(details, area);

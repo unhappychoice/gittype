@@ -15,11 +15,11 @@ fn rank_tier_color_palette_mappings_are_consistent() {
 fn rank_tier_terminal_colors_follow_ui_colors() {
     assert_eq!(
         RankTier::Beginner.terminal_color(),
-        Colors::to_crossterm(Colors::INFO)
+        Colors::to_crossterm(Colors::info())
     );
     assert_eq!(
         RankTier::Legendary.terminal_color(),
-        Colors::to_crossterm(Colors::ERROR)
+        Colors::to_crossterm(Colors::error())
     );
 }
 

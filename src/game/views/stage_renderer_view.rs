@@ -143,9 +143,9 @@ impl StageRendererView {
             let header = Paragraph::new(vec![Line::from(header_text.clone())]).block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::BORDER))
+                    .border_style(Style::default().fg(Colors::border()))
                     .title("Challenge")
-                    .title_style(Style::default().fg(Colors::BORDER))
+                    .title_style(Style::default().fg(Colors::border()))
                     .padding(ratatui::widgets::Padding::horizontal(1)),
             ); // Only horizontal padding
             f.render_widget(header, chunks[0]);
@@ -156,9 +156,9 @@ impl StageRendererView {
                 let empty_content = Paragraph::new(Text::from(vec![])).block(
                     Block::default()
                         .borders(Borders::ALL)
-                        .border_style(Style::default().fg(Colors::BORDER))
+                        .border_style(Style::default().fg(Colors::border()))
                         .title("Code")
-                        .title_style(Style::default().fg(Colors::ACTION_KEY))
+                        .title_style(Style::default().fg(Colors::action_key()))
                         .padding(ratatui::widgets::Padding::uniform(1)),
                 );
                 f.render_widget(empty_content, chunks[1]);
@@ -188,9 +188,9 @@ impl StageRendererView {
                     .block(
                         Block::default()
                             .borders(Borders::ALL)
-                            .border_style(Style::default().fg(Colors::BORDER))
+                            .border_style(Style::default().fg(Colors::border()))
                             .title("Code")
-                            .title_style(Style::default().fg(Colors::ACTION_KEY))
+                            .title_style(Style::default().fg(Colors::action_key()))
                             .padding(ratatui::widgets::Padding::uniform(1)),
                     );
                 f.render_widget(content, chunks[1]);
@@ -199,14 +199,14 @@ impl StageRendererView {
             // Metrics section below the code - less prominent
             let metrics_widget = Paragraph::new(vec![Line::from(vec![Span::styled(
                 metrics_line.clone(),
-                Style::default().fg(Colors::MUTED),
+                Style::default().fg(Colors::muted()),
             )])])
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::SECONDARY))
+                    .border_style(Style::default().fg(Colors::secondary()))
                     .title("Metrics")
-                    .title_style(Style::default().fg(Colors::SECONDARY))
+                    .title_style(Style::default().fg(Colors::secondary()))
                     .padding(ratatui::widgets::Padding::horizontal(1)),
             ); // Only horizontal padding
             f.render_widget(metrics_widget, chunks[2]);
@@ -216,11 +216,11 @@ impl StageRendererView {
                 .block(
                     Block::default()
                         .borders(Borders::ALL)
-                        .border_style(Style::default().fg(Colors::SECONDARY))
+                        .border_style(Style::default().fg(Colors::secondary()))
                         .title("Progress")
-                        .title_style(Style::default().fg(Colors::SECONDARY)),
+                        .title_style(Style::default().fg(Colors::secondary())),
                 )
-                .gauge_style(Style::default().fg(Colors::PROGRESS_BAR))
+                .gauge_style(Style::default().fg(Colors::progress_bar()))
                 .percent(progress_percent as u16)
                 .label(format!("{}%", progress_percent));
             f.render_widget(progress_widget, chunks[3]);
@@ -233,8 +233,8 @@ impl StageRendererView {
                 height: 1,
             };
             let esc_text = Paragraph::new(vec![Line::from(vec![
-                Span::styled("[ESC]", Style::default().fg(Colors::ACTION_KEY)),
-                Span::styled(" Options", Style::default().fg(Colors::TEXT)),
+                Span::styled("[ESC]", Style::default().fg(Colors::action_key())),
+                Span::styled(" Options", Style::default().fg(Colors::text())),
             ])]);
             f.render_widget(esc_text, esc_area);
 
@@ -244,14 +244,14 @@ impl StageRendererView {
 
             if waiting_to_start {
                 let start_line = vec![
-                    Span::styled("Press ", Style::default().fg(Colors::TEXT)),
+                    Span::styled("Press ", Style::default().fg(Colors::text())),
                     Span::styled(
                         "[SPACE]",
                         Style::default()
-                            .fg(Colors::SUCCESS)
+                            .fg(Colors::success())
                             .add_modifier(Modifier::BOLD),
                     ),
-                    Span::styled(" to start", Style::default().fg(Colors::TEXT)),
+                    Span::styled(" to start", Style::default().fg(Colors::text())),
                 ];
 
                 let total_width = "Press [SPACE] to start".len() as u16;
@@ -265,11 +265,11 @@ impl StageRendererView {
                 f.render_widget(start_text, start_area);
             } else if let Some(count) = countdown_number {
                 let color = match count {
-                    3 => Colors::COUNTDOWN_3,
-                    2 => Colors::COUNTDOWN_2,
-                    1 => Colors::COUNTDOWN_1,
-                    0 => Colors::COUNTDOWN_GO,
-                    _ => Colors::TEXT,
+                    3 => Colors::countdown_3(),
+                    2 => Colors::countdown_2(),
+                    1 => Colors::countdown_1(),
+                    0 => Colors::countdown_go(),
+                    _ => Colors::text(),
                 };
 
                 if count > 0 && count <= 3 {
@@ -361,14 +361,14 @@ impl StageRendererView {
             let line_num_text = format!("{:>4} │ ", ctx_line_number);
             let mut line_spans = vec![Span::styled(
                 line_num_text,
-                Style::default().fg(Colors::COMMENT_TEXT),
+                Style::default().fg(Colors::comment_text()),
             )];
 
             // Add the context line content with dimmed style
             line_spans.push(Span::styled(
                 pre_line.clone(),
                 Style::default()
-                    .fg(Colors::COMMENT_TEXT)
+                    .fg(Colors::comment_text())
                     .add_modifier(Modifier::DIM),
             ));
 
@@ -384,10 +384,10 @@ impl StageRendererView {
                 let line_num_text = format!("{:>4} │ ", actual_line_number);
                 let line_num_style = if line_number == params.current_line_number {
                     Style::default()
-                        .fg(Colors::WARNING)
+                        .fg(Colors::warning())
                         .add_modifier(ratatui::style::Modifier::BOLD)
                 } else {
-                    Style::default().fg(Colors::SECONDARY)
+                    Style::default().fg(Colors::secondary())
                 };
                 current_line_spans.push(Span::styled(line_num_text, line_num_style));
                 current_line_width += line_number_width;
@@ -415,32 +415,32 @@ impl StageRendererView {
             let style = if is_in_comment {
                 // Comments use same color as context lines
                 Style::default()
-                    .fg(Colors::COMMENT_TEXT)
+                    .fg(Colors::comment_text())
                     .add_modifier(Modifier::DIM)
             } else if i < params.current_display_position {
                 // Already typed - light blue dimmed for non-comments
                 Style::default()
-                    .fg(Colors::TYPED_TEXT)
+                    .fg(Colors::typed_text())
                     .add_modifier(Modifier::DIM)
             } else if i == params.current_display_position {
                 // Current cursor position - highlighted
                 if let Some(mistake_pos) = params.current_mistake_position {
                     if i == mistake_pos {
                         Style::default()
-                            .fg(Colors::CURRENT_CURSOR)
-                            .bg(Colors::MISTAKE_BG)
+                            .fg(Colors::current_cursor())
+                            .bg(Colors::mistake_bg())
                     } else {
                         Style::default()
-                            .fg(Colors::CURRENT_CURSOR)
-                            .bg(Colors::CURSOR_BG)
+                            .fg(Colors::current_cursor())
+                            .bg(Colors::cursor_bg())
                     }
                 } else {
-                    Style::default().fg(Colors::TEXT).bg(Colors::MUTED)
+                    Style::default().fg(Colors::text()).bg(Colors::muted())
                 }
             } else {
                 // Not yet typed - dim white for non-comments
                 Style::default()
-                    .fg(Colors::UNTYPED_TEXT)
+                    .fg(Colors::untyped_text())
                     .add_modifier(Modifier::DIM)
             };
 
@@ -478,14 +478,14 @@ impl StageRendererView {
             let line_num_text = format!("{:>4} │ ", ctx_line_number);
             let mut line_spans = vec![Span::styled(
                 line_num_text,
-                Style::default().fg(Colors::COMMENT_TEXT),
+                Style::default().fg(Colors::comment_text()),
             )];
 
             // Add the context line content with dimmed style
             line_spans.push(Span::styled(
                 post_line.clone(),
                 Style::default()
-                    .fg(Colors::COMMENT_TEXT)
+                    .fg(Colors::comment_text())
                     .add_modifier(Modifier::DIM),
             ));
 
@@ -494,7 +494,7 @@ impl StageRendererView {
 
         if lines.is_empty() {
             let line_num_text = format!("{:>4} │ ", start_line_number);
-            let line_num_style = Style::default().fg(Colors::SECONDARY);
+            let line_num_style = Style::default().fg(Colors::secondary());
             lines.push(Line::from(vec![Span::styled(
                 line_num_text,
                 line_num_style,
@@ -549,7 +549,7 @@ impl StageRendererView {
             Line::from(vec![Span::styled(
                 "Choose an option:",
                 Style::default()
-                    .fg(Colors::TEXT)
+                    .fg(Colors::text())
                     .add_modifier(Modifier::BOLD),
             )]),
             Line::from(""),
@@ -558,27 +558,27 @@ impl StageRendererView {
                     Span::styled(
                         "[S] ",
                         Style::default()
-                            .fg(Colors::INFO)
+                            .fg(Colors::info())
                             .add_modifier(Modifier::BOLD),
                     )
                 } else {
                     Span::styled(
                         "[S] ",
                         Style::default()
-                            .fg(Colors::MUTED)
+                            .fg(Colors::muted())
                             .add_modifier(Modifier::DIM),
                     )
                 },
                 if skips_remaining > 0 {
                     Span::styled(
                         format!("Skip challenge ({})", skips_remaining),
-                        Style::default().fg(Colors::TEXT),
+                        Style::default().fg(Colors::text()),
                     )
                 } else {
                     Span::styled(
                         "No skips remaining",
                         Style::default()
-                            .fg(Colors::MUTED)
+                            .fg(Colors::muted())
                             .add_modifier(Modifier::DIM),
                     )
                 },
@@ -587,19 +587,19 @@ impl StageRendererView {
                 Span::styled(
                     "[Q] ",
                     Style::default()
-                        .fg(Colors::ERROR)
+                        .fg(Colors::error())
                         .add_modifier(Modifier::BOLD),
                 ),
-                Span::styled("Quit (fail)", Style::default().fg(Colors::TEXT)),
+                Span::styled("Quit (fail)", Style::default().fg(Colors::text())),
             ]),
             Line::from(vec![
                 Span::styled(
                     "[ESC] ",
                     Style::default()
-                        .fg(Colors::ACTION_KEY)
+                        .fg(Colors::action_key())
                         .add_modifier(Modifier::BOLD),
                 ),
-                Span::styled("Back to game", Style::default().fg(Colors::TEXT)),
+                Span::styled("Back to game", Style::default().fg(Colors::text())),
             ]),
             Line::from(""),
         ];
@@ -611,10 +611,10 @@ impl StageRendererView {
                     .title("Game Options")
                     .title_style(
                         Style::default()
-                            .fg(Colors::ACTION_KEY)
+                            .fg(Colors::action_key())
                             .add_modifier(Modifier::BOLD),
                     )
-                    .border_style(Style::default().fg(Colors::BORDER)),
+                    .border_style(Style::default().fg(Colors::border())),
             )
             .alignment(ratatui::layout::Alignment::Center);
 

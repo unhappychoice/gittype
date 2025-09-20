@@ -42,7 +42,7 @@ impl VersionCheckView {
             Line::from(vec![Span::styled(
                 "🎮 GitType Update Available",
                 Style::default()
-                    .fg(Colors::TITLE)
+                    .fg(Colors::title())
                     .add_modifier(Modifier::BOLD),
             )]),
         ];
@@ -51,11 +51,11 @@ impl VersionCheckView {
 
         // Current version
         let current_text = vec![Line::from(vec![
-            Span::styled("Current version: ", Style::default().fg(Colors::TEXT)),
+            Span::styled("Current version: ", Style::default().fg(Colors::text())),
             Span::styled(
                 format!("v{}", current_version),
                 Style::default()
-                    .fg(Colors::TEXT)
+                    .fg(Colors::text())
                     .add_modifier(Modifier::BOLD),
             ),
         ])];
@@ -64,11 +64,11 @@ impl VersionCheckView {
 
         // Latest version
         let latest_text = vec![Line::from(vec![
-            Span::styled("Latest version:  ", Style::default().fg(Colors::TEXT)),
+            Span::styled("Latest version:  ", Style::default().fg(Colors::text())),
             Span::styled(
                 format!("v{}", latest_version),
                 Style::default()
-                    .fg(Colors::SUCCESS)
+                    .fg(Colors::success())
                     .add_modifier(Modifier::BOLD),
             ),
         ])];
@@ -83,7 +83,7 @@ impl VersionCheckView {
             Line::from("curl -sSL https://raw.githubusercontent.com/unhappychoice/gittype/main/install.sh | bash"),
         ];
         let install_para = Paragraph::new(install_text)
-            .style(Style::default().fg(Colors::SECONDARY))
+            .style(Style::default().fg(Colors::secondary()))
             .wrap(Wrap { trim: true });
         f.render_widget(install_para, chunks[3]);
 
@@ -95,18 +95,18 @@ impl VersionCheckView {
                 Span::styled(
                     "[SPACE] ",
                     Style::default()
-                        .fg(Colors::SUCCESS)
+                        .fg(Colors::success())
                         .add_modifier(Modifier::BOLD),
                 ),
-                Span::styled("Continue", Style::default().fg(Colors::TEXT)),
+                Span::styled("Continue", Style::default().fg(Colors::text())),
                 Span::styled("  ", Style::default()),
                 Span::styled(
                     "[ESC] ",
                     Style::default()
-                        .fg(Colors::ERROR)
+                        .fg(Colors::error())
                         .add_modifier(Modifier::BOLD),
                 ),
-                Span::styled("Exit", Style::default().fg(Colors::TEXT)),
+                Span::styled("Exit", Style::default().fg(Colors::text())),
             ]),
         ];
         let control_para = Paragraph::new(control_text);

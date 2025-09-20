@@ -17,7 +17,7 @@ impl Language for Cpp {
 
     fn color(&self) -> ratatui::style::Color {
         use crate::ui::Colors;
-        Colors::LANG_CPP
+        Colors::lang_cpp()
     }
 
     fn display_name(&self) -> &'static str {

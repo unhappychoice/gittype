@@ -33,11 +33,11 @@ impl RankTier {
     /// Get the terminal color for this tier
     pub fn terminal_color(&self) -> crossterm::style::Color {
         match self {
-            RankTier::Beginner => Colors::to_crossterm(Colors::INFO),
-            RankTier::Intermediate => Colors::to_crossterm(Colors::BORDER),
-            RankTier::Advanced => Colors::to_crossterm(Colors::CPM_WPM),
-            RankTier::Expert => Colors::to_crossterm(Colors::ACCURACY),
-            RankTier::Legendary => Colors::to_crossterm(Colors::ERROR),
+            RankTier::Beginner => Colors::to_crossterm(Colors::info()),
+            RankTier::Intermediate => Colors::to_crossterm(Colors::border()),
+            RankTier::Advanced => Colors::to_crossterm(Colors::cpm_wpm()),
+            RankTier::Expert => Colors::to_crossterm(Colors::accuracy()),
+            RankTier::Legendary => Colors::to_crossterm(Colors::error()),
         }
     }
 }

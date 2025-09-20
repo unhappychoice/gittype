@@ -28,7 +28,7 @@ impl BestRecordsView {
                 Line::from(Span::styled(
                     "BEST RECORDS",
                     Style::default()
-                        .fg(Colors::WARNING)
+                        .fg(Colors::warning())
                         .add_modifier(Modifier::BOLD),
                 )),
                 Line::from(""),
@@ -67,44 +67,44 @@ impl BestRecordsView {
                     if is_new_pb {
                         spans.push(Span::styled(
                             "*** NEW PB! ",
-                            Style::default().fg(Colors::WARNING),
+                            Style::default().fg(Colors::warning()),
                         ));
                     }
 
                     spans.push(Span::styled(
                         format!("{:>width$}: ", label, width = max_label_width),
-                        Style::default().fg(Colors::TEXT),
+                        Style::default().fg(Colors::text()),
                     ));
 
-                    spans.push(Span::styled("Score ", Style::default().fg(Colors::SCORE)));
+                    spans.push(Span::styled("Score ", Style::default().fg(Colors::score())));
                     spans.push(Span::styled(
                         format!("{:.0}", record.score),
-                        Style::default().fg(Colors::TEXT),
+                        Style::default().fg(Colors::text()),
                     ));
-                    spans.push(Span::styled(" | ", Style::default().fg(Colors::TEXT)));
+                    spans.push(Span::styled(" | ", Style::default().fg(Colors::text())));
 
-                    spans.push(Span::styled("CPM ", Style::default().fg(Colors::CPM_WPM)));
+                    spans.push(Span::styled("CPM ", Style::default().fg(Colors::cpm_wpm())));
                     spans.push(Span::styled(
                         format!("{:.0}", record.cpm),
-                        Style::default().fg(Colors::TEXT),
+                        Style::default().fg(Colors::text()),
                     ));
-                    spans.push(Span::styled(" | ", Style::default().fg(Colors::TEXT)));
+                    spans.push(Span::styled(" | ", Style::default().fg(Colors::text())));
 
-                    spans.push(Span::styled("Acc ", Style::default().fg(Colors::ACCURACY)));
+                    spans.push(Span::styled("Acc ", Style::default().fg(Colors::accuracy())));
                     spans.push(Span::styled(
                         format!("{:.1}%", record.accuracy),
-                        Style::default().fg(Colors::TEXT),
+                        Style::default().fg(Colors::text()),
                     ));
 
                     if diff > 0.0 {
                         spans.push(Span::styled(
                             format!(" (+{:.0})", diff),
-                            Style::default().fg(Colors::SUCCESS),
+                            Style::default().fg(Colors::success()),
                         ));
                     } else if diff < 0.0 {
                         spans.push(Span::styled(
                             format!(" ({:.0})", diff),
-                            Style::default().fg(Colors::ERROR),
+                            Style::default().fg(Colors::error()),
                         ));
                     }
 
@@ -117,7 +117,7 @@ impl BestRecordsView {
                     );
                     lines.push(Line::from(Span::styled(
                         no_record_line,
-                        Style::default().fg(Colors::MUTED),
+                        Style::default().fg(Colors::muted()),
                     )));
                 }
             }

@@ -36,24 +36,24 @@ impl DifficultySelectionView {
         execute!(stdout, MoveTo(difficulty_col, start_row))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print("Difficulty: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY))
+            SetForegroundColor(Colors::to_crossterm(Colors::accuracy()))
         )?;
         execute!(stdout, Print("← "))?;
         execute!(
             stdout,
             SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(name))?;
         execute!(
             stdout,
             ResetColor,
-            SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY))
+            SetForegroundColor(Colors::to_crossterm(Colors::accuracy()))
         )?;
         execute!(stdout, Print(" →"))?;
         execute!(stdout, ResetColor)?;
@@ -69,7 +69,7 @@ impl DifficultySelectionView {
         execute!(stdout, MoveTo(count_col, start_row + 1))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::INFO)),
+            SetForegroundColor(Colors::to_crossterm(Colors::info())),
             SetAttribute(Attribute::Dim)
         )?;
         execute!(stdout, Print(count_text))?;
@@ -82,7 +82,7 @@ impl DifficultySelectionView {
             execute!(stdout, MoveTo(desc_col, start_row + 2 + i as u16))?;
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::TEXT)),
+                SetForegroundColor(Colors::to_crossterm(Colors::text())),
                 SetAttribute(Attribute::Dim)
             )?;
             execute!(stdout, Print(description))?;

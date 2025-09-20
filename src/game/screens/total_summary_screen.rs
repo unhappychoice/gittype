@@ -48,7 +48,7 @@ impl TotalSummaryScreen {
         execute!(
             stdout,
             SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(Colors::INFO))
+            SetForegroundColor(Colors::to_crossterm(Colors::info()))
         )?;
         execute!(stdout, Print(title))?;
         execute!(stdout, ResetColor)?;

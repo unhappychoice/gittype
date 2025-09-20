@@ -52,9 +52,9 @@ impl TypingHeaderView {
         let header = Paragraph::new(vec![header_text]).block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Colors::BORDER))
+                .border_style(Style::default().fg(Colors::border()))
                 .title("Challenge")
-                .title_style(Style::default().fg(Colors::BORDER))
+                .title_style(Style::default().fg(Colors::border()))
                 .padding(ratatui::widgets::Padding::horizontal(1)),
         );
         frame.render_widget(header, area);

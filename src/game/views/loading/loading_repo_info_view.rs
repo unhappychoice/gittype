@@ -12,7 +12,7 @@ pub struct LoadingRepoInfoView;
 impl LoadingRepoInfoView {
     pub fn render(frame: &mut Frame, area: Rect, repo_info: &str) {
         // Use same style as title_screen: DarkGrey color and centered
-        let repo_line = Line::from(Span::styled(repo_info, Style::default().fg(Colors::MUTED)));
+        let repo_line = Line::from(Span::styled(repo_info, Style::default().fg(Colors::muted())));
 
         let repo_widget = Paragraph::new(vec![repo_line]).alignment(Alignment::Center);
 

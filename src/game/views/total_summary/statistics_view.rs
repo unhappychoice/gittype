@@ -27,41 +27,41 @@ impl StatisticsView {
 
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print("Overall "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+            SetForegroundColor(Colors::to_crossterm(Colors::cpm_wpm()))
         )?;
         execute!(stdout, Print("CPM: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(format!("{:.1}", total_summary.overall_cpm)))?;
         execute!(stdout, Print(" | "))?;
 
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+            SetForegroundColor(Colors::to_crossterm(Colors::cpm_wpm()))
         )?;
         execute!(stdout, Print("WPM: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(format!("{:.1}", total_summary.overall_wpm)))?;
         execute!(stdout, Print(" | "))?;
 
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY))
+            SetForegroundColor(Colors::to_crossterm(Colors::accuracy()))
         )?;
         execute!(stdout, Print("Accuracy: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(
             stdout,
@@ -82,17 +82,17 @@ impl StatisticsView {
 
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print("Total "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::STAGE_INFO))
+            SetForegroundColor(Colors::to_crossterm(Colors::stage_info()))
         )?;
         execute!(stdout, Print("Sessions: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(
             stdout,
@@ -102,12 +102,12 @@ impl StatisticsView {
 
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS))
+            SetForegroundColor(Colors::to_crossterm(Colors::success()))
         )?;
         execute!(stdout, Print("Completed: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(
             stdout,
@@ -117,12 +117,12 @@ impl StatisticsView {
 
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::STAGE_INFO))
+            SetForegroundColor(Colors::to_crossterm(Colors::stage_info()))
         )?;
         execute!(stdout, Print("Stages: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(
             stdout,
@@ -145,41 +145,41 @@ impl StatisticsView {
 
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print("Total "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::STAGE_INFO))
+            SetForegroundColor(Colors::to_crossterm(Colors::stage_info()))
         )?;
         execute!(stdout, Print("Keystrokes: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(format!("{}", total_summary.total_keystrokes)))?;
         execute!(stdout, Print(" | "))?;
 
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::ERROR))
+            SetForegroundColor(Colors::to_crossterm(Colors::error()))
         )?;
         execute!(stdout, Print("Mistakes: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(format!("{}", total_summary.total_mistakes)))?;
         execute!(stdout, Print(" | "))?;
 
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::WARNING))
+            SetForegroundColor(Colors::to_crossterm(Colors::warning()))
         )?;
         execute!(stdout, Print("Skipped: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(
             stdout,
@@ -200,12 +200,12 @@ impl StatisticsView {
 
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print("Best Session: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+            SetForegroundColor(Colors::to_crossterm(Colors::cpm_wpm()))
         )?;
         execute!(
             stdout,
@@ -213,12 +213,12 @@ impl StatisticsView {
         )?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(", "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY))
+            SetForegroundColor(Colors::to_crossterm(Colors::accuracy()))
         )?;
         execute!(
             stdout,
@@ -226,12 +226,12 @@ impl StatisticsView {
         )?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(" | Worst: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+            SetForegroundColor(Colors::to_crossterm(Colors::cpm_wpm()))
         )?;
         execute!(
             stdout,
@@ -239,12 +239,12 @@ impl StatisticsView {
         )?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(", "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY))
+            SetForegroundColor(Colors::to_crossterm(Colors::accuracy()))
         )?;
         execute!(
             stdout,

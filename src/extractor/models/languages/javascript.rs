@@ -17,7 +17,7 @@ impl Language for JavaScript {
 
     fn color(&self) -> ratatui::style::Color {
         use crate::ui::Colors;
-        Colors::LANG_JAVASCRIPT
+        Colors::lang_javascript()
     }
 
     fn display_name(&self) -> &'static str {

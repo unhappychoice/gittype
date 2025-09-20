@@ -17,7 +17,7 @@ impl Language for Scala {
 
     fn color(&self) -> ratatui::style::Color {
         use crate::ui::Colors;
-        Colors::LANG_SCALA
+        Colors::lang_scala()
     }
 
     fn display_name(&self) -> &'static str {

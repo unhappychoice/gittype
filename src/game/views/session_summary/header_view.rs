@@ -19,7 +19,7 @@ impl HeaderView {
         execute!(
             stdout,
             SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(Colors::INFO))
+            SetForegroundColor(Colors::to_crossterm(Colors::info()))
         )?;
         execute!(stdout, Print(session_title))?;
         execute!(stdout, ResetColor)?;
@@ -30,7 +30,7 @@ impl HeaderView {
         execute!(
             stdout,
             SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(Colors::INFO))
+            SetForegroundColor(Colors::to_crossterm(Colors::info()))
         )?;
         execute!(stdout, Print(youre_label))?;
         execute!(stdout, ResetColor)?;

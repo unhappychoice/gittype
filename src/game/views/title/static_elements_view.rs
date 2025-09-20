@@ -44,7 +44,7 @@ impl StaticElementsView {
         execute!(stdout, MoveTo(subtitle_col, center_row - 1))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::SECONDARY))
+            SetForegroundColor(Colors::to_crossterm(Colors::secondary()))
         )?;
         execute!(stdout, Print(subtitle))?;
         execute!(stdout, ResetColor)?;
@@ -58,12 +58,12 @@ impl StaticElementsView {
         execute!(stdout, MoveTo(change_col, instructions_start_row))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::NAVIGATION_KEY))
+            SetForegroundColor(Colors::to_crossterm(Colors::navigation_key()))
         )?;
         execute!(stdout, Print("[←→/HL]"))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(" Change Difficulty"))?;
         execute!(stdout, ResetColor)?;
@@ -74,32 +74,32 @@ impl StaticElementsView {
         execute!(stdout, MoveTo(secondary_col, instructions_start_row + 1))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::INFO))
+            SetForegroundColor(Colors::to_crossterm(Colors::info()))
         )?;
         execute!(stdout, Print("[R]"))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(" Records  "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::INFO))
+            SetForegroundColor(Colors::to_crossterm(Colors::info()))
         )?;
         execute!(stdout, Print("[A]"))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(" Analytics  "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::INFO))
+            SetForegroundColor(Colors::to_crossterm(Colors::info()))
         )?;
         execute!(stdout, Print("[I/?]"))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(" Help"))?;
         execute!(stdout, ResetColor)?;
@@ -110,22 +110,22 @@ impl StaticElementsView {
         execute!(stdout, MoveTo(primary_col, instructions_start_row + 2))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS))
+            SetForegroundColor(Colors::to_crossterm(Colors::success()))
         )?;
         execute!(stdout, Print("[SPACE]"))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(" Start  "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::ERROR))
+            SetForegroundColor(Colors::to_crossterm(Colors::error()))
         )?;
         execute!(stdout, Print("[ESC]"))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(" Quit"))?;
         execute!(stdout, ResetColor)?;

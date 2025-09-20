@@ -17,7 +17,7 @@ impl Language for CSharp {
 
     fn color(&self) -> ratatui::style::Color {
         use crate::ui::Colors;
-        Colors::LANG_CSHARP
+        Colors::lang_csharp()
     }
 
     fn display_name(&self) -> &'static str {

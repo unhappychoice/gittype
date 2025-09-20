@@ -26,7 +26,7 @@ pub trait Language: std::fmt::Debug + Send + Sync {
     }
 
     fn color(&self) -> ratatui::style::Color {
-        Colors::LANG_DEFAULT
+        Colors::lang_default()
     }
 }
 
@@ -138,11 +138,11 @@ impl LanguageRegistry {
                 .map(|l| l.color())
                 .unwrap_or_else(|| {
                     use crate::ui::Colors;
-                    Colors::LANG_DEFAULT
+                    Colors::lang_default()
                 }),
             None => {
                 use crate::ui::Colors;
-                Colors::LANG_DEFAULT
+                Colors::lang_default()
             }
         }
     }

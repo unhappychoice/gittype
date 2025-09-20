@@ -99,7 +99,7 @@ impl LoadingProgressView {
         if total_files > 0 {
             let gauge = Gauge::default()
                 .block(Block::default())
-                .gauge_style(Style::default().fg(Colors::SUCCESS))
+                .gauge_style(Style::default().fg(Colors::success()))
                 .ratio(progress.clamp(0.0, 1.0)); // Clamp progress to valid range
 
             frame.render_widget(gauge, progress_area[0]);
@@ -108,7 +108,7 @@ impl LoadingProgressView {
         // Render progress text
         let progress_line = Line::from(Span::styled(
             progress_text,
-            Style::default().fg(Colors::SUCCESS),
+            Style::default().fg(Colors::success()),
         ));
 
         let progress_widget = Paragraph::new(vec![progress_line]).alignment(Alignment::Center);

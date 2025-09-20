@@ -121,58 +121,6 @@ impl Colors {
             .unwrap_or_else(|| vec!["ascii_dark".to_string()])
     }
 
-    // Backward compatibility constants for existing code
-    pub const BORDER: Color = Color::Blue;
-    pub const TITLE: Color = Color::White;
-    pub const TEXT: Color = Color::White;
-    pub const BACKGROUND: Color = Color::Black;
-    pub const SUCCESS: Color = Color::Green;
-    pub const ERROR: Color = Color::Red;
-    pub const WARNING: Color = Color::Yellow;
-    pub const INFO: Color = Color::Cyan;
-    pub const BACK_KEY: Color = Color::Red;
-    pub const ACTION_KEY: Color = Color::LightBlue;
-    pub const NAVIGATION_KEY: Color = Color::LightBlue;
-    pub const HIGHLIGHT: Color = Color::Cyan;
-    pub const SCORE: Color = Color::Magenta;
-    pub const CPM_WPM: Color = Color::Green;
-    pub const ACCURACY: Color = Color::Yellow;
-    pub const DURATION: Color = Color::Cyan;
-    pub const STAGE_INFO: Color = Color::Blue;
-    pub const TYPED_TEXT: Color = Color::LightBlue;
-    pub const CURRENT_CURSOR: Color = Color::White;
-    pub const CURSOR_BG: Color = Color::DarkGray;
-    pub const MISTAKE_BG: Color = Color::Red;
-    pub const UNTYPED_TEXT: Color = Color::White;
-    pub const COMMENT_TEXT: Color = Color::DarkGray;
-    pub const SECONDARY: Color = Color::DarkGray;
-    pub const MUTED: Color = Color::DarkGray;
-    pub const COMPLETED: Color = Color::Green;
-    pub const SKIPPED: Color = Color::Yellow;
-    pub const FAILED: Color = Color::Red;
-    pub const COUNTDOWN_3: Color = Color::Magenta;
-    pub const COUNTDOWN_2: Color = Color::Cyan;
-    pub const COUNTDOWN_1: Color = Color::Yellow;
-    pub const COUNTDOWN_GO: Color = Color::Green;
-    pub const PROGRESS_BAR: Color = Color::Cyan;
-    pub const PROGRESS_BG: Color = Color::DarkGray;
-    pub const LANG_RUST: Color = Color::Rgb(222, 165, 132);
-    pub const LANG_PYTHON: Color = Color::Rgb(255, 212, 59);
-    pub const LANG_JAVASCRIPT: Color = Color::Rgb(240, 219, 79);
-    pub const LANG_TYPESCRIPT: Color = Color::Rgb(49, 120, 198);
-    pub const LANG_GO: Color = Color::Rgb(0, 173, 181);
-    pub const LANG_JAVA: Color = Color::Rgb(237, 41, 57);
-    pub const LANG_C: Color = Color::Rgb(85, 85, 85);
-    pub const LANG_CPP: Color = Color::Rgb(0, 89, 156);
-    pub const LANG_CSHARP: Color = Color::Rgb(239, 117, 27);
-    pub const LANG_PHP: Color = Color::Rgb(119, 123, 180);
-    pub const LANG_RUBY: Color = Color::Rgb(204, 52, 45);
-    pub const LANG_SWIFT: Color = Color::Rgb(250, 109, 63);
-    pub const LANG_KOTLIN: Color = Color::Rgb(124, 75, 255);
-    pub const LANG_SCALA: Color = Color::Rgb(220, 50, 47);
-    pub const LANG_HASKELL: Color = Color::Rgb(94, 80, 134);
-    pub const LANG_DART: Color = Color::Rgb(0, 180, 240);
-    pub const LANG_DEFAULT: Color = Color::White;
 }
 
 impl Colors {

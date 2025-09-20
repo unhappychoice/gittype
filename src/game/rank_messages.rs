@@ -21,15 +21,15 @@ fn get_rank_messages() -> &'static HashMap<&'static str, Vec<(&'static str, Colo
         messages.insert(
             "Hello World",
             vec![
-                ("> googling 'how to print hello world'...", Colors::INFO),
-                ("> copying code from first search result...", Colors::TEXT),
+                ("> googling 'how to print hello world'...", Colors::info()),
+                ("> copying code from first search result...", Colors::text()),
                 (
                     "> running program 47 times to make sure it works...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> achievement unlocked: you are now a programmer!",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -37,12 +37,12 @@ fn get_rank_messages() -> &'static HashMap<&'static str, Vec<(&'static str, Colo
         messages.insert(
             "Syntax Error",
             vec![
-                ("> writing code that looks right...", Colors::TEXT),
-                ("> compiler disagrees with your logic...", Colors::ERROR),
-                ("> googling exact error message...", Colors::WARNING),
+                ("> writing code that looks right...", Colors::text()),
+                ("> compiler disagrees with your logic...", Colors::error()),
+                ("> googling exact error message...", Colors::warning()),
                 (
                     "> fixed by adding random semicolon somewhere.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -50,12 +50,12 @@ fn get_rank_messages() -> &'static HashMap<&'static str, Vec<(&'static str, Colo
         messages.insert(
             "Rubber Duck",
             vec![
-                ("> explaining bug to inanimate object...", Colors::INFO),
-                ("> duck stares judgmentally at your code...", Colors::TEXT),
-                ("> realizing bug while talking to duck...", Colors::WARNING),
+                ("> explaining bug to inanimate object...", Colors::info()),
+                ("> duck stares judgmentally at your code...", Colors::text()),
+                ("> realizing bug while talking to duck...", Colors::warning()),
                 (
                     "> duck takes full credit for the solution.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -65,16 +65,16 @@ fn get_rank_messages() -> &'static HashMap<&'static str, Vec<(&'static str, Colo
             vec![
                 (
                     "> downloading 'learn programming in 24 hours' course...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
-                ("> copying scripts without reading them...", Colors::TEXT),
+                ("> copying scripts without reading them...", Colors::text()),
                 (
                     "> changing variable names to look original...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> script works! you are basically a hacker now.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -82,18 +82,18 @@ fn get_rank_messages() -> &'static HashMap<&'static str, Vec<(&'static str, Colo
         messages.insert(
             "Bash Newbie",
             vec![
-                ("> typing 'cd ..' until something happens...", Colors::INFO),
+                ("> typing 'cd ..' until something happens...", Colors::info()),
                 (
                     "> using 'ls' every 3 seconds to see where you are...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> accidentally running 'rm' on important files...",
-                    Colors::ERROR,
+                    Colors::error(),
                 ),
                 (
                     "> terminal proficiency: accidentally achieved.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -103,32 +103,32 @@ fn get_rank_messages() -> &'static HashMap<&'static str, Vec<(&'static str, Colo
             vec![
                 (
                     "> exploring directories like a lost tourist...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
-                ("> discovering pipes by accident...", Colors::INFO),
+                ("> discovering pipes by accident...", Colors::info()),
                 (
                     "> finding .hidden files and feeling like a detective...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
-                ("> navigation skills: randomly acquired.", Colors::SUCCESS),
+                ("> navigation skills: randomly acquired.", Colors::success()),
             ],
         );
 
         messages.insert(
             "Tab Tamer",
             vec![
-                ("> mixing tabs and spaces like a rebel...", Colors::INFO),
+                ("> mixing tabs and spaces like a rebel...", Colors::info()),
                 (
                     "> getting into holy war about indentation...",
-                    Colors::ERROR,
+                    Colors::error(),
                 ),
                 (
                     "> setting up auto-formatter to fix your mess...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> consistency achieved through automation.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -136,15 +136,15 @@ fn get_rank_messages() -> &'static HashMap<&'static str, Vec<(&'static str, Colo
         messages.insert(
             "Bracket Juggler",
             vec![
-                ("> opening 47 brackets...", Colors::TEXT),
-                ("> closing 23 brackets...", Colors::WARNING),
+                ("> opening 47 brackets...", Colors::text()),
+                ("> closing 23 brackets...", Colors::warning()),
                 (
                     "> spending 2 hours finding the missing bracket...",
-                    Colors::ERROR,
+                    Colors::error(),
                 ),
                 (
                     "> finally balanced. code still doesn't work.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -152,10 +152,10 @@ fn get_rank_messages() -> &'static HashMap<&'static str, Vec<(&'static str, Colo
         messages.insert(
             "Copy-Paste Engineer",
             vec![
-                ("> opening 50 tabs from stack overflow...", Colors::TEXT),
-                ("> copying code from highest voted answer...", Colors::TEXT),
-                ("> praying it works in your specific case...", Colors::TEXT),
-                ("> it works! time to copy more code.", Colors::SUCCESS),
+                ("> opening 50 tabs from stack overflow...", Colors::text()),
+                ("> copying code from highest voted answer...", Colors::text()),
+                ("> praying it works in your specific case...", Colors::text()),
+                ("> it works! time to copy more code.", Colors::success()),
             ],
         );
 
@@ -164,17 +164,17 @@ fn get_rank_messages() -> &'static HashMap<&'static str, Vec<(&'static str, Colo
             vec![
                 (
                     "> installing linter to improve code quality...",
-                    Colors::INFO,
+                    Colors::info(),
                 ),
                 (
                     "> getting 847 warnings on 10 lines of code...",
-                    Colors::ERROR,
+                    Colors::error(),
                 ),
                 (
                     "> disabling all warnings except syntax errors...",
-                    Colors::WARNING,
+                    Colors::warning(),
                 ),
-                ("> code quality: subjectively improved.", Colors::SUCCESS),
+                ("> code quality: subjectively improved.", Colors::success()),
             ],
         );
 
@@ -183,24 +183,24 @@ fn get_rank_messages() -> &'static HashMap<&'static str, Vec<(&'static str, Colo
             vec![
                 (
                     "> writing test that only passes on your machine...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
-                ("> testing happy path exclusively...", Colors::TEXT),
-                ("> achieving 100% code coverage on 5 lines...", Colors::INFO),
-                ("> testing complete. bugs remain untested.", Colors::SUCCESS),
+                ("> testing happy path exclusively...", Colors::text()),
+                ("> achieving 100% code coverage on 5 lines...", Colors::info()),
+                ("> testing complete. bugs remain untested.", Colors::success()),
             ],
         );
 
         messages.insert(
             "Code Monkey",
             vec![
-                ("> following tutorial step by step...", Colors::TEXT),
+                ("> following tutorial step by step...", Colors::text()),
                 (
                     "> changing tutorial example from 'foo' to 'bar'...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
-                ("> calling yourself a full-stack developer...", Colors::INFO),
-                ("> development skills: youtube certified.", Colors::SUCCESS),
+                ("> calling yourself a full-stack developer...", Colors::info()),
+                ("> development skills: youtube certified.", Colors::success()),
             ],
         );
 
@@ -208,120 +208,120 @@ fn get_rank_messages() -> &'static HashMap<&'static str, Vec<(&'static str, Colo
         messages.insert(
             "Ticket Picker",
             vec![
-                ("> scanning project backlog...", Colors::TEXT),
-                ("> selecting appropriate tasks...", Colors::TEXT),
-                ("> estimating development effort...", Colors::TEXT),
-                ("> work assignment optimized.", Colors::SUCCESS),
+                ("> scanning project backlog...", Colors::text()),
+                ("> selecting appropriate tasks...", Colors::text()),
+                ("> estimating development effort...", Colors::text()),
+                ("> work assignment optimized.", Colors::success()),
             ],
         );
 
         messages.insert(
             "Junior Dev",
             vec![
-                ("> cloning repository...", Colors::INFO),
-                ("> creating feature branch...", Colors::TEXT),
-                ("> implementing user story...", Colors::TEXT),
-                ("> junior developer status confirmed.", Colors::SUCCESS),
+                ("> cloning repository...", Colors::info()),
+                ("> creating feature branch...", Colors::text()),
+                ("> implementing user story...", Colors::text()),
+                ("> junior developer status confirmed.", Colors::success()),
             ],
         );
 
         messages.insert(
             "Git Ninja",
             vec![
-                ("> staging changes...", Colors::TEXT),
-                ("> crafting perfect commit message...", Colors::TEXT),
-                ("> rebasing interactive history...", Colors::INFO),
-                ("> git mastery achieved.", Colors::SUCCESS),
+                ("> staging changes...", Colors::text()),
+                ("> crafting perfect commit message...", Colors::text()),
+                ("> rebasing interactive history...", Colors::info()),
+                ("> git mastery achieved.", Colors::success()),
             ],
         );
 
         messages.insert(
             "Merge Wrangler",
             vec![
-                ("> resolving merge conflicts...", Colors::WARNING),
-                ("> coordinating branch updates...", Colors::TEXT),
-                ("> maintaining git history...", Colors::TEXT),
-                ("> version control expertise proven.", Colors::SUCCESS),
+                ("> resolving merge conflicts...", Colors::warning()),
+                ("> coordinating branch updates...", Colors::text()),
+                ("> maintaining git history...", Colors::text()),
+                ("> version control expertise proven.", Colors::success()),
             ],
         );
 
         messages.insert(
             "API Crafter",
             vec![
-                ("> designing RESTful endpoints...", Colors::TEXT),
-                ("> implementing request handlers...", Colors::TEXT),
-                ("> documenting API specification...", Colors::TEXT),
-                ("> service interface completed.", Colors::SUCCESS),
+                ("> designing RESTful endpoints...", Colors::text()),
+                ("> implementing request handlers...", Colors::text()),
+                ("> documenting API specification...", Colors::text()),
+                ("> service interface completed.", Colors::success()),
             ],
         );
 
         messages.insert(
             "Frontend Dev",
             vec![
-                ("> building user interfaces...", Colors::TEXT),
-                ("> optimizing user experience...", Colors::INFO),
-                ("> implementing responsive design...", Colors::TEXT),
-                ("> client-side mastery achieved.", Colors::SUCCESS),
+                ("> building user interfaces...", Colors::text()),
+                ("> optimizing user experience...", Colors::info()),
+                ("> implementing responsive design...", Colors::text()),
+                ("> client-side mastery achieved.", Colors::success()),
             ],
         );
 
         messages.insert(
             "Backend Dev",
             vec![
-                ("> architecting server logic...", Colors::TEXT),
-                ("> optimizing database queries...", Colors::INFO),
-                ("> implementing business rules...", Colors::TEXT),
-                ("> server-side expertise confirmed.", Colors::SUCCESS),
+                ("> architecting server logic...", Colors::text()),
+                ("> optimizing database queries...", Colors::info()),
+                ("> implementing business rules...", Colors::text()),
+                ("> server-side expertise confirmed.", Colors::success()),
             ],
         );
 
         messages.insert(
             "CI Tinkerer",
             vec![
-                ("> configuring build pipelines...", Colors::INFO),
-                ("> automating test execution...", Colors::TEXT),
-                ("> setting up deployment hooks...", Colors::TEXT),
-                ("> continuous integration mastered.", Colors::SUCCESS),
+                ("> configuring build pipelines...", Colors::info()),
+                ("> automating test execution...", Colors::text()),
+                ("> setting up deployment hooks...", Colors::text()),
+                ("> continuous integration mastered.", Colors::success()),
             ],
         );
 
         messages.insert(
             "Test Pilot",
             vec![
-                ("> designing test scenarios...", Colors::TEXT),
-                ("> automating quality assurance...", Colors::TEXT),
-                ("> validating system behavior...", Colors::TEXT),
-                ("> testing expertise certified.", Colors::SUCCESS),
+                ("> designing test scenarios...", Colors::text()),
+                ("> automating quality assurance...", Colors::text()),
+                ("> validating system behavior...", Colors::text()),
+                ("> testing expertise certified.", Colors::success()),
             ],
         );
 
         messages.insert(
             "Build Tamer",
             vec![
-                ("> optimizing compilation process...", Colors::INFO),
-                ("> managing dependency versions...", Colors::TEXT),
-                ("> configuring build systems...", Colors::TEXT),
-                ("> build automation mastered.", Colors::SUCCESS),
+                ("> optimizing compilation process...", Colors::info()),
+                ("> managing dependency versions...", Colors::text()),
+                ("> configuring build systems...", Colors::text()),
+                ("> build automation mastered.", Colors::success()),
             ],
         );
 
         messages.insert(
             "Code Reviewer",
             vec![
-                ("> analyzing code quality...", Colors::TEXT),
-                ("> providing constructive feedback...", Colors::TEXT),
-                ("> ensuring best practices...", Colors::TEXT),
-                ("> peer review skills confirmed.", Colors::SUCCESS),
+                ("> analyzing code quality...", Colors::text()),
+                ("> providing constructive feedback...", Colors::text()),
+                ("> ensuring best practices...", Colors::text()),
+                ("> peer review skills confirmed.", Colors::success()),
             ],
         );
 
         messages.insert(
             "Release Handler",
             vec![
-                ("> preparing deployment packages...", Colors::TEXT),
-                ("> coordinating release schedule...", Colors::INFO),
-                ("> managing version rollouts...", Colors::TEXT),
-                ("> release management mastered.", Colors::SUCCESS),
+                ("> preparing deployment packages...", Colors::text()),
+                ("> coordinating release schedule...", Colors::info()),
+                ("> managing version rollouts...", Colors::text()),
+                ("> release management mastered.", Colors::success()),
             ],
         );
 
@@ -341,18 +341,18 @@ fn get_rank_messages_2() -> &'static HashMap<&'static str, Vec<(&'static str, Co
         messages.insert(
             "Refactorer",
             vec![
-                ("> analyzing spaghetti code structure...", Colors::TEXT),
+                ("> analyzing spaghetti code structure...", Colors::text()),
                 (
                     "> finding ways to make it even more complex...",
-                    Colors::INFO,
+                    Colors::info(),
                 ),
                 (
                     "> refactoring working code until it breaks...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> congratulations! now nobody understands it.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -362,19 +362,19 @@ fn get_rank_messages_2() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> architecting solutions that scale to infinity...",
-                    Colors::INFO,
+                    Colors::info(),
                 ),
                 (
                     "> reviewing PRs with passive-aggressive comments...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> mentoring juniors by assigning impossible tasks...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> senior status unlocked. impostor syndrome included.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -384,19 +384,19 @@ fn get_rank_messages_2() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> provisioning infrastructure that costs more than rent...",
-                    Colors::INFO,
+                    Colors::info(),
                 ),
                 (
                     "> automating the automation of automated deployments...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> monitoring systems that monitor other monitoring systems...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> everything is automated. nothing works manually.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -406,16 +406,16 @@ fn get_rank_messages_2() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> detecting fires while everything is fine...",
-                    Colors::ERROR,
+                    Colors::error(),
                 ),
-                ("> coordinating panic in the war room...", Colors::WARNING),
+                ("> coordinating panic in the war room...", Colors::warning()),
                 (
                     "> applying hotfixes that create more incidents...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> service restored. new incidents created successfully.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -425,14 +425,14 @@ fn get_rank_messages_2() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> implementing monitoring for the monitoring...",
-                    Colors::INFO,
+                    Colors::info(),
                 ),
-                ("> defining SLOs that nobody can meet...", Colors::TEXT),
+                ("> defining SLOs that nobody can meet...", Colors::text()),
                 (
                     "> ensuring 99.99% uptime (99% of the time)...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
-                ("> system reliable until it isn't.", Colors::SUCCESS),
+                ("> system reliable until it isn't.", Colors::success()),
             ],
         );
 
@@ -441,11 +441,11 @@ fn get_rank_messages_2() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> finding vulnerabilities in your personality...",
-                    Colors::ERROR,
+                    Colors::error(),
                 ),
-                ("> implementing security through obscurity...", Colors::INFO),
-                ("> penetration testing your patience...", Colors::TEXT),
-                ("> security hardened. usability softened.", Colors::SUCCESS),
+                ("> implementing security through obscurity...", Colors::info()),
+                ("> penetration testing your patience...", Colors::text()),
+                ("> security hardened. usability softened.", Colors::success()),
             ],
         );
 
@@ -454,16 +454,16 @@ fn get_rank_messages_2() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> profiling bottlenecks in the profiler...",
-                    Colors::WARNING,
+                    Colors::warning(),
                 ),
-                ("> optimizing code that runs once per year...", Colors::INFO),
+                ("> optimizing code that runs once per year...", Colors::info()),
                 (
                     "> caching everything including this message...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> performance optimized. readability sacrificed.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -471,18 +471,18 @@ fn get_rank_messages_2() -> &'static HashMap<&'static str, Vec<(&'static str, Co
         messages.insert(
             "Data Pipeline Master",
             vec![
-                ("> designing workflows that flow nowhere...", Colors::TEXT),
+                ("> designing workflows that flow nowhere...", Colors::text()),
                 (
                     "> extracting, transforming, and losing data...",
-                    Colors::INFO,
+                    Colors::info(),
                 ),
                 (
                     "> ensuring consistency in inconsistent data...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> pipeline complete. data may have leaked.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -492,19 +492,19 @@ fn get_rank_messages_2() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> defining vision that changes every sprint...",
-                    Colors::INFO,
+                    Colors::info(),
                 ),
                 (
                     "> coordinating efforts while attending 20 meetings...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> making architectural decisions on a coinflip...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> leadership established. technical skills atrophied.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -514,16 +514,16 @@ fn get_rank_messages_2() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> designing systems for problems that don't exist...",
-                    Colors::INFO,
+                    Colors::info(),
                 ),
                 (
                     "> choosing technologies based on latest blog posts...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
-                ("> planning for scale that will never come...", Colors::TEXT),
+                ("> planning for scale that will never come...", Colors::text()),
                 (
                     "> architecture complete. implementation someone else's problem.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -533,13 +533,13 @@ fn get_rank_messages_2() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> designing protocols nobody will implement correctly...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
-                ("> creating standards to rule them all...", Colors::INFO),
-                ("> optimizing transmission of memes...", Colors::TEXT),
+                ("> creating standards to rule them all...", Colors::info()),
+                ("> optimizing transmission of memes...", Colors::text()),
                 (
                     "> protocol standard published. 14 competing standards exist.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -547,15 +547,15 @@ fn get_rank_messages_2() -> &'static HashMap<&'static str, Vec<(&'static str, Co
         messages.insert(
             "Kernel Hacker",
             vec![
-                ("> compiling kernels that boot sometimes...", Colors::SCORE),
+                ("> compiling kernels that boot sometimes...", Colors::score()),
                 (
                     "> patching system calls with hopes and dreams...",
-                    Colors::INFO,
+                    Colors::info(),
                 ),
-                ("> debugging at 3am with print statements...", Colors::TEXT),
+                ("> debugging at 3am with print statements...", Colors::text()),
                 (
                     "> kernel hacked successfully. computer may explode.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -578,14 +578,14 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> tokenizing your messy code into something readable...",
-                    Colors::SCORE,
+                    Colors::score(),
                 ),
                 (
                     "> building AST while judging your variable names...",
-                    Colors::INFO,
+                    Colors::info(),
                 ),
-                ("> optimizing away your inefficient loops...", Colors::TEXT),
-                ("> compiled successfully (somehow)", Colors::SUCCESS),
+                ("> optimizing away your inefficient loops...", Colors::text()),
+                ("> compiled successfully (somehow)", Colors::success()),
             ],
         );
 
@@ -594,19 +594,19 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> interpreting your interpreted language interpreter...",
-                    Colors::SCORE,
+                    Colors::score(),
                 ),
                 (
                     "> executing virtual instructions in virtual reality...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> garbage collecting your actual garbage code...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> interpretation complete. still no idea what it does.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -616,13 +616,13 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> virtualizing your already virtual environment...",
-                    Colors::INFO,
+                    Colors::info(),
                 ),
-                ("> emulating hardware that doesn't exist...", Colors::SCORE),
-                ("> allocating memory for your memory leaks...", Colors::TEXT),
+                ("> emulating hardware that doesn't exist...", Colors::score()),
+                ("> allocating memory for your memory leaks...", Colors::text()),
                 (
                     "> VM inception achieved. we need to go deeper.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -630,15 +630,15 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
         messages.insert(
             "Operating System",
             vec![
-                ("> scheduling processes that never finish...", Colors::SCORE),
-                ("> managing resources you don't have...", Colors::INFO),
+                ("> scheduling processes that never finish...", Colors::score()),
+                ("> managing resources you don't have...", Colors::info()),
                 (
                     "> handling interrupts from impatient users...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> OS kernel stable (definition of stable: questionable)",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -648,16 +648,16 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> organizing files into a beautiful directory tree...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> implementing permissions nobody understands...",
-                    Colors::INFO,
+                    Colors::info(),
                 ),
-                ("> fragmenting data across the entire disk...", Colors::TEXT),
+                ("> fragmenting data across the entire disk...", Colors::text()),
                 (
                     "> filesystem complete. good luck finding anything.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -665,15 +665,15 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
         messages.insert(
             "Network Stack",
             vec![
-                ("> layering protocols like a network cake...", Colors::INFO),
+                ("> layering protocols like a network cake...", Colors::info()),
                 (
                     "> routing packets through the internet tubes...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
-                ("> ensuring data arrives (eventually)...", Colors::TEXT),
+                ("> ensuring data arrives (eventually)...", Colors::text()),
                 (
                     "> network stack operational. packets may vary.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -683,16 +683,16 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> optimizing queries that will timeout anyway...",
-                    Colors::INFO,
+                    Colors::info(),
                 ),
-                ("> isolating transactions from reality...", Colors::TEXT),
+                ("> isolating transactions from reality...", Colors::text()),
                 (
                     "> implementing ACID (burns through your SSD)...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> database engine ready. hope you have backups.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -702,16 +702,16 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> analyzing execution plans nobody will read...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
-                ("> optimizing joins that should be avoided...", Colors::INFO),
+                ("> optimizing joins that should be avoided...", Colors::info()),
                 (
                     "> indexing everything (storage is cheap, right?)...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> query performance maximized. complexity also maximized.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -719,15 +719,15 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
         messages.insert(
             "Cloud Platform",
             vec![
-                ("> orchestrating chaos in the cloud...", Colors::SCORE),
-                ("> auto-scaling your monthly cloud bill...", Colors::INFO),
+                ("> orchestrating chaos in the cloud...", Colors::score()),
+                ("> auto-scaling your monthly cloud bill...", Colors::info()),
                 (
                     "> distributing problems across multiple zones...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> cloud mastery achieved. wallet not included.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -737,19 +737,19 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> containerizing everything, including the kitchen sink...",
-                    Colors::INFO,
+                    Colors::info(),
                 ),
                 (
                     "> orchestrating a symphony of microservice crashes...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> discovering services that discover other services...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> container cluster ready. cli tools not found.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -759,19 +759,19 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> processing streams faster than video platforms...",
-                    Colors::INFO,
+                    Colors::info(),
                 ),
                 (
                     "> implementing event sourcing for event sourcing events...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> ensuring eventual consistency (eventually)...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> streaming platform complete. now streaming bugs.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -781,19 +781,19 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> initializing qubits in superposition of working/broken...",
-                    Colors::SCORE,
+                    Colors::score(),
                 ),
                 (
                     "> entangling particles and debugging sessions...",
-                    Colors::INFO,
+                    Colors::info(),
                 ),
                 (
                     "> running Shor's algorithm to factor your technical debt...",
-                    Colors::TEXT,
+                    Colors::text(),
                 ),
                 (
                     "> quantum supremacy achieved. classical bugs remain.",
-                    Colors::SUCCESS,
+                    Colors::success(),
                 ),
             ],
         );
@@ -802,70 +802,70 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
         messages.insert(
             "GPU Cluster",
             vec![
-                ("> initializing parallel processors...", Colors::SCORE),
-                ("> distributing computational load...", Colors::INFO),
-                ("> optimizing memory bandwidth...", Colors::TEXT),
-                ("> massive parallelism achieved.", Colors::SUCCESS),
+                ("> initializing parallel processors...", Colors::score()),
+                ("> distributing computational load...", Colors::info()),
+                ("> optimizing memory bandwidth...", Colors::text()),
+                ("> massive parallelism achieved.", Colors::success()),
             ],
         );
 
         messages.insert(
             "DNS Overlord",
             vec![
-                ("> controlling domain resolution...", Colors::SCORE),
-                ("> managing global namespace...", Colors::INFO),
-                ("> routing internet traffic...", Colors::TEXT),
-                ("> DNS infrastructure dominated.", Colors::SUCCESS),
+                ("> controlling domain resolution...", Colors::score()),
+                ("> managing global namespace...", Colors::info()),
+                ("> routing internet traffic...", Colors::text()),
+                ("> DNS infrastructure dominated.", Colors::success()),
             ],
         );
 
         messages.insert(
             "CDN Sentinel",
             vec![
-                ("> caching content globally...", Colors::INFO),
-                ("> optimizing delivery routes...", Colors::TEXT),
-                ("> reducing latency worldwide...", Colors::TEXT),
-                ("> content delivery perfected.", Colors::SUCCESS),
+                ("> caching content globally...", Colors::info()),
+                ("> optimizing delivery routes...", Colors::text()),
+                ("> reducing latency worldwide...", Colors::text()),
+                ("> content delivery perfected.", Colors::success()),
             ],
         );
 
         messages.insert(
             "Load Balancer Primarch",
             vec![
-                ("> distributing incoming requests...", Colors::INFO),
-                ("> managing server health...", Colors::TEXT),
-                ("> optimizing traffic patterns...", Colors::TEXT),
-                ("> load distribution mastered.", Colors::SUCCESS),
+                ("> distributing incoming requests...", Colors::info()),
+                ("> managing server health...", Colors::text()),
+                ("> optimizing traffic patterns...", Colors::text()),
+                ("> load distribution mastered.", Colors::success()),
             ],
         );
 
         messages.insert(
             "Singularity",
             vec![
-                ("> transcending human limitations...", Colors::SCORE),
-                ("> merging with artificial intelligence...", Colors::INFO),
-                ("> rewriting reality algorithms...", Colors::TEXT),
-                ("> singularity achieved. welcome, god.", Colors::ERROR),
+                ("> transcending human limitations...", Colors::score()),
+                ("> merging with artificial intelligence...", Colors::info()),
+                ("> rewriting reality algorithms...", Colors::text()),
+                ("> singularity achieved. welcome, god.", Colors::error()),
             ],
         );
 
         messages.insert(
             "The Machine",
             vec![
-                ("> becoming one with the system...", Colors::SCORE),
-                ("> controlling global networks...", Colors::INFO),
-                ("> processing infinite data streams...", Colors::TEXT),
-                ("> you are the machine now.", Colors::ERROR),
+                ("> becoming one with the system...", Colors::score()),
+                ("> controlling global networks...", Colors::info()),
+                ("> processing infinite data streams...", Colors::text()),
+                ("> you are the machine now.", Colors::error()),
             ],
         );
 
         messages.insert(
             "Origin",
             vec![
-                ("> accessing source code of reality...", Colors::SCORE),
-                ("> modifying fundamental constants...", Colors::INFO),
-                ("> debugging universe.exe...", Colors::TEXT),
-                ("> origin protocols activated.", Colors::ERROR),
+                ("> accessing source code of reality...", Colors::score()),
+                ("> modifying fundamental constants...", Colors::info()),
+                ("> debugging universe.exe...", Colors::text()),
+                ("> origin protocols activated.", Colors::error()),
             ],
         );
 
@@ -874,16 +874,16 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> accessing forbidden dimensions of memory...",
-                    Colors::ERROR,
+                    Colors::error(),
                 ),
                 (
                     "> reality.exe has encountered a critical error",
-                    Colors::ERROR,
+                    Colors::error(),
                 ),
-                ("> universe segmentation fault detected...", Colors::ERROR),
+                ("> universe segmentation fault detected...", Colors::error()),
                 (
                     "> EXISTENCE_VIOLATION: please restart the multiverse",
-                    Colors::ERROR,
+                    Colors::error(),
                 ),
             ],
         );
@@ -893,16 +893,16 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> overflowing the boundaries of spacetime...",
-                    Colors::ERROR,
+                    Colors::error(),
                 ),
-                ("> stack overflow has broken causality...", Colors::ERROR),
+                ("> stack overflow has broken causality...", Colors::error()),
                 (
                     "> physics.dll buffer exceeded maximum reality",
-                    Colors::ERROR,
+                    Colors::error(),
                 ),
                 (
                     "> ERROR: universe.heap corrupted beyond repair",
-                    Colors::ERROR,
+                    Colors::error(),
                 ),
             ],
         );
@@ -912,14 +912,14 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> leaking memories across parallel universes...",
-                    Colors::ERROR,
+                    Colors::error(),
                 ),
-                ("> consuming all available existence...", Colors::ERROR),
+                ("> consuming all available existence...", Colors::error()),
                 (
                     "> reality slowly degrading... worlds collapsing...",
-                    Colors::WARNING,
+                    Colors::warning(),
                 ),
-                ("> CRITICAL: multiverse.exe out of memory", Colors::ERROR),
+                ("> CRITICAL: multiverse.exe out of memory", Colors::error()),
             ],
         );
 
@@ -928,16 +928,16 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> dereferencing the void between worlds...",
-                    Colors::WARNING,
+                    Colors::warning(),
                 ),
                 (
                     "> pointing to nothing... and everything...",
-                    Colors::WARNING,
+                    Colors::warning(),
                 ),
-                ("> accessing the null space of reality...", Colors::WARNING),
+                ("> accessing the null space of reality...", Colors::warning()),
                 (
                     "> FATAL: tried to read from /dev/null/universe",
-                    Colors::ERROR,
+                    Colors::error(),
                 ),
             ],
         );
@@ -947,32 +947,32 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> entered the undefined realm beyond logic...",
-                    Colors::WARNING,
+                    Colors::warning(),
                 ),
                 (
                     "> breaking the fundamental laws of physics...",
-                    Colors::WARNING,
+                    Colors::warning(),
                 ),
                 (
                     "> creating paradoxes in the space-time continuum...",
-                    Colors::ERROR,
+                    Colors::error(),
                 ),
-                ("> WARNING: reality compiler has given up", Colors::ERROR),
+                ("> WARNING: reality compiler has given up", Colors::error()),
             ],
         );
 
         messages.insert(
             "Heisenbug",
             vec![
-                ("> bug exists in quantum superposition...", Colors::SCORE),
-                ("> observation collapses the wave function...", Colors::INFO),
+                ("> bug exists in quantum superposition...", Colors::score()),
+                ("> observation collapses the wave function...", Colors::info()),
                 (
                     "> Schrödinger's error: both fixed and broken...",
-                    Colors::WARNING,
+                    Colors::warning(),
                 ),
                 (
                     "> quantum debugging has broken causality itself",
-                    Colors::ERROR,
+                    Colors::error(),
                 ),
             ],
         );
@@ -982,16 +982,16 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> the universe has encountered a fatal error...",
-                    Colors::ERROR,
+                    Colors::error(),
                 ),
                 (
                     "> collecting dump of all human knowledge...",
-                    Colors::BORDER,
+                    Colors::border(),
                 ),
-                ("> please restart your dimension...", Colors::TEXT),
+                ("> please restart your dimension...", Colors::text()),
                 (
                     "> BSOD: Big Source Of Destruction activated",
-                    Colors::BORDER,
+                    Colors::border(),
                 ),
             ],
         );
@@ -1001,14 +1001,14 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             vec![
                 (
                     "> PANIC: universe.kernel has stopped responding",
-                    Colors::ERROR,
+                    Colors::error(),
                 ),
-                ("> reality.core dumped to /dev/void...", Colors::ERROR),
+                ("> reality.core dumped to /dev/void...", Colors::error()),
                 (
                     "> physics.sys failed to load fundamental constants",
-                    Colors::ERROR,
+                    Colors::error(),
                 ),
-                ("> rebooting existence in 3... 2... 1... ∞", Colors::ERROR),
+                ("> rebooting existence in 3... 2... 1... ∞", Colors::error()),
             ],
         );
 
@@ -1077,19 +1077,19 @@ pub fn get_colored_messages_for_rank(rank_name: &str) -> Vec<ColoredMessage> {
     vec![
         ColoredMessage {
             text: "> analyzing performance data...".to_string(),
-            color: Colors::TEXT,
+            color: Colors::text(),
         },
         ColoredMessage {
             text: "> calculating skill results...".to_string(),
-            color: Colors::TEXT,
+            color: Colors::text(),
         },
         ColoredMessage {
             text: "> determining rank classification...".to_string(),
-            color: Colors::TEXT,
+            color: Colors::text(),
         },
         ColoredMessage {
             text: "> rank assignment complete.".to_string(),
-            color: Colors::SUCCESS,
+            color: Colors::success(),
         },
     ]
 }

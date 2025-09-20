@@ -23,11 +23,11 @@ impl Step for CacheCheckStep {
 
     fn icon(&self, is_current: bool, is_completed: bool) -> (&str, Color) {
         if is_completed {
-            ("✓", Colors::SUCCESS)
+            ("✓", Colors::success())
         } else if is_current {
-            ("🔍", Colors::WARNING)
+            ("🔍", Colors::warning())
         } else {
-            ("◦", Colors::MUTED)
+            ("◦", Colors::muted())
         }
     }
 

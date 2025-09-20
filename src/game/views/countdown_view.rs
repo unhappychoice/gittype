@@ -16,11 +16,11 @@ impl CountdownView {
         let center_y = area.height / 2;
 
         let color = match count {
-            3 => Colors::COUNTDOWN_3,
-            2 => Colors::COUNTDOWN_2,
-            1 => Colors::COUNTDOWN_1,
-            0 => Colors::COUNTDOWN_GO,
-            _ => Colors::TEXT,
+            3 => Colors::countdown_3(),
+            2 => Colors::countdown_2(),
+            1 => Colors::countdown_1(),
+            0 => Colors::countdown_go(),
+            _ => Colors::text(),
         };
 
         if count > 0 && count <= 3 {

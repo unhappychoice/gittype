@@ -63,7 +63,7 @@ impl PanicScreen {
         // Render header (no border)
         let header_lines = vec![Line::from(""), Line::from("💥 APPLICATION PANIC 💥")];
         let header = Paragraph::new(header_lines)
-            .style(Style::default().fg(Colors::ERROR))
+            .style(Style::default().fg(Colors::error()))
             .alignment(Alignment::Center);
         frame.render_widget(header, chunks[0]);
 
@@ -71,11 +71,11 @@ impl PanicScreen {
         let apology_lines = vec![
             Line::from(Span::styled(
                 "We sincerely apologize for this unexpected error.",
-                Style::default().fg(Colors::ERROR),
+                Style::default().fg(Colors::error()),
             )),
             Line::from(Span::styled(
                 "Progress is saved per session. Current session data may be lost.",
-                Style::default().fg(Colors::WARNING),
+                Style::default().fg(Colors::warning()),
             )),
         ];
         let apology_widget = Paragraph::new(apology_lines).alignment(Alignment::Center);
@@ -89,13 +89,13 @@ impl PanicScreen {
             Line::from(""),
             Line::from(Span::styled(
                 "📋 Logs saved to:",
-                Style::default().fg(Colors::SUCCESS),
+                Style::default().fg(Colors::success()),
             )),
             Line::from(Span::raw(log_path)),
             Line::from(""),
             Line::from(Span::styled(
                 "🐛 Report this issue:",
-                Style::default().fg(Colors::STAGE_INFO),
+                Style::default().fg(Colors::stage_info()),
             )),
             Line::from(Span::raw("https://github.com/unhappychoice/gittype/issues")),
             Line::from(""),
@@ -108,12 +108,12 @@ impl PanicScreen {
 
         // Render detailed error info
         let mut error_lines = vec![
-            Line::from(Span::styled("Time:", Style::default().fg(Colors::INFO))),
+            Line::from(Span::styled("Time:", Style::default().fg(Colors::info()))),
             Line::from(Span::raw(&self.timestamp)),
             Line::from(""),
             Line::from(Span::styled(
                 "Panic Message:",
-                Style::default().fg(Colors::ERROR),
+                Style::default().fg(Colors::error()),
             )),
         ];
 
@@ -124,7 +124,7 @@ impl PanicScreen {
                 error_lines.push(Line::from(""));
                 error_lines.push(Line::from(Span::styled(
                     "Location:",
-                    Style::default().fg(Colors::INFO),
+                    Style::default().fg(Colors::info()),
                 )));
                 let location_info = line.trim().strip_prefix("Location:").unwrap_or("").trim();
                 error_lines.push(Line::from(location_info));
@@ -146,7 +146,7 @@ impl PanicScreen {
 
         // Render ESC key at the bottom (no border, consistent with other screens)
         let esc_instruction = Paragraph::new(Line::from(vec![
-            Span::styled("[ESC]", Style::default().fg(Colors::BACK_KEY)),
+            Span::styled("[ESC]", Style::default().fg(Colors::back_key())),
             Span::raw(" Exit"),
         ]))
         .alignment(Alignment::Center);

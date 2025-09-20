@@ -20,7 +20,7 @@ pub fn render_stage_progress(
     execute!(stdout, MoveTo(stage_x, center_y.saturating_sub(2)))?;
     execute!(
         stdout,
-        SetForegroundColor(Colors::to_crossterm(Colors::INFO))
+        SetForegroundColor(Colors::to_crossterm(Colors::info()))
     )?;
     execute!(stdout, Print(stage_text))?;
     Ok(())
@@ -59,36 +59,36 @@ pub fn render_metrics(
         // CPM label and value
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+            SetForegroundColor(Colors::to_crossterm(Colors::cpm_wpm()))
         )?;
         execute!(stdout, Print(cpm_text))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(cpm_value))?;
 
         // WPM label and value
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+            SetForegroundColor(Colors::to_crossterm(Colors::cpm_wpm()))
         )?;
         execute!(stdout, Print(wpm_text))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(wpm_value))?;
 
         // Accuracy label and value
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY))
+            SetForegroundColor(Colors::to_crossterm(Colors::accuracy()))
         )?;
         execute!(stdout, Print(accuracy_text))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(accuracy_value))?;
     }
@@ -105,7 +105,7 @@ pub fn render_failure_message(
     execute!(stdout, MoveTo(fail_x, center_y + 2))?;
     execute!(
         stdout,
-        SetForegroundColor(Colors::to_crossterm(Colors::ERROR))
+        SetForegroundColor(Colors::to_crossterm(Colors::error()))
     )?;
     execute!(stdout, Print(fail_text))?;
     Ok(())

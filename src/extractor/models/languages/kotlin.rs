@@ -17,7 +17,7 @@ impl Language for Kotlin {
 
     fn color(&self) -> ratatui::style::Color {
         use crate::ui::Colors;
-        Colors::LANG_KOTLIN
+        Colors::lang_kotlin()
     }
 
     fn display_name(&self) -> &'static str {

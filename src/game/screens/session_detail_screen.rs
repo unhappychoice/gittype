@@ -95,7 +95,7 @@ impl SessionDetailScreen {
         let title = Paragraph::new("Session Details")
             .style(
                 Style::default()
-                    .fg(Colors::INFO)
+                    .fg(Colors::info())
                     .add_modifier(Modifier::BOLD),
             )
             .alignment(Alignment::Left);
@@ -126,9 +126,9 @@ impl SessionDetailScreen {
         );
 
         let controls_line = Line::from(vec![
-            Span::styled("[↑↓/JK] Scroll Stages  ", Style::default().fg(Colors::TEXT)),
-            Span::styled("[ESC]", Style::default().fg(Colors::ERROR)),
-            Span::styled(" Back", Style::default().fg(Colors::TEXT)),
+            Span::styled("[↑↓/JK] Scroll Stages  ", Style::default().fg(Colors::text())),
+            Span::styled("[ESC]", Style::default().fg(Colors::error())),
+            Span::styled(" Back", Style::default().fg(Colors::text())),
         ]);
 
         let controls = Paragraph::new(controls_line).alignment(Alignment::Center);

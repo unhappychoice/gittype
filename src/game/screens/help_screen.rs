@@ -77,42 +77,42 @@ impl HelpScreen {
         Text::from(vec![
             Line::from(vec![Span::styled(
                 "Score Calculation Formula:",
-                Style::default().fg(Colors::TITLE).bold(),
+                Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
             Line::from("Base Score = CPM × (Accuracy / 100) × 10"),
             Line::from(""),
             Line::from(vec![
-                Span::styled("CPM", Style::default().fg(Colors::CPM_WPM)),
+                Span::styled("CPM", Style::default().fg(Colors::cpm_wpm())),
                 Span::styled(
                     " (Characters Per Minute): ",
-                    Style::default().fg(Colors::TEXT),
+                    Style::default().fg(Colors::text()),
                 ),
                 Span::styled(
                     "Total characters typed / minutes",
-                    Style::default().fg(Colors::SECONDARY),
+                    Style::default().fg(Colors::secondary()),
                 ),
             ]),
             Line::from(vec![
-                Span::styled("WPM", Style::default().fg(Colors::CPM_WPM)),
-                Span::styled(" (Words Per Minute): ", Style::default().fg(Colors::TEXT)),
+                Span::styled("WPM", Style::default().fg(Colors::cpm_wpm())),
+                Span::styled(" (Words Per Minute): ", Style::default().fg(Colors::text())),
                 Span::styled(
                     "CPM / 5 (average word length)",
-                    Style::default().fg(Colors::SECONDARY),
+                    Style::default().fg(Colors::secondary()),
                 ),
             ]),
             Line::from(vec![
-                Span::styled("Accuracy", Style::default().fg(Colors::ACCURACY)),
-                Span::styled(": ", Style::default().fg(Colors::TEXT)),
+                Span::styled("Accuracy", Style::default().fg(Colors::accuracy())),
+                Span::styled(": ", Style::default().fg(Colors::text())),
                 Span::styled(
                     "(Total chars - Mistakes) / Total chars × 100%",
-                    Style::default().fg(Colors::SECONDARY),
+                    Style::default().fg(Colors::secondary()),
                 ),
             ]),
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Bonuses & Penalties:",
-                Style::default().fg(Colors::TITLE).bold(),
+                Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
             Line::from("• Consistency Bonus: Up to 70% extra for high accuracy"),
@@ -128,7 +128,7 @@ impl HelpScreen {
         let mut lines = vec![
             Line::from(vec![Span::styled(
                 "Rank Tiers:",
-                Style::default().fg(Colors::TITLE).bold(),
+                Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
         ];
@@ -176,19 +176,19 @@ impl HelpScreen {
                             max_score.to_string()
                         }
                     ),
-                    Style::default().fg(Colors::SECONDARY),
+                    Style::default().fg(Colors::secondary()),
                 ),
             ]));
             lines.push(Line::from(vec![Span::styled(
                 format!("  {}", description),
-                Style::default().fg(Colors::TEXT),
+                Style::default().fg(Colors::text()),
             )]));
             lines.push(Line::from(""));
         }
 
         lines.push(Line::from(vec![Span::styled(
             "All Ranks:",
-            Style::default().fg(Colors::TITLE).bold(),
+            Style::default().fg(Colors::title()).bold(),
         )]));
         lines.push(Line::from(""));
 
@@ -234,14 +234,14 @@ impl HelpScreen {
                 };
 
                 lines.push(Line::from(vec![
-                    Span::styled("  • ", Style::default().fg(Colors::SECONDARY)),
+                    Span::styled("  • ", Style::default().fg(Colors::secondary())),
                     Span::styled(
                         rank_name.to_string(),
                         Style::default().fg(Colors::from_crossterm(rank.terminal_color())),
                     ),
                     Span::styled(
                         format!(" ({})", display_score),
-                        Style::default().fg(Colors::SECONDARY),
+                        Style::default().fg(Colors::secondary()),
                     ),
                 ]));
             }
@@ -249,10 +249,10 @@ impl HelpScreen {
         }
 
         lines.push(Line::from(vec![
-            Span::styled("Note:", Style::default().fg(Colors::INFO)),
+            Span::styled("Note:", Style::default().fg(Colors::info())),
             Span::styled(
                 " The highest rank remains mysterious until achieved!",
-                Style::default().fg(Colors::TEXT),
+                Style::default().fg(Colors::text()),
             ),
         ]));
 
@@ -263,7 +263,7 @@ impl HelpScreen {
         Text::from(vec![
             Line::from(vec![Span::styled(
                 "Game Modes:",
-                Style::default().fg(Colors::TITLE).bold(),
+                Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
             Line::from("• Standard: Type code from popular repositories"),
@@ -271,7 +271,7 @@ impl HelpScreen {
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Typing Tips:",
-                Style::default().fg(Colors::TITLE).bold(),
+                Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
             Line::from("• Focus on accuracy over speed initially"),
@@ -282,7 +282,7 @@ impl HelpScreen {
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Code Challenge Types:",
-                Style::default().fg(Colors::TITLE).bold(),
+                Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
             Line::from("GitType extracts real code constructs from repositories:"),
@@ -296,7 +296,7 @@ impl HelpScreen {
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Advanced Typing Tips:",
-                Style::default().fg(Colors::TITLE).bold(),
+                Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
             Line::from("• Use simultaneous key presses for efficiency:"),
@@ -325,195 +325,195 @@ impl HelpScreen {
         Text::from(vec![
             Line::from(vec![Span::styled(
                 "Basic Usage:",
-                Style::default().fg(Colors::TITLE).bold(),
+                Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
             Line::from(vec![
                 Span::styled(
                     format!("{:<33}", "gittype"),
-                    Style::default().fg(Colors::TEXT),
+                    Style::default().fg(Colors::text()),
                 ),
                 Span::styled(
                     "# Start with current directory",
-                    Style::default().fg(Colors::SECONDARY),
+                    Style::default().fg(Colors::secondary()),
                 ),
             ]),
             Line::from(vec![
                 Span::styled(
                     format!("{:<33}", "gittype /path/to/repo"),
-                    Style::default().fg(Colors::TEXT),
+                    Style::default().fg(Colors::text()),
                 ),
                 Span::styled(
                     "# Use specific repository path",
-                    Style::default().fg(Colors::SECONDARY),
+                    Style::default().fg(Colors::secondary()),
                 ),
             ]),
             Line::from(vec![
                 Span::styled(
                     format!("{:<33}", "gittype --repo owner/repo"),
-                    Style::default().fg(Colors::TEXT),
+                    Style::default().fg(Colors::text()),
                 ),
                 Span::styled(
                     "# Clone and use GitHub repository",
-                    Style::default().fg(Colors::SECONDARY),
+                    Style::default().fg(Colors::secondary()),
                 ),
             ]),
             Line::from(vec![
                 Span::styled(
                     format!("{:<33}", "gittype --langs rust,python"),
-                    Style::default().fg(Colors::TEXT),
+                    Style::default().fg(Colors::text()),
                 ),
                 Span::styled(
                     "# Filter by programming languages",
-                    Style::default().fg(Colors::SECONDARY),
+                    Style::default().fg(Colors::secondary()),
                 ),
             ]),
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Repository Commands:",
-                Style::default().fg(Colors::TITLE).bold(),
+                Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
             Line::from(vec![
                 Span::styled(
                     format!("{:<33}", "gittype repo list"),
-                    Style::default().fg(Colors::TEXT),
+                    Style::default().fg(Colors::text()),
                 ),
                 Span::styled(
                     "# List all cached repositories",
-                    Style::default().fg(Colors::SECONDARY),
+                    Style::default().fg(Colors::secondary()),
                 ),
             ]),
             Line::from(vec![
                 Span::styled(
                     format!("{:<33}", "gittype repo clear"),
-                    Style::default().fg(Colors::TEXT),
+                    Style::default().fg(Colors::text()),
                 ),
                 Span::styled(
                     "# Clear all cached repositories",
-                    Style::default().fg(Colors::SECONDARY),
+                    Style::default().fg(Colors::secondary()),
                 ),
             ]),
             Line::from(vec![
                 Span::styled(
                     format!("{:<33}", "gittype repo clear --force"),
-                    Style::default().fg(Colors::TEXT),
+                    Style::default().fg(Colors::text()),
                 ),
                 Span::styled(
                     "# Force clear without confirmation",
-                    Style::default().fg(Colors::SECONDARY),
+                    Style::default().fg(Colors::secondary()),
                 ),
             ]),
             Line::from(vec![
                 Span::styled(
                     format!("{:<33}", "gittype repo play"),
-                    Style::default().fg(Colors::TEXT),
+                    Style::default().fg(Colors::text()),
                 ),
                 Span::styled(
                     "# Play a cached repository interactively",
-                    Style::default().fg(Colors::SECONDARY),
+                    Style::default().fg(Colors::secondary()),
                 ),
             ]),
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Cache Management:",
-                Style::default().fg(Colors::TITLE).bold(),
+                Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
             Line::from(vec![
                 Span::styled(
                     format!("{:<33}", "gittype cache stats"),
-                    Style::default().fg(Colors::TEXT),
+                    Style::default().fg(Colors::text()),
                 ),
                 Span::styled(
                     "# Show cache statistics",
-                    Style::default().fg(Colors::SECONDARY),
+                    Style::default().fg(Colors::secondary()),
                 ),
             ]),
             Line::from(vec![
                 Span::styled(
                     format!("{:<33}", "gittype cache clear"),
-                    Style::default().fg(Colors::TEXT),
+                    Style::default().fg(Colors::text()),
                 ),
                 Span::styled(
                     "# Clear all cached challenges",
-                    Style::default().fg(Colors::SECONDARY),
+                    Style::default().fg(Colors::secondary()),
                 ),
             ]),
             Line::from(vec![
                 Span::styled(
                     format!("{:<33}", "gittype cache list"),
-                    Style::default().fg(Colors::TEXT),
+                    Style::default().fg(Colors::text()),
                 ),
                 Span::styled(
                     "# List cached repository keys",
-                    Style::default().fg(Colors::SECONDARY),
+                    Style::default().fg(Colors::secondary()),
                 ),
             ]),
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Cache Locations:",
-                Style::default().fg(Colors::TITLE).bold(),
+                Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
             Line::from(vec![
                 Span::styled(
                     format!("{:<33}", "~/.gittype/"),
-                    Style::default().fg(Colors::INFO),
+                    Style::default().fg(Colors::info()),
                 ),
                 Span::styled(
                     "# Main cache directory",
-                    Style::default().fg(Colors::SECONDARY),
+                    Style::default().fg(Colors::secondary()),
                 ),
             ]),
             Line::from(vec![
                 Span::styled(
                     format!("{:<33}", "~/.gittype/repos/"),
-                    Style::default().fg(Colors::INFO),
+                    Style::default().fg(Colors::info()),
                 ),
                 Span::styled(
                     "# Repository data cache",
-                    Style::default().fg(Colors::SECONDARY),
+                    Style::default().fg(Colors::secondary()),
                 ),
             ]),
             Line::from(vec![
                 Span::styled(
                     format!("{:<33}", "~/.gittype/cache/"),
-                    Style::default().fg(Colors::INFO),
+                    Style::default().fg(Colors::info()),
                 ),
-                Span::styled("# Challenge cache", Style::default().fg(Colors::SECONDARY)),
+                Span::styled("# Challenge cache", Style::default().fg(Colors::secondary())),
             ]),
             Line::from(vec![
                 Span::styled(
                     format!("{:<33}", "~/.gittype/gittype.db"),
-                    Style::default().fg(Colors::INFO),
+                    Style::default().fg(Colors::info()),
                 ),
                 Span::styled(
                     "# Session history database",
-                    Style::default().fg(Colors::SECONDARY),
+                    Style::default().fg(Colors::secondary()),
                 ),
             ]),
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Examples:",
-                Style::default().fg(Colors::TITLE).bold(),
+                Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
             Line::from(vec![Span::styled(
                 "gittype --repo rust-lang/rust",
-                Style::default().fg(Colors::TEXT),
+                Style::default().fg(Colors::text()),
             )]),
             Line::from(vec![Span::styled(
                 "gittype --repo facebook/react",
-                Style::default().fg(Colors::TEXT),
+                Style::default().fg(Colors::text()),
             )]),
             Line::from(vec![Span::styled(
                 "gittype --repo microsoft/vscode",
-                Style::default().fg(Colors::TEXT),
+                Style::default().fg(Colors::text()),
             )]),
             Line::from(vec![Span::styled(
                 "gittype --langs rust,typescript,python",
-                Style::default().fg(Colors::TEXT),
+                Style::default().fg(Colors::text()),
             )]),
         ])
     }
@@ -522,7 +522,7 @@ impl HelpScreen {
         Text::from(vec![
             Line::from(vec![Span::styled(
                 "GitType",
-                Style::default().fg(Colors::TITLE).bold(),
+                Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
             Line::from("A CLI code-typing game that turns your source code into typing challenges"),
@@ -533,20 +533,20 @@ impl HelpScreen {
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Development Team:",
-                Style::default().fg(Colors::TITLE).bold(),
+                Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
             Line::from(vec![
                 Span::styled(
                     "• Creator & Lead Developer: ",
-                    Style::default().fg(Colors::TEXT),
+                    Style::default().fg(Colors::text()),
                 ),
-                Span::styled("unhappychoice", Style::default().fg(Colors::SUCCESS)),
+                Span::styled("unhappychoice", Style::default().fg(Colors::success())),
             ]),
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Special Thanks:",
-                Style::default().fg(Colors::TITLE).bold(),
+                Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
             Line::from("• All open-source repository maintainers"),
@@ -557,7 +557,7 @@ impl HelpScreen {
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Built with:",
-                Style::default().fg(Colors::TITLE).bold(),
+                Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
             Line::from("• Rust - Systems programming language"),
@@ -572,12 +572,12 @@ impl HelpScreen {
         Text::from(vec![
             Line::from(vec![Span::styled(
                 "Join the Community!",
-                Style::default().fg(Colors::TITLE).bold(),
+                Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
             Line::from(vec![Span::styled(
                 "GitHub Repository:",
-                Style::default().fg(Colors::SUCCESS).bold(),
+                Style::default().fg(Colors::success()).bold(),
             )]),
             Line::from("https://github.com/unhappychoice/gittype"),
             Line::from(""),
@@ -585,7 +585,7 @@ impl HelpScreen {
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Contributing:",
-                Style::default().fg(Colors::TITLE).bold(),
+                Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
             Line::from("• Report bugs and suggest features via GitHub Issues"),
@@ -596,7 +596,7 @@ impl HelpScreen {
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Bug Reporting:",
-                Style::default().fg(Colors::TITLE).bold(),
+                Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
             Line::from("When reporting bugs, please include:"),
@@ -607,14 +607,14 @@ impl HelpScreen {
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Social Media:",
-                Style::default().fg(Colors::TITLE).bold(),
+                Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
             Line::from("Share your progress with #gittype"),
             Line::from(""),
             Line::from(vec![Span::styled(
                 "License:",
-                Style::default().fg(Colors::TITLE).bold(),
+                Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
             Line::from("GitType is open-source software."),
@@ -638,10 +638,10 @@ impl HelpScreen {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::BORDER))
+                    .border_style(Style::default().fg(Colors::border()))
                     .title("Help"),
             )
-            .highlight_style(Style::default().fg(Colors::HIGHLIGHT).bold())
+            .highlight_style(Style::default().fg(Colors::highlight()).bold())
             .select(selected_index);
 
         frame.render_widget(tabs, area);
@@ -665,7 +665,7 @@ impl HelpScreen {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::BORDER))
+                    .border_style(Style::default().fg(Colors::border()))
                     .padding(Padding::horizontal(2)),
             )
             .wrap(Wrap { trim: true })
@@ -702,7 +702,7 @@ impl HelpScreen {
             .title("Cannot open GitHub")
             .title_alignment(Alignment::Center)
             .borders(Borders::ALL)
-            .border_style(Style::default().fg(Colors::ERROR));
+            .border_style(Style::default().fg(Colors::error()));
 
         frame.render_widget(block, area);
 
@@ -712,7 +712,7 @@ impl HelpScreen {
         });
 
         let message = Paragraph::new("Please copy and paste the URL below:")
-            .style(Style::default().fg(Colors::WARNING))
+            .style(Style::default().fg(Colors::warning()))
             .alignment(Alignment::Center);
 
         let message_area = Rect {
@@ -725,7 +725,7 @@ impl HelpScreen {
         frame.render_widget(message, message_area);
 
         let url_para = Paragraph::new(url)
-            .style(Style::default().fg(Colors::INFO).bold())
+            .style(Style::default().fg(Colors::info()).bold())
             .alignment(Alignment::Center);
 
         let url_area = Rect {
@@ -738,8 +738,8 @@ impl HelpScreen {
         frame.render_widget(url_para, url_area);
 
         let back_instructions = vec![
-            Span::styled("[ESC]", Style::default().fg(Colors::SUCCESS)),
-            Span::styled(" Back", Style::default().fg(Colors::TEXT)),
+            Span::styled("[ESC]", Style::default().fg(Colors::success())),
+            Span::styled(" Back", Style::default().fg(Colors::text())),
         ];
 
         let back_para = Paragraph::new(Line::from(back_instructions)).alignment(Alignment::Center);
@@ -767,31 +767,31 @@ impl HelpScreen {
 
         // Star message
         let star_message = vec![
-            Span::styled("★ ", Style::default().fg(Colors::WARNING)),
-            Span::styled("Star us on GitHub (", Style::default().fg(Colors::TEXT)),
+            Span::styled("★ ", Style::default().fg(Colors::warning())),
+            Span::styled("Star us on GitHub (", Style::default().fg(Colors::text())),
             Span::styled(
                 "https://github.com/unhappychoice/gittype",
-                Style::default().fg(Colors::SECONDARY),
+                Style::default().fg(Colors::secondary()),
             ),
             Span::styled(
                 ") if you enjoy GitType! ",
-                Style::default().fg(Colors::TEXT),
+                Style::default().fg(Colors::text()),
             ),
-            Span::styled("★", Style::default().fg(Colors::WARNING)),
+            Span::styled("★", Style::default().fg(Colors::warning())),
         ];
         let star_para = Paragraph::new(Line::from(star_message)).alignment(Alignment::Center);
         frame.render_widget(star_para, chunks[1]);
 
         // Instructions
         let instructions = vec![
-            Span::styled("[←→/HL]", Style::default().fg(Colors::INFO)),
-            Span::styled(" Switch tabs ", Style::default().fg(Colors::TEXT)),
-            Span::styled("[↑↓/JK]", Style::default().fg(Colors::INFO)),
-            Span::styled(" Scroll ", Style::default().fg(Colors::TEXT)),
-            Span::styled("[G]", Style::default().fg(Colors::SUCCESS)),
-            Span::styled(" GitHub ", Style::default().fg(Colors::TEXT)),
-            Span::styled("[ESC]", Style::default().fg(Colors::ERROR)),
-            Span::styled(" Close", Style::default().fg(Colors::TEXT)),
+            Span::styled("[←→/HL]", Style::default().fg(Colors::info())),
+            Span::styled(" Switch tabs ", Style::default().fg(Colors::text())),
+            Span::styled("[↑↓/JK]", Style::default().fg(Colors::info())),
+            Span::styled(" Scroll ", Style::default().fg(Colors::text())),
+            Span::styled("[G]", Style::default().fg(Colors::success())),
+            Span::styled(" GitHub ", Style::default().fg(Colors::text())),
+            Span::styled("[ESC]", Style::default().fg(Colors::error())),
+            Span::styled(" Close", Style::default().fg(Colors::text())),
         ];
         let instructions_para =
             Paragraph::new(Line::from(instructions)).alignment(Alignment::Center);

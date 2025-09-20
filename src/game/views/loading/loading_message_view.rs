@@ -12,11 +12,11 @@ pub struct LoadingMessageView;
 impl LoadingMessageView {
     pub fn render(frame: &mut Frame, area: Rect) {
         let loading_msg = Line::from(vec![
-            Span::styled("» ", Style::default().fg(Colors::WARNING)),
+            Span::styled("» ", Style::default().fg(Colors::warning())),
             Span::styled(
                 "Loading...",
                 Style::default()
-                    .fg(Colors::WARNING)
+                    .fg(Colors::warning())
                     .add_modifier(Modifier::BOLD),
             ),
         ]);

@@ -25,7 +25,7 @@ impl SharingView {
         execute!(
             stdout,
             SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(Colors::INFO))
+            SetForegroundColor(Colors::to_crossterm(Colors::info()))
         )?;
         execute!(stdout, Print(title))?;
         execute!(stdout, ResetColor)?;
@@ -47,12 +47,12 @@ impl SharingView {
         // Score label and value
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::SCORE))
+            SetForegroundColor(Colors::to_crossterm(Colors::score()))
         )?;
         execute!(stdout, Print("Score: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(format!("{:.0}", total_summary.total_score)))?;
         execute!(stdout, Print(", "))?;
@@ -60,12 +60,12 @@ impl SharingView {
         // CPM label and value
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+            SetForegroundColor(Colors::to_crossterm(Colors::cpm_wpm()))
         )?;
         execute!(stdout, Print("CPM: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(format!("{:.0}", total_summary.overall_cpm)))?;
         execute!(stdout, Print(", "))?;
@@ -73,12 +73,12 @@ impl SharingView {
         // Keystrokes label and value
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::STAGE_INFO))
+            SetForegroundColor(Colors::to_crossterm(Colors::stage_info()))
         )?;
         execute!(stdout, Print("Keystrokes: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(format!("{}", total_summary.total_keystrokes)))?;
         execute!(stdout, Print(", "))?;
@@ -86,12 +86,12 @@ impl SharingView {
         // Sessions label and value
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::INFO))
+            SetForegroundColor(Colors::to_crossterm(Colors::info()))
         )?;
         execute!(stdout, Print("Sessions: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(
             stdout,
@@ -105,12 +105,12 @@ impl SharingView {
         // Time label and value
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::DURATION))
+            SetForegroundColor(Colors::to_crossterm(Colors::duration()))
         )?;
         execute!(stdout, Print("Time: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(
             stdout,
@@ -133,12 +133,12 @@ impl SharingView {
             execute!(stdout, MoveTo(option_col, start_row + i as u16))?;
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS))
+                SetForegroundColor(Colors::to_crossterm(Colors::success()))
             )?;
             execute!(stdout, Print(&key))?;
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+                SetForegroundColor(Colors::to_crossterm(Colors::text()))
             )?;
             execute!(stdout, Print(&platform_name))?;
             execute!(stdout, ResetColor)?;
@@ -155,12 +155,12 @@ impl SharingView {
         )?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::ERROR))
+            SetForegroundColor(Colors::to_crossterm(Colors::error()))
         )?;
         execute!(stdout, Print(back_key))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(back_label))?;
         execute!(stdout, ResetColor)?;
@@ -183,7 +183,7 @@ impl SharingView {
         execute!(
             stdout,
             SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(Colors::WARNING))
+            SetForegroundColor(Colors::to_crossterm(Colors::warning()))
         )?;
         execute!(stdout, Print(&title))?;
         execute!(stdout, ResetColor)?;
@@ -197,7 +197,7 @@ impl SharingView {
         )?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(instruction))?;
         execute!(stdout, ResetColor)?;
@@ -209,7 +209,7 @@ impl SharingView {
         execute!(
             stdout,
             SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(Colors::INFO))
+            SetForegroundColor(Colors::to_crossterm(Colors::info()))
         )?;
         execute!(stdout, Print(&url_display))?;
         execute!(stdout, ResetColor)?;
@@ -222,12 +222,12 @@ impl SharingView {
         execute!(stdout, MoveTo(continue_col, center_row + 4))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::ERROR))
+            SetForegroundColor(Colors::to_crossterm(Colors::error()))
         )?;
         execute!(stdout, Print(exit_key))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(exit_label))?;
         execute!(stdout, ResetColor)?;
@@ -248,7 +248,7 @@ impl SharingView {
         execute!(
             stdout,
             SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS))
+            SetForegroundColor(Colors::to_crossterm(Colors::success()))
         )?;
         execute!(stdout, Print(thanks_message))?;
         execute!(stdout, ResetColor)?;
@@ -259,7 +259,7 @@ impl SharingView {
         execute!(stdout, MoveTo(github_col, options_start + 1))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::WARNING))
+            SetForegroundColor(Colors::to_crossterm(Colors::warning()))
         )?;
         execute!(stdout, Print(github_message))?;
         execute!(stdout, ResetColor)?;
@@ -268,9 +268,9 @@ impl SharingView {
             (
                 "[S]",
                 " Share Result",
-                Colors::to_crossterm(Colors::SUCCESS),
+                Colors::to_crossterm(Colors::success()),
             ),
-            ("[ESC]", " Exit", Colors::to_crossterm(Colors::ERROR)),
+            ("[ESC]", " Exit", Colors::to_crossterm(Colors::error())),
         ];
 
         for (i, (key, label, key_color)) in options_data.iter().enumerate() {
@@ -281,7 +281,7 @@ impl SharingView {
             execute!(stdout, Print(key))?;
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+                SetForegroundColor(Colors::to_crossterm(Colors::text()))
             )?;
             execute!(stdout, Print(label))?;
             execute!(stdout, ResetColor)?;

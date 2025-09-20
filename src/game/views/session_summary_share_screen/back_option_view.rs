@@ -21,12 +21,12 @@ impl BackOptionView {
         execute!(stdout, MoveTo(back_col, row))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS))
+            SetForegroundColor(Colors::to_crossterm(Colors::success()))
         )?;
         execute!(stdout, Print(back_key))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(back_label))?;
         execute!(stdout, ResetColor)?;

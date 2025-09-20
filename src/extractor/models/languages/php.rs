@@ -14,7 +14,7 @@ impl Language for Php {
 
     fn color(&self) -> ratatui::style::Color {
         use crate::ui::Colors;
-        Colors::LANG_PHP
+        Colors::lang_php()
     }
 
     fn display_name(&self) -> &'static str {

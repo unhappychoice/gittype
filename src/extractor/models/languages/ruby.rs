@@ -17,7 +17,7 @@ impl Language for Ruby {
 
     fn color(&self) -> ratatui::style::Color {
         use crate::ui::Colors;
-        Colors::LANG_RUBY
+        Colors::lang_ruby()
     }
 
     fn display_name(&self) -> &'static str {

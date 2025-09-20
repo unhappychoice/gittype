@@ -22,7 +22,7 @@ impl AsciiScoreView {
             execute!(
                 stdout,
                 SetAttribute(Attribute::Bold),
-                SetForegroundColor(Colors::to_crossterm(Colors::SCORE))
+                SetForegroundColor(Colors::to_crossterm(Colors::score()))
             )?;
             execute!(stdout, Print(line))?;
             execute!(stdout, ResetColor)?;

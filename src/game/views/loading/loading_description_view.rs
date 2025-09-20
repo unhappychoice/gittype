@@ -22,7 +22,7 @@ impl LoadingDescriptionView {
         let mut description_lines = vec![
             Line::from(Span::styled(
                 "Analyzing your repository to create typing challenges...",
-                Style::default().fg(Colors::SECONDARY),
+                Style::default().fg(Colors::secondary()),
             )),
             Line::from(Span::raw("")), // Empty line for spacing
         ];
@@ -45,11 +45,11 @@ impl LoadingDescriptionView {
                 };
 
                 let (icon, color) = if is_completed {
-                    ("✓", Colors::SUCCESS)
+                    ("✓", Colors::success())
                 } else if is_current {
-                    ("⚡", Colors::WARNING)
+                    ("⚡", Colors::warning())
                 } else {
-                    ("○", Colors::MUTED)
+                    ("○", Colors::muted())
                 };
 
                 description_lines.push(Line::from(vec![
@@ -57,9 +57,9 @@ impl LoadingDescriptionView {
                     Span::styled(
                         step_info.description.clone(),
                         Style::default().fg(if is_completed || is_current {
-                            Colors::SECONDARY
+                            Colors::secondary()
                         } else {
-                            Colors::MUTED
+                            Colors::muted()
                         }),
                     ),
                 ]));

@@ -14,18 +14,18 @@ impl OptionsView {
         let mut stdout = stdout();
 
         let row1_options = [
-            ("[D]", " Show Detail", Colors::to_crossterm(Colors::INFO)),
-            ("[S]", " Share Result", Colors::to_crossterm(Colors::INFO)),
+            ("[D]", " Show Detail", Colors::to_crossterm(Colors::info())),
+            ("[S]", " Share Result", Colors::to_crossterm(Colors::info())),
         ];
 
         let row2_options = [
-            ("[R]", " Retry", Colors::to_crossterm(Colors::SUCCESS)),
+            ("[R]", " Retry", Colors::to_crossterm(Colors::success())),
             (
                 "[T]",
                 " Back to Title",
-                Colors::to_crossterm(Colors::SUCCESS),
+                Colors::to_crossterm(Colors::success()),
             ),
-            ("[ESC]", " Quit", Colors::to_crossterm(Colors::ERROR)),
+            ("[ESC]", " Quit", Colors::to_crossterm(Colors::error())),
         ];
 
         let mut row1_text = String::new();
@@ -47,7 +47,7 @@ impl OptionsView {
             execute!(stdout, Print(key))?;
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+                SetForegroundColor(Colors::to_crossterm(Colors::text()))
             )?;
             execute!(stdout, Print(label))?;
         }
@@ -72,7 +72,7 @@ impl OptionsView {
             execute!(stdout, Print(key))?;
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+                SetForegroundColor(Colors::to_crossterm(Colors::text()))
             )?;
             execute!(stdout, Print(label))?;
         }

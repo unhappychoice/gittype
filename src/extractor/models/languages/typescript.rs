@@ -17,7 +17,7 @@ impl Language for TypeScript {
 
     fn color(&self) -> ratatui::style::Color {
         use crate::ui::Colors;
-        Colors::LANG_TYPESCRIPT
+        Colors::lang_typescript()
     }
 
     fn display_name(&self) -> &'static str {
