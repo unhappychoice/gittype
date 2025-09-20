@@ -116,7 +116,7 @@ pub enum ThemeCommands {
     List,
     /// Set the current theme
     Set {
-        /// Theme name (ascii_color, light, or custom theme name)
+        /// Theme name (ascii, light_original, dark_original, or custom theme name)
         theme: String,
     },
     /// Show current theme

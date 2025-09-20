@@ -109,6 +109,8 @@ fn run_theme_command(theme_command: &ThemeCommands) -> Result<()> {
                 let current_indicator = if *theme_manager.get_current_theme() == match theme.as_str() {
                     "dark" => Theme::Dark,
                     "light" => Theme::Light,
+                    "dark_original" => Theme::DarkOriginal,
+                    "light_original" => Theme::LightOriginal,
                     "ascii" => Theme::Ascii,
                     name => Theme::Custom(name.to_string()),
                 } {
@@ -123,6 +125,8 @@ fn run_theme_command(theme_command: &ThemeCommands) -> Result<()> {
             let theme_enum = match theme.as_str() {
                 "dark" => Theme::Dark,
                 "light" => Theme::Light,
+                "dark_original" => Theme::DarkOriginal,
+                "light_original" => Theme::LightOriginal,
                 "ascii" => Theme::Ascii,
                 name => Theme::Custom(name.to_string()),
             };
@@ -136,6 +140,8 @@ fn run_theme_command(theme_command: &ThemeCommands) -> Result<()> {
             let current = match theme_manager.get_current_theme() {
                 Theme::Dark => "dark",
                 Theme::Light => "light",
+                Theme::DarkOriginal => "dark_original",
+                Theme::LightOriginal => "light_original",
                 Theme::Ascii => "ascii",
                 Theme::Custom(name) => name,
             };

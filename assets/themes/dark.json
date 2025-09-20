@@ -1,29 +1,33 @@
 {
   "name": "Dark",
-  "description": "Modern dark theme with precise RGB colors",
+  "description": "Dark theme with softened contrast and balanced xterm-256 palette for comfortable readability",
   "colors": {
-    "border": {"r": 100, "g": 149, "b": 237},
-    "title": {"r": 255, "g": 255, "b": 255},
-    "text": {"r": 255, "g": 255, "b": 255},
-    "text_secondary": {"r": 96, "g": 96, "b": 96},
-    "background": {"r": 0, "g": 0, "b": 0},
-    "background_secondary": {"r": 64, "g": 64, "b": 64},
-    "status_success": {"r": 46, "g": 160, "b": 67},
-    "status_info": {"r": 96, "g": 165, "b": 250},
-    "status_warning": {"r": 245, "g": 158, "b": 11},
-    "status_error": {"r": 239, "g": 68, "b": 68},
-    "key_back": {"r": 239, "g": 68, "b": 68},
-    "key_action": {"r": 96, "g": 165, "b": 250},
-    "key_navigation": {"r": 96, "g": 165, "b": 250},
-    "metrics_score": {"r": 168, "g": 85, "b": 247},
-    "metrics_cpm_wpm": {"r": 46, "g": 160, "b": 67},
-    "metrics_accuracy": {"r": 245, "g": 158, "b": 11},
-    "metrics_duration": {"r": 34, "g": 211, "b": 238},
-    "metrics_stage_info": {"r": 100, "g": 149, "b": 237},
-    "typing_untyped_text": {"r": 192, "g": 192, "b": 192},
-    "typing_typed_text": {"r": 96, "g": 165, "b": 250},    
-    "typing_cursor_fg": {"r": 0, "g": 0, "b": 0},
-    "typing_cursor_bg": {"r": 220, "g": 220, "b": 220},
-    "typing_mistake_bg": {"r": 239, "g": 68, "b": 68}
+    "border":               {"r": 102, "g": 153, "b": 204},
+    "title":                {"r": 235, "g": 235, "b": 235},
+    "text":                 {"r": 220, "g": 220, "b": 220},
+    "text_secondary":       {"r": 60, "g": 60, "b": 60},
+    "background":           {"r": 15,  "g": 15,  "b": 15},
+    "background_secondary": {"r": 38, "g": 38,  "b": 38},
+
+    "status_success":       {"r": 0,   "g": 175, "b": 95},
+    "status_info":          {"r": 95,  "g": 175, "b": 255},
+    "status_warning":       {"r": 255, "g": 175, "b": 95},
+    "status_error":         {"r": 215, "g": 95,  "b": 95},
+
+    "key_back":             {"r": 215, "g": 95,  "b": 95},
+    "key_action":           {"r": 95,  "g": 175, "b": 255},
+    "key_navigation":       {"r": 95,  "g": 175, "b": 255},
+
+    "metrics_score":        {"r": 175, "g": 135, "b": 255},
+    "metrics_cpm_wpm":      {"r": 95,  "g": 215, "b": 135},
+    "metrics_accuracy":     {"r": 255, "g": 215, "b": 135},
+    "metrics_duration":     {"r": 95,  "g": 215, "b": 215},
+    "metrics_stage_info":   {"r": 102, "g": 153, "b": 204},
+
+    "typing_untyped_text":  {"r": 170, "g": 170, "b": 170},
+    "typing_typed_text":    {"r": 135, "g": 175, "b": 255},
+    "typing_cursor_fg":     {"r": 0,   "g": 0,   "b": 0},
+    "typing_cursor_bg":     {"r": 220, "g": 220, "b": 220},
+    "typing_mistake_bg":    {"r": 175, "g": 95,  "b": 95}
   }
 }

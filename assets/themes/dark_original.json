@@ -1,0 +1,33 @@
+{
+  "name": "Dark",
+  "description": "Modern dark theme with precise RGB colors",
+  "colors": {
+    "border":               {"r": 100, "g": 149, "b": 237},
+    "title":                {"r": 255, "g": 255, "b": 255},
+    "text":                 {"r": 255, "g": 255, "b": 255},
+    "text_secondary":       {"r": 96, "g": 96, "b": 96},
+    "background":           {"r": 0, "g": 0, "b": 0},
+    "background_secondary": {"r": 64, "g": 64, "b": 64},
+
+    "status_success":       {"r": 46, "g": 160, "b": 67},
+    "status_info":          {"r": 96, "g": 165, "b": 250},
+    "status_warning":       {"r": 245, "g": 158, "b": 11},
+    "status_error":         {"r": 239, "g": 68, "b": 68},
+
+    "key_back":             {"r": 239, "g": 68, "b": 68},
+    "key_action":           {"r": 96, "g": 165, "b": 250},
+    "key_navigation":       {"r": 96, "g": 165, "b": 250},
+
+    "metrics_score":        {"r": 168, "g": 85, "b": 247},
+    "metrics_cpm_wpm":      {"r": 46, "g": 160, "b": 67},
+    "metrics_accuracy":     {"r": 245, "g": 158, "b": 11},
+    "metrics_duration":     {"r": 34, "g": 211, "b": 238},
+    "metrics_stage_info":   {"r": 100, "g": 149, "b": 237},
+
+    "typing_untyped_text":  {"r": 192, "g": 192, "b": 192},
+    "typing_typed_text":    {"r": 96, "g": 165, "b": 250},
+    "typing_cursor_fg":     {"r": 0, "g": 0, "b": 0},
+    "typing_cursor_bg":     {"r": 220, "g": 220, "b": 220},
+    "typing_mistake_bg":    {"r": 239, "g": 68, "b": 68}
+  }
+}

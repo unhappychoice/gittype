@@ -8,6 +8,8 @@ use std::path::PathBuf;
 pub enum Theme {
     Dark,
     Light,
+    DarkOriginal,
+    LightOriginal,
     Ascii,
     Custom(String),
 }
@@ -52,8 +54,6 @@ pub struct ColorScheme {
     pub typing_cursor_bg: SerializableColor,
     pub typing_mistake_bg: SerializableColor,
     pub typing_untyped_text: SerializableColor,
-
-
 
     // Programming language colors
     pub lang_rust: SerializableColor,
@@ -168,7 +168,7 @@ impl ColorScheme {
             // Status and feedback colors
             status_success: theme_file.colors.get("status_success").cloned().unwrap_or(SerializableColor::Name("green".to_string())),
             status_info: theme_file.colors.get("status_info").cloned().unwrap_or(SerializableColor::Name("cyan".to_string())),
-            status_warning: theme_file.colors.get("status_warning").cloned().unwrap_or(SerializableColor::Name("yellow".to_string())),            
+            status_warning: theme_file.colors.get("status_warning").cloned().unwrap_or(SerializableColor::Name("yellow".to_string())),
             status_error: theme_file.colors.get("status_error").cloned().unwrap_or(SerializableColor::Name("red".to_string())),
 
             // Specific UI element colors
@@ -200,6 +200,8 @@ impl ColorScheme {
         let lang_json = match theme_name.to_lowercase().as_str() {
             "dark" => include_str!("../../assets/themes/lang_dark.json"),
             "light" => include_str!("../../assets/themes/lang_light.json"),
+            "dark_original" => include_str!("../../assets/themes/lang_dark.json"),
+            "light_original" => include_str!("../../assets/themes/lang_light.json"),
             "ascii" => include_str!("../../assets/themes/lang_ascii.json"),
             _ => include_str!("../../assets/themes/lang_dark.json"), // default
         };
@@ -254,10 +256,24 @@ impl ColorScheme {
         }
     }
 
+    pub fn dark_original() -> Self {
+        let dark_json = include_str!("../../assets/themes/dark_original.json");
+        let theme_file: ThemeFile = serde_json::from_str(dark_json)
+            .expect("Failed to parse dark_original.json");
+        Self::from_theme_file(&theme_file)
+    }
+
     pub fn dark() -> Self {
         let dark_json = include_str!("../../assets/themes/dark.json");
         let theme_file: ThemeFile = serde_json::from_str(dark_json)
             .expect("Failed to parse dark.json");
+        Self::from_theme_file(&theme_file)
+    }
+
+    pub fn light_original() -> Self {
+        let light_json = include_str!("../../assets/themes/light_original.json");
+        let theme_file: ThemeFile = serde_json::from_str(light_json)
+            .expect("Failed to parse light_original.json");
         Self::from_theme_file(&theme_file)
     }
 
@@ -349,6 +365,8 @@ impl ThemeManager {
         match theme {
             Theme::Dark => ColorScheme::dark(),
             Theme::Light => ColorScheme::light(),
+            Theme::DarkOriginal => ColorScheme::dark_original(),
+            Theme::LightOriginal => ColorScheme::light_original(),
             Theme::Ascii => ColorScheme::ascii(),
             Theme::Custom(name) => {
                 config.custom_themes
@@ -364,6 +382,8 @@ impl ThemeManager {
         let mut themes = vec![
             "dark".to_string(),
             "light".to_string(),
+            "dark_original".to_string(),
+            "light_original".to_string(),
             "ascii".to_string(),
         ];
         themes.extend(self.config.custom_themes.keys().cloned());
@@ -375,6 +395,8 @@ impl ThemeManager {
         let theme = match theme_name.to_lowercase().as_str() {
             "dark" => Theme::Dark,
             "light" => Theme::Light,
+            "dark_original" => Theme::DarkOriginal,
+            "light_original" => Theme::LightOriginal,
             "ascii" => Theme::Ascii,
             name => {
                 if self.config.custom_themes.contains_key(name) {
@@ -392,6 +414,8 @@ impl ThemeManager {
         match &self.config.current_theme {
             Theme::Dark => "dark".to_string(),
             Theme::Light => "light".to_string(),
+            Theme::DarkOriginal => "dark_original".to_string(),
+            Theme::LightOriginal => "light_original".to_string(),
             Theme::Ascii => "ascii".to_string(),
             Theme::Custom(name) => name.clone(),
         }
@@ -406,6 +430,8 @@ impl ThemeManager {
         let mut themes = vec![
             "dark".to_string(),
             "light".to_string(),
+            "dark_original".to_string(),
+            "light_original".to_string(),
             "ascii".to_string(),
         ];
         themes.extend(self.config.custom_themes.keys().cloned());
