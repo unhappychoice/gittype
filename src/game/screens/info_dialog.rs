@@ -120,7 +120,7 @@ impl InfoDialogScreen {
                 let style = if i == selected_option {
                     Style::default().fg(Colors::warning()).bold()
                 } else {
-                    Style::default().fg(Colors::secondary())
+                    Style::default().fg(Colors::text_secondary())
                 };
 
                 let content = if i == selected_option {

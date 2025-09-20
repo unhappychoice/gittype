@@ -105,7 +105,7 @@ impl TypingView {
             height: 1,
         };
         let esc_text = Paragraph::new(vec![Line::from(vec![
-            Span::styled("[ESC]", Style::default().fg(Colors::action_key())),
+            Span::styled("[ESC]", Style::default().fg(Colors::key_action())),
             Span::styled(" Options", Style::default().fg(Colors::text())),
         ])]);
         frame.render_widget(esc_text, esc_area);

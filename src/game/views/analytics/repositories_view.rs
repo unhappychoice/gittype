@@ -63,7 +63,7 @@ impl RepositoriesView {
             .style(Style::default().fg(Colors::text()))
             .highlight_style(
                 Style::default()
-                    .bg(Colors::muted())
+                    .bg(Colors::background_secondary())
                     .add_modifier(Modifier::BOLD),
             )
             .highlight_symbol("► ");
@@ -302,11 +302,11 @@ impl RepositoriesView {
                 ]),
                 Line::from(vec![
                     Span::raw("  "),
-                    Span::styled("Use ", Style::default().fg(Colors::muted())),
+                    Span::styled("Use ", Style::default().fg(Colors::text_secondary())),
                     Span::styled("↑↓ / JK", Style::default().fg(Colors::accuracy())),
                     Span::styled(
                         " to navigate repositories",
-                        Style::default().fg(Colors::muted()),
+                        Style::default().fg(Colors::text_secondary()),
                     ),
                 ]),
             ]);
@@ -317,7 +317,7 @@ impl RepositoriesView {
                 Line::from(""),
                 Line::from(vec![
                     Span::raw("  "),
-                    Span::styled("No Repository Selected", Style::default().fg(Colors::muted())),
+                    Span::styled("No Repository Selected", Style::default().fg(Colors::text_secondary())),
                 ]),
                 Line::from(""),
                 Line::from(vec![

@@ -182,7 +182,7 @@ impl SharingService {
         execute!(stdout, MoveTo(info_col, center_row + 4))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::muted()))
+            SetForegroundColor(Colors::to_crossterm(Colors::text_secondary()))
         )?;
         execute!(stdout, Print(info))?;
         execute!(stdout, ResetColor)?;

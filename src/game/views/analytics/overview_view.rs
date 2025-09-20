@@ -74,7 +74,7 @@ impl OverviewView {
                     Style::default().fg(Colors::text()),
                 ),
                 Span::raw("  │  "),
-                Span::styled("Repositories: ", Style::default().fg(Colors::action_key())),
+                Span::styled("Repositories: ", Style::default().fg(Colors::key_action())),
                 Span::styled(
                     data.top_repositories.len().to_string(),
                     Style::default().fg(Colors::text()),
@@ -212,7 +212,7 @@ impl OverviewView {
 
                 repo_lines.push(Line::from(vec![
                     Span::raw("  "), // Left padding
-                    Span::styled(index_text, Style::default().fg(Colors::muted())),
+                    Span::styled(index_text, Style::default().fg(Colors::text_secondary())),
                     Span::styled(display_name, Style::default().fg(Colors::info())),
                     Span::raw(" ".repeat(spaces_needed)), // Spacer to push CPM right
                     Span::styled(cpm_text, Style::default().fg(Colors::cpm_wpm())),
@@ -260,7 +260,7 @@ impl OverviewView {
 
                 lang_lines.push(Line::from(vec![
                     Span::raw("  "), // Left padding
-                    Span::styled(index_text, Style::default().fg(Colors::muted())),
+                    Span::styled(index_text, Style::default().fg(Colors::text_secondary())),
                     Span::styled(display_name, Style::default().fg(Colors::info())),
                     Span::raw(" ".repeat(spaces_needed)), // Spacer to push CPM right
                     Span::styled(cpm_text, Style::default().fg(Colors::cpm_wpm())),

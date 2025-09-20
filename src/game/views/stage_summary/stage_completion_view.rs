@@ -113,17 +113,17 @@ impl StageCompletionView {
         if metrics.was_failed {
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::failed()))
+                SetForegroundColor(Colors::to_crossterm(Colors::error()))
             )?;
         } else if metrics.was_skipped {
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::skipped()))
+                SetForegroundColor(Colors::to_crossterm(Colors::warning()))
             )?;
         } else {
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::completed()))
+                SetForegroundColor(Colors::to_crossterm(Colors::success()))
             )?;
         }
         execute!(stdout, Print(&stage_title))?;
@@ -155,17 +155,17 @@ impl StageCompletionView {
         if metrics.was_failed {
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::failed()))
+                SetForegroundColor(Colors::to_crossterm(Colors::error()))
             )?;
         } else if metrics.was_skipped {
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::skipped()))
+                SetForegroundColor(Colors::to_crossterm(Colors::error()))
             )?;
         } else {
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::completed()))
+                SetForegroundColor(Colors::to_crossterm(Colors::success()))
             )?;
         }
         execute!(stdout, Print(score_label))?;
@@ -190,12 +190,12 @@ impl StageCompletionView {
             if metrics.was_failed {
                 execute!(
                     stdout,
-                    SetForegroundColor(Colors::to_crossterm(Colors::failed()))
+                    SetForegroundColor(Colors::to_crossterm(Colors::error()))
                 )?;
             } else if metrics.was_skipped {
                 execute!(
                     stdout,
-                    SetForegroundColor(Colors::to_crossterm(Colors::skipped()))
+                    SetForegroundColor(Colors::to_crossterm(Colors::warning()))
                 )?;
             } else {
                 let best_rank = crate::scoring::Rank::for_score(metrics.challenge_score);

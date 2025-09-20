@@ -117,7 +117,7 @@ impl BestRecordsView {
                     );
                     lines.push(Line::from(Span::styled(
                         no_record_line,
-                        Style::default().fg(Colors::muted()),
+                        Style::default().fg(Colors::text_secondary()),
                     )));
                 }
             }

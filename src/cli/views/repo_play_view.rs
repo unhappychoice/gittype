@@ -82,19 +82,19 @@ pub fn render_repo_play_ui(
                     let cache_color = if is_cached {
                         Colors::success()
                     } else {
-                        Colors::muted()
+                        Colors::text_secondary()
                     };
 
                     let language_spans = if repo.languages.is_empty() {
                         vec![Span::styled(
                             "No challenges",
-                            Style::default().fg(Colors::muted()),
+                            Style::default().fg(Colors::text_secondary()),
                         )]
                     } else {
                         let mut spans = Vec::new();
                         for (i, lang) in repo.languages.iter().enumerate() {
                             if i > 0 {
-                                spans.push(Span::styled(", ", Style::default().fg(Colors::muted())));
+                                spans.push(Span::styled(", ", Style::default().fg(Colors::text_secondary())));
                             }
                             spans.push(Span::styled(
                                 LanguageRegistry::get_display_name(Some(lang)),
@@ -138,22 +138,22 @@ pub fn render_repo_play_ui(
                 .style(Style::default().fg(Colors::text()))
                 .highlight_style(
                     Style::default()
-                        .bg(Colors::muted())
+                        .bg(Colors::background_secondary())
                         .add_modifier(Modifier::BOLD),
                 );
             f.render_stateful_widget(list, chunks[1], &mut list_state);
 
             // Controls at bottom - using semantic color for navigation keys
             let controls_line = Line::from(vec![
-                Span::styled("[↑↓/JK]", Style::default().fg(Colors::navigation_key())),
+                Span::styled("[↑↓/JK]", Style::default().fg(Colors::key_navigation())),
                 Span::styled(" Navigate  ", Style::default().fg(Colors::text())),
                 Span::styled("[SPACE]", Style::default().fg(Colors::success())),
                 Span::styled(" Play  ", Style::default().fg(Colors::text())),
-                Span::styled("[ESC]", Style::default().fg(Colors::back_key())),
+                Span::styled("[ESC]", Style::default().fg(Colors::key_back())),
                 Span::styled(" Return  ", Style::default().fg(Colors::text())),
                 Span::styled("●", Style::default().fg(Colors::success())),
                 Span::styled(" Cached ", Style::default().fg(Colors::text())),
-                Span::styled("○", Style::default().fg(Colors::muted())),
+                Span::styled("○", Style::default().fg(Colors::text_secondary())),
                 Span::styled(" Not Cached", Style::default().fg(Colors::text())),
             ]);
             let controls = Paragraph::new(controls_line).alignment(Alignment::Center);

@@ -206,7 +206,7 @@ impl RecordsScreen {
                 Line::from("Start typing to build your records!"),
             ];
             let empty_paragraph = Paragraph::new(empty_msg)
-                .style(Style::default().fg(Colors::muted()))
+                .style(Style::default().fg(Colors::text_secondary()))
                 .alignment(Alignment::Center)
                 .block(
                     Block::default()
@@ -244,7 +244,7 @@ impl RecordsScreen {
                 .style(Style::default().fg(Colors::text()))
                 .highlight_style(
                     Style::default()
-                        .bg(Colors::muted())
+                        .bg(Colors::background_secondary())
                         .add_modifier(Modifier::BOLD),
                 )
                 .highlight_symbol("► ");
@@ -270,7 +270,7 @@ impl RecordsScreen {
         let controls_line = Line::from(vec![
             Span::styled(
                 "[↑↓/JK] Navigate  ",
-                Style::default().fg(Colors::navigation_key()),
+                Style::default().fg(Colors::key_navigation()),
             ),
             Span::styled("[SPACE]", Style::default().fg(Colors::success())),
             Span::styled(" Details  ", Style::default().fg(Colors::text())),
@@ -435,7 +435,7 @@ fn format_session_line_ratatui_static<'a>(session_data: &'a SessionDisplayData) 
         ),
         Span::styled(
             format!("{:>10}", duration_str),
-            Style::default().fg(Colors::secondary()),
+            Style::default().fg(Colors::text_secondary()),
         ),
     ])
 }

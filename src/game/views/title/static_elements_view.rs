@@ -44,7 +44,7 @@ impl StaticElementsView {
         execute!(stdout, MoveTo(subtitle_col, center_row - 1))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::secondary()))
+            SetForegroundColor(Colors::to_crossterm(Colors::text_secondary()))
         )?;
         execute!(stdout, Print(subtitle))?;
         execute!(stdout, ResetColor)?;
@@ -58,7 +58,7 @@ impl StaticElementsView {
         execute!(stdout, MoveTo(change_col, instructions_start_row))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::navigation_key()))
+            SetForegroundColor(Colors::to_crossterm(Colors::key_navigation()))
         )?;
         execute!(stdout, Print("[←→/HL]"))?;
         execute!(

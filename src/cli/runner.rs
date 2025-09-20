@@ -107,8 +107,9 @@ fn run_theme_command(theme_command: &ThemeCommands) -> Result<()> {
             println!("Available themes:");
             for theme in theme_manager.list_themes() {
                 let current_indicator = if *theme_manager.get_current_theme() == match theme.as_str() {
-                    "ascii_dark" => Theme::AsciiDark,
-                    "ascii_light" => Theme::AsciiLight,
+                    "dark" => Theme::Dark,
+                    "light" => Theme::Light,
+                    "ascii" => Theme::Ascii,
                     name => Theme::Custom(name.to_string()),
                 } {
                     " (current)"
@@ -120,8 +121,9 @@ fn run_theme_command(theme_command: &ThemeCommands) -> Result<()> {
         }
         ThemeCommands::Set { theme } => {
             let theme_enum = match theme.as_str() {
-                "ascii_dark" => Theme::AsciiDark,
-                "ascii_light" => Theme::AsciiLight,
+                "dark" => Theme::Dark,
+                "light" => Theme::Light,
+                "ascii" => Theme::Ascii,
                 name => Theme::Custom(name.to_string()),
             };
 
@@ -132,8 +134,9 @@ fn run_theme_command(theme_command: &ThemeCommands) -> Result<()> {
         }
         ThemeCommands::Current => {
             let current = match theme_manager.get_current_theme() {
-                Theme::AsciiDark => "ascii_dark",
-                Theme::AsciiLight => "ascii_light",
+                Theme::Dark => "dark",
+                Theme::Light => "light",
+                Theme::Ascii => "ascii",
                 Theme::Custom(name) => name,
             };
             println!("Current theme: {}", current);

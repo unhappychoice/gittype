@@ -90,7 +90,7 @@ impl HelpScreen {
                 ),
                 Span::styled(
                     "Total characters typed / minutes",
-                    Style::default().fg(Colors::secondary()),
+                    Style::default().fg(Colors::text_secondary()),
                 ),
             ]),
             Line::from(vec![
@@ -98,7 +98,7 @@ impl HelpScreen {
                 Span::styled(" (Words Per Minute): ", Style::default().fg(Colors::text())),
                 Span::styled(
                     "CPM / 5 (average word length)",
-                    Style::default().fg(Colors::secondary()),
+                    Style::default().fg(Colors::text_secondary()),
                 ),
             ]),
             Line::from(vec![
@@ -106,7 +106,7 @@ impl HelpScreen {
                 Span::styled(": ", Style::default().fg(Colors::text())),
                 Span::styled(
                     "(Total chars - Mistakes) / Total chars × 100%",
-                    Style::default().fg(Colors::secondary()),
+                    Style::default().fg(Colors::text_secondary()),
                 ),
             ]),
             Line::from(""),
@@ -176,7 +176,7 @@ impl HelpScreen {
                             max_score.to_string()
                         }
                     ),
-                    Style::default().fg(Colors::secondary()),
+                    Style::default().fg(Colors::text_secondary()),
                 ),
             ]));
             lines.push(Line::from(vec![Span::styled(
@@ -234,14 +234,14 @@ impl HelpScreen {
                 };
 
                 lines.push(Line::from(vec![
-                    Span::styled("  • ", Style::default().fg(Colors::secondary())),
+                    Span::styled("  • ", Style::default().fg(Colors::text_secondary())),
                     Span::styled(
                         rank_name.to_string(),
                         Style::default().fg(Colors::from_crossterm(rank.terminal_color())),
                     ),
                     Span::styled(
                         format!(" ({})", display_score),
-                        Style::default().fg(Colors::secondary()),
+                        Style::default().fg(Colors::text_secondary()),
                     ),
                 ]));
             }
@@ -335,7 +335,7 @@ impl HelpScreen {
                 ),
                 Span::styled(
                     "# Start with current directory",
-                    Style::default().fg(Colors::secondary()),
+                    Style::default().fg(Colors::text_secondary()),
                 ),
             ]),
             Line::from(vec![
@@ -345,7 +345,7 @@ impl HelpScreen {
                 ),
                 Span::styled(
                     "# Use specific repository path",
-                    Style::default().fg(Colors::secondary()),
+                    Style::default().fg(Colors::text_secondary()),
                 ),
             ]),
             Line::from(vec![
@@ -355,7 +355,7 @@ impl HelpScreen {
                 ),
                 Span::styled(
                     "# Clone and use GitHub repository",
-                    Style::default().fg(Colors::secondary()),
+                    Style::default().fg(Colors::text_secondary()),
                 ),
             ]),
             Line::from(vec![
@@ -365,7 +365,7 @@ impl HelpScreen {
                 ),
                 Span::styled(
                     "# Filter by programming languages",
-                    Style::default().fg(Colors::secondary()),
+                    Style::default().fg(Colors::text_secondary()),
                 ),
             ]),
             Line::from(""),
@@ -381,7 +381,7 @@ impl HelpScreen {
                 ),
                 Span::styled(
                     "# List all cached repositories",
-                    Style::default().fg(Colors::secondary()),
+                    Style::default().fg(Colors::text_secondary()),
                 ),
             ]),
             Line::from(vec![
@@ -391,7 +391,7 @@ impl HelpScreen {
                 ),
                 Span::styled(
                     "# Clear all cached repositories",
-                    Style::default().fg(Colors::secondary()),
+                    Style::default().fg(Colors::text_secondary()),
                 ),
             ]),
             Line::from(vec![
@@ -401,7 +401,7 @@ impl HelpScreen {
                 ),
                 Span::styled(
                     "# Force clear without confirmation",
-                    Style::default().fg(Colors::secondary()),
+                    Style::default().fg(Colors::text_secondary()),
                 ),
             ]),
             Line::from(vec![
@@ -411,7 +411,7 @@ impl HelpScreen {
                 ),
                 Span::styled(
                     "# Play a cached repository interactively",
-                    Style::default().fg(Colors::secondary()),
+                    Style::default().fg(Colors::text_secondary()),
                 ),
             ]),
             Line::from(""),
@@ -427,7 +427,7 @@ impl HelpScreen {
                 ),
                 Span::styled(
                     "# Show cache statistics",
-                    Style::default().fg(Colors::secondary()),
+                    Style::default().fg(Colors::text_secondary()),
                 ),
             ]),
             Line::from(vec![
@@ -437,7 +437,7 @@ impl HelpScreen {
                 ),
                 Span::styled(
                     "# Clear all cached challenges",
-                    Style::default().fg(Colors::secondary()),
+                    Style::default().fg(Colors::text_secondary()),
                 ),
             ]),
             Line::from(vec![
@@ -447,7 +447,7 @@ impl HelpScreen {
                 ),
                 Span::styled(
                     "# List cached repository keys",
-                    Style::default().fg(Colors::secondary()),
+                    Style::default().fg(Colors::text_secondary()),
                 ),
             ]),
             Line::from(""),
@@ -463,7 +463,7 @@ impl HelpScreen {
                 ),
                 Span::styled(
                     "# Main cache directory",
-                    Style::default().fg(Colors::secondary()),
+                    Style::default().fg(Colors::text_secondary()),
                 ),
             ]),
             Line::from(vec![
@@ -473,7 +473,7 @@ impl HelpScreen {
                 ),
                 Span::styled(
                     "# Repository data cache",
-                    Style::default().fg(Colors::secondary()),
+                    Style::default().fg(Colors::text_secondary()),
                 ),
             ]),
             Line::from(vec![
@@ -481,7 +481,7 @@ impl HelpScreen {
                     format!("{:<33}", "~/.gittype/cache/"),
                     Style::default().fg(Colors::info()),
                 ),
-                Span::styled("# Challenge cache", Style::default().fg(Colors::secondary())),
+                Span::styled("# Challenge cache", Style::default().fg(Colors::text_secondary())),
             ]),
             Line::from(vec![
                 Span::styled(
@@ -490,7 +490,7 @@ impl HelpScreen {
                 ),
                 Span::styled(
                     "# Session history database",
-                    Style::default().fg(Colors::secondary()),
+                    Style::default().fg(Colors::text_secondary()),
                 ),
             ]),
             Line::from(""),
@@ -641,7 +641,7 @@ impl HelpScreen {
                     .border_style(Style::default().fg(Colors::border()))
                     .title("Help"),
             )
-            .highlight_style(Style::default().fg(Colors::highlight()).bold())
+            .highlight_style(Style::default().fg(Colors::text()).bold())
             .select(selected_index);
 
         frame.render_widget(tabs, area);
@@ -771,7 +771,7 @@ impl HelpScreen {
             Span::styled("Star us on GitHub (", Style::default().fg(Colors::text())),
             Span::styled(
                 "https://github.com/unhappychoice/gittype",
-                Style::default().fg(Colors::secondary()),
+                Style::default().fg(Colors::text_secondary()),
             ),
             Span::styled(
                 ") if you enjoy GitType! ",

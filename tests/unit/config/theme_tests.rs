@@ -5,15 +5,15 @@ use tempfile::tempdir;
 
 #[test]
 fn test_color_scheme_conversion() {
-    let scheme = ColorScheme::ascii_dark();
+    let scheme = ColorScheme::ascii();
     let color: Color = scheme.border.into();
-    assert_eq!(color, Color::Blue); // Should be named color, not RGB
+    assert!(matches!(color, Color::Rgb(100, 149, 237))); // Should be RGB color now
 }
 
 #[test]
 fn test_theme_config_default() {
     let config = ThemeConfig::default();
-    assert_eq!(config.current_theme, Theme::AsciiDark);
+    assert_eq!(config.current_theme, Theme::Ascii);
     assert!(config.custom_themes.is_empty());
 }
 
@@ -23,38 +23,35 @@ fn test_theme_manager_with_temp_config() {
     let config_path = temp_dir.path().join("theme.json");
 
     let mut manager = ThemeManager::with_config_path(config_path.clone()).unwrap();
-    assert_eq!(*manager.get_current_theme(), Theme::AsciiDark);
+    assert_eq!(*manager.get_current_theme(), Theme::Ascii);
 
     // Set theme and verify persistence
-    manager.set_theme(Theme::AsciiLight).unwrap();
-    assert_eq!(*manager.get_current_theme(), Theme::AsciiLight);
+    let custom_scheme = ColorScheme::ascii();
+    manager.add_custom_theme("test_theme".to_string(), custom_scheme).unwrap();
+    manager.set_theme(Theme::Custom("test_theme".to_string())).unwrap();
+    assert_eq!(*manager.get_current_theme(), Theme::Custom("test_theme".to_string()));
 
     // Create new manager with same config path
     let manager2 = ThemeManager::with_config_path(config_path).unwrap();
-    assert_eq!(*manager2.get_current_theme(), Theme::AsciiLight);
+    assert_eq!(*manager2.get_current_theme(), Theme::Custom("test_theme".to_string()));
 }
 
 #[test]
 fn test_predefined_themes() {
-    let ascii_dark = ColorScheme::ascii_dark();
-    let ascii_light = ColorScheme::ascii_light();
+    let ascii = ColorScheme::ascii();
+    let custom_scheme = ColorScheme::ascii();
 
-    // Test that themes are different by converting to Color
-    let ascii_dark_bg: Color = ascii_dark.background.clone().into();
-    let ascii_light_bg: Color = ascii_light.background.clone().into();
-    assert_ne!(ascii_dark_bg, ascii_light_bg);
+    // Test that color conversion works
+    let ascii_bg: Color = ascii.background.clone().into();
+    let ascii_text: Color = ascii.text.clone().into();
 
-    let ascii_dark_text: Color = ascii_dark.text.clone().into();
-    let ascii_light_text: Color = ascii_light.text.clone().into();
-    assert_ne!(ascii_dark_text, ascii_light_text);
+    // Should be RGB colors now
+    matches!(ascii_bg, Color::Rgb(0, 0, 0));
+    matches!(ascii_text, Color::Rgb(255, 255, 255));
 
-    // ASCII dark should use black background, white text
-    assert_eq!(ascii_dark_bg, Color::Black);
-    assert_eq!(ascii_dark_text, Color::White);
-
-    // ASCII light theme should use white background, black text
-    assert_eq!(ascii_light_bg, Color::White);
-    assert_eq!(ascii_light_text, Color::Black);
+    // ASCII theme should use RGB colors
+    assert!(matches!(ascii_bg, Color::Rgb(0, 0, 0))); // Black background
+    assert!(matches!(ascii_text, Color::Rgb(255, 255, 255))); // White text
 }
 
 #[test]
@@ -64,7 +61,7 @@ fn test_custom_themes() {
 
     let mut manager = ThemeManager::with_config_path(config_path).unwrap();
 
-    let custom_scheme = ColorScheme::ascii_dark();
+    let custom_scheme = ColorScheme::ascii();
     manager.add_custom_theme("my_theme".to_string(), custom_scheme).unwrap();
 
     let themes = manager.list_themes();
@@ -81,26 +78,22 @@ fn test_theme_list_includes_all_predefined() {
     let manager = ThemeManager::with_config_path(config_path).unwrap();
 
     let themes = manager.list_themes();
-    assert!(themes.contains(&"ascii_dark".to_string()));
-    assert!(themes.contains(&"ascii_light".to_string()));
+    assert!(themes.contains(&"ascii".to_string()));
 }
 
 #[test]
 fn test_theme_file_parsing() {
     // Test that the embedded JSON files can be parsed correctly
-    let ascii_dark_json = include_str!("../../../assets/themes/ascii_dark.json");
-    let theme_file: ThemeFile = serde_json::from_str(ascii_dark_json).unwrap();
+    let ascii_json = include_str!("../../../assets/themes/ascii.json");
+    let theme_file: ThemeFile = serde_json::from_str(ascii_json).unwrap();
 
-    assert_eq!(theme_file.name, "ASCII Dark");
+    assert_eq!(theme_file.name, "ASCII");
     assert!(theme_file.description.contains("ASCII"));
     assert!(theme_file.colors.contains_key("border"));
     assert!(theme_file.colors.contains_key("background"));
 
-    let ascii_light_json = include_str!("../../../assets/themes/ascii_light.json");
-    let ascii_light_theme: ThemeFile = serde_json::from_str(ascii_light_json).unwrap();
-
-    assert_eq!(ascii_light_theme.name, "ASCII Light");
-    assert!(ascii_light_theme.description.contains("ASCII"));
+    // Test that description is appropriate
+    assert!(theme_file.description.contains("Modern"));
 }
 
 #[test]
@@ -129,20 +122,18 @@ fn test_color_scheme_from_theme_file() {
 #[test]
 fn test_embedded_themes_load_correctly() {
     // Test that both embedded themes load without panicking
-    let ascii_dark_scheme = ColorScheme::ascii_dark();
-    let ascii_light_scheme = ColorScheme::ascii_light();
+    let ascii_scheme = ColorScheme::ascii();
 
-    // Verify they're different
-    let ascii_dark_bg: Color = ascii_dark_scheme.background.clone().into();
-    let ascii_light_bg: Color = ascii_light_scheme.background.clone().into();
-    assert_ne!(ascii_dark_bg, ascii_light_bg);
+    // Verify RGB color loading
+    let ascii_bg: Color = ascii_scheme.background.clone().into();
+    assert!(matches!(ascii_bg, Color::Rgb(0, 0, 0)));
 
     // Test some specific colors to ensure JSON loading worked
-    let ascii_dark_bg: Color = ascii_dark_scheme.background.into();
-    let ascii_light_bg: Color = ascii_light_scheme.background.into();
+    let ascii_bg: Color = ascii_scheme.background.into();
+    let ascii_text: Color = ascii_scheme.text.into();
 
-    assert_eq!(ascii_dark_bg, Color::Black); // ASCII Dark should have black background
-    assert_eq!(ascii_light_bg, Color::White); // ASCII Light should have white background
+    assert!(matches!(ascii_bg, Color::Rgb(0, 0, 0))); // Should be RGB black
+    assert!(matches!(ascii_text, Color::Rgb(255, 255, 255))); // Should be RGB white
 }
 
 #[test]

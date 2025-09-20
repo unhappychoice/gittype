@@ -66,7 +66,7 @@ impl LanguagesView {
             .style(Style::default().fg(Colors::text()))
             .highlight_style(
                 Style::default()
-                    .bg(Colors::muted())
+                    .bg(Colors::background_secondary())
                     .add_modifier(Modifier::BOLD),
             )
             .highlight_symbol("► ");
@@ -315,9 +315,9 @@ impl LanguagesView {
                 ]),
                 Line::from(vec![
                     Span::raw("  "),
-                    Span::styled("Use ", Style::default().fg(Colors::muted())),
+                    Span::styled("Use ", Style::default().fg(Colors::text_secondary())),
                     Span::styled("↑↓ / JK", Style::default().fg(Colors::accuracy())),
-                    Span::styled(" to navigate languages", Style::default().fg(Colors::muted())),
+                    Span::styled(" to navigate languages", Style::default().fg(Colors::text_secondary())),
                 ]),
             ]);
 
@@ -327,7 +327,7 @@ impl LanguagesView {
                 Line::from(""),
                 Line::from(vec![
                     Span::raw("  "),
-                    Span::styled("No Language Selected", Style::default().fg(Colors::muted())),
+                    Span::styled("No Language Selected", Style::default().fg(Colors::text_secondary())),
                 ]),
                 Line::from(""),
                 Line::from(vec![

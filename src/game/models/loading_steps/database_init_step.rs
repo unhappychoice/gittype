@@ -27,7 +27,7 @@ impl Step for DatabaseInitStep {
         } else if is_current {
             ("💾", Colors::warning())
         } else {
-            ("◦", Colors::muted())
+            ("◦", Colors::text_secondary())
         }
     }
 

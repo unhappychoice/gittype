@@ -121,7 +121,7 @@ impl AnimationScreen {
                 let dots = ".".repeat(animation.get_pause_dots());
                 lines.push(Line::from(Span::styled(
                     dots,
-                    Style::default().fg(Colors::secondary()),
+                    Style::default().fg(Colors::text_secondary()),
                 )));
 
                 let paragraph = Paragraph::new(Text::from(lines)).alignment(Alignment::Center);
@@ -152,7 +152,7 @@ impl AnimationScreen {
         };
 
         let skip_paragraph =
-            Paragraph::new(skip_text).style(Style::default().fg(Colors::secondary()));
+            Paragraph::new(skip_text).style(Style::default().fg(Colors::text_secondary()));
 
         frame.render_widget(skip_paragraph, skip_area);
     }

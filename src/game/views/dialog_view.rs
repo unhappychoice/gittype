@@ -48,8 +48,7 @@ impl DialogView {
                     Span::styled(
                         "[S] ",
                         Style::default()
-                            .fg(Colors::muted())
-                            .add_modifier(Modifier::DIM),
+                            .fg(Colors::text_secondary())
                     )
                 },
                 if skips_remaining > 0 {
@@ -61,8 +60,7 @@ impl DialogView {
                     Span::styled(
                         "No skips remaining",
                         Style::default()
-                            .fg(Colors::muted())
-                            .add_modifier(Modifier::DIM),
+                            .fg(Colors::text_secondary())
                     )
                 },
             ]),
@@ -79,7 +77,7 @@ impl DialogView {
                 Span::styled(
                     "[ESC] ",
                     Style::default()
-                        .fg(Colors::action_key())
+                        .fg(Colors::key_action())
                         .add_modifier(Modifier::BOLD),
                 ),
                 Span::styled("Back to game", Style::default().fg(Colors::text())),
@@ -94,7 +92,7 @@ impl DialogView {
                     .title("Game Options")
                     .title_style(
                         Style::default()
-                            .fg(Colors::action_key())
+                            .fg(Colors::key_action())
                             .add_modifier(Modifier::BOLD),
                     )
                     .border_style(Style::default().fg(Colors::border())),

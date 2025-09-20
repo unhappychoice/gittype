@@ -44,7 +44,7 @@ impl GitRepositoryView {
             execute!(stdout, MoveTo(git_col, bottom_row))?;
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::muted()))
+                SetForegroundColor(Colors::to_crossterm(Colors::text_secondary()))
             )?;
             execute!(stdout, Print(&git_text))?;
             execute!(stdout, ResetColor)?;

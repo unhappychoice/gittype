@@ -26,7 +26,7 @@ impl Step for ExtractingStep {
         } else if is_current {
             ("⚡", Colors::warning())
         } else {
-            ("◦", Colors::muted())
+            ("◦", Colors::text_secondary())
         }
     }
 

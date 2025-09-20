@@ -93,14 +93,14 @@ impl TrendsView {
             .x_axis(
                 Axis::default()
                     .title("Date")
-                    .style(Style::default().fg(Colors::secondary()))
+                    .style(Style::default().fg(Colors::text_secondary()))
                     .labels(x_labels)
                     .bounds([0.0, (data.cpm_trend.len().saturating_sub(1)) as f64]),
             )
             .y_axis(
                 Axis::default()
                     .title("CPM")
-                    .style(Style::default().fg(Colors::secondary()))
+                    .style(Style::default().fg(Colors::text_secondary()))
                     .bounds([min_cpm - cpm_range * 0.1, max_cpm + cpm_range * 0.1])
                     .labels(vec![
                         Span::styled(format!("{:.0}", min_cpm), Style::default().fg(Colors::text())),
@@ -182,14 +182,14 @@ impl TrendsView {
             .x_axis(
                 Axis::default()
                     .title("Date")
-                    .style(Style::default().fg(Colors::secondary()))
+                    .style(Style::default().fg(Colors::text_secondary()))
                     .labels(x_labels)
                     .bounds([0.0, (data.accuracy_trend.len().saturating_sub(1)) as f64]),
             )
             .y_axis(
                 Axis::default()
                     .title("Accuracy (%)")
-                    .style(Style::default().fg(Colors::secondary()))
+                    .style(Style::default().fg(Colors::text_secondary()))
                     .bounds([
                         min_accuracy - accuracy_range * 0.1,
                         max_accuracy + accuracy_range * 0.1,

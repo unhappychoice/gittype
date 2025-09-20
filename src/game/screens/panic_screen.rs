@@ -146,7 +146,7 @@ impl PanicScreen {
 
         // Render ESC key at the bottom (no border, consistent with other screens)
         let esc_instruction = Paragraph::new(Line::from(vec![
-            Span::styled("[ESC]", Style::default().fg(Colors::back_key())),
+            Span::styled("[ESC]", Style::default().fg(Colors::key_back())),
             Span::raw(" Exit"),
         ]))
         .alignment(Alignment::Center);

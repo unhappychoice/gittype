@@ -18,7 +18,7 @@ impl StageDetailsView {
     ) {
         if stage_results.is_empty() {
             let empty_msg = Paragraph::new("No stage data available")
-                .style(Style::default().fg(Colors::muted()))
+                .style(Style::default().fg(Colors::text_secondary()))
                 .alignment(ratatui::layout::Alignment::Center)
                 .block(
                     Block::default()
@@ -50,11 +50,11 @@ impl StageDetailsView {
             };
 
             let status_color = if stage.was_failed {
-                Colors::failed()
+                Colors::error()
             } else if stage.was_skipped {
-                Colors::skipped()
+                Colors::warning()
             } else {
-                Colors::completed()
+                Colors::success()
             };
 
             stage_text_lines.push(Line::from(vec![

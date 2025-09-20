@@ -83,7 +83,7 @@ impl VersionCheckView {
             Line::from("curl -sSL https://raw.githubusercontent.com/unhappychoice/gittype/main/install.sh | bash"),
         ];
         let install_para = Paragraph::new(install_text)
-            .style(Style::default().fg(Colors::secondary()))
+            .style(Style::default().fg(Colors::text_secondary()))
             .wrap(Wrap { trim: true });
         f.render_widget(install_para, chunks[3]);
 
