@@ -1,0 +1,29 @@
+{
+  "name": "ASCII",
+  "description": "Classic terminal color scheme with ASCII-style colors on dark background",
+  "colors": {
+    "border": "blue",
+    "title": "white",
+    "text": "white",
+    "text_secondary": "dark_gray",
+    "background": "black",
+    "background_secondary": "dark_gray",
+    "status_success": "green",
+    "status_info": "cyan",
+    "status_warning": "yellow",
+    "status_error": "red",
+    "key_back": "red",
+    "key_action": "light_blue",
+    "key_navigation": "light_blue",
+    "metrics_score": "magenta",
+    "metrics_cpm_wpm": "green",
+    "metrics_accuracy": "yellow",
+    "metrics_duration": "cyan",
+    "metrics_stage_info": "blue",
+    "typing_untyped_text": "white",
+    "typing_typed_text": "light_blue",
+    "typing_cursor_fg": "black",
+    "typing_cursor_bg": "white",
+    "typing_mistake_bg": "red"
+  }
+}

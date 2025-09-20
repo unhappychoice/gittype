@@ -1,0 +1,19 @@
+{
+  "lang_rust": "yellow",
+  "lang_python": "yellow",
+  "lang_javascript": "yellow",
+  "lang_typescript": "blue",
+  "lang_go": "cyan",
+  "lang_java": "red",
+  "lang_c": "gray",
+  "lang_cpp": "blue",
+  "lang_csharp": "magenta",
+  "lang_php": "light_blue",
+  "lang_ruby": "red",
+  "lang_swift": "red",
+  "lang_kotlin": "magenta",
+  "lang_scala": "red",
+  "lang_haskell": "magenta",
+  "lang_dart": "cyan",
+  "lang_default": "white"
+}
