@@ -1,4 +1,4 @@
-use crate::cli::args::{CacheCommands, Cli, Commands, RepoCommands};
+use crate::cli::args::{CacheCommands, Cli, Commands, RepoCommands, ThemeCommands};
 use crate::cli::commands::{
     run_export, run_game_session, run_history, run_repo_clear, run_repo_list, run_repo_play,
     run_stats,
@@ -20,6 +20,7 @@ pub async fn run_cli(cli: Cli) -> Result<()> {
         Some(Commands::Export { format, output }) => run_export(format.clone(), output.clone()),
         Some(Commands::Cache { cache_command }) => run_cache_command(cache_command),
         Some(Commands::Repo { repo_command }) => run_repo_command(repo_command),
+        Some(Commands::Theme { theme_command }) => run_theme_command(theme_command),
         None => run_game_session(cli),
     }
 }
@@ -93,4 +94,51 @@ fn run_repo_command(repo_command: &RepoCommands) -> Result<()> {
         RepoCommands::Clear { force } => run_repo_clear(*force),
         RepoCommands::Play => run_repo_play(),
     }
+}
+
+fn run_theme_command(theme_command: &ThemeCommands) -> Result<()> {
+    use crate::config::{Theme, ThemeManager};
+
+    let mut theme_manager = ThemeManager::new()
+        .map_err(|e| crate::GitTypeError::TerminalError(e.to_string()))?;
+
+    match theme_command {
+        ThemeCommands::List => {
+            println!("Available themes:");
+            for theme in theme_manager.list_themes() {
+                let current_indicator = if *theme_manager.get_current_theme() == match theme.as_str() {
+                    "ascii_dark" => Theme::AsciiDark,
+                    "ascii_light" => Theme::AsciiLight,
+                    name => Theme::Custom(name.to_string()),
+                } {
+                    " (current)"
+                } else {
+                    ""
+                };
+                println!("  {}{}", theme, current_indicator);
+            }
+        }
+        ThemeCommands::Set { theme } => {
+            let theme_enum = match theme.as_str() {
+                "ascii_dark" => Theme::AsciiDark,
+                "ascii_light" => Theme::AsciiLight,
+                name => Theme::Custom(name.to_string()),
+            };
+
+            theme_manager.set_theme(theme_enum)
+                .map_err(|e| crate::GitTypeError::TerminalError(e.to_string()))?;
+
+            println!("Theme set to: {}", theme);
+        }
+        ThemeCommands::Current => {
+            let current = match theme_manager.get_current_theme() {
+                Theme::AsciiDark => "ascii_dark",
+                Theme::AsciiLight => "ascii_light",
+                Theme::Custom(name) => name,
+            };
+            println!("Current theme: {}", current);
+        }
+    }
+
+    Ok(())
 }

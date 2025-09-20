@@ -26,6 +26,13 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
         return Ok(());
     }
 
+    // Initialize theme manager
+    if let Err(e) = crate::ui::Colors::init_theme_manager(cli.config.clone()) {
+        log::warn!("Failed to initialize theme manager: {}", e);
+        eprintln!("⚠️ Warning: Failed to load theme configuration: {}", e);
+        eprintln!("   Using default theme.");
+    }
+
     // Session repository will be initialized in DatabaseInitStep during loading screen
 
     let mut options = ExtractionOptions::default();

@@ -80,6 +80,11 @@ pub enum Commands {
         #[command(subcommand)]
         repo_command: RepoCommands,
     },
+    /// Manage color themes
+    Theme {
+        #[command(subcommand)]
+        theme_command: ThemeCommands,
+    },
 }
 
 #[derive(Subcommand)]
@@ -103,4 +108,17 @@ pub enum RepoCommands {
     },
     /// Play a cached repository interactively
     Play,
+}
+
+#[derive(Subcommand)]
+pub enum ThemeCommands {
+    /// List available themes
+    List,
+    /// Set the current theme
+    Set {
+        /// Theme name (ascii_color, light, or custom theme name)
+        theme: String,
+    },
+    /// Show current theme
+    Current,
 }

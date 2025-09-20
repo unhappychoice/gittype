@@ -1,79 +1,178 @@
 use ratatui::style::Color;
+use crate::config::{ColorScheme, ThemeManager};
+use once_cell::sync::Lazy;
+use std::sync::Mutex;
+
+static THEME_MANAGER: Lazy<Mutex<Option<ThemeManager>>> = Lazy::new(|| Mutex::new(None));
 
 /// UI color scheme for gittype application
 pub struct Colors;
 
 impl Colors {
+    /// Initialize the theme manager with optional config path
+    pub fn init_theme_manager(config_path: Option<std::path::PathBuf>) -> anyhow::Result<()> {
+        let mut theme_manager = THEME_MANAGER.lock().unwrap();
+        *theme_manager = Some(if let Some(path) = config_path {
+            ThemeManager::with_config_path(path)?
+        } else {
+            ThemeManager::new()?
+        });
+        Ok(())
+    }
+
+    /// Get the current color scheme
+    fn get_color_scheme() -> ColorScheme {
+        THEME_MANAGER
+            .lock()
+            .unwrap()
+            .as_ref()
+            .map(|tm| tm.get_color_scheme())
+            .unwrap_or_else(ColorScheme::ascii_dark)
+    }
+
     // Primary colors for main UI elements
+    pub fn border() -> Color { Self::get_color_scheme().border.into() }
+    pub fn title() -> Color { Self::get_color_scheme().title.into() }
+    pub fn text() -> Color { Self::get_color_scheme().text.into() }
+    pub fn background() -> Color { Self::get_color_scheme().background.into() }
+
+    // Status and feedback colors
+    pub fn success() -> Color { Self::get_color_scheme().success.into() }
+    pub fn error() -> Color { Self::get_color_scheme().error.into() }
+    pub fn warning() -> Color { Self::get_color_scheme().warning.into() }
+    pub fn info() -> Color { Self::get_color_scheme().info.into() }
+
+    // Specific UI element colors
+    pub fn back_key() -> Color { Self::get_color_scheme().back_key.into() }
+    pub fn action_key() -> Color { Self::get_color_scheme().action_key.into() }
+    pub fn navigation_key() -> Color { Self::get_color_scheme().navigation_key.into() }
+    pub fn highlight() -> Color { Self::get_color_scheme().highlight.into() }
+
+    // Metrics and performance colors
+    pub fn score() -> Color { Self::get_color_scheme().score.into() }
+    pub fn cpm_wpm() -> Color { Self::get_color_scheme().cpm_wpm.into() }
+    pub fn accuracy() -> Color { Self::get_color_scheme().accuracy.into() }
+    pub fn duration() -> Color { Self::get_color_scheme().duration.into() }
+    pub fn stage_info() -> Color { Self::get_color_scheme().stage_info.into() }
+
+    // Typing interface colors
+    pub fn typed_text() -> Color { Self::get_color_scheme().typed_text.into() }
+    pub fn current_cursor() -> Color { Self::get_color_scheme().current_cursor.into() }
+    pub fn cursor_bg() -> Color { Self::get_color_scheme().cursor_bg.into() }
+    pub fn mistake_bg() -> Color { Self::get_color_scheme().mistake_bg.into() }
+    pub fn untyped_text() -> Color { Self::get_color_scheme().untyped_text.into() }
+    pub fn comment_text() -> Color { Self::get_color_scheme().comment_text.into() }
+
+    // Context and secondary elements
+    pub fn secondary() -> Color { Self::get_color_scheme().secondary.into() }
+    pub fn muted() -> Color { Self::get_color_scheme().muted.into() }
+
+    // Status-specific colors
+    pub fn completed() -> Color { Self::get_color_scheme().completed.into() }
+    pub fn skipped() -> Color { Self::get_color_scheme().skipped.into() }
+    pub fn failed() -> Color { Self::get_color_scheme().failed.into() }
+
+    // Countdown colors
+    pub fn countdown_3() -> Color { Self::get_color_scheme().countdown_3.into() }
+    pub fn countdown_2() -> Color { Self::get_color_scheme().countdown_2.into() }
+    pub fn countdown_1() -> Color { Self::get_color_scheme().countdown_1.into() }
+    pub fn countdown_go() -> Color { Self::get_color_scheme().countdown_go.into() }
+
+    // Progress bar colors
+    pub fn progress_bar() -> Color { Self::get_color_scheme().progress_bar.into() }
+    pub fn progress_bg() -> Color { Self::get_color_scheme().progress_bg.into() }
+
+    // Programming language colors
+    pub fn lang_rust() -> Color { Self::get_color_scheme().lang_rust.into() }
+    pub fn lang_python() -> Color { Self::get_color_scheme().lang_python.into() }
+    pub fn lang_javascript() -> Color { Self::get_color_scheme().lang_javascript.into() }
+    pub fn lang_typescript() -> Color { Self::get_color_scheme().lang_typescript.into() }
+    pub fn lang_go() -> Color { Self::get_color_scheme().lang_go.into() }
+    pub fn lang_java() -> Color { Self::get_color_scheme().lang_java.into() }
+    pub fn lang_c() -> Color { Self::get_color_scheme().lang_c.into() }
+    pub fn lang_cpp() -> Color { Self::get_color_scheme().lang_cpp.into() }
+    pub fn lang_csharp() -> Color { Self::get_color_scheme().lang_csharp.into() }
+    pub fn lang_php() -> Color { Self::get_color_scheme().lang_php.into() }
+    pub fn lang_ruby() -> Color { Self::get_color_scheme().lang_ruby.into() }
+    pub fn lang_swift() -> Color { Self::get_color_scheme().lang_swift.into() }
+    pub fn lang_kotlin() -> Color { Self::get_color_scheme().lang_kotlin.into() }
+    pub fn lang_scala() -> Color { Self::get_color_scheme().lang_scala.into() }
+    pub fn lang_haskell() -> Color { Self::get_color_scheme().lang_haskell.into() }
+    pub fn lang_dart() -> Color { Self::get_color_scheme().lang_dart.into() }
+    pub fn lang_default() -> Color { Self::get_color_scheme().lang_default.into() }
+
+    /// Set the current theme
+    pub fn set_theme(theme: crate::config::Theme) -> anyhow::Result<()> {
+        THEME_MANAGER
+            .lock()
+            .unwrap()
+            .as_mut()
+            .ok_or_else(|| anyhow::anyhow!("Theme manager not initialized"))?
+            .set_theme(theme)
+    }
+
+    /// Get list of available themes
+    pub fn list_themes() -> Vec<String> {
+        THEME_MANAGER
+            .lock()
+            .unwrap()
+            .as_ref()
+            .map(|tm| tm.list_themes())
+            .unwrap_or_else(|| vec!["ascii_dark".to_string()])
+    }
+
+    // Backward compatibility constants for existing code
     pub const BORDER: Color = Color::Blue;
     pub const TITLE: Color = Color::White;
     pub const TEXT: Color = Color::White;
     pub const BACKGROUND: Color = Color::Black;
-
-    // Status and feedback colors
     pub const SUCCESS: Color = Color::Green;
     pub const ERROR: Color = Color::Red;
     pub const WARNING: Color = Color::Yellow;
     pub const INFO: Color = Color::Cyan;
-
-    // Specific UI element colors
     pub const BACK_KEY: Color = Color::Red;
     pub const ACTION_KEY: Color = Color::LightBlue;
     pub const NAVIGATION_KEY: Color = Color::LightBlue;
     pub const HIGHLIGHT: Color = Color::Cyan;
-
-    // Metrics and performance colors (from session_detail_screen.rs)
     pub const SCORE: Color = Color::Magenta;
     pub const CPM_WPM: Color = Color::Green;
     pub const ACCURACY: Color = Color::Yellow;
     pub const DURATION: Color = Color::Cyan;
     pub const STAGE_INFO: Color = Color::Blue;
-
-    // Typing interface colors
     pub const TYPED_TEXT: Color = Color::LightBlue;
     pub const CURRENT_CURSOR: Color = Color::White;
     pub const CURSOR_BG: Color = Color::DarkGray;
     pub const MISTAKE_BG: Color = Color::Red;
     pub const UNTYPED_TEXT: Color = Color::White;
     pub const COMMENT_TEXT: Color = Color::DarkGray;
-
-    // Context and secondary elements
     pub const SECONDARY: Color = Color::DarkGray;
     pub const MUTED: Color = Color::DarkGray;
-
-    // Status-specific colors
     pub const COMPLETED: Color = Color::Green;
     pub const SKIPPED: Color = Color::Yellow;
     pub const FAILED: Color = Color::Red;
-
-    // Countdown colors
     pub const COUNTDOWN_3: Color = Color::Magenta;
     pub const COUNTDOWN_2: Color = Color::Cyan;
     pub const COUNTDOWN_1: Color = Color::Yellow;
     pub const COUNTDOWN_GO: Color = Color::Green;
-
-    // Progress bar colors
     pub const PROGRESS_BAR: Color = Color::Cyan;
     pub const PROGRESS_BG: Color = Color::DarkGray;
-
-    // Programming language colors - distinct and accessible
-    pub const LANG_RUST: Color = Color::Rgb(222, 165, 132); // Rust orange
-    pub const LANG_PYTHON: Color = Color::Rgb(255, 212, 59); // Python yellow
-    pub const LANG_JAVASCRIPT: Color = Color::Rgb(240, 219, 79); // JS yellow
-    pub const LANG_TYPESCRIPT: Color = Color::Rgb(49, 120, 198); // TS blue
-    pub const LANG_GO: Color = Color::Rgb(0, 173, 181); // Go cyan
-    pub const LANG_JAVA: Color = Color::Rgb(237, 41, 57); // Java red
-    pub const LANG_C: Color = Color::Rgb(85, 85, 85); // C gray
-    pub const LANG_CPP: Color = Color::Rgb(0, 89, 156); // C++ blue
-    pub const LANG_CSHARP: Color = Color::Rgb(239, 117, 27); // C# orange
-    pub const LANG_PHP: Color = Color::Rgb(119, 123, 180); // PHP purple
-    pub const LANG_RUBY: Color = Color::Rgb(204, 52, 45); // Ruby red
-    pub const LANG_SWIFT: Color = Color::Rgb(250, 109, 63); // Swift orange
-    pub const LANG_KOTLIN: Color = Color::Rgb(124, 75, 255); // Kotlin purple
-    pub const LANG_SCALA: Color = Color::Rgb(220, 50, 47); // Scala red
-    pub const LANG_HASKELL: Color = Color::Rgb(94, 80, 134); // Haskell purple
-    pub const LANG_DART: Color = Color::Rgb(0, 180, 240); // Dart blue
-    pub const LANG_DEFAULT: Color = Color::White; // Default for unknown languages
+    pub const LANG_RUST: Color = Color::Rgb(222, 165, 132);
+    pub const LANG_PYTHON: Color = Color::Rgb(255, 212, 59);
+    pub const LANG_JAVASCRIPT: Color = Color::Rgb(240, 219, 79);
+    pub const LANG_TYPESCRIPT: Color = Color::Rgb(49, 120, 198);
+    pub const LANG_GO: Color = Color::Rgb(0, 173, 181);
+    pub const LANG_JAVA: Color = Color::Rgb(237, 41, 57);
+    pub const LANG_C: Color = Color::Rgb(85, 85, 85);
+    pub const LANG_CPP: Color = Color::Rgb(0, 89, 156);
+    pub const LANG_CSHARP: Color = Color::Rgb(239, 117, 27);
+    pub const LANG_PHP: Color = Color::Rgb(119, 123, 180);
+    pub const LANG_RUBY: Color = Color::Rgb(204, 52, 45);
+    pub const LANG_SWIFT: Color = Color::Rgb(250, 109, 63);
+    pub const LANG_KOTLIN: Color = Color::Rgb(124, 75, 255);
+    pub const LANG_SCALA: Color = Color::Rgb(220, 50, 47);
+    pub const LANG_HASKELL: Color = Color::Rgb(94, 80, 134);
+    pub const LANG_DART: Color = Color::Rgb(0, 180, 240);
+    pub const LANG_DEFAULT: Color = Color::White;
 }
 
 impl Colors {
