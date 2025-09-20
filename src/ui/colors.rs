@@ -26,61 +26,48 @@ impl Colors {
             .lock()
             .unwrap()
             .as_ref()
-            .map(|tm| tm.get_color_scheme())
-            .unwrap_or_else(ColorScheme::ascii_dark)
+            .map(|tm| tm.get_color_scheme().clone())
+            .unwrap_or_else(|| ColorScheme::dark())
     }
 
     // Primary colors for main UI elements
     pub fn border() -> Color { Self::get_color_scheme().border.into() }
     pub fn title() -> Color { Self::get_color_scheme().title.into() }
     pub fn text() -> Color { Self::get_color_scheme().text.into() }
+    pub fn text_secondary() -> Color { Self::get_color_scheme().text_secondary.into() }
     pub fn background() -> Color { Self::get_color_scheme().background.into() }
+    pub fn background_secondary() -> Color { Self::get_color_scheme().background_secondary.into() }
 
     // Status and feedback colors
-    pub fn success() -> Color { Self::get_color_scheme().success.into() }
-    pub fn error() -> Color { Self::get_color_scheme().error.into() }
-    pub fn warning() -> Color { Self::get_color_scheme().warning.into() }
-    pub fn info() -> Color { Self::get_color_scheme().info.into() }
+    pub fn success() -> Color { Self::get_color_scheme().status_success.into() }
+    pub fn info() -> Color { Self::get_color_scheme().status_info.into() }
+    pub fn error() -> Color { Self::get_color_scheme().status_error.into() }
+    pub fn warning() -> Color { Self::get_color_scheme().status_warning.into() }
 
     // Specific UI element colors
-    pub fn back_key() -> Color { Self::get_color_scheme().back_key.into() }
-    pub fn action_key() -> Color { Self::get_color_scheme().action_key.into() }
-    pub fn navigation_key() -> Color { Self::get_color_scheme().navigation_key.into() }
-    pub fn highlight() -> Color { Self::get_color_scheme().highlight.into() }
+    pub fn key_action() -> Color { Self::get_color_scheme().key_action.into() }
+    pub fn key_navigation() -> Color { Self::get_color_scheme().key_navigation.into() }
+    pub fn key_back() -> Color { Self::get_color_scheme().key_back.into() }
 
     // Metrics and performance colors
-    pub fn score() -> Color { Self::get_color_scheme().score.into() }
-    pub fn cpm_wpm() -> Color { Self::get_color_scheme().cpm_wpm.into() }
-    pub fn accuracy() -> Color { Self::get_color_scheme().accuracy.into() }
-    pub fn duration() -> Color { Self::get_color_scheme().duration.into() }
-    pub fn stage_info() -> Color { Self::get_color_scheme().stage_info.into() }
+    pub fn score() -> Color { Self::get_color_scheme().metrics_score.into() }
+    pub fn cpm_wpm() -> Color { Self::get_color_scheme().metrics_cpm_wpm.into() }
+    pub fn accuracy() -> Color { Self::get_color_scheme().metrics_accuracy.into() }
+    pub fn duration() -> Color { Self::get_color_scheme().metrics_duration.into() }
+    pub fn stage_info() -> Color { Self::get_color_scheme().metrics_stage_info.into() }
 
     // Typing interface colors
-    pub fn typed_text() -> Color { Self::get_color_scheme().typed_text.into() }
-    pub fn current_cursor() -> Color { Self::get_color_scheme().current_cursor.into() }
-    pub fn cursor_bg() -> Color { Self::get_color_scheme().cursor_bg.into() }
-    pub fn mistake_bg() -> Color { Self::get_color_scheme().mistake_bg.into() }
-    pub fn untyped_text() -> Color { Self::get_color_scheme().untyped_text.into() }
-    pub fn comment_text() -> Color { Self::get_color_scheme().comment_text.into() }
+    pub fn typed_text() -> Color { Self::get_color_scheme().typing_typed_text.into() }
+    pub fn current_cursor() -> Color { Self::get_color_scheme().typing_current_cursor.into() }
+    pub fn cursor_bg() -> Color { Self::get_color_scheme().typing_cursor_bg.into() }
+    pub fn mistake_bg() -> Color { Self::get_color_scheme().typing_mistake_bg.into() }
+    pub fn untyped_text() -> Color { Self::get_color_scheme().typing_untyped_text.into() }
 
-    // Context and secondary elements
-    pub fn secondary() -> Color { Self::get_color_scheme().secondary.into() }
-    pub fn muted() -> Color { Self::get_color_scheme().muted.into() }
-
-    // Status-specific colors
-    pub fn completed() -> Color { Self::get_color_scheme().completed.into() }
-    pub fn skipped() -> Color { Self::get_color_scheme().skipped.into() }
-    pub fn failed() -> Color { Self::get_color_scheme().failed.into() }
-
-    // Countdown colors
-    pub fn countdown_3() -> Color { Self::get_color_scheme().countdown_3.into() }
-    pub fn countdown_2() -> Color { Self::get_color_scheme().countdown_2.into() }
-    pub fn countdown_1() -> Color { Self::get_color_scheme().countdown_1.into() }
-    pub fn countdown_go() -> Color { Self::get_color_scheme().countdown_go.into() }
-
-    // Progress bar colors
-    pub fn progress_bar() -> Color { Self::get_color_scheme().progress_bar.into() }
-    pub fn progress_bg() -> Color { Self::get_color_scheme().progress_bg.into() }
+    // Countdown colors - using status colors in sequence
+    pub fn countdown_3() -> Color { Self::success() }
+    pub fn countdown_2() -> Color { Self::info() }
+    pub fn countdown_1() -> Color { Self::warning() }
+    pub fn countdown_go() -> Color { Self::error() }
 
     // Programming language colors
     pub fn lang_rust() -> Color { Self::get_color_scheme().lang_rust.into() }
@@ -111,16 +98,35 @@ impl Colors {
             .set_theme(theme)
     }
 
+    /// Set theme by name (for in-game use)
+    pub fn set_theme_by_name(theme_name: &str) -> anyhow::Result<()> {
+        THEME_MANAGER
+            .lock()
+            .unwrap()
+            .as_mut()
+            .ok_or_else(|| anyhow::anyhow!("Theme manager not initialized"))?
+            .set_theme_by_name(theme_name)
+    }
+
+    /// Get current theme name
+    pub fn get_current_theme_name() -> String {
+        THEME_MANAGER
+            .lock()
+            .unwrap()
+            .as_ref()
+            .map(|tm| tm.get_current_theme_name())
+            .unwrap_or_else(|| "dark".to_string())
+    }
+
     /// Get list of available themes
     pub fn list_themes() -> Vec<String> {
         THEME_MANAGER
             .lock()
             .unwrap()
             .as_ref()
-            .map(|tm| tm.list_themes())
-            .unwrap_or_else(|| vec!["ascii_dark".to_string()])
+            .map(|tm| tm.get_available_themes())
+            .unwrap_or_else(|| vec!["dark".to_string()])
     }
-
 }
 
 impl Colors {
