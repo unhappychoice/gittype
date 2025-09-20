@@ -4,7 +4,7 @@ use crate::{
     ui::Colors,
 };
 use ratatui::{
-    style::{Modifier, Style},
+    style::Style,
     text::{Line, Span, Text},
     widgets::{Block, Borders, Paragraph},
     Frame,
@@ -74,7 +74,7 @@ impl TypingContentView {
                         .borders(Borders::ALL)
                         .border_style(Style::default().fg(Colors::border()))
                         .title("Code")
-                        .title_style(Style::default().fg(Colors::action_key()))
+                        .title_style(Style::default().fg(Colors::key_action()))
                         .padding(ratatui::widgets::Padding::uniform(1)),
                 );
             frame.render_widget(content, area);
@@ -84,7 +84,7 @@ impl TypingContentView {
                     .borders(Borders::ALL)
                     .border_style(Style::default().fg(Colors::border()))
                     .title("Code")
-                    .title_style(Style::default().fg(Colors::action_key()))
+                    .title_style(Style::default().fg(Colors::key_action()))
                     .padding(ratatui::widgets::Padding::uniform(1)),
             );
             frame.render_widget(empty_content, area);
@@ -144,13 +144,12 @@ impl TypingContentView {
                 start_line_number.saturating_sub(code_context.pre_context.len() - ctx_idx);
             let line_num_span = Span::styled(
                 format!("{:>4} │ ", ctx_line_number),
-                Style::default().fg(Colors::comment_text()),
+                Style::default().fg(Colors::text_secondary()),
             );
             let content_span = Span::styled(
                 pre_line.clone(),
                 Style::default()
-                    .fg(Colors::comment_text())
-                    .add_modifier(Modifier::DIM),
+                    .fg(Colors::text_secondary())
             );
             lines.push(Line::from(vec![line_num_span, content_span]));
         }
@@ -171,13 +170,12 @@ impl TypingContentView {
             let ctx_line_number = end_line_number + ctx_idx + 1;
             let line_num_span = Span::styled(
                 format!("{:>4} │ ", ctx_line_number),
-                Style::default().fg(Colors::comment_text()),
+                Style::default().fg(Colors::text_secondary()),
             );
             let content_span = Span::styled(
                 post_line.clone(),
                 Style::default()
-                    .fg(Colors::comment_text())
-                    .add_modifier(Modifier::DIM),
+                    .fg(Colors::text_secondary())
             );
             lines.push(Line::from(vec![line_num_span, content_span]));
         }
@@ -350,7 +348,7 @@ impl TypingContentView {
                 .fg(Colors::warning())
                 .add_modifier(ratatui::style::Modifier::BOLD)
         } else {
-            Style::default().fg(Colors::secondary())
+            Style::default().fg(Colors::text_secondary())
         };
         Span::styled(line_num_text, style)
     }
@@ -370,12 +368,10 @@ impl TypingContentView {
     ) -> Style {
         if is_in_comment {
             Style::default()
-                .fg(Colors::comment_text())
-                .add_modifier(Modifier::DIM)
+                .fg(Colors::text_secondary())
         } else if char_index < current_display_position {
             Style::default()
                 .fg(Colors::typed_text())
-                .add_modifier(Modifier::DIM)
         } else if char_index == current_display_position {
             if let Some(mistake_pos) = current_mistake_position {
                 if char_index == mistake_pos {
@@ -388,12 +384,11 @@ impl TypingContentView {
                         .bg(Colors::cursor_bg())
                 }
             } else {
-                Style::default().fg(Colors::text()).bg(Colors::muted())
+                Style::default().fg(Colors::current_cursor()).bg(Colors::cursor_bg())
             }
         } else {
             Style::default()
                 .fg(Colors::untyped_text())
-                .add_modifier(Modifier::DIM)
         }
     }
 

@@ -47,14 +47,14 @@ impl TypingFooterView {
 
         let metrics_widget = Paragraph::new(vec![Line::from(vec![Span::styled(
             metrics_line,
-            Style::default().fg(Colors::muted()),
+            Style::default().fg(Colors::text_secondary()),
         )])])
         .block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Colors::secondary()))
+                .border_style(Style::default().fg(Colors::text_secondary()))
                 .title("Metrics")
-                .title_style(Style::default().fg(Colors::secondary()))
+                .title_style(Style::default().fg(Colors::text_secondary()))
                 .padding(ratatui::widgets::Padding::horizontal(1)),
         );
         frame.render_widget(metrics_widget, area);
@@ -80,11 +80,11 @@ impl TypingFooterView {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::secondary()))
+                    .border_style(Style::default().fg(Colors::text_secondary()))
                     .title("Progress")
-                    .title_style(Style::default().fg(Colors::secondary())),
+                    .title_style(Style::default().fg(Colors::text_secondary())),
             )
-            .gauge_style(Style::default().fg(Colors::progress_bar()))
+            .gauge_style(Style::default().fg(Colors::text_secondary()))
             .percent(progress_percent as u16)
             .label(format!("{}%", progress_percent));
         frame.render_widget(progress_widget, area);
