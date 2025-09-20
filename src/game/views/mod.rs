@@ -7,7 +7,6 @@ pub mod session_detail_dialog;
 pub mod session_failure;
 pub mod session_summary;
 pub mod session_summary_share_screen;
-pub mod stage_renderer_view;
 pub mod stage_summary;
 pub mod title;
 pub mod total_summary;
@@ -27,7 +26,6 @@ pub use session_summary_share_screen::{
     BackOptionView as ShareBackOptionView, PlatformOptionsView as SharePlatformOptionsView,
     PreviewView as SharePreviewView, TitleView as ShareTitleView,
 };
-pub use stage_renderer_view::StageRendererView;
 pub use stage_summary::StageCompletionView;
 pub use total_summary::{AsciiScoreView, StatisticsView};
 pub use total_summary_share::SharingView;
