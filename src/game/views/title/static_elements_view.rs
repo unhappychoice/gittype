@@ -68,8 +68,8 @@ impl StaticElementsView {
         execute!(stdout, Print(" Change Difficulty"))?;
         execute!(stdout, ResetColor)?;
 
-        // Tier 2: Secondary actions (records analytics help)
-        let secondary_display_width = 38u16; // "[R] Records  [A] Analytics  [I/?] Help"
+        // Tier 2: Secondary actions (records analytics settings help)
+        let secondary_display_width = 50u16; // "[R] Records  [A] Analytics  [S] Settings  [I/?] Help"
         let secondary_col = center_col.saturating_sub(secondary_display_width / 2) + 2;
         execute!(stdout, MoveTo(secondary_col, instructions_start_row + 1))?;
         execute!(
@@ -92,6 +92,16 @@ impl StaticElementsView {
             SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(" Analytics  "))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::info()))
+        )?;
+        execute!(stdout, Print("[S]"))?;
+        execute!(
+            stdout,
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
+        )?;
+        execute!(stdout, Print(" Settings  "))?;
         execute!(
             stdout,
             SetForegroundColor(Colors::to_crossterm(Colors::info()))

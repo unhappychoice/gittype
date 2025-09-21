@@ -185,6 +185,9 @@ impl ScreenManager {
             self.register_screen(ScreenType::Analytics, Box::new(analytics_screen));
         }
 
+        // Register Settings screen
+        self.register_screen(ScreenType::Settings, Box::new(crate::game::screens::SettingsScreen::default()));
+
         Ok(())
     }
 
@@ -338,6 +341,7 @@ impl ScreenManager {
             | ScreenType::Loading
             | ScreenType::SessionDetail
             | ScreenType::Typing
+            | ScreenType::Settings
             | ScreenType::Panic => {
                 self.render_backend = RenderBackend::Ratatui;
             }

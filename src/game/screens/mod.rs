@@ -16,6 +16,7 @@ pub mod total_summary_screen;
 pub mod total_summary_share_screen;
 pub mod typing_screen;
 pub mod version_check_screen;
+pub mod settings_screen;
 
 pub use analytics_screen::{AnalyticsAction, AnalyticsScreen};
 pub use animation_screen::AnimationScreen;
@@ -35,3 +36,4 @@ pub use total_summary_screen::{ExitAction, TotalSummaryScreen};
 pub use total_summary_share_screen::{ShareAction, TotalSummaryShareScreen};
 pub use typing_screen::TypingScreen;
 pub use version_check_screen::{VersionCheckResult, VersionCheckScreen};
+pub use settings_screen::SettingsScreen;

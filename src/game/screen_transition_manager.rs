@@ -100,6 +100,14 @@ impl ScreenTransitionManager {
             (ScreenType::VersionCheck, ScreenType::Title) => {}
             (ScreenType::VersionCheck, ScreenType::TotalSummary) => {}
 
+            // From Settings (Help/Settings use Push/Pop, but in case of direct transitions)
+            (ScreenType::Settings, ScreenType::Title) => {}
+            (ScreenType::Settings, ScreenType::TotalSummary) => {}
+
+            // From Help (Help/Settings use Push/Pop, but in case of direct transitions)
+            (ScreenType::Help, ScreenType::Title) => {}
+            (ScreenType::Help, ScreenType::TotalSummary) => {}
+
             // Loading is handled specially by ScreenManager
             (ScreenType::Loading, _) | (_, ScreenType::Loading) => {}
 
