@@ -20,7 +20,7 @@
       );
     in
     {
-      description = cargoToml.packge.description;
+      description = cargoToml.package.description;
       packages = forAllSystems ({ pkgs }: {
         default = pkgs.rustPlatform.buildRustPackage rec {
           inherit pname version;
