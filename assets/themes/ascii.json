@@ -1,4 +1,5 @@
 {
+  "id": "ascii",
   "name": "ASCII",
   "description": "Classic terminal color scheme with ASCII-style colors",
   "dark": {

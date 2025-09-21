@@ -97,105 +97,76 @@ fn run_repo_command(repo_command: &RepoCommands) -> Result<()> {
 }
 
 fn run_theme_command(theme_command: &ThemeCommands) -> Result<()> {
-    use crate::config::{Theme, ThemeManager};
+    use crate::config::ConfigManager;
+    use crate::ui::color_mode::ColorMode;
+    use crate::ui::theme::Theme;
 
-    let mut theme_manager = ThemeManager::new()
+    let mut config_manager = ConfigManager::new()
         .map_err(|e| crate::GitTypeError::TerminalError(e.to_string()))?;
 
     match theme_command {
         ThemeCommands::List => {
             println!("Available themes:");
-            for theme in theme_manager.list_themes() {
-                let current_indicator = if *theme_manager.get_current_theme() == match theme.as_str() {
-                    "default" => Theme::Default,
-                    "original" => Theme::Original,
-                    "ascii" => Theme::Ascii,
-                    "neon_abyss" => Theme::NeonAbyss,
-                    "inferno" => Theme::Inferno,
-                    "eclipse" => Theme::Eclipse,
-                    "glacier" => Theme::Glacier,
-                    "blood_oath" => Theme::BloodOath,
-                    "oblivion" => Theme::Oblivion,
-                    "spectral" => Theme::Spectral,
-                    "venom" => Theme::Venom,
-                    "aurora" => Theme::Aurora,
-                    "cyber_void" => Theme::CyberVoid,
-                    name => Theme::Custom(name.to_string()),
-                } {
+            let themes = Theme::all_themes();
+            let current_theme_id = &config_manager.get_config().theme.current_theme.id;
+
+            for theme in themes {
+                let current_indicator = if current_theme_id == &theme.id {
                     " (current)"
                 } else {
                     ""
                 };
-                println!("  {}{}", theme, current_indicator);
+                println!("  {}{}", theme.id, current_indicator);
             }
         }
         ThemeCommands::Set { theme } => {
-            let theme_enum = match theme.as_str() {
-                "default" => Theme::Default,
-                "original" => Theme::Original,
-                "ascii" => Theme::Ascii,
-                "neon_abyss" => Theme::NeonAbyss,
-                "inferno" => Theme::Inferno,
-                "eclipse" => Theme::Eclipse,
-                "glacier" => Theme::Glacier,
-                "blood_oath" => Theme::BloodOath,
-                "oblivion" => Theme::Oblivion,
-                "spectral" => Theme::Spectral,
-                "venom" => Theme::Venom,
-                "aurora" => Theme::Aurora,
-                "cyber_void" => Theme::CyberVoid,
-                name => Theme::Custom(name.to_string()),
-            };
+            let theme_obj = Theme::all_themes()
+                .into_iter()
+                .find(|t| t.id == *theme)
+                .ok_or_else(|| crate::GitTypeError::TerminalError(format!("Unknown theme: {}", theme)))?;
 
-            theme_manager.set_theme(theme_enum)
+            config_manager.get_config_mut().theme.current_theme = theme_obj;
+            config_manager.save()
                 .map_err(|e| crate::GitTypeError::TerminalError(e.to_string()))?;
 
             println!("Theme set to: {}", theme);
         }
         ThemeCommands::Current => {
-            let current_theme = match theme_manager.get_current_theme() {
-                Theme::Default => "default",
-                Theme::Original => "original",
-                Theme::Ascii => "ascii",
-                Theme::NeonAbyss => "neon_abyss",
-                Theme::Inferno => "inferno",
-                Theme::Eclipse => "eclipse",
-                Theme::Glacier => "glacier",
-                Theme::BloodOath => "blood_oath",
-                Theme::Oblivion => "oblivion",
-                Theme::Spectral => "spectral",
-                Theme::Venom => "venom",
-                Theme::Aurora => "aurora",
-                Theme::CyberVoid => "cyber_void",
-                Theme::Custom(name) => name,
-            };
-            let current_mode = match theme_manager.get_current_color_mode() {
-                crate::config::ColorMode::Dark => "dark",
-                crate::config::ColorMode::Light => "light",
+            let current_theme = &config_manager.get_config().theme.current_theme.id;
+            let current_mode = match config_manager.get_config().theme.current_color_mode {
+                ColorMode::Dark => "dark",
+                ColorMode::Light => "light",
             };
             println!("Current theme: {} ({})", current_theme, current_mode);
         }
         ThemeCommands::Mode { mode } => {
             let color_mode = match mode.to_lowercase().as_str() {
-                "dark" => crate::config::ColorMode::Dark,
-                "light" => crate::config::ColorMode::Light,
+                "dark" => ColorMode::Dark,
+                "light" => ColorMode::Light,
                 _ => return Err(crate::GitTypeError::TerminalError(format!("Invalid color mode: {}. Use 'dark' or 'light'", mode))),
             };
 
-            theme_manager.set_color_mode(color_mode)
+            config_manager.get_config_mut().theme.current_color_mode = color_mode;
+            config_manager.save()
                 .map_err(|e| crate::GitTypeError::TerminalError(e.to_string()))?;
 
             println!("Color mode set to: {}", mode);
         }
         ThemeCommands::Toggle => {
-            theme_manager.toggle_color_mode()
+            let new_mode = match config_manager.get_config().theme.current_color_mode {
+                ColorMode::Dark => ColorMode::Light,
+                ColorMode::Light => ColorMode::Dark,
+            };
+
+            config_manager.get_config_mut().theme.current_color_mode = new_mode.clone();
+            config_manager.save()
                 .map_err(|e| crate::GitTypeError::TerminalError(e.to_string()))?;
 
-            let new_mode = match theme_manager.get_current_color_mode() {
-                crate::config::ColorMode::Dark => "dark",
-                crate::config::ColorMode::Light => "light",
+            let mode_str = match new_mode {
+                ColorMode::Dark => "dark",
+                ColorMode::Light => "light",
             };
-            println!("Color mode toggled to: {}", new_mode);
+            println!("Color mode toggled to: {}", mode_str);
         }
     }
 

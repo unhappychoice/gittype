@@ -1,4 +1,5 @@
 {
+  "id": "default",
   "name": "Default",
   "description": "Default theme with softened contrast and balanced palette for comfortable readability",
   "dark": {

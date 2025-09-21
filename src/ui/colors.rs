@@ -1,33 +1,14 @@
 use ratatui::style::Color;
-use crate::config::{ColorScheme, ThemeManager};
-use once_cell::sync::Lazy;
-use std::sync::Mutex;
-
-static THEME_MANAGER: Lazy<Mutex<Option<ThemeManager>>> = Lazy::new(|| Mutex::new(None));
+use crate::ui::color_scheme::ColorScheme;
+use crate::ui::theme_manager::ThemeManager;
 
 /// UI color scheme for gittype application
 pub struct Colors;
 
 impl Colors {
-    /// Initialize the theme manager with optional config path
-    pub fn init_theme_manager(config_path: Option<std::path::PathBuf>) -> anyhow::Result<()> {
-        let mut theme_manager = THEME_MANAGER.lock().unwrap();
-        *theme_manager = Some(if let Some(path) = config_path {
-            ThemeManager::with_config_path(path)?
-        } else {
-            ThemeManager::new()?
-        });
-        Ok(())
-    }
-
     /// Get the current color scheme
     fn get_color_scheme() -> ColorScheme {
-        THEME_MANAGER
-            .lock()
-            .unwrap()
-            .as_ref()
-            .map(|tm| tm.get_color_scheme().clone())
-            .unwrap_or_else(|| ColorScheme::default_theme(&crate::config::ColorMode::Dark))
+        ThemeManager::get_current_color_scheme()
     }
 
     // Primary colors for main UI elements
@@ -87,87 +68,6 @@ impl Colors {
     pub fn lang_haskell() -> Color { Self::get_color_scheme().lang_haskell.into() }
     pub fn lang_dart() -> Color { Self::get_color_scheme().lang_dart.into() }
     pub fn lang_default() -> Color { Self::get_color_scheme().lang_default.into() }
-
-    /// Set the current theme
-    pub fn set_theme(theme: crate::config::Theme) -> anyhow::Result<()> {
-        THEME_MANAGER
-            .lock()
-            .unwrap()
-            .as_mut()
-            .ok_or_else(|| anyhow::anyhow!("Theme manager not initialized"))?
-            .set_theme(theme)
-    }
-
-    /// Set theme by name (for in-game use)
-    pub fn set_theme_by_name(theme_name: &str) -> anyhow::Result<()> {
-        THEME_MANAGER
-            .lock()
-            .unwrap()
-            .as_mut()
-            .ok_or_else(|| anyhow::anyhow!("Theme manager not initialized"))?
-            .set_theme_by_name(theme_name)
-    }
-
-    /// Get current theme name
-    pub fn get_current_theme_name() -> String {
-        THEME_MANAGER
-            .lock()
-            .unwrap()
-            .as_ref()
-            .map(|tm| tm.get_current_theme_name())
-            .unwrap_or_else(|| "default".to_string())
-    }
-
-    /// Get list of available themes
-    pub fn list_themes() -> Vec<String> {
-        THEME_MANAGER
-            .lock()
-            .unwrap()
-            .as_ref()
-            .map(|tm| tm.get_available_themes())
-            .unwrap_or_else(|| vec!["default".to_string()])
-    }
-
-    /// Get current color mode
-    pub fn current_color_mode() -> String {
-        THEME_MANAGER
-            .lock()
-            .unwrap()
-            .as_ref()
-            .map(|tm| match tm.get_current_color_mode() {
-                crate::config::ColorMode::Dark => "dark".to_string(),
-                crate::config::ColorMode::Light => "light".to_string(),
-            })
-            .unwrap_or_else(|| "dark".to_string())
-    }
-
-    /// Toggle color mode
-    pub fn toggle_color_mode() -> Result<(), String> {
-        THEME_MANAGER
-            .lock()
-            .unwrap()
-            .as_mut()
-            .ok_or("Theme manager not initialized".to_string())?
-            .toggle_color_mode()
-            .map_err(|e| e.to_string())
-    }
-
-    /// Set color mode
-    pub fn set_color_mode(mode: &str) -> Result<(), String> {
-        let color_mode = match mode.to_lowercase().as_str() {
-            "dark" => crate::config::ColorMode::Dark,
-            "light" => crate::config::ColorMode::Light,
-            _ => return Err(format!("Invalid color mode: {}. Use 'dark' or 'light'", mode)),
-        };
-
-        THEME_MANAGER
-            .lock()
-            .unwrap()
-            .as_mut()
-            .ok_or("Theme manager not initialized".to_string())?
-            .set_color_mode(color_mode)
-            .map_err(|e| e.to_string())
-    }
 }
 
 impl Colors {
