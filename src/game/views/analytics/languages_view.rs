@@ -302,24 +302,6 @@ impl LanguagesView {
                 ]);
             }
 
-            lines.extend_from_slice(&[
-                Line::from(""),
-                Line::from(vec![
-                    Span::raw("  "),
-                    Span::styled(
-                        "Navigation:",
-                        Style::default()
-                            .fg(Colors::text())
-                            .add_modifier(Modifier::BOLD),
-                    ),
-                ]),
-                Line::from(vec![
-                    Span::raw("  "),
-                    Span::styled("Use ", Style::default().fg(Colors::text_secondary())),
-                    Span::styled("↑↓ / JK", Style::default().fg(Colors::accuracy())),
-                    Span::styled(" to navigate languages", Style::default().fg(Colors::text_secondary())),
-                ]),
-            ]);
 
             lines
         } else {

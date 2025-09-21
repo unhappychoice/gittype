@@ -537,7 +537,7 @@ impl AnalyticsScreen {
                 Block::default()
                     .borders(Borders::ALL)
                     .border_style(Style::default().fg(Colors::border()))
-                    .title("Navigation"),
+                    .title("Views"),
             );
 
         f.render_widget(tabs, area);
@@ -575,6 +575,8 @@ impl AnalyticsScreen {
         let controls_line = Line::from(vec![
             Span::styled("[←→/HL]", Style::default().fg(Colors::key_navigation())),
             Span::styled(" Switch View  ", Style::default().fg(Colors::text())),
+            Span::styled("[↑↓/JK]", Style::default().fg(Colors::key_navigation())),
+            Span::styled(" Navigate  ", Style::default().fg(Colors::text())),
             Span::styled("[R]", Style::default().fg(Colors::score())),
             Span::styled(" Refresh  ", Style::default().fg(Colors::text())),
             Span::styled("[ESC]", Style::default().fg(Colors::error())),
