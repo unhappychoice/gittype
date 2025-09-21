@@ -5,18 +5,38 @@ use std::fs;
 use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub enum Theme {
+pub enum ColorMode {
     Dark,
     Light,
-    DarkOriginal,
-    LightOriginal,
+}
+
+impl Default for ColorMode {
+    fn default() -> Self {
+        ColorMode::Dark
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum Theme {
+    Default,
+    Original,
     Ascii,
+    NeonAbyss,
+    Inferno,
+    Eclipse,
+    Glacier,
+    BloodOath,
+    Oblivion,
+    Spectral,
+    Venom,
+    Aurora,
+    CyberVoid,
     Custom(String),
 }
 
 impl Default for Theme {
     fn default() -> Self {
-        Theme::Dark
+        Theme::Default
     }
 }
 
@@ -86,7 +106,8 @@ pub enum SerializableColor {
 pub struct ThemeFile {
     pub name: String,
     pub description: String,
-    pub colors: HashMap<String, SerializableColor>,
+    pub dark: HashMap<String, SerializableColor>,
+    pub light: HashMap<String, SerializableColor>,
 }
 
 impl From<Color> for SerializableColor {
@@ -155,40 +176,44 @@ impl From<SerializableColor> for Color {
 }
 
 impl ColorScheme {
-    pub fn from_theme_file(theme_file: &ThemeFile) -> Self {
+    pub fn from_theme_file(theme_file: &ThemeFile, color_mode: &ColorMode) -> Self {
+        let colors = match color_mode {
+            ColorMode::Dark => &theme_file.dark,
+            ColorMode::Light => &theme_file.light,
+        };
         ColorScheme {
             // Primary colors for main UI elements
-            border: theme_file.colors.get("border").cloned().unwrap_or(SerializableColor::Name("blue".to_string())),
-            title: theme_file.colors.get("title").cloned().unwrap_or(SerializableColor::Name("white".to_string())),
-            text: theme_file.colors.get("text").cloned().unwrap_or(SerializableColor::Name("white".to_string())),
-            text_secondary: theme_file.colors.get("text_secondary").cloned().unwrap_or(SerializableColor::Name("dark_gray".to_string())),
-            background: theme_file.colors.get("background").cloned().unwrap_or(SerializableColor::Name("black".to_string())),
-            background_secondary: theme_file.colors.get("background_secondary").cloned().unwrap_or(SerializableColor::Name("dark_gray".to_string())),
+            border: colors.get("border").cloned().unwrap_or(SerializableColor::Name("blue".to_string())),
+            title: colors.get("title").cloned().unwrap_or(SerializableColor::Name("white".to_string())),
+            text: colors.get("text").cloned().unwrap_or(SerializableColor::Name("white".to_string())),
+            text_secondary: colors.get("text_secondary").cloned().unwrap_or(SerializableColor::Name("dark_gray".to_string())),
+            background: colors.get("background").cloned().unwrap_or(SerializableColor::Name("black".to_string())),
+            background_secondary: colors.get("background_secondary").cloned().unwrap_or(SerializableColor::Name("dark_gray".to_string())),
 
             // Status and feedback colors
-            status_success: theme_file.colors.get("status_success").cloned().unwrap_or(SerializableColor::Name("green".to_string())),
-            status_info: theme_file.colors.get("status_info").cloned().unwrap_or(SerializableColor::Name("cyan".to_string())),
-            status_warning: theme_file.colors.get("status_warning").cloned().unwrap_or(SerializableColor::Name("yellow".to_string())),
-            status_error: theme_file.colors.get("status_error").cloned().unwrap_or(SerializableColor::Name("red".to_string())),
+            status_success: colors.get("status_success").cloned().unwrap_or(SerializableColor::Name("green".to_string())),
+            status_info: colors.get("status_info").cloned().unwrap_or(SerializableColor::Name("cyan".to_string())),
+            status_warning: colors.get("status_warning").cloned().unwrap_or(SerializableColor::Name("yellow".to_string())),
+            status_error: colors.get("status_error").cloned().unwrap_or(SerializableColor::Name("red".to_string())),
 
             // Specific UI element colors
-            key_action: theme_file.colors.get("key_action").cloned().unwrap_or(SerializableColor::Name("light_blue".to_string())),
-            key_navigation: theme_file.colors.get("key_navigation").cloned().unwrap_or(SerializableColor::Name("light_blue".to_string())),
-            key_back: theme_file.colors.get("key_back").cloned().unwrap_or(SerializableColor::Name("red".to_string())),
+            key_action: colors.get("key_action").cloned().unwrap_or(SerializableColor::Name("light_blue".to_string())),
+            key_navigation: colors.get("key_navigation").cloned().unwrap_or(SerializableColor::Name("light_blue".to_string())),
+            key_back: colors.get("key_back").cloned().unwrap_or(SerializableColor::Name("red".to_string())),
 
             // Metrics and performance colors
-            metrics_score: theme_file.colors.get("metrics_score").cloned().unwrap_or(SerializableColor::Name("magenta".to_string())),
-            metrics_cpm_wpm: theme_file.colors.get("metrics_cpm_wpm").cloned().unwrap_or(SerializableColor::Name("green".to_string())),
-            metrics_accuracy: theme_file.colors.get("metrics_accuracy").cloned().unwrap_or(SerializableColor::Name("yellow".to_string())),
-            metrics_duration: theme_file.colors.get("metrics_duration").cloned().unwrap_or(SerializableColor::Name("cyan".to_string())),
-            metrics_stage_info: theme_file.colors.get("metrics_stage_info").cloned().unwrap_or(SerializableColor::Name("blue".to_string())),
+            metrics_score: colors.get("metrics_score").cloned().unwrap_or(SerializableColor::Name("magenta".to_string())),
+            metrics_cpm_wpm: colors.get("metrics_cpm_wpm").cloned().unwrap_or(SerializableColor::Name("green".to_string())),
+            metrics_accuracy: colors.get("metrics_accuracy").cloned().unwrap_or(SerializableColor::Name("yellow".to_string())),
+            metrics_duration: colors.get("metrics_duration").cloned().unwrap_or(SerializableColor::Name("cyan".to_string())),
+            metrics_stage_info: colors.get("metrics_stage_info").cloned().unwrap_or(SerializableColor::Name("blue".to_string())),
 
             // Typing interface colors
-            typing_untyped_text: theme_file.colors.get("typing_untyped_text").cloned().unwrap_or(SerializableColor::Name("white".to_string())),
-            typing_typed_text: theme_file.colors.get("typing_typed_text").cloned().unwrap_or(SerializableColor::Name("light_blue".to_string())),
-            typing_current_cursor: theme_file.colors.get("typing_cursor_fg").cloned().unwrap_or(SerializableColor::Name("white".to_string())),
-            typing_cursor_bg: theme_file.colors.get("typing_cursor_bg").cloned().unwrap_or(SerializableColor::Name("dark_gray".to_string())),
-            typing_mistake_bg: theme_file.colors.get("typing_mistake_bg").cloned().unwrap_or(SerializableColor::Name("red".to_string())),
+            typing_untyped_text: colors.get("typing_untyped_text").cloned().unwrap_or(SerializableColor::Name("white".to_string())),
+            typing_typed_text: colors.get("typing_typed_text").cloned().unwrap_or(SerializableColor::Name("light_blue".to_string())),
+            typing_current_cursor: colors.get("typing_cursor_fg").cloned().unwrap_or(SerializableColor::Name("white".to_string())),
+            typing_cursor_bg: colors.get("typing_cursor_bg").cloned().unwrap_or(SerializableColor::Name("dark_gray".to_string())),
+            typing_mistake_bg: colors.get("typing_mistake_bg").cloned().unwrap_or(SerializableColor::Name("red".to_string())),
 
             // Programming language colors (loaded from separate files)
             ..Self::load_language_colors(&theme_file.name)
@@ -198,12 +223,12 @@ impl ColorScheme {
     fn load_language_colors(theme_name: &str) -> Self {
         // Determine which language color file to use based on theme name
         let lang_json = match theme_name.to_lowercase().as_str() {
-            "dark" => include_str!("../../assets/themes/lang_dark.json"),
-            "light" => include_str!("../../assets/themes/lang_light.json"),
-            "dark_original" => include_str!("../../assets/themes/lang_dark.json"),
-            "light_original" => include_str!("../../assets/themes/lang_light.json"),
-            "ascii" => include_str!("../../assets/themes/lang_ascii.json"),
-            _ => include_str!("../../assets/themes/lang_dark.json"), // default
+            "dark" => include_str!("../../assets/languages/lang_dark.json"),
+            "light" => include_str!("../../assets/languages/lang_light.json"),
+            "dark_original" => include_str!("../../assets/languages/lang_dark.json"),
+            "light_original" => include_str!("../../assets/languages/lang_light.json"),
+            "ascii" => include_str!("../../assets/languages/lang_ascii.json"),
+            _ => include_str!("../../assets/languages/lang_dark.json"), // default
         };
 
         let lang_colors: HashMap<String, SerializableColor> = serde_json::from_str(lang_json)
@@ -256,45 +281,52 @@ impl ColorScheme {
         }
     }
 
-    pub fn dark_original() -> Self {
-        let dark_json = include_str!("../../assets/themes/dark_original.json");
-        let theme_file: ThemeFile = serde_json::from_str(dark_json)
-            .expect("Failed to parse dark_original.json");
-        Self::from_theme_file(&theme_file)
+    pub fn default_theme(color_mode: &ColorMode) -> Self {
+        let default_json = include_str!("../../assets/themes/default.json");
+        let theme_file: ThemeFile = serde_json::from_str(default_json)
+            .expect("Failed to parse default.json");
+        Self::from_theme_file(&theme_file, color_mode)
     }
 
-    pub fn dark() -> Self {
-        let dark_json = include_str!("../../assets/themes/dark.json");
-        let theme_file: ThemeFile = serde_json::from_str(dark_json)
-            .expect("Failed to parse dark.json");
-        Self::from_theme_file(&theme_file)
+    pub fn original_theme(color_mode: &ColorMode) -> Self {
+        let original_json = include_str!("../../assets/themes/original.json");
+        let theme_file: ThemeFile = serde_json::from_str(original_json)
+            .expect("Failed to parse original.json");
+        Self::from_theme_file(&theme_file, color_mode)
     }
 
-    pub fn light_original() -> Self {
-        let light_json = include_str!("../../assets/themes/light_original.json");
-        let theme_file: ThemeFile = serde_json::from_str(light_json)
-            .expect("Failed to parse light_original.json");
-        Self::from_theme_file(&theme_file)
-    }
-
-    pub fn light() -> Self {
-        let light_json = include_str!("../../assets/themes/light.json");
-        let theme_file: ThemeFile = serde_json::from_str(light_json)
-            .expect("Failed to parse light.json");
-        Self::from_theme_file(&theme_file)
-    }
-
-    pub fn ascii() -> Self {
+    pub fn ascii(color_mode: &ColorMode) -> Self {
         let ascii_json = include_str!("../../assets/themes/ascii.json");
         let theme_file: ThemeFile = serde_json::from_str(ascii_json)
             .expect("Failed to parse ascii.json");
-        Self::from_theme_file(&theme_file)
+        Self::from_theme_file(&theme_file, color_mode)
+    }
+
+    pub fn load_builtin_theme(theme_name: &str, color_mode: &ColorMode) -> Self {
+        let theme_json = match theme_name {
+            "neon_abyss" => include_str!("../../assets/themes/neon_abyss.json"),
+            "inferno" => include_str!("../../assets/themes/inferno.json"),
+            "eclipse" => include_str!("../../assets/themes/eclipse.json"),
+            "glacier" => include_str!("../../assets/themes/glacier.json"),
+            "blood_oath" => include_str!("../../assets/themes/blood_oath.json"),
+            "oblivion" => include_str!("../../assets/themes/oblivion.json"),
+            "spectral" => include_str!("../../assets/themes/spectral.json"),
+            "venom" => include_str!("../../assets/themes/venom.json"),
+            "aurora" => include_str!("../../assets/themes/aurora.json"),
+            "cyber_void" => include_str!("../../assets/themes/cyber_void.json"),
+            _ => include_str!("../../assets/themes/default.json"), // fallback
+        };
+
+        let theme_file: ThemeFile = serde_json::from_str(theme_json)
+            .expect("Failed to parse theme file");
+        Self::from_theme_file(&theme_file, color_mode)
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ThemeConfig {
     pub current_theme: Theme,
+    pub current_color_mode: ColorMode,
     pub custom_themes: HashMap<String, ColorScheme>,
 }
 
@@ -302,6 +334,7 @@ impl Default for ThemeConfig {
     fn default() -> Self {
         ThemeConfig {
             current_theme: Theme::default(),
+            current_color_mode: ColorMode::default(),
             custom_themes: HashMap::new(),
         }
     }
@@ -329,7 +362,7 @@ impl ThemeManager {
             ThemeConfig::default()
         };
 
-        let cached_color_scheme = Self::get_color_scheme_for_theme(&config.current_theme, &config);
+        let cached_color_scheme = Self::get_color_scheme_for_theme(&config.current_theme, &config.current_color_mode, &config);
 
         Ok(ThemeManager { config, config_path, cached_color_scheme })
     }
@@ -342,7 +375,7 @@ impl ThemeManager {
             ThemeConfig::default()
         };
 
-        let cached_color_scheme = Self::get_color_scheme_for_theme(&config.current_theme, &config);
+        let cached_color_scheme = Self::get_color_scheme_for_theme(&config.current_theme, &config.current_color_mode, &config);
 
         Ok(ThemeManager { config, config_path, cached_color_scheme })
     }
@@ -353,26 +386,52 @@ impl ThemeManager {
 
     pub fn set_theme(&mut self, theme: Theme) -> anyhow::Result<()> {
         self.config.current_theme = theme.clone();
-        self.cached_color_scheme = Self::get_color_scheme_for_theme(&theme, &self.config);
+        self.cached_color_scheme = Self::get_color_scheme_for_theme(&theme, &self.config.current_color_mode, &self.config);
         self.save()
+    }
+
+    pub fn set_color_mode(&mut self, color_mode: ColorMode) -> anyhow::Result<()> {
+        self.config.current_color_mode = color_mode.clone();
+        self.cached_color_scheme = Self::get_color_scheme_for_theme(&self.config.current_theme, &color_mode, &self.config);
+        self.save()
+    }
+
+    pub fn get_current_color_mode(&self) -> &ColorMode {
+        &self.config.current_color_mode
+    }
+
+    pub fn toggle_color_mode(&mut self) -> anyhow::Result<()> {
+        let new_mode = match self.config.current_color_mode {
+            ColorMode::Dark => ColorMode::Light,
+            ColorMode::Light => ColorMode::Dark,
+        };
+        self.set_color_mode(new_mode)
     }
 
     pub fn get_color_scheme(&self) -> &ColorScheme {
         &self.cached_color_scheme
     }
 
-    fn get_color_scheme_for_theme(theme: &Theme, config: &ThemeConfig) -> ColorScheme {
+    fn get_color_scheme_for_theme(theme: &Theme, color_mode: &ColorMode, config: &ThemeConfig) -> ColorScheme {
         match theme {
-            Theme::Dark => ColorScheme::dark(),
-            Theme::Light => ColorScheme::light(),
-            Theme::DarkOriginal => ColorScheme::dark_original(),
-            Theme::LightOriginal => ColorScheme::light_original(),
-            Theme::Ascii => ColorScheme::ascii(),
+            Theme::Default => ColorScheme::default_theme(color_mode),
+            Theme::Original => ColorScheme::original_theme(color_mode),
+            Theme::Ascii => ColorScheme::ascii(color_mode),
+            Theme::NeonAbyss => ColorScheme::load_builtin_theme("neon_abyss", color_mode),
+            Theme::Inferno => ColorScheme::load_builtin_theme("inferno", color_mode),
+            Theme::Eclipse => ColorScheme::load_builtin_theme("eclipse", color_mode),
+            Theme::Glacier => ColorScheme::load_builtin_theme("glacier", color_mode),
+            Theme::BloodOath => ColorScheme::load_builtin_theme("blood_oath", color_mode),
+            Theme::Oblivion => ColorScheme::load_builtin_theme("oblivion", color_mode),
+            Theme::Spectral => ColorScheme::load_builtin_theme("spectral", color_mode),
+            Theme::Venom => ColorScheme::load_builtin_theme("venom", color_mode),
+            Theme::Aurora => ColorScheme::load_builtin_theme("aurora", color_mode),
+            Theme::CyberVoid => ColorScheme::load_builtin_theme("cyber_void", color_mode),
             Theme::Custom(name) => {
                 config.custom_themes
                     .get(name)
                     .cloned()
-                    .unwrap_or_else(ColorScheme::dark)
+                    .unwrap_or_else(|| ColorScheme::default_theme(color_mode))
             }
         }
     }
@@ -380,11 +439,19 @@ impl ThemeManager {
     /// Get list of available theme names for in-game selection
     pub fn get_available_themes(&self) -> Vec<String> {
         let mut themes = vec![
-            "dark".to_string(),
-            "light".to_string(),
-            "dark_original".to_string(),
-            "light_original".to_string(),
+            "default".to_string(),
+            "original".to_string(),
             "ascii".to_string(),
+            "neon_abyss".to_string(),
+            "inferno".to_string(),
+            "eclipse".to_string(),
+            "glacier".to_string(),
+            "blood_oath".to_string(),
+            "oblivion".to_string(),
+            "spectral".to_string(),
+            "venom".to_string(),
+            "aurora".to_string(),
+            "cyber_void".to_string(),
         ];
         themes.extend(self.config.custom_themes.keys().cloned());
         themes
@@ -393,11 +460,19 @@ impl ThemeManager {
     /// Set theme by name (for in-game use)
     pub fn set_theme_by_name(&mut self, theme_name: &str) -> anyhow::Result<()> {
         let theme = match theme_name.to_lowercase().as_str() {
-            "dark" => Theme::Dark,
-            "light" => Theme::Light,
-            "dark_original" => Theme::DarkOriginal,
-            "light_original" => Theme::LightOriginal,
+            "default" => Theme::Default,
+            "original" => Theme::Original,
             "ascii" => Theme::Ascii,
+            "neon_abyss" => Theme::NeonAbyss,
+            "inferno" => Theme::Inferno,
+            "eclipse" => Theme::Eclipse,
+            "glacier" => Theme::Glacier,
+            "blood_oath" => Theme::BloodOath,
+            "oblivion" => Theme::Oblivion,
+            "spectral" => Theme::Spectral,
+            "venom" => Theme::Venom,
+            "aurora" => Theme::Aurora,
+            "cyber_void" => Theme::CyberVoid,
             name => {
                 if self.config.custom_themes.contains_key(name) {
                     Theme::Custom(name.to_string())
@@ -412,11 +487,19 @@ impl ThemeManager {
     /// Get current theme name as string
     pub fn get_current_theme_name(&self) -> String {
         match &self.config.current_theme {
-            Theme::Dark => "dark".to_string(),
-            Theme::Light => "light".to_string(),
-            Theme::DarkOriginal => "dark_original".to_string(),
-            Theme::LightOriginal => "light_original".to_string(),
+            Theme::Default => "default".to_string(),
+            Theme::Original => "original".to_string(),
             Theme::Ascii => "ascii".to_string(),
+            Theme::NeonAbyss => "neon_abyss".to_string(),
+            Theme::Inferno => "inferno".to_string(),
+            Theme::Eclipse => "eclipse".to_string(),
+            Theme::Glacier => "glacier".to_string(),
+            Theme::BloodOath => "blood_oath".to_string(),
+            Theme::Oblivion => "oblivion".to_string(),
+            Theme::Spectral => "spectral".to_string(),
+            Theme::Venom => "venom".to_string(),
+            Theme::Aurora => "aurora".to_string(),
+            Theme::CyberVoid => "cyber_void".to_string(),
             Theme::Custom(name) => name.clone(),
         }
     }
@@ -428,11 +511,19 @@ impl ThemeManager {
 
     pub fn list_themes(&self) -> Vec<String> {
         let mut themes = vec![
-            "dark".to_string(),
-            "light".to_string(),
-            "dark_original".to_string(),
-            "light_original".to_string(),
+            "default".to_string(),
+            "original".to_string(),
             "ascii".to_string(),
+            "neon_abyss".to_string(),
+            "inferno".to_string(),
+            "eclipse".to_string(),
+            "glacier".to_string(),
+            "blood_oath".to_string(),
+            "oblivion".to_string(),
+            "spectral".to_string(),
+            "venom".to_string(),
+            "aurora".to_string(),
+            "cyber_void".to_string(),
         ];
         themes.extend(self.config.custom_themes.keys().cloned());
         themes

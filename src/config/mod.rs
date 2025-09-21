@@ -1,3 +1,3 @@
 pub mod theme;
 
-pub use theme::{ColorScheme, SerializableColor, Theme, ThemeConfig, ThemeFile, ThemeManager};
+pub use theme::{ColorMode, ColorScheme, SerializableColor, Theme, ThemeConfig, ThemeFile, ThemeManager};

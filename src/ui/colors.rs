@@ -27,7 +27,7 @@ impl Colors {
             .unwrap()
             .as_ref()
             .map(|tm| tm.get_color_scheme().clone())
-            .unwrap_or_else(|| ColorScheme::dark())
+            .unwrap_or_else(|| ColorScheme::default_theme(&crate::config::ColorMode::Dark))
     }
 
     // Primary colors for main UI elements
@@ -115,7 +115,7 @@ impl Colors {
             .unwrap()
             .as_ref()
             .map(|tm| tm.get_current_theme_name())
-            .unwrap_or_else(|| "dark".to_string())
+            .unwrap_or_else(|| "default".to_string())
     }
 
     /// Get list of available themes
@@ -125,7 +125,48 @@ impl Colors {
             .unwrap()
             .as_ref()
             .map(|tm| tm.get_available_themes())
-            .unwrap_or_else(|| vec!["dark".to_string()])
+            .unwrap_or_else(|| vec!["default".to_string()])
+    }
+
+    /// Get current color mode
+    pub fn current_color_mode() -> String {
+        THEME_MANAGER
+            .lock()
+            .unwrap()
+            .as_ref()
+            .map(|tm| match tm.get_current_color_mode() {
+                crate::config::ColorMode::Dark => "dark".to_string(),
+                crate::config::ColorMode::Light => "light".to_string(),
+            })
+            .unwrap_or_else(|| "dark".to_string())
+    }
+
+    /// Toggle color mode
+    pub fn toggle_color_mode() -> Result<(), String> {
+        THEME_MANAGER
+            .lock()
+            .unwrap()
+            .as_mut()
+            .ok_or("Theme manager not initialized".to_string())?
+            .toggle_color_mode()
+            .map_err(|e| e.to_string())
+    }
+
+    /// Set color mode
+    pub fn set_color_mode(mode: &str) -> Result<(), String> {
+        let color_mode = match mode.to_lowercase().as_str() {
+            "dark" => crate::config::ColorMode::Dark,
+            "light" => crate::config::ColorMode::Light,
+            _ => return Err(format!("Invalid color mode: {}. Use 'dark' or 'light'", mode)),
+        };
+
+        THEME_MANAGER
+            .lock()
+            .unwrap()
+            .as_mut()
+            .ok_or("Theme manager not initialized".to_string())?
+            .set_color_mode(color_mode)
+            .map_err(|e| e.to_string())
     }
 }
 
