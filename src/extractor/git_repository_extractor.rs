@@ -180,6 +180,12 @@ mod tests {
 
     #[test]
     fn test_find_git_repository_root_basic() {
+        // Skip test if running in a Nix build environment
+        if std::env::var("IN_NIX_SHELL").is_ok() || std::env::var("NIX_BUILD_CORES").is_ok() {
+            eprintln!("Skipping test in Nix build environment.");
+            return;
+        }
+
         // Test with current project directory
         let current_dir = std::env::current_dir().unwrap();
         let git_root = GitRepositoryExtractor::find_git_repository_root(&current_dir);

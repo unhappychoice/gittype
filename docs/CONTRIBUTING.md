@@ -30,6 +30,8 @@ This project follows a standard code of conduct. Please be respectful and constr
 - Git
 - Basic familiarity with Rust and CLI development
 
+> When developing in a [Nix](https://nixos.org/) environment: `nix develop` will create a development shell with all dependencies.
+
 ### Development Setup
 
 1. **Fork and clone the repository:**
