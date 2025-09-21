@@ -142,16 +142,6 @@ impl RecordsScreen {
     }
 
     fn render_session_list(&mut self, f: &mut Frame) {
-        // Add horizontal padding
-        let outer_chunks = Layout::default()
-            .direction(Direction::Horizontal)
-            .constraints([
-                Constraint::Length(2), // Left padding
-                Constraint::Min(1),    // Main content
-                Constraint::Length(2), // Right padding
-            ])
-            .split(f.area());
-
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -159,7 +149,7 @@ impl RecordsScreen {
                 Constraint::Min(1),    // Session list
                 Constraint::Length(1), // Controls at bottom
             ])
-            .split(outer_chunks[1]);
+            .split(f.area());
 
         // Header block containing title and filter info
         let header_lines = vec![
@@ -247,7 +237,7 @@ impl RecordsScreen {
                         .bg(Colors::background_secondary())
                         .add_modifier(Modifier::BOLD),
                 )
-                .highlight_symbol("► ");
+                .highlight_symbol("▶ ");
 
             f.render_stateful_widget(list, chunks[1], &mut self.list_state);
 
