@@ -287,16 +287,6 @@ impl SettingsScreen {
     }
 
     fn render_footer(&self, f: &mut Frame, area: Rect) {
-        let chunks = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([
-                Constraint::Length(1), // Empty line
-                Constraint::Length(1), // Instructions
-                Constraint::Length(1), // Empty line
-                Constraint::Length(1), // More instructions
-            ])
-            .split(area);
-
         // Instructions (matching help screen format)
         let instructions = vec![
             Span::styled("[←→/HL]", Style::default().fg(Colors::info())),
@@ -310,7 +300,7 @@ impl SettingsScreen {
         ];
         let instructions_para =
             Paragraph::new(Line::from(instructions)).alignment(Alignment::Center);
-        f.render_widget(instructions_para, chunks[1]);
+        f.render_widget(instructions_para, area);
     }
 }
 
@@ -412,7 +402,7 @@ impl Screen for SettingsScreen {
             .constraints([
                 Constraint::Length(3),
                 Constraint::Min(0),
-                Constraint::Length(4),
+                Constraint::Length(1),
             ])
             .split(area);
 

@@ -659,25 +659,15 @@ impl Screen for AnalyticsScreen {
     }
 
     fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()> {
-        let outer_chunks = Layout::default()
-            .direction(Direction::Horizontal)
-            .constraints([
-                Constraint::Length(4),
-                Constraint::Min(1),
-                Constraint::Length(4),
-            ])
-            .split(frame.area());
-
         let chunks = Layout::default()
             .direction(Direction::Vertical)
-            .margin(1)
             .constraints([
                 Constraint::Length(3),
                 Constraint::Length(3),
                 Constraint::Min(1),
                 Constraint::Length(1),
             ])
-            .split(outer_chunks[1]);
+            .split(frame.area());
 
         self.render_header(frame, chunks[0]);
         self.render_view_tabs(frame, chunks[1]);
