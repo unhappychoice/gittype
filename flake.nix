@@ -44,7 +44,14 @@
         };
       });
 
-      defaultPackage = self.packages;
-      defaultDevShell = self.devShells;
+      defaultPackage = forAllSystems ({ pkgs }: self.packages.${pkgs.system}.default);
+      defaultDevShell = forAllSystems ({ pkgs }: self.devShells.${pkgs.system}.default);
+
+      apps = forAllSystems ({ pkgs }: {
+        default = {
+          type = "app";
+          program = "${self.packages.${pkgs.system}.default}/bin/gittype";
+        };
+      });
     };
 }
