@@ -25,7 +25,7 @@ impl TitleView {
             execute!(
                 stdout,
                 SetAttribute(Attribute::Bold),
-                SetForegroundColor(Colors::to_crossterm(Colors::INFO))
+                SetForegroundColor(Colors::to_crossterm(Colors::info()))
             )?;
             execute!(stdout, Print(line))?;
             execute!(stdout, ResetColor)?;

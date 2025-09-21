@@ -103,7 +103,7 @@ impl InfoDialogScreen {
             .title("Information & Links")
             .title_alignment(Alignment::Center)
             .borders(Borders::ALL)
-            .border_style(Style::default().fg(Colors::TEXT));
+            .border_style(Style::default().fg(Colors::text()));
 
         frame.render_widget(block, area);
 
@@ -118,9 +118,9 @@ impl InfoDialogScreen {
             .enumerate()
             .map(|(i, (label, _))| {
                 let style = if i == selected_option {
-                    Style::default().fg(Colors::WARNING).bold()
+                    Style::default().fg(Colors::warning()).bold()
                 } else {
-                    Style::default().fg(Colors::SECONDARY)
+                    Style::default().fg(Colors::text_secondary())
                 };
 
                 let content = if i == selected_option {
@@ -133,7 +133,7 @@ impl InfoDialogScreen {
             })
             .collect();
 
-        let list = List::new(items).style(Style::default().fg(Colors::TEXT));
+        let list = List::new(items).style(Style::default().fg(Colors::text()));
 
         let list_area = Rect {
             x: inner.x,
@@ -145,12 +145,12 @@ impl InfoDialogScreen {
         frame.render_widget(list, list_area);
 
         let instructions = vec![
-            Span::styled("[↑↓/JK]", Style::default().fg(Colors::INFO)),
-            Span::styled(" Navigate ", Style::default().fg(Colors::TEXT)),
-            Span::styled("[SPACE]", Style::default().fg(Colors::SUCCESS)),
-            Span::styled(" Select ", Style::default().fg(Colors::TEXT)),
-            Span::styled("[ESC]", Style::default().fg(Colors::ERROR)),
-            Span::styled(" Close", Style::default().fg(Colors::TEXT)),
+            Span::styled("[↑↓/JK]", Style::default().fg(Colors::info())),
+            Span::styled(" Navigate ", Style::default().fg(Colors::text())),
+            Span::styled("[SPACE]", Style::default().fg(Colors::key_action())),
+            Span::styled(" Select ", Style::default().fg(Colors::text())),
+            Span::styled("[ESC]", Style::default().fg(Colors::error())),
+            Span::styled(" Close", Style::default().fg(Colors::text())),
         ];
 
         let instructions_para =
@@ -176,7 +176,7 @@ impl InfoDialogScreen {
             .title(format!("Cannot open {}", title))
             .title_alignment(Alignment::Center)
             .borders(Borders::ALL)
-            .border_style(Style::default().fg(Colors::ERROR));
+            .border_style(Style::default().fg(Colors::error()));
 
         frame.render_widget(block, area);
 
@@ -186,7 +186,7 @@ impl InfoDialogScreen {
         });
 
         let message = Paragraph::new("Please copy and paste the URL below:")
-            .style(Style::default().fg(Colors::WARNING))
+            .style(Style::default().fg(Colors::warning()))
             .alignment(Alignment::Center);
 
         let message_area = Rect {
@@ -199,7 +199,7 @@ impl InfoDialogScreen {
         frame.render_widget(message, message_area);
 
         let url_para = Paragraph::new(url)
-            .style(Style::default().fg(Colors::INFO).bold())
+            .style(Style::default().fg(Colors::info()).bold())
             .alignment(Alignment::Center);
 
         let url_area = Rect {
@@ -212,8 +212,8 @@ impl InfoDialogScreen {
         frame.render_widget(url_para, url_area);
 
         let back_instructions = vec![
-            Span::styled("[ESC]", Style::default().fg(Colors::SUCCESS)),
-            Span::styled(" Back", Style::default().fg(Colors::TEXT)),
+            Span::styled("[ESC]", Style::default().fg(Colors::key_action())),
+            Span::styled(" Back", Style::default().fg(Colors::text())),
         ];
 
         let back_para = Paragraph::new(Line::from(back_instructions)).alignment(Alignment::Center);

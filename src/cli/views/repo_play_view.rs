@@ -59,7 +59,7 @@ pub fn render_repo_play_ui(
                 Span::styled(
                     "Select Repository to Play",
                     Style::default()
-                        .fg(Colors::INFO)
+                        .fg(Colors::info())
                         .add_modifier(Modifier::BOLD),
                 ),
             ])];
@@ -67,7 +67,7 @@ pub fn render_repo_play_ui(
             let header = Paragraph::new(header_lines).block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::BORDER))
+                    .border_style(Style::default().fg(Colors::border()))
                     .title("GitType"),
             );
             f.render_widget(header, chunks[0]);
@@ -80,21 +80,24 @@ pub fn render_repo_play_ui(
                     let is_cached = repo_utils::is_repository_cached(&repo.remote_url);
                     let cache_indicator = if is_cached { "●" } else { "○" };
                     let cache_color = if is_cached {
-                        Colors::SUCCESS
+                        Colors::success()
                     } else {
-                        Colors::MUTED
+                        Colors::text_secondary()
                     };
 
                     let language_spans = if repo.languages.is_empty() {
                         vec![Span::styled(
                             "No challenges",
-                            Style::default().fg(Colors::MUTED),
+                            Style::default().fg(Colors::text_secondary()),
                         )]
                     } else {
                         let mut spans = Vec::new();
                         for (i, lang) in repo.languages.iter().enumerate() {
                             if i > 0 {
-                                spans.push(Span::styled(", ", Style::default().fg(Colors::MUTED)));
+                                spans.push(Span::styled(
+                                    ", ",
+                                    Style::default().fg(Colors::text_secondary()),
+                                ));
                             }
                             spans.push(Span::styled(
                                 LanguageRegistry::get_display_name(Some(lang)),
@@ -111,7 +114,7 @@ pub fn render_repo_play_ui(
                         Span::styled(
                             format!("{:<32}", repo_name),
                             Style::default()
-                                .fg(Colors::TEXT)
+                                .fg(Colors::text())
                                 .add_modifier(Modifier::BOLD),
                         ),
                         Span::raw(" "),
@@ -126,35 +129,35 @@ pub fn render_repo_play_ui(
                 .block(
                     Block::default()
                         .borders(Borders::ALL)
-                        .border_style(Style::default().fg(Colors::BORDER))
+                        .border_style(Style::default().fg(Colors::border()))
                         .title("Played Repositories")
                         .title_style(
                             Style::default()
-                                .fg(Colors::TEXT)
+                                .fg(Colors::text())
                                 .add_modifier(Modifier::BOLD),
                         )
                         .padding(Padding::uniform(1)),
                 )
-                .style(Style::default().fg(Colors::TEXT))
+                .style(Style::default().fg(Colors::text()))
                 .highlight_style(
                     Style::default()
-                        .bg(Colors::MUTED)
+                        .bg(Colors::background_secondary())
                         .add_modifier(Modifier::BOLD),
                 );
             f.render_stateful_widget(list, chunks[1], &mut list_state);
 
             // Controls at bottom - using semantic color for navigation keys
             let controls_line = Line::from(vec![
-                Span::styled("[↑↓/JK]", Style::default().fg(Colors::NAVIGATION_KEY)),
-                Span::styled(" Navigate  ", Style::default().fg(Colors::TEXT)),
-                Span::styled("[SPACE]", Style::default().fg(Colors::SUCCESS)),
-                Span::styled(" Play  ", Style::default().fg(Colors::TEXT)),
-                Span::styled("[ESC]", Style::default().fg(Colors::BACK_KEY)),
-                Span::styled(" Return  ", Style::default().fg(Colors::TEXT)),
-                Span::styled("●", Style::default().fg(Colors::SUCCESS)),
-                Span::styled(" Cached ", Style::default().fg(Colors::TEXT)),
-                Span::styled("○", Style::default().fg(Colors::MUTED)),
-                Span::styled(" Not Cached", Style::default().fg(Colors::TEXT)),
+                Span::styled("[↑↓/JK]", Style::default().fg(Colors::key_navigation())),
+                Span::styled(" Navigate  ", Style::default().fg(Colors::text())),
+                Span::styled("[SPACE]", Style::default().fg(Colors::key_action())),
+                Span::styled(" Play  ", Style::default().fg(Colors::text())),
+                Span::styled("[ESC]", Style::default().fg(Colors::key_back())),
+                Span::styled(" Return  ", Style::default().fg(Colors::text())),
+                Span::styled("●", Style::default().fg(Colors::success())),
+                Span::styled(" Cached ", Style::default().fg(Colors::text())),
+                Span::styled("○", Style::default().fg(Colors::text_secondary())),
+                Span::styled(" Not Cached", Style::default().fg(Colors::text())),
             ]);
             let controls = Paragraph::new(controls_line).alignment(Alignment::Center);
             f.render_widget(controls, chunks[2]);

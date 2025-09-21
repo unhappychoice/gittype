@@ -45,31 +45,31 @@ impl PreviewView {
         // Display with individual colors
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print("\""))?;
         execute!(stdout, SetForegroundColor(best_rank.terminal_color()))?;
         execute!(stdout, Print(best_rank.name()))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print("\" with "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::SCORE))
+            SetForegroundColor(Colors::to_crossterm(Colors::score()))
         )?;
         execute!(stdout, Print(format!("{:.0}pts", metrics.session_score)))?;
 
         if let Some(repo) = repo_info {
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+                SetForegroundColor(Colors::to_crossterm(Colors::text()))
             )?;
             execute!(stdout, Print(" on ["))?;
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::INFO))
+                SetForegroundColor(Colors::to_crossterm(Colors::info()))
             )?;
             execute!(
                 stdout,
@@ -77,35 +77,35 @@ impl PreviewView {
             )?;
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+                SetForegroundColor(Colors::to_crossterm(Colors::text()))
             )?;
             execute!(stdout, Print("]"))?;
         }
 
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(" - "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+            SetForegroundColor(Colors::to_crossterm(Colors::cpm_wpm()))
         )?;
         execute!(stdout, Print("CPM: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(format!("{:.0}", metrics.overall_cpm)))?;
         execute!(stdout, Print(", "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::ERROR))
+            SetForegroundColor(Colors::to_crossterm(Colors::error()))
         )?;
         execute!(stdout, Print("Mistakes: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(
             stdout,

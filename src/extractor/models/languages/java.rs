@@ -14,7 +14,7 @@ impl Language for Java {
 
     fn color(&self) -> ratatui::style::Color {
         use crate::ui::Colors;
-        Colors::LANG_JAVA
+        Colors::lang_java()
     }
 
     fn display_name(&self) -> &'static str {

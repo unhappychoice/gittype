@@ -17,7 +17,7 @@ impl Language for Haskell {
 
     fn color(&self) -> ratatui::style::Color {
         use crate::ui::Colors;
-        Colors::LANG_HASKELL
+        Colors::lang_haskell()
     }
 
     fn display_name(&self) -> &'static str {

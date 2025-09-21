@@ -17,7 +17,7 @@ impl Language for Rust {
 
     fn color(&self) -> ratatui::style::Color {
         use crate::ui::Colors;
-        Colors::LANG_RUST
+        Colors::lang_rust()
     }
 
     fn display_name(&self) -> &'static str {

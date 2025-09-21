@@ -5,7 +5,7 @@ use crate::ui::colors::Colors;
 use crate::Result;
 use crossterm::{
     execute,
-    style::{Color, ResetColor, SetForegroundColor},
+    style::{ResetColor, SetForegroundColor},
 };
 use ratatui::{
     backend::TestBackend,
@@ -43,7 +43,7 @@ pub fn render_repo_list(repositories: Vec<StoredRepositoryWithLanguages>) -> Res
         let header_line = Line::from(vec![Span::styled(
             "GitType - Played Repositories",
             Style::default()
-                .fg(Colors::INFO)
+                .fg(Colors::info())
                 .add_modifier(Modifier::BOLD),
         )]);
         let header = Paragraph::new(header_line)
@@ -51,7 +51,7 @@ pub fn render_repo_list(repositories: Vec<StoredRepositoryWithLanguages>) -> Res
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::BORDER)),
+                    .border_style(Style::default().fg(Colors::border())),
             );
         f.render_widget(header, chunks[0]);
 
@@ -59,16 +59,19 @@ pub fn render_repo_list(repositories: Vec<StoredRepositoryWithLanguages>) -> Res
         let home_dir = dirs::home_dir().unwrap_or_else(|| std::path::PathBuf::from("."));
         let cache_dir = home_dir.join(".gittype").join("repos");
         let cache_line = Line::from(vec![
-            Span::styled("Cache Directory: ", Style::default().fg(Colors::MUTED)),
+            Span::styled(
+                "Cache Directory: ",
+                Style::default().fg(Colors::text_secondary()),
+            ),
             Span::styled(
                 cache_dir.to_string_lossy().to_string(),
-                Style::default().fg(Colors::TEXT),
+                Style::default().fg(Colors::text()),
             ),
         ]);
         let cache_info = Paragraph::new(cache_line).block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Colors::BORDER)),
+                .border_style(Style::default().fg(Colors::border())),
         );
         f.render_widget(cache_info, chunks[2]);
 
@@ -90,15 +93,15 @@ pub fn render_repo_list(repositories: Vec<StoredRepositoryWithLanguages>) -> Res
                     Span::styled(
                         format!("{} ", cache_indicator),
                         Style::default().fg(if is_cached {
-                            Colors::SUCCESS
+                            Colors::success()
                         } else {
-                            Colors::MUTED
+                            Colors::text_secondary()
                         }),
                     ),
                     Span::styled(
                         format!("{:<width$}", repo_name, width = repo_width),
                         Style::default()
-                            .fg(Colors::TEXT)
+                            .fg(Colors::text())
                             .add_modifier(Modifier::BOLD),
                     ),
                 ];
@@ -107,15 +110,17 @@ pub fn render_repo_list(repositories: Vec<StoredRepositoryWithLanguages>) -> Res
                 if repo.languages.is_empty() {
                     line_spans.push(Span::styled(
                         format!("{:<width$}", "No challenges", width = lang_width),
-                        Style::default().fg(Colors::MUTED),
+                        Style::default().fg(Colors::text_secondary()),
                     ));
                 } else {
                     let mut current_length = 0;
                     for (i, lang) in repo.languages.iter().enumerate() {
                         if i > 0 {
                             if current_length + 2 <= lang_width {
-                                line_spans
-                                    .push(Span::styled(", ", Style::default().fg(Colors::MUTED)));
+                                line_spans.push(Span::styled(
+                                    ", ",
+                                    Style::default().fg(Colors::text_secondary()),
+                                ));
                                 current_length += 2;
                             } else {
                                 break;
@@ -129,8 +134,10 @@ pub fn render_repo_list(repositories: Vec<StoredRepositoryWithLanguages>) -> Res
                             ));
                             current_length += lang_name.len();
                         } else if current_length + 3 <= lang_width {
-                            line_spans
-                                .push(Span::styled("...", Style::default().fg(Colors::MUTED)));
+                            line_spans.push(Span::styled(
+                                "...",
+                                Style::default().fg(Colors::text_secondary()),
+                            ));
                             current_length += 3;
                             break;
                         } else {
@@ -144,7 +151,10 @@ pub fn render_repo_list(repositories: Vec<StoredRepositoryWithLanguages>) -> Res
                 }
 
                 line_spans.push(Span::styled(" ", Style::default()));
-                line_spans.push(Span::styled(url, Style::default().fg(Colors::MUTED)));
+                line_spans.push(Span::styled(
+                    url,
+                    Style::default().fg(Colors::text_secondary()),
+                ));
 
                 ListItem::new(Line::from(line_spans))
             })
@@ -154,31 +164,31 @@ pub fn render_repo_list(repositories: Vec<StoredRepositoryWithLanguages>) -> Res
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::BORDER))
+                    .border_style(Style::default().fg(Colors::border()))
                     .title("Repository List")
                     .title_style(
                         Style::default()
-                            .fg(Colors::TEXT)
+                            .fg(Colors::text())
                             .add_modifier(Modifier::BOLD),
                     )
                     .padding(Padding::horizontal(1)),
             )
-            .style(Style::default().fg(Colors::TEXT));
+            .style(Style::default().fg(Colors::text()));
         f.render_widget(list, chunks[4]);
 
         // Legend
         let legend_line = Line::from(vec![
-            Span::styled("●", Style::default().fg(Colors::SUCCESS)),
-            Span::styled(" Cached  ", Style::default().fg(Colors::TEXT)),
-            Span::styled("○", Style::default().fg(Colors::MUTED)),
-            Span::styled(" Not Cached", Style::default().fg(Colors::TEXT)),
+            Span::styled("●", Style::default().fg(Colors::success())),
+            Span::styled(" Cached  ", Style::default().fg(Colors::text())),
+            Span::styled("○", Style::default().fg(Colors::text_secondary())),
+            Span::styled(" Not Cached", Style::default().fg(Colors::text())),
         ]);
         let legend = Paragraph::new(legend_line)
             .alignment(Alignment::Center)
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::BORDER)),
+                    .border_style(Style::default().fg(Colors::border())),
             );
         f.render_widget(legend, chunks[5]);
     })?;
@@ -188,28 +198,8 @@ pub fn render_repo_list(repositories: Vec<StoredRepositoryWithLanguages>) -> Res
     for y in 0..buffer.area.height {
         for x in 0..buffer.area.width {
             let cell = &buffer[(x, y)];
-            // Convert ratatui color to crossterm and print
-            let fg_color = match cell.fg {
-                ratatui::style::Color::Green => Color::Green,
-                ratatui::style::Color::Red => Color::Red,
-                ratatui::style::Color::Yellow => Color::Yellow,
-                ratatui::style::Color::Blue => Color::Blue,
-                ratatui::style::Color::Magenta => Color::Magenta,
-                ratatui::style::Color::Cyan => Color::Cyan,
-                ratatui::style::Color::White => Color::White,
-                ratatui::style::Color::Black => Color::Black,
-                ratatui::style::Color::DarkGray => Color::DarkGrey,
-                ratatui::style::Color::LightRed => Color::DarkRed,
-                ratatui::style::Color::LightGreen => Color::DarkGreen,
-                ratatui::style::Color::LightYellow => Color::DarkYellow,
-                ratatui::style::Color::LightBlue => Color::DarkBlue,
-                ratatui::style::Color::LightMagenta => Color::DarkMagenta,
-                ratatui::style::Color::LightCyan => Color::DarkCyan,
-                ratatui::style::Color::Gray => Color::Grey,
-                ratatui::style::Color::Rgb(r, g, b) => Color::Rgb { r, g, b },
-                ratatui::style::Color::Indexed(i) => Color::AnsiValue(i),
-                ratatui::style::Color::Reset => Color::Reset,
-            };
+            // Convert ratatui color to crossterm using Colors utility
+            let fg_color = Colors::to_crossterm(cell.fg);
             execute!(stdout(), SetForegroundColor(fg_color))?;
             print!("{}", cell.symbol());
             execute!(stdout(), ResetColor)?;

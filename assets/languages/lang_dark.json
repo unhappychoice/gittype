@@ -1,0 +1,19 @@
+{
+  "lang_rust": {"r": 222, "g": 165, "b": 132},
+  "lang_python": {"r": 255, "g": 212, "b": 59},
+  "lang_javascript": {"r": 240, "g": 219, "b": 79},
+  "lang_typescript": {"r": 49, "g": 120, "b": 198},
+  "lang_go": {"r": 0, "g": 173, "b": 181},
+  "lang_java": {"r": 237, "g": 41, "b": 57},
+  "lang_c": {"r": 85, "g": 85, "b": 85},
+  "lang_cpp": {"r": 0, "g": 89, "b": 156},
+  "lang_csharp": {"r": 239, "g": 117, "b": 27},
+  "lang_php": {"r": 119, "g": 123, "b": 180},
+  "lang_ruby": {"r": 204, "g": 52, "b": 45},
+  "lang_swift": {"r": 250, "g": 109, "b": 63},
+  "lang_kotlin": {"r": 124, "g": 75, "b": 255},
+  "lang_scala": {"r": 220, "g": 50, "b": 47},
+  "lang_haskell": {"r": 94, "g": 80, "b": 134},
+  "lang_dart": {"r": 0, "g": 180, "b": 240},
+  "lang_default": {"r": 255, "g": 255, "b": 255}
+}

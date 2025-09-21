@@ -32,7 +32,7 @@ impl TypingDialogView {
             Line::from(vec![Span::styled(
                 "Choose an option:",
                 Style::default()
-                    .fg(Colors::TEXT)
+                    .fg(Colors::text())
                     .add_modifier(Modifier::BOLD),
             )]),
             Line::from(""),
@@ -41,28 +41,21 @@ impl TypingDialogView {
                     Span::styled(
                         "[S] ",
                         Style::default()
-                            .fg(Colors::INFO)
+                            .fg(Colors::info())
                             .add_modifier(Modifier::BOLD),
                     )
                 } else {
-                    Span::styled(
-                        "[S] ",
-                        Style::default()
-                            .fg(Colors::MUTED)
-                            .add_modifier(Modifier::DIM),
-                    )
+                    Span::styled("[S] ", Style::default().fg(Colors::text_secondary()))
                 },
                 if skips_remaining > 0 {
                     Span::styled(
                         format!("Skip challenge ({})", skips_remaining),
-                        Style::default().fg(Colors::TEXT),
+                        Style::default().fg(Colors::text()),
                     )
                 } else {
                     Span::styled(
                         "No skips remaining",
-                        Style::default()
-                            .fg(Colors::MUTED)
-                            .add_modifier(Modifier::DIM),
+                        Style::default().fg(Colors::text_secondary()),
                     )
                 },
             ]),
@@ -70,19 +63,19 @@ impl TypingDialogView {
                 Span::styled(
                     "[Q] ",
                     Style::default()
-                        .fg(Colors::ERROR)
+                        .fg(Colors::error())
                         .add_modifier(Modifier::BOLD),
                 ),
-                Span::styled("Quit (fail)", Style::default().fg(Colors::TEXT)),
+                Span::styled("Quit (fail)", Style::default().fg(Colors::text())),
             ]),
             Line::from(vec![
                 Span::styled(
                     "[ESC] ",
                     Style::default()
-                        .fg(Colors::ACTION_KEY)
+                        .fg(Colors::key_action())
                         .add_modifier(Modifier::BOLD),
                 ),
-                Span::styled("Back to game", Style::default().fg(Colors::TEXT)),
+                Span::styled("Back to game", Style::default().fg(Colors::text())),
             ]),
             Line::from(""),
         ];
@@ -94,10 +87,10 @@ impl TypingDialogView {
                     .title("Game Options")
                     .title_style(
                         Style::default()
-                            .fg(Colors::ACTION_KEY)
+                            .fg(Colors::key_action())
                             .add_modifier(Modifier::BOLD),
                     )
-                    .border_style(Style::default().fg(Colors::BORDER)),
+                    .border_style(Style::default().fg(Colors::border())),
             )
             .alignment(ratatui::layout::Alignment::Center);
 

@@ -22,7 +22,7 @@ impl PlatformOptionsView {
             execute!(stdout, MoveTo(option_col, start_row + i as u16))?;
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+                SetForegroundColor(Colors::to_crossterm(Colors::text()))
             )?;
             execute!(stdout, Print(&option_text))?;
             execute!(stdout, ResetColor)?;

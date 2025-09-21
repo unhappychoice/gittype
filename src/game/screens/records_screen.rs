@@ -168,7 +168,7 @@ impl RecordsScreen {
                 Span::styled(
                     "Records - Typing Session Records",
                     Style::default()
-                        .fg(Colors::INFO)
+                        .fg(Colors::info())
                         .add_modifier(Modifier::BOLD),
                 ),
             ]),
@@ -186,7 +186,7 @@ impl RecordsScreen {
                         },
                         self.sessions.len()
                     ),
-                    Style::default().fg(Colors::ACCURACY),
+                    Style::default().fg(Colors::accuracy()),
                 ),
             ]),
         ];
@@ -194,7 +194,7 @@ impl RecordsScreen {
         let header = Paragraph::new(header_lines).block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Colors::BORDER))
+                .border_style(Style::default().fg(Colors::border()))
                 .title("Session Records"),
         );
         f.render_widget(header, chunks[0]);
@@ -206,12 +206,12 @@ impl RecordsScreen {
                 Line::from("Start typing to build your records!"),
             ];
             let empty_paragraph = Paragraph::new(empty_msg)
-                .style(Style::default().fg(Colors::MUTED))
+                .style(Style::default().fg(Colors::text_secondary()))
                 .alignment(Alignment::Center)
                 .block(
                     Block::default()
                         .borders(Borders::ALL)
-                        .border_style(Style::default().fg(Colors::BORDER))
+                        .border_style(Style::default().fg(Colors::border()))
                         .title("Sessions"),
                 );
             f.render_widget(empty_paragraph, chunks[1]);
@@ -233,18 +233,18 @@ impl RecordsScreen {
                 .block(
                     Block::default()
                         .borders(Borders::ALL)
-                        .border_style(Style::default().fg(Colors::BORDER))
+                        .border_style(Style::default().fg(Colors::border()))
                         .title("Sessions")
                         .title_style(
                             Style::default()
-                                .fg(Colors::TEXT)
+                                .fg(Colors::text())
                                 .add_modifier(Modifier::BOLD),
                         ),
                 )
-                .style(Style::default().fg(Colors::TEXT))
+                .style(Style::default().fg(Colors::text()))
                 .highlight_style(
                     Style::default()
-                        .bg(Colors::MUTED)
+                        .bg(Colors::background_secondary())
                         .add_modifier(Modifier::BOLD),
                 )
                 .highlight_symbol("► ");
@@ -270,18 +270,18 @@ impl RecordsScreen {
         let controls_line = Line::from(vec![
             Span::styled(
                 "[↑↓/JK] Navigate  ",
-                Style::default().fg(Colors::NAVIGATION_KEY),
+                Style::default().fg(Colors::key_navigation()),
             ),
-            Span::styled("[SPACE]", Style::default().fg(Colors::SUCCESS)),
-            Span::styled(" Details  ", Style::default().fg(Colors::TEXT)),
-            Span::styled("[F]", Style::default().fg(Colors::BORDER)),
-            Span::styled(" Filter  ", Style::default().fg(Colors::TEXT)),
-            Span::styled("[S]", Style::default().fg(Colors::INFO)),
-            Span::styled(" Sort  ", Style::default().fg(Colors::TEXT)),
-            Span::styled("[R]", Style::default().fg(Colors::WARNING)),
-            Span::styled(" Refresh  ", Style::default().fg(Colors::TEXT)),
-            Span::styled("[ESC]", Style::default().fg(Colors::ERROR)),
-            Span::styled(" Back", Style::default().fg(Colors::TEXT)),
+            Span::styled("[SPACE]", Style::default().fg(Colors::key_action())),
+            Span::styled(" Details  ", Style::default().fg(Colors::text())),
+            Span::styled("[F]", Style::default().fg(Colors::border())),
+            Span::styled(" Filter  ", Style::default().fg(Colors::text())),
+            Span::styled("[S]", Style::default().fg(Colors::info())),
+            Span::styled(" Sort  ", Style::default().fg(Colors::text())),
+            Span::styled("[R]", Style::default().fg(Colors::warning())),
+            Span::styled(" Refresh  ", Style::default().fg(Colors::text())),
+            Span::styled("[ESC]", Style::default().fg(Colors::error())),
+            Span::styled(" Back", Style::default().fg(Colors::text())),
         ]);
 
         let controls = Paragraph::new(controls_line).alignment(Alignment::Center);
@@ -411,31 +411,31 @@ fn format_session_line_ratatui_static<'a>(session_data: &'a SessionDisplayData) 
     Line::from(vec![
         Span::styled(
             format!("{:<17}", date_str),
-            Style::default().fg(Colors::TEXT),
+            Style::default().fg(Colors::text()),
         ),
         Span::styled(
             format!("{:<26}", repo_display),
-            Style::default().fg(Colors::INFO),
+            Style::default().fg(Colors::info()),
         ),
         Span::styled(
             format!("{:>6}", score_str),
-            Style::default().fg(Colors::SCORE),
+            Style::default().fg(Colors::score()),
         ),
         Span::styled(
             format!("{:>6}", cpm_str),
-            Style::default().fg(Colors::SUCCESS),
+            Style::default().fg(Colors::success()),
         ),
         Span::styled(
             format!("{:>6}", acc_str),
-            Style::default().fg(Colors::ACCURACY),
+            Style::default().fg(Colors::accuracy()),
         ),
         Span::styled(
             format!("{:>5}", stages_str),
-            Style::default().fg(Colors::BORDER),
+            Style::default().fg(Colors::border()),
         ),
         Span::styled(
             format!("{:>10}", duration_str),
-            Style::default().fg(Colors::SECONDARY),
+            Style::default().fg(Colors::text_secondary()),
         ),
     ])
 }

@@ -17,7 +17,7 @@ impl Language for Python {
 
     fn color(&self) -> ratatui::style::Color {
         use crate::ui::Colors;
-        Colors::LANG_PYTHON
+        Colors::lang_python()
     }
 
     fn display_name(&self) -> &'static str {

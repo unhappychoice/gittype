@@ -39,7 +39,7 @@ impl TrendsView {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::BORDER))
+                    .border_style(Style::default().fg(Colors::border()))
                     .title("CPM Trend"),
             );
             f.render_widget(empty_msg, area);
@@ -68,7 +68,7 @@ impl TrendsView {
         let datasets = vec![Dataset::default()
             .name("CPM")
             .marker(ratatui::symbols::Marker::Braille)
-            .style(Style::default().fg(Colors::CPM_WPM))
+            .style(Style::default().fg(Colors::cpm_wpm()))
             .graph_type(GraphType::Line)
             .data(&chart_data)];
 
@@ -79,7 +79,7 @@ impl TrendsView {
             .step_by((data.cpm_trend.len().max(1) / 8).max(1)) // Show ~8 labels max
             .map(|(date, _)| {
                 let day = if date.len() >= 5 { &date[3..] } else { date };
-                Span::styled(day, Style::default().fg(Colors::TEXT))
+                Span::styled(day, Style::default().fg(Colors::text()))
             })
             .collect();
 
@@ -87,28 +87,34 @@ impl TrendsView {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::BORDER))
+                    .border_style(Style::default().fg(Colors::border()))
                     .title("CPM Performance Trend"),
             )
             .x_axis(
                 Axis::default()
                     .title("Date")
-                    .style(Style::default().fg(Colors::SECONDARY))
+                    .style(Style::default().fg(Colors::text_secondary()))
                     .labels(x_labels)
                     .bounds([0.0, (data.cpm_trend.len().saturating_sub(1)) as f64]),
             )
             .y_axis(
                 Axis::default()
                     .title("CPM")
-                    .style(Style::default().fg(Colors::SECONDARY))
+                    .style(Style::default().fg(Colors::text_secondary()))
                     .bounds([min_cpm - cpm_range * 0.1, max_cpm + cpm_range * 0.1])
                     .labels(vec![
-                        Span::styled(format!("{:.0}", min_cpm), Style::default().fg(Colors::TEXT)),
+                        Span::styled(
+                            format!("{:.0}", min_cpm),
+                            Style::default().fg(Colors::text()),
+                        ),
                         Span::styled(
                             format!("{:.0}", (min_cpm + max_cpm) / 2.0),
-                            Style::default().fg(Colors::TEXT),
+                            Style::default().fg(Colors::text()),
                         ),
-                        Span::styled(format!("{:.0}", max_cpm), Style::default().fg(Colors::TEXT)),
+                        Span::styled(
+                            format!("{:.0}", max_cpm),
+                            Style::default().fg(Colors::text()),
+                        ),
                     ]),
             );
 
@@ -128,7 +134,7 @@ impl TrendsView {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::BORDER))
+                    .border_style(Style::default().fg(Colors::border()))
                     .title("Accuracy Trend"),
             );
             f.render_widget(empty_msg, area);
@@ -157,7 +163,7 @@ impl TrendsView {
         let datasets = vec![Dataset::default()
             .name("Accuracy")
             .marker(ratatui::symbols::Marker::Braille)
-            .style(Style::default().fg(Colors::ACCURACY))
+            .style(Style::default().fg(Colors::accuracy()))
             .graph_type(GraphType::Line)
             .data(&chart_data)];
 
@@ -168,7 +174,7 @@ impl TrendsView {
             .step_by((data.accuracy_trend.len().max(1) / 8).max(1))
             .map(|(date, _)| {
                 let day = if date.len() >= 5 { &date[3..] } else { date };
-                Span::styled(day, Style::default().fg(Colors::TEXT))
+                Span::styled(day, Style::default().fg(Colors::text()))
             })
             .collect();
 
@@ -176,20 +182,20 @@ impl TrendsView {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::BORDER))
+                    .border_style(Style::default().fg(Colors::border()))
                     .title("Accuracy Performance Trend"),
             )
             .x_axis(
                 Axis::default()
                     .title("Date")
-                    .style(Style::default().fg(Colors::SECONDARY))
+                    .style(Style::default().fg(Colors::text_secondary()))
                     .labels(x_labels)
                     .bounds([0.0, (data.accuracy_trend.len().saturating_sub(1)) as f64]),
             )
             .y_axis(
                 Axis::default()
                     .title("Accuracy (%)")
-                    .style(Style::default().fg(Colors::SECONDARY))
+                    .style(Style::default().fg(Colors::text_secondary()))
                     .bounds([
                         min_accuracy - accuracy_range * 0.1,
                         max_accuracy + accuracy_range * 0.1,
@@ -197,15 +203,15 @@ impl TrendsView {
                     .labels(vec![
                         Span::styled(
                             format!("{:.1}%", min_accuracy),
-                            Style::default().fg(Colors::TEXT),
+                            Style::default().fg(Colors::text()),
                         ),
                         Span::styled(
                             format!("{:.1}%", (min_accuracy + max_accuracy) / 2.0),
-                            Style::default().fg(Colors::TEXT),
+                            Style::default().fg(Colors::text()),
                         ),
                         Span::styled(
                             format!("{:.1}%", max_accuracy),
-                            Style::default().fg(Colors::TEXT),
+                            Style::default().fg(Colors::text()),
                         ),
                     ]),
             );

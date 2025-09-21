@@ -13,7 +13,7 @@ impl HeaderView {
         let title = Paragraph::new("=== SESSION DETAILS ===")
             .style(
                 Style::default()
-                    .fg(Colors::INFO)
+                    .fg(Colors::info())
                     .add_modifier(Modifier::BOLD),
             )
             .alignment(Alignment::Center);

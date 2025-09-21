@@ -14,7 +14,7 @@ impl Language for Go {
 
     fn color(&self) -> ratatui::style::Color {
         use crate::ui::Colors;
-        Colors::LANG_GO
+        Colors::lang_go()
     }
 
     fn display_name(&self) -> &'static str {

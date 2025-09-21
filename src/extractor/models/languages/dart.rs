@@ -14,7 +14,7 @@ impl Language for Dart {
 
     fn color(&self) -> ratatui::style::Color {
         use crate::ui::Colors;
-        Colors::LANG_DART
+        Colors::lang_dart()
     }
 
     fn display_name(&self) -> &'static str {

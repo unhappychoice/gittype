@@ -105,8 +105,8 @@ impl TypingView {
             height: 1,
         };
         let esc_text = Paragraph::new(vec![Line::from(vec![
-            Span::styled("[ESC]", Style::default().fg(Colors::ACTION_KEY)),
-            Span::styled(" Options", Style::default().fg(Colors::TEXT)),
+            Span::styled("[ESC]", Style::default().fg(Colors::key_action())),
+            Span::styled(" Options", Style::default().fg(Colors::text())),
         ])]);
         frame.render_widget(esc_text, esc_area);
 
@@ -116,14 +116,14 @@ impl TypingView {
 
         if waiting_to_start {
             let start_line = vec![
-                Span::styled("Press ", Style::default().fg(Colors::TEXT)),
+                Span::styled("Press ", Style::default().fg(Colors::text())),
                 Span::styled(
                     "[SPACE]",
                     Style::default()
-                        .fg(Colors::SUCCESS)
+                        .fg(Colors::success())
                         .add_modifier(Modifier::BOLD),
                 ),
-                Span::styled(" to start", Style::default().fg(Colors::TEXT)),
+                Span::styled(" to start", Style::default().fg(Colors::text())),
             ];
 
             let total_width = "Press [SPACE] to start".len() as u16;

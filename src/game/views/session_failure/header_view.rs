@@ -13,7 +13,7 @@ pub fn render_header(stdout: &mut Stdout, terminal_width: u16, center_y: u16) ->
     execute!(stdout, MoveTo(header_x, center_y.saturating_sub(6)))?;
     execute!(
         stdout,
-        SetForegroundColor(Colors::to_crossterm(Colors::ERROR)),
+        SetForegroundColor(Colors::to_crossterm(Colors::error())),
         SetAttribute(Attribute::Bold)
     )?;
     execute!(stdout, Print(header_text))?;

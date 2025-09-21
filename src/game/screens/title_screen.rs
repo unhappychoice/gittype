@@ -23,6 +23,7 @@ pub enum TitleAction {
     Start(DifficultyLevel),
     Records,
     Analytics,
+    Settings,
     Quit,
 }
 
@@ -129,6 +130,10 @@ impl Screen for TitleScreen {
             KeyCode::Char('a') | KeyCode::Char('A') => {
                 self.action_result = Some(TitleAction::Analytics);
                 Ok(ScreenTransition::Replace(ScreenType::Analytics))
+            }
+            KeyCode::Char('s') | KeyCode::Char('S') => {
+                self.action_result = Some(TitleAction::Settings);
+                Ok(ScreenTransition::Push(ScreenType::Settings))
             }
             _ => Ok(ScreenTransition::None),
         }

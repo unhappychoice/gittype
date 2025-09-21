@@ -15,11 +15,11 @@ fn rank_tier_color_palette_mappings_are_consistent() {
 fn rank_tier_terminal_colors_follow_ui_colors() {
     assert_eq!(
         RankTier::Beginner.terminal_color(),
-        Colors::to_crossterm(Colors::INFO)
+        Colors::to_crossterm(Colors::info())
     );
     assert_eq!(
         RankTier::Legendary.terminal_color(),
-        Colors::to_crossterm(Colors::ERROR)
+        Colors::to_crossterm(Colors::error())
     );
 }
 
@@ -56,5 +56,6 @@ fn rank_for_score_returns_correct_rank() {
 fn rank_for_score_defaults_to_highest_when_exceeded() {
     let rank = Rank::for_score(999_999.0);
     assert_eq!(rank.tier(), &RankTier::Legendary);
-    assert_eq!(rank.terminal_color(), TerminalColor::Red);
+    // Legendary tier uses error color which is now RGB
+    assert!(matches!(rank.terminal_color(), TerminalColor::Rgb { .. }));
 }

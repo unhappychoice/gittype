@@ -4,7 +4,7 @@ use crate::{
     ui::Colors,
 };
 use ratatui::{
-    style::{Modifier, Style},
+    style::Style,
     text::{Line, Span, Text},
     widgets::{Block, Borders, Paragraph},
     Frame,
@@ -72,9 +72,9 @@ impl TypingContentView {
                 .block(
                     Block::default()
                         .borders(Borders::ALL)
-                        .border_style(Style::default().fg(Colors::BORDER))
+                        .border_style(Style::default().fg(Colors::border()))
                         .title("Code")
-                        .title_style(Style::default().fg(Colors::ACTION_KEY))
+                        .title_style(Style::default().fg(Colors::key_action()))
                         .padding(ratatui::widgets::Padding::uniform(1)),
                 );
             frame.render_widget(content, area);
@@ -82,9 +82,9 @@ impl TypingContentView {
             let empty_content = Paragraph::new(Text::from(vec![])).block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::BORDER))
+                    .border_style(Style::default().fg(Colors::border()))
                     .title("Code")
-                    .title_style(Style::default().fg(Colors::ACTION_KEY))
+                    .title_style(Style::default().fg(Colors::key_action()))
                     .padding(ratatui::widgets::Padding::uniform(1)),
             );
             frame.render_widget(empty_content, area);
@@ -144,13 +144,11 @@ impl TypingContentView {
                 start_line_number.saturating_sub(code_context.pre_context.len() - ctx_idx);
             let line_num_span = Span::styled(
                 format!("{:>4} │ ", ctx_line_number),
-                Style::default().fg(Colors::COMMENT_TEXT),
+                Style::default().fg(Colors::text_secondary()),
             );
             let content_span = Span::styled(
                 pre_line.clone(),
-                Style::default()
-                    .fg(Colors::COMMENT_TEXT)
-                    .add_modifier(Modifier::DIM),
+                Style::default().fg(Colors::text_secondary()),
             );
             lines.push(Line::from(vec![line_num_span, content_span]));
         }
@@ -171,13 +169,11 @@ impl TypingContentView {
             let ctx_line_number = end_line_number + ctx_idx + 1;
             let line_num_span = Span::styled(
                 format!("{:>4} │ ", ctx_line_number),
-                Style::default().fg(Colors::COMMENT_TEXT),
+                Style::default().fg(Colors::text_secondary()),
             );
             let content_span = Span::styled(
                 post_line.clone(),
-                Style::default()
-                    .fg(Colors::COMMENT_TEXT)
-                    .add_modifier(Modifier::DIM),
+                Style::default().fg(Colors::text_secondary()),
             );
             lines.push(Line::from(vec![line_num_span, content_span]));
         }
@@ -347,10 +343,10 @@ impl TypingContentView {
         let line_num_text = format!("{:>4} │ ", line_number);
         let style = if is_current {
             Style::default()
-                .fg(Colors::WARNING)
+                .fg(Colors::warning())
                 .add_modifier(ratatui::style::Modifier::BOLD)
         } else {
-            Style::default().fg(Colors::SECONDARY)
+            Style::default().fg(Colors::text_secondary())
         };
         Span::styled(line_num_text, style)
     }
@@ -369,31 +365,27 @@ impl TypingContentView {
         current_mistake_position: Option<usize>,
     ) -> Style {
         if is_in_comment {
-            Style::default()
-                .fg(Colors::COMMENT_TEXT)
-                .add_modifier(Modifier::DIM)
+            Style::default().fg(Colors::text_secondary())
         } else if char_index < current_display_position {
-            Style::default()
-                .fg(Colors::TYPED_TEXT)
-                .add_modifier(Modifier::DIM)
+            Style::default().fg(Colors::typed_text())
         } else if char_index == current_display_position {
             if let Some(mistake_pos) = current_mistake_position {
                 if char_index == mistake_pos {
                     Style::default()
-                        .fg(Colors::CURRENT_CURSOR)
-                        .bg(Colors::MISTAKE_BG)
+                        .fg(Colors::current_cursor())
+                        .bg(Colors::mistake_bg())
                 } else {
                     Style::default()
-                        .fg(Colors::CURRENT_CURSOR)
-                        .bg(Colors::CURSOR_BG)
+                        .fg(Colors::current_cursor())
+                        .bg(Colors::cursor_bg())
                 }
             } else {
-                Style::default().fg(Colors::TEXT).bg(Colors::MUTED)
+                Style::default()
+                    .fg(Colors::current_cursor())
+                    .bg(Colors::cursor_bg())
             }
         } else {
-            Style::default()
-                .fg(Colors::UNTYPED_TEXT)
-                .add_modifier(Modifier::DIM)
+            Style::default().fg(Colors::untyped_text())
         }
     }
 

@@ -105,7 +105,7 @@ impl ScoreView {
         execute!(
             stdout,
             SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(Colors::SCORE))
+            SetForegroundColor(Colors::to_crossterm(Colors::score()))
         )?;
         execute!(stdout, Print(score_label))?;
         execute!(stdout, ResetColor)?;
@@ -117,7 +117,7 @@ impl ScoreView {
             execute!(stdout, SetAttribute(Attribute::Bold))?;
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::WARNING))
+                SetForegroundColor(Colors::to_crossterm(Colors::warning()))
             )?;
             execute!(stdout, Print(&best_label))?;
             execute!(stdout, ResetColor)?;
@@ -161,17 +161,17 @@ impl ScoreView {
         if score_diff > 0.0 {
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS))
+                SetForegroundColor(Colors::to_crossterm(Colors::success()))
             )?;
         } else if score_diff < 0.0 {
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::ERROR))
+                SetForegroundColor(Colors::to_crossterm(Colors::error()))
             )?;
         } else {
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+                SetForegroundColor(Colors::to_crossterm(Colors::text()))
             )?;
         }
         execute!(stdout, Print(&diff_text))?;

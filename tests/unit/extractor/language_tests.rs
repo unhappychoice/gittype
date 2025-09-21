@@ -3,22 +3,22 @@ use gittype::ui::Colors;
 
 #[test]
 fn language_registry_get_color_returns_specific_colors_for_known_languages() {
-    assert_eq!(LanguageRegistry::get_color(Some("rust")), Colors::LANG_RUST);
-    assert_eq!(LanguageRegistry::get_color(Some("python")), Colors::LANG_PYTHON);
-    assert_eq!(LanguageRegistry::get_color(Some("javascript")), Colors::LANG_JAVASCRIPT);
-    assert_eq!(LanguageRegistry::get_color(Some("typescript")), Colors::LANG_TYPESCRIPT);
+    assert_eq!(LanguageRegistry::get_color(Some("rust")), Colors::lang_rust());
+    assert_eq!(LanguageRegistry::get_color(Some("python")), Colors::lang_python());
+    assert_eq!(LanguageRegistry::get_color(Some("javascript")), Colors::lang_javascript());
+    assert_eq!(LanguageRegistry::get_color(Some("typescript")), Colors::lang_typescript());
 }
 
 #[test]
 fn language_registry_get_color_returns_default_for_unknown_languages() {
-    assert_eq!(LanguageRegistry::get_color(Some("unknown")), Colors::LANG_DEFAULT);
-    assert_eq!(LanguageRegistry::get_color(Some("xyz")), Colors::LANG_DEFAULT);
-    assert_eq!(LanguageRegistry::get_color(Some("")), Colors::LANG_DEFAULT);
+    assert_eq!(LanguageRegistry::get_color(Some("unknown")), Colors::lang_default());
+    assert_eq!(LanguageRegistry::get_color(Some("xyz")), Colors::lang_default());
+    assert_eq!(LanguageRegistry::get_color(Some("")), Colors::lang_default());
 }
 
 #[test]
 fn language_registry_get_color_returns_default_for_none() {
-    assert_eq!(LanguageRegistry::get_color(None), Colors::LANG_DEFAULT);
+    assert_eq!(LanguageRegistry::get_color(None), Colors::lang_default());
 }
 
 #[test]
@@ -62,6 +62,6 @@ fn language_trait_methods_work_correctly() {
     if let Some(rust_lang) = LanguageRegistry::get_by_name("rust") {
         assert_eq!(rust_lang.name(), "rust");
         assert_eq!(rust_lang.display_name(), "Rust");
-        assert_eq!(rust_lang.color(), Colors::LANG_RUST);
+        assert_eq!(rust_lang.color(), Colors::lang_rust());
     }
 }

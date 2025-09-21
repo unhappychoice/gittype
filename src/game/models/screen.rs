@@ -23,6 +23,7 @@ pub enum ScreenType {
     InfoDialog,
     Help,
     DetailsDialog,
+    Settings,
     Panic,
 }
 

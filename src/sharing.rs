@@ -146,7 +146,7 @@ impl SharingService {
         execute!(
             stdout,
             SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(Colors::WARNING))
+            SetForegroundColor(Colors::to_crossterm(Colors::warning()))
         )?;
         execute!(stdout, Print(&title))?;
         execute!(stdout, ResetColor)?;
@@ -160,7 +160,7 @@ impl SharingService {
         )?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(instruction))?;
         execute!(stdout, ResetColor)?;
@@ -171,7 +171,7 @@ impl SharingService {
         execute!(
             stdout,
             SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(Colors::INFO))
+            SetForegroundColor(Colors::to_crossterm(Colors::info()))
         )?;
         execute!(stdout, Print(&url_display))?;
         execute!(stdout, ResetColor)?;
@@ -182,7 +182,7 @@ impl SharingService {
         execute!(stdout, MoveTo(info_col, center_row + 4))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::MUTED))
+            SetForegroundColor(Colors::to_crossterm(Colors::text_secondary()))
         )?;
         execute!(stdout, Print(info))?;
         execute!(stdout, ResetColor)?;
@@ -193,7 +193,7 @@ impl SharingService {
         execute!(stdout, MoveTo(continue_col, center_row + 6))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS))
+            SetForegroundColor(Colors::to_crossterm(Colors::success()))
         )?;
         execute!(stdout, Print(continue_text))?;
         execute!(stdout, ResetColor)?;

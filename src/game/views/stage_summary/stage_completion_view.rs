@@ -113,17 +113,17 @@ impl StageCompletionView {
         if metrics.was_failed {
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::FAILED))
+                SetForegroundColor(Colors::to_crossterm(Colors::error()))
             )?;
         } else if metrics.was_skipped {
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::SKIPPED))
+                SetForegroundColor(Colors::to_crossterm(Colors::warning()))
             )?;
         } else {
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::COMPLETED))
+                SetForegroundColor(Colors::to_crossterm(Colors::success()))
             )?;
         }
         execute!(stdout, Print(&stage_title))?;
@@ -155,17 +155,17 @@ impl StageCompletionView {
         if metrics.was_failed {
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::FAILED))
+                SetForegroundColor(Colors::to_crossterm(Colors::error()))
             )?;
         } else if metrics.was_skipped {
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::SKIPPED))
+                SetForegroundColor(Colors::to_crossterm(Colors::error()))
             )?;
         } else {
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::COMPLETED))
+                SetForegroundColor(Colors::to_crossterm(Colors::success()))
             )?;
         }
         execute!(stdout, Print(score_label))?;
@@ -190,12 +190,12 @@ impl StageCompletionView {
             if metrics.was_failed {
                 execute!(
                     stdout,
-                    SetForegroundColor(Colors::to_crossterm(Colors::FAILED))
+                    SetForegroundColor(Colors::to_crossterm(Colors::error()))
                 )?;
             } else if metrics.was_skipped {
                 execute!(
                     stdout,
-                    SetForegroundColor(Colors::to_crossterm(Colors::SKIPPED))
+                    SetForegroundColor(Colors::to_crossterm(Colors::warning()))
                 )?;
             } else {
                 let best_rank = crate::scoring::Rank::for_score(metrics.challenge_score);
@@ -227,12 +227,12 @@ impl StageCompletionView {
         // CPM label and value
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+            SetForegroundColor(Colors::to_crossterm(Colors::cpm_wpm()))
         )?;
         execute!(stdout, Print("CPM: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(format!("{:.0}", metrics.cpm)))?;
         execute!(stdout, Print(" | "))?;
@@ -240,12 +240,12 @@ impl StageCompletionView {
         // WPM label and value
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::CPM_WPM))
+            SetForegroundColor(Colors::to_crossterm(Colors::cpm_wpm()))
         )?;
         execute!(stdout, Print("WPM: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(format!("{:.0}", metrics.wpm)))?;
         execute!(stdout, Print(" | "))?;
@@ -253,12 +253,12 @@ impl StageCompletionView {
         // Time label and value
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::DURATION))
+            SetForegroundColor(Colors::to_crossterm(Colors::duration()))
         )?;
         execute!(stdout, Print("Time: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(format!("{:.1}s", time_secs)))?;
         execute!(stdout, ResetColor)?;
@@ -274,12 +274,12 @@ impl StageCompletionView {
         // Keystrokes label and value
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::STAGE_INFO))
+            SetForegroundColor(Colors::to_crossterm(Colors::stage_info()))
         )?;
         execute!(stdout, Print("Keystrokes: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(format!("{}", keystrokes)))?;
         execute!(stdout, Print(" | "))?;
@@ -287,12 +287,12 @@ impl StageCompletionView {
         // Mistakes label and value
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::ERROR))
+            SetForegroundColor(Colors::to_crossterm(Colors::error()))
         )?;
         execute!(stdout, Print("Mistakes: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(format!("{}", metrics.mistakes)))?;
         execute!(stdout, Print(" | "))?;
@@ -300,12 +300,12 @@ impl StageCompletionView {
         // Accuracy label and value
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::ACCURACY))
+            SetForegroundColor(Colors::to_crossterm(Colors::accuracy()))
         )?;
         execute!(stdout, Print("Accuracy: "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(format!("{:.1}%", metrics.accuracy)))?;
         execute!(stdout, ResetColor)?;
@@ -328,7 +328,7 @@ impl StageCompletionView {
         execute!(stdout, MoveTo(progress_col, progress_start_row))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(&progress_text))?;
         execute!(stdout, ResetColor)?;
@@ -345,7 +345,7 @@ impl StageCompletionView {
             execute!(stdout, MoveTo(next_col, progress_start_row + 2))?;
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::WARNING))
+                SetForegroundColor(Colors::to_crossterm(Colors::warning()))
             )?;
             execute!(stdout, Print(next_text))?;
             execute!(stdout, ResetColor)?;
@@ -367,22 +367,22 @@ impl StageCompletionView {
         execute!(stdout, MoveTo(start_col, options_row))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS))
+            SetForegroundColor(Colors::to_crossterm(Colors::success()))
         )?;
         execute!(stdout, Print("[SPACE]"))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(" Continue  "))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::ERROR))
+            SetForegroundColor(Colors::to_crossterm(Colors::error()))
         )?;
         execute!(stdout, Print("[ESC]"))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+            SetForegroundColor(Colors::to_crossterm(Colors::text()))
         )?;
         execute!(stdout, Print(" Quit"))?;
         execute!(stdout, ResetColor)?;

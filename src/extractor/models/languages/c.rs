@@ -14,7 +14,7 @@ impl Language for C {
 
     fn color(&self) -> ratatui::style::Color {
         use crate::ui::Colors;
-        Colors::LANG_C
+        Colors::lang_c()
     }
 
     fn display_name(&self) -> &'static str {

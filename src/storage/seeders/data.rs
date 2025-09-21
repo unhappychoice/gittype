@@ -507,7 +507,7 @@ where
     name: string;
     avatar?: string;
     preferences: {
-        theme: 'light' | 'dark';
+        theme: 'light_original' | 'dark_original';
         notifications: boolean;
     };
 }
@@ -518,7 +518,7 @@ export const createUserProfile = (data: Partial<UserProfile>): UserProfile => {
         email: data.email || '',
         name: data.name || '',
         preferences: {
-            theme: 'light',
+            theme: 'light_original',
             notifications: true,
             ...data.preferences
         },

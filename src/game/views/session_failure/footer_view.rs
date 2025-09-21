@@ -15,36 +15,36 @@ pub fn render_navigation(stdout: &mut Stdout, terminal_width: u16, center_y: u16
     // [R] Retry
     execute!(
         stdout,
-        SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS))
+        SetForegroundColor(Colors::to_crossterm(Colors::success()))
     )?;
     execute!(stdout, Print("[R]"))?;
     execute!(
         stdout,
-        SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        SetForegroundColor(Colors::to_crossterm(Colors::text()))
     )?;
     execute!(stdout, Print(" Retry | "))?;
 
     // [T] Back to Title
     execute!(
         stdout,
-        SetForegroundColor(Colors::to_crossterm(Colors::SUCCESS))
+        SetForegroundColor(Colors::to_crossterm(Colors::success()))
     )?;
     execute!(stdout, Print("[T]"))?;
     execute!(
         stdout,
-        SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        SetForegroundColor(Colors::to_crossterm(Colors::text()))
     )?;
     execute!(stdout, Print(" Back to Title | "))?;
 
     // [ESC] Session Summary & Exit
     execute!(
         stdout,
-        SetForegroundColor(Colors::to_crossterm(Colors::ERROR))
+        SetForegroundColor(Colors::to_crossterm(Colors::error()))
     )?;
     execute!(stdout, Print("[ESC]"))?;
     execute!(
         stdout,
-        SetForegroundColor(Colors::to_crossterm(Colors::TEXT))
+        SetForegroundColor(Colors::to_crossterm(Colors::text()))
     )?;
     execute!(stdout, Print(" Session Summary & Exit"))?;
 

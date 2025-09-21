@@ -490,7 +490,7 @@ impl AnalyticsScreen {
             Span::styled(
                 "Performance Analytics",
                 Style::default()
-                    .fg(Colors::INFO)
+                    .fg(Colors::info())
                     .add_modifier(Modifier::BOLD),
             ),
         ])])
@@ -498,7 +498,7 @@ impl AnalyticsScreen {
         .block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Colors::BORDER))
+                .border_style(Style::default().fg(Colors::border()))
                 .title("GitType Analytics"),
         );
         f.render_widget(header, area);
@@ -517,15 +517,15 @@ impl AnalyticsScreen {
 
         for (i, view) in all_views.iter().enumerate() {
             if i > 0 {
-                tab_spans.push(Span::styled(" | ", Style::default().fg(Colors::TEXT)));
+                tab_spans.push(Span::styled(" | ", Style::default().fg(Colors::text())));
             }
 
             let style = if *view == self.view_mode {
                 Style::default()
-                    .fg(Colors::TEXT)
+                    .fg(Colors::text())
                     .add_modifier(Modifier::BOLD)
             } else {
-                Style::default().fg(Colors::MUTED)
+                Style::default().fg(Colors::text_secondary())
             };
 
             tab_spans.push(Span::styled(view.display_name(), style));
@@ -536,8 +536,8 @@ impl AnalyticsScreen {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::BORDER))
-                    .title("Navigation"),
+                    .border_style(Style::default().fg(Colors::border()))
+                    .title("Views"),
             );
 
         f.render_widget(tabs, area);
@@ -573,12 +573,14 @@ impl AnalyticsScreen {
 
     fn render_controls(&mut self, f: &mut Frame, area: Rect) {
         let controls_line = Line::from(vec![
-            Span::styled("[←→/HL]", Style::default().fg(Colors::NAVIGATION_KEY)),
-            Span::styled(" Switch View  ", Style::default().fg(Colors::TEXT)),
-            Span::styled("[R]", Style::default().fg(Colors::SCORE)),
-            Span::styled(" Refresh  ", Style::default().fg(Colors::TEXT)),
-            Span::styled("[ESC]", Style::default().fg(Colors::ERROR)),
-            Span::styled(" Back", Style::default().fg(Colors::TEXT)),
+            Span::styled("[←→/HL]", Style::default().fg(Colors::key_navigation())),
+            Span::styled(" Switch View  ", Style::default().fg(Colors::text())),
+            Span::styled("[↑↓/JK]", Style::default().fg(Colors::key_navigation())),
+            Span::styled(" Navigate  ", Style::default().fg(Colors::text())),
+            Span::styled("[R]", Style::default().fg(Colors::score())),
+            Span::styled(" Refresh  ", Style::default().fg(Colors::text())),
+            Span::styled("[ESC]", Style::default().fg(Colors::error())),
+            Span::styled(" Back", Style::default().fg(Colors::text())),
         ]);
 
         let controls = Paragraph::new(controls_line).alignment(Alignment::Center);

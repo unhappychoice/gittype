@@ -89,7 +89,7 @@ impl AnimationScreen {
                     {
                         lines.push(Line::from(vec![
                             Span::styled(text, Style::default().fg(line_color)),
-                            Span::styled("█", Style::default().fg(Colors::TEXT)),
+                            Span::styled("█", Style::default().fg(Colors::text())),
                         ]));
                     } else if !text.is_empty() {
                         lines.push(Line::from(Span::styled(
@@ -121,7 +121,7 @@ impl AnimationScreen {
                 let dots = ".".repeat(animation.get_pause_dots());
                 lines.push(Line::from(Span::styled(
                     dots,
-                    Style::default().fg(Colors::SECONDARY),
+                    Style::default().fg(Colors::text_secondary()),
                 )));
 
                 let paragraph = Paragraph::new(Text::from(lines)).alignment(Alignment::Center);
@@ -152,7 +152,7 @@ impl AnimationScreen {
         };
 
         let skip_paragraph =
-            Paragraph::new(skip_text).style(Style::default().fg(Colors::SECONDARY));
+            Paragraph::new(skip_text).style(Style::default().fg(Colors::text_secondary()));
 
         frame.render_widget(skip_paragraph, skip_area);
     }
