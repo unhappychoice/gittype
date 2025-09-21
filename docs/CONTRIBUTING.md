@@ -30,7 +30,7 @@ This project follows a standard code of conduct. Please be respectful and constr
 - Git
 - Basic familiarity with Rust and CLI development
 
-> When developing in a [Nix](https://nixos.org/) environment: `nix develop` will create a dev shell with all dependencies.
+> When developing in a [Nix](https://nixos.org/) environment: `nix develop` will create a development shell with all dependencies.
 
 ### Development Setup
 
@@ -44,10 +44,10 @@ This project follows a standard code of conduct. Please be respectful and constr
    ```bash
    # Install dependencies and build
    cargo build
-
+   
    # Run tests to ensure everything works
    cargo test
-
+   
    # Try running the application
    cargo run -- --help
    ```
