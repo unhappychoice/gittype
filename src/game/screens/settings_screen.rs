@@ -9,7 +9,7 @@ use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Style, Stylize},
     text::{Line, Span},
-    widgets::{Block, Borders, List, ListItem, ListState, Paragraph, Tabs, Wrap},
+    widgets::{Block, Borders, List, ListItem, ListState, Padding, Paragraph, Tabs, Wrap},
     Frame,
 };
 use std::io::Stdout;
@@ -152,7 +152,8 @@ impl SettingsScreen {
                 Block::default()
                     .title("Color Mode")
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border())),
+                    .border_style(Style::default().fg(Colors::border()))
+                    .padding(Padding::horizontal(2)),
             )
             .highlight_style(Style::default().bg(Colors::text()).fg(Colors::background()));
 
@@ -171,7 +172,8 @@ impl SettingsScreen {
                 Block::default()
                     .title("Theme")
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border())),
+                    .border_style(Style::default().fg(Colors::border()))
+                    .padding(Padding::horizontal(2)),
             )
             .highlight_style(Style::default().bg(Colors::text()).fg(Colors::background()));
 
@@ -232,7 +234,8 @@ impl SettingsScreen {
                 Block::default()
                     .title("Description")
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border())),
+                    .border_style(Style::default().fg(Colors::border()))
+                    .padding(Padding::horizontal(2)),
             )
             .wrap(Wrap { trim: true })
             .alignment(Alignment::Left);
@@ -269,7 +272,6 @@ impl SettingsScreen {
         let content_chunks = Layout::default()
             .direction(Direction::Horizontal)
             .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
-            .margin(1)
             .split(area);
 
         match self.current_section {
