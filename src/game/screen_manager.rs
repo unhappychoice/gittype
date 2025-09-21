@@ -186,7 +186,10 @@ impl ScreenManager {
         }
 
         // Register Settings screen
-        self.register_screen(ScreenType::Settings, Box::new(crate::game::screens::SettingsScreen::default()));
+        self.register_screen(
+            ScreenType::Settings,
+            Box::new(crate::game::screens::SettingsScreen::default()),
+        );
 
         Ok(())
     }

@@ -1,5 +1,5 @@
-use crate::ui::color_scheme::ColorScheme;
 use crate::ui::color_mode::ColorMode;
+use crate::ui::color_scheme::ColorScheme;
 use serde::{Deserialize, Serialize};
 
 const THEME_FILES: &[&str] = &[
@@ -42,7 +42,7 @@ impl Theme {
     /// Get all builtin themes
     pub fn all_themes() -> Vec<Self> {
         THEME_FILES
-            .into_iter()
+            .iter()
             .map(|json| {
                 let theme_file: crate::ui::color_scheme::ThemeFile =
                     serde_json::from_str(json).expect("Failed to parse theme JSON");

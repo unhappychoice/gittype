@@ -263,7 +263,10 @@ impl LanguagesView {
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Total Stages: ", Style::default().fg(Colors::stage_info())),
+                        Span::styled(
+                            "• Total Stages: ",
+                            Style::default().fg(Colors::stage_info()),
+                        ),
                         Span::styled(
                             format!(
                                 "{}/{} completed",
@@ -293,7 +296,10 @@ impl LanguagesView {
                     ]),
                     Line::from(vec![
                         Span::raw("  "),
-                        Span::styled("• Session Count: ", Style::default().fg(Colors::stage_info())),
+                        Span::styled(
+                            "• Session Count: ",
+                            Style::default().fg(Colors::stage_info()),
+                        ),
                         Span::styled(
                             format!("{}", lang_data.2),
                             Style::default().fg(Colors::text()),
@@ -302,14 +308,16 @@ impl LanguagesView {
                 ]);
             }
 
-
             lines
         } else {
             vec![
                 Line::from(""),
                 Line::from(vec![
                     Span::raw("  "),
-                    Span::styled("No Language Selected", Style::default().fg(Colors::text_secondary())),
+                    Span::styled(
+                        "No Language Selected",
+                        Style::default().fg(Colors::text_secondary()),
+                    ),
                 ]),
                 Line::from(""),
                 Line::from(vec![

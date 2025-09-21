@@ -94,7 +94,10 @@ pub fn render_repo_play_ui(
                         let mut spans = Vec::new();
                         for (i, lang) in repo.languages.iter().enumerate() {
                             if i > 0 {
-                                spans.push(Span::styled(", ", Style::default().fg(Colors::text_secondary())));
+                                spans.push(Span::styled(
+                                    ", ",
+                                    Style::default().fg(Colors::text_secondary()),
+                                ));
                             }
                             spans.push(Span::styled(
                                 LanguageRegistry::get_display_name(Some(lang)),

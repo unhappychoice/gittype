@@ -80,7 +80,10 @@ impl HelpScreen {
                 Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
-            Line::from(Span::styled("Base Score = CPM × (Accuracy / 100) × 10", Style::default().fg(Colors::text()))),
+            Line::from(Span::styled(
+                "Base Score = CPM × (Accuracy / 100) × 10",
+                Style::default().fg(Colors::text()),
+            )),
             Line::from(""),
             Line::from(vec![
                 Span::styled("CPM", Style::default().fg(Colors::cpm_wpm())),
@@ -115,11 +118,23 @@ impl HelpScreen {
                 Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
-            Line::from(Span::styled("• Consistency Bonus: Up to 70% extra for high accuracy", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Time Bonus: Extra points for fast completion", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Mistake Penalty: -5 points per error", Style::default().fg(Colors::text()))),
+            Line::from(Span::styled(
+                "• Consistency Bonus: Up to 70% extra for high accuracy",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Time Bonus: Extra points for fast completion",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Mistake Penalty: -5 points per error",
+                Style::default().fg(Colors::text()),
+            )),
             Line::from(""),
-            Line::from(Span::styled("Final Score = (Base + Consistency + Time - Penalties) × 2 + 100", Style::default().fg(Colors::text()))),
+            Line::from(Span::styled(
+                "Final Score = (Base + Consistency + Time - Penalties) × 2 + 100",
+                Style::default().fg(Colors::text()),
+            )),
         ])
     }
 
@@ -266,58 +281,148 @@ impl HelpScreen {
                 Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
-            Line::from(Span::styled("• Standard: Type code from popular repositories", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Difficulty: Choose Easy, Normal, Hard, Wild, or Zen", Style::default().fg(Colors::text()))),
+            Line::from(Span::styled(
+                "• Standard: Type code from popular repositories",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Difficulty: Choose Easy, Normal, Hard, Wild, or Zen",
+                Style::default().fg(Colors::text()),
+            )),
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Typing Tips:",
                 Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
-            Line::from(Span::styled("• Focus on accuracy over speed initially", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Use proper finger positioning", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Practice regularly to improve muscle memory", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Don't look at the keyboard while typing", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Take breaks to avoid fatigue", Style::default().fg(Colors::text()))),
+            Line::from(Span::styled(
+                "• Focus on accuracy over speed initially",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Use proper finger positioning",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Practice regularly to improve muscle memory",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Don't look at the keyboard while typing",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Take breaks to avoid fatigue",
+                Style::default().fg(Colors::text()),
+            )),
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Code Challenge Types:",
                 Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
-            Line::from(Span::styled("GitType extracts real code constructs from repositories:", Style::default().fg(Colors::text()))),
+            Line::from(Span::styled(
+                "GitType extracts real code constructs from repositories:",
+                Style::default().fg(Colors::text()),
+            )),
             Line::from(""),
-            Line::from(Span::styled("• Functions, methods, and procedures", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Classes, structs, and interfaces", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Enums, traits, and type definitions", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Variables, constants, and modules", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• React components and namespaces", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Control flow (loops, conditionals)", Style::default().fg(Colors::text()))),
+            Line::from(Span::styled(
+                "• Functions, methods, and procedures",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Classes, structs, and interfaces",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Enums, traits, and type definitions",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Variables, constants, and modules",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• React components and namespaces",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Control flow (loops, conditionals)",
+                Style::default().fg(Colors::text()),
+            )),
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Advanced Typing Tips:",
                 Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
-            Line::from(Span::styled("• Use simultaneous key presses for efficiency:", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("  - For 'knock': press 'kno' with right hand almost simultaneously,", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("    then 'ck' together", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("  - Practice common letter combinations as single motions", Style::default().fg(Colors::text()))),
+            Line::from(Span::styled(
+                "• Use simultaneous key presses for efficiency:",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "  - For 'knock': press 'kno' with right hand almost simultaneously,",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "    then 'ck' together",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "  - Practice common letter combinations as single motions",
+                Style::default().fg(Colors::text()),
+            )),
             Line::from(""),
-            Line::from(Span::styled("• Master Shift key timing:", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("  - Press Shift slightly before the target letter", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("  - Use the opposite hand's Shift when possible", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("  - Release Shift immediately after the letter", Style::default().fg(Colors::text()))),
+            Line::from(Span::styled(
+                "• Master Shift key timing:",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "  - Press Shift slightly before the target letter",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "  - Use the opposite hand's Shift when possible",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "  - Release Shift immediately after the letter",
+                Style::default().fg(Colors::text()),
+            )),
             Line::from(""),
-            Line::from(Span::styled("• Optimize hand movement:", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("  - Keep wrists straight and hands relaxed", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("  - Use minimal finger movement", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("  - Practice chord-like movements for common patterns", Style::default().fg(Colors::text()))),
+            Line::from(Span::styled(
+                "• Optimize hand movement:",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "  - Keep wrists straight and hands relaxed",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "  - Use minimal finger movement",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "  - Practice chord-like movements for common patterns",
+                Style::default().fg(Colors::text()),
+            )),
             Line::from(""),
-            Line::from(Span::styled("• Code-specific techniques:", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("  - Learn bracket/brace patterns as single motions", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("  - Practice common variable naming conventions", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("  - Master punctuation placement without looking", Style::default().fg(Colors::text()))),
+            Line::from(Span::styled(
+                "• Code-specific techniques:",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "  - Learn bracket/brace patterns as single motions",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "  - Practice common variable naming conventions",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "  - Master punctuation placement without looking",
+                Style::default().fg(Colors::text()),
+            )),
         ])
     }
 
@@ -481,7 +586,10 @@ impl HelpScreen {
                     format!("{:<33}", "~/.gittype/cache/"),
                     Style::default().fg(Colors::info()),
                 ),
-                Span::styled("# Challenge cache", Style::default().fg(Colors::text_secondary())),
+                Span::styled(
+                    "# Challenge cache",
+                    Style::default().fg(Colors::text_secondary()),
+                ),
             ]),
             Line::from(vec![
                 Span::styled(
@@ -525,11 +633,23 @@ impl HelpScreen {
                 Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
-            Line::from(Span::styled("A CLI code-typing game that turns your source code into typing challenges", Style::default().fg(Colors::text()))),
+            Line::from(Span::styled(
+                "A CLI code-typing game that turns your source code into typing challenges",
+                Style::default().fg(Colors::text()),
+            )),
             Line::from(""),
-            Line::from(Span::styled("Practice typing with your own code repositories -", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("improve your speed and accuracy while working with", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("real functions, classes, and methods from your actual projects.", Style::default().fg(Colors::text()))),
+            Line::from(Span::styled(
+                "Practice typing with your own code repositories -",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "improve your speed and accuracy while working with",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "real functions, classes, and methods from your actual projects.",
+                Style::default().fg(Colors::text()),
+            )),
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Development Team:",
@@ -549,22 +669,52 @@ impl HelpScreen {
                 Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
-            Line::from(Span::styled("• All open-source repository maintainers", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• The Rust community for excellent tooling", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Tree-sitter for code parsing capabilities", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Ratatui for terminal UI framework", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• All contributors and users providing feedback", Style::default().fg(Colors::text()))),
+            Line::from(Span::styled(
+                "• All open-source repository maintainers",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• The Rust community for excellent tooling",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Tree-sitter for code parsing capabilities",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Ratatui for terminal UI framework",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• All contributors and users providing feedback",
+                Style::default().fg(Colors::text()),
+            )),
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Built with:",
                 Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
-            Line::from(Span::styled("• Rust - Systems programming language", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Ratatui - Terminal user interface library", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Tree-sitter - Code parsing and syntax highlighting", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• SQLite - Local data storage", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Git2 - Repository cloning and management", Style::default().fg(Colors::text()))),
+            Line::from(Span::styled(
+                "• Rust - Systems programming language",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Ratatui - Terminal user interface library",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Tree-sitter - Code parsing and syntax highlighting",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• SQLite - Local data storage",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Git2 - Repository cloning and management",
+                Style::default().fg(Colors::text()),
+            )),
         ])
     }
 
@@ -579,46 +729,91 @@ impl HelpScreen {
                 "GitHub Repository:",
                 Style::default().fg(Colors::success()).bold(),
             )]),
-            Line::from(Span::styled("https://github.com/unhappychoice/gittype", Style::default().fg(Colors::text()))),
+            Line::from(Span::styled(
+                "https://github.com/unhappychoice/gittype",
+                Style::default().fg(Colors::text()),
+            )),
             Line::from(""),
-            Line::from(Span::styled("⭐ Star the repository if you enjoy GitType!", Style::default().fg(Colors::text()))),
+            Line::from(Span::styled(
+                "⭐ Star the repository if you enjoy GitType!",
+                Style::default().fg(Colors::text()),
+            )),
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Contributing:",
                 Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
-            Line::from(Span::styled("• Report bugs and suggest features via GitHub Issues", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Submit pull requests for improvements", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Add support for new programming languages", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Improve code extraction algorithms", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Enhance UI/UX design", Style::default().fg(Colors::text()))),
+            Line::from(Span::styled(
+                "• Report bugs and suggest features via GitHub Issues",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Submit pull requests for improvements",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Add support for new programming languages",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Improve code extraction algorithms",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Enhance UI/UX design",
+                Style::default().fg(Colors::text()),
+            )),
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Bug Reporting:",
                 Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
-            Line::from(Span::styled("When reporting bugs, please include:", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Operating system and terminal details", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Steps to reproduce the issue", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Expected vs actual behavior", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("• Any error messages or logs", Style::default().fg(Colors::text()))),
+            Line::from(Span::styled(
+                "When reporting bugs, please include:",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Operating system and terminal details",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Steps to reproduce the issue",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Expected vs actual behavior",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Any error messages or logs",
+                Style::default().fg(Colors::text()),
+            )),
             Line::from(""),
             Line::from(vec![Span::styled(
                 "Social Media:",
                 Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
-            Line::from(Span::styled("Share your progress with #gittype", Style::default().fg(Colors::text()))),
+            Line::from(Span::styled(
+                "Share your progress with #gittype",
+                Style::default().fg(Colors::text()),
+            )),
             Line::from(""),
             Line::from(vec![Span::styled(
                 "License:",
                 Style::default().fg(Colors::title()).bold(),
             )]),
             Line::from(""),
-            Line::from(Span::styled("GitType is open-source software.", Style::default().fg(Colors::text()))),
-            Line::from(Span::styled("Check the LICENSE file for details.", Style::default().fg(Colors::text()))),
+            Line::from(Span::styled(
+                "GitType is open-source software.",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "Check the LICENSE file for details.",
+                Style::default().fg(Colors::text()),
+            )),
         ])
     }
 

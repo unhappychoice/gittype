@@ -1,43 +1,40 @@
-use gittype::config::{ColorScheme, SerializableColor, Theme, ThemeConfig, ThemeFile, ThemeManager};
+use gittype::config::ThemeConfig;
+use gittype::ui::color_mode::ColorMode;
+use gittype::ui::color_scheme::{ColorScheme, SerializableColor, ThemeFile};
 use ratatui::style::Color;
-use std::collections::HashMap;
-use tempfile::tempdir;
 
 #[test]
 fn test_color_scheme_conversion() {
-    let scheme = ColorScheme::ascii();
+    // Load ascii theme file and create color scheme
+    let ascii_json = include_str!("../../../assets/themes/ascii.json");
+    let theme_file: ThemeFile = serde_json::from_str(ascii_json).unwrap();
+    let scheme = ColorScheme::from_theme_file(&theme_file, &ColorMode::Dark);
     let color: Color = scheme.border.into();
-    assert!(matches!(color, Color::Rgb(100, 149, 237))); // Should be RGB color now
+    // ASCII theme uses named colors like "blue"
+    assert_eq!(color, Color::Blue);
 }
 
 #[test]
 fn test_theme_config_default() {
     let config = ThemeConfig::default();
     assert_eq!(config.current_theme_id, "default");
-    assert!(config.custom_themes.is_empty());
+    // ThemeConfig no longer has custom_themes field
 }
-
-// #[test]
-// fn test_theme_manager_with_temp_config() {
-//     // TODO: Update this test after ThemeManager API changes
-// }
 
 #[test]
 fn test_predefined_themes() {
-    let ascii = ColorScheme::ascii();
-    let custom_scheme = ColorScheme::ascii();
+    // Load ascii theme file and create color schemes
+    let ascii_json = include_str!("../../../assets/themes/ascii.json");
+    let theme_file: ThemeFile = serde_json::from_str(ascii_json).unwrap();
+    let ascii = ColorScheme::from_theme_file(&theme_file, &ColorMode::Dark);
 
     // Test that color conversion works
     let ascii_bg: Color = ascii.background.clone().into();
     let ascii_text: Color = ascii.text.clone().into();
 
-    // Should be RGB colors now
-    matches!(ascii_bg, Color::Rgb(0, 0, 0));
-    matches!(ascii_text, Color::Rgb(255, 255, 255));
-
-    // ASCII theme should use RGB colors
-    assert!(matches!(ascii_bg, Color::Rgb(0, 0, 0))); // Black background
-    assert!(matches!(ascii_text, Color::Rgb(255, 255, 255))); // White text
+    // ASCII theme uses named colors
+    assert_eq!(ascii_bg, Color::Black);
+    assert_eq!(ascii_text, Color::White);
 }
 
 // #[test]
@@ -72,19 +69,21 @@ fn test_theme_file_parsing() {
 
 #[test]
 fn test_embedded_themes_load_correctly() {
-    // Test that both embedded themes load without panicking
-    let ascii_scheme = ColorScheme::ascii();
+    // Test that embedded themes load without panicking
+    let ascii_json = include_str!("../../../assets/themes/ascii.json");
+    let theme_file: ThemeFile = serde_json::from_str(ascii_json).unwrap();
+    let ascii_scheme = ColorScheme::from_theme_file(&theme_file, &ColorMode::Dark);
 
-    // Verify RGB color loading
+    // Verify color loading
     let ascii_bg: Color = ascii_scheme.background.clone().into();
-    assert!(matches!(ascii_bg, Color::Rgb(0, 0, 0)));
+    assert_eq!(ascii_bg, Color::Black);
 
     // Test some specific colors to ensure JSON loading worked
     let ascii_bg: Color = ascii_scheme.background.into();
     let ascii_text: Color = ascii_scheme.text.into();
 
-    assert!(matches!(ascii_bg, Color::Rgb(0, 0, 0))); // Should be RGB black
-    assert!(matches!(ascii_text, Color::Rgb(255, 255, 255))); // Should be RGB white
+    assert_eq!(ascii_bg, Color::Black); // Should be black
+    assert_eq!(ascii_text, Color::White); // Should be white
 }
 
 #[test]
@@ -133,7 +132,11 @@ fn test_hex_color_parsing() {
 #[test]
 fn test_rgb_and_name_serialization() {
     // Test that both RGB and name formats work
-    let rgb_color = SerializableColor::Rgb { r: 255, g: 128, b: 0 };
+    let rgb_color = SerializableColor::Rgb {
+        r: 255,
+        g: 128,
+        b: 0,
+    };
     let color: Color = rgb_color.into();
     assert_eq!(color, Color::Rgb(255, 128, 0));
 

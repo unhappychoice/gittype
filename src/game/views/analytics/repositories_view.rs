@@ -258,7 +258,10 @@ impl RepositoriesView {
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Total Stages: ", Style::default().fg(Colors::stage_info())),
+                        Span::styled(
+                            "• Total Stages: ",
+                            Style::default().fg(Colors::stage_info()),
+                        ),
                         Span::styled(
                             format!(
                                 "{}/{} completed",
@@ -289,14 +292,16 @@ impl RepositoriesView {
                 ]);
             }
 
-
             lines
         } else {
             vec![
                 Line::from(""),
                 Line::from(vec![
                     Span::raw("  "),
-                    Span::styled("No Repository Selected", Style::default().fg(Colors::text_secondary())),
+                    Span::styled(
+                        "No Repository Selected",
+                        Style::default().fg(Colors::text_secondary()),
+                    ),
                 ]),
                 Line::from(""),
                 Line::from(vec![

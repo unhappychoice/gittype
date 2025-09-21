@@ -52,21 +52,30 @@ impl StageResultsView {
                 let mut metrics_spans = vec![];
                 metrics_spans.push(Span::styled("  ", Style::default()));
 
-                metrics_spans.push(Span::styled("Score: ", Style::default().fg(Colors::score())));
+                metrics_spans.push(Span::styled(
+                    "Score: ",
+                    Style::default().fg(Colors::score()),
+                ));
                 metrics_spans.push(Span::styled(
                     format!("{:.0}", stage_result.challenge_score),
                     Style::default().fg(Colors::text()),
                 ));
                 metrics_spans.push(Span::styled(" | ", Style::default().fg(Colors::text())));
 
-                metrics_spans.push(Span::styled("CPM: ", Style::default().fg(Colors::cpm_wpm())));
+                metrics_spans.push(Span::styled(
+                    "CPM: ",
+                    Style::default().fg(Colors::cpm_wpm()),
+                ));
                 metrics_spans.push(Span::styled(
                     format!("{:.0}", stage_result.cpm),
                     Style::default().fg(Colors::text()),
                 ));
                 metrics_spans.push(Span::styled(" | ", Style::default().fg(Colors::text())));
 
-                metrics_spans.push(Span::styled("Acc: ", Style::default().fg(Colors::accuracy())));
+                metrics_spans.push(Span::styled(
+                    "Acc: ",
+                    Style::default().fg(Colors::accuracy()),
+                ));
                 metrics_spans.push(Span::styled(
                     format!("{:.1}%", stage_result.accuracy),
                     Style::default().fg(Colors::text()),

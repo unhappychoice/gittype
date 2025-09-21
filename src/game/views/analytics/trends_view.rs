@@ -103,12 +103,18 @@ impl TrendsView {
                     .style(Style::default().fg(Colors::text_secondary()))
                     .bounds([min_cpm - cpm_range * 0.1, max_cpm + cpm_range * 0.1])
                     .labels(vec![
-                        Span::styled(format!("{:.0}", min_cpm), Style::default().fg(Colors::text())),
+                        Span::styled(
+                            format!("{:.0}", min_cpm),
+                            Style::default().fg(Colors::text()),
+                        ),
                         Span::styled(
                             format!("{:.0}", (min_cpm + max_cpm) / 2.0),
                             Style::default().fg(Colors::text()),
                         ),
-                        Span::styled(format!("{:.0}", max_cpm), Style::default().fg(Colors::text())),
+                        Span::styled(
+                            format!("{:.0}", max_cpm),
+                            Style::default().fg(Colors::text()),
+                        ),
                     ]),
             );
 

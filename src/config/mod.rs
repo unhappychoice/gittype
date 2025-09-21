@@ -3,32 +3,20 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Config {
     pub theme: ThemeConfig,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ThemeConfig {
+    #[serde(default = "default_theme_id")]
     pub current_theme_id: String,
     pub current_color_mode: ColorMode,
 }
 
-impl Default for Config {
-    fn default() -> Self {
-        Config {
-            theme: ThemeConfig::default(),
-        }
-    }
-}
-
-impl Default for ThemeConfig {
-    fn default() -> Self {
-        ThemeConfig {
-            current_theme_id: "default".to_string(),
-            current_color_mode: ColorMode::default(),
-        }
-    }
+fn default_theme_id() -> String {
+    "default".to_string()
 }
 
 pub struct ConfigManager {
@@ -52,7 +40,10 @@ impl ConfigManager {
             Config::default()
         };
 
-        Ok(ConfigManager { config, config_path })
+        Ok(ConfigManager {
+            config,
+            config_path,
+        })
     }
 
     pub fn with_config_path(config_path: PathBuf) -> anyhow::Result<Self> {
@@ -63,7 +54,10 @@ impl ConfigManager {
             Config::default()
         };
 
-        Ok(ConfigManager { config, config_path })
+        Ok(ConfigManager {
+            config,
+            config_path,
+        })
     }
 
     pub fn get_config(&self) -> &Config {

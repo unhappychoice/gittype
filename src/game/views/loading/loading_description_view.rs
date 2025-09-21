@@ -56,11 +56,7 @@ impl LoadingDescriptionView {
                     Span::styled(format!("{} ", icon), Style::default().fg(color)),
                     Span::styled(
                         step_info.description.clone(),
-                        Style::default().fg(if is_completed || is_current {
-                            Colors::text_secondary()
-                        } else {
-                            Colors::text_secondary()
-                        }),
+                        Style::default().fg(Colors::text_secondary()),
                     ),
                 ]));
             }

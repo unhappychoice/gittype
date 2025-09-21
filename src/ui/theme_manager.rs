@@ -34,14 +34,14 @@ impl ThemeManager {
         let current_color_mode = config.theme.current_color_mode.clone();
 
         let mut manager = THEME_MANAGER.write().unwrap();
-        
+
         // Find theme by ID
         let available_themes = manager.get_available_themes();
         let current_theme = available_themes
             .into_iter()
             .find(|t| t.id == current_theme_id)
-            .unwrap_or_else(|| Theme::default());
-        
+            .unwrap_or_else(Theme::default);
+
         manager.current_theme = current_theme;
         manager.current_color_mode = current_color_mode;
         Ok(())
@@ -60,7 +60,6 @@ impl ThemeManager {
             ColorMode::Dark => theme.dark.clone(),
         }
     }
-
 
     /// Get all available themes
     pub fn get_available_themes(&self) -> Vec<Theme> {
@@ -84,7 +83,7 @@ impl ThemeManager {
                             dark,
                             light,
                         }
-                    })
+                    }),
             )
             .collect()
     }
@@ -92,13 +91,15 @@ impl ThemeManager {
     /// Get the custom theme file path
     fn get_custom_theme_path() -> std::path::PathBuf {
         let home_dir = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
-        std::path::PathBuf::from(home_dir).join(".gittype").join("custom-theme.json")
+        std::path::PathBuf::from(home_dir)
+            .join(".gittype")
+            .join("custom-theme.json")
     }
 
     /// Create default custom theme file if it doesn't exist
     fn create_default_custom_theme_file() -> anyhow::Result<()> {
         let custom_theme_path = Self::get_custom_theme_path();
-        
+
         if custom_theme_path.exists() {
             return Ok(());
         }
@@ -111,7 +112,7 @@ impl ThemeManager {
         // Create default custom theme based on the default theme
         let default_theme_json = include_str!("../../assets/themes/default.json");
         let default_theme_file: ThemeFile = serde_json::from_str(default_theme_json)?;
-        
+
         let custom_theme = CustomThemeFile {
             dark: default_theme_file.dark,
             light: default_theme_file.light,
@@ -119,7 +120,7 @@ impl ThemeManager {
 
         let custom_theme_json = serde_json::to_string_pretty(&custom_theme)?;
         std::fs::write(&custom_theme_path, custom_theme_json)?;
-        
+
         Ok(())
     }
 }

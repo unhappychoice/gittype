@@ -1,8 +1,8 @@
 use crate::game::models::{Screen, ScreenTransition};
 use crate::ui::color_mode::ColorMode;
+use crate::ui::colors::Colors;
 use crate::ui::theme::Theme;
 use crate::ui::theme_manager::THEME_MANAGER;
-use crate::ui::colors::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{
@@ -64,7 +64,6 @@ impl Default for SettingsScreen {
         let themes = theme_manager.get_available_themes();
         drop(theme_manager); // Release the lock early
 
-
         // Set initial selections
         if let Some(pos) = color_modes.iter().position(|m| m == &current_color_mode) {
             color_mode_state.select(Some(pos));
@@ -110,34 +109,34 @@ impl SettingsScreen {
     }
 
     fn save_settings(&mut self) {
-    self.is_preview_mode = false;
-    
-    // Save theme and color mode to config file
-    if let Ok(mut config_manager) = crate::config::ConfigManager::new() {
-        let selected_color_mode = self.get_selected_color_mode();
-        let selected_theme = self.get_selected_theme();
-        
-        if let (Some(color_mode), Some(theme)) = (selected_color_mode, selected_theme) {
-            config_manager.get_config_mut().theme.current_color_mode = color_mode.clone();
-            config_manager.get_config_mut().theme.current_theme_id = theme.id.clone();
-            let _ = config_manager.save();
+        self.is_preview_mode = false;
+
+        // Save theme and color mode to config file
+        if let Ok(mut config_manager) = crate::config::ConfigManager::new() {
+            let selected_color_mode = self.get_selected_color_mode();
+            let selected_theme = self.get_selected_theme();
+
+            if let (Some(color_mode), Some(theme)) = (selected_color_mode, selected_theme) {
+                config_manager.get_config_mut().theme.current_color_mode = color_mode.clone();
+                config_manager.get_config_mut().theme.current_theme_id = theme.id.clone();
+                let _ = config_manager.save();
+            }
         }
     }
-}
 
     fn get_selected_color_mode(&self) -> Option<&ColorMode> {
-        self.color_mode_state.selected()
+        self.color_mode_state
+            .selected()
             .and_then(|i| self.color_modes.get(i))
     }
 
     fn get_selected_theme(&self) -> Option<&Theme> {
-        self.theme_state.selected()
-            .and_then(|i| self.themes.get(i))
+        self.theme_state.selected().and_then(|i| self.themes.get(i))
     }
 
-
     fn render_color_mode_section(&self, f: &mut Frame, area: Rect) {
-        let items: Vec<ListItem> = self.color_modes
+        let items: Vec<ListItem> = self
+            .color_modes
             .iter()
             .map(|mode| {
                 let text = match mode {
@@ -153,23 +152,18 @@ impl SettingsScreen {
                 Block::default()
                     .title("Color Mode")
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border()))
+                    .border_style(Style::default().fg(Colors::border())),
             )
-            .highlight_style(
-                Style::default()
-                    .bg(Colors::text())
-                    .fg(Colors::background())
-            );
+            .highlight_style(Style::default().bg(Colors::text()).fg(Colors::background()));
 
         f.render_stateful_widget(list, area, &mut self.color_mode_state.clone());
     }
 
     fn render_theme_section(&self, f: &mut Frame, area: Rect) {
-        let items: Vec<ListItem> = self.themes
+        let items: Vec<ListItem> = self
+            .themes
             .iter()
-            .map(|theme| {
-                ListItem::new(theme.name.as_str())
-            })
+            .map(|theme| ListItem::new(theme.name.as_str()))
             .collect();
 
         let list = List::new(items)
@@ -177,76 +171,74 @@ impl SettingsScreen {
                 Block::default()
                     .title("Theme")
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border()))
+                    .border_style(Style::default().fg(Colors::border())),
             )
-            .highlight_style(
-                Style::default()
-                    .bg(Colors::text())
-                    .fg(Colors::background())
-            );
+            .highlight_style(Style::default().bg(Colors::text()).fg(Colors::background()));
 
         f.render_stateful_widget(list, area, &mut self.theme_state.clone());
     }
 
-
     fn render_description(&self, f: &mut Frame, area: Rect) {
-    let content = match self.current_section {
-        SettingsSection::ColorMode => {
-            vec![Line::from(self.current_section.description())]
-        },
-        SettingsSection::Theme => {
-            let mut lines = vec![Line::from(self.current_section.description())];
-            
-            if let Some(theme) = self.get_selected_theme() {
-                lines.push(Line::from(""));
-                lines.push(Line::from(theme.description.as_str()));
-                lines.push(Line::from(""));
-                lines.push(Line::from("Color Preview:"));
-                
-                // Add color preview lines with actual colors
-                let color_examples = vec![
-                    ("Border", Colors::border()),
-                    ("Title", Colors::title()),
-                    ("Text", Colors::text()),
-                    ("Text Secondary", Colors::text_secondary()),
-                    ("Success", Colors::success()),
-                    ("Error", Colors::error()),
-                    ("Warning", Colors::warning()),
-                    ("Info", Colors::info()),
-                    ("Key Action", Colors::key_action()),
-                    ("Key Navigation", Colors::key_navigation()),
-                    ("Key Back", Colors::key_back()),
-                    ("Typed Text", Colors::typed_text()),
-                    ("Cursor", Colors::current_cursor()),
-                    ("Mistake", Colors::mistake_bg()),
-                    ("Untyped Text", Colors::untyped_text()),
-                ];
-
-                for (name, color) in color_examples {
-                    lines.push(Line::from(vec![
-                        Span::styled("● ", Style::default().fg(color)),
-                        Span::styled(format!("This is {} color", name), Style::default().fg(color)),
-                    ]));
-                }
+        let content = match self.current_section {
+            SettingsSection::ColorMode => {
+                vec![Line::from(self.current_section.description())]
             }
-            
-            lines
-        }
-    };
-    
-    let paragraph = Paragraph::new(content)
-        .style(Style::default().fg(Colors::text()))
-        .block(
-            Block::default()
-                .title("Description")
-                .borders(Borders::ALL)
-                .border_style(Style::default().fg(Colors::border()))
-        )
-        .wrap(Wrap { trim: true })
-        .alignment(Alignment::Left);
+            SettingsSection::Theme => {
+                let mut lines = vec![Line::from(self.current_section.description())];
 
-    f.render_widget(paragraph, area);
-}
+                if let Some(theme) = self.get_selected_theme() {
+                    lines.push(Line::from(""));
+                    lines.push(Line::from(theme.description.as_str()));
+                    lines.push(Line::from(""));
+                    lines.push(Line::from("Color Preview:"));
+
+                    // Add color preview lines with actual colors
+                    let color_examples = vec![
+                        ("Border", Colors::border()),
+                        ("Title", Colors::title()),
+                        ("Text", Colors::text()),
+                        ("Text Secondary", Colors::text_secondary()),
+                        ("Success", Colors::success()),
+                        ("Error", Colors::error()),
+                        ("Warning", Colors::warning()),
+                        ("Info", Colors::info()),
+                        ("Key Action", Colors::key_action()),
+                        ("Key Navigation", Colors::key_navigation()),
+                        ("Key Back", Colors::key_back()),
+                        ("Typed Text", Colors::typed_text()),
+                        ("Cursor", Colors::current_cursor()),
+                        ("Mistake", Colors::mistake_bg()),
+                        ("Untyped Text", Colors::untyped_text()),
+                    ];
+
+                    for (name, color) in color_examples {
+                        lines.push(Line::from(vec![
+                            Span::styled("● ", Style::default().fg(color)),
+                            Span::styled(
+                                format!("This is {} color", name),
+                                Style::default().fg(color),
+                            ),
+                        ]));
+                    }
+                }
+
+                lines
+            }
+        };
+
+        let paragraph = Paragraph::new(content)
+            .style(Style::default().fg(Colors::text()))
+            .block(
+                Block::default()
+                    .title("Description")
+                    .borders(Borders::ALL)
+                    .border_style(Style::default().fg(Colors::border())),
+            )
+            .wrap(Wrap { trim: true })
+            .alignment(Alignment::Left);
+
+        f.render_widget(paragraph, area);
+    }
 
     fn render_tabs(&self, f: &mut Frame, area: Rect) {
         let sections = SettingsSection::all();
@@ -274,27 +266,23 @@ impl SettingsScreen {
     }
 
     fn render_content(&mut self, f: &mut Frame, area: Rect) {
-    let content_chunks = Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints([
-            Constraint::Percentage(50),
-            Constraint::Percentage(50),
-        ])
-        .margin(1)
-        .split(area);
+        let content_chunks = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
+            .margin(1)
+            .split(area);
 
-    match self.current_section {
-        SettingsSection::ColorMode => {
-            self.render_color_mode_section(f, content_chunks[0]);
-            self.render_description(f, content_chunks[1]);
-        }
-        SettingsSection::Theme => {
-            self.render_theme_section(f, content_chunks[0]);
-            self.render_description(f, content_chunks[1]);
+        match self.current_section {
+            SettingsSection::ColorMode => {
+                self.render_color_mode_section(f, content_chunks[0]);
+                self.render_description(f, content_chunks[1]);
+            }
+            SettingsSection::Theme => {
+                self.render_theme_section(f, content_chunks[0]);
+                self.render_description(f, content_chunks[1]);
+            }
         }
     }
-}
-
 
     fn render_footer(&self, f: &mut Frame, area: Rect) {
         let chunks = Layout::default()

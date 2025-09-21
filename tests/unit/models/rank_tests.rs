@@ -56,5 +56,6 @@ fn rank_for_score_returns_correct_rank() {
 fn rank_for_score_defaults_to_highest_when_exceeded() {
     let rank = Rank::for_score(999_999.0);
     assert_eq!(rank.tier(), &RankTier::Legendary);
-    assert_eq!(rank.terminal_color(), TerminalColor::Red);
+    // Legendary tier uses error color which is now RGB
+    assert!(matches!(rank.terminal_color(), TerminalColor::Rgb { .. }));
 }

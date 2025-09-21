@@ -45,11 +45,7 @@ impl TypingDialogView {
                             .add_modifier(Modifier::BOLD),
                     )
                 } else {
-                    Span::styled(
-                        "[S] ",
-                        Style::default()
-                            .fg(Colors::text_secondary())
-                    )
+                    Span::styled("[S] ", Style::default().fg(Colors::text_secondary()))
                 },
                 if skips_remaining > 0 {
                     Span::styled(
@@ -59,8 +55,7 @@ impl TypingDialogView {
                 } else {
                     Span::styled(
                         "No skips remaining",
-                        Style::default()
-                            .fg(Colors::text_secondary())
+                        Style::default().fg(Colors::text_secondary()),
                     )
                 },
             ]),

@@ -1,7 +1,7 @@
+use crate::ui::color_mode::ColorMode;
 use ratatui::style::Color;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use crate::ui::color_mode::ColorMode;
 
 const LANG_DARK: &str = include_str!("../../assets/languages/lang_dark.json");
 const LANG_LIGHT: &str = include_str!("../../assets/languages/lang_light.json");
@@ -28,7 +28,9 @@ impl CustomThemeFile {
         ThemeFile {
             id: "custom".to_string(),
             name: "Custom".to_string(),
-            description: "Your personal custom theme - edit ~/.gittype/custom-theme.json to customize".to_string(),
+            description:
+                "Your personal custom theme - edit ~/.gittype/custom-theme.json to customize"
+                    .to_string(),
             dark: self.dark.clone(),
             light: self.light.clone(),
         }
@@ -87,7 +89,7 @@ impl From<SerializableColor> for Color {
                     // Fallback to white for unknown color names
                     Color::White
                 }
-            }
+            },
         }
     }
 }
@@ -157,56 +159,178 @@ impl ColorScheme {
         let lang_colors = Self::load_language_colors(theme_file, color_mode);
 
         Self {
-            border: colors.get("border").cloned().unwrap_or(SerializableColor::Name("blue".to_string())),
-            title: colors.get("title").cloned().unwrap_or(SerializableColor::Name("white".to_string())),
-            text: colors.get("text").cloned().unwrap_or(SerializableColor::Name("white".to_string())),
-            text_secondary: colors.get("text_secondary").cloned().unwrap_or(SerializableColor::Name("gray".to_string())),
-            background: colors.get("background").cloned().unwrap_or(SerializableColor::Name("black".to_string())),
-            background_secondary: colors.get("background_secondary").cloned().unwrap_or(SerializableColor::Name("black".to_string())),
+            border: colors
+                .get("border")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("blue".to_string())),
+            title: colors
+                .get("title")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("white".to_string())),
+            text: colors
+                .get("text")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("white".to_string())),
+            text_secondary: colors
+                .get("text_secondary")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("gray".to_string())),
+            background: colors
+                .get("background")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("black".to_string())),
+            background_secondary: colors
+                .get("background_secondary")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("black".to_string())),
 
-            status_success: colors.get("status_success").cloned().unwrap_or(SerializableColor::Name("green".to_string())),
-            status_error: colors.get("status_error").cloned().unwrap_or(SerializableColor::Name("red".to_string())),
-            status_warning: colors.get("status_warning").cloned().unwrap_or(SerializableColor::Name("yellow".to_string())),
-            status_info: colors.get("status_info").cloned().unwrap_or(SerializableColor::Name("blue".to_string())),
+            status_success: colors
+                .get("status_success")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("green".to_string())),
+            status_error: colors
+                .get("status_error")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("red".to_string())),
+            status_warning: colors
+                .get("status_warning")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("yellow".to_string())),
+            status_info: colors
+                .get("status_info")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("blue".to_string())),
 
-            key_action: colors.get("key_action").cloned().unwrap_or(SerializableColor::Name("blue".to_string())),
-            key_navigation: colors.get("key_navigation").cloned().unwrap_or(SerializableColor::Name("blue".to_string())),
-            key_back: colors.get("key_back").cloned().unwrap_or(SerializableColor::Name("red".to_string())),
+            key_action: colors
+                .get("key_action")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("blue".to_string())),
+            key_navigation: colors
+                .get("key_navigation")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("blue".to_string())),
+            key_back: colors
+                .get("key_back")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("red".to_string())),
 
-            metrics_score: colors.get("metrics_score").cloned().unwrap_or(SerializableColor::Name("magenta".to_string())),
-            metrics_cpm_wpm: colors.get("metrics_cpm_wpm").cloned().unwrap_or(SerializableColor::Name("green".to_string())),
-            metrics_accuracy: colors.get("metrics_accuracy").cloned().unwrap_or(SerializableColor::Name("yellow".to_string())),
-            metrics_duration: colors.get("metrics_duration").cloned().unwrap_or(SerializableColor::Name("cyan".to_string())),
-            metrics_stage_info: colors.get("metrics_stage_info").cloned().unwrap_or(SerializableColor::Name("blue".to_string())),
+            metrics_score: colors
+                .get("metrics_score")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("magenta".to_string())),
+            metrics_cpm_wpm: colors
+                .get("metrics_cpm_wpm")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("green".to_string())),
+            metrics_accuracy: colors
+                .get("metrics_accuracy")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("yellow".to_string())),
+            metrics_duration: colors
+                .get("metrics_duration")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("cyan".to_string())),
+            metrics_stage_info: colors
+                .get("metrics_stage_info")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("blue".to_string())),
 
-            typing_typed_text: colors.get("typing_typed_text").cloned().unwrap_or(SerializableColor::Name("green".to_string())),
-            typing_cursor_fg: colors.get("typing_cursor_fg").cloned().unwrap_or(SerializableColor::Name("white".to_string())),
-            typing_cursor_bg: colors.get("typing_cursor_bg").cloned().unwrap_or(SerializableColor::Name("blue".to_string())),
-            typing_mistake_bg: colors.get("typing_mistake_bg").cloned().unwrap_or(SerializableColor::Name("red".to_string())),
-            typing_untyped_text: colors.get("typing_untyped_text").cloned().unwrap_or(SerializableColor::Name("gray".to_string())),
+            typing_typed_text: colors
+                .get("typing_typed_text")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("green".to_string())),
+            typing_cursor_fg: colors
+                .get("typing_cursor_fg")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("white".to_string())),
+            typing_cursor_bg: colors
+                .get("typing_cursor_bg")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("blue".to_string())),
+            typing_mistake_bg: colors
+                .get("typing_mistake_bg")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("red".to_string())),
+            typing_untyped_text: colors
+                .get("typing_untyped_text")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("gray".to_string())),
 
-            lang_rust: lang_colors.get("lang_rust").cloned().unwrap_or(SerializableColor::Name("red".to_string())),
-            lang_python: lang_colors.get("lang_python").cloned().unwrap_or(SerializableColor::Name("blue".to_string())),
-            lang_javascript: lang_colors.get("lang_javascript").cloned().unwrap_or(SerializableColor::Name("yellow".to_string())),
-            lang_typescript: lang_colors.get("lang_typescript").cloned().unwrap_or(SerializableColor::Name("blue".to_string())),
-            lang_go: lang_colors.get("lang_go").cloned().unwrap_or(SerializableColor::Name("cyan".to_string())),
-            lang_java: lang_colors.get("lang_java").cloned().unwrap_or(SerializableColor::Name("red".to_string())),
-            lang_c: lang_colors.get("lang_c").cloned().unwrap_or(SerializableColor::Name("blue".to_string())),
-            lang_cpp: lang_colors.get("lang_cpp").cloned().unwrap_or(SerializableColor::Name("blue".to_string())),
-            lang_csharp: lang_colors.get("lang_csharp").cloned().unwrap_or(SerializableColor::Name("green".to_string())),
-            lang_php: lang_colors.get("lang_php").cloned().unwrap_or(SerializableColor::Name("magenta".to_string())),
-            lang_ruby: lang_colors.get("lang_ruby").cloned().unwrap_or(SerializableColor::Name("red".to_string())),
-            lang_swift: lang_colors.get("lang_swift").cloned().unwrap_or(SerializableColor::Name("red".to_string())),
-            lang_kotlin: lang_colors.get("lang_kotlin").cloned().unwrap_or(SerializableColor::Name("magenta".to_string())),
-            lang_scala: lang_colors.get("lang_scala").cloned().unwrap_or(SerializableColor::Name("red".to_string())),
-            lang_haskell: lang_colors.get("lang_haskell").cloned().unwrap_or(SerializableColor::Name("magenta".to_string())),
-            lang_dart: lang_colors.get("lang_dart").cloned().unwrap_or(SerializableColor::Name("blue".to_string())),
-            lang_default: lang_colors.get("lang_default").cloned().unwrap_or(SerializableColor::Name("white".to_string())),
+            lang_rust: lang_colors
+                .get("lang_rust")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("red".to_string())),
+            lang_python: lang_colors
+                .get("lang_python")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("blue".to_string())),
+            lang_javascript: lang_colors
+                .get("lang_javascript")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("yellow".to_string())),
+            lang_typescript: lang_colors
+                .get("lang_typescript")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("blue".to_string())),
+            lang_go: lang_colors
+                .get("lang_go")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("cyan".to_string())),
+            lang_java: lang_colors
+                .get("lang_java")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("red".to_string())),
+            lang_c: lang_colors
+                .get("lang_c")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("blue".to_string())),
+            lang_cpp: lang_colors
+                .get("lang_cpp")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("blue".to_string())),
+            lang_csharp: lang_colors
+                .get("lang_csharp")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("green".to_string())),
+            lang_php: lang_colors
+                .get("lang_php")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("magenta".to_string())),
+            lang_ruby: lang_colors
+                .get("lang_ruby")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("red".to_string())),
+            lang_swift: lang_colors
+                .get("lang_swift")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("red".to_string())),
+            lang_kotlin: lang_colors
+                .get("lang_kotlin")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("magenta".to_string())),
+            lang_scala: lang_colors
+                .get("lang_scala")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("red".to_string())),
+            lang_haskell: lang_colors
+                .get("lang_haskell")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("magenta".to_string())),
+            lang_dart: lang_colors
+                .get("lang_dart")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("blue".to_string())),
+            lang_default: lang_colors
+                .get("lang_default")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("white".to_string())),
         }
     }
 
-
-    fn load_language_colors(theme_file: &ThemeFile, color_mode: &ColorMode) -> HashMap<String, SerializableColor> {
+    fn load_language_colors(
+        theme_file: &ThemeFile,
+        color_mode: &ColorMode,
+    ) -> HashMap<String, SerializableColor> {
         let lang_json = match (theme_file.id.as_str(), color_mode) {
             ("ascii", _) => LANG_ASCII,
             (_, ColorMode::Light) => LANG_LIGHT,
@@ -214,5 +338,4 @@ impl ColorScheme {
         };
         serde_json::from_str(lang_json).unwrap_or_default()
     }
-
 }

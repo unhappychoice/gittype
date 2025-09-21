@@ -59,7 +59,10 @@ pub fn render_repo_list(repositories: Vec<StoredRepositoryWithLanguages>) -> Res
         let home_dir = dirs::home_dir().unwrap_or_else(|| std::path::PathBuf::from("."));
         let cache_dir = home_dir.join(".gittype").join("repos");
         let cache_line = Line::from(vec![
-            Span::styled("Cache Directory: ", Style::default().fg(Colors::text_secondary())),
+            Span::styled(
+                "Cache Directory: ",
+                Style::default().fg(Colors::text_secondary()),
+            ),
             Span::styled(
                 cache_dir.to_string_lossy().to_string(),
                 Style::default().fg(Colors::text()),
@@ -114,8 +117,10 @@ pub fn render_repo_list(repositories: Vec<StoredRepositoryWithLanguages>) -> Res
                     for (i, lang) in repo.languages.iter().enumerate() {
                         if i > 0 {
                             if current_length + 2 <= lang_width {
-                                line_spans
-                                    .push(Span::styled(", ", Style::default().fg(Colors::text_secondary())));
+                                line_spans.push(Span::styled(
+                                    ", ",
+                                    Style::default().fg(Colors::text_secondary()),
+                                ));
                                 current_length += 2;
                             } else {
                                 break;
@@ -129,8 +134,10 @@ pub fn render_repo_list(repositories: Vec<StoredRepositoryWithLanguages>) -> Res
                             ));
                             current_length += lang_name.len();
                         } else if current_length + 3 <= lang_width {
-                            line_spans
-                                .push(Span::styled("...", Style::default().fg(Colors::text_secondary())));
+                            line_spans.push(Span::styled(
+                                "...",
+                                Style::default().fg(Colors::text_secondary()),
+                            ));
                             current_length += 3;
                             break;
                         } else {
@@ -144,7 +151,10 @@ pub fn render_repo_list(repositories: Vec<StoredRepositoryWithLanguages>) -> Res
                 }
 
                 line_spans.push(Span::styled(" ", Style::default()));
-                line_spans.push(Span::styled(url, Style::default().fg(Colors::text_secondary())));
+                line_spans.push(Span::styled(
+                    url,
+                    Style::default().fg(Colors::text_secondary()),
+                ));
 
                 ListItem::new(Line::from(line_spans))
             })

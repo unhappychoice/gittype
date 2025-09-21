@@ -90,7 +90,10 @@ impl BestRecordsView {
                     ));
                     spans.push(Span::styled(" | ", Style::default().fg(Colors::text())));
 
-                    spans.push(Span::styled("Acc ", Style::default().fg(Colors::accuracy())));
+                    spans.push(Span::styled(
+                        "Acc ",
+                        Style::default().fg(Colors::accuracy()),
+                    ));
                     spans.push(Span::styled(
                         format!("{:.1}%", record.accuracy),
                         Style::default().fg(Colors::text()),

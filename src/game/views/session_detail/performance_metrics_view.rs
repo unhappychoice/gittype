@@ -84,7 +84,10 @@ impl PerformanceMetricsView {
 
             metrics_lines.push(Line::from(vec![
                 Span::raw("  "),
-                Span::styled("Completed Stage: ", Style::default().fg(Colors::stage_info())),
+                Span::styled(
+                    "Completed Stage: ",
+                    Style::default().fg(Colors::stage_info()),
+                ),
                 Span::styled(
                     result.stages_completed.to_string(),
                     Style::default().fg(Colors::text()),

@@ -52,7 +52,10 @@ fn get_rank_messages() -> &'static HashMap<&'static str, Vec<(&'static str, Colo
             vec![
                 ("> explaining bug to inanimate object...", Colors::info()),
                 ("> duck stares judgmentally at your code...", Colors::text()),
-                ("> realizing bug while talking to duck...", Colors::warning()),
+                (
+                    "> realizing bug while talking to duck...",
+                    Colors::warning(),
+                ),
                 (
                     "> duck takes full credit for the solution.",
                     Colors::success(),
@@ -82,7 +85,10 @@ fn get_rank_messages() -> &'static HashMap<&'static str, Vec<(&'static str, Colo
         messages.insert(
             "Bash Newbie",
             vec![
-                ("> typing 'cd ..' until something happens...", Colors::info()),
+                (
+                    "> typing 'cd ..' until something happens...",
+                    Colors::info(),
+                ),
                 (
                     "> using 'ls' every 3 seconds to see where you are...",
                     Colors::text(),
@@ -153,8 +159,14 @@ fn get_rank_messages() -> &'static HashMap<&'static str, Vec<(&'static str, Colo
             "Copy-Paste Engineer",
             vec![
                 ("> opening 50 tabs from stack overflow...", Colors::text()),
-                ("> copying code from highest voted answer...", Colors::text()),
-                ("> praying it works in your specific case...", Colors::text()),
+                (
+                    "> copying code from highest voted answer...",
+                    Colors::text(),
+                ),
+                (
+                    "> praying it works in your specific case...",
+                    Colors::text(),
+                ),
                 ("> it works! time to copy more code.", Colors::success()),
             ],
         );
@@ -186,8 +198,14 @@ fn get_rank_messages() -> &'static HashMap<&'static str, Vec<(&'static str, Colo
                     Colors::text(),
                 ),
                 ("> testing happy path exclusively...", Colors::text()),
-                ("> achieving 100% code coverage on 5 lines...", Colors::info()),
-                ("> testing complete. bugs remain untested.", Colors::success()),
+                (
+                    "> achieving 100% code coverage on 5 lines...",
+                    Colors::info(),
+                ),
+                (
+                    "> testing complete. bugs remain untested.",
+                    Colors::success(),
+                ),
             ],
         );
 
@@ -199,8 +217,14 @@ fn get_rank_messages() -> &'static HashMap<&'static str, Vec<(&'static str, Colo
                     "> changing tutorial example from 'foo' to 'bar'...",
                     Colors::text(),
                 ),
-                ("> calling yourself a full-stack developer...", Colors::info()),
-                ("> development skills: youtube certified.", Colors::success()),
+                (
+                    "> calling yourself a full-stack developer...",
+                    Colors::info(),
+                ),
+                (
+                    "> development skills: youtube certified.",
+                    Colors::success(),
+                ),
             ],
         );
 
@@ -443,9 +467,15 @@ fn get_rank_messages_2() -> &'static HashMap<&'static str, Vec<(&'static str, Co
                     "> finding vulnerabilities in your personality...",
                     Colors::error(),
                 ),
-                ("> implementing security through obscurity...", Colors::info()),
+                (
+                    "> implementing security through obscurity...",
+                    Colors::info(),
+                ),
                 ("> penetration testing your patience...", Colors::text()),
-                ("> security hardened. usability softened.", Colors::success()),
+                (
+                    "> security hardened. usability softened.",
+                    Colors::success(),
+                ),
             ],
         );
 
@@ -456,7 +486,10 @@ fn get_rank_messages_2() -> &'static HashMap<&'static str, Vec<(&'static str, Co
                     "> profiling bottlenecks in the profiler...",
                     Colors::warning(),
                 ),
-                ("> optimizing code that runs once per year...", Colors::info()),
+                (
+                    "> optimizing code that runs once per year...",
+                    Colors::info(),
+                ),
                 (
                     "> caching everything including this message...",
                     Colors::text(),
@@ -520,7 +553,10 @@ fn get_rank_messages_2() -> &'static HashMap<&'static str, Vec<(&'static str, Co
                     "> choosing technologies based on latest blog posts...",
                     Colors::text(),
                 ),
-                ("> planning for scale that will never come...", Colors::text()),
+                (
+                    "> planning for scale that will never come...",
+                    Colors::text(),
+                ),
                 (
                     "> architecture complete. implementation someone else's problem.",
                     Colors::success(),
@@ -547,12 +583,18 @@ fn get_rank_messages_2() -> &'static HashMap<&'static str, Vec<(&'static str, Co
         messages.insert(
             "Kernel Hacker",
             vec![
-                ("> compiling kernels that boot sometimes...", Colors::score()),
+                (
+                    "> compiling kernels that boot sometimes...",
+                    Colors::score(),
+                ),
                 (
                     "> patching system calls with hopes and dreams...",
                     Colors::info(),
                 ),
-                ("> debugging at 3am with print statements...", Colors::text()),
+                (
+                    "> debugging at 3am with print statements...",
+                    Colors::text(),
+                ),
                 (
                     "> kernel hacked successfully. computer may explode.",
                     Colors::success(),
@@ -584,7 +626,10 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
                     "> building AST while judging your variable names...",
                     Colors::info(),
                 ),
-                ("> optimizing away your inefficient loops...", Colors::text()),
+                (
+                    "> optimizing away your inefficient loops...",
+                    Colors::text(),
+                ),
                 ("> compiled successfully (somehow)", Colors::success()),
             ],
         );
@@ -618,8 +663,14 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
                     "> virtualizing your already virtual environment...",
                     Colors::info(),
                 ),
-                ("> emulating hardware that doesn't exist...", Colors::score()),
-                ("> allocating memory for your memory leaks...", Colors::text()),
+                (
+                    "> emulating hardware that doesn't exist...",
+                    Colors::score(),
+                ),
+                (
+                    "> allocating memory for your memory leaks...",
+                    Colors::text(),
+                ),
                 (
                     "> VM inception achieved. we need to go deeper.",
                     Colors::success(),
@@ -630,7 +681,10 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
         messages.insert(
             "Operating System",
             vec![
-                ("> scheduling processes that never finish...", Colors::score()),
+                (
+                    "> scheduling processes that never finish...",
+                    Colors::score(),
+                ),
                 ("> managing resources you don't have...", Colors::info()),
                 (
                     "> handling interrupts from impatient users...",
@@ -654,7 +708,10 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
                     "> implementing permissions nobody understands...",
                     Colors::info(),
                 ),
-                ("> fragmenting data across the entire disk...", Colors::text()),
+                (
+                    "> fragmenting data across the entire disk...",
+                    Colors::text(),
+                ),
                 (
                     "> filesystem complete. good luck finding anything.",
                     Colors::success(),
@@ -665,7 +722,10 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
         messages.insert(
             "Network Stack",
             vec![
-                ("> layering protocols like a network cake...", Colors::info()),
+                (
+                    "> layering protocols like a network cake...",
+                    Colors::info(),
+                ),
                 (
                     "> routing packets through the internet tubes...",
                     Colors::text(),
@@ -704,7 +764,10 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
                     "> analyzing execution plans nobody will read...",
                     Colors::text(),
                 ),
-                ("> optimizing joins that should be avoided...", Colors::info()),
+                (
+                    "> optimizing joins that should be avoided...",
+                    Colors::info(),
+                ),
                 (
                     "> indexing everything (storage is cheap, right?)...",
                     Colors::text(),
@@ -934,7 +997,10 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
                     "> pointing to nothing... and everything...",
                     Colors::warning(),
                 ),
-                ("> accessing the null space of reality...", Colors::warning()),
+                (
+                    "> accessing the null space of reality...",
+                    Colors::warning(),
+                ),
                 (
                     "> FATAL: tried to read from /dev/null/universe",
                     Colors::error(),
@@ -965,7 +1031,10 @@ fn get_rank_messages_3() -> &'static HashMap<&'static str, Vec<(&'static str, Co
             "Heisenbug",
             vec![
                 ("> bug exists in quantum superposition...", Colors::score()),
-                ("> observation collapses the wave function...", Colors::info()),
+                (
+                    "> observation collapses the wave function...",
+                    Colors::info(),
+                ),
                 (
                     "> Schrödinger's error: both fixed and broken...",
                     Colors::warning(),

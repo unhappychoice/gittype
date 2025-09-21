@@ -126,7 +126,10 @@ impl SessionDetailScreen {
         );
 
         let controls_line = Line::from(vec![
-            Span::styled("[↑↓/JK] Scroll Stages  ", Style::default().fg(Colors::text())),
+            Span::styled(
+                "[↑↓/JK] Scroll Stages  ",
+                Style::default().fg(Colors::text()),
+            ),
             Span::styled("[ESC]", Style::default().fg(Colors::error())),
             Span::styled(" Back", Style::default().fg(Colors::text())),
         ]);
