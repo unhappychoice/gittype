@@ -16,6 +16,25 @@ pub struct ThemeFile {
     pub light: HashMap<String, SerializableColor>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CustomThemeFile {
+    pub dark: HashMap<String, SerializableColor>,
+    pub light: HashMap<String, SerializableColor>,
+}
+
+impl CustomThemeFile {
+    /// Convert CustomThemeFile to ThemeFile with fixed metadata
+    pub fn to_theme_file(&self) -> ThemeFile {
+        ThemeFile {
+            id: "custom".to_string(),
+            name: "Custom".to_string(),
+            description: "Your personal custom theme - edit ~/.gittype/custom-theme.json to customize".to_string(),
+            dark: self.dark.clone(),
+            light: self.light.clone(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
 pub enum SerializableColor {
@@ -103,7 +122,7 @@ pub struct ColorScheme {
 
     // Typing interface colors
     pub typing_typed_text: SerializableColor,
-    pub typing_current_cursor: SerializableColor,
+    pub typing_cursor_fg: SerializableColor,
     pub typing_cursor_bg: SerializableColor,
     pub typing_mistake_bg: SerializableColor,
     pub typing_untyped_text: SerializableColor,
@@ -161,7 +180,7 @@ impl ColorScheme {
             metrics_stage_info: colors.get("metrics_stage_info").cloned().unwrap_or(SerializableColor::Name("blue".to_string())),
 
             typing_typed_text: colors.get("typing_typed_text").cloned().unwrap_or(SerializableColor::Name("green".to_string())),
-            typing_current_cursor: colors.get("typing_current_cursor").cloned().unwrap_or(SerializableColor::Name("white".to_string())),
+            typing_cursor_fg: colors.get("typing_cursor_fg").cloned().unwrap_or(SerializableColor::Name("white".to_string())),
             typing_cursor_bg: colors.get("typing_cursor_bg").cloned().unwrap_or(SerializableColor::Name("blue".to_string())),
             typing_mistake_bg: colors.get("typing_mistake_bg").cloned().unwrap_or(SerializableColor::Name("red".to_string())),
             typing_untyped_text: colors.get("typing_untyped_text").cloned().unwrap_or(SerializableColor::Name("gray".to_string())),
@@ -185,6 +204,7 @@ impl ColorScheme {
             lang_default: lang_colors.get("lang_default").cloned().unwrap_or(SerializableColor::Name("white".to_string())),
         }
     }
+
 
     fn load_language_colors(theme_file: &ThemeFile, color_mode: &ColorMode) -> HashMap<String, SerializableColor> {
         let lang_json = match (theme_file.id.as_str(), color_mode) {
