@@ -39,7 +39,7 @@ impl Colors {
 
     // Typing interface colors
     pub fn typed_text() -> Color { Self::get_color_scheme().typing_typed_text.into() }
-    pub fn current_cursor() -> Color { Self::get_color_scheme().typing_current_cursor.into() }
+    pub fn current_cursor() -> Color { Self::get_color_scheme().typing_cursor_fg.into() }
     pub fn cursor_bg() -> Color { Self::get_color_scheme().typing_cursor_bg.into() }
     pub fn mistake_bg() -> Color { Self::get_color_scheme().typing_mistake_bg.into() }
     pub fn untyped_text() -> Color { Self::get_color_scheme().typing_untyped_text.into() }
