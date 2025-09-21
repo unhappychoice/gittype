@@ -275,6 +275,12 @@ mod tests {
 
     #[test]
     fn test_get_log_directory() {
+        // Skip test if running in a Nix build environment
+        if std::env::var("IN_NIX_SHELL").is_ok() || std::env::var("NIX_BUILD_CORES").is_ok() {
+            eprintln!("Skipping test in Nix build environment.");
+            return;
+        }
+
         let log_dir = get_log_directory().unwrap();
 
         if cfg!(debug_assertions) {
