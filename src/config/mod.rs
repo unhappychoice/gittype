@@ -1,8 +1,5 @@
-use crate::ui::color_scheme::ColorScheme;
 use crate::ui::color_mode::ColorMode;
-use crate::ui::theme::Theme;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 
@@ -13,9 +10,8 @@ pub struct Config {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ThemeConfig {
-    pub current_theme: Theme,
+    pub current_theme_id: String,
     pub current_color_mode: ColorMode,
-    pub custom_themes: HashMap<String, ColorScheme>,
 }
 
 impl Default for Config {
@@ -29,9 +25,8 @@ impl Default for Config {
 impl Default for ThemeConfig {
     fn default() -> Self {
         ThemeConfig {
-            current_theme: Theme::default(),
+            current_theme_id: "default".to_string(),
             current_color_mode: ColorMode::default(),
-            custom_themes: HashMap::new(),
         }
     }
 }
