@@ -74,15 +74,6 @@ impl SessionDetailScreen {
     }
 
     fn ui(&mut self, f: &mut Frame) {
-        let outer_chunks = Layout::default()
-            .direction(Direction::Horizontal)
-            .constraints([
-                Constraint::Length(2),
-                Constraint::Min(1),
-                Constraint::Length(2),
-            ])
-            .split(f.area());
-
         let main_chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -90,7 +81,7 @@ impl SessionDetailScreen {
                 Constraint::Min(1),
                 Constraint::Length(1),
             ])
-            .split(outer_chunks[1]);
+            .split(f.area());
 
         let title = Paragraph::new("Session Details")
             .style(
@@ -126,10 +117,8 @@ impl SessionDetailScreen {
         );
 
         let controls_line = Line::from(vec![
-            Span::styled(
-                "[↑↓/JK] Scroll Stages  ",
-                Style::default().fg(Colors::text()),
-            ),
+            Span::styled("[↑↓/JK]", Style::default().fg(Colors::key_navigation())),
+            Span::styled(" Scroll Stages  ", Style::default().fg(Colors::text())),
             Span::styled("[ESC]", Style::default().fg(Colors::error())),
             Span::styled(" Back", Style::default().fg(Colors::text())),
         ]);
