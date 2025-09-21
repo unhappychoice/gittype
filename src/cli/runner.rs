@@ -1,4 +1,4 @@
-use crate::cli::args::{CacheCommands, Cli, Commands, RepoCommands, ThemeCommands};
+use crate::cli::args::{CacheCommands, Cli, Commands, RepoCommands};
 use crate::cli::commands::{
     run_export, run_game_session, run_history, run_repo_clear, run_repo_list, run_repo_play,
     run_stats,
@@ -20,7 +20,6 @@ pub async fn run_cli(cli: Cli) -> Result<()> {
         Some(Commands::Export { format, output }) => run_export(format.clone(), output.clone()),
         Some(Commands::Cache { cache_command }) => run_cache_command(cache_command),
         Some(Commands::Repo { repo_command }) => run_repo_command(repo_command),
-        Some(Commands::Theme { theme_command }) => run_theme_command(theme_command),
         None => run_game_session(cli),
     }
 }
@@ -96,79 +95,3 @@ fn run_repo_command(repo_command: &RepoCommands) -> Result<()> {
     }
 }
 
-fn run_theme_command(theme_command: &ThemeCommands) -> Result<()> {
-    use crate::config::ConfigManager;
-    use crate::ui::color_mode::ColorMode;
-    use crate::ui::theme::Theme;
-
-    let mut config_manager = ConfigManager::new()
-        .map_err(|e| crate::GitTypeError::TerminalError(e.to_string()))?;
-
-    match theme_command {
-        ThemeCommands::List => {
-            println!("Available themes:");
-            let themes = Theme::all_themes();
-            let current_theme_id = &config_manager.get_config().theme.current_theme.id;
-
-            for theme in themes {
-                let current_indicator = if current_theme_id == &theme.id {
-                    " (current)"
-                } else {
-                    ""
-                };
-                println!("  {}{}", theme.id, current_indicator);
-            }
-        }
-        ThemeCommands::Set { theme } => {
-            let theme_obj = Theme::all_themes()
-                .into_iter()
-                .find(|t| t.id == *theme)
-                .ok_or_else(|| crate::GitTypeError::TerminalError(format!("Unknown theme: {}", theme)))?;
-
-            config_manager.get_config_mut().theme.current_theme = theme_obj;
-            config_manager.save()
-                .map_err(|e| crate::GitTypeError::TerminalError(e.to_string()))?;
-
-            println!("Theme set to: {}", theme);
-        }
-        ThemeCommands::Current => {
-            let current_theme = &config_manager.get_config().theme.current_theme.id;
-            let current_mode = match config_manager.get_config().theme.current_color_mode {
-                ColorMode::Dark => "dark",
-                ColorMode::Light => "light",
-            };
-            println!("Current theme: {} ({})", current_theme, current_mode);
-        }
-        ThemeCommands::Mode { mode } => {
-            let color_mode = match mode.to_lowercase().as_str() {
-                "dark" => ColorMode::Dark,
-                "light" => ColorMode::Light,
-                _ => return Err(crate::GitTypeError::TerminalError(format!("Invalid color mode: {}. Use 'dark' or 'light'", mode))),
-            };
-
-            config_manager.get_config_mut().theme.current_color_mode = color_mode;
-            config_manager.save()
-                .map_err(|e| crate::GitTypeError::TerminalError(e.to_string()))?;
-
-            println!("Color mode set to: {}", mode);
-        }
-        ThemeCommands::Toggle => {
-            let new_mode = match config_manager.get_config().theme.current_color_mode {
-                ColorMode::Dark => ColorMode::Light,
-                ColorMode::Light => ColorMode::Dark,
-            };
-
-            config_manager.get_config_mut().theme.current_color_mode = new_mode.clone();
-            config_manager.save()
-                .map_err(|e| crate::GitTypeError::TerminalError(e.to_string()))?;
-
-            let mode_str = match new_mode {
-                ColorMode::Dark => "dark",
-                ColorMode::Light => "light",
-            };
-            println!("Color mode toggled to: {}", mode_str);
-        }
-    }
-
-    Ok(())
-}

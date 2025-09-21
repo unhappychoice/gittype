@@ -80,11 +80,6 @@ pub enum Commands {
         #[command(subcommand)]
         repo_command: RepoCommands,
     },
-    /// Manage color themes
-    Theme {
-        #[command(subcommand)]
-        theme_command: ThemeCommands,
-    },
 }
 
 #[derive(Subcommand)]
@@ -110,22 +105,3 @@ pub enum RepoCommands {
     Play,
 }
 
-#[derive(Subcommand)]
-pub enum ThemeCommands {
-    /// List available themes
-    List,
-    /// Set the current theme
-    Set {
-        /// Theme name (default, original, ascii, or custom theme name)
-        theme: String,
-    },
-    /// Show current theme
-    Current,
-    /// Set color mode (dark or light)
-    Mode {
-        /// Color mode (dark or light)
-        mode: String,
-    },
-    /// Toggle color mode between dark and light
-    Toggle,
-}
