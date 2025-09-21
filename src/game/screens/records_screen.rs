@@ -272,7 +272,7 @@ impl RecordsScreen {
                 "[↑↓/JK] Navigate  ",
                 Style::default().fg(Colors::key_navigation()),
             ),
-            Span::styled("[SPACE]", Style::default().fg(Colors::success())),
+            Span::styled("[SPACE]", Style::default().fg(Colors::key_action())),
             Span::styled(" Details  ", Style::default().fg(Colors::text())),
             Span::styled("[F]", Style::default().fg(Colors::border())),
             Span::styled(" Filter  ", Style::default().fg(Colors::text())),

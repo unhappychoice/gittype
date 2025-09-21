@@ -147,7 +147,7 @@ impl InfoDialogScreen {
         let instructions = vec![
             Span::styled("[↑↓/JK]", Style::default().fg(Colors::info())),
             Span::styled(" Navigate ", Style::default().fg(Colors::text())),
-            Span::styled("[SPACE]", Style::default().fg(Colors::success())),
+            Span::styled("[SPACE]", Style::default().fg(Colors::key_action())),
             Span::styled(" Select ", Style::default().fg(Colors::text())),
             Span::styled("[ESC]", Style::default().fg(Colors::error())),
             Span::styled(" Close", Style::default().fg(Colors::text())),
@@ -212,7 +212,7 @@ impl InfoDialogScreen {
         frame.render_widget(url_para, url_area);
 
         let back_instructions = vec![
-            Span::styled("[ESC]", Style::default().fg(Colors::success())),
+            Span::styled("[ESC]", Style::default().fg(Colors::key_action())),
             Span::styled(" Back", Style::default().fg(Colors::text())),
         ];
 

@@ -147,7 +147,7 @@ pub fn render_repo_play_ui(
             let controls_line = Line::from(vec![
                 Span::styled("[↑↓/JK]", Style::default().fg(Colors::key_navigation())),
                 Span::styled(" Navigate  ", Style::default().fg(Colors::text())),
-                Span::styled("[SPACE]", Style::default().fg(Colors::success())),
+                Span::styled("[SPACE]", Style::default().fg(Colors::key_action())),
                 Span::styled(" Play  ", Style::default().fg(Colors::text())),
                 Span::styled("[ESC]", Style::default().fg(Colors::key_back())),
                 Span::styled(" Return  ", Style::default().fg(Colors::text())),
