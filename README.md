@@ -43,6 +43,13 @@ brew install unhappychoice/tap/gittype
 cargo install gittype
 ```
 
+### Nix
+If you have [Nix](https://nixos.org/) installed, you can run GitType directly with:
+
+```bash
+nix run github:unhappychoice/gittype
+```
+
 ### Binary Downloads
 Get pre-compiled binaries for your platform from our [releases page](https://github.com/unhappychoice/gittype/releases/latest).
 
