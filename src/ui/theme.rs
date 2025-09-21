@@ -6,16 +6,18 @@ const THEME_FILES: &[&str] = &[
     include_str!("../../assets/themes/default.json"),
     include_str!("../../assets/themes/original.json"),
     include_str!("../../assets/themes/ascii.json"),
-    include_str!("../../assets/themes/neon_abyss.json"),
-    include_str!("../../assets/themes/inferno.json"),
+    include_str!("../../assets/themes/aurora.json"),
+    include_str!("../../assets/themes/blood_oath.json"),
+    include_str!("../../assets/themes/cyber_void.json"),
     include_str!("../../assets/themes/eclipse.json"),
     include_str!("../../assets/themes/glacier.json"),
-    include_str!("../../assets/themes/blood_oath.json"),
+    include_str!("../../assets/themes/inferno.json"),
+    include_str!("../../assets/themes/neon_abyss.json"),
     include_str!("../../assets/themes/oblivion.json"),
+    include_str!("../../assets/themes/runic.json"),
     include_str!("../../assets/themes/spectral.json"),
+    include_str!("../../assets/themes/starforge.json"),
     include_str!("../../assets/themes/venom.json"),
-    include_str!("../../assets/themes/aurora.json"),
-    include_str!("../../assets/themes/cyber_void.json"),
 ];
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

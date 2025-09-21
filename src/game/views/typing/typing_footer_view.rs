@@ -52,7 +52,7 @@ impl TypingFooterView {
         .block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Colors::text_secondary()))
+                .border_style(Style::default().fg(Colors::border()))
                 .title("Metrics")
                 .title_style(Style::default().fg(Colors::text_secondary()))
                 .padding(ratatui::widgets::Padding::horizontal(1)),
@@ -80,7 +80,7 @@ impl TypingFooterView {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::text_secondary()))
+                    .border_style(Style::default().fg(Colors::border()))
                     .title("Progress")
                     .title_style(Style::default().fg(Colors::text_secondary())),
             )
