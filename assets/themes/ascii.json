@@ -23,7 +23,7 @@
     "metrics_stage_info": "blue",
     "typing_untyped_text": "white",
     "typing_typed_text": "light_blue",
-    "typing_current_cursor": "black",
+    "typing_cursor_fg": "black",
     "typing_cursor_bg": "white",
     "typing_mistake_bg": "red"
   },
@@ -48,7 +48,7 @@
     "metrics_stage_info": "blue",
     "typing_untyped_text": "blue",
     "typing_typed_text": "blue",
-    "typing_current_cursor": "white",
+    "typing_cursor_fg": "white",
     "typing_cursor_bg": "black",
     "typing_mistake_bg": "red"
   }
