@@ -31,7 +31,7 @@
     "border": { "r": 100, "g": 220, "b": 100 },
     "title": { "r": 20, "g": 60, "b": 20 },
     "text": { "r": 30, "g": 90, "b": 30 },
-    "text_secondary": { "r": 205, "g": 225, "b": 205 },
+    "text_secondary": { "r": 100, "g": 140, "b": 100 },
     "background": { "r": 245, "g": 255, "b": 245 },
     "background_secondary": { "r": 225, "g": 245, "b": 225 },
     "status_success": { "r": 100, "g": 220, "b": 100 },
