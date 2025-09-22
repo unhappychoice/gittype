@@ -122,9 +122,13 @@ impl CommonExtractor {
                 large_chunk.content.as_bytes(),
             );
 
-            let chunk_comment_ranges =
-                Self::extract_comment_ranges(&chunk_tree, &large_chunk.content, language, &[])?;
             let chunk_byte_to_char_cache = Self::build_byte_to_char_cache(&large_chunk.content);
+            let chunk_comment_ranges = Self::extract_comment_ranges(
+                &chunk_tree,
+                &large_chunk.content,
+                language,
+                &chunk_byte_to_char_cache,
+            )?;
 
             while let Some(match_) = chunk_matches.next() {
                 for capture in match_.captures {

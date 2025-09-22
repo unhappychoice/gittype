@@ -92,7 +92,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Loop",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          84,
+          104
+        ]
+      ],
       "content": "    for key, value in data.items():\n        if isinstance(value, list):\n            # Process list items\n            processed_list = []\n            for item in value:\n                if isinstance(item, dict) and 'id' in item:\n                    processed_item = {\n                        'id': item['id'],\n                        'processed': True,\n                        'original_keys': list(item.keys())\n                    }\n                    processed_list.append(processed_item)\n\n            processed_items.append({\n                'key': key,\n                'type': 'list',\n                'items': processed_list,\n                'count': len(processed_list)\n            })\n        elif isinstance(value, dict):\n            processed_items.append({\n                'key': key,\n                'type': 'dict',\n                'keys': list(value.keys()),\n                'count': len(value)\n            })",
       "end_line": 45,
       "language": "python",
@@ -102,7 +107,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          48,
+          68
+        ]
+      ],
       "content": "        if isinstance(value, list):\n            # Process list items\n            processed_list = []\n            for item in value:\n                if isinstance(item, dict) and 'id' in item:\n                    processed_item = {\n                        'id': item['id'],\n                        'processed': True,\n                        'original_keys': list(item.keys())\n                    }\n                    processed_list.append(processed_item)\n\n            processed_items.append({\n                'key': key,\n                'type': 'list',\n                'items': processed_list,\n                'count': len(processed_list)\n            })\n        elif isinstance(value, dict):\n            processed_items.append({\n                'key': key,\n                'type': 'dict',\n                'keys': list(value.keys()),\n                'count': len(value)\n            })",
       "end_line": 45,
       "language": "python",
@@ -216,7 +226,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "ErrorHandling",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          175,
+          225
+        ]
+      ],
       "content": "        try:\n            with open(self.config_path, 'r') as file:\n                self.config = json.load(file)\n            return True\n        except Exception:\n            # Default configuration - extractable middle chunk\n            self.config = {\n                'debug': False,\n                'log_level': 'INFO',\n                'database': {\n                    'host': 'localhost',\n                    'port': 0,\n                    'name': 'default_db'\n                },\n                'cache': {\n                    'enabled': True,\n                    'ttl': 0,\n                    'max_size': 1000\n                },\n                'features': {\n                    'analytics': True,\n                    'notifications': False,\n                    'beta_features': False\n                }\n            }\n            return False",
       "end_line": 86,
       "language": "python",

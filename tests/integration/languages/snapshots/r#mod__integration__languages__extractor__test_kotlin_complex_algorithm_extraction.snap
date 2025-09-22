@@ -157,7 +157,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "FunctionCall",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          1566,
+          1589
+        ]
+      ],
       "content": "        input.forEachIndexed { index, value ->\n            val cacheKey = \"item_${index}_$value\"\n\n            cache[cacheKey]?.let { cachedItem ->\n                results.add(cachedItem)\n                return@forEachIndexed\n            }\n\n            val processedItem = when {\n                value > threshold -> {\n                    val transformedValue = value * 2\n                    val category = if (transformedValue > threshold * 3) \"HIGH\" else \"MEDIUM\"\n                    val bonusValue = if (transformedValue > 100) transformedValue + 10 else transformedValue\n\n                    ProcessedItem(\n                        id = index,\n                        originalValue = value,\n                        transformedValue = bonusValue,\n                        category = category,\n                        metadata = mutableMapOf(\n                            \"processed\" to true,\n                            \"multiplier\" to 2,\n                            \"processor\" to \"enhanced\"\n                        )\n                    ).also { processedCount++ }\n                }\n                value > 0 -> ProcessedItem(\n                    id = index,\n                    originalValue = value,\n                    transformedValue = value + threshold,\n                    category = \"LOW\",\n                    metadata = mutableMapOf(\n                        \"processed\" to true,\n                        \"adjusted\" to true,\n                        \"processor\" to \"basic\"\n                    )\n                )\n                else -> return@forEachIndexed // skip negative values\n            }\n\n            cache[cacheKey] = processedItem\n            processingLog.add(processedItem)\n            results.add(processedItem)\n        }",
       "end_line": 63,
       "language": "kotlin",
@@ -187,7 +192,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          1326,
+          1349
+        ]
+      ],
       "content": "            val processedItem = when {\n                value > threshold -> {\n                    val transformedValue = value * 2\n                    val category = if (transformedValue > threshold * 3) \"HIGH\" else \"MEDIUM\"\n                    val bonusValue = if (transformedValue > 100) transformedValue + 10 else transformedValue\n\n                    ProcessedItem(\n                        id = index,\n                        originalValue = value,\n                        transformedValue = bonusValue,\n                        category = category,\n                        metadata = mutableMapOf(\n                            \"processed\" to true,\n                            \"multiplier\" to 2,\n                            \"processor\" to \"enhanced\"\n                        )\n                    ).also { processedCount++ }\n                }\n                value > 0 -> ProcessedItem(\n                    id = index,\n                    originalValue = value,\n                    transformedValue = value + threshold,\n                    category = \"LOW\",\n                    metadata = mutableMapOf(\n                        \"processed\" to true,\n                        \"adjusted\" to true,\n                        \"processor\" to \"basic\"\n                    )\n                )\n                else -> return@forEachIndexed // skip negative values\n            }",
       "end_line": 58,
       "language": "kotlin",
@@ -344,7 +354,20 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "FunctionCall",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          505,
+          527
+        ],
+        [
+          675,
+          689
+        ],
+        [
+          939,
+          961
+        ]
+      ],
       "content": "        categoryGroups.forEach { (category, categoryItems) ->\n            val values = categoryItems.map { it.transformedValue.toDouble() }\n            val categoryAnalysis = mapOf(\n                \"count\" to categoryItems.size,\n                \"percentage\" to (categoryItems.size.toDouble() / items.size * 100),\n                \"avg_value\" to values.average(),\n                \"min_value\" to values.minOrNull(),\n                \"max_value\" to values.maxOrNull()\n            ).toMutableMap()\n\n            // Time-based analysis\n            val currentTime = System.currentTimeMillis()\n            val recentItems = categoryItems.filter { currentTime - it.timestamp < 60000 } // last minute\n            if (recentItems.isNotEmpty()) {\n                categoryAnalysis[\"recent_count\"] = recentItems.size\n                categoryAnalysis[\"recent_avg\"] = recentItems.map { it.transformedValue.toDouble() }.average()\n            }\n\n            // High-value analysis\n            val highValueItems = categoryItems.filter { it.transformedValue > 1000 }\n            if (highValueItems.isNotEmpty()) {\n                categoryAnalysis[\"high_value_count\"] = highValueItems.size\n            }\n\n            analysis[category] = categoryAnalysis\n        }",
       "end_line": 108,
       "language": "kotlin",

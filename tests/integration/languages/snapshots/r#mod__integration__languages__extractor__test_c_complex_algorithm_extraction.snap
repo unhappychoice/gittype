@@ -170,7 +170,20 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Loop",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          435,
+          475
+        ],
+        [
+          547,
+          555
+        ],
+        [
+          727,
+          750
+        ]
+      ],
       "content": "    for (size_t i = 0; i < input_size; i++) {\n        int value = input[i];\n        ProcessedItem item;\n        item.id = (int)i;\n\n        if (value > threshold) {\n            int transformed = value * 2;\n            item.value = transformed;\n\n            if (transformed > threshold * 3) {\n                strcpy(item.category, \"HIGH\");\n            } else {\n                strcpy(item.category, \"MEDIUM\");\n            }\n\n            // Additional processing for high values\n            if (transformed > 100) {\n                item.value += 10; // bonus\n            }\n        } else if (value > 0) {\n            item.value = value + threshold;\n            strcpy(item.category, \"LOW\");\n        } else {\n            continue; // skip negative values\n        }\n\n        results[result_count++] = item;\n    }",
       "end_line": 54,
       "language": "c",
@@ -190,7 +203,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          304,
+          344
+        ],
+        [
+          416,
+          424
+        ]
+      ],
       "content": "        if (value > threshold) {\n            int transformed = value * 2;\n            item.value = transformed;\n\n            if (transformed > threshold * 3) {\n                strcpy(item.category, \"HIGH\");\n            } else {\n                strcpy(item.category, \"MEDIUM\");\n            }\n\n            // Additional processing for high values\n            if (transformed > 100) {\n                item.value += 10; // bonus\n            }\n        }",
       "end_line": 46,
       "language": "c",
@@ -200,7 +222,20 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          304,
+          344
+        ],
+        [
+          416,
+          424
+        ],
+        [
+          596,
+          619
+        ]
+      ],
       "content": "        if (value > threshold) {\n            int transformed = value * 2;\n            item.value = transformed;\n\n            if (transformed > threshold * 3) {\n                strcpy(item.category, \"HIGH\");\n            } else {\n                strcpy(item.category, \"MEDIUM\");\n            }\n\n            // Additional processing for high values\n            if (transformed > 100) {\n                item.value += 10; // bonus\n            }\n        } else if (value > 0) {\n            item.value = value + threshold;\n            strcpy(item.category, \"LOW\");\n        } else {\n            continue; // skip negative values\n        }",
       "end_line": 51,
       "language": "c",
@@ -250,7 +285,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          71,
+          79
+        ]
+      ],
       "content": "            if (transformed > 100) {\n                item.value += 10; // bonus\n            }",
       "end_line": 45,
       "language": "c",
@@ -270,7 +310,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          157,
+          180
+        ]
+      ],
       "content": "        } else if (value > 0) {\n            item.value = value + threshold;\n            strcpy(item.category, \"LOW\");\n        } else {\n            continue; // skip negative values\n        }",
       "end_line": 51,
       "language": "c",
@@ -280,7 +325,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          39,
+          62
+        ]
+      ],
       "content": "        } else {\n            continue; // skip negative values\n        }",
       "end_line": 51,
       "language": "c",
@@ -290,7 +340,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          36,
+          71
+        ],
+        [
+          254,
+          302
+        ]
+      ],
       "content": "    if (result_count > 0) {\n        // Calculate average for validation\n        int total = 0;\n        for (size_t i = 0; i < result_count; i++) {\n            total += results[i].value;\n        }\n        int average = total / (int)result_count;\n\n        // Add average as metadata (simplified approach)\n        printf(\"Average processed value: %d\\n\", average);\n    }",
       "end_line": 67,
       "language": "c",
@@ -387,7 +446,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Loop",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          541,
+          574
+        ]
+      ],
       "content": "    for (size_t i = 0; i < count; i++) {\n        ProcessedItem *item = &items[i];\n        int category_index = -1;\n\n        if (strcmp(item->category, \"LOW\") == 0) {\n            category_index = 0;\n        } else if (strcmp(item->category, \"MEDIUM\") == 0) {\n            category_index = 1;\n        } else if (strcmp(item->category, \"HIGH\") == 0) {\n            category_index = 2;\n        }\n\n        if (category_index >= 0) {\n            category_counts[category_index]++;\n            value_sums[category_index] += item->value;\n\n            // Time-based analysis simulation\n            if (item->value > 1000) {\n                printf(\"High value item found: %d\\n\", item->value);\n            }\n        }\n    }",
       "end_line": 102,
       "language": "c",
@@ -457,7 +521,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          150,
+          183
+        ]
+      ],
       "content": "        if (category_index >= 0) {\n            category_counts[category_index]++;\n            value_sums[category_index] += item->value;\n\n            // Time-based analysis simulation\n            if (item->value > 1000) {\n                printf(\"High value item found: %d\\n\", item->value);\n            }\n        }",
       "end_line": 101,
       "language": "c",

@@ -252,7 +252,20 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Loop",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          542,
+          582
+        ],
+        [
+          713,
+          721
+        ],
+        [
+          908,
+          931
+        ]
+      ],
       "content": "        for (size_t i = 0; i < input.size(); ++i) {\n            const T& value = input[i];\n            std::string cache_key = \"item_\" + std::to_string(i);\n\n            auto cache_it = cache.find(cache_key);\n            if (cache_it != cache.end()) {\n                results.push_back(cache_it->second);\n                continue;\n            }\n\n            T processed_value;\n            if (value > static_cast<T>(threshold)) {\n                processed_value = value * static_cast<T>(2);\n                processed_count++;\n\n                // Additional processing for high values\n                if (processed_value > static_cast<T>(threshold * 3)) {\n                    processed_value += static_cast<T>(10); // bonus\n                }\n            } else if (value > static_cast<T>(0)) {\n                processed_value = value + static_cast<T>(threshold);\n            } else {\n                continue; // skip negative values\n            }\n\n            cache[cache_key] = processed_value;\n            processing_log.push_back(processed_value);\n            results.push_back(processed_value);\n        }",
       "end_line": 52,
       "language": "cpp",
@@ -292,7 +305,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          166,
+          206
+        ],
+        [
+          337,
+          345
+        ]
+      ],
       "content": "            if (value > static_cast<T>(threshold)) {\n                processed_value = value * static_cast<T>(2);\n                processed_count++;\n\n                // Additional processing for high values\n                if (processed_value > static_cast<T>(threshold * 3)) {\n                    processed_value += static_cast<T>(10); // bonus\n                }\n            }",
       "end_line": 43,
       "language": "cpp",
@@ -302,7 +324,20 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          166,
+          206
+        ],
+        [
+          337,
+          345
+        ],
+        [
+          532,
+          555
+        ]
+      ],
       "content": "            if (value > static_cast<T>(threshold)) {\n                processed_value = value * static_cast<T>(2);\n                processed_count++;\n\n                // Additional processing for high values\n                if (processed_value > static_cast<T>(threshold * 3)) {\n                    processed_value += static_cast<T>(10); // bonus\n                }\n            } else if (value > static_cast<T>(0)) {\n                processed_value = value + static_cast<T>(threshold);\n            } else {\n                continue; // skip negative values\n            }",
       "end_line": 47,
       "language": "cpp",
@@ -312,7 +347,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          130,
+          138
+        ]
+      ],
       "content": "                if (processed_value > static_cast<T>(threshold * 3)) {\n                    processed_value += static_cast<T>(10); // bonus\n                }",
       "end_line": 42,
       "language": "cpp",
@@ -332,7 +372,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          168,
+          191
+        ]
+      ],
       "content": "            } else if (value > static_cast<T>(0)) {\n                processed_value = value + static_cast<T>(threshold);\n            } else {\n                continue; // skip negative values\n            }",
       "end_line": 47,
       "language": "cpp",
@@ -342,7 +387,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          47,
+          70
+        ]
+      ],
       "content": "            } else {\n                continue; // skip negative values\n            }",
       "end_line": 47,
       "language": "cpp",
@@ -352,7 +402,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          202,
+          236
+        ]
+      ],
       "content": "        if (processed_count > 0) {\n            T total = std::accumulate(results.begin(), results.end(), static_cast<T>(0));\n            T average = total / static_cast<T>(results.size());\n\n            // Add average to log for analysis\n            processing_log.push_back(average);\n        }",
       "end_line": 61,
       "language": "cpp",
@@ -415,7 +470,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          395,
+          426
+        ]
+      ],
       "content": "        for (const auto& item : data) {\n            std::string category;\n\n            if (item > static_cast<T>(threshold * 2)) {\n                category = \"HIGH\";\n            } else if (item > static_cast<T>(threshold)) {\n                category = \"MEDIUM\";\n            } else {\n                category = \"LOW\";\n            }\n\n            categories[category].push_back(item);\n\n            // Additional pattern detection\n            if (item > static_cast<T>(1000)) {\n                categories[\"PREMIUM\"].push_back(item);\n            }\n        }",
       "end_line": 88,
       "language": "cpp",
@@ -589,7 +649,20 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          96,
+          134
+        ],
+        [
+          259,
+          300
+        ],
+        [
+          599,
+          633
+        ]
+      ],
       "content": "        for (const auto& text : input) {\n            std::string processed = text;\n\n            // Pattern matching and transformation\n            size_t pos = 0;\n            while ((pos = processed.find(pattern, pos)) != std::string::npos) {\n                // Replace pattern with uppercase version\n                std::string replacement = pattern;\n                std::transform(replacement.begin(), replacement.end(), replacement.begin(), ::toupper);\n                processed.replace(pos, pattern.length(), replacement);\n                pos += replacement.length();\n            }\n\n            // Additional text transformations\n            if (processed.length() > 50) {\n                processed = processed.substr(0, 47) + \"...\";\n            }\n\n            if (!processed.empty()) {\n                results.push_back(processed);\n            }\n        }",
       "end_line": 133,
       "language": "cpp",
@@ -619,7 +692,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Loop",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          96,
+          137
+        ]
+      ],
       "content": "            while ((pos = processed.find(pattern, pos)) != std::string::npos) {\n                // Replace pattern with uppercase version\n                std::string replacement = pattern;\n                std::transform(replacement.begin(), replacement.end(), replacement.begin(), ::toupper);\n                processed.replace(pos, pattern.length(), replacement);\n                pos += replacement.length();\n            }",
       "end_line": 123,
       "language": "cpp",

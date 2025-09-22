@@ -92,7 +92,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Loop",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          146,
+          169
+        ]
+      ],
       "content": "    for item in data:\n        if isinstance(item, dict):\n            value = item.get('value', 0)\n        else:\n            value = item\n\n        # Apply transformations\n        if value > threshold:\n            transformed = value * 2\n            result.append({\n                'original': value,\n                'transformed': transformed,\n                'ratio': transformed / value\n            })\n            processed_count += 1\n        elif value > 0:\n            result.append({\n                'original': value,\n                'transformed': value + threshold,\n                'ratio': (value + threshold) / value\n            })",
       "end_line": 32,
       "language": "python",
@@ -195,7 +200,20 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Loop",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          81,
+          135
+        ],
+        [
+          327,
+          338
+        ],
+        [
+          515,
+          534
+        ]
+      ],
       "content": "    for idx, item in enumerate(input_data):\n        key = f\"item_{idx}\"\n\n        # Complex conditional logic - extractable middle chunk\n        if key in cache:\n            cached_result = cache[key]\n            if cached_result['valid']:\n                results.append(cached_result['data'])\n            else:\n                # Recompute\n                new_result = item * 2 + 1\n                cache[key] = {'data': new_result, 'valid': True}\n                results.append(new_result)\n        else:\n            # First computation\n            computed = item ** 2 if item > 5 else item * 3\n            cache[key] = {'data': computed, 'valid': True}\n            results.append(computed)",
       "end_line": 64,
       "language": "python",
@@ -205,7 +223,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          191,
+          202
+        ],
+        [
+          379,
+          398
+        ]
+      ],
       "content": "        if key in cache:\n            cached_result = cache[key]\n            if cached_result['valid']:\n                results.append(cached_result['data'])\n            else:\n                # Recompute\n                new_result = item * 2 + 1\n                cache[key] = {'data': new_result, 'valid': True}\n                results.append(new_result)\n        else:\n            # First computation\n            computed = item ** 2 if item > 5 else item * 3\n            cache[key] = {'data': computed, 'valid': True}\n            results.append(computed)",
       "end_line": 64,
       "language": "python",
@@ -215,7 +242,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          127,
+          138
+        ]
+      ],
       "content": "            if cached_result['valid']:\n                results.append(cached_result['data'])\n            else:\n                # Recompute\n                new_result = item * 2 + 1\n                cache[key] = {'data': new_result, 'valid': True}\n                results.append(new_result)",
       "end_line": 59,
       "language": "python",

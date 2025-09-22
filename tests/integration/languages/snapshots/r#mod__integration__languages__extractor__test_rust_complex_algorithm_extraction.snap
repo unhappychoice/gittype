@@ -70,7 +70,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Loop",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          260,
+          300
+        ]
+      ],
       "content": "    for (index, value) in input.iter().enumerate() {\n        let key = format!(\"item_{}\", index);\n\n        if *value > threshold {\n            let processed = value * 2;\n            result.insert(key.clone(), processed);\n            counter += 1;\n\n            // Additional processing for high values\n            if processed > 100 {\n                let bonus_key = format!(\"{}_bonus\", key);\n                result.insert(bonus_key, processed / 10);\n            }\n        } else if *value > 0 {\n            let adjusted = value + threshold;\n            result.insert(key, adjusted);\n            counter += 1;\n        }\n    }",
       "end_line": 27,
       "language": "rust",
@@ -80,7 +85,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          161,
+          201
+        ]
+      ],
       "content": "        if *value > threshold {\n            let processed = value * 2;\n            result.insert(key.clone(), processed);\n            counter += 1;\n\n            // Additional processing for high values\n            if processed > 100 {\n                let bonus_key = format!(\"{}_bonus\", key);\n                result.insert(bonus_key, processed / 10);\n            }\n        }",
       "end_line": 22,
       "language": "rust",
@@ -90,7 +100,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          161,
+          201
+        ]
+      ],
       "content": "        if *value > threshold {\n            let processed = value * 2;\n            result.insert(key.clone(), processed);\n            counter += 1;\n\n            // Additional processing for high values\n            if processed > 100 {\n                let bonus_key = format!(\"{}_bonus\", key);\n                result.insert(bonus_key, processed / 10);\n            }\n        } else if *value > 0 {\n            let adjusted = value + threshold;\n            result.insert(key, adjusted);\n            counter += 1;\n        }",
       "end_line": 26,
       "language": "rust",
@@ -169,7 +184,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Loop",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          547,
+          572
+        ]
+      ],
       "content": "    for (pattern_idx, pattern) in patterns.iter().enumerate() {\n        let mut search_start = 0;\n\n        while let Some(pos) = text[search_start..].find(pattern) {\n            let absolute_pos = search_start + pos;\n            let context_start = absolute_pos.saturating_sub(10);\n            let context_end = (absolute_pos + pattern.len() + 10).min(text.len());\n            let context = text[context_start..context_end].to_string();\n\n            matches.push((absolute_pos, context));\n            search_start = absolute_pos + 1;\n\n            // Prevent infinite loops\n            if search_start >= text.len() {\n                break;\n            }\n        }\n    }",
       "end_line": 60,
       "language": "rust",
@@ -179,7 +199,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Loop",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          448,
+          473
+        ]
+      ],
       "content": "        while let Some(pos) = text[search_start..].find(pattern) {\n            let absolute_pos = search_start + pos;\n            let context_start = absolute_pos.saturating_sub(10);\n            let context_end = (absolute_pos + pattern.len() + 10).min(text.len());\n            let context = text[context_start..context_end].to_string();\n\n            matches.push((absolute_pos, context));\n            search_start = absolute_pos + 1;\n\n            // Prevent infinite loops\n            if search_start >= text.len() {\n                break;\n            }\n        }",
       "end_line": 59,
       "language": "rust",
