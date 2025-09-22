@@ -295,7 +295,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Loop",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          162,
+          184
+        ],
+        [
+          547,
+          577
+        ]
+      ],
       "content": "    for _, item := range items {\n        category := item.Category\n        categoryCount[category]++\n        valueSum[category] += item.TransformedValue\n\n        // Time-based analysis\n        timeDiff := time.Since(item.Timestamp)\n        if timeDiff < time.Minute {\n            recentKey := fmt.Sprintf(\"%s_recent\", category)\n            if count, exists := categoryCount[recentKey]; exists {\n                categoryCount[recentKey] = count + 1\n            } else {\n                categoryCount[recentKey] = 1\n            }\n        }\n\n        // Value distribution analysis\n        if item.TransformedValue > 1000 {\n            highValueKey := fmt.Sprintf(\"%s_high_value\", category)\n            categoryCount[highValueKey]++\n        }\n    }",
       "end_line": 140,
       "language": "go",

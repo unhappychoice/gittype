@@ -143,7 +143,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Variable",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          242,
+          297
+        ]
+      ],
       "content": "        let cacheKey = \"item_\" ++ show (length acc) ++ \"_\" ++ show value\n        in case Map.lookup cacheKey cache of\n            Just cachedItem -> processWithCache rest thresh cache (cachedItem : acc)\n            Nothing ->\n                -- Main processing algorithm - extractable middle chunk\n                let processedItem = if value > thresh\n                        then let transformed = value * 2\n                                 cat = if transformed > thresh * 3 then \"HIGH\" else \"MEDIUM\"\n                                 bonusValue = if transformed > 100 then transformed + 10 else transformed\n                             in ProcessedItem (length acc) value bonusValue cat \"now\"\n                        else if value > 0\n                        then ProcessedItem (length acc) value (value + thresh) \"LOW\" \"now\"\n                        else ProcessedItem (length acc) value 0 \"INVALID\" \"now\"\n\n                    newCache = Map.insert cacheKey processedItem cache\n                in if category processedItem == \"INVALID\"\n                   then processWithCache rest thresh newCache acc\n                   else processWithCache rest thresh newCache (processedItem : acc)",
       "end_line": 38,
       "language": "haskell",
@@ -153,7 +158,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          169,
+          224
+        ]
+      ],
       "content": "        in case Map.lookup cacheKey cache of\n            Just cachedItem -> processWithCache rest thresh cache (cachedItem : acc)\n            Nothing ->\n                -- Main processing algorithm - extractable middle chunk\n                let processedItem = if value > thresh\n                        then let transformed = value * 2\n                                 cat = if transformed > thresh * 3 then \"HIGH\" else \"MEDIUM\"\n                                 bonusValue = if transformed > 100 then transformed + 10 else transformed\n                             in ProcessedItem (length acc) value bonusValue cat \"now\"\n                        else if value > 0\n                        then ProcessedItem (length acc) value (value + thresh) \"LOW\" \"now\"\n                        else ProcessedItem (length acc) value 0 \"INVALID\" \"now\"\n\n                    newCache = Map.insert cacheKey processedItem cache\n                in if category processedItem == \"INVALID\"\n                   then processWithCache rest thresh newCache acc\n                   else processWithCache rest thresh newCache (processedItem : acc)",
       "end_line": 38,
       "language": "haskell",
@@ -323,7 +333,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Variable",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          216,
+          268
+        ]
+      ],
       "content": "        let cat = category firstItem\n            values = map (fromIntegral . transformedValue) group\n            count = fromIntegral $ length group\n            totalItems = fromIntegral $ length items\n\n            -- Pattern analysis logic - extractable middle chunk\n            avgValue = sum values / count\n            minValue = minimum values\n            maxValue = maximum values\n            percentage = (count / totalItems) * 100\n\n            highValueItems = filter (> 1000) values\n            highValueCount = fromIntegral $ length highValueItems\n\n            recentItems = filter (\\item -> timestamp item == \"now\") group\n            recentCount = fromIntegral $ length recentItems\n\n            analysis = Map.fromList\n                [ (\"count\", count)\n                , (\"percentage\", percentage)\n                , (\"avg_value\", avgValue)\n                , (\"min_value\", minValue)\n                , (\"max_value\", maxValue)\n                , (\"high_value_count\", highValueCount)\n                , (\"recent_count\", recentCount)\n                ]\n        in (cat, analysis)",
       "end_line": 72,
       "language": "haskell",

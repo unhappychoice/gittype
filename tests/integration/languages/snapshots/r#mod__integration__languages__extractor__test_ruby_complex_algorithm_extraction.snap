@@ -209,7 +209,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "FunctionCall",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          1439,
+          1461
+        ]
+      ],
       "content": "    input.each_with_index do |value, index|\n      cache_key = \"item_#{index}_#{value}\"\n\n      if @cache.key?(cache_key)\n        results << @cache[cache_key]\n        next\n      end\n\n      processed_item = if value > @threshold\n                         transformed_value = value * 2\n                         category = transformed_value > @threshold * 3 ? 'HIGH' : 'MEDIUM'\n                         bonus_value = transformed_value > 100 ? transformed_value + 10 : transformed_value\n\n                         ProcessedItem.new(\n                           index,\n                           value,\n                           bonus_value,\n                           category,\n                           {\n                             processed: true,\n                             multiplier: 0,\n                             processor: 'enhanced'\n                           }\n                         ).tap { processed_count += 1 }\n                       elsif value > 0\n                         ProcessedItem.new(\n                           index,\n                           value,\n                           value + @threshold,\n                           'LOW',\n                           {\n                             processed: true,\n                             adjusted: true,\n                             processor: 'basic'\n                           }\n                         )\n                       else\n                         next # skip negative values\n                       end\n\n      @cache[cache_key] = processed_item\n      @processing_log << processed_item\n      results << processed_item\n    end",
       "end_line": 70,
       "language": "ruby",
@@ -229,7 +234,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          1258,
+          1280
+        ]
+      ],
       "content": "      processed_item = if value > @threshold\n                         transformed_value = value * 2\n                         category = transformed_value > @threshold * 3 ? 'HIGH' : 'MEDIUM'\n                         bonus_value = transformed_value > 100 ? transformed_value + 10 : transformed_value\n\n                         ProcessedItem.new(\n                           index,\n                           value,\n                           bonus_value,\n                           category,\n                           {\n                             processed: true,\n                             multiplier: 0,\n                             processor: 'enhanced'\n                           }\n                         ).tap { processed_count += 1 }\n                       elsif value > 0\n                         ProcessedItem.new(\n                           index,\n                           value,\n                           value + @threshold,\n                           'LOW',\n                           {\n                             processed: true,\n                             adjusted: true,\n                             processor: 'basic'\n                           }\n                         )\n                       else\n                         next # skip negative values\n                       end",
       "end_line": 65,
       "language": "ruby",
@@ -259,7 +269,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          173,
+          200
+        ]
+      ],
       "content": "    if processed_count > 0\n      average = results.sum(&:transformed_value).to_f / results.size\n      puts \"Processing complete. Average: #{format('%.2f', average)}\"\n\n      # Add processing statistics\n      results.each { |item| item.metadata[:processing_average] = average }\n    end",
       "end_line": 79,
       "language": "ruby",
@@ -306,7 +321,20 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "FunctionCall",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          367,
+          388
+        ],
+        [
+          508,
+          521
+        ],
+        [
+          780,
+          801
+        ]
+      ],
       "content": "    category_groups.each do |category, category_items|\n      values = category_items.map(&:transformed_value)\n      category_analysis = {\n        count: category_items.size,\n        percentage: (category_items.size.to_f / items.size * 100),\n        avg_value: values.sum.to_f / values.size,\n        min_value: values.min,\n        max_value: values.max\n      }\n\n      # Time-based analysis\n      current_time = Time.now\n      recent_items = category_items.select { |item| current_time - item.timestamp < 60 } # last minute\n      unless recent_items.empty?\n        recent_values = recent_items.map(&:transformed_value)\n        category_analysis[:recent_count] = recent_items.size\n        category_analysis[:recent_avg] = recent_values.sum.to_f / recent_values.size\n      end\n\n      # High-value analysis\n      high_value_items = category_items.select { |item| item.transformed_value > 1000 }\n      category_analysis[:high_value_count] = high_value_items.size unless high_value_items.empty?\n\n      analysis[category] = category_analysis\n    end",
       "end_line": 113,
       "language": "ruby",

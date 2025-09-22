@@ -187,7 +187,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Loop",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          1497,
+          1520
+        ]
+      ],
       "content": "        for (index, value) in input.enumerated() {\n            let cacheKey = \"item_\\(index)_\\(value)\"\n\n            if let cachedItem = cache[cacheKey] {\n                results.append(cachedItem)\n                continue\n            }\n\n            let processedItem: ProcessedItem?\n            if value > threshold {\n                let transformedValue = value * 2\n                let category = transformedValue > threshold * 3 ? \"HIGH\" : \"MEDIUM\"\n                let bonusValue = transformedValue > 100 ? transformedValue + 10 : transformedValue\n\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: bonusValue,\n                    category: category,\n                    metadata: [\n                        \"processed\": true,\n                        \"multiplier\": 0,\n                        \"processor\": \"enhanced\"\n                    ]\n                )\n                processedCount += 1\n            } else if value > 0 {\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: value + threshold,\n                    category: \"LOW\",\n                    metadata: [\n                        \"processed\": true,\n                        \"adjusted\": true,\n                        \"processor\": \"basic\"\n                    ]\n                )\n            } else {\n                continue // skip negative values\n            }\n\n            if let item = processedItem {\n                cache[cacheKey] = item\n                processingLog.append(item)\n                results.append(item)\n            }\n        }",
       "end_line": 83,
       "language": "swift",
@@ -197,7 +202,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          1446,
+          1469
+        ]
+      ],
       "content": "            let cacheKey = \"item_\\(index)_\\(value)\"\n\n            if let cachedItem = cache[cacheKey] {\n                results.append(cachedItem)\n                continue\n            }\n\n            let processedItem: ProcessedItem?\n            if value > threshold {\n                let transformedValue = value * 2\n                let category = transformedValue > threshold * 3 ? \"HIGH\" : \"MEDIUM\"\n                let bonusValue = transformedValue > 100 ? transformedValue + 10 : transformedValue\n\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: bonusValue,\n                    category: category,\n                    metadata: [\n                        \"processed\": true,\n                        \"multiplier\": 0,\n                        \"processor\": \"enhanced\"\n                    ]\n                )\n                processedCount += 1\n            } else if value > 0 {\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: value + threshold,\n                    category: \"LOW\",\n                    metadata: [\n                        \"processed\": true,\n                        \"adjusted\": true,\n                        \"processor\": \"basic\"\n                    ]\n                )\n            } else {\n                continue // skip negative values\n            }\n\n            if let item = processedItem {\n                cache[cacheKey] = item\n                processingLog.append(item)\n                results.append(item)\n            }\n        ",
       "end_line": 83,
       "language": "swift",
@@ -227,7 +237,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          1214,
+          1237
+        ]
+      ],
       "content": "            if value > threshold {\n                let transformedValue = value * 2\n                let category = transformedValue > threshold * 3 ? \"HIGH\" : \"MEDIUM\"\n                let bonusValue = transformedValue > 100 ? transformedValue + 10 : transformedValue\n\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: bonusValue,\n                    category: category,\n                    metadata: [\n                        \"processed\": true,\n                        \"multiplier\": 0,\n                        \"processor\": \"enhanced\"\n                    ]\n                )\n                processedCount += 1\n            } else if value > 0 {\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: value + threshold,\n                    category: \"LOW\",\n                    metadata: [\n                        \"processed\": true,\n                        \"adjusted\": true,\n                        \"processor\": \"basic\"\n                    ]\n                )\n            } else {\n                continue // skip negative values\n            }",
       "end_line": 76,
       "language": "swift",
@@ -257,7 +272,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          496,
+          519
+        ]
+      ],
       "content": "            } else if value > 0 {\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: value + threshold,\n                    category: \"LOW\",\n                    metadata: [\n                        \"processed\": true,\n                        \"adjusted\": true,\n                        \"processor\": \"basic\"\n                    ]\n                )\n            } else {\n                continue // skip negative values\n            }",
       "end_line": 76,
       "language": "swift",
@@ -287,7 +307,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          25,
+          48
+        ]
+      ],
       "content": "                continue // skip negative values\n            ",
       "end_line": 76,
       "language": "swift",
@@ -317,7 +342,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          238,
+          266
+        ]
+      ],
       "content": "        if processedCount > 0 {\n            let average = Double(results.map { $0.transformedValue }.reduce(0, +)) / Double(results.count)\n            print(\"Processing complete. Average: \\(String(format: \"%.2f\", average))\")\n\n            // Add processing statistics\n            for i in 0..<results.count {\n                results[i].metadata[\"processing_average\"] = average\n            }\n        }",
       "end_line": 94,
       "language": "swift",
@@ -327,7 +357,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          206,
+          234
+        ]
+      ],
       "content": "            let average = Double(results.map { $0.transformedValue }.reduce(0, +)) / Double(results.count)\n            print(\"Processing complete. Average: \\(String(format: \"%.2f\", average))\")\n\n            // Add processing statistics\n            for i in 0..<results.count {\n                results[i].metadata[\"processing_average\"] = average\n            }\n        ",
       "end_line": 94,
       "language": "swift",
@@ -394,7 +429,24 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          134,
+          186
+        ],
+        [
+          700,
+          722
+        ],
+        [
+          864,
+          878
+        ],
+        [
+          1200,
+          1222
+        ]
+      ],
       "content": "        var analysis: [String: [String: Any]] = [:]\n        let categoryGroups = Dictionary(grouping: items) { $0.category }\n\n        // Pattern analysis logic - extractable middle chunk\n        for (category, categoryItems) in categoryGroups {\n            let values = categoryItems.map { $0.transformedValue }\n            var categoryAnalysis: [String: Any] = [\n                \"count\": categoryItems.count,\n                \"percentage\": Double(categoryItems.count) / Double(items.count) * 100,\n                \"avg_value\": Double(values.reduce(0, +)) / Double(values.count),\n                \"min_value\": values.min() ?? 0,\n                \"max_value\": values.max() ?? 0\n            ]\n\n            // Time-based analysis\n            let currentTime = Date()\n            let recentItems = categoryItems.filter { currentTime.timeIntervalSince($0.timestamp) < 60 } // last minute\n            if !recentItems.isEmpty {\n                let recentValues = recentItems.map { $0.transformedValue }\n                categoryAnalysis[\"recent_count\"] = recentItems.count\n                categoryAnalysis[\"recent_avg\"] = Double(recentValues.reduce(0, +)) / Double(recentValues.count)\n            }\n\n            // High-value analysis\n            let highValueItems = categoryItems.filter { $0.transformedValue > 1000 }\n            if !highValueItems.isEmpty {\n                categoryAnalysis[\"high_value_count\"] = highValueItems.count\n            }\n\n            analysis[category] = categoryAnalysis\n        }\n\n        analysis[\"total_items\"] = items.count\n        analysis[\"processing_time\"] = Date().timeIntervalSince1970\n\n        return analysis\n    ",
       "end_line": 136,
       "language": "swift",
@@ -404,7 +456,20 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Loop",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          513,
+          535
+        ],
+        [
+          677,
+          691
+        ],
+        [
+          1013,
+          1035
+        ]
+      ],
       "content": "        for (category, categoryItems) in categoryGroups {\n            let values = categoryItems.map { $0.transformedValue }\n            var categoryAnalysis: [String: Any] = [\n                \"count\": categoryItems.count,\n                \"percentage\": Double(categoryItems.count) / Double(items.count) * 100,\n                \"avg_value\": Double(values.reduce(0, +)) / Double(values.count),\n                \"min_value\": values.min() ?? 0,\n                \"max_value\": values.max() ?? 0\n            ]\n\n            // Time-based analysis\n            let currentTime = Date()\n            let recentItems = categoryItems.filter { currentTime.timeIntervalSince($0.timestamp) < 60 } // last minute\n            if !recentItems.isEmpty {\n                let recentValues = recentItems.map { $0.transformedValue }\n                categoryAnalysis[\"recent_count\"] = recentItems.count\n                categoryAnalysis[\"recent_avg\"] = Double(recentValues.reduce(0, +)) / Double(recentValues.count)\n            }\n\n            // High-value analysis\n            let highValueItems = categoryItems.filter { $0.transformedValue > 1000 }\n            if !highValueItems.isEmpty {\n                categoryAnalysis[\"high_value_count\"] = highValueItems.count\n            }\n\n            analysis[category] = categoryAnalysis\n        }",
       "end_line": 130,
       "language": "swift",
@@ -414,7 +479,20 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          455,
+          477
+        ],
+        [
+          619,
+          633
+        ],
+        [
+          955,
+          977
+        ]
+      ],
       "content": "            let values = categoryItems.map { $0.transformedValue }\n            var categoryAnalysis: [String: Any] = [\n                \"count\": categoryItems.count,\n                \"percentage\": Double(categoryItems.count) / Double(items.count) * 100,\n                \"avg_value\": Double(values.reduce(0, +)) / Double(values.count),\n                \"min_value\": values.min() ?? 0,\n                \"max_value\": values.max() ?? 0\n            ]\n\n            // Time-based analysis\n            let currentTime = Date()\n            let recentItems = categoryItems.filter { currentTime.timeIntervalSince($0.timestamp) < 60 } // last minute\n            if !recentItems.isEmpty {\n                let recentValues = recentItems.map { $0.transformedValue }\n                categoryAnalysis[\"recent_count\"] = recentItems.count\n                categoryAnalysis[\"recent_avg\"] = Double(recentValues.reduce(0, +)) / Double(recentValues.count)\n            }\n\n            // High-value analysis\n            let highValueItems = categoryItems.filter { $0.transformedValue > 1000 }\n            if !highValueItems.isEmpty {\n                categoryAnalysis[\"high_value_count\"] = highValueItems.count\n            }\n\n            analysis[category] = categoryAnalysis\n        ",
       "end_line": 130,
       "language": "swift",

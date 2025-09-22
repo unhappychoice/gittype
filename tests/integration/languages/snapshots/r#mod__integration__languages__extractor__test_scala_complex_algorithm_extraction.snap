@@ -137,7 +137,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "FunctionCall",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          1367,
+          1390
+        ]
+      ],
       "content": "    input.zipWithIndex.foreach { case (value, index) =>\n      val cacheKey = s\"item_${index}_$value\"\n\n      cache.get(cacheKey) match {\n        case Some(cachedItem) =>\n          results += cachedItem\n        case None =>\n          val processedItem = value match {\n            case v if v > threshold =>\n              val transformedValue = v * 2\n              val category = if (transformedValue > threshold * 3) \"HIGH\" else \"MEDIUM\"\n              val bonusValue = if (transformedValue > 100) transformedValue + 10 else transformedValue\n\n              processedCount += 1\n              ProcessedItem(\n                id = index,\n                originalValue = v,\n                transformedValue = bonusValue,\n                category = category,\n                metadata = mutable.Map(\n                  \"processed\" -> true,\n                  \"multiplier\" -> 2,\n                  \"processor\" -> \"enhanced\"\n                )\n              )\n\n            case v if v > 0 =>\n              ProcessedItem(\n                id = index,\n                originalValue = v,\n                transformedValue = v + threshold,\n                category = \"LOW\",\n                metadata = mutable.Map(\n                  \"processed\" -> true,\n                  \"adjusted\" -> true,\n                  \"processor\" -> \"basic\"\n                )\n              )\n\n            case _ => // skip negative values\n              null\n          }\n\n          if (processedItem != null) {\n            cache(cacheKey) = processedItem\n            processingLog += processedItem\n            results += processedItem\n          }\n      }\n    }",
       "end_line": 73,
       "language": "scala",
@@ -147,7 +152,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          1265,
+          1288
+        ]
+      ],
       "content": "      cache.get(cacheKey) match {\n        case Some(cachedItem) =>\n          results += cachedItem\n        case None =>\n          val processedItem = value match {\n            case v if v > threshold =>\n              val transformedValue = v * 2\n              val category = if (transformedValue > threshold * 3) \"HIGH\" else \"MEDIUM\"\n              val bonusValue = if (transformedValue > 100) transformedValue + 10 else transformedValue\n\n              processedCount += 1\n              ProcessedItem(\n                id = index,\n                originalValue = v,\n                transformedValue = bonusValue,\n                category = category,\n                metadata = mutable.Map(\n                  \"processed\" -> true,\n                  \"multiplier\" -> 2,\n                  \"processor\" -> \"enhanced\"\n                )\n              )\n\n            case v if v > 0 =>\n              ProcessedItem(\n                id = index,\n                originalValue = v,\n                transformedValue = v + threshold,\n                category = \"LOW\",\n                metadata = mutable.Map(\n                  \"processed\" -> true,\n                  \"adjusted\" -> true,\n                  \"processor\" -> \"basic\"\n                )\n              )\n\n            case _ => // skip negative values\n              null\n          }\n\n          if (processedItem != null) {\n            cache(cacheKey) = processedItem\n            processingLog += processedItem\n            results += processedItem\n          }\n      }",
       "end_line": 72,
       "language": "scala",
@@ -157,7 +167,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          1145,
+          1168
+        ]
+      ],
       "content": "          val processedItem = value match {\n            case v if v > threshold =>\n              val transformedValue = v * 2\n              val category = if (transformedValue > threshold * 3) \"HIGH\" else \"MEDIUM\"\n              val bonusValue = if (transformedValue > 100) transformedValue + 10 else transformedValue\n\n              processedCount += 1\n              ProcessedItem(\n                id = index,\n                originalValue = v,\n                transformedValue = bonusValue,\n                category = category,\n                metadata = mutable.Map(\n                  \"processed\" -> true,\n                  \"multiplier\" -> 2,\n                  \"processor\" -> \"enhanced\"\n                )\n              )\n\n            case v if v > 0 =>\n              ProcessedItem(\n                id = index,\n                originalValue = v,\n                transformedValue = v + threshold,\n                category = \"LOW\",\n                metadata = mutable.Map(\n                  \"processed\" -> true,\n                  \"adjusted\" -> true,\n                  \"processor\" -> \"basic\"\n                )\n              )\n\n            case _ => // skip negative values\n              null\n          }",
       "end_line": 65,
       "language": "scala",
@@ -217,7 +232,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          178,
+          206
+        ]
+      ],
       "content": "    if (processedCount > 0) {\n      val average = results.map(_.transformedValue).sum.toDouble / results.size\n      println(f\"Processing complete. Average: $average%.2f\")\n\n      // Add processing statistics\n      results.foreach(_.metadata(\"processing_average\") = average)\n    }",
       "end_line": 82,
       "language": "scala",
@@ -250,7 +270,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "FunctionCall",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          428,
+          450
+        ],
+        [
+          939,
+          961
+        ]
+      ],
       "content": "    val analysis = categoryGroups.map { case (category, categoryItems) =>\n      val values = categoryItems.map(_.transformedValue)\n      val categoryAnalysis = Map(\n        \"count\" -> categoryItems.size,\n        \"percentage\" -> (categoryItems.size.toDouble / items.size * 100),\n        \"avg_value\" -> (values.sum.toDouble / values.size),\n        \"min_value\" -> values.min,\n        \"max_value\" -> values.max\n      ) ++ {\n        // Time-based analysis\n        val currentTime = Instant.now()\n        val recentItems = categoryItems.filter { item =>\n          java.time.Duration.between(item.timestamp, currentTime).getSeconds < 60\n        }\n\n        if (recentItems.nonEmpty) {\n          val recentValues = recentItems.map(_.transformedValue)\n          Map(\n            \"recent_count\" -> recentItems.size,\n            \"recent_avg\" -> (recentValues.sum.toDouble / recentValues.size)\n          )\n        } else Map.empty\n      } ++ {\n        // High-value analysis\n        val highValueItems = categoryItems.filter(_.transformedValue > 1000)\n        if (highValueItems.nonEmpty) {\n          Map(\"high_value_count\" -> highValueItems.size)\n        } else Map.empty\n      }\n\n      category -> categoryAnalysis\n    }",
       "end_line": 122,
       "language": "scala",
@@ -270,7 +299,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          21,
+          43
+        ]
+      ],
       "content": "      ) ++ {\n        // Time-based analysis\n        val currentTime = Instant.now()\n        val recentItems = categoryItems.filter { item =>\n          java.time.Duration.between(item.timestamp, currentTime).getSeconds < 60\n        }\n\n        if (recentItems.nonEmpty) {\n          val recentValues = recentItems.map(_.transformedValue)\n          Map(\n            \"recent_count\" -> recentItems.size,\n            \"recent_avg\" -> (recentValues.sum.toDouble / recentValues.size)\n          )\n        } else Map.empty\n      }",
       "end_line": 113,
       "language": "scala",
@@ -310,7 +344,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          21,
+          43
+        ]
+      ],
       "content": "      } ++ {\n        // High-value analysis\n        val highValueItems = categoryItems.filter(_.transformedValue > 1000)\n        if (highValueItems.nonEmpty) {\n          Map(\"high_value_count\" -> highValueItems.size)\n        } else Map.empty\n      }",
       "end_line": 119,
       "language": "scala",

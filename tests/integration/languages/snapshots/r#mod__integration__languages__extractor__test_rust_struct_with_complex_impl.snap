@@ -78,7 +78,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          14,
+          66
+        ],
+        [
+          244,
+          295
+        ]
+      ],
       "content": "    {\n        // Cache management logic - extractable middle chunk\n        if let Some(value) = self.cache.get(key) {\n            *self.access_count.entry(key.to_string()).or_insert(0) += 1;\n            return value.clone();\n        }\n\n        // Check if cache is full and evict least used item\n        if self.cache.len() >= self.max_size {\n            if let Some(lru_key) = self.find_least_used_key() {\n                self.cache.remove(&lru_key);\n                self.access_count.remove(&lru_key);\n            }\n        }\n\n        let computed_value = compute();\n        self.cache.insert(key.to_string(), computed_value.clone());\n        self.access_count.insert(key.to_string(), 1);\n        computed_value\n    }",
       "end_line": 40,
       "language": "rust",

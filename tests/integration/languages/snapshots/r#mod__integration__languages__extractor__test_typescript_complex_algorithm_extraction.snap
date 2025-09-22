@@ -191,7 +191,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          34,
+          65
+        ],
+        [
+          470,
+          510
+        ]
+      ],
       "content": "            try {\n                // Complex transformation logic\n                let transformedValue: number;\n                let category: 'LOW' | 'MEDIUM' | 'HIGH';\n                let processor: string;\n\n                if (item.value > this.threshold) {\n                    transformedValue = item.value * 2;\n                    category = transformedValue > this.threshold * 3 ? 'HIGH' : 'MEDIUM';\n                    processor = 'enhanced';\n\n                    // Additional processing for high values\n                    if (category === 'HIGH' && item.metadata?.boost) {\n                        transformedValue *= 1.5;\n                        processor = 'boosted';\n                    }\n                } else {\n                    transformedValue = item.value + this.threshold;\n                    category = 'LOW';\n                    processor = 'basic';\n                }\n\n                const processedItem: ProcessedItem = {\n                    ...item,\n                    transformedValue,\n                    category,\n                    timestamp: Date.now(),\n                    processingInfo: {\n                        cached: false,\n                        processor,\n                        duration: Date.now() - startTime\n                    }\n                };\n\n                this.cache.set(cacheKey, processedItem);\n                results.push(processedItem);\n                this.stats.processed++;\n\n            }",
       "end_line": 89,
       "language": "typescript",
@@ -201,7 +210,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "ErrorHandling",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          34,
+          65
+        ],
+        [
+          470,
+          510
+        ]
+      ],
       "content": "            try {\n                // Complex transformation logic\n                let transformedValue: number;\n                let category: 'LOW' | 'MEDIUM' | 'HIGH';\n                let processor: string;\n\n                if (item.value > this.threshold) {\n                    transformedValue = item.value * 2;\n                    category = transformedValue > this.threshold * 3 ? 'HIGH' : 'MEDIUM';\n                    processor = 'enhanced';\n\n                    // Additional processing for high values\n                    if (category === 'HIGH' && item.metadata?.boost) {\n                        transformedValue *= 1.5;\n                        processor = 'boosted';\n                    }\n                } else {\n                    transformedValue = item.value + this.threshold;\n                    category = 'LOW';\n                    processor = 'basic';\n                }\n\n                const processedItem: ProcessedItem = {\n                    ...item,\n                    transformedValue,\n                    category,\n                    timestamp: Date.now(),\n                    processingInfo: {\n                        cached: false,\n                        processor,\n                        duration: Date.now() - startTime\n                    }\n                };\n\n                this.cache.set(cacheKey, processedItem);\n                results.push(processedItem);\n                this.stats.processed++;\n\n            } catch (error) {\n                this.stats.errors++;\n                console.error(`Error processing item ${item.id}:`, error);\n            }",
       "end_line": 92,
       "language": "typescript",
@@ -211,7 +229,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          261,
+          301
+        ]
+      ],
       "content": "                if (item.value > this.threshold) {\n                    transformedValue = item.value * 2;\n                    category = transformedValue > this.threshold * 3 ? 'HIGH' : 'MEDIUM';\n                    processor = 'enhanced';\n\n                    // Additional processing for high values\n                    if (category === 'HIGH' && item.metadata?.boost) {\n                        transformedValue *= 1.5;\n                        processor = 'boosted';\n                    }\n                }",
       "end_line": 67,
       "language": "typescript",
@@ -221,7 +244,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          261,
+          301
+        ]
+      ],
       "content": "                if (item.value > this.threshold) {\n                    transformedValue = item.value * 2;\n                    category = transformedValue > this.threshold * 3 ? 'HIGH' : 'MEDIUM';\n                    processor = 'enhanced';\n\n                    // Additional processing for high values\n                    if (category === 'HIGH' && item.metadata?.boost) {\n                        transformedValue *= 1.5;\n                        processor = 'boosted';\n                    }\n                } else {\n                    transformedValue = item.value + this.threshold;\n                    category = 'LOW';\n                    processor = 'basic';\n                }",
       "end_line": 71,
       "language": "typescript",
@@ -314,7 +342,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Loop",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          753,
+          775
+        ],
+        [
+          890,
+          904
+        ]
+      ],
       "content": "        for (const [category, categoryItems] of Object.entries(categoryGroups)) {\n            const values = categoryItems.map(item => item.transformedValue);\n            const average = values.reduce((sum, val) => sum + val, 0) / values.length;\n            const max = Math.max(...values);\n            const min = Math.min(...values);\n\n            analysis.categoryDistribution = {\n                ...analysis.categoryDistribution as object,\n                [category]: {\n                    count: categoryItems.length,\n                    percentage: (categoryItems.length / items.length) * 100,\n                    avgValue: average,\n                    minValue: min,\n                    maxValue: max\n                }\n            };\n\n            // Time-based analysis\n            const recentItems = categoryItems.filter(\n                item => Date.now() - item.timestamp < 60000 // last minute\n            );\n\n            if (recentItems.length > 0) {\n                analysis.averageValues = {\n                    ...analysis.averageValues as object,\n                    [`${category}_recent`]: recentItems.length\n                };\n            }\n        }",
       "end_line": 144,
       "language": "typescript",
@@ -324,7 +361,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "FunctionCall",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          114,
+          128
+        ]
+      ],
       "content": "            const recentItems = categoryItems.filter(\n                item => Date.now() - item.timestamp < 60000 // last minute\n            )",
       "end_line": 136,
       "language": "typescript",
@@ -373,7 +415,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Lambda",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          113,
+          159
+        ],
+        [
+          462,
+          501
+        ]
+      ],
       "content": "    return (data: unknown): data is T => {\n        if (!data || typeof data !== 'object') return false;\n\n        // Validation logic - extractable middle chunk\n        for (const [key, validator] of Object.entries(schema)) {\n            const value = (data as Record<string, unknown>)[key];\n\n            if (!validator(value)) {\n                console.warn(`Validation failed for field ${key}:`, value);\n                return false;\n            }\n\n            // Additional type-specific validations\n            if (typeof value === 'string' && value.length === 0) {\n                console.warn(`Empty string not allowed for field ${key}`);\n                return false;\n            }\n\n            if (typeof value === 'number' && !Number.isFinite(value)) {\n                console.warn(`Invalid number for field ${key}:`, value);\n                return false;\n            }\n        }\n\n        return true;\n    }",
       "end_line": 177,
       "language": "typescript",
@@ -383,7 +434,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Loop",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          302,
+          341
+        ]
+      ],
       "content": "        for (const [key, validator] of Object.entries(schema)) {\n            const value = (data as Record<string, unknown>)[key];\n\n            if (!validator(value)) {\n                console.warn(`Validation failed for field ${key}:`, value);\n                return false;\n            }\n\n            // Additional type-specific validations\n            if (typeof value === 'string' && value.length === 0) {\n                console.warn(`Empty string not allowed for field ${key}`);\n                return false;\n            }\n\n            if (typeof value === 'number' && !Number.isFinite(value)) {\n                console.warn(`Invalid number for field ${key}:`, value);\n                return false;\n            }\n        }",
       "end_line": 174,
       "language": "typescript",

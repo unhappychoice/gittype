@@ -306,7 +306,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Loop",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          974,
+          1014
+        ],
+        [
+          1592,
+          1614
+        ]
+      ],
       "content": "            for (int i = 0; i < input.Count; i++)\n            {\n                var value = input[i];\n                var cacheKey = $\"item_{i}_{value}\";\n\n                if (_cache.TryGetValue(cacheKey, out var cachedItem))\n                {\n                    results.Add(cachedItem);\n                    continue;\n                }\n\n                var processedItem = new ProcessedItem\n                {\n                    Id = i,\n                    OriginalValue = Convert.ToInt32(value),\n                    Timestamp = DateTime.Now,\n                    Metadata = new Dictionary<string, object>()\n                };\n\n                if (value.CompareTo(_threshold) > 0)\n                {\n                    processedItem.TransformedValue = processedItem.OriginalValue * 2;\n                    processedItem.Category = processedItem.TransformedValue > Convert.ToInt32(_threshold) * 3 ? \"HIGH\" : \"MEDIUM\";\n                    processedCount++;\n\n                    // Additional processing for high values\n                    if (processedItem.TransformedValue > 100)\n                    {\n                        processedItem.Metadata[\"bonus\"] = true;\n                        processedItem.TransformedValue += 10;\n                    }\n                }\n                else if (value.CompareTo(default(T)) > 0)\n                {\n                    processedItem.TransformedValue = processedItem.OriginalValue + Convert.ToInt32(_threshold);\n                    processedItem.Category = \"LOW\";\n                }\n                else\n                {\n                    continue; // skip invalid values\n                }\n\n                _cache[cacheKey] = processedItem;\n                _processingLog.Add(processedItem);\n                results.Add(processedItem);\n            }",
       "end_line": 82,
       "language": "csharp",
@@ -316,7 +325,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          924,
+          964
+        ],
+        [
+          1542,
+          1564
+        ]
+      ],
       "content": "            {\n                var value = input[i];\n                var cacheKey = $\"item_{i}_{value}\";\n\n                if (_cache.TryGetValue(cacheKey, out var cachedItem))\n                {\n                    results.Add(cachedItem);\n                    continue;\n                }\n\n                var processedItem = new ProcessedItem\n                {\n                    Id = i,\n                    OriginalValue = Convert.ToInt32(value),\n                    Timestamp = DateTime.Now,\n                    Metadata = new Dictionary<string, object>()\n                };\n\n                if (value.CompareTo(_threshold) > 0)\n                {\n                    processedItem.TransformedValue = processedItem.OriginalValue * 2;\n                    processedItem.Category = processedItem.TransformedValue > Convert.ToInt32(_threshold) * 3 ? \"HIGH\" : \"MEDIUM\";\n                    processedCount++;\n\n                    // Additional processing for high values\n                    if (processedItem.TransformedValue > 100)\n                    {\n                        processedItem.Metadata[\"bonus\"] = true;\n                        processedItem.TransformedValue += 10;\n                    }\n                }\n                else if (value.CompareTo(default(T)) > 0)\n                {\n                    processedItem.TransformedValue = processedItem.OriginalValue + Convert.ToInt32(_threshold);\n                    processedItem.Category = \"LOW\";\n                }\n                else\n                {\n                    continue; // skip invalid values\n                }\n\n                _cache[cacheKey] = processedItem;\n                _processingLog.Add(processedItem);\n                results.Add(processedItem);\n            }",
       "end_line": 82,
       "language": "csharp",
@@ -346,7 +364,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          347,
+          387
+        ],
+        [
+          965,
+          987
+        ]
+      ],
       "content": "                if (value.CompareTo(_threshold) > 0)\n                {\n                    processedItem.TransformedValue = processedItem.OriginalValue * 2;\n                    processedItem.Category = processedItem.TransformedValue > Convert.ToInt32(_threshold) * 3 ? \"HIGH\" : \"MEDIUM\";\n                    processedCount++;\n\n                    // Additional processing for high values\n                    if (processedItem.TransformedValue > 100)\n                    {\n                        processedItem.Metadata[\"bonus\"] = true;\n                        processedItem.TransformedValue += 10;\n                    }\n                }\n                else if (value.CompareTo(default(T)) > 0)\n                {\n                    processedItem.TransformedValue = processedItem.OriginalValue + Convert.ToInt32(_threshold);\n                    processedItem.Category = \"LOW\";\n                }\n                else\n                {\n                    continue; // skip invalid values\n                }",
       "end_line": 77,
       "language": "csharp",
@@ -356,7 +383,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          294,
+          334
+        ]
+      ],
       "content": "                {\n                    processedItem.TransformedValue = processedItem.OriginalValue * 2;\n                    processedItem.Category = processedItem.TransformedValue > Convert.ToInt32(_threshold) * 3 ? \"HIGH\" : \"MEDIUM\";\n                    processedCount++;\n\n                    // Additional processing for high values\n                    if (processedItem.TransformedValue > 100)\n                    {\n                        processedItem.Metadata[\"bonus\"] = true;\n                        processedItem.TransformedValue += 10;\n                    }\n                }",
       "end_line": 68,
       "language": "csharp",
@@ -386,7 +418,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          327,
+          349
+        ]
+      ],
       "content": "                else if (value.CompareTo(default(T)) > 0)\n                {\n                    processedItem.TransformedValue = processedItem.OriginalValue + Convert.ToInt32(_threshold);\n                    processedItem.Category = \"LOW\";\n                }\n                else\n                {\n                    continue; // skip invalid values\n                }",
       "end_line": 77,
       "language": "csharp",
@@ -406,7 +443,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          48,
+          70
+        ]
+      ],
       "content": "                {\n                    continue; // skip invalid values\n                }",
       "end_line": 77,
       "language": "csharp",
@@ -416,7 +458,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Conditional",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          221,
+          244
+        ]
+      ],
       "content": "            if (processedCount > 0)\n            {\n                var average = results.Average(r => r.TransformedValue);\n                Console.WriteLine($\"Processing complete. Average: {average:F2}\");\n\n                // Add summary metadata\n                foreach (var item in results)\n                {\n                    item.Metadata[\"processing_average\"] = average;\n                }\n            }",
       "end_line": 95,
       "language": "csharp",
@@ -426,7 +473,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          185,
+          208
+        ]
+      ],
       "content": "            {\n                var average = results.Average(r => r.TransformedValue);\n                Console.WriteLine($\"Processing complete. Average: {average:F2}\");\n\n                // Add summary metadata\n                foreach (var item in results)\n                {\n                    item.Metadata[\"processing_average\"] = average;\n                }\n            }",
       "end_line": 95,
       "language": "csharp",
@@ -489,7 +541,20 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          191,
+          243
+        ],
+        [
+          930,
+          952
+        ],
+        [
+          1334,
+          1356
+        ]
+      ],
       "content": "        {\n            var analysis = new Dictionary<string, object>();\n            var categoryGroups = items.GroupBy(i => i.Category).ToDictionary(g => g.Key, g => g.ToList());\n\n            // Pattern analysis logic - extractable middle chunk\n            foreach (var categoryGroup in categoryGroups)\n            {\n                var category = categoryGroup.Key;\n                var categoryItems = categoryGroup.Value;\n\n                var categoryAnalysis = new Dictionary<string, object>\n                {\n                    [\"count\"] = categoryItems.Count,\n                    [\"percentage\"] = (double)categoryItems.Count / items.Count * 100,\n                    [\"avg_value\"] = categoryItems.Average(i => i.TransformedValue),\n                    [\"min_value\"] = categoryItems.Min(i => i.TransformedValue),\n                    [\"max_value\"] = categoryItems.Max(i => i.TransformedValue)\n                };\n\n                // Time-based analysis\n                var recentItems = categoryItems.Where(i => (DateTime.Now - i.Timestamp).TotalMinutes < 1).ToList();\n                if (recentItems.Any())\n                {\n                    categoryAnalysis[\"recent_count\"] = recentItems.Count;\n                    categoryAnalysis[\"recent_avg\"] = recentItems.Average(i => i.TransformedValue);\n                }\n\n                // High-value analysis\n                var highValueItems = categoryItems.Where(i => i.TransformedValue > 1000).ToList();\n                if (highValueItems.Any())\n                {\n                    categoryAnalysis[\"high_value_count\"] = highValueItems.Count;\n                }\n\n                analysis[category] = categoryAnalysis;\n            }\n\n            analysis[\"total_items\"] = items.Count;\n            analysis[\"processing_time\"] = DateTime.Now;\n\n            return analysis;\n        }",
       "end_line": 142,
       "language": "csharp",
@@ -499,7 +564,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "Loop",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          686,
+          708
+        ],
+        [
+          1090,
+          1112
+        ]
+      ],
       "content": "            foreach (var categoryGroup in categoryGroups)\n            {\n                var category = categoryGroup.Key;\n                var categoryItems = categoryGroup.Value;\n\n                var categoryAnalysis = new Dictionary<string, object>\n                {\n                    [\"count\"] = categoryItems.Count,\n                    [\"percentage\"] = (double)categoryItems.Count / items.Count * 100,\n                    [\"avg_value\"] = categoryItems.Average(i => i.TransformedValue),\n                    [\"min_value\"] = categoryItems.Min(i => i.TransformedValue),\n                    [\"max_value\"] = categoryItems.Max(i => i.TransformedValue)\n                };\n\n                // Time-based analysis\n                var recentItems = categoryItems.Where(i => (DateTime.Now - i.Timestamp).TotalMinutes < 1).ToList();\n                if (recentItems.Any())\n                {\n                    categoryAnalysis[\"recent_count\"] = recentItems.Count;\n                    categoryAnalysis[\"recent_avg\"] = recentItems.Average(i => i.TransformedValue);\n                }\n\n                // High-value analysis\n                var highValueItems = categoryItems.Where(i => i.TransformedValue > 1000).ToList();\n                if (highValueItems.Any())\n                {\n                    categoryAnalysis[\"high_value_count\"] = highValueItems.Count;\n                }\n\n                analysis[category] = categoryAnalysis;\n            }",
       "end_line": 136,
       "language": "csharp",
@@ -509,7 +583,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     },
     {
       "chunk_type": "CodeBlock",
-      "comment_ranges": [],
+      "comment_ranges": [
+        [
+          628,
+          650
+        ],
+        [
+          1032,
+          1054
+        ]
+      ],
       "content": "            {\n                var category = categoryGroup.Key;\n                var categoryItems = categoryGroup.Value;\n\n                var categoryAnalysis = new Dictionary<string, object>\n                {\n                    [\"count\"] = categoryItems.Count,\n                    [\"percentage\"] = (double)categoryItems.Count / items.Count * 100,\n                    [\"avg_value\"] = categoryItems.Average(i => i.TransformedValue),\n                    [\"min_value\"] = categoryItems.Min(i => i.TransformedValue),\n                    [\"max_value\"] = categoryItems.Max(i => i.TransformedValue)\n                };\n\n                // Time-based analysis\n                var recentItems = categoryItems.Where(i => (DateTime.Now - i.Timestamp).TotalMinutes < 1).ToList();\n                if (recentItems.Any())\n                {\n                    categoryAnalysis[\"recent_count\"] = recentItems.Count;\n                    categoryAnalysis[\"recent_avg\"] = recentItems.Average(i => i.TransformedValue);\n                }\n\n                // High-value analysis\n                var highValueItems = categoryItems.Where(i => i.TransformedValue > 1000).ToList();\n                if (highValueItems.Any())\n                {\n                    categoryAnalysis[\"high_value_count\"] = highValueItems.Count;\n                }\n\n                analysis[category] = categoryAnalysis;\n            }",
       "end_line": 136,
       "language": "csharp",
