@@ -80,6 +80,16 @@ pub enum Commands {
         #[command(subcommand)]
         repo_command: RepoCommands,
     },
+    /// Select and practice with trending repositories from GitHub
+    Trending {
+        /// Programming language to filter trending repositories
+        language: Option<String>,
+        /// Specific repository name to select from trending list
+        repo_name: Option<String>,
+        /// Time period for trending (daily, weekly, monthly)
+        #[arg(long, default_value = "daily")]
+        period: String,
+    },
 }
 
 #[derive(Subcommand)]
