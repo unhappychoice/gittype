@@ -27,7 +27,7 @@ name = "gittype"
 path = "src/main.rs"
 
 [dependencies]
-clap = { version = "4.0", features = ["derive"] }
+clap = { version = "4.5", features = ["derive"] }
 tree-sitter = "0.25"
 tree-sitter-rust = "0.24"
 tree-sitter-typescript = "0.23"
