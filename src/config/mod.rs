@@ -6,7 +6,6 @@ use std::path::PathBuf;
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Config {
     pub theme: ThemeConfig,
-    pub trending: TrendingConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -29,40 +28,6 @@ fn default_theme_id() -> String {
     "default".to_string()
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TrendingConfig {
-    #[serde(default = "default_cache_ttl_minutes")]
-    pub cache_ttl_minutes: u64,
-    #[serde(default = "default_rate_limit_ms")]
-    pub rate_limit_ms: u64,
-    #[serde(default = "default_period")]
-    pub default_period: String,
-    #[serde(default)]
-    pub default_language: Option<String>,
-}
-
-impl Default for TrendingConfig {
-    fn default() -> Self {
-        Self {
-            cache_ttl_minutes: default_cache_ttl_minutes(),
-            rate_limit_ms: default_rate_limit_ms(),
-            default_period: default_period(),
-            default_language: None,
-        }
-    }
-}
-
-fn default_cache_ttl_minutes() -> u64 {
-    5 // 5 minutes cache
-}
-
-fn default_rate_limit_ms() -> u64 {
-    100 // 100ms rate limit
-}
-
-fn default_period() -> String {
-    "daily".to_string()
-}
 
 pub struct ConfigManager {
     config: Config,

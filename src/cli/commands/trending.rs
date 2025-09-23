@@ -34,11 +34,7 @@ impl TrendingCache {
         cache_dir.push(".gittype");
         cache_dir.push("trending_cache");
 
-        let ttl_seconds = if let Ok(config_manager) = crate::config::ConfigManager::new() {
-            config_manager.get_config().trending.cache_ttl_minutes * 60
-        } else {
-            300 // 5 minutes default
-        };
+        let ttl_seconds = 300; // 5 minutes
 
         Self {
             cache_dir,
@@ -57,11 +53,11 @@ impl TrendingCache {
 
         let current_time = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .unwrap()
+            .unwrap_or_else(|_| Duration::from_secs(0))
             .as_secs();
 
         // Check if cache is still valid
-        if current_time - cache_data.timestamp < self.ttl_seconds {
+        if current_time.saturating_sub(cache_data.timestamp) < self.ttl_seconds {
             Some(cache_data.repositories)
         } else {
             // Remove expired cache file
@@ -75,7 +71,7 @@ impl TrendingCache {
 
         let current_time = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .unwrap()
+            .unwrap_or_else(|_| Duration::from_secs(0))
             .as_secs();
 
         let cache_data = TrendingCacheData {
@@ -97,14 +93,14 @@ impl TrendingCache {
 
         let current_time = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .unwrap()
+            .unwrap_or_else(|_| Duration::from_secs(0))
             .as_secs();
 
         if let Ok(entries) = fs::read_dir(&self.cache_dir) {
             for entry in entries.flatten() {
                 if let Ok(content) = fs::read_to_string(entry.path()) {
                     if let Ok(cache_data) = serde_json::from_str::<TrendingCacheData>(&content) {
-                        if current_time - cache_data.timestamp >= self.ttl_seconds {
+                        if current_time.saturating_sub(cache_data.timestamp) >= self.ttl_seconds {
                             let _ = fs::remove_file(entry.path());
                         }
                     }
@@ -151,6 +147,9 @@ pub async fn run_trending(
                 command: None,
             };
             return crate::cli::commands::run_game_session(cli);
+        } else {
+            eprintln!("⚠️ Repository '{}' not found in trending list", name);
+            return Ok(());
         }
     } else if language.is_some() {
         // Language provided - show repositories directly
@@ -221,11 +220,7 @@ pub async fn fetch_trending_repositories_cached(
     TRENDING_CACHE.cleanup_expired();
 
     // Rate limiting: wait a bit between API calls to be respectful
-    let rate_limit_ms = if let Ok(config_manager) = crate::config::ConfigManager::new() {
-        config_manager.get_config().trending.rate_limit_ms
-    } else {
-        100 // default 100ms
-    };
+    let rate_limit_ms = 100; // 100ms
     tokio::time::sleep(Duration::from_millis(rate_limit_ms)).await;
 
     // Fetch from API
@@ -281,6 +276,7 @@ async fn fetch_trending_repositories(
         .get(&url)
         .header("User-Agent", "gittype")
         .header("Accept", "application/json")
+        .timeout(Duration::from_secs(10))
         .send()
         .await?;
 
