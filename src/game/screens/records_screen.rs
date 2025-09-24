@@ -281,6 +281,9 @@ impl RecordsScreen {
     fn refresh_sessions(&mut self) -> Result<()> {
         let session_repo = SessionRepository::new()?;
 
+        // Refresh repository list to include any newly created repositories
+        self.repositories = session_repo.get_all_repositories()?;
+
         // Use the improved database filtering method
         let sessions = session_repo.get_sessions_filtered(
             self.filter_state.repository_filter,
