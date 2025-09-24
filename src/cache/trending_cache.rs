@@ -26,6 +26,12 @@ pub struct TrendingCache {
     ttl_seconds: u64,
 }
 
+impl Default for TrendingCache {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TrendingCache {
     pub fn new() -> Self {
         let mut cache_dir = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));

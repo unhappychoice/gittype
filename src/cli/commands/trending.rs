@@ -3,12 +3,50 @@ use crate::{GitTypeError, Result};
 use reqwest::Client;
 use std::time::Duration;
 
+const SUPPORTED_LANGUAGES: &[(&str, &str)] = &[
+    ("C", "C"),
+    ("C#", "C#"),
+    ("C++", "C++"),
+    ("Dart", "Dart"),
+    ("Go", "Go"),
+    ("Haskell", "Haskell"),
+    ("Java", "Java"),
+    ("JavaScript", "JavaScript"),
+    ("Kotlin", "Kotlin"),
+    ("PHP", "PHP"),
+    ("Python", "Python"),
+    ("Ruby", "Ruby"),
+    ("Rust", "Rust"),
+    ("Scala", "Scala"),
+    ("Swift", "Swift"),
+    ("TypeScript", "TypeScript"),
+];
+
+fn validate_language(language: &str) -> bool {
+    SUPPORTED_LANGUAGES.iter().any(|(display_name, lang_code)| {
+        display_name.to_lowercase() == language.to_lowercase()
+            || lang_code.to_lowercase() == language.to_lowercase()
+    })
+}
 
 pub async fn run_trending(
     language: Option<String>,
     repo_name: Option<String>,
     period: String,
 ) -> Result<()> {
+    // Validate language if provided
+    if let Some(ref lang) = language {
+        if !validate_language(lang) {
+            let supported_langs: Vec<&str> =
+                SUPPORTED_LANGUAGES.iter().map(|(name, _)| *name).collect();
+            eprintln!("❌ Unsupported language: '{}'", lang);
+            eprintln!("📚 Supported languages: {}", supported_langs.join(", "));
+            return Err(GitTypeError::ValidationError(format!(
+                "Unsupported language: {}",
+                lang
+            )));
+        }
+    }
     if let Some(name) = repo_name {
         // Direct repository selection by name
         let client = Client::new();

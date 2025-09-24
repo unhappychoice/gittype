@@ -28,7 +28,6 @@ fn default_theme_id() -> String {
     "default".to_string()
 }
 
-
 pub struct ConfigManager {
     config: Config,
     config_path: PathBuf,

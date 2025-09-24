@@ -194,5 +194,9 @@ fn handle_game_error(e: GitTypeError) -> Result<()> {
             eprintln!("💡 The service may be temporarily unavailable");
             std::process::exit(1);
         }
+        GitTypeError::ValidationError(msg) => {
+            eprintln!("❌ {}", msg);
+            std::process::exit(1);
+        }
     }
 }

@@ -46,6 +46,9 @@ pub enum GitTypeError {
 
     #[error("API error: {0}")]
     ApiError(String),
+
+    #[error("Validation error: {0}")]
+    ValidationError(String),
 }
 
 impl GitTypeError {
