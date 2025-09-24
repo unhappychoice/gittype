@@ -27,6 +27,12 @@
    gittype repo play
    ```
 
+6. **Discover trending repositories:**
+   ```bash
+   gittype trending
+   gittype trending rust
+   ```
+
 ## Command Line Options
 
 ```bash
@@ -100,3 +106,41 @@ gittype repo <COMMAND>
 - `gittype repo list` - List all cached repositories
 - `gittype repo clear [--force]` - Clear all cached repositories
 - `gittype repo play` - Play a cached repository interactively
+
+### Practice with Trending Repositories
+```bash
+gittype trending [LANGUAGE] [OPTIONS]
+```
+
+Discover and practice typing with trending GitHub repositories. Repositories are cached and updated automatically.
+
+#### Options:
+| Option | Description | Default |
+|---|---|---|
+| `LANGUAGE` | Programming language to filter repositories | All languages |
+| `--period` | Time period for trending (daily, weekly, monthly) | `daily` |
+
+#### Supported Languages:
+- C, C#, C++, Dart, Go, Haskell, Java, JavaScript, Kotlin, PHP, Python, Ruby, Rust, Scala, Swift, TypeScript
+
+#### Examples:
+```bash
+# Browse trending repositories interactively (all languages)
+gittype trending
+
+# Show trending Rust repositories for interactive selection
+gittype trending rust
+
+# Show weekly trending Python repositories
+gittype trending python --period weekly
+
+# Show monthly trending repositories for all languages
+gittype trending --period monthly
+```
+
+#### How it works:
+1. **Interactive Selection**: When no specific repository is provided, GitType shows an interactive list of trending repositories
+2. **Language Filtering**: Specify a language to see only repositories in that programming language
+3. **Direct Repository Selection**: Provide a repository name to search for and play with that specific repository
+4. **Automatic Caching**: Trending data is cached to reduce API calls and improve performance
+5. **Seamless Integration**: Selected repositories are automatically cloned and ready for typing practice

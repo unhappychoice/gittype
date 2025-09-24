@@ -18,6 +18,8 @@
 - 🎮 **Multiple game modes**: Normal, Time Attack, and custom difficulty levels (Easy to Zen)
 - ⏸️ **Pause/resume**: Take breaks without ruining your stats
 - 🎯 **Your own code**: Type functions from your actual projects, not boring examples
+- 🔥 **Trending repositories**: Practice with hot GitHub repositories updated daily
+- 🎨 **15+ Themes**: Built-in themes with Dark/Light modes + custom theme support
 
 ## Installation 📦
 
@@ -77,6 +79,10 @@ gittype --repo clap-rs/clap
 gittype --repo https://github.com/ratatui-org/ratatui
 gittype --repo git@github.com:dtolnay/anyhow.git
 
+# Discover and practice with trending GitHub repositories
+gittype trending                    # Browse trending repos interactively
+gittype trending rust               # Filter by language (Rust)
+
 # Play with cached repositories interactively
 gittype repo play
 ```
@@ -114,6 +120,7 @@ Perfect for when the game gets too addictive:
 - **[Installation](docs/installation.md)** - `cargo install` and chill
 - **[Usage](docs/usage.md)** - All the CLI flags your heart desires
 - **[Playing Guide](docs/playing-guide.md)** - Game modes, scoring, and ranks
+- **[Themes](docs/themes.md)** - 15+ built-in themes and custom theme creation
 - **[Languages](docs/supported-languages.md)** - What we extract and how
 - **[Contributing](docs/CONTRIBUTING.md)** - Join the keyboard warriors
 - **[Architecture](docs/ARCHITECTURE.md)** - For the curious minds
