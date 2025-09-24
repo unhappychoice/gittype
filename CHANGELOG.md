@@ -5,6 +5,66 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2025-09-24
+
+### ✨ Features
+
+- feat: add comprehensive documentation for trending and themes features ([b86ff98](https://github.com/unhappychoice/gittype/commit/b86ff98))
+- feat: reorder Game Help sections to show Code Challenge Types before Typing Tips ([9bfbaae](https://github.com/unhappychoice/gittype/commit/9bfbaae))
+- feat: add language validation for trending command ([6b458bf](https://github.com/unhappychoice/gittype/commit/6b458bf))
+- feat: add HTTP and API error handling for trending feature ([9347cf4](https://github.com/unhappychoice/gittype/commit/9347cf4))
+- feat: add trending repositories selection feature ([ccf589e](https://github.com/unhappychoice/gittype/commit/ccf589e))
+- feat: add Starforge and Runic themes with comprehensive color adjustments ([8ba14d4](https://github.com/unhappychoice/gittype/commit/8ba14d4))
+- feat: add Colors::key_action() and Colors::key_navigation() methods ([8dbae6c](https://github.com/unhappychoice/gittype/commit/8dbae6c))
+- feat: add custom theme support via ~/.gittype/custom-theme.json ([ba482da](https://github.com/unhappychoice/gittype/commit/ba482da))
+- feat: add settings screen with theme and color mode selection ([90fd06e](https://github.com/unhappychoice/gittype/commit/90fd06e))
+- feat: restructure theme system with simplified Theme struct and proper separation of concerns ([c157160](https://github.com/unhappychoice/gittype/commit/c157160))
+- feat: add Nix support with flake configuration and dependencies ([310b577](https://github.com/unhappychoice/gittype/commit/310b577))
+- feat: reorganize theme structure and add extensive theme collection ([3197abb](https://github.com/unhappychoice/gittype/commit/3197abb))
+- feat: add new dark and light themes with improved color schemes ([9ca8b74](https://github.com/unhappychoice/gittype/commit/9ca8b74))
+- feat: add ColorScheme caching and in-game theme switching ([f768443](https://github.com/unhappychoice/gittype/commit/f768443))
+- feat: restructure theme system with consolidated and separated colors ([08d49b5](https://github.com/unhappychoice/gittype/commit/08d49b5))
+- feat: improve typing interface color usage ([2a79fde](https://github.com/unhappychoice/gittype/commit/2a79fde))
+- feat: replace hardcoded color constants with dynamic theme system ([ee322e4](https://github.com/unhappychoice/gittype/commit/ee322e4))
+- feat: rename themes to ascii_dark and ascii_light ([b8403a5](https://github.com/unhappychoice/gittype/commit/b8403a5))
+
+### 🐛 Bug Fixes
+
+- fix: refresh repository list in records screen to prevent unknown display ([58ac54b](https://github.com/unhappychoice/gittype/commit/58ac54b))
+- fix: remove TrendingConfig and hardcode values ([8a20f72](https://github.com/unhappychoice/gittype/commit/8a20f72))
+- fix: correct comment range detection in middle chunk extraction ([a2fe4a6](https://github.com/unhappychoice/gittype/commit/a2fe4a6))
+- fix: remove left-right margins and fix key colors in session detail screen ([b212175](https://github.com/unhappychoice/gittype/commit/b212175))
+- fix: remove unnecessary margins and spacing from screen layouts ([eedec04](https://github.com/unhappychoice/gittype/commit/eedec04))
+- fix: rename typing_current_cursor to typing_cursor_fg in ascii theme ([0653b10](https://github.com/unhappychoice/gittype/commit/0653b10))
+- fix: add horizontal padding to settings screen content sections ([a297926](https://github.com/unhappychoice/gittype/commit/a297926))
+- fix: restore manual Default implementation for ThemeConfig ([4872ae8](https://github.com/unhappychoice/gittype/commit/4872ae8))
+- fix: update tests and resolve clippy warnings after theme system refactor ([d43b47a](https://github.com/unhappychoice/gittype/commit/d43b47a))
+- fix: ensure key colors match semantic colors in all themes ([bfa5028](https://github.com/unhappychoice/gittype/commit/bfa5028))
+
+### 📝 Other Changes
+
+- chore: bump version to v0.8.0 ([ab1f563](https://github.com/unhappychoice/gittype/commit/ab1f563))
+- docs: enhance README with comprehensive screenshots ([335ee87](https://github.com/unhappychoice/gittype/commit/335ee87))
+- refactor: split trending_view into separate files and add help info ([32f3312](https://github.com/unhappychoice/gittype/commit/32f3312))
+- chore(deps): bump tree-sitter from 0.25.9 to 0.25.10 ([9524aa5](https://github.com/unhappychoice/gittype/commit/9524aa5))
+- chore(deps): bump tempfile from 3.22.0 to 3.23.0 ([9448eb5](https://github.com/unhappychoice/gittype/commit/9448eb5))
+- chore(deps): bump serde from 1.0.225 to 1.0.226 ([7a887b7](https://github.com/unhappychoice/gittype/commit/7a887b7))
+- chore(deps): bump clap from 4.5.47 to 4.5.48 ([4d5aa49](https://github.com/unhappychoice/gittype/commit/4d5aa49))
+- chore(deps): bump anyhow from 1.0.99 to 1.0.100 ([7931060](https://github.com/unhappychoice/gittype/commit/7931060))
+- Apply suggestion from @coderabbitai[bot] ([1cd74a0](https://github.com/unhappychoice/gittype/commit/1cd74a0))
+- Apply suggestion from @coderabbitai[bot] ([1e67c43](https://github.com/unhappychoice/gittype/commit/1e67c43))
+- Apply suggestion from @coderabbitai[bot] ([13a0301](https://github.com/unhappychoice/gittype/commit/13a0301))
+- refactor: improve analytics screen navigation UI consistency ([633d257](https://github.com/unhappychoice/gittype/commit/633d257))
+- refactor: save theme ID instead of entire theme object in config ([d475f01](https://github.com/unhappychoice/gittype/commit/d475f01))
+- remove: CLI theme-related commands ([fb44a83](https://github.com/unhappychoice/gittype/commit/fb44a83))
+- refactor: use Colors::key_action() instead of Colors::success() for key descriptions ([4a92b04](https://github.com/unhappychoice/gittype/commit/4a92b04))
+- docs: clean up commit and wording ([b8d6e6b](https://github.com/unhappychoice/gittype/commit/b8d6e6b))
+- docs: update CONTRIBUTING and README to include Nix development instructions ([bec7820](https://github.com/unhappychoice/gittype/commit/bec7820))
+- test: skip tests in nix build environments if they are incompatible with nix sandboxing ([a412a73](https://github.com/unhappychoice/gittype/commit/a412a73))
+- refactor: update all UI components to use new consolidated color system ([1641183](https://github.com/unhappychoice/gittype/commit/1641183))
+- refactor: remove unused StageRendererView component ([b6aeb45](https://github.com/unhappychoice/gittype/commit/b6aeb45))
+
+
 ## [0.7.0] - 2025-09-19
 
 ### ✨ Features
@@ -41,7 +101,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📝 Other Changes
 
-- chore: bump version to v0.7.0 ([1477551](https://github.com/unhappychoice/gittype/commit/1477551))
+- chore: bump version to v0.7.0 ([2261823](https://github.com/unhappychoice/gittype/commit/2261823))
 - docs: add updated screenshots and new analytics images ([0f598d2](https://github.com/unhappychoice/gittype/commit/0f598d2))
 - docs: update documentation structure and language support ([52d6428](https://github.com/unhappychoice/gittype/commit/52d6428))
 - Update src/game/session_manager.rs ([8278d20](https://github.com/unhappychoice/gittype/commit/8278d20))
