@@ -14,6 +14,8 @@ use ratatui::{
     Frame,
 };
 
+const THIRD_PARTY_LICENSES: &str = include_str!("../../../LICENSE-THIRD-PARTY");
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum HelpSection {
     Scoring,
@@ -21,6 +23,7 @@ pub enum HelpSection {
     GameHelp,
     CLI,
     About,
+    ThirdPartyLicenses,
     Community,
 }
 
@@ -32,6 +35,7 @@ impl HelpSection {
             HelpSection::GameHelp => "Game Help",
             HelpSection::CLI => "CLI Usage",
             HelpSection::About => "About & Credits",
+            HelpSection::ThirdPartyLicenses => "Third-Party Licenses",
             HelpSection::Community => "Community",
         }
     }
@@ -42,8 +46,9 @@ impl HelpSection {
             HelpSection::Scoring,
             HelpSection::Ranks,
             HelpSection::GameHelp,
-            HelpSection::About,
             HelpSection::Community,
+            HelpSection::About,
+            HelpSection::ThirdPartyLicenses,
         ]
     }
 }
@@ -718,6 +723,14 @@ impl HelpScreen {
         ])
     }
 
+    fn get_third_party_licenses_content() -> Text<'static> {
+        let lines = THIRD_PARTY_LICENSES
+            .lines()
+            .map(Line::from)
+            .collect::<Vec<_>>();
+        Text::from(lines)
+    }
+
     fn get_community_content() -> Text<'static> {
         Text::from(vec![
             Line::from(vec![Span::styled(
@@ -849,6 +862,7 @@ impl HelpScreen {
             HelpSection::GameHelp => Self::get_game_help_content(),
             HelpSection::CLI => Self::get_cli_content(),
             HelpSection::About => Self::get_about_content(),
+            HelpSection::ThirdPartyLicenses => Self::get_third_party_licenses_content(),
             HelpSection::Community => Self::get_community_content(),
         };
 
