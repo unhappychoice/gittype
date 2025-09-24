@@ -40,6 +40,15 @@ pub enum GitTypeError {
 
     #[error("Application panic: {0}")]
     PanicError(String),
+
+    #[error("HTTP request error: {0}")]
+    HttpError(#[from] reqwest::Error),
+
+    #[error("API error: {0}")]
+    ApiError(String),
+
+    #[error("Validation error: {0}")]
+    ValidationError(String),
 }
 
 impl GitTypeError {

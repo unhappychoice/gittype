@@ -184,5 +184,19 @@ fn handle_game_error(e: GitTypeError) -> Result<()> {
             eprintln!("💡 This indicates an unexpected error. Please report this issue.");
             std::process::exit(1);
         }
+        GitTypeError::HttpError(http_error) => {
+            eprintln!("❌ HTTP request failed: {}", http_error);
+            eprintln!("💡 Check your internet connection and try again");
+            std::process::exit(1);
+        }
+        GitTypeError::ApiError(msg) => {
+            eprintln!("❌ API error: {}", msg);
+            eprintln!("💡 The service may be temporarily unavailable");
+            std::process::exit(1);
+        }
+        GitTypeError::ValidationError(msg) => {
+            eprintln!("❌ {}", msg);
+            std::process::exit(1);
+        }
     }
 }
