@@ -83,6 +83,10 @@ pub enum Commands {
     /// Select and practice with trending repositories from GitHub
     Trending {
         /// Programming language to filter trending repositories
+        #[arg(
+            help = "Programming language to filter trending repositories",
+            long_help = "Programming language to filter trending repositories.\nSupported languages: C, C#, C++, Dart, Go, Haskell, Java, JavaScript, Kotlin, PHP, Python, Ruby, Rust, Scala, Swift, TypeScript"
+        )]
         language: Option<String>,
         /// Specific repository name to select from trending list
         repo_name: Option<String>,
