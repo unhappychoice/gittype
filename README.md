@@ -87,18 +87,6 @@ gittype trending rust               # Filter by language (Rust)
 gittype repo play
 ```
 
-## Screenshots 📸
-
-![GitType Title Screen](docs/images/title.png)
-
-![GitType Gaming](docs/images/gaming.png)
-
-![GitType Result](docs/images/result.png)
-
-![GitType Records](docs/images/records.png)
-
-![GitType Analytics](docs/images/analytics-trends.png)
-
 ## Why GitType? 🤔
 
 - **Look busy at work** → "I'm studying the codebase" (technically true!)
@@ -124,6 +112,30 @@ Perfect for when the game gets too addictive:
 - **[Languages](docs/supported-languages.md)** - What we extract and how
 - **[Contributing](docs/CONTRIBUTING.md)** - Join the keyboard warriors
 - **[Architecture](docs/ARCHITECTURE.md)** - For the curious minds
+
+## Screenshots 📸
+
+![GitType Title Screen](docs/images/title.png)
+
+![GitType Gaming](docs/images/gaming.png)
+
+![GitType Result](docs/images/result.png)
+
+![GitType Result](docs/images/stage-result.png)
+
+![GitType Records](docs/images/records.png)
+
+![GitType Records Detail](docs/images/records-detail.png)
+
+![GitType Analytics Overview](docs/images/analytics-overview.png)
+
+![GitType Analytics Trends](docs/images/analytics-trends.png)
+
+![GitType Analytics Languages](docs/images/analytics-languages.png)
+
+![GitType Analytics Repositories](docs/images/analytics-repositories.png)
+
+![GitType Settings](docs/images/settings-theme.png)
 
 ## License 📄
 
