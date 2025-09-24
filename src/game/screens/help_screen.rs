@@ -814,7 +814,7 @@ impl HelpScreen {
                 Style::default().fg(Colors::text()),
             )),
             Line::from(Span::styled(
-                "https://twitter.com/search?q=%23gittype",
+                "https://x.com/search?q=%23gittype",
                 Style::default().fg(Colors::text()),
             )),
             Line::from(""),
