@@ -63,6 +63,7 @@ GitType extracts real code constructs from repositories:
 ### Rank Progression
 Progress through ranks by achieving higher scores. Each rank requires a minimum score threshold. The highest ranks remain mysterious until achieved!
 
+
 ## Help System
 
 Press **I** or **?** from the title screen to access the in-game help system with detailed information about:
