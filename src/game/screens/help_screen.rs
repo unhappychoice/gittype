@@ -291,32 +291,6 @@ impl HelpScreen {
             )),
             Line::from(""),
             Line::from(vec![Span::styled(
-                "Typing Tips:",
-                Style::default().fg(Colors::title()).bold(),
-            )]),
-            Line::from(""),
-            Line::from(Span::styled(
-                "• Focus on accuracy over speed initially",
-                Style::default().fg(Colors::text()),
-            )),
-            Line::from(Span::styled(
-                "• Use proper finger positioning",
-                Style::default().fg(Colors::text()),
-            )),
-            Line::from(Span::styled(
-                "• Practice regularly to improve muscle memory",
-                Style::default().fg(Colors::text()),
-            )),
-            Line::from(Span::styled(
-                "• Don't look at the keyboard while typing",
-                Style::default().fg(Colors::text()),
-            )),
-            Line::from(Span::styled(
-                "• Take breaks to avoid fatigue",
-                Style::default().fg(Colors::text()),
-            )),
-            Line::from(""),
-            Line::from(vec![Span::styled(
                 "Code Challenge Types:",
                 Style::default().fg(Colors::title()).bold(),
             )]),
@@ -348,6 +322,32 @@ impl HelpScreen {
             )),
             Line::from(Span::styled(
                 "• Control flow (loops, conditionals)",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(""),
+            Line::from(vec![Span::styled(
+                "Typing Tips:",
+                Style::default().fg(Colors::title()).bold(),
+            )]),
+            Line::from(""),
+            Line::from(Span::styled(
+                "• Focus on accuracy over speed initially",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Use proper finger positioning",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Practice regularly to improve muscle memory",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Don't look at the keyboard while typing",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "• Take breaks to avoid fatigue",
                 Style::default().fg(Colors::text()),
             )),
             Line::from(""),
