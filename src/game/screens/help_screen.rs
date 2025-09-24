@@ -734,6 +734,20 @@ impl HelpScreen {
     fn get_community_content() -> Text<'static> {
         Text::from(vec![
             Line::from(vec![Span::styled(
+                "Social Media:",
+                Style::default().fg(Colors::title()).bold(),
+            )]),
+            Line::from(""),
+            Line::from(Span::styled(
+                "Share your progress with #gittype",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(Span::styled(
+                "https://x.com/search?q=%23gittype",
+                Style::default().fg(Colors::text()),
+            )),
+            Line::from(""),
+            Line::from(vec![Span::styled(
                 "Join the Community!",
                 Style::default().fg(Colors::title()).bold(),
             )]),
@@ -801,20 +815,6 @@ impl HelpScreen {
             )),
             Line::from(Span::styled(
                 "• Any error messages or logs",
-                Style::default().fg(Colors::text()),
-            )),
-            Line::from(""),
-            Line::from(vec![Span::styled(
-                "Social Media:",
-                Style::default().fg(Colors::title()).bold(),
-            )]),
-            Line::from(""),
-            Line::from(Span::styled(
-                "Share your progress with #gittype",
-                Style::default().fg(Colors::text()),
-            )),
-            Line::from(Span::styled(
-                "https://x.com/search?q=%23gittype",
                 Style::default().fg(Colors::text()),
             )),
             Line::from(""),
