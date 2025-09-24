@@ -813,6 +813,10 @@ impl HelpScreen {
                 "Share your progress with #gittype",
                 Style::default().fg(Colors::text()),
             )),
+            Line::from(Span::styled(
+                "https://twitter.com/search?q=%23gittype",
+                Style::default().fg(Colors::text()),
+            )),
             Line::from(""),
             Line::from(vec![Span::styled(
                 "License:",
