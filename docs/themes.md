@@ -43,13 +43,10 @@ Switch between Dark and Light modes:
 ## Creating Custom Themes
 
 ### Theme File Structure
-Custom themes use JSON format with the following structure:
+Custom theme files use simplified JSON format without metadata:
 
 ```json
 {
-  "id": "my-custom-theme",
-  "name": "My Custom Theme",
-  "description": "My personal color scheme",
   "dark": {
     "border": {"r": 102, "g": 153, "b": 204},
     "title": {"r": 235, "g": 235, "b": 235},
@@ -63,6 +60,8 @@ Custom themes use JSON format with the following structure:
   }
 }
 ```
+
+Note: The custom theme automatically appears as "Custom" in the theme selection menu.
 
 ### Color Properties
 Each theme defines colors for both `dark` and `light` modes:
@@ -100,21 +99,18 @@ Each theme defines colors for both `dark` and `light` modes:
 - `metrics_duration` - Timer display
 - `metrics_stage_info` - Stage information
 
-### Installing Custom Themes
+### Installing Custom Theme
 
-1. **Create theme file**: Save as `~/.gittype/my-theme.json`
-2. **Restart GitType**: The theme will be available in Settings → Theme menu
-3. **File location**: Custom themes are loaded from the GitType user directory (`~/.gittype/`)
+1. **Create theme file**: Save as `~/.gittype/custom-theme.json`
+2. **Restart GitType**: The theme will be available as "Custom" in Settings → Theme menu
+3. **File location**: Custom theme must be saved as `~/.gittype/custom-theme.json`
 
 ### Complete Theme Example
 
-Here's a complete example creating a "Matrix" theme:
+Here's a complete example creating a custom theme:
 
 ```json
 {
-  "id": "matrix",
-  "name": "Matrix",
-  "description": "Green-on-black Matrix movie theme",
   "dark": {
     "border": {"r": 0, "g": 255, "b": 0},
     "title": {"r": 0, "g": 255, "b": 0},
@@ -168,7 +164,7 @@ Here's a complete example creating a "Matrix" theme:
 }
 ```
 
-Save this as `~/.gittype/matrix.json` and restart GitType to use it.
+Save this as `~/.gittype/custom-theme.json` and restart GitType to use it.
 
 ## Configuration Files
 
@@ -185,9 +181,9 @@ Your current theme preference is stored in `~/.gittype/config.json`:
 ```
 
 ### Custom Theme Storage
-- **Location**: `~/.gittype/`
-- **Format**: `your-theme-name.json`
-- **Auto-detection**: GitType automatically loads all `.json` files in the user directory
+- **Location**: `~/.gittype/custom-theme.json`
+- **Format**: JSON format without theme metadata (id, name, description)
+- **Auto-detection**: GitType automatically loads the custom theme if the file exists
 
 ## Color Format
 
@@ -217,4 +213,4 @@ Colors use RGB format with values from 0-255:
 
 **Theme reverts to default**:
 - Check that `~/.gittype/config.json` has proper write permissions
-- Verify theme ID matches the file name (without .json extension)
+- Verify the custom theme file is named exactly `custom-theme.json`
