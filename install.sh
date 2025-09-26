@@ -102,6 +102,7 @@ detect_platform() {
 get_latest_version() {
     curl -sSL https://api.github.com/repos/unhappychoice/gittype/releases/latest | \
         grep '"tag_name":' | \
+        head -n 1 | \
         cut -d'"' -f4
 }
 
