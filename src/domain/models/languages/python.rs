@@ -1,23 +1,26 @@
-use super::super::language::Language;
+use crate::extractor::models::language::Language;
 use std::hash::Hash;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Java;
+pub struct Python;
 
-impl Language for Java {
+impl Language for Python {
     fn name(&self) -> &'static str {
-        "java"
+        "python"
     }
     fn extensions(&self) -> Vec<&'static str> {
-        vec!["java"]
+        vec!["py"]
+    }
+    fn aliases(&self) -> Vec<&'static str> {
+        vec!["py"]
     }
 
     fn color(&self) -> ratatui::style::Color {
         use crate::presentation::ui::Colors;
-        Colors::lang_java()
+        Colors::lang_python()
     }
 
     fn display_name(&self) -> &'static str {
-        "Java"
+        "Python"
     }
 }

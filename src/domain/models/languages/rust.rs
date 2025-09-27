@@ -1,26 +1,26 @@
-use super::super::language::Language;
+use crate::extractor::models::language::Language;
 use std::hash::Hash;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct TypeScript;
+pub struct Rust;
 
-impl Language for TypeScript {
+impl Language for Rust {
     fn name(&self) -> &'static str {
-        "typescript"
+        "rust"
     }
     fn extensions(&self) -> Vec<&'static str> {
-        vec!["ts", "tsx"]
+        vec!["rs"]
     }
     fn aliases(&self) -> Vec<&'static str> {
-        vec!["ts"]
+        vec!["rs"]
     }
 
     fn color(&self) -> ratatui::style::Color {
         use crate::presentation::ui::Colors;
-        Colors::lang_typescript()
+        Colors::lang_rust()
     }
 
     fn display_name(&self) -> &'static str {
-        "TypeScript"
+        "Rust"
     }
 }

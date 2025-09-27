@@ -1,26 +1,26 @@
-use super::super::language::Language;
+use crate::extractor::models::language::Language;
 use std::hash::Hash;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Python;
+pub struct Scala;
 
-impl Language for Python {
+impl Language for Scala {
     fn name(&self) -> &'static str {
-        "python"
+        "scala"
     }
     fn extensions(&self) -> Vec<&'static str> {
-        vec!["py"]
+        vec!["sc", "scala"]
     }
     fn aliases(&self) -> Vec<&'static str> {
-        vec!["py"]
+        vec!["sc"]
     }
 
     fn color(&self) -> ratatui::style::Color {
         use crate::presentation::ui::Colors;
-        Colors::lang_python()
+        Colors::lang_scala()
     }
 
     fn display_name(&self) -> &'static str {
-        "Python"
+        "Scala"
     }
 }

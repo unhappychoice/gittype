@@ -5,6 +5,7 @@ pub mod color_scheme;
 pub mod config;
 pub mod countdown;
 pub mod git_repository;
+pub mod languages;
 pub mod rank;
 pub mod session;
 pub mod stage;

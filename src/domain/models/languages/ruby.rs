@@ -1,23 +1,26 @@
-use super::super::language::Language;
+use crate::extractor::models::language::Language;
 use std::hash::Hash;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct C;
+pub struct Ruby;
 
-impl Language for C {
+impl Language for Ruby {
     fn name(&self) -> &'static str {
-        "c"
+        "ruby"
     }
     fn extensions(&self) -> Vec<&'static str> {
-        vec!["c", "h"]
+        vec!["rb"]
+    }
+    fn aliases(&self) -> Vec<&'static str> {
+        vec!["rb"]
     }
 
     fn color(&self) -> ratatui::style::Color {
         use crate::presentation::ui::Colors;
-        Colors::lang_c()
+        Colors::lang_ruby()
     }
 
     fn display_name(&self) -> &'static str {
-        "C"
+        "Ruby"
     }
 }

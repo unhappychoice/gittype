@@ -1,26 +1,23 @@
-use super::super::language::Language;
+use crate::extractor::models::language::Language;
 use std::hash::Hash;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Cpp;
+pub struct C;
 
-impl Language for Cpp {
+impl Language for C {
     fn name(&self) -> &'static str {
-        "cpp"
+        "c"
     }
     fn extensions(&self) -> Vec<&'static str> {
-        vec!["cpp", "cc", "cxx", "hpp"]
-    }
-    fn aliases(&self) -> Vec<&'static str> {
-        vec!["c++"]
+        vec!["c", "h"]
     }
 
     fn color(&self) -> ratatui::style::Color {
         use crate::presentation::ui::Colors;
-        Colors::lang_cpp()
+        Colors::lang_c()
     }
 
     fn display_name(&self) -> &'static str {
-        "C++"
+        "C"
     }
 }

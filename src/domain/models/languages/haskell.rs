@@ -1,23 +1,26 @@
-use super::super::language::Language;
+use crate::extractor::models::language::Language;
 use std::hash::Hash;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Swift;
+pub struct Haskell;
 
-impl Language for Swift {
+impl Language for Haskell {
     fn name(&self) -> &'static str {
-        "swift"
+        "haskell"
     }
     fn extensions(&self) -> Vec<&'static str> {
-        vec!["swift"]
+        vec!["hs", "lhs"]
+    }
+    fn aliases(&self) -> Vec<&'static str> {
+        vec!["hs"]
     }
 
     fn color(&self) -> ratatui::style::Color {
         use crate::presentation::ui::Colors;
-        Colors::lang_swift()
+        Colors::lang_haskell()
     }
 
     fn display_name(&self) -> &'static str {
-        "Swift"
+        "Haskell"
     }
 }

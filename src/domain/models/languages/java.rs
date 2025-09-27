@@ -1,26 +1,23 @@
-use super::super::language::Language;
+use crate::extractor::models::language::Language;
 use std::hash::Hash;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Scala;
+pub struct Java;
 
-impl Language for Scala {
+impl Language for Java {
     fn name(&self) -> &'static str {
-        "scala"
+        "java"
     }
     fn extensions(&self) -> Vec<&'static str> {
-        vec!["sc", "scala"]
-    }
-    fn aliases(&self) -> Vec<&'static str> {
-        vec!["sc"]
+        vec!["java"]
     }
 
     fn color(&self) -> ratatui::style::Color {
         use crate::presentation::ui::Colors;
-        Colors::lang_scala()
+        Colors::lang_java()
     }
 
     fn display_name(&self) -> &'static str {
-        "Scala"
+        "Java"
     }
 }

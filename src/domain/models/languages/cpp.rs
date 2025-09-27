@@ -1,26 +1,26 @@
-use super::super::language::Language;
+use crate::extractor::models::language::Language;
 use std::hash::Hash;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Rust;
+pub struct Cpp;
 
-impl Language for Rust {
+impl Language for Cpp {
     fn name(&self) -> &'static str {
-        "rust"
+        "cpp"
     }
     fn extensions(&self) -> Vec<&'static str> {
-        vec!["rs"]
+        vec!["cpp", "cc", "cxx", "hpp"]
     }
     fn aliases(&self) -> Vec<&'static str> {
-        vec!["rs"]
+        vec!["c++"]
     }
 
     fn color(&self) -> ratatui::style::Color {
         use crate::presentation::ui::Colors;
-        Colors::lang_rust()
+        Colors::lang_cpp()
     }
 
     fn display_name(&self) -> &'static str {
-        "Rust"
+        "C++"
     }
 }

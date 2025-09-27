@@ -1,26 +1,26 @@
-use super::super::language::Language;
+use crate::extractor::models::language::Language;
 use std::hash::Hash;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Kotlin;
+pub struct TypeScript;
 
-impl Language for Kotlin {
+impl Language for TypeScript {
     fn name(&self) -> &'static str {
-        "kotlin"
+        "typescript"
     }
     fn extensions(&self) -> Vec<&'static str> {
-        vec!["kt", "kts"]
+        vec!["ts", "tsx"]
     }
     fn aliases(&self) -> Vec<&'static str> {
-        vec!["kt"]
+        vec!["ts"]
     }
 
     fn color(&self) -> ratatui::style::Color {
         use crate::presentation::ui::Colors;
-        Colors::lang_kotlin()
+        Colors::lang_typescript()
     }
 
     fn display_name(&self) -> &'static str {
-        "Kotlin"
+        "TypeScript"
     }
 }

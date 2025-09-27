@@ -1,26 +1,26 @@
-use super::super::language::Language;
+use crate::extractor::models::language::Language;
 use std::hash::Hash;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Haskell;
+pub struct JavaScript;
 
-impl Language for Haskell {
+impl Language for JavaScript {
     fn name(&self) -> &'static str {
-        "haskell"
+        "javascript"
     }
     fn extensions(&self) -> Vec<&'static str> {
-        vec!["hs", "lhs"]
+        vec!["js", "jsx", "mjs", "cjs"]
     }
     fn aliases(&self) -> Vec<&'static str> {
-        vec!["hs"]
+        vec!["js"]
     }
 
     fn color(&self) -> ratatui::style::Color {
         use crate::presentation::ui::Colors;
-        Colors::lang_haskell()
+        Colors::lang_javascript()
     }
 
     fn display_name(&self) -> &'static str {
-        "Haskell"
+        "JavaScript"
     }
 }
