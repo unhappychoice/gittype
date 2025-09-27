@@ -2,8 +2,8 @@
 //! This module contains all tests related to comment range extraction, processing, and display.
 
 #[cfg(test)]
-use gittype::extractor::challenge_converter::ChallengeConverter;
-use gittype::extractor::core::CommonExtractor;
+use gittype::domain::services::extractor::ChallengeConverter;
+use gittype::domain::services::extractor::core::CommonExtractor;
 use gittype::game::typing_core::TypingCore;
 use gittype::domain::models::ChunkType;
 use std::path::Path;
@@ -75,7 +75,7 @@ mod byte_char_position_bugs {
 
         // Also extract just the comment ranges for debugging
         let content = std::fs::read_to_string(options_path).unwrap();
-        let tree = gittype::extractor::parsers::parse_with_thread_local("rust", &content).unwrap();
+        let tree = gittype::domain::services::extractor::parsers::parse_with_thread_local("rust", &content).unwrap();
         let comment_ranges =
             CommonExtractor::extract_comment_ranges(&tree, &content, "rust", &[]).unwrap();
 

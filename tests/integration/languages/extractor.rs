@@ -16,7 +16,7 @@ macro_rules! test_language_extractor {
         #[test]
         fn $test_name() {
             use crate::integration::{extract_chunks_for_test, test_extraction_options};
-            use gittype::extractor::CodeChunkExtractor;
+            use gittype::domain::services::extractor::CodeChunkExtractor;
             use gittype::domain::models::ChunkType;
             use std::collections::HashMap;
             use std::fs;

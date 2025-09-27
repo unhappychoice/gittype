@@ -1,5 +1,5 @@
 use crate::presentation::cli::args::Cli;
-use crate::extractor::ExtractionOptions;
+use crate::domain::models::ExtractionOptions;
 use crate::game::models::ScreenType;
 use crate::game::screen_manager::ScreenManager;
 use crate::{GitTypeError, Result};
@@ -39,7 +39,7 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
 
     if let Some(langs) = cli.langs {
         if let Err(unsupported_langs) =
-            crate::extractor::models::language::LanguageRegistry::validate_languages(&langs)
+            crate::domain::services::extractor::LanguageRegistry::validate_languages(&langs)
         {
             eprintln!(
                 "❌ Unsupported language(s): {}",
@@ -47,7 +47,7 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
             );
             eprintln!("💡 Supported languages:");
             let supported =
-                crate::extractor::models::language::LanguageRegistry::get_supported_languages();
+                crate::domain::services::extractor::LanguageRegistry::get_supported_languages();
             let mut supported_display = supported.clone();
             supported_display.dedup();
             for chunk in supported_display.chunks(6) {

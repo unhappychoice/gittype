@@ -1,4 +1,4 @@
-use super::ProgressReporter;
+use crate::game::screens::loading_screen::ProgressReporter;
 use crate::game::models::StepType;
 use crate::game::DifficultyLevel;
 use crate::domain::models::{Challenge, CodeChunk};

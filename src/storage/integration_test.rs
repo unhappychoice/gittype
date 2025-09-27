@@ -1,4 +1,5 @@
-use super::{Database, SessionRepository};
+use super::Database;
+use crate::domain::repositories::SessionRepository;
 use crate::logging::setup_console_logging;
 use crate::domain::models::{Challenge, GitRepository, SessionResult};
 use crate::scoring::tracker::{StageInput, StageTracker};

@@ -1,10 +1,10 @@
 use std::path::PathBuf;
 use std::sync::Once;
 
-use gittype::extractor::ExtractionOptions;
-use gittype::game::GameData;
 use gittype::domain::models::challenge::Challenge;
 use gittype::domain::models::git_repository::GitRepository;
+use gittype::domain::models::ExtractionOptions;
+use gittype::game::GameData;
 
 fn setup_game_data() {
     static INIT: Once = Once::new();

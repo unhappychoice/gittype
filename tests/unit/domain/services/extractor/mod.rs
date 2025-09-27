@@ -1,0 +1,1 @@
+mod language_registry_tests;

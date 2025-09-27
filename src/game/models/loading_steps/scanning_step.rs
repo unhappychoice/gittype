@@ -73,7 +73,7 @@ impl Step for ScanningStep {
         // Extract git repository info if not already set (for local paths) and set in GameData
         if context.git_repository.is_none() {
             if let Ok(Some(git_repository)) =
-                crate::extractor::GitRepositoryExtractor::extract_git_repository(repo_path)
+                crate::domain::services::extractor::GitRepositoryExtractor::extract_git_repository(repo_path)
             {
                 // Set git repository info in GameData directly
                 let _ = crate::game::GameData::set_git_repository(Some(git_repository.clone()));

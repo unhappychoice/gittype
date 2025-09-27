@@ -1,4 +1,4 @@
-use crate::extractor::models::language::Language;
+use crate::domain::models::Language;
 use std::hash::Hash;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

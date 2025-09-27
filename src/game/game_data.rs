@@ -1,4 +1,4 @@
-use crate::extractor::ExtractionOptions;
+use crate::domain::models::ExtractionOptions;
 use crate::domain::models::{Challenge, GitRepository};
 use crate::Result;
 use std::path::PathBuf;

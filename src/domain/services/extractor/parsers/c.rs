@@ -1,4 +1,4 @@
-use crate::extractor::parsers::LanguageExtractor;
+use super::LanguageExtractor;
 use crate::domain::models::ChunkType;
 use crate::Result;
 use tree_sitter::{Node, Parser};

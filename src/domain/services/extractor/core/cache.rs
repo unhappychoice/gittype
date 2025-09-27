@@ -16,7 +16,7 @@ impl ParserCache {
     }
 
     pub fn create_parser(&self, language: &str) -> crate::Result<tree_sitter::Parser> {
-        let registry = crate::extractor::parsers::get_parser_registry();
+        let registry = super::super::parsers::get_parser_registry();
         registry.create_parser(language)
     }
 
@@ -25,7 +25,7 @@ impl ParserCache {
         language: &str,
         query_str: &str,
     ) -> crate::Result<tree_sitter::Query> {
-        let registry = crate::extractor::parsers::get_parser_registry();
+        let registry = super::super::parsers::get_parser_registry();
         let extractor = registry.get_extractor(language)?;
         let tree_sitter_lang = extractor.tree_sitter_language();
 

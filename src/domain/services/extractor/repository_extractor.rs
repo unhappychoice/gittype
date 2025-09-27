@@ -1,5 +1,6 @@
-use super::models::language::LanguageRegistry;
-use super::{ChallengeConverter, CodeChunkExtractor, ExtractionOptions, ProgressReporter};
+use super::{ChallengeConverter, CodeChunkExtractor, LanguageRegistry};
+use crate::domain::models::ExtractionOptions;
+use crate::game::screens::loading_screen::ProgressReporter;
 use crate::{GitTypeError, Result};
 use ignore::WalkBuilder;
 use std::path::Path;
@@ -116,7 +117,7 @@ impl RepositoryExtractor {
 
     pub fn convert_chunks_and_files_to_challenges_with_progress(
         &self,
-        chunks: Vec<crate::extractor::models::CodeChunk>,
+        chunks: Vec<crate::domain::models::CodeChunk>,
         _file_paths: Vec<std::path::PathBuf>, // No longer needed, files are processed as chunks
         _git_root: Option<&std::path::Path>,
         progress: &dyn ProgressReporter,
@@ -130,11 +131,11 @@ impl RepositoryExtractor {
         scanned_files: &[std::path::PathBuf],
         options: &ExtractionOptions,
         progress: &dyn ProgressReporter,
-    ) -> Result<Vec<crate::extractor::models::CodeChunk>> {
+    ) -> Result<Vec<crate::domain::models::CodeChunk>> {
         // Convert scanned files to (path, language) pairs
         let files_to_process: Vec<(
             std::path::PathBuf,
-            Box<dyn super::models::language::Language>,
+            Box<dyn crate::domain::models::Language>,
         )> = scanned_files
             .iter()
             .filter_map(|path| {

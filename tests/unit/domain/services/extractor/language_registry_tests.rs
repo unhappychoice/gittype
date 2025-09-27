@@ -1,4 +1,4 @@
-use gittype::extractor::models::language::LanguageRegistry;
+use gittype::domain::services::extractor::LanguageRegistry;
 use gittype::presentation::ui::Colors;
 
 #[test]

@@ -1,55 +1,8 @@
-use crate::presentation::ui::Colors;
-use std::hash::{Hash, Hasher};
-
-pub trait Language: std::fmt::Debug + Send + Sync {
-    fn name(&self) -> &'static str;
-
-    fn display_name(&self) -> &'static str {
-        self.name()
-    }
-
-    fn extensions(&self) -> Vec<&'static str>;
-
-    fn aliases(&self) -> Vec<&'static str> {
-        vec![]
-    }
-
-    fn file_patterns(&self) -> Vec<String> {
-        self.extensions()
-            .into_iter()
-            .map(|ext| format!("**/*.{}", ext))
-            .collect()
-    }
-
-    fn as_hash_key(&self) -> &'static str {
-        self.name()
-    }
-
-    fn color(&self) -> ratatui::style::Color {
-        Colors::lang_default()
-    }
-}
-
-// Implement Hash for Box<dyn Language>
-impl Hash for dyn Language {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.as_hash_key().hash(state);
-    }
-}
-
-impl PartialEq for dyn Language {
-    fn eq(&self, other: &Self) -> bool {
-        self.as_hash_key() == other.as_hash_key()
-    }
-}
-
-impl Eq for dyn Language {}
-
-// Re-export language implementations from domain/models/languages/
-pub use crate::domain::models::languages::{
+use crate::domain::models::languages::{
     CSharp, Cpp, Dart, Go, Haskell, Java, JavaScript, Kotlin, Php, Python, Ruby, Rust, Scala,
     Swift, TypeScript, C,
 };
+use crate::domain::models::Language;
 
 pub struct LanguageRegistry;
 

@@ -1,4 +1,4 @@
-use crate::extractor::parsers::{get_parser_registry, parse_with_thread_local};
+use super::super::parsers::{get_parser_registry, parse_with_thread_local};
 use crate::domain::models::CodeChunk;
 use crate::{GitTypeError, Result};
 use std::fs;

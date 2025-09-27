@@ -1,7 +1,7 @@
-use super::{CodeChunk, ProgressReporter};
-use crate::extractor::core::CommonExtractor;
-use crate::extractor::models::language::Language;
-use crate::extractor::models::ExtractionOptions;
+use crate::domain::models::{CodeChunk, ExtractionOptions};
+use crate::game::screens::loading_screen::ProgressReporter;
+use super::core::CommonExtractor;
+use crate::domain::models::Language;
 use crate::game::models::StepType;
 use crate::Result;
 use rayon::prelude::*;

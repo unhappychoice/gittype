@@ -1,5 +1,4 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
-use crate::repository_manager::RepositoryManager;
 use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::style::Color;
@@ -50,15 +49,15 @@ impl Step for CloningStep {
 
     fn execute(&self, context: &mut ExecutionContext) -> Result<StepResult> {
         if let Some(repo_spec) = context.repo_spec {
-            let repo_info = RepositoryManager::parse_repo_url(repo_spec)?;
+            let repo_info = crate::repository_manager::RepositoryManager::parse_repo_url(repo_spec)?;
 
             // Clone repository
             let repo_path =
-                RepositoryManager::clone_or_update_repo(&repo_info, context.loading_screen)?;
+                crate::repository_manager::RepositoryManager::clone_or_update_repo(&repo_info, context.loading_screen)?;
 
             // Extract actual git info from cloned repository and set it in loading screen
             let git_repository = if let Ok(Some(git_repository)) =
-                crate::extractor::GitRepositoryExtractor::extract_git_repository(&repo_path)
+                crate::domain::services::extractor::GitRepositoryExtractor::extract_git_repository(&repo_path)
             {
                 git_repository
             } else {
@@ -83,6 +82,7 @@ impl Step for CloningStep {
             }
             context.git_repository = Some(git_repository);
 
+            context.current_repo_path = Some(repo_path.clone());
             Ok(StepResult::RepoPath(repo_path))
         } else {
             // Skip this step if no remote repo specified

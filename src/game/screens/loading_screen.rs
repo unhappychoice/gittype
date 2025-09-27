@@ -1,4 +1,5 @@
-use crate::extractor::{ExtractionOptions, RepositoryExtractor};
+use crate::domain::models::ExtractionOptions;
+use crate::domain::services::extractor::RepositoryExtractor;
 use crate::game::models::loading_steps::{ExecutionContext, StepManager, StepType};
 use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
 use crate::game::GameData;

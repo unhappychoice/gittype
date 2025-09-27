@@ -1,4 +1,5 @@
-use crate::extractor::{ExtractionOptions, RepositoryExtractor};
+use crate::domain::models::ExtractionOptions;
+use crate::domain::services::extractor::RepositoryExtractor;
 use crate::domain::models::Challenge;
 use crate::Result;
 use ratatui::style::Color;
@@ -44,7 +45,7 @@ pub struct ExecutionContext<'a> {
     pub current_repo_path: Option<PathBuf>,
     pub git_repository: Option<crate::domain::models::GitRepository>,
     pub scanned_files: Option<Vec<PathBuf>>, // Temporary storage for step results
-    pub chunks: Option<Vec<crate::extractor::models::CodeChunk>>, // Chunks from ExtractingStep
+    pub chunks: Option<Vec<crate::domain::models::CodeChunk>>, // Chunks from ExtractingStep
     pub cache_used: bool, // Flag to indicate cache was used and remaining steps should be skipped
 }
 
@@ -53,7 +54,7 @@ pub enum StepResult {
     RepoPath(PathBuf),
     Challenges(Vec<Challenge>),
     ScannedFiles(Vec<PathBuf>),
-    Chunks(Vec<crate::extractor::models::CodeChunk>),
+    Chunks(Vec<crate::domain::models::CodeChunk>),
     Skipped,
 }
 
