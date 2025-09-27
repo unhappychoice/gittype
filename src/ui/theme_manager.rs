@@ -1,4 +1,4 @@
-use crate::config::ConfigManager;
+use crate::infrastructure::config::ConfigManager;
 use crate::ui::color_mode::ColorMode;
 use crate::ui::color_scheme::{ColorScheme, CustomThemeFile, ThemeFile};
 use crate::ui::theme::Theme;

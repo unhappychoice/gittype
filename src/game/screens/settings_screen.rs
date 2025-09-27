@@ -112,7 +112,7 @@ impl SettingsScreen {
         self.is_preview_mode = false;
 
         // Save theme and color mode to config file
-        if let Ok(mut config_manager) = crate::config::ConfigManager::new() {
+        if let Ok(mut config_manager) = crate::infrastructure::config::ConfigManager::new() {
             let selected_color_mode = self.get_selected_color_mode();
             let selected_theme = self.get_selected_theme();
 

@@ -1,4 +1,4 @@
-use gittype::config::ThemeConfig;
+use gittype::domain::models::config::ThemeConfig;
 use gittype::ui::color_mode::ColorMode;
 use gittype::ui::color_scheme::{ColorScheme, SerializableColor, ThemeFile};
 use ratatui::style::Color;
@@ -6,7 +6,7 @@ use ratatui::style::Color;
 #[test]
 fn test_color_scheme_conversion() {
     // Load ascii theme file and create color scheme
-    let ascii_json = include_str!("../../../assets/themes/ascii.json");
+    let ascii_json = include_str!("../../../../assets/themes/ascii.json");
     let theme_file: ThemeFile = serde_json::from_str(ascii_json).unwrap();
     let scheme = ColorScheme::from_theme_file(&theme_file, &ColorMode::Dark);
     let color: Color = scheme.border.into();
@@ -24,7 +24,7 @@ fn test_theme_config_default() {
 #[test]
 fn test_predefined_themes() {
     // Load ascii theme file and create color schemes
-    let ascii_json = include_str!("../../../assets/themes/ascii.json");
+    let ascii_json = include_str!("../../../../assets/themes/ascii.json");
     let theme_file: ThemeFile = serde_json::from_str(ascii_json).unwrap();
     let ascii = ColorScheme::from_theme_file(&theme_file, &ColorMode::Dark);
 
@@ -50,7 +50,7 @@ fn test_predefined_themes() {
 #[test]
 fn test_theme_file_parsing() {
     // Test that the embedded JSON files can be parsed correctly
-    let ascii_json = include_str!("../../../assets/themes/ascii.json");
+    let ascii_json = include_str!("../../../../assets/themes/ascii.json");
     let theme_file: ThemeFile = serde_json::from_str(ascii_json).unwrap();
 
     assert_eq!(theme_file.name, "ASCII");
@@ -70,7 +70,7 @@ fn test_theme_file_parsing() {
 #[test]
 fn test_embedded_themes_load_correctly() {
     // Test that embedded themes load without panicking
-    let ascii_json = include_str!("../../../assets/themes/ascii.json");
+    let ascii_json = include_str!("../../../../assets/themes/ascii.json");
     let theme_file: ThemeFile = serde_json::from_str(ascii_json).unwrap();
     let ascii_scheme = ColorScheme::from_theme_file(&theme_file, &ColorMode::Dark);
 

@@ -1,6 +1,6 @@
+pub mod domain;
 pub mod infrastructure;
 pub mod presentation;
-pub mod config;
 pub mod error;
 pub mod extractor;
 pub mod game;

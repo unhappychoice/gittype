@@ -1,5 +1,5 @@
+pub mod domain;
 pub mod infrastructure;
-pub mod config;
 pub mod error_tests;
 pub mod extractor_unit_tests;
 pub mod game;
