@@ -1,6 +1,6 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
 use crate::infrastructure::cache::CHALLENGE_CACHE;
-use crate::ui::Colors;
+use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::style::Color;
 

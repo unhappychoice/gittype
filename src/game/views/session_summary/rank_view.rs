@@ -1,5 +1,5 @@
 use crate::game::ascii_rank_titles_generated::get_rank_display;
-use crate::ui::Colors;
+use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::{
     cursor::MoveTo,

@@ -1,5 +1,5 @@
 use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
-use crate::ui::Colors;
+use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::{

@@ -1,6 +1,6 @@
 use crossterm::style::Color as TerminalColor;
 use gittype::domain::models::rank::{Rank, RankTier};
-use gittype::ui::Colors;
+use gittype::presentation::ui::Colors;
 
 #[test]
 fn rank_tier_color_palette_mappings_are_consistent() {

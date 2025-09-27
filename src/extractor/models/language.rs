@@ -1,4 +1,4 @@
-use crate::ui::Colors;
+use crate::presentation::ui::Colors;
 use std::hash::{Hash, Hasher};
 
 pub trait Language: std::fmt::Debug + Send + Sync {
@@ -137,11 +137,11 @@ impl LanguageRegistry {
             Some(lang) => Self::get_by_name(lang)
                 .map(|l| l.color())
                 .unwrap_or_else(|| {
-                    use crate::ui::Colors;
+                    use crate::presentation::ui::Colors;
                     Colors::lang_default()
                 }),
             None => {
-                use crate::ui::Colors;
+                use crate::presentation::ui::Colors;
                 Colors::lang_default()
             }
         }

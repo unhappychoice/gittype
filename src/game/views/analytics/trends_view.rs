@@ -1,5 +1,5 @@
 use crate::game::screens::analytics_screen::AnalyticsData;
-use crate::ui::Colors;
+use crate::presentation::ui::Colors;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::Style,

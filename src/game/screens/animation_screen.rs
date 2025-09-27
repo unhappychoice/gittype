@@ -2,7 +2,7 @@ use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
 use crate::game::views::typing::typing_animation_view::AnimationPhase;
 use crate::game::views::typing::TypingAnimationView;
 use crate::scoring::Rank;
-use crate::ui::Colors;
+use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::{

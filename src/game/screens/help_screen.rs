@@ -1,6 +1,6 @@
 use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
 use crate::domain::models::rank::{Rank, RankTier};
-use crate::ui::Colors;
+use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::{

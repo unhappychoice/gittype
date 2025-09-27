@@ -10,6 +10,5 @@ pub mod scoring;
 pub mod sharing;
 pub mod signal_handler;
 pub mod storage;
-pub mod ui;
 
 pub use error::{GitTypeError, Result};

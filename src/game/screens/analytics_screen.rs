@@ -1,7 +1,7 @@
 use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
 use crate::game::views::analytics::{LanguagesView, OverviewView, RepositoriesView, TrendsView};
 use crate::storage::repositories::{GitRepositoryRepository, SessionRepository};
-use crate::ui::Colors;
+use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},

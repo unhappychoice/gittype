@@ -1,4 +1,4 @@
-use crate::ui::colors::Colors;
+use crate::presentation::ui::colors::Colors;
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Modifier, Style},

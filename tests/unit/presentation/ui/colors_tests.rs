@@ -1,5 +1,5 @@
 use crossterm::style::Color as TerminalColor;
-use gittype::ui::colors::Colors;
+use gittype::presentation::ui::colors::Colors;
 use ratatui::style::Color;
 
 #[test]

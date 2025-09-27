@@ -1,4 +1,4 @@
-use crate::{game::typing_core::TypingCore, scoring::tracker::stage::StageTracker, ui::Colors};
+use crate::{game::typing_core::TypingCore, scoring::tracker::stage::StageTracker, presentation::ui::Colors};
 use ratatui::{
     style::Style,
     text::{Line, Span},

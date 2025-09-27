@@ -1,7 +1,7 @@
 use crate::infrastructure::config::ConfigManager;
-use crate::ui::color_mode::ColorMode;
-use crate::ui::color_scheme::{ColorScheme, CustomThemeFile, ThemeFile};
-use crate::ui::theme::Theme;
+use super::super::models::color_mode::ColorMode;
+use super::super::models::color_scheme::{ColorScheme, CustomThemeFile, ThemeFile};
+use super::super::models::theme::Theme;
 use once_cell::sync::Lazy;
 
 pub static THEME_MANAGER: Lazy<std::sync::RwLock<ThemeManager>> = Lazy::new(|| {
@@ -110,7 +110,7 @@ impl ThemeManager {
         }
 
         // Create default custom theme based on the default theme
-        let default_theme_json = include_str!("../../assets/themes/default.json");
+        let default_theme_json = include_str!("../../../assets/themes/default.json");
         let default_theme_file: ThemeFile = serde_json::from_str(default_theme_json)?;
 
         let custom_theme = CustomThemeFile {

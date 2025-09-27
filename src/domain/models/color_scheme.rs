@@ -1,11 +1,11 @@
-use crate::ui::color_mode::ColorMode;
+use crate::domain::models::color_mode::ColorMode;
 use ratatui::style::Color;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-const LANG_DARK: &str = include_str!("../../assets/languages/lang_dark.json");
-const LANG_LIGHT: &str = include_str!("../../assets/languages/lang_light.json");
-const LANG_ASCII: &str = include_str!("../../assets/languages/lang_ascii.json");
+const LANG_DARK: &str = include_str!("../../../assets/languages/lang_dark.json");
+const LANG_LIGHT: &str = include_str!("../../../assets/languages/lang_light.json");
+const LANG_ASCII: &str = include_str!("../../../assets/languages/lang_ascii.json");
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ThemeFile {

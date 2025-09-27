@@ -1,4 +1,4 @@
-use crate::ui::color_mode::ColorMode;
+use crate::domain::models::color_mode::ColorMode;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]

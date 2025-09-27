@@ -1,5 +1,5 @@
 use crate::storage::daos::session_dao::SessionStageResult;
-use crate::ui::Colors;
+use crate::presentation::ui::Colors;
 use ratatui::{
     style::{Modifier, Style},
     text::{Line, Span},

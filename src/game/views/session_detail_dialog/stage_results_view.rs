@@ -1,5 +1,5 @@
 use crate::domain::models::GitRepository;
-use crate::ui::Colors;
+use crate::presentation::ui::Colors;
 use ratatui::{
     layout::{Alignment, Rect},
     style::{Modifier, Style},

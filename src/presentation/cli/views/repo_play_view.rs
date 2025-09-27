@@ -1,7 +1,7 @@
 use super::repo_utils;
 use crate::extractor::models::language::LanguageRegistry;
 use crate::storage::daos::repository_dao::StoredRepositoryWithLanguages;
-use crate::ui::colors::Colors;
+use crate::presentation::ui::colors::Colors;
 use crate::Result;
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind},

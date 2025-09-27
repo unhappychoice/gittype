@@ -1,11 +1,14 @@
 pub mod challenge;
 pub mod chunk;
+pub mod color_mode;
+pub mod color_scheme;
 pub mod config;
 pub mod countdown;
 pub mod git_repository;
 pub mod rank;
 pub mod session;
 pub mod stage;
+pub mod theme;
 pub mod total;
 pub mod version;
 

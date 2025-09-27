@@ -1,6 +1,6 @@
 use crate::storage::daos::StoredRepository;
 use crate::storage::daos::StoredSession;
-use crate::ui::Colors;
+use crate::presentation::ui::Colors;
 use chrono::{DateTime, Local};
 use ratatui::{
     style::Style,

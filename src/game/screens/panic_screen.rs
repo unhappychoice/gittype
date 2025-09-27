@@ -1,6 +1,6 @@
 use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
 use crate::logging::get_current_log_file_path;
-use crate::ui::colors::Colors;
+use crate::presentation::ui::colors::Colors;
 use crate::Result;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},

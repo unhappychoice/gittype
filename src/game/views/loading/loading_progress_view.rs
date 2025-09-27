@@ -1,6 +1,6 @@
 use crate::game::models::loading_steps::StepType;
 use crate::game::screens::loading_screen::LoadingScreenState;
-use crate::ui::Colors;
+use crate::presentation::ui::Colors;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::Style,

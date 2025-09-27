@@ -1,8 +1,8 @@
 use crate::game::models::{Screen, ScreenTransition};
-use crate::ui::color_mode::ColorMode;
-use crate::ui::colors::Colors;
-use crate::ui::theme::Theme;
-use crate::ui::theme_manager::THEME_MANAGER;
+use crate::domain::models::color_mode::ColorMode;
+use crate::presentation::ui::colors::Colors;
+use crate::domain::models::theme::Theme;
+use crate::domain::services::theme_manager::THEME_MANAGER;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{

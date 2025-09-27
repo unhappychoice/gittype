@@ -1,5 +1,5 @@
 use gittype::extractor::models::language::LanguageRegistry;
-use gittype::ui::Colors;
+use gittype::presentation::ui::Colors;
 
 #[test]
 fn language_registry_get_color_returns_specific_colors_for_known_languages() {

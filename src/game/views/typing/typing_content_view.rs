@@ -1,7 +1,7 @@
 use crate::{
     game::{context_loader::CodeContext, typing_core::TypingCore},
     domain::models::Challenge,
-    ui::Colors,
+    presentation::ui::Colors,
 };
 use ratatui::{
     style::Style,

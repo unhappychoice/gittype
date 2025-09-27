@@ -7,7 +7,7 @@ use crate::storage::{
     },
     repositories::SessionRepository,
 };
-use crate::ui::Colors;
+use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},

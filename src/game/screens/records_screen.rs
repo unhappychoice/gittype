@@ -5,7 +5,7 @@ use crate::storage::{
     repositories::SessionRepository,
     HasDatabase,
 };
-use crate::ui::Colors;
+use crate::presentation::ui::Colors;
 use crate::Result;
 use chrono::{DateTime, Local};
 use ratatui::{

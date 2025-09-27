@@ -1,4 +1,4 @@
-use crate::ui::Colors;
+use crate::presentation::ui::Colors;
 use ratatui::style::Color;
 use std::collections::HashMap;
 use std::sync::OnceLock;

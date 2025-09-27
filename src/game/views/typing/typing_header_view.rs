@@ -1,6 +1,6 @@
 use crate::{
     domain::models::{Challenge, GitRepository},
-    ui::Colors,
+    presentation::ui::Colors,
 };
 use ratatui::{
     style::Style,

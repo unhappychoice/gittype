@@ -1,5 +1,5 @@
 use crate::domain::models::GitRepository;
-use crate::ui::Colors;
+use crate::presentation::ui::Colors;
 use anyhow::Result;
 use crossterm::event::KeyCode;
 

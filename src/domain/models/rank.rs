@@ -1,4 +1,4 @@
-use crate::ui::Colors;
+use crate::presentation::ui::Colors;
 
 /// Represents a rank with associated metadata
 #[derive(Debug, Clone, PartialEq)]

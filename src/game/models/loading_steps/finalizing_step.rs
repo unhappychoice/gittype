@@ -4,7 +4,7 @@ use crate::game::stage_repository::StageRepository;
 use crate::game::DifficultyLevel;
 use crate::game::GameData;
 use crate::scoring::tracker::{SessionTracker, TotalTracker};
-use crate::ui::Colors;
+use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::style::Color;
 

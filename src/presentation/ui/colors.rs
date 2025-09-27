@@ -1,5 +1,5 @@
-use crate::ui::color_scheme::ColorScheme;
-use crate::ui::theme_manager::ThemeManager;
+use crate::domain::models::color_scheme::ColorScheme;
+use crate::domain::services::theme_manager::ThemeManager;
 use ratatui::style::Color;
 
 /// UI color scheme for gittype application
