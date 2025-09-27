@@ -49,11 +49,11 @@ impl Step for CloningStep {
 
     fn execute(&self, context: &mut ExecutionContext) -> Result<StepResult> {
         if let Some(repo_spec) = context.repo_spec {
-            let repo_info = crate::repository_manager::RepositoryManager::parse_repo_url(repo_spec)?;
+            let repo_info = crate::infrastructure::repository_manager::RepositoryManager::parse_repo_url(repo_spec)?;
 
             // Clone repository
             let repo_path =
-                crate::repository_manager::RepositoryManager::clone_or_update_repo(&repo_info, context.loading_screen)?;
+                crate::infrastructure::repository_manager::RepositoryManager::clone_or_update_repo(&repo_info, context.loading_screen)?;
 
             // Extract actual git info from cloned repository and set it in loading screen
             let git_repository = if let Ok(Some(git_repository)) =

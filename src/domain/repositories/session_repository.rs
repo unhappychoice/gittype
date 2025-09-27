@@ -5,7 +5,7 @@ use crate::infrastructure::storage::{
 use crate::domain::models::storage::{SaveStageParams, SessionResultData, SessionStageResult, StoredRepository, StoredSession};
 use crate::domain::models::{Challenge, GitRepository, SessionResult};
 use crate::domain::services::scoring::{StageResult, StageTracker};
-use crate::{error::GitTypeError, Result};
+use crate::{domain::error::GitTypeError, Result};
 use std::sync::{Arc, Mutex};
 
 type StageResultTuple = (String, StageResult, usize, Option<Challenge>);

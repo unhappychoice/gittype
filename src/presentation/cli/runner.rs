@@ -3,7 +3,7 @@ use crate::presentation::cli::commands::{
     run_export, run_game_session, run_history, run_repo_clear, run_repo_list, run_repo_play,
     run_stats, run_trending,
 };
-use crate::logging::{setup_console_logging, setup_logging};
+use crate::infrastructure::logging::{setup_console_logging, setup_logging};
 use crate::Result;
 
 pub async fn run_cli(cli: Cli) -> Result<()> {

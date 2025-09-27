@@ -1,4 +1,4 @@
-use crate::repository_manager::{RepoInfo, RepositoryManager};
+use crate::infrastructure::repository_manager::{RepoInfo, RepositoryManager};
 
 /// Extract host, owner path (can include `/` for subgroups), and repo name (no .git)
 fn parse_git_url(remote_url: &str) -> Option<(String, String, String)> {

@@ -1,4 +1,4 @@
-use crate::{error::GitTypeError, Result};
+use crate::{domain::error::GitTypeError, Result};
 use chrono;
 use log4rs::{
     append::{console::ConsoleAppender, file::FileAppender},

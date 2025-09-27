@@ -25,7 +25,7 @@ pub fn run_repo_clear(force: bool) -> Result<()> {
 
     // Get the repos directory path
     let home_dir = dirs::home_dir().ok_or_else(|| {
-        crate::error::GitTypeError::InvalidRepositoryFormat(
+        crate::domain::error::GitTypeError::InvalidRepositoryFormat(
             "Could not determine home directory".to_string(),
         )
     })?;
@@ -88,7 +88,7 @@ pub fn run_repo_clear(force: bool) -> Result<()> {
             println!("Cache directory {} has been removed.", repos_dir.display());
         }
         Err(e) => {
-            return Err(crate::error::GitTypeError::InvalidRepositoryFormat(
+            return Err(crate::domain::error::GitTypeError::InvalidRepositoryFormat(
                 format!("Failed to delete cache directory: {}", e),
             ));
         }

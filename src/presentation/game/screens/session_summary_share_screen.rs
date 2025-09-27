@@ -2,7 +2,7 @@ use crate::presentation::game::models::{Screen, ScreenTransition, UpdateStrategy
 use crate::presentation::game::views::{
     ShareBackOptionView, SharePlatformOptionsView, SharePreviewView, ShareTitleView,
 };
-use crate::sharing::{SharingPlatform, SharingService};
+use crate::presentation::sharing::{SharingPlatform, SharingService};
 use crate::{domain::models::GitRepository, Result};
 use crossterm::terminal::{self};
 use std::io::Stdout;

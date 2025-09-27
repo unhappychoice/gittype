@@ -1,5 +1,5 @@
 use super::migrations::{get_all_migrations, get_latest_version};
-use crate::{error::GitTypeError, Result};
+use crate::{domain::error::GitTypeError, Result};
 use rusqlite::Connection;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, MutexGuard};

@@ -108,7 +108,7 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
 
 fn handle_game_error(e: GitTypeError) -> Result<()> {
     // Log the error details for debugging before handling user-friendly output
-    crate::logging::log_error_to_file(&e);
+    crate::infrastructure::logging::log_error_to_file(&e);
 
     match e {
         GitTypeError::NoSupportedFiles => {

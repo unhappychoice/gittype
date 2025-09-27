@@ -1,6 +1,6 @@
 use super::Database;
 use crate::domain::repositories::SessionRepository;
-use crate::logging::setup_console_logging;
+use crate::infrastructure::logging::setup_console_logging;
 use crate::domain::models::{Challenge, GitRepository, SessionResult};
 use crate::domain::services::scoring::tracker::{StageInput, StageTracker};
 

@@ -1,6 +1,6 @@
 use super::super::database::Database;
 use crate::domain::models::storage::{DifficultyStats, LanguageStats, StageStatistics, StoredStageResult};
-use crate::{error::GitTypeError, Result};
+use crate::{domain::error::GitTypeError, Result};
 use chrono::{DateTime, Utc};
 use rusqlite::params;
 

@@ -1,7 +1,7 @@
 use super::super::database::Database;
 use crate::domain::models::{GitRepository, SessionResult};
 use crate::domain::models::storage::{SaveStageParams, SessionResultData, SessionStageResult, StoredSession};
-use crate::{error::GitTypeError, Result};
+use crate::{domain::error::GitTypeError, Result};
 use chrono::{DateTime, Utc};
 use rusqlite::{params, OptionalExtension, Transaction};
 use std::time::{SystemTime, UNIX_EPOCH};

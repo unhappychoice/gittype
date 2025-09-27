@@ -1,4 +1,4 @@
-use gittype::error::GitTypeError;
+use gittype::domain::error::GitTypeError;
 
 #[test]
 fn database_error_wraps_message() {

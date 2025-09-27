@@ -225,7 +225,7 @@ impl ScreenManager {
 
             // Check if we're running in a valid terminal environment using atty
             if !atty::is(atty::Stream::Stdout) {
-                return Err(crate::error::GitTypeError::TerminalError(
+                return Err(crate::domain::error::GitTypeError::TerminalError(
                     "Not running in a terminal environment. Please run in a proper terminal."
                         .to_string(),
                 ));
@@ -238,7 +238,7 @@ impl ScreenManager {
                     // In WSL, sometimes raw mode fails initially, try after a short delay
                     std::thread::sleep(Duration::from_millis(10));
                     terminal::enable_raw_mode().map_err(|e2| {
-                        crate::error::GitTypeError::TerminalError(format!(
+                        crate::domain::error::GitTypeError::TerminalError(format!(
                             "Failed to enable raw mode: {} (retry also failed: {})",
                             e, e2
                         ))
@@ -273,14 +273,14 @@ impl ScreenManager {
                 cursor::Show
             )
             .map_err(|e| {
-                crate::error::GitTypeError::TerminalError(format!(
+                crate::domain::error::GitTypeError::TerminalError(format!(
                     "Failed to restore terminal: {}",
                     e
                 ))
             })?;
 
             terminal::disable_raw_mode().map_err(|e| {
-                crate::error::GitTypeError::TerminalError(format!(
+                crate::domain::error::GitTypeError::TerminalError(format!(
                     "Failed to disable raw mode: {}",
                     e
                 ))
@@ -309,7 +309,7 @@ impl ScreenManager {
 
         // Flush before cleaning up the current screen
         stdout().flush().map_err(|e| {
-            crate::error::GitTypeError::TerminalError(format!(
+            crate::domain::error::GitTypeError::TerminalError(format!(
                 "Failed to flush before screen transition: {}",
                 e
             ))
@@ -322,13 +322,13 @@ impl ScreenManager {
         // Clear screen after cleanup and flush again
         use crossterm::{execute, terminal};
         execute!(stdout(), terminal::Clear(terminal::ClearType::All)).map_err(|e| {
-            crate::error::GitTypeError::TerminalError(format!(
+            crate::domain::error::GitTypeError::TerminalError(format!(
                 "Failed to clear screen during transition: {}",
                 e
             ))
         })?;
         stdout().flush().map_err(|e| {
-            crate::error::GitTypeError::TerminalError(format!(
+            crate::domain::error::GitTypeError::TerminalError(format!(
                 "Failed to flush after screen clear: {}",
                 e
             ))
@@ -406,7 +406,7 @@ impl ScreenManager {
 
         // Flush after initializing new screen
         stdout().flush().map_err(|e| {
-            crate::error::GitTypeError::TerminalError(format!(
+            crate::domain::error::GitTypeError::TerminalError(format!(
                 "Failed to flush after screen init: {}",
                 e
             ))
@@ -422,7 +422,7 @@ impl ScreenManager {
                 use std::io::stdout;
 
                 execute!(stdout(), terminal::Clear(terminal::ClearType::All)).map_err(|e| {
-                    crate::error::GitTypeError::TerminalError(format!(
+                    crate::domain::error::GitTypeError::TerminalError(format!(
                         "Failed to clear screen: {}",
                         e
                     ))
@@ -432,7 +432,7 @@ impl ScreenManager {
                 // For ratatui, we need to clear the terminal buffer
                 if let Some(terminal) = &mut self.ratatui_terminal {
                     terminal.clear().map_err(|e| {
-                        crate::error::GitTypeError::TerminalError(format!(
+                        crate::domain::error::GitTypeError::TerminalError(format!(
                             "Failed to clear ratatui terminal: {}",
                             e
                         ))
@@ -809,7 +809,7 @@ impl ScreenManager {
 
                 // Flush before rendering to clear any pending output
                 stdout_handle.flush().map_err(|e| {
-                    crate::error::GitTypeError::TerminalError(format!(
+                    crate::domain::error::GitTypeError::TerminalError(format!(
                         "Failed to flush before rendering: {}",
                         e
                     ))
@@ -854,7 +854,7 @@ impl ScreenManager {
 
                 // Flush after rendering to ensure display is updated
                 stdout_handle.flush().map_err(|e| {
-                    crate::error::GitTypeError::TerminalError(format!(
+                    crate::domain::error::GitTypeError::TerminalError(format!(
                         "Failed to flush after rendering: {}",
                         e
                     ))
@@ -868,7 +868,7 @@ impl ScreenManager {
 
                     let backend = CrosstermBackend::new(stdout());
                     let terminal = Terminal::new(backend).map_err(|e| {
-                        crate::error::GitTypeError::TerminalError(format!(
+                        crate::domain::error::GitTypeError::TerminalError(format!(
                             "Failed to create ratatui terminal: {}",
                             e
                         ))
@@ -884,7 +884,7 @@ impl ScreenManager {
                                 let _ = screen.render_ratatui(frame);
                             })
                             .map_err(|e| {
-                                crate::error::GitTypeError::TerminalError(format!(
+                                crate::domain::error::GitTypeError::TerminalError(format!(
                                     "Failed to draw ratatui frame: {}",
                                     e
                                 ))

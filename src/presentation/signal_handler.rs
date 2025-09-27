@@ -1,5 +1,5 @@
 use crate::presentation::game::screen_manager::ScreenManager;
-use crate::logging::log_panic_to_file;
+use crate::infrastructure::logging::log_panic_to_file;
 
 pub fn setup_signal_handlers() {
     std::panic::set_hook(Box::new(|panic_info| {
@@ -37,8 +37,8 @@ pub fn setup_signal_handlers() {
         log_panic_to_file(panic_info);
 
         // Also log with our error type for consistency
-        let error = crate::error::GitTypeError::PanicError(full_message.clone());
-        crate::logging::log_error_to_file(&error);
+        let error = crate::domain::error::GitTypeError::PanicError(full_message.clone());
+        crate::infrastructure::logging::log_error_to_file(&error);
 
         // Try to show panic screen - if this fails, fall back to standard panic behavior
         if show_panic_screen(&full_message).is_err() {

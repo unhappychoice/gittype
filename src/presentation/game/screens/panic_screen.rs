@@ -1,5 +1,5 @@
 use crate::presentation::game::models::{Screen, ScreenTransition, UpdateStrategy};
-use crate::logging::get_current_log_file_path;
+use crate::infrastructure::logging::get_current_log_file_path;
 use crate::presentation::ui::colors::Colors;
 use crate::Result;
 use ratatui::{

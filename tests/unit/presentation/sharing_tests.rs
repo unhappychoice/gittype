@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use gittype::sharing::SharingPlatform;
+use gittype::presentation::sharing::SharingPlatform;
 
 #[test]
 fn sharing_platform_all_lists_every_variant_once() {

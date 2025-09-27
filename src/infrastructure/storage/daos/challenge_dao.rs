@@ -1,6 +1,6 @@
 use super::super::database::Database;
 use crate::domain::models::Challenge;
-use crate::{error::GitTypeError, Result};
+use crate::{domain::error::GitTypeError, Result};
 use rusqlite::{params, Transaction};
 use serde_json;
 

@@ -1,4 +1,4 @@
-use crate::sharing::SharingPlatform;
+use crate::presentation::sharing::SharingPlatform;
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::{

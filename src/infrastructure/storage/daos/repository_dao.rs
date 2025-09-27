@@ -1,7 +1,7 @@
 use super::super::database::Database;
 use crate::domain::models::GitRepository;
 use crate::domain::models::storage::{StoredRepository, StoredRepositoryWithLanguages};
-use crate::{error::GitTypeError, Result};
+use crate::{domain::error::GitTypeError, Result};
 use rusqlite::{params, Transaction};
 
 pub struct RepositoryDao<'a> {
