@@ -1,4 +1,4 @@
-use crate::game::screen_manager::ScreenManager;
+use crate::presentation::game::screen_manager::ScreenManager;
 use crate::logging::log_panic_to_file;
 
 pub fn setup_signal_handlers() {
@@ -63,7 +63,7 @@ pub fn setup_signal_handlers() {
 
 /// Show panic screen using the PanicScreen component with ratatui
 fn show_panic_screen(error_message: &str) -> anyhow::Result<()> {
-    use crate::game::{models::Screen, screens::PanicScreen};
+    use crate::presentation::game::{models::Screen, screens::PanicScreen};
     use crossterm::{
         cursor::Hide,
         execute,
@@ -107,10 +107,10 @@ fn show_panic_screen(error_message: &str) -> anyhow::Result<()> {
 /// Main loop for panic screen interaction using ratatui
 fn panic_screen_loop_ratatui(
     terminal: &mut ratatui::Terminal<ratatui::backend::CrosstermBackend<std::io::Stdout>>,
-    panic_screen: &mut crate::game::screens::PanicScreen,
+    panic_screen: &mut crate::presentation::game::screens::PanicScreen,
     error_message: &str,
 ) -> anyhow::Result<()> {
-    use crate::game::models::{Screen, ScreenTransition};
+    use crate::presentation::game::models::{Screen, ScreenTransition};
     use crossterm::event::{poll, read, Event};
     use std::time::Duration;
 

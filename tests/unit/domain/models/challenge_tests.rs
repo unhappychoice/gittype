@@ -1,4 +1,4 @@
-use gittype::game::DifficultyLevel;
+use gittype::presentation::game::DifficultyLevel;
 use gittype::domain::models::challenge::Challenge;
 use gittype::domain::models::git_repository::GitRepository;
 

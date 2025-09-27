@@ -1,8 +1,8 @@
 use crate::domain::models::{CodeChunk, ExtractionOptions};
-use crate::game::screens::loading_screen::ProgressReporter;
+use crate::presentation::game::screens::loading_screen::ProgressReporter;
 use super::core::CommonExtractor;
 use crate::domain::models::Language;
-use crate::game::models::StepType;
+use crate::presentation::game::models::StepType;
 use crate::Result;
 use rayon::prelude::*;
 use std::path::Path;

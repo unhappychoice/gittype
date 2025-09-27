@@ -11,7 +11,7 @@ struct ChallengePointer {
     end_line: Option<usize>,
     language: Option<String>,
     comment_ranges: Vec<(usize, usize)>,
-    difficulty_level: Option<crate::game::stage_repository::DifficultyLevel>,
+    difficulty_level: Option<crate::presentation::game::stage_repository::DifficultyLevel>,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -79,7 +79,7 @@ impl ChallengeCache {
     pub fn load_with_progress(
         &self,
         repo: &GitRepository,
-        progress_reporter: Option<&dyn crate::game::screens::loading_screen::ProgressReporter>,
+        progress_reporter: Option<&dyn crate::presentation::game::screens::loading_screen::ProgressReporter>,
     ) -> Option<Vec<Challenge>> {
         use rayon::prelude::*;
         use std::sync::{Arc, Mutex};
@@ -117,7 +117,7 @@ impl ChallengeCache {
                     drop(count);
 
                     reporter.set_file_counts(
-                        crate::game::models::loading_steps::StepType::CacheCheck,
+                        crate::presentation::game::models::loading_steps::StepType::CacheCheck,
                         current,
                         total,
                         Some(format!("Reconstructing challenge {}/{}", current, total)),

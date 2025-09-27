@@ -37,10 +37,10 @@ pub fn test_session_recording_integration() -> crate::Result<()> {
     let challenges = vec![
         Challenge::new("challenge1".to_string(), "fn test() {}".to_string())
             .with_language("rust".to_string())
-            .with_difficulty_level(crate::game::DifficultyLevel::Easy),
+            .with_difficulty_level(crate::presentation::game::DifficultyLevel::Easy),
         Challenge::new("challenge2".to_string(), "fn main() {}".to_string())
             .with_language("rust".to_string())
-            .with_difficulty_level(crate::game::DifficultyLevel::Normal),
+            .with_difficulty_level(crate::presentation::game::DifficultyLevel::Normal),
     ];
 
     // Create test database and repository

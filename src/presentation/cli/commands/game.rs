@@ -1,7 +1,7 @@
 use crate::presentation::cli::args::Cli;
 use crate::domain::models::ExtractionOptions;
-use crate::game::models::ScreenType;
-use crate::game::screen_manager::ScreenManager;
+use crate::presentation::game::models::ScreenType;
+use crate::presentation::game::screen_manager::ScreenManager;
 use crate::{GitTypeError, Result};
 use std::path::PathBuf;
 
@@ -69,7 +69,7 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
     };
 
     // Initialize GameData and set processing parameters
-    use crate::game::GameData;
+    use crate::presentation::game::GameData;
     GameData::initialize()?;
     GameData::set_processing_parameters(repo_spec, initial_repo_path, &options)?;
 

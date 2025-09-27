@@ -1,5 +1,5 @@
 use super::git_repository::GitRepository;
-use crate::game::DifficultyLevel;
+use crate::presentation::game::DifficultyLevel;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Challenge {

@@ -1,6 +1,6 @@
-use crate::game::screens::loading_screen::ProgressReporter;
-use crate::game::models::StepType;
-use crate::game::DifficultyLevel;
+use crate::presentation::game::screens::loading_screen::ProgressReporter;
+use crate::presentation::game::models::StepType;
+use crate::presentation::game::DifficultyLevel;
 use crate::domain::models::{Challenge, CodeChunk};
 use rayon::prelude::*;
 use std::borrow::Cow;
@@ -139,7 +139,7 @@ impl ChallengeConverter {
         difficulty: &DifficultyLevel,
         code_char_count: usize,
     ) -> bool {
-        use crate::game::DifficultyLevel;
+        use crate::presentation::game::DifficultyLevel;
 
         // Skip empty or whitespace-only chunks early
         if chunk.content.trim().is_empty() {
@@ -174,7 +174,7 @@ impl ChallengeConverter {
         difficulty: &DifficultyLevel,
         code_char_count: usize,
     ) -> Vec<Challenge> {
-        use crate::game::DifficultyLevel;
+        use crate::presentation::game::DifficultyLevel;
 
         // Helper function to create challenge with string borrowing optimization
         let create_challenge = |content: Cow<'_, str>,

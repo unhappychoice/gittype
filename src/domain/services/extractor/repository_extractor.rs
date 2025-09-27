@@ -1,6 +1,6 @@
 use super::{ChallengeConverter, CodeChunkExtractor, LanguageRegistry};
 use crate::domain::models::ExtractionOptions;
-use crate::game::screens::loading_screen::ProgressReporter;
+use crate::presentation::game::screens::loading_screen::ProgressReporter;
 use crate::{GitTypeError, Result};
 use ignore::WalkBuilder;
 use std::path::Path;
@@ -96,7 +96,7 @@ impl RepositoryExtractor {
             if processed % 100 == 0 || processed == total_files_estimated {
                 // Update progress with estimated total
                 progress.set_file_counts(
-                    crate::game::models::loading_steps::StepType::Scanning,
+                    crate::presentation::game::models::loading_steps::StepType::Scanning,
                     processed,
                     total_files_estimated,
                     None,
@@ -106,7 +106,7 @@ impl RepositoryExtractor {
 
         // Ensure final progress is exactly 100%
         progress.set_file_counts(
-            crate::game::models::loading_steps::StepType::Scanning,
+            crate::presentation::game::models::loading_steps::StepType::Scanning,
             total_files_estimated,
             total_files_estimated,
             None,

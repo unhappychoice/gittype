@@ -4,7 +4,7 @@
 #[cfg(test)]
 use gittype::domain::services::extractor::ChallengeConverter;
 use gittype::domain::services::extractor::core::CommonExtractor;
-use gittype::game::typing_core::TypingCore;
+use gittype::presentation::game::typing_core::TypingCore;
 use gittype::domain::models::ChunkType;
 use std::path::Path;
 
