@@ -124,7 +124,6 @@ pub fn run_repo_play() -> Result<()> {
                 repo_path: None,
                 repo: Some(repo_spec),
                 langs: None,
-                config: None,
                 command: None,
             };
 

@@ -1,7 +1,7 @@
 use super::super::models::color_mode::ColorMode;
 use super::super::models::color_scheme::{ColorScheme, CustomThemeFile, ThemeFile};
 use super::super::models::theme::Theme;
-use crate::infrastructure::config::ConfigManager;
+use crate::domain::services::config_manager::ConfigService;
 use once_cell::sync::Lazy;
 
 pub static THEME_MANAGER: Lazy<std::sync::RwLock<ThemeManager>> = Lazy::new(|| {
@@ -18,13 +18,9 @@ pub struct ThemeManager {
 }
 
 impl ThemeManager {
-    /// Initialize the theme manager with optional config path
-    pub fn init(config_path: Option<std::path::PathBuf>) -> anyhow::Result<()> {
-        let config_manager = if let Some(path) = config_path {
-            ConfigManager::with_config_path(path)?
-        } else {
-            ConfigManager::new()?
-        };
+    /// Initialize the theme manager
+    pub fn init() -> anyhow::Result<()> {
+        let config_manager = ConfigService::new()?;
 
         // Create default custom theme file if it doesn't exist
         let _ = Self::create_default_custom_theme_file();

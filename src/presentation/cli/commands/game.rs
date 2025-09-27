@@ -36,7 +36,7 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
     }
 
     // Initialize theme manager
-    if let Err(e) = ThemeManager::init(cli.config.clone()) {
+    if let Err(e) = ThemeManager::init() {
         log::warn!("Failed to initialize theme manager: {}", e);
         eprintln!("⚠️ Warning: Failed to load theme configuration: {}", e);
         eprintln!("   Using default theme.");

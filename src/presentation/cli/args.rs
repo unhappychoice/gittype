@@ -47,10 +47,6 @@ pub struct Cli {
     )]
     pub langs: Option<Vec<String>>,
 
-    /// Path to config file
-    #[arg(long)]
-    pub config: Option<PathBuf>,
-
     #[command(subcommand)]
     pub command: Option<Commands>,
 }

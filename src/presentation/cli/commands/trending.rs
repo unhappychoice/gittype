@@ -60,7 +60,6 @@ pub async fn run_trending(
                 repo_path: None,
                 repo: Some(repo_url),
                 langs: None,
-                config: None,
                 command: None,
             };
             return run_game_session(cli);
@@ -85,8 +84,7 @@ pub async fn run_trending(
                         repo_path: None,
                         repo: Some(repo_url),
                         langs: None,
-                        config: None,
-                        command: None,
+                                command: None,
                     };
                     return run_game_session(cli);
                 }
@@ -101,8 +99,7 @@ pub async fn run_trending(
                     repo_path: None,
                     repo: Some(repo_url),
                     langs: None,
-                    config: None,
-                    command: None,
+                        command: None,
                 };
                 return run_game_session(cli);
             }
