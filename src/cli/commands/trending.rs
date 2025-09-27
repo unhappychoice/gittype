@@ -1,4 +1,4 @@
-use crate::cache::{TrendingRepository, TRENDING_CACHE};
+use crate::infrastructure::cache::{TrendingRepository, TRENDING_CACHE};
 use crate::{GitTypeError, Result};
 use reqwest::Client;
 use std::time::Duration;

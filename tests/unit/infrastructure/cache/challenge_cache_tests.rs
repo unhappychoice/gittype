@@ -1,4 +1,4 @@
-use gittype::cache::ChallengeCache;
+use gittype::infrastructure::cache::ChallengeCache;
 use gittype::models::{Challenge, GitRepository};
 use std::fs;
 use tempfile;

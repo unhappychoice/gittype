@@ -30,7 +30,7 @@ pub async fn run_cli(cli: Cli) -> Result<()> {
 }
 
 fn run_cache_command(cache_command: &CacheCommands) -> Result<()> {
-    use crate::cache::CHALLENGE_CACHE;
+    use crate::infrastructure::cache::CHALLENGE_CACHE;
 
     match cache_command {
         CacheCommands::Stats => match CHALLENGE_CACHE.stats() {

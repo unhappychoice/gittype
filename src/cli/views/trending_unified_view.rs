@@ -1,4 +1,4 @@
-use crate::cache::TrendingRepository;
+use crate::infrastructure::cache::TrendingRepository;
 use crate::ui::colors::Colors;
 use crate::Result;
 use crossterm::{
