@@ -4,7 +4,7 @@ use crate::Result;
 use std::io::{self, Write};
 
 pub fn run_repo_list() -> Result<()> {
-    use crate::cli::views::repo_list_view;
+    use crate::presentation::cli::views::repo_list_view;
 
     let db = Database::new()?;
     let repo_dao = RepositoryDao::new(&db);
@@ -98,7 +98,7 @@ pub fn run_repo_clear(force: bool) -> Result<()> {
 }
 
 pub fn run_repo_play() -> Result<()> {
-    use crate::cli::views::repo_play_view;
+    use crate::presentation::cli::views::repo_play_view;
 
     let db = Database::new()?;
     let repo_dao = RepositoryDao::new(&db);
@@ -122,7 +122,7 @@ pub fn run_repo_play() -> Result<()> {
             println!("Starting gittype with repository: {}", repo_spec);
 
             // Create a Cli struct to pass to run_game_session
-            let cli = crate::cli::args::Cli {
+            let cli = crate::presentation::cli::args::Cli {
                 repo_path: None,
                 repo: Some(repo_spec),
                 langs: None,
@@ -131,7 +131,7 @@ pub fn run_repo_play() -> Result<()> {
             };
 
             // Start the game session
-            crate::cli::commands::run_game_session(cli)
+            crate::presentation::cli::commands::run_game_session(cli)
         }
         None => {
             println!("Repository selection cancelled.");

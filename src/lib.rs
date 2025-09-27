@@ -1,5 +1,5 @@
 pub mod infrastructure;
-pub mod cli;
+pub mod presentation;
 pub mod config;
 pub mod error;
 pub mod extractor;

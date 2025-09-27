@@ -382,7 +382,7 @@ pub async fn render_trending_selection_ui() -> Result<Option<String>> {
                                 let client = reqwest::Client::new();
                                 let effective_period = "daily";
 
-                                repositories = crate::cli::commands::trending::fetch_trending_repositories_cached(
+                                repositories = crate::presentation::cli::commands::trending::fetch_trending_repositories_cached(
                                     &client,
                                     Some(lang_code),
                                     effective_period

@@ -1,5 +1,5 @@
 use clap::Parser;
-use gittype::cli::{run_cli, Cli};
+use gittype::presentation::cli::{run_cli, Cli};
 use gittype::logging::log_error_to_file;
 use gittype::signal_handler::setup_signal_handlers;
 

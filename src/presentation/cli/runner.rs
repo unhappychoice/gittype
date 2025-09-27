@@ -1,5 +1,5 @@
-use crate::cli::args::{CacheCommands, Cli, Commands, RepoCommands};
-use crate::cli::commands::{
+use crate::presentation::cli::args::{CacheCommands, Cli, Commands, RepoCommands};
+use crate::presentation::cli::commands::{
     run_export, run_game_session, run_history, run_repo_clear, run_repo_list, run_repo_play,
     run_stats, run_trending,
 };

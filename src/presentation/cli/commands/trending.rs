@@ -55,14 +55,14 @@ pub async fn run_trending(
 
         if let Some(repo) = select_repository_by_name(&repos, &name) {
             let repo_url = format!("https://github.com/{}", repo.repo_name);
-            let cli = crate::cli::args::Cli {
+            let cli = crate::presentation::cli::args::Cli {
                 repo_path: None,
                 repo: Some(repo_url),
                 langs: None,
                 config: None,
                 command: None,
             };
-            return crate::cli::commands::run_game_session(cli);
+            return crate::presentation::cli::commands::run_game_session(cli);
         } else {
             eprintln!("⚠️ Repository '{}' not found in trending list", name);
             return Ok(());
@@ -77,38 +77,38 @@ pub async fn run_trending(
             return Ok(());
         }
 
-        use crate::cli::views::trending_repository_selection_view;
+        use crate::presentation::cli::views::trending_repository_selection_view;
 
         match trending_repository_selection_view::render_trending_ui(repos.clone())? {
             Some(selection) => {
                 if let Some(repo) = repos.get(selection) {
                     let repo_url = format!("https://github.com/{}", repo.repo_name);
-                    let cli = crate::cli::args::Cli {
+                    let cli = crate::presentation::cli::args::Cli {
                         repo_path: None,
                         repo: Some(repo_url),
                         langs: None,
                         config: None,
                         command: None,
                     };
-                    return crate::cli::commands::run_game_session(cli);
+                    return crate::presentation::cli::commands::run_game_session(cli);
                 }
             }
             None => return Ok(()),
         }
     } else {
         // No language provided - show unified selection UI
-        use crate::cli::views::trending_unified_view;
+        use crate::presentation::cli::views::trending_unified_view;
 
         match trending_unified_view::render_trending_selection_ui().await? {
             Some(repo_url) => {
-                let cli = crate::cli::args::Cli {
+                let cli = crate::presentation::cli::args::Cli {
                     repo_path: None,
                     repo: Some(repo_url),
                     langs: None,
                     config: None,
                     command: None,
                 };
-                return crate::cli::commands::run_game_session(cli);
+                return crate::presentation::cli::commands::run_game_session(cli);
             }
             None => return Ok(()),
         }
