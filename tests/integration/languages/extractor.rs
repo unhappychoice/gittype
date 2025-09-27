@@ -17,7 +17,7 @@ macro_rules! test_language_extractor {
         fn $test_name() {
             use crate::integration::{extract_chunks_for_test, test_extraction_options};
             use gittype::extractor::CodeChunkExtractor;
-            use gittype::models::ChunkType;
+            use gittype::domain::models::ChunkType;
             use std::collections::HashMap;
             use std::fs;
             use tempfile::TempDir;
@@ -75,7 +75,7 @@ macro_rules! test_language_extractor {
 
 /// Create a snapshot using insta
 pub fn create_insta_snapshot(
-    chunks: &[gittype::models::CodeChunk],
+    chunks: &[gittype::domain::models::CodeChunk],
     source_code: &str,
     test_name: &str,
 ) {

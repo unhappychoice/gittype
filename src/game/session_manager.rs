@@ -3,7 +3,7 @@ use crate::storage::session_repository::BestStatus;
 use crate::storage::SessionRepository;
 use crate::{
     game::{stage_repository::StageRepository, DifficultyLevel},
-    models::{Challenge, SessionResult},
+    domain::models::{Challenge, SessionResult},
     scoring::{StageInput, StageResult, StageTracker, GLOBAL_SESSION_TRACKER},
     Result,
 };
@@ -66,9 +66,9 @@ pub struct SessionManager {
     current_stage_tracker: Option<StageTracker>,
     stage_trackers: Vec<(String, crate::scoring::StageTracker)>,
     // Git repository context
-    git_repository: Option<crate::models::GitRepository>,
+    git_repository: Option<crate::domain::models::GitRepository>,
     // Challenge management - tracks all challenges used in this session (completed, failed, skipped)
-    session_challenges: Vec<crate::models::Challenge>,
+    session_challenges: Vec<crate::domain::models::Challenge>,
     // Best records at session start (for accurate comparison)
     best_records_at_start: Option<crate::storage::repositories::session_repository::BestRecords>,
 }
@@ -239,7 +239,7 @@ impl SessionManager {
     }
 
     /// Set git repository context for the session
-    pub fn set_git_repository(git_repository: Option<crate::models::GitRepository>) -> Result<()> {
+    pub fn set_git_repository(git_repository: Option<crate::domain::models::GitRepository>) -> Result<()> {
         let instance = Self::instance();
         let mut manager = instance.lock().map_err(|e| {
             crate::GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
@@ -382,7 +382,7 @@ impl SessionManager {
     /// Record session to database
     fn record_session_to_database(
         &self,
-        session_result: &crate::models::SessionResult,
+        session_result: &crate::domain::models::SessionResult,
     ) -> Result<()> {
         // Get game mode and difficulty from global repositories or session config
         let game_mode = format!("{:?}", self.config.difficulty);

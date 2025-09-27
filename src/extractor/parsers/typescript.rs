@@ -1,5 +1,5 @@
 use super::LanguageExtractor;
-use crate::models::ChunkType;
+use crate::domain::models::ChunkType;
 use crate::{GitTypeError, Result};
 use tree_sitter::{Node, Parser};
 

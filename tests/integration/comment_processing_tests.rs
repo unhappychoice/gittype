@@ -5,7 +5,7 @@
 use gittype::extractor::challenge_converter::ChallengeConverter;
 use gittype::extractor::core::CommonExtractor;
 use gittype::game::typing_core::TypingCore;
-use gittype::models::ChunkType;
+use gittype::domain::models::ChunkType;
 use std::path::Path;
 
 /// Tests for the core bug: byte vs character position misalignment

@@ -1,4 +1,4 @@
-use crate::models::{Rank, RankTier};
+use crate::domain::models::{Rank, RankTier};
 
 /// Calculator for rank and tier position information
 pub struct RankCalculator;

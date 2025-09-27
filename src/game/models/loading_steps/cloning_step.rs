@@ -63,7 +63,7 @@ impl Step for CloningStep {
                 git_repository
             } else {
                 // Fallback to basic info from RepoInfo if git extraction fails
-                crate::models::GitRepository {
+                crate::domain::models::GitRepository {
                     user_name: repo_info.owner.clone(),
                     repository_name: repo_info.name.clone(),
                     remote_url: format!(

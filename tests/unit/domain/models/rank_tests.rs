@@ -1,5 +1,5 @@
 use crossterm::style::Color as TerminalColor;
-use gittype::models::rank::{Rank, RankTier};
+use gittype::domain::models::rank::{Rank, RankTier};
 use gittype::ui::Colors;
 
 #[test]

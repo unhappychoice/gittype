@@ -3,7 +3,7 @@ pub mod rank_calculator;
 pub mod score_calculator;
 pub mod tracker;
 
-pub use crate::models::{Rank, RankTier, SessionResult, StageResult, TotalResult};
+pub use crate::domain::models::{Rank, RankTier, SessionResult, StageResult, TotalResult};
 pub use calculator::{
     RealTimeCalculator, RealTimeResult, SessionCalculator, StageCalculator, TotalCalculator,
 };

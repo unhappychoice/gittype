@@ -1,4 +1,4 @@
-use gittype::models::SessionResult;
+use gittype::domain::models::SessionResult;
 use gittype::scoring::calculator::TotalCalculator;
 use gittype::scoring::tracker::TotalTracker;
 use std::time::Duration;

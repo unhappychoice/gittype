@@ -69,11 +69,11 @@ impl RankView {
         execute!(stdout, SetAttribute(Attribute::Bold))?;
 
         let tier_color = match best_rank.tier() {
-            crate::models::RankTier::Beginner => Colors::to_crossterm(Colors::border()),
-            crate::models::RankTier::Intermediate => Colors::to_crossterm(Colors::success()),
-            crate::models::RankTier::Advanced => Colors::to_crossterm(Colors::info()),
-            crate::models::RankTier::Expert => Colors::to_crossterm(Colors::warning()),
-            crate::models::RankTier::Legendary => Colors::to_crossterm(Colors::error()),
+            crate::domain::models::RankTier::Beginner => Colors::to_crossterm(Colors::border()),
+            crate::domain::models::RankTier::Intermediate => Colors::to_crossterm(Colors::success()),
+            crate::domain::models::RankTier::Advanced => Colors::to_crossterm(Colors::info()),
+            crate::domain::models::RankTier::Expert => Colors::to_crossterm(Colors::warning()),
+            crate::domain::models::RankTier::Legendary => Colors::to_crossterm(Colors::error()),
         };
         execute!(stdout, SetForegroundColor(tier_color))?;
         execute!(stdout, Print(&tier_info))?;

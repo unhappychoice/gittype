@@ -1,4 +1,4 @@
-use crate::models::GitRepository;
+use crate::domain::models::GitRepository;
 use crate::ui::Colors;
 use ratatui::{
     layout::{Alignment, Rect},
@@ -14,7 +14,7 @@ impl StageResultsView {
     pub fn render(
         f: &mut Frame,
         area: Rect,
-        session_result: &crate::models::SessionResult,
+        session_result: &crate::domain::models::SessionResult,
         repo_info: &Option<GitRepository>,
     ) {
         if !session_result.stage_results.is_empty() {
@@ -89,7 +89,7 @@ impl StageResultsView {
         }
     }
 
-    fn get_stage_name(stage_result: &crate::models::StageResult, index: usize) -> String {
+    fn get_stage_name(stage_result: &crate::domain::models::StageResult, index: usize) -> String {
         if !stage_result.challenge_path.is_empty() {
             stage_result.challenge_path.clone()
         } else {

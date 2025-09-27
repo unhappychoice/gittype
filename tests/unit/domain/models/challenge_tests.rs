@@ -1,6 +1,6 @@
 use gittype::game::DifficultyLevel;
-use gittype::models::challenge::Challenge;
-use gittype::models::git_repository::GitRepository;
+use gittype::domain::models::challenge::Challenge;
+use gittype::domain::models::git_repository::GitRepository;
 
 fn build_repo() -> GitRepository {
     GitRepository {

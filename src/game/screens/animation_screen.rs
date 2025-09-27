@@ -16,7 +16,7 @@ use std::io::Stdout;
 
 pub struct AnimationScreen {
     animation: Option<TypingAnimationView>,
-    session_result: Option<crate::models::SessionResult>,
+    session_result: Option<crate::domain::models::SessionResult>,
     animation_initialized: bool,
 }
 
@@ -36,7 +36,7 @@ impl AnimationScreen {
     }
 
     /// Pre-inject session result from ScreenManager (avoids RefCell conflicts)
-    pub fn inject_session_result(&mut self, session_result: crate::models::SessionResult) {
+    pub fn inject_session_result(&mut self, session_result: crate::domain::models::SessionResult) {
         self.session_result = Some(session_result);
 
         if let Some(ref session_result) = self.session_result {
@@ -157,12 +157,12 @@ impl AnimationScreen {
         frame.render_widget(skip_paragraph, skip_area);
     }
 
-    fn get_tier_from_rank_name(rank_name: &str) -> crate::models::RankTier {
+    fn get_tier_from_rank_name(rank_name: &str) -> crate::domain::models::RankTier {
         Rank::all_ranks()
             .iter()
             .find(|rank| rank.name() == rank_name)
             .map(|rank| rank.tier().clone())
-            .unwrap_or(crate::models::RankTier::Beginner)
+            .unwrap_or(crate::domain::models::RankTier::Beginner)
     }
 }
 
@@ -194,7 +194,7 @@ impl Screen for AnimationScreen {
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut Stdout,
-        _session_result: Option<&crate::models::SessionResult>,
+        _session_result: Option<&crate::domain::models::SessionResult>,
         _total_result: Option<&crate::scoring::TotalResult>,
     ) -> Result<()> {
         Ok(())

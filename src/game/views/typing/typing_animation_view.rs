@@ -1,4 +1,4 @@
-use crate::models::RankTier;
+use crate::domain::models::RankTier;
 use ratatui::style::Color;
 use std::time::{Duration, Instant};
 

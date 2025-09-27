@@ -652,7 +652,7 @@ impl Screen for AnalyticsScreen {
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut std::io::Stdout,
-        _session_result: Option<&crate::models::SessionResult>,
+        _session_result: Option<&crate::domain::models::SessionResult>,
         _total_result: Option<&crate::scoring::TotalResult>,
     ) -> Result<()> {
         Ok(())

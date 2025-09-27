@@ -1,6 +1,6 @@
 use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
 use crate::game::views::SharingView;
-use crate::models::TotalResult;
+use crate::domain::models::TotalResult;
 use crate::sharing::SharingPlatform;
 use crate::Result;
 use crossterm::{
@@ -124,7 +124,7 @@ impl Screen for TotalSummaryShareScreen {
     fn render_crossterm_with_data(
         &mut self,
         stdout: &mut Stdout,
-        _session_result: Option<&crate::models::SessionResult>,
+        _session_result: Option<&crate::domain::models::SessionResult>,
         _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         let current_fallback_state = self.fallback_url.is_some();

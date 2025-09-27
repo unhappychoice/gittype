@@ -2,7 +2,7 @@ use gittype::extractor::models::language::LanguageRegistry;
 use gittype::extractor::{
     ChallengeConverter, CodeChunkExtractor, ExtractionOptions, RepositoryExtractor,
 };
-use gittype::models::{ChunkType, CodeChunk};
+use gittype::domain::models::{ChunkType, CodeChunk};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::Instant;

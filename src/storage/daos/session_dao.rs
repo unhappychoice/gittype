@@ -1,5 +1,5 @@
 use super::super::Database;
-use crate::models::{Challenge, GitRepository, SessionResult, StageResult};
+use crate::domain::models::{Challenge, GitRepository, SessionResult, StageResult};
 use crate::{error::GitTypeError, Result};
 use chrono::{DateTime, Utc};
 use rusqlite::{params, OptionalExtension, Transaction};
@@ -87,13 +87,13 @@ impl<'a> SessionDao<'a> {
         difficulty_level: Option<&str>,
     ) -> Result<()> {
         // Calculate tier and rank from session score
-        let session_rank = crate::models::Rank::for_score(session_result.session_score);
+        let session_rank = crate::domain::models::Rank::for_score(session_result.session_score);
         let tier_name = match session_rank.tier() {
-            crate::models::RankTier::Beginner => "Beginner",
-            crate::models::RankTier::Intermediate => "Intermediate",
-            crate::models::RankTier::Advanced => "Advanced",
-            crate::models::RankTier::Expert => "Expert",
-            crate::models::RankTier::Legendary => "Legendary",
+            crate::domain::models::RankTier::Beginner => "Beginner",
+            crate::domain::models::RankTier::Intermediate => "Intermediate",
+            crate::domain::models::RankTier::Advanced => "Advanced",
+            crate::domain::models::RankTier::Expert => "Expert",
+            crate::domain::models::RankTier::Legendary => "Legendary",
         };
 
         // Calculate position information using RankCalculator

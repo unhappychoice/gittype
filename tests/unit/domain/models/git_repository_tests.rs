@@ -1,4 +1,4 @@
-use gittype::models::git_repository::GitRepository;
+use gittype::domain::models::git_repository::GitRepository;
 
 #[test]
 fn git_repository_equality_depends_on_all_fields() {

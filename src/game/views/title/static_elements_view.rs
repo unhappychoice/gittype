@@ -1,4 +1,4 @@
-use crate::models::GitRepository;
+use crate::domain::models::GitRepository;
 use crate::ui::Colors;
 use crate::Result;
 use crossterm::{

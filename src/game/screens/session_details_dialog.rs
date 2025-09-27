@@ -2,7 +2,7 @@ use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
 use crate::game::views::{BestRecordsView, ControlsView, HeaderView, StageResultsView};
 use crate::game::{GameData, SessionManager};
 use crate::storage::repositories::session_repository::SessionRepository;
-use crate::{models::GitRepository, Result};
+use crate::{domain::models::GitRepository, Result};
 use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
@@ -10,7 +10,7 @@ use ratatui::{
 use std::io::Stdout;
 
 pub struct SessionDetailsDialog {
-    session_result: Option<crate::models::SessionResult>,
+    session_result: Option<crate::domain::models::SessionResult>,
     repo_info: Option<GitRepository>,
     best_status: Option<crate::storage::repositories::session_repository::BestStatus>,
 }
@@ -141,7 +141,7 @@ impl Screen for SessionDetailsDialog {
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut Stdout,
-        _session_result: Option<&crate::models::SessionResult>,
+        _session_result: Option<&crate::domain::models::SessionResult>,
         _total_result: Option<&crate::scoring::TotalResult>,
     ) -> Result<()> {
         Ok(())

@@ -89,7 +89,7 @@ impl Screen for ScreenState {
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut Stdout,
-        _session_result: Option<&crate::models::SessionResult>,
+        _session_result: Option<&crate::domain::models::SessionResult>,
         _total_result: Option<&crate::scoring::TotalResult>,
     ) -> crate::Result<()> {
         // Version check is now handled by ScreenManager

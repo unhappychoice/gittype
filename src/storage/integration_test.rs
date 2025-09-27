@@ -1,6 +1,6 @@
 use super::{Database, SessionRepository};
 use crate::logging::setup_console_logging;
-use crate::models::{Challenge, GitRepository, SessionResult};
+use crate::domain::models::{Challenge, GitRepository, SessionResult};
 use crate::scoring::tracker::{StageInput, StageTracker};
 
 pub fn test_session_recording_integration() -> crate::Result<()> {

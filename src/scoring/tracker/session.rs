@@ -1,4 +1,4 @@
-use crate::models::StageResult;
+use crate::domain::models::StageResult;
 use once_cell::sync::Lazy;
 use std::sync::{Arc, Mutex};
 use std::time::Instant;

@@ -1,8 +1,8 @@
-use gittype::models::challenge::Challenge;
-use gittype::models::session::Session;
-use gittype::models::stage::Stage;
-use gittype::models::total::Total;
-use gittype::models::total::TotalResult;
+use gittype::domain::models::challenge::Challenge;
+use gittype::domain::models::session::Session;
+use gittype::domain::models::stage::Stage;
+use gittype::domain::models::total::Total;
+use gittype::domain::models::total::TotalResult;
 
 fn sample_session(id: &str) -> Session {
     let stage = Stage::new(Challenge::new(id.into(), "fn main() {}".into()), 1);

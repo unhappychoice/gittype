@@ -1,6 +1,6 @@
 use crate::{
     game::{context_loader::CodeContext, typing_core::TypingCore},
-    models::Challenge,
+    domain::models::Challenge,
     ui::Colors,
 };
 use ratatui::{

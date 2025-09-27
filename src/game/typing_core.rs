@@ -1,4 +1,4 @@
-use crate::models::Challenge;
+use crate::domain::models::Challenge;
 
 #[derive(Debug, Clone)]
 pub struct TypingCore {

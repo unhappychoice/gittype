@@ -1,4 +1,4 @@
-use crate::models::{Rank, StageResult};
+use crate::domain::models::{Rank, StageResult};
 use crate::scoring::tracker::StageTracker;
 
 /// Stage level result calculation

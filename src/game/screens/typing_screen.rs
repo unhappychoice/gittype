@@ -5,9 +5,9 @@ use super::super::{
 use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
 use crate::game::{game_data::GameData, views::TypingView};
 use crate::game::{ScreenType, SessionManager};
-use crate::models::{Challenge, Countdown};
+use crate::domain::models::{Challenge, Countdown};
 use crate::scoring::StageInput;
-use crate::{models::GitRepository, Result};
+use crate::{domain::models::GitRepository, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use std::io::Stdout;
 use std::time::Duration;
@@ -351,7 +351,7 @@ impl Screen for TypingScreen {
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut Stdout,
-        _session_result: Option<&crate::models::SessionResult>,
+        _session_result: Option<&crate::domain::models::SessionResult>,
         _total_result: Option<&crate::scoring::TotalResult>,
     ) -> Result<()> {
         Ok(())

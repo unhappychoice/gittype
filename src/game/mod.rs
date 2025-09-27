@@ -13,8 +13,8 @@ pub mod text_processor;
 pub mod typing_core;
 pub mod views;
 
-pub use crate::models::Challenge;
-pub use crate::models::SessionResult;
+pub use crate::domain::models::Challenge;
+pub use crate::domain::models::SessionResult;
 pub use game_data::GameData;
 pub use models::{Screen, ScreenTransition, ScreenType, UpdateStrategy};
 pub use screen_manager::{RenderBackend, ScreenManager};

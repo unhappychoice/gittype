@@ -1,7 +1,7 @@
-use gittype::models::challenge::Challenge;
-use gittype::models::session::Session;
-use gittype::models::session::SessionResult;
-use gittype::models::stage::Stage;
+use gittype::domain::models::challenge::Challenge;
+use gittype::domain::models::session::Session;
+use gittype::domain::models::session::SessionResult;
+use gittype::domain::models::stage::Stage;
 
 fn sample_stage(id: &str) -> Stage {
     let challenge = Challenge::new(id.into(), "fn main() {}".into());

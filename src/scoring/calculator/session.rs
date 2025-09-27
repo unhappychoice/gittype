@@ -1,4 +1,4 @@
-use crate::models::SessionResult;
+use crate::domain::models::SessionResult;
 use crate::scoring::tracker::SessionTracker;
 use std::time::Duration;
 

@@ -72,7 +72,7 @@ impl Screen for StageSummaryScreen {
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut std::io::Stdout,
-        _session_result: Option<&crate::models::SessionResult>,
+        _session_result: Option<&crate::domain::models::SessionResult>,
         _total_result: Option<&crate::scoring::TotalResult>,
     ) -> Result<()> {
         if let Some(ref stage_result) = self.stage_result {

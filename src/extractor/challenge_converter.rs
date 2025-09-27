@@ -1,7 +1,7 @@
 use super::ProgressReporter;
 use crate::game::models::StepType;
 use crate::game::DifficultyLevel;
-use crate::models::{Challenge, CodeChunk};
+use crate::domain::models::{Challenge, CodeChunk};
 use rayon::prelude::*;
 use std::borrow::Cow;
 use std::collections::HashMap;
@@ -154,7 +154,7 @@ impl ChallengeConverter {
         match difficulty {
             DifficultyLevel::Zen => {
                 // Only File chunks for Zen mode
-                matches!(chunk.chunk_type, crate::models::ChunkType::File)
+                matches!(chunk.chunk_type, crate::domain::models::ChunkType::File)
             }
             DifficultyLevel::Wild => {
                 // Wild difficulty accepts any valid chunk

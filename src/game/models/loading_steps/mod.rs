@@ -1,5 +1,5 @@
 use crate::extractor::{ExtractionOptions, RepositoryExtractor};
-use crate::models::Challenge;
+use crate::domain::models::Challenge;
 use crate::Result;
 use ratatui::style::Color;
 use std::path::PathBuf;
@@ -42,7 +42,7 @@ pub struct ExecutionContext<'a> {
     pub loading_screen: Option<&'a crate::game::screens::loading_screen::LoadingScreen>,
     pub repository_loader: Option<&'a mut RepositoryExtractor>,
     pub current_repo_path: Option<PathBuf>,
-    pub git_repository: Option<crate::models::GitRepository>,
+    pub git_repository: Option<crate::domain::models::GitRepository>,
     pub scanned_files: Option<Vec<PathBuf>>, // Temporary storage for step results
     pub chunks: Option<Vec<crate::extractor::models::CodeChunk>>, // Chunks from ExtractingStep
     pub cache_used: bool, // Flag to indicate cache was used and remaining steps should be skipped

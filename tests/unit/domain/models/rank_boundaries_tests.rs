@@ -1,4 +1,4 @@
-use gittype::models::rank::{Rank, RankTier};
+use gittype::domain::models::rank::{Rank, RankTier};
 
 macro_rules! rank_range_tests {
     ($($test:ident => $index:expr, $min:expr, $max:expr),+ $(,)?) => {

@@ -1,4 +1,4 @@
-use crate::models::SessionResult;
+use crate::domain::models::SessionResult;
 use once_cell::sync::Lazy;
 use std::sync::{Arc, Mutex};
 

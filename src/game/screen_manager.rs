@@ -58,10 +58,10 @@ pub struct ScreenManager {
     exit_requested: bool,
 
     // Shared data for screens
-    pub shared_session_result: Option<crate::models::SessionResult>,
-    pub shared_git_repository: Option<crate::models::GitRepository>,
+    pub shared_session_result: Option<crate::domain::models::SessionResult>,
+    pub shared_git_repository: Option<crate::domain::models::GitRepository>,
     pub shared_total_result: Option<crate::scoring::TotalResult>,
-    pub shared_stage_result: Option<crate::models::StageResult>,
+    pub shared_stage_result: Option<crate::domain::models::StageResult>,
     pending_screen_transition: Option<ScreenType>,
 }
 
@@ -165,7 +165,7 @@ impl ScreenManager {
             ScreenType::TotalSummaryShare,
             Box::new(
                 crate::game::screens::total_summary_share_screen::TotalSummaryShareScreen::new(
-                    crate::models::TotalResult::new(), // Placeholder - will be updated when transitioning
+                    crate::domain::models::TotalResult::new(), // Placeholder - will be updated when transitioning
                 ),
             ),
         );
@@ -200,7 +200,7 @@ impl ScreenManager {
     }
 
     /// Get current total result from GLOBAL_TOTAL_TRACKER
-    fn get_current_total_result(&self) -> Option<crate::models::TotalResult> {
+    fn get_current_total_result(&self) -> Option<crate::domain::models::TotalResult> {
         use crate::scoring::{TotalCalculator, GLOBAL_TOTAL_TRACKER};
 
         if let Ok(global_total_tracker) = GLOBAL_TOTAL_TRACKER.lock() {

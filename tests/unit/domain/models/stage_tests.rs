@@ -1,5 +1,5 @@
-use gittype::models::challenge::Challenge;
-use gittype::models::stage::{Stage, StageResult};
+use gittype::domain::models::challenge::Challenge;
+use gittype::domain::models::stage::{Stage, StageResult};
 
 fn sample_challenge() -> Challenge {
     Challenge::new("id".into(), "fn main() {}".into()).with_source_info("src/main.rs".into(), 1, 10)

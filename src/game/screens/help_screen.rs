@@ -1,5 +1,5 @@
 use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
-use crate::models::rank::{Rank, RankTier};
+use crate::domain::models::rank::{Rank, RankTier};
 use crate::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyModifiers};
@@ -1115,7 +1115,7 @@ impl Screen for HelpScreen {
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut std::io::Stdout,
-        _session_result: Option<&crate::models::SessionResult>,
+        _session_result: Option<&crate::domain::models::SessionResult>,
         _total_result: Option<&crate::scoring::TotalResult>,
     ) -> Result<()> {
         // HelpScreen only supports ratatui rendering

@@ -4,7 +4,7 @@ use super::super::{
     },
     Database, HasDatabase,
 };
-use crate::models::{Challenge, GitRepository, SessionResult};
+use crate::domain::models::{Challenge, GitRepository, SessionResult};
 use crate::scoring::{StageResult, StageTracker};
 use crate::storage::daos::session_dao::{SessionResultData, SessionStageResult};
 use crate::{error::GitTypeError, Result};

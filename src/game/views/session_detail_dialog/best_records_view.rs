@@ -1,4 +1,4 @@
-use crate::models::SessionResult;
+use crate::domain::models::SessionResult;
 use crate::storage::repositories::session_repository::SessionRepository;
 use crate::storage::session_repository::BestStatus;
 use crate::ui::Colors;

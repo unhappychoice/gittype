@@ -1,4 +1,4 @@
-use gittype::models::StageResult;
+use gittype::domain::models::StageResult;
 use gittype::scoring::tracker::SessionTracker;
 
 #[test]

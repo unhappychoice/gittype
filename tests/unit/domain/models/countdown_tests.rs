@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use gittype::models::countdown::Countdown;
+use gittype::domain::models::countdown::Countdown;
 
 #[test]
 fn countdown_advances_through_numbers_and_finishes() {

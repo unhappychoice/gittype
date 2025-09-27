@@ -1,4 +1,4 @@
-use crate::models::TotalResult;
+use crate::domain::models::TotalResult;
 use crate::scoring::tracker::TotalTracker;
 use std::time::{Duration, Instant};
 

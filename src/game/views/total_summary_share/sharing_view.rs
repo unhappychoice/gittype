@@ -1,4 +1,4 @@
-use crate::models::TotalResult;
+use crate::domain::models::TotalResult;
 use crate::sharing::SharingPlatform;
 use crate::ui::Colors;
 use crate::Result;

@@ -61,7 +61,7 @@ pub fn extract_challenges_for_test(
     repo_extractor: &mut gittype::extractor::RepositoryExtractor,
     repo_path: &Path,
     options: gittype::extractor::ExtractionOptions,
-) -> gittype::Result<Vec<gittype::models::Challenge>> {
+) -> gittype::Result<Vec<gittype::domain::models::Challenge>> {
     use gittype::extractor::NoOpProgressReporter;
 
     // Step 1: Collect source files

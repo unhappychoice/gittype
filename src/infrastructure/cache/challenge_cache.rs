@@ -1,5 +1,5 @@
 use super::gzip_storage::GzipStorage;
-use crate::models::{Challenge, GitRepository};
+use crate::domain::models::{Challenge, GitRepository};
 use std::fs;
 use std::path::PathBuf;
 

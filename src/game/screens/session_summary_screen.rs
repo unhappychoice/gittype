@@ -1,7 +1,7 @@
 use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
 use crate::game::views::{OptionsView, RankView, ScoreView, SessionSummaryHeaderView, SummaryView};
 use crate::game::ScreenType;
-use crate::{models::GitRepository, Result};
+use crate::{domain::models::GitRepository, Result};
 use crossterm::{
     cursor::{Hide, MoveTo},
     execute,
@@ -42,7 +42,7 @@ impl SessionSummaryScreen {
 
     fn show_session_summary(
         &mut self,
-        session_result: &crate::models::SessionResult,
+        session_result: &crate::domain::models::SessionResult,
         _repo_info: &Option<GitRepository>,
     ) -> Result<()> {
         let mut stdout = stdout();
@@ -146,7 +146,7 @@ impl Screen for SessionSummaryScreen {
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut std::io::Stdout,
-        session_result: Option<&crate::models::SessionResult>,
+        session_result: Option<&crate::domain::models::SessionResult>,
         _total_result: Option<&crate::scoring::TotalResult>,
     ) -> Result<()> {
         if let Some(session_result) = session_result {

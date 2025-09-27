@@ -11,7 +11,7 @@ pub struct SummaryView;
 
 impl SummaryView {
     pub fn render(
-        session_result: &crate::models::SessionResult,
+        session_result: &crate::domain::models::SessionResult,
         center_col: u16,
         summary_start_row: u16,
     ) -> Result<()> {

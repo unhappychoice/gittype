@@ -1,5 +1,5 @@
 use crate::extractor::ExtractionOptions;
-use crate::models::{Challenge, GitRepository};
+use crate::domain::models::{Challenge, GitRepository};
 use crate::Result;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, OnceLock};

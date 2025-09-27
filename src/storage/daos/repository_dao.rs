@@ -1,5 +1,5 @@
 use super::super::Database;
-use crate::models::GitRepository;
+use crate::domain::models::GitRepository;
 use crate::{error::GitTypeError, Result};
 use rusqlite::{params, Transaction};
 

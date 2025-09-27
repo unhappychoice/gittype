@@ -1,5 +1,5 @@
 use crate::{
-    models::{Challenge, GitRepository},
+    domain::models::{Challenge, GitRepository},
     ui::Colors,
 };
 use ratatui::{

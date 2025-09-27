@@ -2,7 +2,7 @@ use super::super::{
     daos::{RepositoryDao, StoredRepository},
     Database, HasDatabase,
 };
-use crate::models::GitRepository;
+use crate::domain::models::GitRepository;
 use crate::Result;
 use std::sync::{Arc, Mutex};
 

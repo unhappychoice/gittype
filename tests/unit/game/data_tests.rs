@@ -3,8 +3,8 @@ use std::sync::Once;
 
 use gittype::extractor::ExtractionOptions;
 use gittype::game::GameData;
-use gittype::models::challenge::Challenge;
-use gittype::models::git_repository::GitRepository;
+use gittype::domain::models::challenge::Challenge;
+use gittype::domain::models::git_repository::GitRepository;
 
 fn setup_game_data() {
     static INIT: Once = Once::new();

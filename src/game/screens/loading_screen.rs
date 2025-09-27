@@ -2,7 +2,7 @@ use crate::extractor::{ExtractionOptions, RepositoryExtractor};
 use crate::game::models::loading_steps::{ExecutionContext, StepManager, StepType};
 use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
 use crate::game::GameData;
-use crate::models::Challenge;
+use crate::domain::models::Challenge;
 use crate::Result;
 use ratatui::Frame;
 use std::path::PathBuf;
@@ -76,7 +76,7 @@ pub struct LoadingScreen {
 #[derive(Clone)]
 pub struct ProcessingResult {
     pub challenges: Vec<Challenge>,
-    pub git_repository: Option<crate::models::GitRepository>,
+    pub git_repository: Option<crate::domain::models::GitRepository>,
 }
 
 impl LoadingScreen {
@@ -181,7 +181,7 @@ impl LoadingScreen {
         Ok(())
     }
 
-    pub fn set_git_repository(&self, git_repository: &crate::models::GitRepository) -> Result<()> {
+    pub fn set_git_repository(&self, git_repository: &crate::domain::models::GitRepository) -> Result<()> {
         let mut parts = vec![format!(
             "📁 {}/{}",
             git_repository.user_name, git_repository.repository_name
@@ -377,7 +377,7 @@ impl Screen for LoadingScreen {
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut std::io::Stdout,
-        _session_result: Option<&crate::models::SessionResult>,
+        _session_result: Option<&crate::domain::models::SessionResult>,
         _total_result: Option<&crate::scoring::TotalResult>,
     ) -> Result<()> {
         Ok(())

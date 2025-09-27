@@ -120,7 +120,7 @@ impl RepositoryExtractor {
         _file_paths: Vec<std::path::PathBuf>, // No longer needed, files are processed as chunks
         _git_root: Option<&std::path::Path>,
         progress: &dyn ProgressReporter,
-    ) -> Vec<crate::models::Challenge> {
+    ) -> Vec<crate::domain::models::Challenge> {
         self.converter
             .convert_chunks_and_files_to_challenges_with_progress(chunks, progress)
     }

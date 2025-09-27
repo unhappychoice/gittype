@@ -3,13 +3,13 @@ use crate::game::views::{
     ShareBackOptionView, SharePlatformOptionsView, SharePreviewView, ShareTitleView,
 };
 use crate::sharing::{SharingPlatform, SharingService};
-use crate::{models::GitRepository, Result};
+use crate::{domain::models::GitRepository, Result};
 use crossterm::terminal::{self};
 use std::io::Stdout;
 
 pub struct SessionSummaryShareScreen {
-    session_result: Option<crate::models::SessionResult>,
-    git_repository: Option<crate::models::GitRepository>,
+    session_result: Option<crate::domain::models::SessionResult>,
+    git_repository: Option<crate::domain::models::GitRepository>,
 }
 
 impl Default for SessionSummaryShareScreen {
@@ -27,7 +27,7 @@ impl SessionSummaryShareScreen {
     }
 
     fn render(
-        metrics: &crate::models::SessionResult,
+        metrics: &crate::domain::models::SessionResult,
         repo_info: &Option<GitRepository>,
     ) -> Result<()> {
         let (terminal_width, terminal_height) = terminal::size()?;
@@ -104,7 +104,7 @@ impl Screen for SessionSummaryShareScreen {
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut Stdout,
-        session_result: Option<&crate::models::SessionResult>,
+        session_result: Option<&crate::domain::models::SessionResult>,
         _total_result: Option<&crate::scoring::TotalResult>,
     ) -> Result<()> {
         self.session_result = session_result.cloned();

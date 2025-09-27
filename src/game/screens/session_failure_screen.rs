@@ -3,7 +3,7 @@ use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
 use crate::game::session_manager::SessionManager;
 use crate::game::views::session_failure::{content_view, footer_view, header_view};
 use crate::game::ScreenType;
-use crate::models::GitRepository;
+use crate::domain::models::GitRepository;
 use crate::scoring::StageTracker;
 use crate::Result;
 use crossterm::{
@@ -98,7 +98,7 @@ impl Screen for SessionFailureScreen {
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut Stdout,
-        _session_result: Option<&crate::models::SessionResult>,
+        _session_result: Option<&crate::domain::models::SessionResult>,
         _total_result: Option<&crate::scoring::TotalResult>,
     ) -> Result<()> {
         let mut stdout = stdout();

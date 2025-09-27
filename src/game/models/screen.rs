@@ -74,7 +74,7 @@ pub trait Screen: Send {
     fn render_crossterm_with_data(
         &mut self,
         stdout: &mut Stdout,
-        session_result: Option<&crate::models::SessionResult>,
+        session_result: Option<&crate::domain::models::SessionResult>,
         total_result: Option<&crate::scoring::TotalResult>,
     ) -> Result<()>;
 

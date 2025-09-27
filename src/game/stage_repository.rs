@@ -1,7 +1,7 @@
 use super::{screen_manager::ScreenManager, screens::title_screen::TitleScreen};
 use crate::game::models::ScreenType;
 
-use crate::{models::Challenge, models::GitRepository, Result};
+use crate::{domain::models::Challenge, domain::models::GitRepository, Result};
 use once_cell::sync::Lazy;
 use rand::rngs::StdRng;
 use rand::seq::SliceRandom;

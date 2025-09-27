@@ -1,5 +1,5 @@
 use crate::game::GameData;
-use crate::models::Challenge;
+use crate::domain::models::Challenge;
 use crate::Result;
 use std::fs;
 use std::path::{Path, PathBuf};

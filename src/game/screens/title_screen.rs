@@ -2,7 +2,7 @@ use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
 use crate::game::stage_repository::DifficultyLevel;
 use crate::game::views::title::{DifficultySelectionView, StaticElementsView};
 use crate::game::ScreenType;
-use crate::models::GitRepository;
+use crate::domain::models::GitRepository;
 use crate::Result;
 use crossterm::{
     event::{KeyCode, KeyEvent, KeyModifiers},
@@ -142,7 +142,7 @@ impl Screen for TitleScreen {
     fn render_crossterm_with_data(
         &mut self,
         stdout: &mut Stdout,
-        _session_result: Option<&crate::models::SessionResult>,
+        _session_result: Option<&crate::domain::models::SessionResult>,
         _total_result: Option<&crate::scoring::TotalResult>,
     ) -> Result<()> {
         let (terminal_width, terminal_height) = terminal::size()?;

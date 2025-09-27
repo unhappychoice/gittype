@@ -1,7 +1,7 @@
 use super::{TypingContentView, TypingDialogView, TypingFooterView, TypingHeaderView};
 use crate::game::views::CountdownView;
 use crate::game::{context_loader::CodeContext, typing_core::TypingCore, SessionManager};
-use crate::models::{Challenge, GitRepository};
+use crate::domain::models::{Challenge, GitRepository};
 use crate::ui::Colors;
 use ratatui::{
     layout::{Constraint, Direction, Layout},
