@@ -11,9 +11,9 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
     // Check for updates before starting the game session
     let should_exit = tokio::task::block_in_place(|| {
         tokio::runtime::Handle::current().block_on(async {
-            if let Ok(Some(entry)) = crate::version::VersionChecker::check_for_updates().await {
+            if let Ok(Some(entry)) = crate::infrastructure::version::checker::VersionChecker::check_for_updates().await {
                 if entry.update_available {
-                    return crate::version::VersionChecker::display_update_notification(&entry)
+                    return crate::infrastructure::version::checker::VersionChecker::display_update_notification(&entry)
                         .map(|should_continue| !should_continue);
                 }
             }

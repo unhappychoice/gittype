@@ -12,6 +12,5 @@ pub mod sharing;
 pub mod signal_handler;
 pub mod storage;
 pub mod ui;
-pub mod version;
 
 pub use error::{GitTypeError, Result};

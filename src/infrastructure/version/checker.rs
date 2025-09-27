@@ -1,4 +1,5 @@
-use super::{VersionCache, VersionCacheEntry};
+use crate::domain::models::version::VersionCacheEntry;
+use crate::infrastructure::version::cache::VersionCache;
 use crate::game::screens::{VersionCheckResult, VersionCheckScreen};
 use crate::{GitTypeError, Result};
 use chrono::Utc;

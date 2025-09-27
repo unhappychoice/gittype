@@ -1,4 +1,4 @@
-use gittype::version::VersionChecker;
+use gittype::infrastructure::version::checker::VersionChecker;
 
 #[test]
 fn test_parse_version() {

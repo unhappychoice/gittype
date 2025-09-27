@@ -9,4 +9,3 @@ pub mod scoring;
 pub mod sharing_tests;
 pub mod storage;
 pub mod ui;
-pub mod version;

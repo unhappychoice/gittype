@@ -1,5 +1,7 @@
 use chrono::{Duration, Utc};
-use gittype::version::{VersionCache, VersionCacheEntry, VersionChecker};
+use gittype::domain::models::version::VersionCacheEntry;
+use gittype::infrastructure::version::cache::VersionCache;
+use gittype::infrastructure::version::checker::VersionChecker;
 
 #[test]
 fn cache_valid_when_recent_and_version_matches() {

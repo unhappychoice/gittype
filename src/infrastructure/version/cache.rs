@@ -1,14 +1,6 @@
-use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
+use crate::domain::models::version::VersionCacheEntry;
+use chrono::Utc;
 use std::path::PathBuf;
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct VersionCacheEntry {
-    pub latest_version: String,
-    pub current_version: String,
-    pub update_available: bool,
-    pub last_checked: DateTime<Utc>,
-}
 
 #[derive(Debug)]
 pub struct VersionCache;
@@ -77,5 +69,13 @@ impl VersionCache {
         let version_valid = entry.current_version == current_version;
 
         time_valid && version_valid
+    }
+
+    pub fn clear() -> crate::Result<()> {
+        let cache_path = Self::cache_path()?;
+        if cache_path.exists() {
+            std::fs::remove_file(&cache_path)?;
+        }
+        Ok(())
     }
 }
