@@ -2,7 +2,7 @@
 
 use crate::integration::languages::typing_core_common::*;
 use crate::typing_core_test_with_parser;
-use gittype::game::typing_core::ProcessingOptions;
+use gittype::presentation::game::typing_core::ProcessingOptions;
 
 // Test multibyte characters in various positions with comments
 
@@ -179,8 +179,7 @@ typing_core_test_with_parser!(
 
 #[cfg(test)]
 mod multibyte_comment_range_tests {
-    use super::*;
-    use gittype::game::typing_core::TypingCore;
+    use gittype::presentation::game::typing_core::TypingCore;
 
     #[test]
     fn test_comment_ranges_with_multibyte_boundaries() {

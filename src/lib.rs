@@ -1,17 +1,5 @@
-pub mod cache;
-pub mod cli;
-pub mod config;
-pub mod error;
-pub mod extractor;
-pub mod game;
-pub mod logging;
-pub mod models;
-pub mod repository_manager;
-pub mod scoring;
-pub mod sharing;
-pub mod signal_handler;
-pub mod storage;
-pub mod ui;
-pub mod version;
+pub mod domain;
+pub mod infrastructure;
+pub mod presentation;
 
-pub use error::{GitTypeError, Result};
+pub use domain::error::{GitTypeError, Result};

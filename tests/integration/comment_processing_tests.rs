@@ -1,11 +1,11 @@
 //! Tests for comment processing functionality
 //! This module contains all tests related to comment range extraction, processing, and display.
 
+use gittype::domain::models::ChunkType;
+use gittype::domain::services::extractor::core::CommonExtractor;
 #[cfg(test)]
-use gittype::extractor::challenge_converter::ChallengeConverter;
-use gittype::extractor::core::CommonExtractor;
-use gittype::game::typing_core::TypingCore;
-use gittype::models::ChunkType;
+use gittype::domain::services::extractor::ChallengeConverter;
+use gittype::presentation::game::typing_core::TypingCore;
 use std::path::Path;
 
 /// Tests for the core bug: byte vs character position misalignment
@@ -68,14 +68,17 @@ mod byte_char_position_bugs {
     #[test]
     fn test_real_models_options_file_reproduces_bug() {
         // Test the actual models/options.rs file that demonstrates the reported bug
-        let options_path = Path::new("src/extractor/models/options.rs");
+        let options_path = Path::new("src/domain/models/extraction_options.rs");
 
         // Extract chunks from the real file
         let chunks = CommonExtractor::extract_from_file(options_path, "rust").unwrap();
 
         // Also extract just the comment ranges for debugging
         let content = std::fs::read_to_string(options_path).unwrap();
-        let tree = gittype::extractor::parsers::parse_with_thread_local("rust", &content).unwrap();
+        let tree = gittype::domain::services::extractor::parsers::parse_with_thread_local(
+            "rust", &content,
+        )
+        .unwrap();
         let comment_ranges =
             CommonExtractor::extract_comment_ranges(&tree, &content, "rust", &[]).unwrap();
 

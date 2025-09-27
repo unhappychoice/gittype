@@ -4,9 +4,10 @@ pub mod indent_treesitter_tests;
 pub mod languages;
 pub mod missing_ascii_art_test;
 
-use gittype::extractor::models::language::LanguageRegistry;
-use gittype::extractor::models::CodeChunk;
-use gittype::extractor::{CodeChunkExtractor, ExtractionOptions, NoOpProgressReporter};
+use gittype::domain::models::{Challenge, CodeChunk, ExtractionOptions, Language};
+use gittype::domain::services::extractor::CodeChunkExtractor;
+use gittype::domain::services::extractor::{LanguageRegistry, RepositoryExtractor};
+use gittype::presentation::game::screens::loading_screen::NoOpProgressReporter;
 use gittype::Result;
 use ignore::WalkBuilder;
 use std::path::{Path, PathBuf};
@@ -20,9 +21,7 @@ pub fn test_extraction_options() -> ExtractionOptions {
 }
 
 // Helper function to collect files with languages from a directory
-fn collect_files_with_languages(
-    repo_path: &Path,
-) -> Vec<(PathBuf, Box<dyn gittype::extractor::Language>)> {
+fn collect_files_with_languages(repo_path: &Path) -> Vec<(PathBuf, Box<dyn Language>)> {
     WalkBuilder::new(repo_path)
         .hidden(false) // Include hidden files
         .git_ignore(true) // Respect .gitignore
@@ -58,12 +57,10 @@ pub fn extract_chunks_for_test(
 }
 
 pub fn extract_challenges_for_test(
-    repo_extractor: &mut gittype::extractor::RepositoryExtractor,
+    repo_extractor: &mut RepositoryExtractor,
     repo_path: &Path,
-    options: gittype::extractor::ExtractionOptions,
-) -> gittype::Result<Vec<gittype::models::Challenge>> {
-    use gittype::extractor::NoOpProgressReporter;
-
+    options: ExtractionOptions,
+) -> gittype::Result<Vec<Challenge>> {
     // Step 1: Collect source files
     let files =
         repo_extractor.collect_source_files_with_progress(repo_path, &NoOpProgressReporter)?;

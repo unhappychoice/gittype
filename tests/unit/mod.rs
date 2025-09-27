@@ -1,12 +1,3 @@
-pub mod cache;
-pub mod config;
-pub mod error_tests;
-pub mod extractor_unit_tests;
-pub mod game;
-pub mod game_unit_tests;
-pub mod models;
-pub mod scoring;
-pub mod sharing_tests;
-pub mod storage;
-pub mod ui;
-pub mod version;
+pub mod domain;
+pub mod infrastructure;
+pub mod presentation;
