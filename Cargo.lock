@@ -104,6 +104,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "69f7f8c3906b62b754cd5326047894316021dcfe5a194c8ea52bdd94934a3457"
 
 [[package]]
+name = "async-trait"
+version = "0.1.89"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9035ad2d096bed7955a320ee7e2230574d28fd3c3a0f186cbea1ff3c7eed5dbb"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "atomic-waker"
 version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -809,6 +820,7 @@ name = "gittype"
 version = "0.8.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "atty",
  "bincode",
  "chrono",
@@ -819,6 +831,7 @@ dependencies = [
  "env_logger",
  "flate2",
  "git2",
+ "gittype",
  "glob",
  "ignore",
  "insta",

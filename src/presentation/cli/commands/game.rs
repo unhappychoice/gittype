@@ -1,10 +1,13 @@
 use crate::domain::models::ExtractionOptions;
 use crate::domain::services::extractor::LanguageRegistry;
 use crate::domain::services::theme_manager::ThemeManager;
-use crate::infrastructure::version::checker::VersionChecker;
+use crate::domain::services::version_service::VersionService;
+use crate::infrastructure::logging;
 use crate::presentation::cli::args::Cli;
 use crate::presentation::game::models::ScreenType;
 use crate::presentation::game::screen_manager::ScreenManager;
+use crate::presentation::game::screens::{VersionCheckResult, VersionCheckScreen};
+use crate::presentation::game::GameData;
 use crate::{GitTypeError, Result};
 use std::path::PathBuf;
 
@@ -14,10 +17,13 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
     // Check for updates before starting the game session
     let should_exit = tokio::task::block_in_place(|| {
         tokio::runtime::Handle::current().block_on(async {
-            if let Ok(Some(entry)) = VersionChecker::check_for_updates().await {
-                if entry.update_available {
-                    return VersionChecker::display_update_notification(&entry)
-                        .map(|should_continue| !should_continue);
+            let version_service = VersionService::new()?;
+            if let Ok((has_update, current_version, latest_version)) = version_service.check().await {
+                if has_update {
+                    match VersionCheckScreen::show_legacy(&current_version, &latest_version)? {
+                        VersionCheckResult::Continue => return Ok::<bool, GitTypeError>(false),
+                        VersionCheckResult::Exit => return Ok::<bool, GitTypeError>(true),
+                    }
                 }
             }
             Ok(false)
@@ -69,7 +75,6 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
     };
 
     // Initialize GameData and set processing parameters
-    use crate::presentation::game::GameData;
     GameData::initialize()?;
     GameData::set_processing_parameters(repo_spec, initial_repo_path, &options)?;
 
@@ -108,7 +113,7 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
 
 fn handle_game_error(e: GitTypeError) -> Result<()> {
     // Log the error details for debugging before handling user-friendly output
-    crate::infrastructure::logging::log_error_to_file(&e);
+    logging::log_error_to_file(&e);
 
     match e {
         GitTypeError::NoSupportedFiles => {
