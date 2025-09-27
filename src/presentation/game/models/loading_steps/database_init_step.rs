@@ -1,6 +1,6 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
 use crate::domain::repositories::SessionRepository;
-use crate::infrastructure::storage::Database;
+use crate::infrastructure::database::database::Database;
 use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::style::Color;

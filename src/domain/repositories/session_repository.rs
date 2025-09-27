@@ -3,10 +3,8 @@ use crate::domain::models::storage::{
 };
 use crate::domain::models::{Challenge, GitRepository, SessionResult};
 use crate::domain::services::scoring::{StageCalculator, StageResult, StageTracker};
-use crate::infrastructure::storage::{
-    daos::{ChallengeDao, RepositoryDao, SessionDao},
-    Database, HasDatabase,
-};
+use crate::infrastructure::database::daos::{ChallengeDao, RepositoryDao, SessionDao};
+use crate::infrastructure::database::database::{Database, HasDatabase};
 use crate::{domain::error::GitTypeError, Result};
 use std::sync::{Arc, Mutex};
 

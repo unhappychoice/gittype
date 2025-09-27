@@ -1,8 +1,6 @@
 use super::data::SeedData;
-use crate::{
-    infrastructure::storage::{Database, HasDatabase},
-    Result,
-};
+use crate::infrastructure::database::database::{Database, HasDatabase};
+use crate::Result;
 use std::sync::{Arc, Mutex};
 
 pub struct DatabaseSeeder {

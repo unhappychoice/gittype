@@ -1,7 +1,8 @@
 use super::session_detail_screen::SessionDisplayData;
 use crate::domain::models::storage::{SessionResultData, StoredRepository};
 use crate::domain::repositories::SessionRepository;
-use crate::infrastructure::storage::{Database, HasDatabase, SessionDao};
+use crate::infrastructure::database::daos::SessionDao;
+use crate::infrastructure::database::database::{Database, HasDatabase};
 use crate::presentation::game::{Screen, ScreenTransition, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;

@@ -1,6 +1,6 @@
 use clap::Parser;
 use gittype::{
-    infrastructure::storage::{seeders::DatabaseSeeder, Database},
+    infrastructure::database::{database::Database, seeders::DatabaseSeeder},
     Result,
 };
 use std::sync::{Arc, Mutex};
