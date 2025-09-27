@@ -105,7 +105,7 @@ impl Screen for SessionSummaryShareScreen {
         &mut self,
         _stdout: &mut Stdout,
         session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::scoring::TotalResult>,
+        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
     ) -> Result<()> {
         self.session_result = session_result.cloned();
         // Get git repository from global GameData

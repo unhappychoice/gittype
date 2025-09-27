@@ -1,7 +1,7 @@
 use gittype::domain::models::StageResult;
-use gittype::scoring::calculator::SessionCalculator;
-use gittype::scoring::tracker::SessionTracker;
-use gittype::scoring::ScoreCalculator;
+use gittype::domain::services::scoring::calculator::SessionCalculator;
+use gittype::domain::services::scoring::tracker::SessionTracker;
+use gittype::domain::services::scoring::ScoreCalculator;
 use std::time::Duration;
 
 const EPSILON: f64 = 0.001;

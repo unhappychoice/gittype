@@ -1,5 +1,5 @@
-use gittype::scoring::calculator::StageCalculator;
-use gittype::scoring::tracker::{StageInput, StageTracker};
+use gittype::domain::services::scoring::calculator::StageCalculator;
+use gittype::domain::services::scoring::tracker::{StageInput, StageTracker};
 use std::time::Duration;
 
 const EPSILON: f64 = 0.001;

@@ -5,8 +5,8 @@ pub mod error;
 pub mod game;
 pub mod logging;
 pub mod repository_manager;
-pub mod scoring;
 pub mod sharing;
 pub mod signal_handler;
+
 
 pub use error::{GitTypeError, Result};

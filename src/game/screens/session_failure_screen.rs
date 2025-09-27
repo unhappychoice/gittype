@@ -4,7 +4,7 @@ use crate::game::session_manager::SessionManager;
 use crate::game::views::session_failure::{content_view, footer_view, header_view};
 use crate::game::ScreenType;
 use crate::domain::models::GitRepository;
-use crate::scoring::StageTracker;
+use crate::domain::services::scoring::StageTracker;
 use crate::Result;
 use crossterm::{
     cursor::MoveTo,
@@ -99,7 +99,7 @@ impl Screen for SessionFailureScreen {
         &mut self,
         _stdout: &mut Stdout,
         _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::scoring::TotalResult>,
+        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
     ) -> Result<()> {
         let mut stdout = stdout();
 

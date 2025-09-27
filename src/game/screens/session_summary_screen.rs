@@ -59,7 +59,7 @@ impl SessionSummaryScreen {
         let center_row = terminal_height / 2;
         let center_col = terminal_width / 2;
 
-        let best_rank = crate::scoring::Rank::for_score(session_result.session_score);
+        let best_rank = crate::domain::services::scoring::Rank::for_score(session_result.session_score);
 
         // Get best status using session start records from SessionManager
         let best_status = crate::game::session_manager::SessionManager::get_best_status_for_score(
@@ -147,7 +147,7 @@ impl Screen for SessionSummaryScreen {
         &mut self,
         _stdout: &mut std::io::Stdout,
         session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::scoring::TotalResult>,
+        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
     ) -> Result<()> {
         if let Some(session_result) = session_result {
             // Get git repository from global GameData

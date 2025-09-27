@@ -1,10 +1,10 @@
-use crate::scoring::{SessionTracker, SessionTrackerData, StageCalculator, GLOBAL_TOTAL_TRACKER};
+use crate::domain::services::scoring::{SessionTracker, SessionTrackerData, StageCalculator, GLOBAL_TOTAL_TRACKER};
 use crate::domain::repositories::session_repository::BestStatus;
 use crate::domain::repositories::SessionRepository;
 use crate::{
     game::{stage_repository::StageRepository, DifficultyLevel},
     domain::models::{Challenge, SessionResult},
-    scoring::{StageInput, StageResult, StageTracker, GLOBAL_SESSION_TRACKER},
+    domain::services::scoring::{StageInput, StageResult, StageTracker, GLOBAL_SESSION_TRACKER},
     Result,
 };
 use once_cell::sync::Lazy;
@@ -64,7 +64,7 @@ pub struct SessionManager {
     stage_results: Vec<StageResult>,
     // Tracker management
     current_stage_tracker: Option<StageTracker>,
-    stage_trackers: Vec<(String, crate::scoring::StageTracker)>,
+    stage_trackers: Vec<(String, crate::domain::services::scoring::StageTracker)>,
     // Git repository context
     git_repository: Option<crate::domain::models::GitRepository>,
     // Challenge management - tracks all challenges used in this session (completed, failed, skipped)
@@ -352,7 +352,7 @@ impl SessionManager {
         if let Ok(global_session_tracker) = GLOBAL_SESSION_TRACKER.lock() {
             if let Some(ref session_tracker) = *global_session_tracker {
                 let result =
-                    crate::scoring::calculator::SessionCalculator::calculate(session_tracker);
+                    crate::domain::services::scoring::calculator::SessionCalculator::calculate(session_tracker);
                 return Some(result);
             }
         }
@@ -369,7 +369,7 @@ impl SessionManager {
             self.record_session_to_database(&session_result)?;
 
             // Record session result in GLOBAL_TOTAL_TRACKER
-            use crate::scoring::GLOBAL_TOTAL_TRACKER;
+            use crate::domain::services::scoring::GLOBAL_TOTAL_TRACKER;
             if let Ok(mut global_total_tracker) = GLOBAL_TOTAL_TRACKER.lock() {
                 if let Some(ref mut tracker) = global_total_tracker.as_mut() {
                     tracker.record(session_result);
@@ -483,7 +483,7 @@ impl SessionManager {
         target_text: String,
         challenge_path: Option<String>,
     ) -> Result<()> {
-        use crate::scoring::tracker::StageTracker;
+        use crate::domain::services::scoring::tracker::StageTracker;
 
         self.current_stage_tracker = Some(match challenge_path {
             Some(path) => StageTracker::new_with_path(target_text, path),
@@ -756,7 +756,7 @@ impl SessionManager {
                 // Record skip event and finalize current stage tracker
                 if let Some(ref mut tracker) = manager.current_stage_tracker {
                     tracker.record(StageInput::Skip);
-                    let mut stage_result = crate::scoring::StageCalculator::calculate(tracker);
+                    let mut stage_result = crate::domain::services::scoring::StageCalculator::calculate(tracker);
                     stage_result.was_skipped = true;
 
                     // Record in global session tracker
@@ -861,7 +861,7 @@ impl SessionManager {
 
         if let Some(ref mut tracker) = manager.current_stage_tracker {
             tracker.record(StageInput::Fail);
-            let stage_result = crate::scoring::StageCalculator::calculate(tracker);
+            let stage_result = crate::domain::services::scoring::StageCalculator::calculate(tracker);
             manager.reduce(SessionAction::CompleteStage(stage_result))?;
         }
 

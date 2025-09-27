@@ -379,7 +379,7 @@ impl Screen for LoadingScreen {
         &mut self,
         _stdout: &mut std::io::Stdout,
         _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::scoring::TotalResult>,
+        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
     ) -> Result<()> {
         Ok(())
     }

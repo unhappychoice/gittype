@@ -1,4 +1,4 @@
-use gittype::scoring::tracker::{StageInput, StageTracker};
+use gittype::domain::services::scoring::tracker::{StageInput, StageTracker};
 use std::time::Duration;
 
 #[test]

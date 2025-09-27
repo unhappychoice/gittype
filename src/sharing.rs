@@ -63,7 +63,7 @@ impl SharingService {
                 )
             }
             SharingPlatform::Reddit => {
-                let best_rank = crate::scoring::Rank::for_score(metrics.session_score);
+                let best_rank = crate::domain::services::scoring::Rank::for_score(metrics.session_score);
                 let title = format!(
                     "Achieved {} rank with {:.0} points in gittype!",
                     best_rank.name(),
@@ -96,7 +96,7 @@ impl SharingService {
         metrics: &crate::domain::models::SessionResult,
         repo_info: &Option<GitRepository>,
     ) -> String {
-        let best_rank = crate::scoring::Rank::for_score(metrics.session_score);
+        let best_rank = crate::domain::services::scoring::Rank::for_score(metrics.session_score);
         if let Some(repo) = repo_info {
             format!(
                 "Achieved \"{}\" with {:.0}pts on [{}/{}] in gittype! CPM: {:.0}, Mistakes: {} 🚀\n\nType your own code! https://github.com/unhappychoice/gittype\n\n#gittype #typing #coding",

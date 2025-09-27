@@ -59,7 +59,7 @@ impl<'a> SessionDao<'a> {
         session_id: i64,
         repository_id: Option<i64>,
         session_result: &SessionResult,
-        _stage_engines: &[(String, crate::scoring::StageTracker)],
+        _stage_engines: &[(String, crate::domain::services::scoring::StageTracker)],
         game_mode: &str,
         difficulty_level: Option<&str>,
     ) -> Result<()> {
@@ -75,7 +75,7 @@ impl<'a> SessionDao<'a> {
 
         // Calculate position information using RankCalculator
         let (_, tier_position, tier_total, overall_position, overall_total) =
-            crate::scoring::RankCalculator::calculate_tier_info(session_result.session_score);
+            crate::domain::services::scoring::RankCalculator::calculate_tier_info(session_result.session_score);
 
         tx.execute(
             "INSERT INTO session_results (

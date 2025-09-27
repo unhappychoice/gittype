@@ -37,8 +37,8 @@ use crate::game::screens::session_detail_screen::SessionDetailScreen;
 use crate::game::screens::stage_summary_screen::StageSummaryScreen;
 use crate::game::screens::total_summary_share_screen::TotalSummaryShareScreen;
 use crate::game::session_manager::SessionManager;
-use crate::scoring::TotalCalculator;
-use crate::scoring::GLOBAL_TOTAL_TRACKER;
+use crate::domain::services::scoring::TotalCalculator;
+use crate::domain::services::scoring::GLOBAL_TOTAL_TRACKER;
 use crate::Result;
 use crossterm::event::{Event, KeyEventKind};
 use std::cell::RefCell;
@@ -60,7 +60,7 @@ pub struct ScreenManager {
     // Shared data for screens
     pub shared_session_result: Option<crate::domain::models::SessionResult>,
     pub shared_git_repository: Option<crate::domain::models::GitRepository>,
-    pub shared_total_result: Option<crate::scoring::TotalResult>,
+    pub shared_total_result: Option<crate::domain::services::scoring::TotalResult>,
     pub shared_stage_result: Option<crate::domain::models::StageResult>,
     pending_screen_transition: Option<ScreenType>,
 }
@@ -201,7 +201,7 @@ impl ScreenManager {
 
     /// Get current total result from GLOBAL_TOTAL_TRACKER
     fn get_current_total_result(&self) -> Option<crate::domain::models::TotalResult> {
-        use crate::scoring::{TotalCalculator, GLOBAL_TOTAL_TRACKER};
+        use crate::domain::services::scoring::{TotalCalculator, GLOBAL_TOTAL_TRACKER};
 
         if let Ok(global_total_tracker) = GLOBAL_TOTAL_TRACKER.lock() {
             (*global_total_tracker)
@@ -933,7 +933,7 @@ impl ScreenManager {
 
     /// Get latest stage result from SessionTracker and store in shared data
     fn get_latest_stage_result_from_session_tracker(&mut self) {
-        use crate::scoring::GLOBAL_SESSION_TRACKER;
+        use crate::domain::services::scoring::GLOBAL_SESSION_TRACKER;
         if let Ok(global_session_tracker) = GLOBAL_SESSION_TRACKER.lock() {
             if let Some(ref session_tracker) = *global_session_tracker {
                 let session_data = session_tracker.get_data();

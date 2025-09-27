@@ -5,5 +5,4 @@ pub mod error_tests;
 pub mod extractor_unit_tests;
 pub mod game;
 pub mod game_unit_tests;
-pub mod scoring;
 pub mod sharing_tests;

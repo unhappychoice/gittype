@@ -6,7 +6,7 @@ use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
 use crate::game::{game_data::GameData, views::TypingView};
 use crate::game::{ScreenType, SessionManager};
 use crate::domain::models::{Challenge, Countdown};
-use crate::scoring::StageInput;
+use crate::domain::services::scoring::StageInput;
 use crate::{domain::models::GitRepository, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use std::io::Stdout;
@@ -352,7 +352,7 @@ impl Screen for TypingScreen {
         &mut self,
         _stdout: &mut Stdout,
         _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::scoring::TotalResult>,
+        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
     ) -> Result<()> {
         Ok(())
     }

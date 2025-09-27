@@ -1,4 +1,4 @@
-use gittype::scoring::RankCalculator;
+use gittype::domain::services::scoring::RankCalculator;
 
 #[test]
 fn test_calculate_tier_info_beginner() {

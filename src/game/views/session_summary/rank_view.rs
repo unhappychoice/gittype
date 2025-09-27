@@ -35,7 +35,7 @@ impl RankView {
     }
 
     pub fn render(
-        best_rank: crate::scoring::Rank,
+        best_rank: crate::domain::services::scoring::Rank,
         session_score: f64,
         center_col: u16,
         rank_start_row: u16,
@@ -45,7 +45,7 @@ impl RankView {
         let rank_lines = get_rank_display(best_rank.name());
         let rank_height = rank_lines.len() as u16;
 
-        let tier_info_values = crate::scoring::RankCalculator::calculate_tier_info(session_score);
+        let tier_info_values = crate::domain::services::scoring::RankCalculator::calculate_tier_info(session_score);
 
         for (row_index, line) in rank_lines.iter().enumerate() {
             let display_width = Self::calculate_display_width(line);

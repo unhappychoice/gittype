@@ -75,7 +75,7 @@ pub trait Screen: Send {
         &mut self,
         stdout: &mut Stdout,
         session_result: Option<&crate::domain::models::SessionResult>,
-        total_result: Option<&crate::scoring::TotalResult>,
+        total_result: Option<&crate::domain::services::scoring::TotalResult>,
     ) -> Result<()>;
 
     /// Render the screen using ratatui backend (optional)

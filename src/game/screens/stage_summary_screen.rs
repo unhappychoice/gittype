@@ -2,7 +2,7 @@ use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
 use crate::game::screens::ResultAction;
 use crate::game::views::stage_summary::StageCompletionView;
 use crate::game::{ScreenType, SessionManager};
-use crate::scoring::StageResult;
+use crate::domain::services::scoring::StageResult;
 use crate::Result;
 
 pub struct StageSummaryScreen {
@@ -73,7 +73,7 @@ impl Screen for StageSummaryScreen {
         &mut self,
         _stdout: &mut std::io::Stdout,
         _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::scoring::TotalResult>,
+        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
     ) -> Result<()> {
         if let Some(ref stage_result) = self.stage_result {
             let (session_current_stage, total_stages) =

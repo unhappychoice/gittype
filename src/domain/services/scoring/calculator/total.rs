@@ -1,5 +1,5 @@
 use crate::domain::models::TotalResult;
-use crate::scoring::tracker::TotalTracker;
+use crate::domain::services::scoring::tracker::TotalTracker;
 use std::time::{Duration, Instant};
 
 /// Total level result calculation

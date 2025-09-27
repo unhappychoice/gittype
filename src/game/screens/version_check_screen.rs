@@ -90,7 +90,7 @@ impl Screen for ScreenState {
         &mut self,
         _stdout: &mut Stdout,
         _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::scoring::TotalResult>,
+        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
     ) -> crate::Result<()> {
         // Version check is now handled by ScreenManager
         // let current_version = env!("CARGO_PKG_VERSION");

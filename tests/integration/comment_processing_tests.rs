@@ -68,7 +68,7 @@ mod byte_char_position_bugs {
     #[test]
     fn test_real_models_options_file_reproduces_bug() {
         // Test the actual models/options.rs file that demonstrates the reported bug
-        let options_path = Path::new("src/extractor/models/options.rs");
+        let options_path = Path::new("src/domain/models/extraction_options.rs");
 
         // Extract chunks from the real file
         let chunks = CommonExtractor::extract_from_file(options_path, "rust").unwrap();

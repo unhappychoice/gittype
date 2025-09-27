@@ -1,7 +1,7 @@
 use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
 use crate::game::views::typing::typing_animation_view::AnimationPhase;
 use crate::game::views::typing::TypingAnimationView;
-use crate::scoring::Rank;
+use crate::domain::services::scoring::Rank;
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyModifiers};
@@ -195,7 +195,7 @@ impl Screen for AnimationScreen {
         &mut self,
         _stdout: &mut Stdout,
         _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::scoring::TotalResult>,
+        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
     ) -> Result<()> {
         Ok(())
     }

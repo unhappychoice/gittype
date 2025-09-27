@@ -98,7 +98,7 @@ pub struct SaveStageParams<'a> {
     pub repository_id: Option<i64>,
     pub stage_index: usize,
     pub stage_name: &'a str,
-    pub stage_result: &'a crate::scoring::StageResult,
+    pub stage_result: &'a crate::domain::services::scoring::StageResult,
     pub keystrokes: usize,
     pub challenge: Option<&'a crate::domain::models::Challenge>,
 }

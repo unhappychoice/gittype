@@ -174,7 +174,7 @@ impl Screen for PanicScreen {
         &mut self,
         _stdout: &mut Stdout,
         _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::scoring::TotalResult>,
+        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
     ) -> Result<()> {
         // This is a fallback - panic screen should use ratatui
         Ok(())

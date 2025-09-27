@@ -70,8 +70,8 @@ impl TotalSummaryScreen {
         Ok(())
     }
 
-    fn get_total_result_from_tracker() -> Option<crate::scoring::TotalResult> {
-        use crate::scoring::{TotalCalculator, GLOBAL_TOTAL_TRACKER};
+    fn get_total_result_from_tracker() -> Option<crate::domain::services::scoring::TotalResult> {
+        use crate::domain::services::scoring::{TotalCalculator, GLOBAL_TOTAL_TRACKER};
 
         if let Ok(global_total_tracker) = GLOBAL_TOTAL_TRACKER.lock() {
             (*global_total_tracker)
@@ -108,7 +108,7 @@ impl Screen for TotalSummaryScreen {
         &mut self,
         _stdout: &mut Stdout,
         _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::scoring::TotalResult>,
+        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
     ) -> Result<()> {
         if !self.displayed {
             let mut total_result = Self::get_total_result_from_tracker().unwrap_or_default();

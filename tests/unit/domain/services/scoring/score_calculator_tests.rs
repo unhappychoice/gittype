@@ -1,4 +1,4 @@
-use gittype::scoring::ScoreCalculator;
+use gittype::domain::services::scoring::ScoreCalculator;
 
 const EPSILON: f64 = 0.001;
 

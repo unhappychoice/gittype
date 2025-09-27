@@ -1,4 +1,4 @@
-use gittype::scoring::calculator::RealTimeCalculator;
+use gittype::domain::services::scoring::calculator::RealTimeCalculator;
 use std::time::Duration;
 
 const EPSILON: f64 = 0.001;
