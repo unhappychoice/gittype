@@ -5,11 +5,15 @@ pub mod languages;
 pub mod missing_ascii_art_test;
 
 use gittype::domain::models::{Challenge, CodeChunk, ExtractionOptions, Language};
+use gittype::domain::services::extractor::core::CommonExtractor;
+use gittype::domain::services::extractor::parsers::parse_with_thread_local;
 use gittype::domain::services::extractor::CodeChunkExtractor;
 use gittype::domain::services::extractor::{LanguageRegistry, RepositoryExtractor};
 use gittype::presentation::game::screens::loading_screen::NoOpProgressReporter;
+use gittype::GitTypeError;
 use gittype::Result;
 use ignore::WalkBuilder;
+use std::fs;
 use std::path::{Path, PathBuf};
 
 // Helper function for consistent test extraction options
@@ -42,18 +46,54 @@ fn collect_files_with_languages(repo_path: &Path) -> Vec<(PathBuf, Box<dyn Langu
         .collect()
 }
 
+// Test-specific helper functions
+pub fn extract_from_file_for_test(file_path: &Path, language: &str) -> Result<Vec<CodeChunk>> {
+    let content = fs::read_to_string(file_path)?;
+    let tree = parse_with_thread_local(language, &content).ok_or_else(|| {
+        GitTypeError::ExtractionFailed(format!("Failed to parse file: {:?}", file_path))
+    })?;
+
+    // Use parent directory as git_root for tests
+    let git_root = file_path.parent().unwrap_or(Path::new("."));
+    CommonExtractor::extract_chunks_from_tree(&tree, &content, file_path, git_root, language)
+}
+
+fn extract_chunks_from_scanned_files_for_test(
+    scanned_files: &[PathBuf],
+    _options: &ExtractionOptions,
+) -> Result<Vec<CodeChunk>> {
+    let mut all_chunks = Vec::new();
+
+    // Convert scanned files to chunks using test function
+    for file_path in scanned_files {
+        if let Some(extension) = file_path.extension().and_then(|e| e.to_str()) {
+            if let Some(language) = LanguageRegistry::from_extension(extension) {
+                if let Ok(chunks) = extract_from_file_for_test(file_path, language.name()) {
+                    all_chunks.extend(chunks);
+                }
+            }
+        }
+    }
+
+    Ok(all_chunks)
+}
+
 // Helper function to extract chunks with NoOpProgressReporter for tests
 pub fn extract_chunks_for_test(
-    extractor: &mut CodeChunkExtractor,
+    _extractor: &mut CodeChunkExtractor,
     repo_path: &Path,
-    options: ExtractionOptions,
+    _options: ExtractionOptions,
 ) -> Result<Vec<CodeChunk>> {
     let files_to_process = collect_files_with_languages(repo_path);
-    extractor.extract_chunks_from_files_with_progress(
-        files_to_process,
-        &options,
-        &NoOpProgressReporter,
-    )
+    let mut all_chunks = Vec::new();
+
+    for (file_path, language) in files_to_process {
+        if let Ok(chunks) = extract_from_file_for_test(&file_path, language.name()) {
+            all_chunks.extend(chunks);
+        }
+    }
+
+    Ok(all_chunks)
 }
 
 pub fn extract_challenges_for_test(
@@ -65,12 +105,8 @@ pub fn extract_challenges_for_test(
     let files =
         repo_extractor.collect_source_files_with_progress(repo_path, &NoOpProgressReporter)?;
 
-    // Step 2: Extract chunks from files
-    let chunks = repo_extractor.extract_chunks_from_scanned_files_with_progress(
-        &files,
-        &options,
-        &NoOpProgressReporter,
-    )?;
+    // Step 2: Extract chunks from files (using test version)
+    let chunks = extract_chunks_from_scanned_files_for_test(&files, &options)?;
 
     // Step 3: Convert to challenges
     let challenges = repo_extractor.convert_chunks_and_files_to_challenges_with_progress(

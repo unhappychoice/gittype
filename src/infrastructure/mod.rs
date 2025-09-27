@@ -4,6 +4,5 @@ pub mod external;
 pub mod git;
 pub mod http;
 pub mod logging;
-pub mod repository_manager;
 pub mod storage;
 pub mod version;

@@ -1,42 +1,18 @@
-use super::super::parsers::{get_parser_registry, parse_with_thread_local};
+use super::super::parsers::get_parser_registry;
 use crate::domain::models::{ChunkType, CodeChunk};
-use crate::{GitTypeError, Result};
-use std::fs;
-use std::path::{Path, PathBuf};
+use crate::Result;
+use std::path::Path;
 use streaming_iterator::StreamingIterator;
 use tree_sitter::{Node, QueryCursor, Tree};
 
 pub struct CommonExtractor;
 
 impl CommonExtractor {
-    /// Find git repository root starting from the given path
-    fn find_git_repository_root(start_path: &Path) -> Option<PathBuf> {
-        let mut current_path = start_path;
-
-        // If start_path is a file, start from its parent directory
-        if current_path.is_file() {
-            current_path = current_path.parent()?;
-        }
-
-        loop {
-            let git_dir = current_path.join(".git");
-            if git_dir.exists() {
-                return Some(current_path.to_path_buf());
-            }
-
-            // Move to parent directory
-            match current_path.parent() {
-                Some(parent) => current_path = parent,
-                None => break,
-            }
-        }
-
-        None
-    }
     pub fn extract_chunks_from_tree(
         tree: &Tree,
         source_code: &str,
         file_path: &Path,
+        git_root: &Path,
         language: &str,
     ) -> Result<Vec<CodeChunk>> {
         let mut chunks = Vec::new();
@@ -53,14 +29,9 @@ impl CommonExtractor {
         // Create query
         let query = registry.create_query(language)?;
 
-        // Find git root
-        let git_root = Self::find_git_repository_root(file_path);
-        let relative_file_path = if let Some(ref git_root) = git_root {
-            if let Ok(relative) = file_path.strip_prefix(git_root) {
-                relative.to_path_buf()
-            } else {
-                file_path.to_path_buf()
-            }
+        // Calculate relative file path from git root
+        let relative_file_path = if let Ok(relative) = file_path.strip_prefix(git_root) {
+            relative.to_path_buf()
         } else {
             file_path.to_path_buf()
         };
@@ -300,15 +271,6 @@ impl CommonExtractor {
             comment_ranges: chunk_local_comment_ranges,
             original_indentation: indent_offset_chars,
         }
-    }
-
-    pub fn extract_from_file(file_path: &Path, language: &str) -> Result<Vec<CodeChunk>> {
-        let content = fs::read_to_string(file_path)?;
-        let tree = parse_with_thread_local(language, &content).ok_or_else(|| {
-            GitTypeError::ExtractionFailed(format!("Failed to parse file: {:?}", file_path))
-        })?;
-
-        Self::extract_chunks_from_tree(&tree, &content, file_path, language)
     }
 
     /// Cached version of extract_comment_ranges
