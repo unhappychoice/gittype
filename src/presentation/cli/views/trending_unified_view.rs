@@ -380,11 +380,10 @@ pub async fn render_trending_selection_ui() -> Result<Option<String>> {
                                 })?;
 
                                 // Now fetch repositories in background
-                                let client = reqwest::Client::new();
                                 let effective_period = "daily";
 
                                 repositories = fetch_trending_repositories_cached(
-                                    &client,
+                                    &(),
                                     Some(lang_code),
                                     effective_period,
                                 )
