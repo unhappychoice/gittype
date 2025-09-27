@@ -75,7 +75,10 @@ mod byte_char_position_bugs {
 
         // Also extract just the comment ranges for debugging
         let content = std::fs::read_to_string(options_path).unwrap();
-        let tree = gittype::domain::services::extractor::parsers::parse_with_thread_local("rust", &content).unwrap();
+        let tree = gittype::domain::services::extractor::parsers::parse_with_thread_local(
+            "rust", &content,
+        )
+        .unwrap();
         let comment_ranges =
             CommonExtractor::extract_comment_ranges(&tree, &content, "rust", &[]).unwrap();
 

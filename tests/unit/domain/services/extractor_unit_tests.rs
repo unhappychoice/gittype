@@ -1,5 +1,7 @@
 use gittype::domain::models::{ChunkType, CodeChunk, ExtractionOptions};
-use gittype::domain::services::extractor::{ChallengeConverter, CodeChunkExtractor, LanguageRegistry, RepositoryExtractor};
+use gittype::domain::services::extractor::{
+    ChallengeConverter, CodeChunkExtractor, LanguageRegistry, RepositoryExtractor,
+};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::Instant;

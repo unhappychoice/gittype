@@ -1,5 +1,7 @@
 use super::super::database::Database;
-use crate::domain::models::storage::{SaveStageParams, SessionResultData, SessionStageResult, StoredSession};
+use crate::domain::models::storage::{
+    SaveStageParams, SessionResultData, SessionStageResult, StoredSession,
+};
 use crate::domain::models::{GitRepository, SessionResult};
 use crate::domain::services::scoring::RankCalculator;
 use crate::{domain::error::GitTypeError, Result};
@@ -10,7 +12,6 @@ use std::time::{SystemTime, UNIX_EPOCH};
 pub struct SessionDao<'a> {
     db: &'a Database,
 }
-
 
 impl<'a> SessionDao<'a> {
     pub fn new(db: &'a Database) -> Self {
@@ -558,4 +559,3 @@ impl<'a> SessionDao<'a> {
             .map_err(|e| GitTypeError::database_error(format!("Failed to parse timestamp: {}", e)))
     }
 }
-

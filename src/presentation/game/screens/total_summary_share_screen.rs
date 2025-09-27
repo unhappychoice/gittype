@@ -87,9 +87,8 @@ impl TotalSummaryShareScreen {
     }
 
     fn open_browser(&self, url: &str) -> crate::Result<()> {
-        open::that(url).map_err(|e| {
-            GitTypeError::TerminalError(format!("Failed to open browser: {}", e))
-        })
+        open::that(url)
+            .map_err(|e| GitTypeError::TerminalError(format!("Failed to open browser: {}", e)))
     }
 }
 

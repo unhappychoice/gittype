@@ -10,16 +10,11 @@ impl VersionCache {
     fn cache_path() -> crate::Result<PathBuf> {
         let cache_dir = if cfg!(debug_assertions) {
             std::env::current_dir().map_err(|e| {
-                GitTypeError::ExtractionFailed(format!(
-                    "Could not get current directory: {}",
-                    e
-                ))
+                GitTypeError::ExtractionFailed(format!("Could not get current directory: {}", e))
             })?
         } else {
             let home_dir = dirs::home_dir().ok_or_else(|| {
-                GitTypeError::ExtractionFailed(
-                    "Could not determine home directory".to_string(),
-                )
+                GitTypeError::ExtractionFailed("Could not determine home directory".to_string())
             })?;
             home_dir.join(".gittype")
         };

@@ -182,9 +182,9 @@ impl Screen for AnimationScreen {
         key_event: crossterm::event::KeyEvent,
     ) -> Result<ScreenTransition> {
         match key_event.code {
-            KeyCode::Char('s') | KeyCode::Char('S') => Ok(ScreenTransition::Replace(
-                ScreenType::SessionSummary,
-            )),
+            KeyCode::Char('s') | KeyCode::Char('S') => {
+                Ok(ScreenTransition::Replace(ScreenType::SessionSummary))
+            }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
                 Ok(ScreenTransition::Exit)
             }

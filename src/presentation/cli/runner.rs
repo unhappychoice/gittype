@@ -1,6 +1,9 @@
 use crate::infrastructure::logging::{setup_console_logging, setup_logging};
 use crate::presentation::cli::args::{CacheCommands, RepoCommands};
-use crate::presentation::cli::commands::{run_export, run_game_session, run_history, run_repo_clear, run_repo_list, run_repo_play, run_stats, run_trending};
+use crate::presentation::cli::commands::{
+    run_export, run_game_session, run_history, run_repo_clear, run_repo_list, run_repo_play,
+    run_stats, run_trending,
+};
 use crate::presentation::cli::{Cli, Commands};
 use crate::Result;
 

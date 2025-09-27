@@ -44,7 +44,8 @@ impl Theme {
         THEME_FILES
             .iter()
             .map(|json| {
-                let theme_file: ThemeFile = serde_json::from_str(json).expect("Failed to parse theme JSON");
+                let theme_file: ThemeFile =
+                    serde_json::from_str(json).expect("Failed to parse theme JSON");
 
                 let light = ColorScheme::from_theme_file(&theme_file, &ColorMode::Light);
                 let dark = ColorScheme::from_theme_file(&theme_file, &ColorMode::Dark);

@@ -2,7 +2,6 @@
 /// Auto-generated from oh-my-logo with different palettes for different rank categories
 use std::collections::HashMap;
 
-
 pub fn get_all_rank_patterns() -> HashMap<String, Vec<String>> {
     let mut patterns = HashMap::new();
 

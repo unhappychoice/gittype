@@ -180,15 +180,9 @@ impl RepositoryManager {
 
                     if let Some(screen_ptr) = loading_screen_clone {
                         unsafe {
-                            let screen: &LoadingScreen =
-                                &*screen_ptr;
+                            let screen: &LoadingScreen = &*screen_ptr;
                             let current_step = (total_progress * 100.0) as usize;
-                            screen.set_file_counts(
-                                StepType::Cloning,
-                                current_step,
-                                100,
-                                None,
-                            );
+                            screen.set_file_counts(StepType::Cloning, current_step, 100, None);
                         }
                     }
                 }
@@ -209,12 +203,7 @@ impl RepositoryManager {
                     // Map refs progress to 60-80% of total clone progress
                     let refs_progress = 0.6 + (ref_count as f64 * 0.005).min(0.2); // Increment by 0.5% per ref, max 20%
                     let current_step = (refs_progress * 100.0) as usize;
-                    screen.set_file_counts(
-                        StepType::Cloning,
-                        current_step,
-                        100,
-                        None,
-                    );
+                    screen.set_file_counts(StepType::Cloning, current_step, 100, None);
                 }
             }
             true
@@ -242,15 +231,9 @@ impl RepositoryManager {
 
                     if let Some(screen_ptr) = loading_screen_clone3 {
                         unsafe {
-                            let screen: &LoadingScreen =
-                                &*screen_ptr;
+                            let screen: &LoadingScreen = &*screen_ptr;
                             let current_step = (total_progress * 100.0) as usize;
-                            screen.set_file_counts(
-                                StepType::Cloning,
-                                current_step,
-                                100,
-                                None,
-                            );
+                            screen.set_file_counts(StepType::Cloning, current_step, 100, None);
                         }
                     }
                 }

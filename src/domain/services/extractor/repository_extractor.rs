@@ -134,7 +134,7 @@ impl RepositoryExtractor {
         progress: &dyn ProgressReporter,
     ) -> Result<Vec<CodeChunk>> {
         // Convert scanned files to (path, language) pairs
-        let files_to_process: Vec<(PathBuf, Box<dyn Language>,)> = scanned_files
+        let files_to_process: Vec<(PathBuf, Box<dyn Language>)> = scanned_files
             .iter()
             .filter_map(|path| {
                 if let Some(extension) = path.extension().and_then(|e| e.to_str()) {

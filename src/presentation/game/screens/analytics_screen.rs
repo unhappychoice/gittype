@@ -1,5 +1,7 @@
 use crate::domain::repositories::{GitRepositoryRepository, SessionRepository};
-use crate::presentation::game::views::analytics::{LanguagesView, OverviewView, RepositoriesView, TrendsView};
+use crate::presentation::game::views::analytics::{
+    LanguagesView, OverviewView, RepositoriesView, TrendsView,
+};
 use crate::presentation::game::{Screen, ScreenTransition, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
@@ -607,9 +609,7 @@ impl Screen for AnalyticsScreen {
         match key_event.code {
             KeyCode::Esc => {
                 self.action_result = Some(AnalyticsAction::Return);
-                Ok(ScreenTransition::Replace(
-                    ScreenType::Title,
-                ))
+                Ok(ScreenTransition::Replace(ScreenType::Title))
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
                 self.action_result = Some(AnalyticsAction::Return);

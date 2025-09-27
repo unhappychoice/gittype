@@ -41,16 +41,13 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
     let mut options = ExtractionOptions::default();
 
     if let Some(langs) = cli.langs {
-        if let Err(unsupported_langs) =
-            LanguageRegistry::validate_languages(&langs)
-        {
+        if let Err(unsupported_langs) = LanguageRegistry::validate_languages(&langs) {
             eprintln!(
                 "❌ Unsupported language(s): {}",
                 unsupported_langs.join(", ")
             );
             eprintln!("💡 Supported languages:");
-            let supported =
-                LanguageRegistry::get_supported_languages();
+            let supported = LanguageRegistry::get_supported_languages();
             let mut supported_display = supported.clone();
             supported_display.dedup();
             for chunk in supported_display.chunks(6) {

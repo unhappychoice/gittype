@@ -79,7 +79,7 @@ pub async fn run_trending(
         if repos.is_empty() {
             return Ok(());
         }
-        
+
         match trending_repository_selection_view::render_trending_ui(repos.clone())? {
             Some(selection) => {
                 if let Some(repo) = repos.get(selection) {

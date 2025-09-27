@@ -3,7 +3,9 @@ use crate::domain::models::ExtractionOptions;
 use crate::domain::services::extractor::RepositoryExtractor;
 use crate::presentation::game::models::{ExecutionContext, StepManager, StepType};
 use crate::presentation::game::views::LoadingMainView;
-use crate::presentation::game::{GameData, Screen, ScreenManager, ScreenTransition, UpdateStrategy};
+use crate::presentation::game::{
+    GameData, Screen, ScreenManager, ScreenTransition, UpdateStrategy,
+};
 use crate::Result;
 use ratatui::Frame;
 use std::path::PathBuf;
@@ -182,7 +184,10 @@ impl LoadingScreen {
         Ok(())
     }
 
-    pub fn set_git_repository(&self, git_repository: &crate::domain::models::GitRepository) -> Result<()> {
+    pub fn set_git_repository(
+        &self,
+        git_repository: &crate::domain::models::GitRepository,
+    ) -> Result<()> {
         let mut parts = vec![format!(
             "📁 {}/{}",
             git_repository.user_name, git_repository.repository_name

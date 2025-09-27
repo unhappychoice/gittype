@@ -1,6 +1,10 @@
 use crate::domain::repositories::session_repository::SessionRepository;
-use crate::presentation::game::views::{BestRecordsView, ControlsView, HeaderView, StageResultsView};
-use crate::presentation::game::{GameData, Screen, ScreenTransition, SessionManager, UpdateStrategy};
+use crate::presentation::game::views::{
+    BestRecordsView, ControlsView, HeaderView, StageResultsView,
+};
+use crate::presentation::game::{
+    GameData, Screen, ScreenTransition, SessionManager, UpdateStrategy,
+};
 use crate::{domain::models::GitRepository, Result};
 use ratatui::{
     layout::{Constraint, Direction, Layout},

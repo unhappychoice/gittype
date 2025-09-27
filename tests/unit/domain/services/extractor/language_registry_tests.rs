@@ -3,17 +3,38 @@ use gittype::presentation::ui::Colors;
 
 #[test]
 fn language_registry_get_color_returns_specific_colors_for_known_languages() {
-    assert_eq!(LanguageRegistry::get_color(Some("rust")), Colors::lang_rust());
-    assert_eq!(LanguageRegistry::get_color(Some("python")), Colors::lang_python());
-    assert_eq!(LanguageRegistry::get_color(Some("javascript")), Colors::lang_javascript());
-    assert_eq!(LanguageRegistry::get_color(Some("typescript")), Colors::lang_typescript());
+    assert_eq!(
+        LanguageRegistry::get_color(Some("rust")),
+        Colors::lang_rust()
+    );
+    assert_eq!(
+        LanguageRegistry::get_color(Some("python")),
+        Colors::lang_python()
+    );
+    assert_eq!(
+        LanguageRegistry::get_color(Some("javascript")),
+        Colors::lang_javascript()
+    );
+    assert_eq!(
+        LanguageRegistry::get_color(Some("typescript")),
+        Colors::lang_typescript()
+    );
 }
 
 #[test]
 fn language_registry_get_color_returns_default_for_unknown_languages() {
-    assert_eq!(LanguageRegistry::get_color(Some("unknown")), Colors::lang_default());
-    assert_eq!(LanguageRegistry::get_color(Some("xyz")), Colors::lang_default());
-    assert_eq!(LanguageRegistry::get_color(Some("")), Colors::lang_default());
+    assert_eq!(
+        LanguageRegistry::get_color(Some("unknown")),
+        Colors::lang_default()
+    );
+    assert_eq!(
+        LanguageRegistry::get_color(Some("xyz")),
+        Colors::lang_default()
+    );
+    assert_eq!(
+        LanguageRegistry::get_color(Some("")),
+        Colors::lang_default()
+    );
 }
 
 #[test]
@@ -25,8 +46,14 @@ fn language_registry_get_color_returns_default_for_none() {
 fn language_registry_get_display_name_returns_formal_names() {
     assert_eq!(LanguageRegistry::get_display_name(Some("rust")), "Rust");
     assert_eq!(LanguageRegistry::get_display_name(Some("python")), "Python");
-    assert_eq!(LanguageRegistry::get_display_name(Some("javascript")), "JavaScript");
-    assert_eq!(LanguageRegistry::get_display_name(Some("typescript")), "TypeScript");
+    assert_eq!(
+        LanguageRegistry::get_display_name(Some("javascript")),
+        "JavaScript"
+    );
+    assert_eq!(
+        LanguageRegistry::get_display_name(Some("typescript")),
+        "TypeScript"
+    );
     assert_eq!(LanguageRegistry::get_display_name(Some("cpp")), "C++");
     assert_eq!(LanguageRegistry::get_display_name(Some("csharp")), "C#");
 }
@@ -34,14 +61,23 @@ fn language_registry_get_display_name_returns_formal_names() {
 #[test]
 fn language_registry_get_display_name_is_case_insensitive() {
     assert_eq!(LanguageRegistry::get_display_name(Some("RUST")), "Rust");
-    assert_eq!(LanguageRegistry::get_display_name(Some("JavaScript")), "JavaScript");
+    assert_eq!(
+        LanguageRegistry::get_display_name(Some("JavaScript")),
+        "JavaScript"
+    );
     assert_eq!(LanguageRegistry::get_display_name(Some("Python")), "Python");
 }
 
 #[test]
 fn language_registry_get_display_name_preserves_unknown_languages() {
-    assert_eq!(LanguageRegistry::get_display_name(Some("unknown")), "unknown");
-    assert_eq!(LanguageRegistry::get_display_name(Some("CustomLang")), "CustomLang");
+    assert_eq!(
+        LanguageRegistry::get_display_name(Some("unknown")),
+        "unknown"
+    );
+    assert_eq!(
+        LanguageRegistry::get_display_name(Some("CustomLang")),
+        "CustomLang"
+    );
 }
 
 #[test]

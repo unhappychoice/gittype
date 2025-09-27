@@ -1,4 +1,6 @@
-use crate::presentation::game::views::{ShareBackOptionView, SharePlatformOptionsView, SharePreviewView, ShareTitleView};
+use crate::presentation::game::views::{
+    ShareBackOptionView, SharePlatformOptionsView, SharePreviewView, ShareTitleView,
+};
 use crate::presentation::game::{GameData, Screen, ScreenTransition, UpdateStrategy};
 use crate::presentation::sharing::{SharingPlatform, SharingService};
 use crate::{domain::models::GitRepository, Result};

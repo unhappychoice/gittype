@@ -1,6 +1,8 @@
 use crate::domain::repositories::session_repository::BestStatus;
 use crate::domain::repositories::SessionRepository;
-use crate::domain::services::scoring::{SessionCalculator, SessionTracker, SessionTrackerData, StageCalculator, GLOBAL_TOTAL_TRACKER};
+use crate::domain::services::scoring::{
+    SessionCalculator, SessionTracker, SessionTrackerData, StageCalculator, GLOBAL_TOTAL_TRACKER,
+};
 use crate::{
     domain::models::{Challenge, SessionResult},
     domain::services::scoring::{StageInput, StageResult, StageTracker, GLOBAL_SESSION_TRACKER},
@@ -239,7 +241,9 @@ impl SessionManager {
     }
 
     /// Set git repository context for the session
-    pub fn set_git_repository(git_repository: Option<crate::domain::models::GitRepository>) -> Result<()> {
+    pub fn set_git_repository(
+        git_repository: Option<crate::domain::models::GitRepository>,
+    ) -> Result<()> {
         let instance = Self::instance();
         let mut manager = instance.lock().map_err(|e| {
             crate::GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
@@ -351,8 +355,7 @@ impl SessionManager {
         // Use GLOBAL_SESSION_TRACKER and SessionCalculator for proper flow implementation
         if let Ok(global_session_tracker) = GLOBAL_SESSION_TRACKER.lock() {
             if let Some(ref session_tracker) = *global_session_tracker {
-                let result =
-                    SessionCalculator::calculate(session_tracker);
+                let result = SessionCalculator::calculate(session_tracker);
                 return Some(result);
             }
         }

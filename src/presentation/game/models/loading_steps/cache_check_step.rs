@@ -82,9 +82,7 @@ impl Step for CacheCheckStep {
         // Try to load from cache
         let Some(cached_challenges) = CHALLENGE_CACHE.load_with_progress(
             git_repo,
-            context
-                .loading_screen
-                .map(|s| s as &dyn ProgressReporter),
+            context.loading_screen.map(|s| s as &dyn ProgressReporter),
         ) else {
             log::info!(
                 "Cache miss for {} - proceeding with full extraction",

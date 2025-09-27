@@ -25,9 +25,7 @@ pub fn run_repo_clear(force: bool) -> Result<()> {
 
     // Get the repos directory path
     let home_dir = dirs::home_dir().ok_or_else(|| {
-        GitTypeError::InvalidRepositoryFormat(
-            "Could not determine home directory".to_string(),
-        )
+        GitTypeError::InvalidRepositoryFormat("Could not determine home directory".to_string())
     })?;
     let repos_dir = home_dir.join(".gittype").join("repos");
 
@@ -88,9 +86,10 @@ pub fn run_repo_clear(force: bool) -> Result<()> {
             println!("Cache directory {} has been removed.", repos_dir.display());
         }
         Err(e) => {
-            return Err(GitTypeError::InvalidRepositoryFormat(
-                format!("Failed to delete cache directory: {}", e),
-            ));
+            return Err(GitTypeError::InvalidRepositoryFormat(format!(
+                "Failed to delete cache directory: {}",
+                e
+            )));
         }
     }
 

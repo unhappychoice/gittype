@@ -17,6 +17,12 @@ pub enum VersionCheckResult {
 
 pub struct VersionCheckScreen;
 
+impl Default for VersionCheckScreen {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl VersionCheckScreen {
     pub fn new() -> Self {
         Self {}

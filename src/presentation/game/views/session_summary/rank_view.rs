@@ -71,7 +71,9 @@ impl RankView {
 
         let tier_color = match best_rank.tier() {
             crate::domain::models::RankTier::Beginner => Colors::to_crossterm(Colors::border()),
-            crate::domain::models::RankTier::Intermediate => Colors::to_crossterm(Colors::success()),
+            crate::domain::models::RankTier::Intermediate => {
+                Colors::to_crossterm(Colors::success())
+            }
             crate::domain::models::RankTier::Advanced => Colors::to_crossterm(Colors::info()),
             crate::domain::models::RankTier::Expert => Colors::to_crossterm(Colors::warning()),
             crate::domain::models::RankTier::Legendary => Colors::to_crossterm(Colors::error()),

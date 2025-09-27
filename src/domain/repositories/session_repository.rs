@@ -1,4 +1,6 @@
-use crate::domain::models::storage::{SaveStageParams, SessionResultData, SessionStageResult, StoredRepository, StoredSession};
+use crate::domain::models::storage::{
+    SaveStageParams, SessionResultData, SessionStageResult, StoredRepository, StoredSession,
+};
 use crate::domain::models::{Challenge, GitRepository, SessionResult};
 use crate::domain::services::scoring::{StageCalculator, StageResult, StageTracker};
 use crate::infrastructure::storage::{

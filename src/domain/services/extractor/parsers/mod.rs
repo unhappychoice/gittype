@@ -1,6 +1,6 @@
 use crate::domain::models::languages::{
-    CSharp, Cpp, Dart, Go, Haskell, Java, JavaScript, Kotlin, Php, Python, Ruby, Rust,
-    Scala, Swift, TypeScript, C,
+    CSharp, Cpp, Dart, Go, Haskell, Java, JavaScript, Kotlin, Php, Python, Ruby, Rust, Scala,
+    Swift, TypeScript, C,
 };
 use crate::domain::models::ChunkType;
 use crate::domain::models::Language;

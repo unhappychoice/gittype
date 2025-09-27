@@ -1,7 +1,9 @@
 use crate::domain::models::GitRepository;
 use crate::domain::services::scoring::StageTracker;
 use crate::presentation::game::views::session_failure::{content_view, footer_view, header_view};
-use crate::presentation::game::{GameData, Screen, ScreenTransition, ScreenType, SessionManager, UpdateStrategy};
+use crate::presentation::game::{
+    GameData, Screen, ScreenTransition, ScreenType, SessionManager, UpdateStrategy,
+};
 use crate::Result;
 use crossterm::{
     cursor::MoveTo,

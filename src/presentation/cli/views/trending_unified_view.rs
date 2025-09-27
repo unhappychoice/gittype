@@ -386,8 +386,10 @@ pub async fn render_trending_selection_ui() -> Result<Option<String>> {
                                 repositories = fetch_trending_repositories_cached(
                                     &client,
                                     Some(lang_code),
-                                    effective_period
-                                ).await.unwrap_or_default();
+                                    effective_period,
+                                )
+                                .await
+                                .unwrap_or_default();
 
                                 if repositories.is_empty() {
                                     break Ok(None);

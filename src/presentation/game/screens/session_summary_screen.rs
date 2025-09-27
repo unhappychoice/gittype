@@ -1,6 +1,10 @@
 use crate::domain::models::Rank;
-use crate::presentation::game::views::{OptionsView, RankView, ScoreView, SessionSummaryHeaderView, SummaryView};
-use crate::presentation::game::{GameData, Screen, ScreenTransition, ScreenType, SessionManager, UpdateStrategy};
+use crate::presentation::game::views::{
+    OptionsView, RankView, ScoreView, SessionSummaryHeaderView, SummaryView,
+};
+use crate::presentation::game::{
+    GameData, Screen, ScreenTransition, ScreenType, SessionManager, UpdateStrategy,
+};
 use crate::{domain::models::GitRepository, Result};
 use crossterm::{
     cursor::{Hide, MoveTo},
@@ -62,11 +66,9 @@ impl SessionSummaryScreen {
         let best_rank = Rank::for_score(session_result.session_score);
 
         // Get best status using session start records from SessionManager
-        let best_status = SessionManager::get_best_status_for_score(
-            session_result.session_score,
-        )
-        .ok()
-        .flatten();
+        let best_status = SessionManager::get_best_status_for_score(session_result.session_score)
+            .ok()
+            .flatten();
 
         let total_content_height = 4 + 5 + 1 + 3 + 1 + 4 + 2 + 2;
         let rank_start_row = if total_content_height < terminal_height {

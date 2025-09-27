@@ -90,10 +90,8 @@ impl LanguageRegistry {
         match language {
             Some(lang) => Self::get_by_name(lang)
                 .map(|l| l.color())
-                .unwrap_or_else(|| { Colors::lang_default() }),
-            None => {
-                Colors::lang_default()
-            }
+                .unwrap_or_else(Colors::lang_default),
+            None => Colors::lang_default(),
         }
     }
 

@@ -1,5 +1,8 @@
 use crate::domain::services::scoring::RealTimeCalculator;
-use crate::{domain::services::scoring::tracker::stage::StageTracker, presentation::game::typing_core::TypingCore, presentation::ui::Colors};
+use crate::{
+    domain::services::scoring::tracker::stage::StageTracker,
+    presentation::game::typing_core::TypingCore, presentation::ui::Colors,
+};
 use ratatui::{
     style::Style,
     text::{Line, Span},
@@ -32,11 +35,7 @@ impl TypingFooterView {
             let current_position = typing_core.current_position_to_type();
             let mistakes = typing_core.mistakes();
 
-            let metrics = RealTimeCalculator::calculate(
-                current_position,
-                mistakes,
-                elapsed_time,
-            );
+            let metrics = RealTimeCalculator::calculate(current_position, mistakes, elapsed_time);
             let elapsed_secs = elapsed_time.as_secs();
 
             let streak = stage_tracker.get_data().current_streak;

@@ -1,6 +1,9 @@
 use crate::domain::models::GitRepository;
 use crate::presentation::game::views::title::{DifficultySelectionView, StaticElementsView};
-use crate::presentation::game::{DifficultyLevel, GameData, Screen, ScreenTransition, ScreenType, StageRepository, UpdateStrategy};
+use crate::presentation::game::{
+    DifficultyLevel, GameData, Screen, ScreenTransition, ScreenType, StageRepository,
+    UpdateStrategy,
+};
 use crate::Result;
 use crossterm::{
     event::{KeyCode, KeyEvent, KeyModifiers},

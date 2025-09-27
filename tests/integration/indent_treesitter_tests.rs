@@ -75,8 +75,9 @@ fn test_chunk_start_indentation_patterns() {
         println!("Code:\n{}", code);
 
         // Parse with TreeSitter
-        let tree = gittype::domain::services::extractor::parsers::parse_with_thread_local("rust", code)
-            .expect("Should parse successfully");
+        let tree =
+            gittype::domain::services::extractor::parsers::parse_with_thread_local("rust", code)
+                .expect("Should parse successfully");
 
         // Extract comment ranges
         let comment_ranges = CommonExtractor::extract_comment_ranges(&tree, code, "rust", &[])
@@ -196,8 +197,9 @@ fn test_multibyte_indent_treesitter() {
         println!("Code bytes: {:?}", code.as_bytes());
         println!("Code chars: {:?}", code.chars().collect::<Vec<_>>());
 
-        let tree = gittype::domain::services::extractor::parsers::parse_with_thread_local("rust", code)
-            .expect("Should parse successfully");
+        let tree =
+            gittype::domain::services::extractor::parsers::parse_with_thread_local("rust", code)
+                .expect("Should parse successfully");
 
         let comment_ranges = CommonExtractor::extract_comment_ranges(&tree, code, "rust", &[])
             .expect("Should extract comment ranges");
@@ -243,8 +245,9 @@ fn test_indent_char_extraction_accuracy() {
     for (case_name, code, expected_byte_len, expected_chars) in test_cases {
         println!("=== Testing indent extraction: {} ===", case_name);
 
-        let tree = gittype::domain::services::extractor::parsers::parse_with_thread_local("rust", code)
-            .expect("Should parse");
+        let tree =
+            gittype::domain::services::extractor::parsers::parse_with_thread_local("rust", code)
+                .expect("Should parse");
 
         // Find function node and check its indentation
         let mut cursor = tree.walk();

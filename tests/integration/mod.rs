@@ -21,9 +21,7 @@ pub fn test_extraction_options() -> ExtractionOptions {
 }
 
 // Helper function to collect files with languages from a directory
-fn collect_files_with_languages(
-    repo_path: &Path,
-) -> Vec<(PathBuf, Box<dyn Language>)> {
+fn collect_files_with_languages(repo_path: &Path) -> Vec<(PathBuf, Box<dyn Language>)> {
     WalkBuilder::new(repo_path)
         .hidden(false) // Include hidden files
         .git_ignore(true) // Respect .gitignore
@@ -63,7 +61,6 @@ pub fn extract_challenges_for_test(
     repo_path: &Path,
     options: ExtractionOptions,
 ) -> gittype::Result<Vec<Challenge>> {
-
     // Step 1: Collect source files
     let files =
         repo_extractor.collect_source_files_with_progress(repo_path, &NoOpProgressReporter)?;

@@ -1,9 +1,10 @@
 use super::super::database::Database;
-use crate::domain::models::storage::{DifficultyStats, LanguageStats, StageStatistics, StoredStageResult};
+use crate::domain::models::storage::{
+    DifficultyStats, LanguageStats, StageStatistics, StoredStageResult,
+};
 use crate::{domain::error::GitTypeError, Result};
 use chrono::{DateTime, Utc};
 use rusqlite::params;
-
 
 pub struct StageDao<'a> {
     db: &'a Database,

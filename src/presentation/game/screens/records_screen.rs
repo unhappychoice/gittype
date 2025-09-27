@@ -460,9 +460,7 @@ impl Screen for RecordsScreen {
             KeyCode::Esc => {
                 self.action_result = Some(RecordsAction::Return);
                 // Return to Title screen
-                Ok(ScreenTransition::Replace(
-                    ScreenType::Title,
-                ))
+                Ok(ScreenTransition::Replace(ScreenType::Title))
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
                 self.action_result = Some(RecordsAction::Return);
@@ -488,9 +486,7 @@ impl Screen for RecordsScreen {
                         // Store session data for the transition
                         self.selected_session_for_detail = Some(session.clone());
 
-                        return Ok(ScreenTransition::Push(
-                            ScreenType::SessionDetail,
-                        ));
+                        return Ok(ScreenTransition::Push(ScreenType::SessionDetail));
                     }
                 }
                 Ok(ScreenTransition::None)

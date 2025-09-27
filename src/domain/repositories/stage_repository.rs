@@ -1,8 +1,7 @@
-use crate::domain::models::storage::{DifficultyStats, LanguageStats, StageStatistics, StoredStageResult};
-use crate::infrastructure::storage::{
-    daos::StageDao,
-    Database, HasDatabase,
+use crate::domain::models::storage::{
+    DifficultyStats, LanguageStats, StageStatistics, StoredStageResult,
 };
+use crate::infrastructure::storage::{daos::StageDao, Database, HasDatabase};
 use crate::Result;
 use std::sync::{Arc, Mutex};
 
