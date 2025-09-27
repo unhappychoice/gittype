@@ -1,2 +1,2 @@
-mod extractor_unit_tests;
+mod core;
 mod language_registry_tests;

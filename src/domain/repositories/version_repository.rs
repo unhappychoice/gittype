@@ -1,6 +1,6 @@
 use crate::domain::models::version::VersionCacheEntry;
 use crate::infrastructure::http::GitHubApiClient;
-use crate::infrastructure::storage::file::FileStorage;
+use crate::infrastructure::storage::{file_storage::FileStorage, AppDataProvider};
 use crate::Result;
 use chrono::Utc;
 use std::path::PathBuf;
@@ -84,7 +84,7 @@ impl VersionRepository {
     }
 
     fn get_version_cache_path(&self) -> Result<PathBuf> {
-        let app_dir = FileStorage::get_app_data_dir()?;
+        let app_dir = <FileStorage as AppDataProvider>::get_app_data_dir()?;
         Ok(app_dir.join(Self::VERSION_CACHE_FILENAME))
     }
 

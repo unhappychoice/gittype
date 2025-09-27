@@ -2,6 +2,7 @@
 use crate::{GitTypeError, Result};
 #[cfg(feature = "test-mocks")]
 use crate::Result;
+use super::AppDataProvider;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
@@ -11,23 +12,9 @@ mod real_impl {
 
     pub struct FileStorage;
 
-    impl FileStorage {
-        /// Create the application data directory based on environment
-        pub fn get_app_data_dir() -> Result<PathBuf> {
-            let data_dir = if cfg!(debug_assertions) {
-                std::env::current_dir().map_err(|e| {
-                    GitTypeError::ExtractionFailed(format!("Could not get current directory: {}", e))
-                })?
-            } else {
-                let home_dir = dirs::home_dir().ok_or_else(|| {
-                    GitTypeError::ExtractionFailed("Could not determine home directory".to_string())
-                })?;
-                home_dir.join(".gittype")
-            };
+    impl AppDataProvider for FileStorage {}
 
-            std::fs::create_dir_all(&data_dir)?;
-            Ok(data_dir)
-        }
+    impl FileStorage {
 
         /// Read and deserialize JSON from a file
         pub fn read_json<T>(&self, file_path: &Path) -> Result<Option<T>>
@@ -91,10 +78,9 @@ mod mock_impl {
 
     pub struct FileStorage;
 
+    impl AppDataProvider for FileStorage {}
+
     impl FileStorage {
-        pub fn get_app_data_dir() -> Result<PathBuf> {
-            Ok(PathBuf::from("/tmp/test"))
-        }
 
         pub fn read_json<T>(&self, _file_path: &Path) -> Result<Option<T>>
         where

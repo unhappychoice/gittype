@@ -1,4 +1,4 @@
-use super::gzip_storage::GzipStorage;
+use crate::infrastructure::storage::compressed_file_storage::CompressedFileStorage;
 use crate::domain::models::{Challenge, GitRepository};
 use crate::presentation::game::models::StepType;
 use crate::presentation::game::screens::loading_screen::ProgressReporter;
@@ -78,7 +78,8 @@ impl ChallengeCache {
             challenge_pointers,
         };
 
-        GzipStorage::save(&cache_file, &cache_data)
+        let storage = CompressedFileStorage;
+        storage.save(&cache_file, &cache_data).map_err(|e| e.to_string())
     }
 
     pub fn load_with_progress(
@@ -92,7 +93,8 @@ impl ChallengeCache {
         }
 
         let cache_file = self.get_cache_file(repo);
-        let cache_data: CacheData = GzipStorage::load(&cache_file)?;
+        let storage = CompressedFileStorage;
+        let cache_data: CacheData = storage.load(&cache_file).ok()??;
 
         // Check if commit hash matches
         let current_commit = repo.commit_hash.as_deref().unwrap_or("");
@@ -138,6 +140,7 @@ impl ChallengeCache {
         Some(challenges)
     }
 
+    #[cfg(not(feature = "test-mocks"))]
     pub fn clear(&self) -> Result<(), String> {
         if self.cache_dir.exists() {
             fs::remove_dir_all(&self.cache_dir)
@@ -146,6 +149,17 @@ impl ChallengeCache {
         Ok(())
     }
 
+    #[cfg(feature = "test-mocks")]
+    pub fn clear(&self) -> Result<(), String> {
+        let storage = CompressedFileStorage;
+        let files = storage.list_files_in_dir(&self.cache_dir);
+        for file in files {
+            storage.delete_file(&file).map_err(|e| e.to_string())?;
+        }
+        Ok(())
+    }
+
+    #[cfg(not(feature = "test-mocks"))]
     pub fn stats(&self) -> Result<(usize, u64), String> {
         if !self.cache_dir.exists() {
             return Ok((0, 0));
@@ -173,6 +187,19 @@ impl ChallengeCache {
         Ok((count, total_size))
     }
 
+    #[cfg(feature = "test-mocks")]
+    pub fn stats(&self) -> Result<(usize, u64), String> {
+        let storage = CompressedFileStorage;
+        let files = storage.list_files_in_dir(&self.cache_dir);
+        let count = files.len();
+        let total_size = files
+            .iter()
+            .filter_map(|path| storage.get_file_size(path))
+            .sum();
+        Ok((count, total_size))
+    }
+
+    #[cfg(not(feature = "test-mocks"))]
     pub fn invalidate_repo(&self, repo: &GitRepository) -> Result<bool, String> {
         let cache_file = self.get_cache_file(repo);
         if cache_file.exists() {
@@ -184,18 +211,54 @@ impl ChallengeCache {
         }
     }
 
+    #[cfg(feature = "test-mocks")]
+    pub fn invalidate_repo(&self, repo: &GitRepository) -> Result<bool, String> {
+        let cache_file = self.get_cache_file(repo);
+        let storage = CompressedFileStorage;
+        if storage.file_exists(&cache_file) {
+            storage.delete_file(&cache_file).map_err(|e| e.to_string())?;
+            Ok(true)
+        } else {
+            Ok(false)
+        }
+    }
+
+    #[cfg(not(feature = "test-mocks"))]
     pub fn list_keys(&self) -> Result<Vec<String>, String> {
         if !self.cache_dir.exists() {
             return Ok(Vec::new());
         }
 
+        let storage = CompressedFileStorage;
         let mut keys: Vec<String> = fs::read_dir(&self.cache_dir)
             .map_err(|e| format!("Failed to read cache dir: {}", e))?
             .filter_map(|entry| entry.ok())
             .filter_map(|entry| {
                 // Prefer data inside the file (repo_key + commit_hash) instead of filename.
                 if entry.file_name().to_string_lossy().ends_with(".bin") {
-                    GzipStorage::load::<CacheData>(&entry.path())
+                    storage.load::<CacheData>(&entry.path()).ok().flatten()
+                        .map(|d| format!("{}:{}", d.repo_key, d.commit_hash))
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        keys.sort();
+        keys.dedup();
+        Ok(keys)
+    }
+
+    #[cfg(feature = "test-mocks")]
+    pub fn list_keys(&self) -> Result<Vec<String>, String> {
+        let storage = CompressedFileStorage;
+        let files = storage.list_files_in_dir(&self.cache_dir);
+        
+        let mut keys: Vec<String> = files
+            .iter()
+            .filter_map(|path| {
+                if path.file_name()?.to_str()?.ends_with(".bin") {
+                    storage.load::<CacheData>(path).ok().flatten()
                         .map(|d| format!("{}:{}", d.repo_key, d.commit_hash))
                 } else {
                     None

@@ -1,5 +1,5 @@
 use crate::domain::models::config::Config;
-use crate::infrastructure::storage::file::file_storage::FileStorage;
+use crate::infrastructure::storage::{file_storage::FileStorage, AppDataProvider};
 use crate::Result;
 use std::path::PathBuf;
 
@@ -32,6 +32,6 @@ impl ConfigService {
     }
 
     fn get_config_path() -> Result<PathBuf> {
-        Ok(FileStorage::get_app_data_dir()?.join("config.json"))
+        Ok(<FileStorage as AppDataProvider>::get_app_data_dir()?.join("config.json"))
     }
 }
