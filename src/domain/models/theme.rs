@@ -1,5 +1,5 @@
 use crate::domain::models::color_mode::ColorMode;
-use crate::domain::models::color_scheme::ColorScheme;
+use crate::domain::models::color_scheme::{ColorScheme, ThemeFile};
 use serde::{Deserialize, Serialize};
 
 const THEME_FILES: &[&str] = &[
@@ -44,8 +44,7 @@ impl Theme {
         THEME_FILES
             .iter()
             .map(|json| {
-                let theme_file: crate::domain::models::color_scheme::ThemeFile =
-                    serde_json::from_str(json).expect("Failed to parse theme JSON");
+                let theme_file: ThemeFile = serde_json::from_str(json).expect("Failed to parse theme JSON");
 
                 let light = ColorScheme::from_theme_file(&theme_file, &ColorMode::Light);
                 let dark = ColorScheme::from_theme_file(&theme_file, &ColorMode::Dark);

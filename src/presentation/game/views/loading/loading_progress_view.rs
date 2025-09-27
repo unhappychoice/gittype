@@ -1,4 +1,4 @@
-use crate::presentation::game::models::loading_steps::StepType;
+use crate::presentation::game::models::StepType;
 use crate::presentation::game::screens::loading_screen::LoadingScreenState;
 use crate::presentation::ui::Colors;
 use ratatui::{

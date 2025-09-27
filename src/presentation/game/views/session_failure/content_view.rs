@@ -1,4 +1,4 @@
-use crate::domain::services::scoring::StageTracker;
+use crate::domain::services::scoring::{StageCalculator, StageInput, StageTracker};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::{
@@ -35,8 +35,8 @@ pub fn render_metrics(
     if !stage_trackers.is_empty() {
         let (_last_stage_name, last_tracker) = stage_trackers.last().unwrap();
         let mut tracker = last_tracker.clone();
-        tracker.record(crate::domain::services::scoring::StageInput::Fail);
-        let metrics = crate::domain::services::scoring::StageCalculator::calculate(&tracker);
+        tracker.record(StageInput::Fail);
+        let metrics = StageCalculator::calculate(&tracker);
 
         execute!(stdout, MoveTo(0, center_y))?;
 

@@ -1,3 +1,4 @@
+use crate::presentation::game::ascii_digits::get_digit_patterns;
 use crate::presentation::ui::Colors;
 use ratatui::{
     layout::{Alignment, Rect},
@@ -25,7 +26,7 @@ impl CountdownView {
 
         if count > 0 && count <= 3 {
             // Use ASCII art for numbers 1, 2, 3
-            let digit_patterns = crate::presentation::game::ascii_digits::get_digit_patterns();
+            let digit_patterns = get_digit_patterns();
             let pattern = &digit_patterns[count as usize];
 
             let ascii_start_y = center_y.saturating_sub(2); // Center the 4-line ASCII art

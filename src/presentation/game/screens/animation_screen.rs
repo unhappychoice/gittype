@@ -1,7 +1,7 @@
-use crate::presentation::game::models::{Screen, ScreenTransition, UpdateStrategy};
-use crate::presentation::game::views::typing::typing_animation_view::AnimationPhase;
-use crate::presentation::game::views::typing::TypingAnimationView;
 use crate::domain::services::scoring::Rank;
+use crate::presentation::game::views::typing::typing_animation_view::AnimationPhase;
+use crate::presentation::game::views::TypingAnimationView;
+use crate::presentation::game::{Screen, ScreenTransition, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyModifiers};
@@ -13,6 +13,7 @@ use ratatui::{
     Frame,
 };
 use std::io::Stdout;
+use std::time::Duration;
 
 pub struct AnimationScreen {
     animation: Option<TypingAnimationView>,
@@ -182,7 +183,7 @@ impl Screen for AnimationScreen {
     ) -> Result<ScreenTransition> {
         match key_event.code {
             KeyCode::Char('s') | KeyCode::Char('S') => Ok(ScreenTransition::Replace(
-                crate::presentation::game::models::ScreenType::SessionSummary,
+                ScreenType::SessionSummary,
             )),
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
                 Ok(ScreenTransition::Exit)
@@ -213,7 +214,6 @@ impl Screen for AnimationScreen {
     }
 
     fn get_update_strategy(&self) -> UpdateStrategy {
-        use std::time::Duration;
         UpdateStrategy::TimeBased(Duration::from_millis(16)) // ~60 FPS for smooth animation
     }
 

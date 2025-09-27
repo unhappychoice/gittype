@@ -1,5 +1,5 @@
 use super::super::parsers::{get_parser_registry, parse_with_thread_local};
-use crate::domain::models::CodeChunk;
+use crate::domain::models::{ChunkType, CodeChunk};
 use crate::{GitTypeError, Result};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -179,7 +179,7 @@ impl CommonExtractor {
             start_line: 1,
             end_line: line_count,
             language: language_string.to_owned(),
-            chunk_type: crate::domain::models::ChunkType::File,
+            chunk_type: ChunkType::File,
             name: "entire_file".to_string(),
             comment_ranges: file_comment_ranges,
             original_indentation: 0,
@@ -191,19 +191,19 @@ impl CommonExtractor {
             let pos_cmp = (a.start_line, a.end_line).cmp(&(b.start_line, b.end_line));
             if pos_cmp == std::cmp::Ordering::Equal {
                 let a_priority = match a.chunk_type {
-                    crate::domain::models::ChunkType::Function => 0,
-                    crate::domain::models::ChunkType::Class => 0,
-                    crate::domain::models::ChunkType::Method => 0,
-                    crate::domain::models::ChunkType::CodeBlock => 10,
-                    crate::domain::models::ChunkType::File => 20,
+                    ChunkType::Function => 0,
+                    ChunkType::Class => 0,
+                    ChunkType::Method => 0,
+                    ChunkType::CodeBlock => 10,
+                    ChunkType::File => 20,
                     _ => 5,
                 };
                 let b_priority = match b.chunk_type {
-                    crate::domain::models::ChunkType::Function => 0,
-                    crate::domain::models::ChunkType::Class => 0,
-                    crate::domain::models::ChunkType::Method => 0,
-                    crate::domain::models::ChunkType::CodeBlock => 10,
-                    crate::domain::models::ChunkType::File => 20,
+                    ChunkType::Function => 0,
+                    ChunkType::Class => 0,
+                    ChunkType::Method => 0,
+                    ChunkType::CodeBlock => 10,
+                    ChunkType::File => 20,
                     _ => 5,
                 };
                 a_priority.cmp(&b_priority)
@@ -215,8 +215,8 @@ impl CommonExtractor {
         chunks.dedup_by(|a, b| {
             a.start_line == b.start_line
                 && a.end_line == b.end_line
-                && a.chunk_type != crate::domain::models::ChunkType::File
-                && b.chunk_type != crate::domain::models::ChunkType::File
+                && a.chunk_type != ChunkType::File
+                && b.chunk_type != ChunkType::File
         });
 
         Ok(chunks)
@@ -227,7 +227,7 @@ impl CommonExtractor {
     fn build_middle_chunk_local(
         node: tree_sitter::Node,
         capture_name: &str,
-        chunk_type: crate::domain::models::ChunkType,
+        chunk_type: ChunkType,
         content: &str,
         start_byte: usize,
         end_byte: usize,
@@ -238,7 +238,7 @@ impl CommonExtractor {
         chunk_byte_to_char_cache: &[usize],
         parent_start_line: usize,
         file_line_cache: &[usize],
-    ) -> crate::domain::models::CodeChunk {
+    ) -> CodeChunk {
         // Use cached byte-to-char conversion for chunk-local coordinates
         let start_char = Self::byte_to_char_cached(chunk_byte_to_char_cache, start_byte);
         let end_char = Self::byte_to_char_cached(chunk_byte_to_char_cache, end_byte);
@@ -289,7 +289,7 @@ impl CommonExtractor {
             })
             .collect();
 
-        crate::domain::models::CodeChunk {
+        CodeChunk {
             name: capture_name.to_owned(),
             content: normalized_content,
             chunk_type,
@@ -489,7 +489,7 @@ impl CommonExtractor {
         file_comment_ranges: &[(usize, usize)],
         byte_to_char_cache: &[usize],
         line_cache: &[usize],
-    ) -> Option<crate::domain::models::CodeChunk> {
+    ) -> Option<CodeChunk> {
         let start_byte = node.start_byte();
         let end_byte = node.end_byte();
         let content = &source_code[start_byte..end_byte];
@@ -547,13 +547,13 @@ impl CommonExtractor {
             .collect();
 
         let chunk_type = match capture_name {
-            "function" => crate::domain::models::ChunkType::Function,
-            "class" => crate::domain::models::ChunkType::Class,
-            "method" => crate::domain::models::ChunkType::Method,
-            _ => crate::domain::models::ChunkType::CodeBlock,
+            "function" => ChunkType::Function,
+            "class" => ChunkType::Class,
+            "method" => ChunkType::Method,
+            _ => ChunkType::CodeBlock,
         };
 
-        Some(crate::domain::models::CodeChunk {
+        Some(CodeChunk {
             name: capture_name.to_owned(),
             content: normalized_content,
             chunk_type,

@@ -1,7 +1,7 @@
-use crate::presentation::game::models::{Screen, ScreenTransition, UpdateStrategy};
-use crate::presentation::game::views::{PerformanceMetricsView, SessionInfoView, StageDetailsView};
-use crate::domain::repositories::SessionRepository;
 use crate::domain::models::storage::{SessionResultData, SessionStageResult, StoredRepository, StoredSession};
+use crate::domain::repositories::SessionRepository;
+use crate::presentation::game::views::{PerformanceMetricsView, SessionInfoView, StageDetailsView};
+use crate::presentation::game::{Screen, ScreenTransition, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::{

@@ -1,8 +1,7 @@
-use crate::presentation::game::models::{Screen, ScreenTransition, UpdateStrategy};
-use crate::presentation::game::screens::ResultAction;
-use crate::presentation::game::views::stage_summary::StageCompletionView;
-use crate::presentation::game::{ScreenType, SessionManager};
 use crate::domain::services::scoring::StageResult;
+use crate::presentation::game::screens::ResultAction;
+use crate::presentation::game::views::StageCompletionView;
+use crate::presentation::game::{Screen, ScreenTransition, ScreenType, SessionManager, UpdateStrategy};
 use crate::Result;
 
 pub struct StageSummaryScreen {

@@ -1,4 +1,5 @@
-use crate::presentation::game::screens::loading_screen::ProgressReporter;
+use crate::presentation::game::models::loading_steps::StepType;
+use crate::presentation::game::screens::loading_screen::{LoadingScreen, ProgressReporter};
 use crate::{GitTypeError, Result};
 use std::path::PathBuf;
 
@@ -116,7 +117,7 @@ impl RepositoryManager {
 
     pub fn clone_or_update_repo(
         repo_info: &RepoInfo,
-        loading_screen: Option<&crate::presentation::game::screens::loading_screen::LoadingScreen>,
+        loading_screen: Option<&LoadingScreen>,
     ) -> Result<PathBuf> {
         log::info!("Cloning repository: {}/{}", repo_info.owner, repo_info.name);
 
@@ -179,11 +180,11 @@ impl RepositoryManager {
 
                     if let Some(screen_ptr) = loading_screen_clone {
                         unsafe {
-                            let screen: &crate::presentation::game::screens::loading_screen::LoadingScreen =
+                            let screen: &LoadingScreen =
                                 &*screen_ptr;
                             let current_step = (total_progress * 100.0) as usize;
                             screen.set_file_counts(
-                                crate::presentation::game::models::loading_steps::StepType::Cloning,
+                                StepType::Cloning,
                                 current_step,
                                 100,
                                 None,
@@ -204,12 +205,12 @@ impl RepositoryManager {
 
             if let Some(screen_ptr) = loading_screen_clone2 {
                 unsafe {
-                    let screen: &crate::presentation::game::screens::loading_screen::LoadingScreen = &*screen_ptr;
+                    let screen: &LoadingScreen = &*screen_ptr;
                     // Map refs progress to 60-80% of total clone progress
                     let refs_progress = 0.6 + (ref_count as f64 * 0.005).min(0.2); // Increment by 0.5% per ref, max 20%
                     let current_step = (refs_progress * 100.0) as usize;
                     screen.set_file_counts(
-                        crate::presentation::game::models::loading_steps::StepType::Cloning,
+                        StepType::Cloning,
                         current_step,
                         100,
                         None,
@@ -241,11 +242,11 @@ impl RepositoryManager {
 
                     if let Some(screen_ptr) = loading_screen_clone3 {
                         unsafe {
-                            let screen: &crate::presentation::game::screens::loading_screen::LoadingScreen =
+                            let screen: &LoadingScreen =
                                 &*screen_ptr;
                             let current_step = (total_progress * 100.0) as usize;
                             screen.set_file_counts(
-                                crate::presentation::game::models::loading_steps::StepType::Cloning,
+                                StepType::Cloning,
                                 current_step,
                                 100,
                                 None,

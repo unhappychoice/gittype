@@ -1,5 +1,5 @@
 use crate::domain::models::SessionResult;
-use crate::domain::services::scoring::tracker::SessionTracker;
+use crate::domain::services::scoring::{ScoreCalculator, SessionTracker};
 use std::time::Duration;
 
 /// Session level result calculation
@@ -66,7 +66,7 @@ impl SessionCalculator {
                 / valid_keystrokes as f64)
                 * 100.0;
 
-            crate::domain::services::scoring::ScoreCalculator::calculate_score_from_metrics(
+            ScoreCalculator::calculate_score_from_metrics(
                 cpm,
                 accuracy,
                 valid_mistakes,

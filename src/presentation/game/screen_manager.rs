@@ -29,17 +29,15 @@
 //!     ScreenManager::run_global()
 //! }
 //! ```
-
-use crate::presentation::game::models::{Screen, ScreenTransition, ScreenType, UpdateStrategy};
-use crate::presentation::game::screen_transition_manager::ScreenTransitionManager;
-use crate::presentation::game::screens::animation_screen::AnimationScreen;
-use crate::presentation::game::screens::session_detail_screen::SessionDetailScreen;
-use crate::presentation::game::screens::stage_summary_screen::StageSummaryScreen;
-use crate::presentation::game::screens::total_summary_share_screen::TotalSummaryShareScreen;
-use crate::presentation::game::session_manager::SessionManager;
+//!
+use crate::domain::models::TotalResult;
 use crate::domain::services::scoring::TotalCalculator;
 use crate::domain::services::scoring::GLOBAL_TOTAL_TRACKER;
-use crate::Result;
+use crate::presentation::game::screen_transition_manager::ScreenTransitionManager;
+use crate::presentation::game::screens::session_detail_screen::SessionDisplayData;
+use crate::presentation::game::screens::{AnalyticsScreen, AnimationScreen, HelpScreen, InfoDialogScreen, LoadingScreen, PanicScreen, RecordsScreen, SessionDetailScreen, SessionDetailsDialog, SessionFailureScreen, SessionSummaryScreen, SessionSummaryShareScreen, SettingsScreen, StageSummaryScreen, TitleAction, TitleScreen, TotalSummaryScreen, TotalSummaryShareScreen, VersionCheckScreen};
+use crate::presentation::game::{Screen, ScreenTransition, ScreenType, SessionManager, StageRepository, TypingScreen, UpdateStrategy};
+use crate::{GitTypeError, Result};
 use crossterm::event::{Event, KeyEventKind};
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -108,88 +106,46 @@ impl ScreenManager {
 
     /// Initialize ScreenManager with all screens
     pub fn initialize_all_screens(&mut self) -> Result<()> {
-        use crate::presentation::game::screens::{
-            analytics_screen::AnalyticsScreen, animation_screen::AnimationScreen,
-            help_screen::HelpScreen, info_dialog::InfoDialogScreen, loading_screen::LoadingScreen,
-            panic_screen::PanicScreen, records_screen::RecordsScreen,
-            session_detail_screen::SessionDetailScreen,
-            session_details_dialog::SessionDetailsDialog as DetailsDialogScreenState,
-            session_failure_screen::SessionFailureScreen as FailureScreenState,
-            session_summary_screen::SessionSummaryScreen,
-            session_summary_share_screen::SessionSummaryShareScreen as SessionSummaryShareScreenState,
-            stage_summary_screen::StageSummaryScreen, title_screen::TitleScreen,
-            total_summary_screen::TotalSummaryScreen as ExitSummaryScreenState,
-            typing_screen::TypingScreen,
-            version_check_screen::ScreenState as VersionCheckScreenState,
-        };
-
-        // Register all screens with their actual implementations
         self.register_screen(ScreenType::Title, Box::new(TitleScreen::new()));
         self.register_screen(ScreenType::Loading, Box::new(LoadingScreen::new()?));
+        self.register_screen(ScreenType::SessionFailure, Box::new(SessionFailureScreen::new()));
+        self.register_screen(ScreenType::StageSummary, Box::new(StageSummaryScreen::new()));
+        self.register_screen(ScreenType::SessionSummary, Box::new(SessionSummaryScreen::new()));
+        self.register_screen(ScreenType::TotalSummary, Box::new(TotalSummaryScreen::new()));
 
-        self.register_screen(
-            ScreenType::SessionFailure,
-            Box::new(FailureScreenState::new()),
-        );
-        self.register_screen(
-            ScreenType::StageSummary,
-            Box::new(StageSummaryScreen::new()),
-        );
-        self.register_screen(
-            ScreenType::SessionSummary,
-            Box::new(SessionSummaryScreen::new()),
-        );
-        self.register_screen(
-            ScreenType::TotalSummary,
-            Box::new(ExitSummaryScreenState::new()),
-        );
-
-        // Register default TypingScreen (will be updated with challenge data when needed)
         if let Ok(typing_screen) = TypingScreen::new() {
             self.register_screen(ScreenType::Typing, Box::new(typing_screen));
         }
+
         self.register_screen(
             ScreenType::SessionDetail,
             Box::new(SessionDetailScreen::new_for_screen_manager().unwrap()),
         );
         self.register_screen(ScreenType::Animation, Box::new(AnimationScreen::new()));
-        self.register_screen(
-            ScreenType::VersionCheck,
-            Box::new(VersionCheckScreenState::new()),
-        );
-        self.register_screen(
-            ScreenType::SessionSharing,
-            Box::new(SessionSummaryShareScreenState::new()),
-        );
+        self.register_screen(ScreenType::VersionCheck, Box::new(VersionCheckScreen::new()));
+        self.register_screen(ScreenType::SessionSharing, Box::new(SessionSummaryShareScreen::new()));
         self.register_screen(
             ScreenType::TotalSummaryShare,
             Box::new(
-                crate::presentation::game::screens::total_summary_share_screen::TotalSummaryShareScreen::new(
-                    crate::domain::models::TotalResult::new(), // Placeholder - will be updated when transitioning
-                ),
+                TotalSummaryShareScreen::new(
+                    TotalResult::new(), // Placeholder - will be updated when transitioning
+                )
             ),
         );
         self.register_screen(ScreenType::InfoDialog, Box::new(InfoDialogScreen::new()));
         self.register_screen(ScreenType::Help, Box::new(HelpScreen::new()));
-        self.register_screen(
-            ScreenType::DetailsDialog,
-            Box::new(DetailsDialogScreenState::new()),
-        );
+        self.register_screen(ScreenType::DetailsDialog, Box::new(SessionDetailsDialog::new()));
         self.register_screen(ScreenType::Panic, Box::new(PanicScreen::new()));
 
-        // Register History and Analytics screens
         if let Ok(records_screen) = RecordsScreen::new_for_screen_manager() {
             self.register_screen(ScreenType::Records, Box::new(records_screen));
         }
+
         if let Ok(analytics_screen) = AnalyticsScreen::new_for_screen_manager() {
             self.register_screen(ScreenType::Analytics, Box::new(analytics_screen));
         }
 
-        // Register Settings screen
-        self.register_screen(
-            ScreenType::Settings,
-            Box::new(crate::presentation::game::screens::SettingsScreen::default()),
-        );
+        self.register_screen(ScreenType::Settings, Box::new(SettingsScreen::default()));
 
         Ok(())
     }
@@ -200,7 +156,7 @@ impl ScreenManager {
     }
 
     /// Get current total result from GLOBAL_TOTAL_TRACKER
-    fn get_current_total_result(&self) -> Option<crate::domain::models::TotalResult> {
+    fn get_current_total_result(&self) -> Option<TotalResult> {
         use crate::domain::services::scoring::{TotalCalculator, GLOBAL_TOTAL_TRACKER};
 
         if let Ok(global_total_tracker) = GLOBAL_TOTAL_TRACKER.lock() {
@@ -225,7 +181,7 @@ impl ScreenManager {
 
             // Check if we're running in a valid terminal environment using atty
             if !atty::is(atty::Stream::Stdout) {
-                return Err(crate::domain::error::GitTypeError::TerminalError(
+                return Err(GitTypeError::TerminalError(
                     "Not running in a terminal environment. Please run in a proper terminal."
                         .to_string(),
                 ));
@@ -238,7 +194,7 @@ impl ScreenManager {
                     // In WSL, sometimes raw mode fails initially, try after a short delay
                     std::thread::sleep(Duration::from_millis(10));
                     terminal::enable_raw_mode().map_err(|e2| {
-                        crate::domain::error::GitTypeError::TerminalError(format!(
+                        GitTypeError::TerminalError(format!(
                             "Failed to enable raw mode: {} (retry also failed: {})",
                             e, e2
                         ))
@@ -273,14 +229,14 @@ impl ScreenManager {
                 cursor::Show
             )
             .map_err(|e| {
-                crate::domain::error::GitTypeError::TerminalError(format!(
+                GitTypeError::TerminalError(format!(
                     "Failed to restore terminal: {}",
                     e
                 ))
             })?;
 
             terminal::disable_raw_mode().map_err(|e| {
-                crate::domain::error::GitTypeError::TerminalError(format!(
+                GitTypeError::TerminalError(format!(
                     "Failed to disable raw mode: {}",
                     e
                 ))
@@ -309,7 +265,7 @@ impl ScreenManager {
 
         // Flush before cleaning up the current screen
         stdout().flush().map_err(|e| {
-            crate::domain::error::GitTypeError::TerminalError(format!(
+            GitTypeError::TerminalError(format!(
                 "Failed to flush before screen transition: {}",
                 e
             ))
@@ -322,13 +278,13 @@ impl ScreenManager {
         // Clear screen after cleanup and flush again
         use crossterm::{execute, terminal};
         execute!(stdout(), terminal::Clear(terminal::ClearType::All)).map_err(|e| {
-            crate::domain::error::GitTypeError::TerminalError(format!(
+            GitTypeError::TerminalError(format!(
                 "Failed to clear screen during transition: {}",
                 e
             ))
         })?;
         stdout().flush().map_err(|e| {
-            crate::domain::error::GitTypeError::TerminalError(format!(
+            GitTypeError::TerminalError(format!(
                 "Failed to flush after screen clear: {}",
                 e
             ))
@@ -406,7 +362,7 @@ impl ScreenManager {
 
         // Flush after initializing new screen
         stdout().flush().map_err(|e| {
-            crate::domain::error::GitTypeError::TerminalError(format!(
+            GitTypeError::TerminalError(format!(
                 "Failed to flush after screen init: {}",
                 e
             ))
@@ -422,7 +378,7 @@ impl ScreenManager {
                 use std::io::stdout;
 
                 execute!(stdout(), terminal::Clear(terminal::ClearType::All)).map_err(|e| {
-                    crate::domain::error::GitTypeError::TerminalError(format!(
+                    GitTypeError::TerminalError(format!(
                         "Failed to clear screen: {}",
                         e
                     ))
@@ -432,7 +388,7 @@ impl ScreenManager {
                 // For ratatui, we need to clear the terminal buffer
                 if let Some(terminal) = &mut self.ratatui_terminal {
                     terminal.clear().map_err(|e| {
-                        crate::domain::error::GitTypeError::TerminalError(format!(
+                        GitTypeError::TerminalError(format!(
                             "Failed to clear ratatui terminal: {}",
                             e
                         ))
@@ -524,11 +480,11 @@ impl ScreenManager {
                 if let Some(title_screen) = self.screens.get(&ScreenType::Title) {
                     if let Some(title) = title_screen
                         .as_any()
-                        .downcast_ref::<crate::presentation::game::screens::title_screen::TitleScreen>(
+                        .downcast_ref::<TitleScreen>(
                     ) {
                         if let Some(action) = title.get_action_result() {
                             match action {
-                                crate::presentation::game::screens::title_screen::TitleAction::Start(
+                                TitleAction::Start(
                                     difficulty,
                                 ) => Some(*difficulty),
                                 _ => None,
@@ -545,7 +501,7 @@ impl ScreenManager {
 
             // Apply difficulty to global repositories if found
             if let Some(difficulty) = selected_difficulty {
-                crate::presentation::game::stage_repository::StageRepository::set_global_difficulty(difficulty)?;
+                StageRepository::set_global_difficulty(difficulty)?;
 
                 // Also set difficulty in SessionManager
                 let session_instance = SessionManager::instance();
@@ -561,7 +517,7 @@ impl ScreenManager {
             if let Some(typing_screen) = self.screens.get_mut(&ScreenType::Typing) {
                 if let Some(screen) = typing_screen
                     .as_any_mut()
-                    .downcast_mut::<crate::presentation::game::screens::typing_screen::TypingScreen>(
+                    .downcast_mut::<TypingScreen>(
                 ) {
                     if !screen.load_current_challenge()? {
                         // No more challenges available, create session result and go to session summary
@@ -595,7 +551,7 @@ impl ScreenManager {
             if let Some(records_screen) = self.screens.get(&ScreenType::Records) {
                 if let Some(records) = records_screen
                     .as_any()
-                    .downcast_ref::<crate::presentation::game::screens::records_screen::RecordsScreen>(
+                    .downcast_ref::<RecordsScreen>(
                 ) {
                     records.get_selected_session_for_detail().clone()
                 } else {
@@ -675,8 +631,7 @@ impl ScreenManager {
                         self.handle_transition(ScreenTransition::Replace(ScreenType::Title))?;
 
                         // Update title screen with challenge counts from StageRepository
-                        let stage_repo_instance =
-                            crate::presentation::game::stage_repository::StageRepository::instance();
+                        let stage_repo_instance = StageRepository::instance();
                         if let Ok(repo) = stage_repo_instance.lock() {
                             let _ = repo.update_title_screen_data(self);
                         }
@@ -809,7 +764,7 @@ impl ScreenManager {
 
                 // Flush before rendering to clear any pending output
                 stdout_handle.flush().map_err(|e| {
-                    crate::domain::error::GitTypeError::TerminalError(format!(
+                    GitTypeError::TerminalError(format!(
                         "Failed to flush before rendering: {}",
                         e
                     ))
@@ -854,7 +809,7 @@ impl ScreenManager {
 
                 // Flush after rendering to ensure display is updated
                 stdout_handle.flush().map_err(|e| {
-                    crate::domain::error::GitTypeError::TerminalError(format!(
+                    GitTypeError::TerminalError(format!(
                         "Failed to flush after rendering: {}",
                         e
                     ))
@@ -868,7 +823,7 @@ impl ScreenManager {
 
                     let backend = CrosstermBackend::new(stdout());
                     let terminal = Terminal::new(backend).map_err(|e| {
-                        crate::domain::error::GitTypeError::TerminalError(format!(
+                        GitTypeError::TerminalError(format!(
                             "Failed to create ratatui terminal: {}",
                             e
                         ))
@@ -884,7 +839,7 @@ impl ScreenManager {
                                 let _ = screen.render_ratatui(frame);
                             })
                             .map_err(|e| {
-                                crate::domain::error::GitTypeError::TerminalError(format!(
+                                GitTypeError::TerminalError(format!(
                                     "Failed to draw ratatui frame: {}",
                                     e
                                 ))
@@ -900,10 +855,7 @@ impl ScreenManager {
         &self.current_screen_type
     }
 
-    pub fn configure_session_detail_screen(
-        &mut self,
-        session_data: crate::presentation::game::screens::session_detail_screen::SessionDisplayData,
-    ) -> Result<()> {
+    pub fn configure_session_detail_screen(&mut self, session_data: SessionDisplayData, ) -> Result<()> {
         if let Some(screen) = self.screens.get_mut(&ScreenType::SessionDetail) {
             if let Some(session_detail_screen) =
                 screen.as_any_mut().downcast_mut::<SessionDetailScreen>()

@@ -1,5 +1,8 @@
-use crate::presentation::cli::args::Cli;
 use crate::domain::models::ExtractionOptions;
+use crate::domain::services::extractor::LanguageRegistry;
+use crate::domain::services::theme_manager::ThemeManager;
+use crate::infrastructure::version::checker::VersionChecker;
+use crate::presentation::cli::args::Cli;
 use crate::presentation::game::models::ScreenType;
 use crate::presentation::game::screen_manager::ScreenManager;
 use crate::{GitTypeError, Result};
@@ -11,9 +14,9 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
     // Check for updates before starting the game session
     let should_exit = tokio::task::block_in_place(|| {
         tokio::runtime::Handle::current().block_on(async {
-            if let Ok(Some(entry)) = crate::infrastructure::version::checker::VersionChecker::check_for_updates().await {
+            if let Ok(Some(entry)) = VersionChecker::check_for_updates().await {
                 if entry.update_available {
-                    return crate::infrastructure::version::checker::VersionChecker::display_update_notification(&entry)
+                    return VersionChecker::display_update_notification(&entry)
                         .map(|should_continue| !should_continue);
                 }
             }
@@ -27,7 +30,7 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
     }
 
     // Initialize theme manager
-    if let Err(e) = crate::domain::services::theme_manager::ThemeManager::init(cli.config.clone()) {
+    if let Err(e) = ThemeManager::init(cli.config.clone()) {
         log::warn!("Failed to initialize theme manager: {}", e);
         eprintln!("⚠️ Warning: Failed to load theme configuration: {}", e);
         eprintln!("   Using default theme.");
@@ -39,7 +42,7 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
 
     if let Some(langs) = cli.langs {
         if let Err(unsupported_langs) =
-            crate::domain::services::extractor::LanguageRegistry::validate_languages(&langs)
+            LanguageRegistry::validate_languages(&langs)
         {
             eprintln!(
                 "❌ Unsupported language(s): {}",
@@ -47,7 +50,7 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
             );
             eprintln!("💡 Supported languages:");
             let supported =
-                crate::domain::services::extractor::LanguageRegistry::get_supported_languages();
+                LanguageRegistry::get_supported_languages();
             let mut supported_display = supported.clone();
             supported_display.dedup();
             for chunk in supported_display.chunks(6) {

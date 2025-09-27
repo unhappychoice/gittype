@@ -1,7 +1,6 @@
-use crate::presentation::game::models::{Screen, ScreenTransition, UpdateStrategy};
-use crate::presentation::game::views::{AsciiScoreView, SharingView, StatisticsView};
-use crate::presentation::game::ScreenType;
 use crate::domain::models::TotalResult;
+use crate::presentation::game::views::{AsciiScoreView, SharingView, StatisticsView};
+use crate::presentation::game::{Screen, ScreenTransition, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::{

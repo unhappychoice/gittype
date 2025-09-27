@@ -1,11 +1,11 @@
-use crate::infrastructure::storage::daos::RepositoryDao;
-use crate::infrastructure::storage::Database;
-use crate::Result;
+use crate::infrastructure::storage::{Database, RepositoryDao};
+use crate::presentation::cli::commands::run_game_session;
+use crate::presentation::cli::views::{repo_list_view, repo_play_view};
+use crate::presentation::cli::Cli;
+use crate::{GitTypeError, Result};
 use std::io::{self, Write};
 
 pub fn run_repo_list() -> Result<()> {
-    use crate::presentation::cli::views::repo_list_view;
-
     let db = Database::new()?;
     let repo_dao = RepositoryDao::new(&db);
 
@@ -25,7 +25,7 @@ pub fn run_repo_clear(force: bool) -> Result<()> {
 
     // Get the repos directory path
     let home_dir = dirs::home_dir().ok_or_else(|| {
-        crate::domain::error::GitTypeError::InvalidRepositoryFormat(
+        GitTypeError::InvalidRepositoryFormat(
             "Could not determine home directory".to_string(),
         )
     })?;
@@ -88,7 +88,7 @@ pub fn run_repo_clear(force: bool) -> Result<()> {
             println!("Cache directory {} has been removed.", repos_dir.display());
         }
         Err(e) => {
-            return Err(crate::domain::error::GitTypeError::InvalidRepositoryFormat(
+            return Err(GitTypeError::InvalidRepositoryFormat(
                 format!("Failed to delete cache directory: {}", e),
             ));
         }
@@ -98,8 +98,6 @@ pub fn run_repo_clear(force: bool) -> Result<()> {
 }
 
 pub fn run_repo_play() -> Result<()> {
-    use crate::presentation::cli::views::repo_play_view;
-
     let db = Database::new()?;
     let repo_dao = RepositoryDao::new(&db);
 
@@ -122,7 +120,7 @@ pub fn run_repo_play() -> Result<()> {
             println!("Starting gittype with repository: {}", repo_spec);
 
             // Create a Cli struct to pass to run_game_session
-            let cli = crate::presentation::cli::args::Cli {
+            let cli = Cli {
                 repo_path: None,
                 repo: Some(repo_spec),
                 langs: None,
@@ -131,7 +129,7 @@ pub fn run_repo_play() -> Result<()> {
             };
 
             // Start the game session
-            crate::presentation::cli::commands::run_game_session(cli)
+            run_game_session(cli)
         }
         None => {
             println!("Repository selection cancelled.");

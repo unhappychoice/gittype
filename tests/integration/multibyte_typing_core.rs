@@ -179,7 +179,6 @@ typing_core_test_with_parser!(
 
 #[cfg(test)]
 mod multibyte_comment_range_tests {
-    use super::*;
     use gittype::presentation::game::typing_core::TypingCore;
 
     #[test]

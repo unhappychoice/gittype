@@ -1,7 +1,7 @@
-use crate::presentation::game::screens::loading_screen::ProgressReporter;
+use crate::domain::models::{Challenge, ChunkType, CodeChunk};
 use crate::presentation::game::models::StepType;
+use crate::presentation::game::screens::loading_screen::ProgressReporter;
 use crate::presentation::game::DifficultyLevel;
-use crate::domain::models::{Challenge, CodeChunk};
 use rayon::prelude::*;
 use std::borrow::Cow;
 use std::collections::HashMap;
@@ -139,8 +139,6 @@ impl ChallengeConverter {
         difficulty: &DifficultyLevel,
         code_char_count: usize,
     ) -> bool {
-        use crate::presentation::game::DifficultyLevel;
-
         // Skip empty or whitespace-only chunks early
         if chunk.content.trim().is_empty() {
             return false;
@@ -154,7 +152,7 @@ impl ChallengeConverter {
         match difficulty {
             DifficultyLevel::Zen => {
                 // Only File chunks for Zen mode
-                matches!(chunk.chunk_type, crate::domain::models::ChunkType::File)
+                matches!(chunk.chunk_type, ChunkType::File)
             }
             DifficultyLevel::Wild => {
                 // Wild difficulty accepts any valid chunk

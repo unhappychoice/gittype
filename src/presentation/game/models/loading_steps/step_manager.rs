@@ -2,6 +2,7 @@ use super::{
     CacheCheckStep, CloningStep, DatabaseInitStep, ExecutionContext, ExtractingStep,
     FinalizingStep, GeneratingStep, ScanningStep, Step, StepResult,
 };
+use crate::presentation::game::models::StepType;
 use crate::presentation::game::screens::loading_screen::ProgressReporter;
 use crate::Result;
 
@@ -62,7 +63,7 @@ impl StepManager {
             }
 
             // Skip remaining steps if cache was used (except finalization)
-            if context.cache_used && step.step_type() != super::StepType::Finalizing {
+            if context.cache_used && step.step_type() != StepType::Finalizing {
                 log::debug!(
                     "Skipping step {:?} because cache was used",
                     step.step_type()

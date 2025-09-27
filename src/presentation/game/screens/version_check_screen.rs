@@ -1,5 +1,5 @@
-use crate::presentation::game::models::{Screen, ScreenTransition, UpdateStrategy};
-use crate::presentation::game::views::version_check::VersionCheckView;
+use crate::presentation::game::views::VersionCheckView;
+use crate::presentation::game::{Screen, ScreenTransition, UpdateStrategy};
 use crate::Result;
 use crossterm::{
     event::{self, Event, KeyCode},
@@ -18,6 +18,10 @@ pub enum VersionCheckResult {
 pub struct VersionCheckScreen;
 
 impl VersionCheckScreen {
+    pub fn new() -> Self {
+        Self {}
+    }
+
     pub fn show_legacy(current_version: &str, latest_version: &str) -> Result<VersionCheckResult> {
         enable_raw_mode()?;
         let mut stdout = stdout();
@@ -60,21 +64,7 @@ impl VersionCheckScreen {
     }
 }
 
-pub struct ScreenState {}
-
-impl Default for ScreenState {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl ScreenState {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Screen for ScreenState {
+impl Screen for VersionCheckScreen {
     fn handle_key_event(&mut self, key_event: event::KeyEvent) -> Result<ScreenTransition> {
         use crossterm::event::{KeyCode, KeyModifiers};
         match key_event.code {

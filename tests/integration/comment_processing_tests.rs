@@ -1,11 +1,11 @@
 //! Tests for comment processing functionality
 //! This module contains all tests related to comment range extraction, processing, and display.
 
+use gittype::domain::models::ChunkType;
+use gittype::domain::services::extractor::core::CommonExtractor;
 #[cfg(test)]
 use gittype::domain::services::extractor::ChallengeConverter;
-use gittype::domain::services::extractor::core::CommonExtractor;
 use gittype::presentation::game::typing_core::TypingCore;
-use gittype::domain::models::ChunkType;
 use std::path::Path;
 
 /// Tests for the core bug: byte vs character position misalignment

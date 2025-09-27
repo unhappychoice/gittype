@@ -3,6 +3,7 @@ use crate::domain::models::languages::{
     Swift, TypeScript, C,
 };
 use crate::domain::models::Language;
+use crate::presentation::ui::Colors;
 
 pub struct LanguageRegistry;
 
@@ -89,12 +90,8 @@ impl LanguageRegistry {
         match language {
             Some(lang) => Self::get_by_name(lang)
                 .map(|l| l.color())
-                .unwrap_or_else(|| {
-                    use crate::presentation::ui::Colors;
-                    Colors::lang_default()
-                }),
+                .unwrap_or_else(|| { Colors::lang_default() }),
             None => {
-                use crate::presentation::ui::Colors;
                 Colors::lang_default()
             }
         }

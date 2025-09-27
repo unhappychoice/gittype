@@ -1,5 +1,5 @@
-use gittype::infrastructure::cache::ChallengeCache;
 use gittype::domain::models::{Challenge, GitRepository};
+use gittype::infrastructure::cache::ChallengeCache;
 use std::fs;
 use tempfile;
 

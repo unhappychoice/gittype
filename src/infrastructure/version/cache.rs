@@ -1,4 +1,5 @@
 use crate::domain::models::version::VersionCacheEntry;
+use crate::GitTypeError;
 use chrono::Utc;
 use std::path::PathBuf;
 
@@ -9,14 +10,14 @@ impl VersionCache {
     fn cache_path() -> crate::Result<PathBuf> {
         let cache_dir = if cfg!(debug_assertions) {
             std::env::current_dir().map_err(|e| {
-                crate::GitTypeError::ExtractionFailed(format!(
+                GitTypeError::ExtractionFailed(format!(
                     "Could not get current directory: {}",
                     e
                 ))
             })?
         } else {
             let home_dir = dirs::home_dir().ok_or_else(|| {
-                crate::GitTypeError::ExtractionFailed(
+                GitTypeError::ExtractionFailed(
                     "Could not determine home directory".to_string(),
                 )
             })?;
@@ -37,7 +38,7 @@ impl VersionCache {
         if cache_path.exists() {
             let contents = std::fs::read_to_string(&cache_path)?;
             let entry: VersionCacheEntry = serde_json::from_str(&contents).map_err(|e| {
-                crate::GitTypeError::ExtractionFailed(format!("Failed to parse cache: {}", e))
+                GitTypeError::ExtractionFailed(format!("Failed to parse cache: {}", e))
             })?;
             Ok(Some(entry))
         } else {
@@ -53,7 +54,7 @@ impl VersionCache {
 
         let cache_path = Self::cache_path()?;
         let contents = serde_json::to_string_pretty(entry).map_err(|e| {
-            crate::GitTypeError::ExtractionFailed(format!("Failed to serialize cache: {}", e))
+            GitTypeError::ExtractionFailed(format!("Failed to serialize cache: {}", e))
         })?;
         std::fs::write(&cache_path, contents)?;
         Ok(())

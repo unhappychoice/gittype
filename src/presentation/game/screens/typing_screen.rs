@@ -2,11 +2,10 @@ use super::super::{
     context_loader::{self, CodeContext},
     typing_core::{InputResult, ProcessingOptions, TypingCore},
 };
-use crate::presentation::game::models::{Screen, ScreenTransition, UpdateStrategy};
-use crate::presentation::game::{game_data::GameData, views::TypingView};
-use crate::presentation::game::{ScreenType, SessionManager};
 use crate::domain::models::{Challenge, Countdown};
 use crate::domain::services::scoring::StageInput;
+use crate::presentation::game::{game_data::GameData, views::TypingView, Screen, ScreenTransition, UpdateStrategy};
+use crate::presentation::game::{ScreenType, SessionManager};
 use crate::{domain::models::GitRepository, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use std::io::Stdout;

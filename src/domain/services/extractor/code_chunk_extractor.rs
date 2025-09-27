@@ -1,11 +1,11 @@
-use crate::domain::models::{CodeChunk, ExtractionOptions};
-use crate::presentation::game::screens::loading_screen::ProgressReporter;
-use super::core::CommonExtractor;
 use crate::domain::models::Language;
+use crate::domain::models::{CodeChunk, ExtractionOptions};
+use crate::domain::services::extractor::core::extractor::CommonExtractor;
 use crate::presentation::game::models::StepType;
+use crate::presentation::game::screens::loading_screen::ProgressReporter;
 use crate::Result;
 use rayon::prelude::*;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::{
     atomic::{AtomicUsize, Ordering},
     Arc,
@@ -20,7 +20,7 @@ impl CodeChunkExtractor {
 
     pub fn extract_chunks_from_files_with_progress<P: ProgressReporter + ?Sized>(
         &mut self,
-        files_to_process: Vec<(std::path::PathBuf, Box<dyn Language>)>,
+        files_to_process: Vec<(PathBuf, Box<dyn Language>)>,
         options: &ExtractionOptions,
         progress: &P,
     ) -> Result<Vec<CodeChunk>> {

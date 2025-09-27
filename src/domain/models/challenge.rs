@@ -1,5 +1,6 @@
 use super::git_repository::GitRepository;
 use crate::presentation::game::DifficultyLevel;
+use std::path::Path;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Challenge {
@@ -91,8 +92,6 @@ impl Challenge {
     }
 
     fn get_relative_path(&self, path: &str) -> String {
-        use std::path::Path;
-
         // Try to extract just the filename if it's a full path
         if let Some(file_name) = Path::new(path).file_name() {
             if let Some(parent) = Path::new(path).parent() {

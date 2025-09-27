@@ -1,5 +1,5 @@
 use crate::domain::models::{Rank, StageResult};
-use crate::domain::services::scoring::tracker::StageTracker;
+use crate::domain::services::scoring::{RankCalculator, ScoreCalculator, StageTracker};
 
 /// Stage level result calculation
 pub struct StageCalculator;
@@ -38,7 +38,7 @@ impl StageCalculator {
             all_streaks.push(data.current_streak);
         }
 
-        let challenge_score = crate::domain::services::scoring::ScoreCalculator::calculate_score_from_metrics(
+        let challenge_score = ScoreCalculator::calculate_score_from_metrics(
             cpm,
             accuracy,
             mistakes,
@@ -47,7 +47,7 @@ impl StageCalculator {
         );
         let rank_name = Rank::for_score(challenge_score).name().to_string();
         let (tier_name, tier_position, tier_total, overall_position, overall_total) =
-            crate::domain::services::scoring::RankCalculator::calculate_tier_info(challenge_score);
+            RankCalculator::calculate_tier_info(challenge_score);
 
         StageResult {
             cpm,

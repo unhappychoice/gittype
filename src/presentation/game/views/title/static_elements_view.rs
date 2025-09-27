@@ -1,4 +1,5 @@
 use crate::domain::models::GitRepository;
+use crate::presentation::game::views::title::GitRepositoryView;
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::{
@@ -141,7 +142,7 @@ impl StaticElementsView {
         execute!(stdout, ResetColor)?;
 
         // Display git info at bottom
-        crate::presentation::game::views::title::GitRepositoryView::draw(stdout, git_repository)?;
+        GitRepositoryView::draw(stdout, git_repository)?;
 
         Ok(())
     }

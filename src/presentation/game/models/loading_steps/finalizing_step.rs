@@ -1,9 +1,7 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
-use crate::presentation::game::session_manager::{SessionConfig, SessionManager};
-use crate::presentation::game::stage_repository::StageRepository;
-use crate::presentation::game::DifficultyLevel;
+use crate::domain::services::scoring::{SessionTracker, TotalTracker};
 use crate::presentation::game::GameData;
-use crate::domain::services::scoring::tracker::{SessionTracker, TotalTracker};
+use crate::presentation::game::{DifficultyLevel, SessionConfig, SessionManager, StageRepository};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::style::Color;

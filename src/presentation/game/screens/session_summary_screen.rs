@@ -1,6 +1,6 @@
-use crate::presentation::game::models::{Screen, ScreenTransition, UpdateStrategy};
+use crate::domain::models::Rank;
 use crate::presentation::game::views::{OptionsView, RankView, ScoreView, SessionSummaryHeaderView, SummaryView};
-use crate::presentation::game::ScreenType;
+use crate::presentation::game::{GameData, Screen, ScreenTransition, ScreenType, SessionManager, UpdateStrategy};
 use crate::{domain::models::GitRepository, Result};
 use crossterm::{
     cursor::{Hide, MoveTo},
@@ -59,10 +59,10 @@ impl SessionSummaryScreen {
         let center_row = terminal_height / 2;
         let center_col = terminal_width / 2;
 
-        let best_rank = crate::domain::services::scoring::Rank::for_score(session_result.session_score);
+        let best_rank = Rank::for_score(session_result.session_score);
 
         // Get best status using session start records from SessionManager
-        let best_status = crate::presentation::game::session_manager::SessionManager::get_best_status_for_score(
+        let best_status = SessionManager::get_best_status_for_score(
             session_result.session_score,
         )
         .ok()
@@ -151,7 +151,7 @@ impl Screen for SessionSummaryScreen {
     ) -> Result<()> {
         if let Some(session_result) = session_result {
             // Get git repository from global GameData
-            let git_repository = crate::presentation::game::game_data::GameData::get_git_repository();
+            let git_repository = GameData::get_git_repository();
             let _ = self.show_session_summary(session_result, &git_repository);
         }
         Ok(())

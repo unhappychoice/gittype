@@ -1,4 +1,4 @@
-use crate::presentation::game::stage_repository::DifficultyLevel;
+use crate::presentation::game::DifficultyLevel;
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::{

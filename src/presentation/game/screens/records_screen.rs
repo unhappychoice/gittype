@@ -1,8 +1,8 @@
 use super::session_detail_screen::SessionDisplayData;
-use crate::presentation::game::models::{Screen, ScreenTransition, UpdateStrategy};
-use crate::infrastructure::storage::HasDatabase;
-use crate::domain::repositories::SessionRepository;
 use crate::domain::models::storage::{SessionResultData, StoredRepository};
+use crate::domain::repositories::SessionRepository;
+use crate::infrastructure::storage::{Database, HasDatabase, SessionDao};
+use crate::presentation::game::{Screen, ScreenTransition, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use chrono::{DateTime, Local};
@@ -436,9 +436,8 @@ trait SessionResultExt {
     fn get_session_result(&self, session_id: i64) -> Result<Option<SessionResultData>>;
 }
 
-impl SessionResultExt for crate::infrastructure::storage::Database {
+impl SessionResultExt for Database {
     fn get_session_result(&self, session_id: i64) -> Result<Option<SessionResultData>> {
-        use crate::infrastructure::storage::daos::SessionDao;
         let dao = SessionDao::new(self);
         dao.get_session_result(session_id)
     }
@@ -462,7 +461,7 @@ impl Screen for RecordsScreen {
                 self.action_result = Some(RecordsAction::Return);
                 // Return to Title screen
                 Ok(ScreenTransition::Replace(
-                    crate::presentation::game::models::ScreenType::Title,
+                    ScreenType::Title,
                 ))
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
@@ -490,7 +489,7 @@ impl Screen for RecordsScreen {
                         self.selected_session_for_detail = Some(session.clone());
 
                         return Ok(ScreenTransition::Push(
-                            crate::presentation::game::models::ScreenType::SessionDetail,
+                            ScreenType::SessionDetail,
                         ));
                     }
                 }

@@ -1,6 +1,6 @@
-use crate::presentation::game::models::{Screen, ScreenTransition, UpdateStrategy};
-use crate::presentation::game::views::analytics::{LanguagesView, OverviewView, RepositoriesView, TrendsView};
 use crate::domain::repositories::{GitRepositoryRepository, SessionRepository};
+use crate::presentation::game::views::analytics::{LanguagesView, OverviewView, RepositoriesView, TrendsView};
+use crate::presentation::game::{Screen, ScreenTransition, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::{
@@ -608,7 +608,7 @@ impl Screen for AnalyticsScreen {
             KeyCode::Esc => {
                 self.action_result = Some(AnalyticsAction::Return);
                 Ok(ScreenTransition::Replace(
-                    crate::presentation::game::models::ScreenType::Title,
+                    ScreenType::Title,
                 ))
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {

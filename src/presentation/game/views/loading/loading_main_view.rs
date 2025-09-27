@@ -1,8 +1,8 @@
 use crate::presentation::game::screens::loading_screen::LoadingScreenState;
-use crate::presentation::game::views::loading::{
-    loading_description_view::LoadingDescriptionView, loading_message_view::LoadingMessageView,
-    loading_progress_view::LoadingProgressView, loading_repo_info_view::LoadingRepoInfoView,
-};
+use crate::presentation::game::views::loading::loading_description_view::LoadingDescriptionView;
+use crate::presentation::game::views::loading::loading_message_view::LoadingMessageView;
+use crate::presentation::game::views::loading::loading_progress_view::LoadingProgressView;
+use crate::presentation::game::views::loading::loading_repo_info_view::LoadingRepoInfoView;
 use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,

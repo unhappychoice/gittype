@@ -1,4 +1,4 @@
-use crate::domain::models::GitRepository;
+use crate::domain::models::{GitRepository, Rank};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::{
@@ -19,7 +19,7 @@ impl PreviewView {
     ) -> Result<()> {
         let mut stdout = stdout();
 
-        let best_rank = crate::domain::services::scoring::Rank::for_score(metrics.session_score);
+        let best_rank = Rank::for_score(metrics.session_score);
         let preview_text = if let Some(repo) = repo_info {
             format!(
                 "\"{}\" with {:.0}pts on [{}/{}] - CPM: {:.0}, Mistakes: {}",

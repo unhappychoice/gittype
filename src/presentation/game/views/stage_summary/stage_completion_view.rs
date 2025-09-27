@@ -1,5 +1,6 @@
-use crate::presentation::game::ascii_digits::get_digit_patterns;
+use crate::domain::models::Rank;
 use crate::domain::services::scoring::StageResult;
+use crate::presentation::game::ascii_digits::get_digit_patterns;
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::{
@@ -198,7 +199,7 @@ impl StageCompletionView {
                     SetForegroundColor(Colors::to_crossterm(Colors::warning()))
                 )?;
             } else {
-                let best_rank = crate::domain::services::scoring::Rank::for_score(metrics.challenge_score);
+                let best_rank = Rank::for_score(metrics.challenge_score);
                 execute!(stdout, SetForegroundColor(best_rank.terminal_color()))?;
             }
             execute!(stdout, Print(line))?;

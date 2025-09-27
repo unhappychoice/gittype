@@ -1,3 +1,4 @@
+use crate::domain::services::scoring::RankCalculator;
 use crate::presentation::game::ascii_rank_titles_generated::get_rank_display;
 use crate::presentation::ui::Colors;
 use crate::Result;
@@ -45,7 +46,7 @@ impl RankView {
         let rank_lines = get_rank_display(best_rank.name());
         let rank_height = rank_lines.len() as u16;
 
-        let tier_info_values = crate::domain::services::scoring::RankCalculator::calculate_tier_info(session_score);
+        let tier_info_values = RankCalculator::calculate_tier_info(session_score);
 
         for (row_index, line) in rank_lines.iter().enumerate() {
             let display_width = Self::calculate_display_width(line);

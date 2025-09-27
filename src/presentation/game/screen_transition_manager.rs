@@ -1,4 +1,4 @@
-use crate::presentation::game::models::ScreenType;
+use crate::presentation::game::{ScreenType, SessionManager};
 use crate::Result;
 
 pub struct ScreenTransitionManager;
@@ -125,8 +125,8 @@ impl ScreenTransitionManager {
 
     fn handle_start_game_transition() -> Result<()> {
         // Start session if not already in progress
-        if !crate::presentation::game::session_manager::SessionManager::is_global_session_in_progress()? {
-            crate::presentation::game::session_manager::SessionManager::on_session_start()?;
+        if !SessionManager::is_global_session_in_progress()? {
+            SessionManager::on_session_start()?;
         }
 
         Ok(())
@@ -134,31 +134,31 @@ impl ScreenTransitionManager {
 
     fn handle_retry_transition() -> Result<()> {
         // Reset session state then start new session
-        crate::presentation::game::session_manager::SessionManager::reset_global_session()?;
-        crate::presentation::game::session_manager::SessionManager::on_session_start()?;
+        SessionManager::reset_global_session()?;
+        SessionManager::on_session_start()?;
 
         Ok(())
     }
 
     fn handle_game_failure() -> Result<()> {
-        crate::presentation::game::session_manager::SessionManager::on_session_failure()?;
+        SessionManager::on_session_failure()?;
         Ok(())
     }
 
     fn handle_session_completion() -> Result<()> {
-        crate::presentation::game::session_manager::SessionManager::on_session_complete()?;
+        SessionManager::on_session_complete()?;
         Ok(())
     }
 
     fn handle_session_retry() -> Result<()> {
         // Record completed session, reset state, then start new session
-        crate::presentation::game::session_manager::SessionManager::on_session_retry()?;
-        crate::presentation::game::session_manager::SessionManager::on_session_start()?;
+        SessionManager::on_session_retry()?;
+        SessionManager::on_session_start()?;
         Ok(())
     }
 
     fn handle_session_reset() -> Result<()> {
-        crate::presentation::game::session_manager::SessionManager::reset_global_session()?;
+        SessionManager::reset_global_session()?;
         Ok(())
     }
 }

@@ -1,6 +1,7 @@
 use super::super::database::Database;
-use crate::domain::models::{GitRepository, SessionResult};
 use crate::domain::models::storage::{SaveStageParams, SessionResultData, SessionStageResult, StoredSession};
+use crate::domain::models::{GitRepository, SessionResult};
+use crate::domain::services::scoring::RankCalculator;
 use crate::{domain::error::GitTypeError, Result};
 use chrono::{DateTime, Utc};
 use rusqlite::{params, OptionalExtension, Transaction};
@@ -75,7 +76,7 @@ impl<'a> SessionDao<'a> {
 
         // Calculate position information using RankCalculator
         let (_, tier_position, tier_total, overall_position, overall_total) =
-            crate::domain::services::scoring::RankCalculator::calculate_tier_info(session_result.session_score);
+            RankCalculator::calculate_tier_info(session_result.session_score);
 
         tx.execute(
             "INSERT INTO session_results (

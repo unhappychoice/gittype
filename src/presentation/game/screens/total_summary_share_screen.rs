@@ -1,8 +1,8 @@
-use crate::presentation::game::models::{Screen, ScreenTransition, UpdateStrategy};
-use crate::presentation::game::views::SharingView;
 use crate::domain::models::TotalResult;
+use crate::presentation::game::views::SharingView;
+use crate::presentation::game::{Screen, ScreenTransition, UpdateStrategy};
 use crate::presentation::sharing::SharingPlatform;
-use crate::Result;
+use crate::{GitTypeError, Result};
 use crossterm::{
     event::{self},
     execute,
@@ -88,7 +88,7 @@ impl TotalSummaryShareScreen {
 
     fn open_browser(&self, url: &str) -> crate::Result<()> {
         open::that(url).map_err(|e| {
-            crate::domain::error::GitTypeError::TerminalError(format!("Failed to open browser: {}", e))
+            GitTypeError::TerminalError(format!("Failed to open browser: {}", e))
         })
     }
 }

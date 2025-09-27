@@ -1,5 +1,6 @@
 use crate::infrastructure::cache::TrendingRepository;
-use crate::presentation::ui::colors::Colors;
+use crate::presentation::cli::commands::trending::fetch_trending_repositories_cached;
+use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::{
     event::{self, Event, KeyCode, KeyEventKind},
@@ -382,7 +383,7 @@ pub async fn render_trending_selection_ui() -> Result<Option<String>> {
                                 let client = reqwest::Client::new();
                                 let effective_period = "daily";
 
-                                repositories = crate::presentation::cli::commands::trending::fetch_trending_repositories_cached(
+                                repositories = fetch_trending_repositories_cached(
                                     &client,
                                     Some(lang_code),
                                     effective_period

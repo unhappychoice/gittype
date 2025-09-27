@@ -1,6 +1,6 @@
 use crate::domain::models::SessionResult;
-use crate::domain::repositories::session_repository::SessionRepository;
 use crate::domain::repositories::session_repository::BestStatus;
+use crate::domain::repositories::session_repository::SessionRepository;
 use crate::presentation::ui::Colors;
 use ratatui::{
     layout::{Alignment, Rect},

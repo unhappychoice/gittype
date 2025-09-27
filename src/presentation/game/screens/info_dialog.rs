@@ -1,4 +1,4 @@
-use crate::presentation::game::models::{Screen, ScreenTransition, UpdateStrategy};
+use crate::presentation::game::{Screen, ScreenTransition, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyModifiers};

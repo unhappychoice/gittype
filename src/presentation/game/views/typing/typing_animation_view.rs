@@ -1,4 +1,5 @@
 use crate::domain::models::RankTier;
+use crate::presentation::game::rank_messages::get_colored_messages_for_rank;
 use ratatui::style::Color;
 use std::time::{Duration, Instant};
 
@@ -42,7 +43,6 @@ impl TypingAnimationView {
     }
 
     pub fn set_rank_messages(&mut self, rank_name: &str) {
-        use crate::presentation::game::rank_messages::get_colored_messages_for_rank;
         let colored_messages = get_colored_messages_for_rank(rank_name);
         self.hacking_lines = colored_messages
             .into_iter()

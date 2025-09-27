@@ -1,10 +1,10 @@
+use crate::domain::models::storage::{SaveStageParams, SessionResultData, SessionStageResult, StoredRepository, StoredSession};
+use crate::domain::models::{Challenge, GitRepository, SessionResult};
+use crate::domain::services::scoring::{StageCalculator, StageResult, StageTracker};
 use crate::infrastructure::storage::{
     daos::{ChallengeDao, RepositoryDao, SessionDao},
     Database, HasDatabase,
 };
-use crate::domain::models::storage::{SaveStageParams, SessionResultData, SessionStageResult, StoredRepository, StoredSession};
-use crate::domain::models::{Challenge, GitRepository, SessionResult};
-use crate::domain::services::scoring::{StageResult, StageTracker};
 use crate::{domain::error::GitTypeError, Result};
 use std::sync::{Arc, Mutex};
 
@@ -86,7 +86,7 @@ impl SessionRepository {
             .iter()
             .enumerate()
             .map(|(index, (name, tracker))| {
-                let stage_result = crate::domain::services::scoring::StageCalculator::calculate(tracker);
+                let stage_result = StageCalculator::calculate(tracker);
                 let keystrokes = tracker.get_data().keystrokes.len();
                 let challenge = challenges.get(index).cloned();
                 Ok((name.clone(), stage_result, keystrokes, challenge))

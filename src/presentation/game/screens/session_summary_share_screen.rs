@@ -1,7 +1,5 @@
-use crate::presentation::game::models::{Screen, ScreenTransition, UpdateStrategy};
-use crate::presentation::game::views::{
-    ShareBackOptionView, SharePlatformOptionsView, SharePreviewView, ShareTitleView,
-};
+use crate::presentation::game::views::{ShareBackOptionView, SharePlatformOptionsView, SharePreviewView, ShareTitleView};
+use crate::presentation::game::{GameData, Screen, ScreenTransition, UpdateStrategy};
 use crate::presentation::sharing::{SharingPlatform, SharingService};
 use crate::{domain::models::GitRepository, Result};
 use crossterm::terminal::{self};
@@ -109,7 +107,7 @@ impl Screen for SessionSummaryShareScreen {
     ) -> Result<()> {
         self.session_result = session_result.cloned();
         // Get git repository from global GameData
-        let git_repository = crate::presentation::game::game_data::GameData::get_git_repository();
+        let git_repository = GameData::get_git_repository();
         self.git_repository = git_repository.clone();
 
         if let Some(session_result) = session_result {

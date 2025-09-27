@@ -2,9 +2,9 @@
 //! This module tests how TreeSitter handles different indentation scenarios
 //! and ensures comment range extraction works correctly with indented code.
 
+use gittype::domain::services::extractor::core::CommonExtractor;
 #[cfg(test)]
 use gittype::domain::services::extractor::ChallengeConverter;
-use gittype::domain::services::extractor::core::CommonExtractor;
 use gittype::presentation::game::typing_core::TypingCore;
 use std::path::Path;
 use tree_sitter::StreamingIterator;

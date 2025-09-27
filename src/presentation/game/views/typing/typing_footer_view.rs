@@ -1,4 +1,5 @@
-use crate::{presentation::game::typing_core::TypingCore, domain::services::scoring::tracker::stage::StageTracker, presentation::ui::Colors};
+use crate::domain::services::scoring::RealTimeCalculator;
+use crate::{domain::services::scoring::tracker::stage::StageTracker, presentation::game::typing_core::TypingCore, presentation::ui::Colors};
 use ratatui::{
     style::Style,
     text::{Line, Span},
@@ -31,7 +32,7 @@ impl TypingFooterView {
             let current_position = typing_core.current_position_to_type();
             let mistakes = typing_core.mistakes();
 
-            let metrics = crate::domain::services::scoring::RealTimeCalculator::calculate(
+            let metrics = RealTimeCalculator::calculate(
                 current_position,
                 mistakes,
                 elapsed_time,

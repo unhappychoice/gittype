@@ -1,5 +1,5 @@
 use crate::domain::models::GitRepository;
-use crate::Result;
+use crate::{GitTypeError, Result};
 use std::path::Path;
 use std::process::Command;
 
@@ -76,10 +76,10 @@ impl GitRepositoryExtractor {
             .current_dir(repo_path)
             .args(["remote", "get-url", "origin"])
             .output()
-            .map_err(crate::GitTypeError::IoError)?;
+            .map_err(GitTypeError::IoError)?;
 
         if !output.status.success() {
-            return Err(crate::GitTypeError::ExtractionFailed(
+            return Err(GitTypeError::ExtractionFailed(
                 "Failed to get remote URL".to_string(),
             ));
         }
@@ -127,10 +127,10 @@ impl GitRepositoryExtractor {
             .current_dir(repo_path)
             .args(["branch", "--show-current"])
             .output()
-            .map_err(crate::GitTypeError::IoError)?;
+            .map_err(GitTypeError::IoError)?;
 
         if !output.status.success() {
-            return Err(crate::GitTypeError::ExtractionFailed(
+            return Err(GitTypeError::ExtractionFailed(
                 "Failed to get current branch".to_string(),
             ));
         }
@@ -144,10 +144,10 @@ impl GitRepositoryExtractor {
             .current_dir(repo_path)
             .args(["rev-parse", "HEAD"])
             .output()
-            .map_err(crate::GitTypeError::IoError)?;
+            .map_err(GitTypeError::IoError)?;
 
         if !output.status.success() {
-            return Err(crate::GitTypeError::ExtractionFailed(
+            return Err(GitTypeError::ExtractionFailed(
                 "Failed to get current commit hash".to_string(),
             ));
         }
@@ -161,10 +161,10 @@ impl GitRepositoryExtractor {
             .current_dir(repo_path)
             .args(["status", "--porcelain"])
             .output()
-            .map_err(crate::GitTypeError::IoError)?;
+            .map_err(GitTypeError::IoError)?;
 
         if !output.status.success() {
-            return Err(crate::GitTypeError::ExtractionFailed(
+            return Err(GitTypeError::ExtractionFailed(
                 "Failed to check working directory status".to_string(),
             ));
         }

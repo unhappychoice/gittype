@@ -1,8 +1,6 @@
-use crate::presentation::game::models::{Screen, ScreenTransition, UpdateStrategy};
-use crate::presentation::game::stage_repository::DifficultyLevel;
-use crate::presentation::game::views::title::{DifficultySelectionView, StaticElementsView};
-use crate::presentation::game::ScreenType;
 use crate::domain::models::GitRepository;
+use crate::presentation::game::views::title::{DifficultySelectionView, StaticElementsView};
+use crate::presentation::game::{DifficultyLevel, GameData, Screen, ScreenTransition, ScreenType, StageRepository, UpdateStrategy};
 use crate::Result;
 use crossterm::{
     event::{KeyCode, KeyEvent, KeyModifiers},
@@ -85,7 +83,7 @@ impl Screen for TitleScreen {
         self.needs_render = true;
 
         // Update challenge counts from StageRepository when initializing
-        if let Ok(stage_repo) = crate::presentation::game::stage_repository::StageRepository::instance().lock() {
+        if let Ok(stage_repo) = StageRepository::instance().lock() {
             let challenge_counts = stage_repo.count_challenges_by_difficulty();
             self.challenge_counts = challenge_counts;
         }
@@ -150,7 +148,7 @@ impl Screen for TitleScreen {
         let center_col = terminal_width / 2;
 
         // Get git repository from global GameData or use local one as fallback
-        let binding = crate::presentation::game::game_data::GameData::get_git_repository();
+        let binding = GameData::get_git_repository();
         let git_repo_to_use = binding.as_ref().or(self.git_repository.as_ref());
         let difficulties_array = &DIFFICULTIES;
 

@@ -1,5 +1,5 @@
 use crate::infrastructure::cache::TrendingRepository;
-use crate::presentation::ui::colors::Colors;
+use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::{
     event::{self, Event, KeyCode, KeyEventKind},

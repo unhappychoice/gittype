@@ -1,9 +1,9 @@
+use crate::domain::models::Challenge;
 use crate::domain::models::ExtractionOptions;
 use crate::domain::services::extractor::RepositoryExtractor;
-use crate::presentation::game::models::loading_steps::{ExecutionContext, StepManager, StepType};
-use crate::presentation::game::models::{Screen, ScreenTransition, UpdateStrategy};
-use crate::presentation::game::GameData;
-use crate::domain::models::Challenge;
+use crate::presentation::game::models::{ExecutionContext, StepManager, StepType};
+use crate::presentation::game::views::LoadingMainView;
+use crate::presentation::game::{GameData, Screen, ScreenManager, ScreenTransition, UpdateStrategy};
 use crate::Result;
 use ratatui::Frame;
 use std::path::PathBuf;
@@ -276,7 +276,6 @@ impl LoadingScreen {
     }
 
     fn draw_ui_static(frame: &mut Frame, state: &LoadingScreenState) {
-        use crate::presentation::game::views::LoadingMainView;
         LoadingMainView::render(frame, state);
     }
 
@@ -368,7 +367,7 @@ impl Screen for LoadingScreen {
         if key_event.code == KeyCode::Char('c')
             && key_event.modifiers.contains(KeyModifiers::CONTROL)
         {
-            crate::presentation::game::screen_manager::ScreenManager::show_session_summary_on_interrupt();
+            ScreenManager::show_session_summary_on_interrupt();
             std::process::exit(0);
         }
 

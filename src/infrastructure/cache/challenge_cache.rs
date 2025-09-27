@@ -1,7 +1,12 @@
 use super::gzip_storage::GzipStorage;
 use crate::domain::models::{Challenge, GitRepository};
+use crate::presentation::game::models::StepType;
+use crate::presentation::game::screens::loading_screen::ProgressReporter;
+use crate::presentation::game::DifficultyLevel;
+use rayon::prelude::*;
 use std::fs;
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 struct ChallengePointer {
@@ -11,7 +16,7 @@ struct ChallengePointer {
     end_line: Option<usize>,
     language: Option<String>,
     comment_ranges: Vec<(usize, usize)>,
-    difficulty_level: Option<crate::presentation::game::stage_repository::DifficultyLevel>,
+    difficulty_level: Option<DifficultyLevel>,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -79,11 +84,8 @@ impl ChallengeCache {
     pub fn load_with_progress(
         &self,
         repo: &GitRepository,
-        progress_reporter: Option<&dyn crate::presentation::game::screens::loading_screen::ProgressReporter>,
+        progress_reporter: Option<&dyn ProgressReporter>,
     ) -> Option<Vec<Challenge>> {
-        use rayon::prelude::*;
-        use std::sync::{Arc, Mutex};
-
         // Skip cache for dirty repositories
         if repo.is_dirty {
             return None;
@@ -117,7 +119,7 @@ impl ChallengeCache {
                     drop(count);
 
                     reporter.set_file_counts(
-                        crate::presentation::game::models::loading_steps::StepType::CacheCheck,
+                        StepType::CacheCheck,
                         current,
                         total,
                         Some(format!("Reconstructing challenge {}/{}", current, total)),

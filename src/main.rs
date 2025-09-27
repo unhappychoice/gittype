@@ -1,6 +1,6 @@
 use clap::Parser;
-use gittype::presentation::cli::{run_cli, Cli};
 use gittype::infrastructure::logging::log_error_to_file;
+use gittype::presentation::cli::{run_cli, Cli};
 use gittype::presentation::signal_handler::setup_signal_handlers;
 
 #[tokio::main]

@@ -1,5 +1,6 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
 use crate::infrastructure::cache::CHALLENGE_CACHE;
+use crate::presentation::game::screens::loading_screen::ProgressReporter;
 use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::style::Color;
@@ -83,7 +84,7 @@ impl Step for CacheCheckStep {
             git_repo,
             context
                 .loading_screen
-                .map(|s| s as &dyn crate::presentation::game::screens::loading_screen::ProgressReporter),
+                .map(|s| s as &dyn ProgressReporter),
         ) else {
             log::info!(
                 "Cache miss for {} - proceeding with full extraction",

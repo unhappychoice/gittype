@@ -1,6 +1,5 @@
-use super::{screen_manager::ScreenManager, screens::title_screen::TitleScreen};
-use crate::presentation::game::models::ScreenType;
-
+use crate::presentation::game::screens::TitleScreen;
+use crate::presentation::game::{ScreenManager, ScreenType};
 use crate::{domain::models::Challenge, domain::models::GitRepository, Result};
 use once_cell::sync::Lazy;
 use rand::rngs::StdRng;

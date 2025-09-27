@@ -1,6 +1,6 @@
-use gittype::domain::models::config::ThemeConfig;
 use gittype::domain::models::color_mode::ColorMode;
 use gittype::domain::models::color_scheme::{ColorScheme, SerializableColor, ThemeFile};
+use gittype::domain::models::config::ThemeConfig;
 use ratatui::style::Color;
 
 #[test]

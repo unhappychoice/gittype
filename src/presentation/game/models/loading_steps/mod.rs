@@ -1,6 +1,7 @@
+use crate::domain::models::Challenge;
 use crate::domain::models::ExtractionOptions;
 use crate::domain::services::extractor::RepositoryExtractor;
-use crate::domain::models::Challenge;
+use crate::presentation::game::screens::LoadingScreen;
 use crate::Result;
 use ratatui::style::Color;
 use std::path::PathBuf;
@@ -40,7 +41,7 @@ pub struct ExecutionContext<'a> {
     pub repo_spec: Option<&'a str>,
     pub repo_path: Option<&'a PathBuf>,
     pub extraction_options: Option<&'a ExtractionOptions>,
-    pub loading_screen: Option<&'a crate::presentation::game::screens::loading_screen::LoadingScreen>,
+    pub loading_screen: Option<&'a LoadingScreen>,
     pub repository_loader: Option<&'a mut RepositoryExtractor>,
     pub current_repo_path: Option<PathBuf>,
     pub git_repository: Option<crate::domain::models::GitRepository>,

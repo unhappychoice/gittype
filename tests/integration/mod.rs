@@ -4,11 +4,10 @@ pub mod indent_treesitter_tests;
 pub mod languages;
 pub mod missing_ascii_art_test;
 
-use gittype::domain::models::{CodeChunk, ExtractionOptions, Language};
+use gittype::domain::models::{Challenge, CodeChunk, ExtractionOptions, Language};
 use gittype::domain::services::extractor::CodeChunkExtractor;
 use gittype::domain::services::extractor::{LanguageRegistry, RepositoryExtractor};
 use gittype::presentation::game::screens::loading_screen::NoOpProgressReporter;
-use gittype::presentation::game::Challenge;
 use gittype::Result;
 use ignore::WalkBuilder;
 use std::path::{Path, PathBuf};
