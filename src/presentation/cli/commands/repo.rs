@@ -1,5 +1,5 @@
-use crate::storage::daos::RepositoryDao;
-use crate::storage::Database;
+use crate::infrastructure::storage::daos::RepositoryDao;
+use crate::infrastructure::storage::Database;
 use crate::Result;
 use std::io::{self, Write};
 

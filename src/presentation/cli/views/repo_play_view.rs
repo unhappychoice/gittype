@@ -1,6 +1,6 @@
 use super::repo_utils;
 use crate::domain::services::extractor::LanguageRegistry;
-use crate::storage::daos::repository_dao::StoredRepositoryWithLanguages;
+use crate::domain::models::storage::StoredRepositoryWithLanguages;
 use crate::presentation::ui::colors::Colors;
 use crate::Result;
 use crossterm::{

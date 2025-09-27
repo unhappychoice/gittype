@@ -1,5 +1,5 @@
-use crate::storage::daos::StoredRepository;
-use crate::storage::daos::StoredSession;
+use crate::domain::models::storage::StoredRepository;
+use crate::domain::models::storage::StoredSession;
 use crate::presentation::ui::Colors;
 use chrono::{DateTime, Local};
 use ratatui::{

@@ -1,6 +1,6 @@
 use super::data::SeedData;
 use crate::{
-    storage::{Database, HasDatabase},
+    infrastructure::storage::{Database, HasDatabase},
     Result,
 };
 use std::sync::{Arc, Mutex};

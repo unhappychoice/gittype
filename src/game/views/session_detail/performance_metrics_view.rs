@@ -1,4 +1,4 @@
-use crate::storage::daos::session_dao::SessionResultData;
+use crate::domain::models::storage::SessionResultData;
 use crate::presentation::ui::Colors;
 use ratatui::{
     style::Style,

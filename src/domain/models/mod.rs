@@ -11,6 +11,7 @@ pub mod languages;
 pub mod rank;
 pub mod session;
 pub mod stage;
+pub mod storage;
 pub mod theme;
 pub mod total;
 pub mod version;

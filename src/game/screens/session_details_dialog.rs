@@ -1,7 +1,7 @@
 use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
 use crate::game::views::{BestRecordsView, ControlsView, HeaderView, StageResultsView};
 use crate::game::{GameData, SessionManager};
-use crate::storage::repositories::session_repository::SessionRepository;
+use crate::domain::repositories::session_repository::SessionRepository;
 use crate::{domain::models::GitRepository, Result};
 use ratatui::{
     layout::{Constraint, Direction, Layout},
@@ -12,7 +12,7 @@ use std::io::Stdout;
 pub struct SessionDetailsDialog {
     session_result: Option<crate::domain::models::SessionResult>,
     repo_info: Option<GitRepository>,
-    best_status: Option<crate::storage::repositories::session_repository::BestStatus>,
+    best_status: Option<crate::domain::repositories::session_repository::BestStatus>,
 }
 
 impl Default for SessionDetailsDialog {

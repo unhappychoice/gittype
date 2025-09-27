@@ -1,7 +1,7 @@
 use crate::game::ascii_digits::get_digit_patterns;
 use crate::domain::models::{Rank, SessionResult};
-use crate::storage::repositories::SessionRepository;
-use crate::storage::session_repository::BestStatus;
+use crate::domain::repositories::SessionRepository;
+use crate::domain::repositories::session_repository::BestStatus;
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::{

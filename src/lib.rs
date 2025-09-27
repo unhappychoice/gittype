@@ -8,6 +8,5 @@ pub mod repository_manager;
 pub mod scoring;
 pub mod sharing;
 pub mod signal_handler;
-pub mod storage;
 
 pub use error::{GitTypeError, Result};

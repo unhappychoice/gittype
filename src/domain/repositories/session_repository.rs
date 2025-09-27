@@ -1,12 +1,10 @@
-use super::super::{
-    daos::{
-        ChallengeDao, RepositoryDao, SaveStageParams, SessionDao, StoredRepository, StoredSession,
-    },
+use crate::infrastructure::storage::{
+    daos::{ChallengeDao, RepositoryDao, SessionDao},
     Database, HasDatabase,
 };
+use crate::domain::models::storage::{SaveStageParams, SessionResultData, SessionStageResult, StoredRepository, StoredSession};
 use crate::domain::models::{Challenge, GitRepository, SessionResult};
 use crate::scoring::{StageResult, StageTracker};
-use crate::storage::daos::session_dao::{SessionResultData, SessionStageResult};
 use crate::{error::GitTypeError, Result};
 use std::sync::{Arc, Mutex};
 

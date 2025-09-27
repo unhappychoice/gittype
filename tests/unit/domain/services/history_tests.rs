@@ -1,4 +1,4 @@
-use gittype::storage::history::SessionHistory;
+use gittype::domain::services::history::SessionHistory;
 
 #[test]
 fn session_history_default_is_empty() {

@@ -1,24 +1,8 @@
-use super::super::Database;
+use super::super::database::Database;
 use crate::domain::models::GitRepository;
+use crate::domain::models::storage::{StoredRepository, StoredRepositoryWithLanguages};
 use crate::{error::GitTypeError, Result};
 use rusqlite::{params, Transaction};
-
-#[derive(Debug, Clone)]
-pub struct StoredRepository {
-    pub id: i64,
-    pub user_name: String,
-    pub repository_name: String,
-    pub remote_url: String,
-}
-
-#[derive(Debug, Clone)]
-pub struct StoredRepositoryWithLanguages {
-    pub id: i64,
-    pub user_name: String,
-    pub repository_name: String,
-    pub remote_url: String,
-    pub languages: Vec<String>,
-}
 
 pub struct RepositoryDao<'a> {
     db: &'a Database,

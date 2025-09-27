@@ -1,4 +1,4 @@
-use crate::storage::daos::session_dao::SessionStageResult;
+use crate::domain::models::storage::SessionStageResult;
 use crate::presentation::ui::Colors;
 use ratatui::{
     style::{Modifier, Style},

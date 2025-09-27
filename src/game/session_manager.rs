@@ -1,6 +1,6 @@
 use crate::scoring::{SessionTracker, SessionTrackerData, StageCalculator, GLOBAL_TOTAL_TRACKER};
-use crate::storage::session_repository::BestStatus;
-use crate::storage::SessionRepository;
+use crate::domain::repositories::session_repository::BestStatus;
+use crate::domain::repositories::SessionRepository;
 use crate::{
     game::{stage_repository::StageRepository, DifficultyLevel},
     domain::models::{Challenge, SessionResult},
@@ -70,7 +70,7 @@ pub struct SessionManager {
     // Challenge management - tracks all challenges used in this session (completed, failed, skipped)
     session_challenges: Vec<crate::domain::models::Challenge>,
     // Best records at session start (for accurate comparison)
-    best_records_at_start: Option<crate::storage::repositories::session_repository::BestRecords>,
+    best_records_at_start: Option<crate::domain::repositories::session_repository::BestRecords>,
 }
 
 static GLOBAL_SESSION_MANAGER: Lazy<Arc<Mutex<SessionManager>>> =

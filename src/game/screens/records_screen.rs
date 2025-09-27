@@ -1,10 +1,8 @@
 use super::session_detail_screen::SessionDisplayData;
 use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
-use crate::storage::{
-    daos::{session_dao::SessionResultData, StoredRepository},
-    repositories::SessionRepository,
-    HasDatabase,
-};
+use crate::infrastructure::storage::HasDatabase;
+use crate::domain::repositories::SessionRepository;
+use crate::domain::models::storage::{SessionResultData, StoredRepository};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use chrono::{DateTime, Local};
@@ -438,9 +436,9 @@ trait SessionResultExt {
     fn get_session_result(&self, session_id: i64) -> Result<Option<SessionResultData>>;
 }
 
-impl SessionResultExt for crate::storage::Database {
+impl SessionResultExt for crate::infrastructure::storage::Database {
     fn get_session_result(&self, session_id: i64) -> Result<Option<SessionResultData>> {
-        use crate::storage::daos::SessionDao;
+        use crate::infrastructure::storage::daos::SessionDao;
         let dao = SessionDao::new(self);
         dao.get_session_result(session_id)
     }

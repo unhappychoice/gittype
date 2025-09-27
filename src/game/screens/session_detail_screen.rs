@@ -1,12 +1,7 @@
 use crate::game::models::{Screen, ScreenTransition, UpdateStrategy};
 use crate::game::views::{PerformanceMetricsView, SessionInfoView, StageDetailsView};
-use crate::storage::{
-    daos::{
-        session_dao::{SessionResultData, SessionStageResult},
-        StoredRepository, StoredSession,
-    },
-    repositories::SessionRepository,
-};
+use crate::domain::repositories::SessionRepository;
+use crate::domain::models::storage::{SessionResultData, SessionStageResult, StoredRepository, StoredSession};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::{

@@ -1,4 +1,4 @@
-use super::super::Database;
+use super::super::database::Database;
 use crate::domain::models::Challenge;
 use crate::{error::GitTypeError, Result};
 use rusqlite::{params, Transaction};
