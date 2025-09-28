@@ -1,5 +1,4 @@
-use crate::infrastructure::cache::{TrendingRepository, TRENDING_CACHE};
-use crate::infrastructure::http::OssInsightClient;
+use crate::domain::repositories::trending_repository::{TrendingRepositoryInfo, TRENDING_REPOSITORY};
 use crate::presentation::cli::commands::run_game_session;
 use crate::presentation::cli::views::{trending_repository_selection_view, trending_unified_view};
 use crate::presentation::cli::Cli;
@@ -114,34 +113,26 @@ pub async fn fetch_trending_repositories_cached(
     _client: &(),
     language: Option<&str>,
     period: &str,
-) -> Result<Vec<TrendingRepository>> {
+) -> Result<Vec<TrendingRepositoryInfo>> {
     let cache_key = format!("{}:{}", language.unwrap_or("all"), period);
 
-    if let Some(cached_repos) = TRENDING_CACHE.get(&cache_key) {
-        log::debug!("Using cached trending repositories for key: {}", cache_key);
-        return Ok(cached_repos);
+    // Use the unified repository method that handles both caching and API fetching
+    match TRENDING_REPOSITORY.get_trending_repositories(&cache_key, language, period).await {
+        Ok(repos) => {
+            log::debug!("Retrieved trending repositories for key: {}", cache_key);
+            Ok(repos)
+        }
+        Err(e) => {
+            log::warn!("Failed to retrieve trending repositories: {}", e);
+            Ok(Vec::new()) // Return empty vec for graceful degradation
+        }
     }
-
-    TRENDING_CACHE.cleanup_expired();
-
-    let rate_limit_ms = 100;
-    tokio::time::sleep(std::time::Duration::from_millis(rate_limit_ms)).await;
-
-    let api_client = OssInsightClient::new();
-    let repos = api_client
-        .fetch_trending_repositories(language, period)
-        .await?;
-
-    TRENDING_CACHE.set(&cache_key, repos.clone());
-    log::debug!("Cached trending repositories for key: {}", cache_key);
-
-    Ok(repos)
 }
 
 fn select_repository_by_name<'a>(
-    repos: &'a [TrendingRepository],
+    repos: &'a [TrendingRepositoryInfo],
     name: &str,
-) -> Option<&'a TrendingRepository> {
+) -> Option<&'a TrendingRepositoryInfo> {
     repos
         .iter()
         .find(|repo| repo.repo_name.to_lowercase().contains(&name.to_lowercase()))

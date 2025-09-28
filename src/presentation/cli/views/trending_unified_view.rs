@@ -1,4 +1,4 @@
-use crate::infrastructure::cache::TrendingRepository;
+use crate::domain::repositories::trending_repository::TrendingRepositoryInfo;
 use crate::presentation::cli::commands::trending::fetch_trending_repositories_cached;
 use crate::presentation::ui::Colors;
 use crate::Result;
@@ -49,7 +49,7 @@ pub async fn render_trending_selection_ui() -> Result<Option<String>> {
     list_state.select(Some(0));
     let mut show_repos = false;
     let mut _selected_language: Option<String> = None;
-    let mut repositories: Vec<TrendingRepository> = Vec::new();
+    let mut repositories: Vec<TrendingRepositoryInfo> = Vec::new();
 
     let result: Result<Option<String>> = loop {
         terminal.draw(|f| {

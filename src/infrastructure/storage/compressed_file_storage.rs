@@ -13,6 +13,7 @@ mod real_impl {
     use std::fs;
     use std::io::{Read, Write};
 
+    #[derive(Debug, Clone, Default)]
     pub struct CompressedFileStorage;
 
     impl AppDataProvider for CompressedFileStorage {}
@@ -73,6 +74,25 @@ mod real_impl {
             Ok(())
         }
 
+        /// Get file size if it exists
+        pub fn get_file_size(&self, file_path: &Path) -> Option<u64> {
+            file_path.metadata().ok().map(|m| m.len())
+        }
+
+        /// List all files in a directory (for testing compatibility)
+        pub fn list_files_in_dir(&self, dir_path: &Path) -> Vec<PathBuf> {
+            if !dir_path.exists() {
+                return Vec::new();
+            }
+
+            std::fs::read_dir(dir_path)
+                .unwrap_or_else(|_| std::fs::read_dir(".").unwrap())
+                .filter_map(|entry| entry.ok())
+                .map(|entry| entry.path())
+                .filter(|path| path.is_file())
+                .collect()
+        }
+
         /// Check if a file exists
         pub fn file_exists(&self, file_path: &Path) -> bool {
             file_path.exists()
@@ -85,13 +105,20 @@ mod mock_impl {
     use super::*;
     use crate::GitTypeError;
     use std::collections::HashMap;
-    use std::sync::{LazyLock, Mutex};
+    use std::sync::{Arc, Mutex};
 
-    // Simple in-memory storage for tests
-    static TEST_STORAGE: LazyLock<Mutex<HashMap<PathBuf, Vec<u8>>>> =
-        LazyLock::new(|| Mutex::new(HashMap::new()));
+    #[derive(Debug, Clone)]
+    pub struct CompressedFileStorage {
+        test_storage: Arc<Mutex<HashMap<PathBuf, Vec<u8>>>>,
+    }
 
-    pub struct CompressedFileStorage;
+    impl Default for CompressedFileStorage {
+        fn default() -> Self {
+            Self {
+                test_storage: Arc::new(Mutex::new(HashMap::new())),
+            }
+        }
+    }
 
     impl AppDataProvider for CompressedFileStorage {}
 
@@ -113,7 +140,7 @@ mod mock_impl {
                 .finish()
                 .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to finish compression: {}", e)))?;
 
-            let mut storage = TEST_STORAGE.lock().unwrap();
+            let mut storage = self.test_storage.lock().unwrap();
             storage.insert(file_path.to_path_buf(), compressed_data);
             Ok(())
         }
@@ -122,7 +149,7 @@ mod mock_impl {
             use flate2::read::GzDecoder;
             use std::io::Read;
 
-            let storage = TEST_STORAGE.lock().unwrap();
+            let storage = self.test_storage.lock().unwrap();
             let compressed_data = match storage.get(file_path) {
                 Some(data) => data,
                 None => return Ok(None),
@@ -141,19 +168,19 @@ mod mock_impl {
         }
 
         pub fn delete_file(&self, file_path: &Path) -> Result<()> {
-            let mut storage = TEST_STORAGE.lock().unwrap();
+            let mut storage = self.test_storage.lock().unwrap();
             storage.remove(file_path);
             Ok(())
         }
 
         pub fn file_exists(&self, file_path: &Path) -> bool {
-            let storage = TEST_STORAGE.lock().unwrap();
+            let storage = self.test_storage.lock().unwrap();
             storage.contains_key(file_path)
         }
 
         /// Test-only method to get all stored file paths in a directory
         pub fn list_files_in_dir(&self, dir_path: &Path) -> Vec<PathBuf> {
-            let storage = TEST_STORAGE.lock().unwrap();
+            let storage = self.test_storage.lock().unwrap();
             storage
                 .keys()
                 .filter(|path| path.parent() == Some(dir_path))
@@ -163,7 +190,7 @@ mod mock_impl {
 
         /// Test-only method to get file size
         pub fn get_file_size(&self, file_path: &Path) -> Option<u64> {
-            let storage = TEST_STORAGE.lock().unwrap();
+            let storage = self.test_storage.lock().unwrap();
             storage.get(file_path).map(|data| data.len() as u64)
         }
 

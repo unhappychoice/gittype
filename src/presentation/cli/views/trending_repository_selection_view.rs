@@ -1,4 +1,4 @@
-use crate::infrastructure::cache::TrendingRepository;
+use crate::domain::repositories::trending_repository::TrendingRepositoryInfo;
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::{
@@ -16,7 +16,7 @@ use ratatui::{
 };
 use std::io;
 
-pub fn render_trending_ui(repositories: Vec<TrendingRepository>) -> Result<Option<usize>> {
+pub fn render_trending_ui(repositories: Vec<TrendingRepositoryInfo>) -> Result<Option<usize>> {
     // Setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();

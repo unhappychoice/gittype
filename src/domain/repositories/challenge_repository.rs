@@ -21,37 +21,41 @@ struct ChallengePointer {
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 struct CacheData {
-    /// For display/CLI purposes; filename becomes opaque once hashed.
     repo_key: String,
     commit_hash: String,
     challenge_pointers: Vec<ChallengePointer>,
 }
 
 #[derive(Debug, Clone)]
-pub struct ChallengeCache {
+pub struct ChallengeRepository {
     cache_dir: PathBuf,
+    storage: CompressedFileStorage,
 }
 
-impl ChallengeCache {
+impl ChallengeRepository {
     pub fn new() -> Self {
         let mut cache_dir = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
         cache_dir.push(".gittype");
         cache_dir.push("cache");
 
-        Self { cache_dir }
+        Self {
+            cache_dir,
+            storage: CompressedFileStorage::default(),
+        }
     }
 
     pub fn with_cache_dir(cache_dir: PathBuf) -> Self {
-        Self { cache_dir }
+        Self {
+            cache_dir,
+            storage: CompressedFileStorage::default(),
+        }
     }
 
-    pub fn save(&self, repo: &GitRepository, challenges: &[Challenge]) -> Result<(), String> {
-        // Skip caching for dirty repositories
+    pub fn save_challenges(&self, repo: &GitRepository, challenges: &[Challenge]) -> Result<(), String> {
         if repo.is_dirty {
             return Ok(());
         }
 
-        // Do not save when the commit hash is unknown
         let commit_str = match repo.commit_hash.as_deref() {
             Some(h) if !h.is_empty() => h,
             _ => return Ok(()),
@@ -78,31 +82,26 @@ impl ChallengeCache {
             challenge_pointers,
         };
 
-        let storage = CompressedFileStorage;
-        storage.save(&cache_file, &cache_data).map_err(|e| e.to_string())
+        self.storage.save(&cache_file, &cache_data).map_err(|e| e.to_string())
     }
 
-    pub fn load_with_progress(
+    pub fn load_challenges_with_progress(
         &self,
         repo: &GitRepository,
         progress_reporter: Option<&dyn ProgressReporter>,
     ) -> Option<Vec<Challenge>> {
-        // Skip cache for dirty repositories
         if repo.is_dirty {
             return None;
         }
 
         let cache_file = self.get_cache_file(repo);
-        let storage = CompressedFileStorage;
-        let cache_data: CacheData = storage.load(&cache_file).ok()??;
+        let cache_data: CacheData = self.storage.load(&cache_file).ok()??;
 
-        // Check if commit hash matches
         let current_commit = repo.commit_hash.as_deref().unwrap_or("");
         if cache_data.commit_hash != current_commit {
             return None;
         }
 
-        // Reconstruct challenges from pointers with parallel progress
         let repo_root = repo.root_path.as_ref()?;
         let total = cache_data.challenge_pointers.len();
         let processed = Arc::new(Mutex::new(0usize));
@@ -113,7 +112,6 @@ impl ChallengeCache {
             .map(|pointer| {
                 let challenge = self.reconstruct_challenge(pointer, repo_root);
 
-                // Report progress atomically
                 if let Some(reporter) = progress_reporter {
                     let mut count = processed.lock().unwrap();
                     *count += 1;
@@ -140,125 +138,42 @@ impl ChallengeCache {
         Some(challenges)
     }
 
-    #[cfg(not(feature = "test-mocks"))]
-    pub fn clear(&self) -> Result<(), String> {
-        if self.cache_dir.exists() {
-            fs::remove_dir_all(&self.cache_dir)
-                .map_err(|e| format!("Failed to clear cache: {}", e))?;
-        }
-        Ok(())
-    }
-
-    #[cfg(feature = "test-mocks")]
-    pub fn clear(&self) -> Result<(), String> {
-        let storage = CompressedFileStorage;
-        let files = storage.list_files_in_dir(&self.cache_dir);
+    pub fn clear_cache(&self) -> Result<(), String> {
+        let files = self.storage.list_files_in_dir(&self.cache_dir);
         for file in files {
-            storage.delete_file(&file).map_err(|e| e.to_string())?;
+            self.storage.delete_file(&file).map_err(|e| e.to_string())?;
         }
         Ok(())
     }
 
-    #[cfg(not(feature = "test-mocks"))]
-    pub fn stats(&self) -> Result<(usize, u64), String> {
-        if !self.cache_dir.exists() {
-            return Ok((0, 0));
-        }
-
-        let mut count = 0;
-        let mut total_size = 0u64;
-
-        for entry in
-            fs::read_dir(&self.cache_dir).map_err(|e| format!("Failed to read cache dir: {}", e))?
-        {
-            let entry = entry.map_err(|e| format!("Failed to read cache entry: {}", e))?;
-            if entry
-                .file_name()
-                .to_str()
-                .is_some_and(|name| name.ends_with(".bin"))
-            {
-                count += 1;
-                if let Ok(metadata) = entry.metadata() {
-                    total_size += metadata.len();
-                }
-            }
-        }
-
-        Ok((count, total_size))
-    }
-
-    #[cfg(feature = "test-mocks")]
-    pub fn stats(&self) -> Result<(usize, u64), String> {
-        let storage = CompressedFileStorage;
-        let files = storage.list_files_in_dir(&self.cache_dir);
+    pub fn get_cache_stats(&self) -> Result<(usize, u64), String> {
+        let files = self.storage.list_files_in_dir(&self.cache_dir);
         let count = files.len();
         let total_size = files
             .iter()
-            .filter_map(|path| storage.get_file_size(path))
+            .filter_map(|path| self.storage.get_file_size(path))
             .sum();
         Ok((count, total_size))
     }
 
-    #[cfg(not(feature = "test-mocks"))]
-    pub fn invalidate_repo(&self, repo: &GitRepository) -> Result<bool, String> {
+    pub fn invalidate_repository(&self, repo: &GitRepository) -> Result<bool, String> {
         let cache_file = self.get_cache_file(repo);
-        if cache_file.exists() {
-            fs::remove_file(cache_file)
-                .map_err(|e| format!("Failed to invalidate cache: {}", e))?;
+        if self.storage.file_exists(&cache_file) {
+            self.storage.delete_file(&cache_file).map_err(|e| e.to_string())?;
             Ok(true)
         } else {
             Ok(false)
         }
     }
 
-    #[cfg(feature = "test-mocks")]
-    pub fn invalidate_repo(&self, repo: &GitRepository) -> Result<bool, String> {
-        let cache_file = self.get_cache_file(repo);
-        let storage = CompressedFileStorage;
-        if storage.file_exists(&cache_file) {
-            storage.delete_file(&cache_file).map_err(|e| e.to_string())?;
-            Ok(true)
-        } else {
-            Ok(false)
-        }
-    }
+    pub fn list_cache_keys(&self) -> Result<Vec<String>, String> {
+        let files = self.storage.list_files_in_dir(&self.cache_dir);
 
-    #[cfg(not(feature = "test-mocks"))]
-    pub fn list_keys(&self) -> Result<Vec<String>, String> {
-        if !self.cache_dir.exists() {
-            return Ok(Vec::new());
-        }
-
-        let storage = CompressedFileStorage;
-        let mut keys: Vec<String> = fs::read_dir(&self.cache_dir)
-            .map_err(|e| format!("Failed to read cache dir: {}", e))?
-            .filter_map(|entry| entry.ok())
-            .filter_map(|entry| {
-                // Prefer data inside the file (repo_key + commit_hash) instead of filename.
-                if entry.file_name().to_string_lossy().ends_with(".bin") {
-                    storage.load::<CacheData>(&entry.path()).ok().flatten()
-                        .map(|d| format!("{}:{}", d.repo_key, d.commit_hash))
-                } else {
-                    None
-                }
-            })
-            .collect();
-
-        keys.sort();
-        keys.dedup();
-        Ok(keys)
-    }
-
-    #[cfg(feature = "test-mocks")]
-    pub fn list_keys(&self) -> Result<Vec<String>, String> {
-        let storage = CompressedFileStorage;
-        let files = storage.list_files_in_dir(&self.cache_dir);
-        
         let mut keys: Vec<String> = files
             .iter()
             .filter_map(|path| {
                 if path.file_name()?.to_str()?.ends_with(".bin") {
-                    storage.load::<CacheData>(path).ok().flatten()
+                    self.storage.load::<CacheData>(path).ok().flatten()
                         .map(|d| format!("{}:{}", d.repo_key, d.commit_hash))
                 } else {
                     None
@@ -293,7 +208,6 @@ impl ChallengeCache {
             return None;
         }
 
-        // Read file content
         let file_content = fs::read_to_string(&absolute_path)
             .map_err(|e| {
                 log::debug!("Failed to read file {}: {}", file_path, e);
@@ -303,7 +217,6 @@ impl ChallengeCache {
 
         let lines: Vec<&str> = file_content.lines().collect();
 
-        // Extract code content based on line numbers
         let code_content = match (pointer.start_line, pointer.end_line) {
             (Some(start), Some(end)) => {
                 if start <= lines.len() && end <= lines.len() && start <= end {
@@ -319,7 +232,7 @@ impl ChallengeCache {
                     return None;
                 }
             }
-            _ => file_content, // Fallback to entire file if no line info
+            _ => file_content,
         };
 
         Some(Challenge {
@@ -335,13 +248,10 @@ impl ChallengeCache {
     }
 
     fn get_cache_file(&self, repo: &GitRepository) -> PathBuf {
-        // Best-effort dir creation; callers handle save/load errors.
         let _ = fs::create_dir_all(&self.cache_dir);
-        // Compose a stable, collision-resistant, filesystem-safe key.
         let commit = repo.commit_hash.as_deref().unwrap_or("nohash");
         let dirty = if repo.is_dirty { "dirty" } else { "clean" };
         let raw = format!("{}:{}:{}", repo.cache_key(), commit, dirty);
-        // Hash to keep filename short and safe across OSes.
         use sha2::{Digest, Sha256};
         let mut hasher = Sha256::new();
         hasher.update(raw.as_bytes());
@@ -354,11 +264,11 @@ impl ChallengeCache {
     }
 }
 
-impl Default for ChallengeCache {
+impl Default for ChallengeRepository {
     fn default() -> Self {
         Self::new()
     }
 }
 
-pub static CHALLENGE_CACHE: once_cell::sync::Lazy<ChallengeCache> =
-    once_cell::sync::Lazy::new(ChallengeCache::new);
+pub static CHALLENGE_REPOSITORY: once_cell::sync::Lazy<ChallengeRepository> =
+    once_cell::sync::Lazy::new(ChallengeRepository::new);

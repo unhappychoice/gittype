@@ -4,7 +4,7 @@ use crate::{GitTypeError, Result};
 use crate::Result;
 use super::AppDataProvider;
 use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 #[cfg(not(feature = "test-mocks"))]
 mod real_impl {

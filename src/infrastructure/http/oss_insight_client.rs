@@ -3,7 +3,7 @@ use serde::Deserialize;
 use std::time::Duration;
 
 use crate::domain::error::{GitTypeError, Result};
-use crate::infrastructure::cache::TrendingRepository;
+use crate::domain::repositories::trending_repository::TrendingRepositoryInfo;
 
 #[derive(Debug, Clone)]
 pub struct OssInsightClient {
@@ -21,7 +21,7 @@ impl OssInsightClient {
         &self,
         language: Option<&str>,
         period: &str,
-    ) -> Result<Vec<TrendingRepository>> {
+    ) -> Result<Vec<TrendingRepositoryInfo>> {
         let api_period = match period {
             "daily" => "past_24_hours",
             "weekly" => "past_week",
@@ -80,12 +80,12 @@ impl OssInsightClient {
         }
     }
 
-    fn convert_api_response(&self, api_response: ApiResponse) -> Vec<TrendingRepository> {
+    fn convert_api_response(&self, api_response: ApiResponse) -> Vec<TrendingRepositoryInfo> {
         api_response
             .data
             .rows
             .into_iter()
-            .map(|row| TrendingRepository {
+            .map(|row| TrendingRepositoryInfo {
                 repo_name: row.repo_name,
                 primary_language: row.primary_language,
                 description: row.description,

@@ -31,10 +31,10 @@ pub async fn run_cli(cli: Cli) -> Result<()> {
 }
 
 fn run_cache_command(cache_command: &CacheCommands) -> Result<()> {
-    use crate::infrastructure::cache::CHALLENGE_CACHE;
+    use crate::domain::repositories::challenge_repository::CHALLENGE_REPOSITORY;
 
     match cache_command {
-        CacheCommands::Stats => match CHALLENGE_CACHE.stats() {
+        CacheCommands::Stats => match CHALLENGE_REPOSITORY.get_cache_stats() {
             Ok((file_count, total_bytes)) => {
                 println!("Challenge Cache Statistics:");
                 println!("  Cached repositories: {}", file_count);
@@ -63,7 +63,7 @@ fn run_cache_command(cache_command: &CacheCommands) -> Result<()> {
                 return Err(crate::GitTypeError::TerminalError(e));
             }
         },
-        CacheCommands::Clear => match CHALLENGE_CACHE.clear() {
+        CacheCommands::Clear => match CHALLENGE_REPOSITORY.clear_cache() {
             Ok(()) => {
                 println!("Challenge cache cleared successfully.");
             }
@@ -72,7 +72,7 @@ fn run_cache_command(cache_command: &CacheCommands) -> Result<()> {
                 return Err(crate::GitTypeError::TerminalError(e));
             }
         },
-        CacheCommands::List => match CHALLENGE_CACHE.list_keys() {
+        CacheCommands::List => match CHALLENGE_REPOSITORY.list_cache_keys() {
             Ok(keys) => {
                 if keys.is_empty() {
                     println!("No cached challenges found.");

@@ -1,10 +1,12 @@
+use crate::infrastructure::http::OssInsightClient;
+use crate::Result;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TrendingRepository {
+pub struct TrendingRepositoryInfo {
     pub repo_name: String,
     pub primary_language: Option<String>,
     pub description: Option<String>,
@@ -15,24 +17,25 @@ pub struct TrendingRepository {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct TrendingCacheData {
-    repositories: Vec<TrendingRepository>,
-    timestamp: u64, // Unix timestamp
+    repositories: Vec<TrendingRepositoryInfo>,
+    timestamp: u64,
     cache_key: String,
 }
 
 #[derive(Debug)]
-pub struct TrendingCache {
+pub struct TrendingRepository {
     cache_dir: PathBuf,
     ttl_seconds: u64,
+    oss_insight_client: OssInsightClient,
 }
 
-impl Default for TrendingCache {
+impl Default for TrendingRepository {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl TrendingCache {
+impl TrendingRepository {
     pub fn new() -> Self {
         let mut cache_dir = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
         cache_dir.push(".gittype");
@@ -43,10 +46,44 @@ impl TrendingCache {
         Self {
             cache_dir,
             ttl_seconds,
+            oss_insight_client: OssInsightClient::new(),
         }
     }
 
-    pub fn get(&self, key: &str) -> Option<Vec<TrendingRepository>> {
+    pub fn with_cache_dir(cache_dir: PathBuf) -> Self {
+        let ttl_seconds = 300; // 5 minutes
+
+        Self {
+            cache_dir,
+            ttl_seconds,
+            oss_insight_client: OssInsightClient::new(),
+        }
+    }
+
+    /// Get trending repositories with caching and fallback to fresh data
+    pub async fn get_trending_repositories(&self, key: &str, language: Option<&str>, period: &str) -> Result<Vec<TrendingRepositoryInfo>> {
+        // Try cache first
+        if let Some(cached_repos) = self.get_from_cache(key) {
+            return Ok(cached_repos);
+        }
+
+        // Fetch fresh data from API
+        match self.fetch_from_api(language, period).await {
+            Ok(repos) => {
+                // Cache the fresh data
+                self.save_to_cache(key, &repos);
+                Ok(repos)
+            }
+            Err(e) => {
+                log::warn!("Failed to fetch trending repositories from API: {}", e);
+                // Return empty vec instead of error for graceful degradation
+                Ok(Vec::new())
+            }
+        }
+    }
+
+    /// Get data from cache if valid
+    fn get_from_cache(&self, key: &str) -> Option<Vec<TrendingRepositoryInfo>> {
         let cache_file = self.get_cache_file(key);
         if !cache_file.exists() {
             return None;
@@ -70,7 +107,8 @@ impl TrendingCache {
         }
     }
 
-    pub fn set(&self, key: &str, repositories: Vec<TrendingRepository>) {
+    /// Save data to cache
+    fn save_to_cache(&self, key: &str, repositories: &[TrendingRepositoryInfo]) {
         let _ = fs::create_dir_all(&self.cache_dir);
 
         let current_time = SystemTime::now()
@@ -79,7 +117,7 @@ impl TrendingCache {
             .as_secs();
 
         let cache_data = TrendingCacheData {
-            repositories,
+            repositories: repositories.to_vec(),
             timestamp: current_time,
             cache_key: key.to_string(),
         };
@@ -90,31 +128,26 @@ impl TrendingCache {
         }
     }
 
-    pub fn cleanup_expired(&self) {
-        if !self.cache_dir.exists() {
-            return;
-        }
+    /// Fetch fresh data from API
+    async fn fetch_from_api(&self, language: Option<&str>, period: &str) -> Result<Vec<TrendingRepositoryInfo>> {
+        let trending_repos = self.oss_insight_client.fetch_trending_repositories(language, period).await?;
 
-        let current_time = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_else(|_| Duration::from_secs(0))
-            .as_secs();
+        let repositories = trending_repos
+            .into_iter()
+            .map(|repo| TrendingRepositoryInfo {
+                repo_name: repo.repo_name,
+                primary_language: repo.primary_language,
+                description: repo.description,
+                stars: repo.stars,
+                forks: repo.forks,
+                total_score: repo.total_score,
+            })
+            .collect();
 
-        if let Ok(entries) = fs::read_dir(&self.cache_dir) {
-            for entry in entries.flatten() {
-                if let Ok(content) = fs::read_to_string(entry.path()) {
-                    if let Ok(cache_data) = serde_json::from_str::<TrendingCacheData>(&content) {
-                        if current_time.saturating_sub(cache_data.timestamp) >= self.ttl_seconds {
-                            let _ = fs::remove_file(entry.path());
-                        }
-                    }
-                }
-            }
-        }
+        Ok(repositories)
     }
 
     fn get_cache_file(&self, key: &str) -> PathBuf {
-        // Create a safe filename from cache key
         use sha2::{Digest, Sha256};
         let mut hasher = Sha256::new();
         hasher.update(key.as_bytes());
@@ -127,5 +160,5 @@ impl TrendingCache {
     }
 }
 
-pub static TRENDING_CACHE: once_cell::sync::Lazy<TrendingCache> =
-    once_cell::sync::Lazy::new(TrendingCache::new);
+pub static TRENDING_REPOSITORY: once_cell::sync::Lazy<TrendingRepository> =
+    once_cell::sync::Lazy::new(TrendingRepository::new);

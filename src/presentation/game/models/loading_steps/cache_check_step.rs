@@ -1,5 +1,5 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
-use crate::infrastructure::cache::CHALLENGE_CACHE;
+use crate::domain::repositories::challenge_repository::CHALLENGE_REPOSITORY;
 use crate::presentation::game::screens::loading_screen::ProgressReporter;
 use crate::presentation::ui::Colors;
 use crate::Result;
@@ -80,7 +80,7 @@ impl Step for CacheCheckStep {
         }
 
         // Try to load from cache
-        let Some(cached_challenges) = CHALLENGE_CACHE.load_with_progress(
+        let Some(cached_challenges) = CHALLENGE_REPOSITORY.load_challenges_with_progress(
             git_repo,
             context.loading_screen.map(|s| s as &dyn ProgressReporter),
         ) else {
