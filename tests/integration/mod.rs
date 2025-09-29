@@ -4,11 +4,10 @@ pub mod indent_treesitter_tests;
 pub mod languages;
 pub mod missing_ascii_art_test;
 
-use gittype::domain::models::{Challenge, CodeChunk, ExtractionOptions, Language};
+use gittype::domain::models::{Challenge, CodeChunk, ExtractionOptions, Language, Languages};
 use gittype::domain::services::challenge_generator::ChallengeGenerator;
 use gittype::domain::services::source_code_parser::parsers::parse_with_thread_local;
 use gittype::domain::services::source_code_parser::CommonExtractor;
-use gittype::domain::services::source_code_parser::LanguageRegistry;
 use gittype::domain::services::source_code_parser::SourceCodeParser;
 use gittype::domain::services::source_file_extractor::SourceFileExtractor;
 use gittype::presentation::game::screens::loading_screen::NoOpProgressReporter;
@@ -39,8 +38,7 @@ fn collect_files_with_languages(repo_path: &Path) -> Vec<(PathBuf, Box<dyn Langu
         .filter_map(|entry| {
             let path = entry.path();
             if let Some(extension) = path.extension().and_then(|e| e.to_str()) {
-                LanguageRegistry::from_extension(extension)
-                    .map(|language| (path.to_owned(), language))
+                Languages::from_extension(extension).map(|language| (path.to_owned(), language))
             } else {
                 None
             }
@@ -69,7 +67,7 @@ fn extract_chunks_from_scanned_files_for_test(
     // Convert scanned files to chunks using test function
     for file_path in scanned_files {
         if let Some(extension) = file_path.extension().and_then(|e| e.to_str()) {
-            if let Some(language) = LanguageRegistry::from_extension(extension) {
+            if let Some(language) = Languages::from_extension(extension) {
                 if let Ok(chunks) = extract_from_file_for_test(file_path, language.name()) {
                     all_chunks.extend(chunks);
                 }

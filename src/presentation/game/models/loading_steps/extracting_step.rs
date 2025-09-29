@@ -1,6 +1,6 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
-use crate::domain::models::Language;
-use crate::domain::services::source_code_parser::{LanguageRegistry, SourceCodeParser};
+use crate::domain::models::{Language, Languages};
+use crate::domain::services::source_code_parser::SourceCodeParser;
 use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::style::Color;
@@ -76,8 +76,7 @@ impl Step for ExtractingStep {
             .iter()
             .filter_map(|path| {
                 if let Some(extension) = path.extension().and_then(|e| e.to_str()) {
-                    LanguageRegistry::from_extension(extension)
-                        .map(|language| (path.to_owned(), language))
+                    Languages::from_extension(extension).map(|language| (path.to_owned(), language))
                 } else {
                     None
                 }

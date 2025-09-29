@@ -1,5 +1,5 @@
 use gittype::domain::models::{ChunkType, CodeChunk, ExtractionOptions};
-use gittype::domain::models::{Language, Languages};
+use gittype::domain::models::Languages;
 use gittype::domain::services::challenge_generator::ChallengeGenerator;
 use gittype::domain::services::source_code_parser::SourceCodeParser;
 use gittype::domain::services::source_file_extractor::SourceFileExtractor;

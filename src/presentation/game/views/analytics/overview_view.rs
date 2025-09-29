@@ -1,4 +1,4 @@
-use crate::domain::services::source_code_parser::LanguageRegistry;
+use crate::domain::models::Languages;
 use crate::presentation::game::screens::analytics_screen::AnalyticsData;
 use crate::presentation::ui::Colors;
 use ratatui::{
@@ -242,7 +242,7 @@ impl OverviewView {
             let name_width = available_width.saturating_sub(cpm_count_width + index_width);
 
             for (i, (lang_name, avg_cpm, _)) in data.top_languages.iter().enumerate() {
-                let display_name_full = LanguageRegistry::get_display_name(Some(lang_name));
+                let display_name_full = Languages::get_display_name(Some(lang_name));
 
                 // Truncate name to fit available space
                 let display_name = if display_name_full.len() > name_width {

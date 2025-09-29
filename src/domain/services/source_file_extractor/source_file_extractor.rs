@@ -1,5 +1,4 @@
-use crate::domain::models::ExtractionOptions;
-use crate::domain::services::source_code_parser::LanguageRegistry;
+use crate::domain::models::{ExtractionOptions, Languages};
 use crate::presentation::game::models::StepType;
 use crate::presentation::game::screens::loading_screen::ProgressReporter;
 use crate::{GitTypeError, Result};
@@ -74,7 +73,7 @@ impl SourceFileExtractor {
             processed += 1;
 
             if let Some(extension) = path.extension().and_then(|e| e.to_str()) {
-                if LanguageRegistry::from_extension(extension).is_some()
+                if Languages::from_extension(extension).is_some()
                     && Self::should_process_file_compiled(
                         path,
                         &include_patterns,

@@ -24,7 +24,7 @@ pub use countdown::Countdown;
 pub use extraction_options::ExtractionOptions;
 pub use git_repository::GitRepository;
 pub use git_repository_ref::GitRepositoryRef;
-pub use language::Language;
+pub use language::{Language, Languages};
 pub use rank::{Rank, RankTier};
 pub use session::{Session, SessionResult};
 pub use stage::{Stage, StageResult};

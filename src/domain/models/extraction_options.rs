@@ -1,4 +1,4 @@
-use crate::domain::services::source_code_parser::LanguageRegistry;
+use crate::domain::models::Languages;
 
 #[derive(Debug, Clone)]
 pub struct ExtractionOptions {
@@ -12,7 +12,7 @@ pub struct ExtractionOptions {
 impl Default for ExtractionOptions {
     fn default() -> Self {
         Self {
-            include_patterns: LanguageRegistry::all_file_patterns(),
+            include_patterns: Languages::all_file_patterns(),
             exclude_patterns: vec![
                 // === Common build directories ===
                 "**/build/**".to_string(),
@@ -103,7 +103,7 @@ impl Default for ExtractionOptions {
 impl ExtractionOptions {
     pub fn apply_language_filter(&mut self) {
         if let Some(ref languages) = self.languages {
-            let registry = LanguageRegistry::all_languages();
+            let registry = Languages::all_languages();
             self.include_patterns = registry
                 .into_iter()
                 .filter(|lang| {
