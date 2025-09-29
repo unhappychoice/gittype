@@ -5,9 +5,10 @@ pub mod languages;
 pub mod missing_ascii_art_test;
 
 use gittype::domain::models::{Challenge, CodeChunk, ExtractionOptions, Language, Languages};
+use gittype::domain::models::languages::*;
 use gittype::domain::services::challenge_generator::ChallengeGenerator;
 use gittype::domain::services::source_code_parser::parsers::parse_with_thread_local;
-use gittype::domain::services::source_code_parser::CommonExtractor;
+use gittype::domain::services::source_code_parser::ChunkExtractor;
 use gittype::domain::services::source_code_parser::SourceCodeParser;
 use gittype::domain::services::source_file_extractor::SourceFileExtractor;
 use gittype::presentation::game::screens::loading_screen::NoOpProgressReporter;
@@ -47,6 +48,28 @@ fn collect_files_with_languages(repo_path: &Path) -> Vec<(PathBuf, Box<dyn Langu
 }
 
 // Test-specific helper functions
+fn string_to_language_obj(language: &str) -> &'static dyn Language {
+    match language {
+        "c" => &C,
+        "cpp" => &Cpp,
+        "csharp" => &CSharp,
+        "dart" => &Dart,
+        "go" => &Go,
+        "haskell" => &Haskell,
+        "java" => &Java,
+        "javascript" => &JavaScript,
+        "kotlin" => &Kotlin,
+        "php" => &Php,
+        "python" => &Python,
+        "ruby" => &Ruby,
+        "rust" => &Rust,
+        "scala" => &Scala,
+        "swift" => &Swift,
+        "typescript" => &TypeScript,
+        _ => panic!("Unsupported language: {}", language),
+    }
+}
+
 pub fn extract_from_file_for_test(file_path: &Path, language: &str) -> Result<Vec<CodeChunk>> {
     let content = fs::read_to_string(file_path)?;
     let tree = parse_with_thread_local(language, &content).ok_or_else(|| {
@@ -55,7 +78,8 @@ pub fn extract_from_file_for_test(file_path: &Path, language: &str) -> Result<Ve
 
     // Use parent directory as git_root for tests
     let git_root = file_path.parent().unwrap_or(Path::new("."));
-    CommonExtractor::extract_chunks_from_tree(&tree, &content, file_path, git_root, language)
+    let language_obj = string_to_language_obj(language);
+    ChunkExtractor::extract_chunks_from_tree(&tree, &content, file_path, git_root, language_obj)
 }
 
 fn extract_chunks_from_scanned_files_for_test(

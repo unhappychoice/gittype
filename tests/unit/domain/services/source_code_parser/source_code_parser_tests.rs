@@ -1,5 +1,5 @@
 use gittype::domain::models::Languages;
-use gittype::domain::models::{ChunkType, CodeChunk, ExtractionOptions};
+use gittype::domain::models::{Challenge, ChunkType, CodeChunk, ExtractionOptions};
 use gittype::domain::services::challenge_generator::ChallengeGenerator;
 use gittype::domain::services::source_code_parser::SourceCodeParser;
 use gittype::domain::services::source_file_extractor::SourceFileExtractor;
@@ -190,7 +190,7 @@ fn test_convert_chunk_to_challenge() {
         original_indentation: 0,
     };
 
-    let challenge = converter.convert(chunk).unwrap();
+    let challenge = Challenge::from_chunk(&chunk, None).unwrap();
 
     assert_eq!(
         challenge.code_content,

@@ -40,9 +40,18 @@ pub trait Language: std::fmt::Debug + Send + Sync {
     fn color(&self) -> ratatui::style::Color {
         Colors::lang_default()
     }
+
+    /// Returns true if the tree-sitter node represents a valid comment for this language
+    fn is_valid_comment_node(&self, node: tree_sitter::Node) -> bool;
 }
 
 pub struct Languages;
+
+impl Languages {
+    pub fn get_language_by_name(name: &str) -> Option<Box<dyn Language>> {
+        Self::get_by_name(name)
+    }
+}
 
 impl Languages {
     pub fn all_languages() -> Vec<Box<dyn Language>> {
