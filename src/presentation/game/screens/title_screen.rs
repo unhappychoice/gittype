@@ -1,7 +1,7 @@
-use crate::domain::models::GitRepository;
+use crate::domain::models::{DifficultyLevel, GitRepository};
 use crate::presentation::game::views::title::{DifficultySelectionView, StaticElementsView};
 use crate::presentation::game::{
-    DifficultyLevel, GameData, Screen, ScreenTransition, ScreenType, StageRepository,
+    GameData, Screen, ScreenTransition, ScreenType, StageRepository,
     UpdateStrategy,
 };
 use crate::Result;

@@ -1,1 +1,1 @@
-// Tests for challenge_generator will be added here
+mod challenge_generator_tests;
