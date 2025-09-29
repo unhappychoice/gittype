@@ -19,7 +19,10 @@ impl VersionService {
     }
 
     /// Check if a new version is available with a custom current version
-    pub async fn check_with_version(&self, current_version: &str) -> Result<(bool, String, String)> {
+    pub async fn check_with_version(
+        &self,
+        current_version: &str,
+    ) -> Result<(bool, String, String)> {
         let current_version = current_version.to_string();
         let latest_version = self.repository.fetch_latest_version().await?;
         let has_update = Self::is_version_newer(&latest_version, &current_version);

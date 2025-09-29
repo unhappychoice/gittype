@@ -9,14 +9,15 @@ use std::fs::{create_dir_all, remove_dir_all};
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
-
 pub struct RemoteGitRepositoryClient;
 
 impl RemoteGitRepositoryClient {
     pub fn get_local_repo_path(repo_info: &GitRepositoryRef) -> Result<PathBuf> {
         dirs::home_dir()
             .ok_or_else(|| {
-                GitTypeError::InvalidRepositoryFormat("Could not determine home directory".to_string())
+                GitTypeError::InvalidRepositoryFormat(
+                    "Could not determine home directory".to_string(),
+                )
             })
             .map(|home_dir| {
                 home_dir
@@ -33,7 +34,7 @@ impl RemoteGitRepositoryClient {
         F: FnMut(usize, usize),
     {
         let repo_info = GitRepositoryRefParser::parse(repo_spec)?;
-        
+
         log::info!("Cloning repository: {}/{}", repo_info.owner, repo_info.name);
 
         let local_path = Self::get_local_repo_path(&repo_info)?;
@@ -55,20 +56,20 @@ impl RemoteGitRepositoryClient {
 
         let callback_cell = Rc::new(RefCell::new(progress_callback));
         let callback_clone = callback_cell.clone();
-        
+
         remote_callbacks.pack_progress(move |_stage, current, total| {
-            if total <= 0 {
+            if total == 0 {
                 return;
             }
             if let Ok(mut cb) = callback_clone.try_borrow_mut() {
                 cb(current, total);
             }
         });
-        
+
         let cell_clone = callback_cell.clone();
         let mut checkout_builder = CheckoutBuilder::new();
         checkout_builder.progress(move |_path, cur, total| {
-            if total <= 0 {
+            if total == 0 {
                 return;
             }
             if let Ok(mut cb) = cell_clone.try_borrow_mut() {
@@ -88,7 +89,6 @@ impl RemoteGitRepositoryClient {
         Ok(local_path)
     }
 
-
     pub fn is_repository_complete(repo_path: &Path) -> bool {
         repo_path.join(".git").exists()
             && repo_path.join(".git/HEAD").exists()
@@ -99,8 +99,7 @@ impl RemoteGitRepositoryClient {
     pub fn is_repository_cached(remote_url: &str) -> bool {
         GitRepositoryRefParser::parse(remote_url)
             .and_then(|repo_info| {
-                Self::get_local_repo_path(&repo_info)
-                    .map(|path| path.exists() && path.is_dir())
+                Self::get_local_repo_path(&repo_info).map(|path| path.exists() && path.is_dir())
             })
             .unwrap_or(false)
     }

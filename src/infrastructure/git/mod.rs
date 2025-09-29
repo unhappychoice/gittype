@@ -1,6 +1,6 @@
+pub mod git_repository_ref_parser;
 pub mod local;
 pub mod remote;
-pub mod git_repository_ref_parser;
 
 pub use git_repository_ref_parser::GitRepositoryRefParser;
 pub use local::LocalGitRepositoryClient;

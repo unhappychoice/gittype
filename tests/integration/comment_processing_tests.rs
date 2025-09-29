@@ -10,8 +10,8 @@ use std::path::Path;
 
 /// Tests for the core bug: byte vs character position misalignment
 mod byte_char_position_bugs {
-    use crate::integration::extract_from_file_for_test;
     use super::*;
+    use crate::integration::extract_from_file_for_test;
 
     #[test]
     fn test_original_indent_chars_fix() {

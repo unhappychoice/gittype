@@ -28,7 +28,8 @@ mod tests {
 
     #[test]
     fn test_parse_https_format_with_git_suffix() {
-        let repo_ref = GitRepositoryRefParser::parse("https://github.com/microsoft/vscode.git").unwrap();
+        let repo_ref =
+            GitRepositoryRefParser::parse("https://github.com/microsoft/vscode.git").unwrap();
         assert_eq!(repo_ref.origin, "github.com");
         assert_eq!(repo_ref.owner, "microsoft");
         assert_eq!(repo_ref.name, "vscode");
@@ -36,7 +37,8 @@ mod tests {
 
     #[test]
     fn test_parse_https_format_with_extra_path() {
-        let repo_ref = GitRepositoryRefParser::parse("https://github.com/torvalds/linux/tree/master").unwrap();
+        let repo_ref =
+            GitRepositoryRefParser::parse("https://github.com/torvalds/linux/tree/master").unwrap();
         assert_eq!(repo_ref.origin, "github.com");
         assert_eq!(repo_ref.owner, "torvalds");
         assert_eq!(repo_ref.name, "linux");
@@ -44,7 +46,8 @@ mod tests {
 
     #[test]
     fn test_parse_ssh_format() {
-        let repo_ref = GitRepositoryRefParser::parse("git@github.com:unhappychoice/gittype.git").unwrap();
+        let repo_ref =
+            GitRepositoryRefParser::parse("git@github.com:unhappychoice/gittype.git").unwrap();
         assert_eq!(repo_ref.origin, "github.com");
         assert_eq!(repo_ref.owner, "unhappychoice");
         assert_eq!(repo_ref.name, "gittype");

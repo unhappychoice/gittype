@@ -1,7 +1,7 @@
-#[cfg(not(feature = "test-mocks"))]
-use crate::{GitTypeError, Result};
 #[cfg(feature = "test-mocks")]
 use crate::Result;
+#[cfg(not(feature = "test-mocks"))]
+use crate::{GitTypeError, Result};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize, Clone)]
@@ -23,19 +23,18 @@ mod real_impl {
                 .user_agent("gittype")
                 .timeout(std::time::Duration::from_secs(10))
                 .build()
-                .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to create HTTP client: {}", e)))?;
+                .map_err(|e| {
+                    GitTypeError::ExtractionFailed(format!("Failed to create HTTP client: {}", e))
+                })?;
 
             Ok(Self { client })
         }
 
         pub async fn fetch_latest_release(&self) -> Result<GitHubRelease> {
             let url = "https://api.github.com/repos/unhappychoice/gittype/releases/latest";
-            let response = self
-                .client
-                .get(url)
-                .send()
-                .await
-                .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to fetch release: {}", e)))?;
+            let response = self.client.get(url).send().await.map_err(|e| {
+                GitTypeError::ExtractionFailed(format!("Failed to fetch release: {}", e))
+            })?;
 
             if !response.status().is_success() {
                 return Err(GitTypeError::ExtractionFailed(format!(
@@ -44,10 +43,9 @@ mod real_impl {
                 )));
             }
 
-            let release: GitHubRelease = response
-                .json()
-                .await
-                .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to parse JSON: {}", e)))?;
+            let release: GitHubRelease = response.json().await.map_err(|e| {
+                GitTypeError::ExtractionFailed(format!("Failed to parse JSON: {}", e))
+            })?;
 
             Ok(release)
         }

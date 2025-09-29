@@ -1,6 +1,6 @@
-use crate::infrastructure::git::RemoteGitRepositoryClient;
 use crate::domain::models::storage::StoredRepositoryWithLanguages;
 use crate::domain::services::extractor::LanguageRegistry;
+use crate::infrastructure::git::RemoteGitRepositoryClient;
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::{
@@ -77,7 +77,8 @@ pub fn render_repo_play_ui(
                 .iter()
                 .map(|repo| {
                     let repo_name = format!("{}/{}", repo.user_name, repo.repository_name);
-                    let is_cached = RemoteGitRepositoryClient::is_repository_cached(&repo.remote_url);
+                    let is_cached =
+                        RemoteGitRepositoryClient::is_repository_cached(&repo.remote_url);
                     let cache_indicator = if is_cached { "●" } else { "○" };
                     let cache_color = if is_cached {
                         Colors::success()

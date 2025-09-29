@@ -1,5 +1,5 @@
-use crate::infrastructure::storage::compressed_file_storage::CompressedFileStorage;
 use crate::domain::models::{Challenge, GitRepository};
+use crate::infrastructure::storage::compressed_file_storage::CompressedFileStorage;
 use crate::presentation::game::models::StepType;
 use crate::presentation::game::screens::loading_screen::ProgressReporter;
 use crate::presentation::game::DifficultyLevel;
@@ -51,7 +51,11 @@ impl ChallengeRepository {
         }
     }
 
-    pub fn save_challenges(&self, repo: &GitRepository, challenges: &[Challenge]) -> Result<(), String> {
+    pub fn save_challenges(
+        &self,
+        repo: &GitRepository,
+        challenges: &[Challenge],
+    ) -> Result<(), String> {
         if repo.is_dirty {
             return Ok(());
         }
@@ -82,7 +86,9 @@ impl ChallengeRepository {
             challenge_pointers,
         };
 
-        self.storage.save(&cache_file, &cache_data).map_err(|e| e.to_string())
+        self.storage
+            .save(&cache_file, &cache_data)
+            .map_err(|e| e.to_string())
     }
 
     pub fn load_challenges_with_progress(
@@ -159,7 +165,9 @@ impl ChallengeRepository {
     pub fn invalidate_repository(&self, repo: &GitRepository) -> Result<bool, String> {
         let cache_file = self.get_cache_file(repo);
         if self.storage.file_exists(&cache_file) {
-            self.storage.delete_file(&cache_file).map_err(|e| e.to_string())?;
+            self.storage
+                .delete_file(&cache_file)
+                .map_err(|e| e.to_string())?;
             Ok(true)
         } else {
             Ok(false)
@@ -173,7 +181,10 @@ impl ChallengeRepository {
             .iter()
             .filter_map(|path| {
                 if path.file_name()?.to_str()?.ends_with(".bin") {
-                    self.storage.load::<CacheData>(path).ok().flatten()
+                    self.storage
+                        .load::<CacheData>(path)
+                        .ok()
+                        .flatten()
                         .map(|d| format!("{}:{}", d.repo_key, d.commit_hash))
                 } else {
                     None

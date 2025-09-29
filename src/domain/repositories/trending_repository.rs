@@ -61,7 +61,12 @@ impl TrendingRepository {
     }
 
     /// Get trending repositories with caching and fallback to fresh data
-    pub async fn get_trending_repositories(&self, key: &str, language: Option<&str>, period: &str) -> Result<Vec<TrendingRepositoryInfo>> {
+    pub async fn get_trending_repositories(
+        &self,
+        key: &str,
+        language: Option<&str>,
+        period: &str,
+    ) -> Result<Vec<TrendingRepositoryInfo>> {
         // Try cache first
         if let Some(cached_repos) = self.get_from_cache(key) {
             return Ok(cached_repos);
@@ -129,8 +134,15 @@ impl TrendingRepository {
     }
 
     /// Fetch fresh data from API
-    async fn fetch_from_api(&self, language: Option<&str>, period: &str) -> Result<Vec<TrendingRepositoryInfo>> {
-        let trending_repos = self.oss_insight_client.fetch_trending_repositories(language, period).await?;
+    async fn fetch_from_api(
+        &self,
+        language: Option<&str>,
+        period: &str,
+    ) -> Result<Vec<TrendingRepositoryInfo>> {
+        let trending_repos = self
+            .oss_insight_client
+            .fetch_trending_repositories(language, period)
+            .await?;
 
         let repositories = trending_repos
             .into_iter()

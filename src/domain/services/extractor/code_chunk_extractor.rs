@@ -9,7 +9,10 @@ use crate::{GitTypeError, Result};
 use rayon::prelude::*;
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::sync::{atomic::{AtomicUsize, Ordering}, Arc};
+use std::sync::{
+    atomic::{AtomicUsize, Ordering},
+    Arc,
+};
 
 pub struct CodeChunkExtractor;
 
@@ -31,7 +34,9 @@ impl CodeChunkExtractor {
             .first()
             .map(|(first_file, _)| first_file)
             .and_then(|path| LocalGitRepositoryClient::get_repository_root(path))
-            .ok_or_else(|| GitTypeError::ExtractionFailed("Git repository not found".to_string()))?;
+            .ok_or_else(|| {
+                GitTypeError::ExtractionFailed("Git repository not found".to_string())
+            })?;
 
         // Sort files by size (largest first) for better loading progress perception
         // Cache metadata to avoid repeated filesystem calls
@@ -61,7 +66,8 @@ impl CodeChunkExtractor {
         let all_chunks: Vec<CodeChunk> = files_to_process
             .into_par_iter()
             .flat_map(|(path, language, _size)| {
-                let result = Self::extract_from_file_static(&git_root, &path, language.as_ref(), options);
+                let result =
+                    Self::extract_from_file_static(&git_root, &path, language.as_ref(), options);
 
                 // Update progress atomically
                 let current = processed.fetch_add(1, Ordering::Relaxed) + 1;
@@ -112,6 +118,12 @@ impl CodeChunkExtractor {
             GitTypeError::ExtractionFailed(format!("Failed to parse file: {:?}", file_path))
         })?;
 
-        CommonExtractor::extract_chunks_from_tree(&tree, &content, file_path, git_root, language.name())
+        CommonExtractor::extract_chunks_from_tree(
+            &tree,
+            &content,
+            file_path,
+            git_root,
+            language.name(),
+        )
     }
 }

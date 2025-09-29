@@ -14,11 +14,7 @@ fn create_test_repo(url: &str, commit: Option<String>, dirty: bool) -> GitReposi
     }
 }
 
-fn create_test_challenge(
-    id: &str,
-    source_file_path: Option<String>,
-    content: &str,
-) -> Challenge {
+fn create_test_challenge(id: &str, source_file_path: Option<String>, content: &str) -> Challenge {
     Challenge {
         id: id.to_string(),
         source_file_path,
@@ -73,9 +69,7 @@ mod tests {
             true,
         );
 
-        let challenges = vec![
-            create_test_challenge("test1", None, "test content"),
-        ];
+        let challenges = vec![create_test_challenge("test1", None, "test content")];
 
         assert!(cache.save_challenges(&dirty_repo, &challenges).is_ok());
 
@@ -93,9 +87,7 @@ mod tests {
             false,
         );
 
-        let challenges = vec![
-            create_test_challenge("test1", None, "test content"),
-        ];
+        let challenges = vec![create_test_challenge("test1", None, "test content")];
 
         assert!(cache.save_challenges(&repo, &challenges).is_ok());
 
@@ -116,9 +108,7 @@ mod tests {
             false,
         );
 
-        let challenges = vec![
-            create_test_challenge("test1", None, "test content"),
-        ];
+        let challenges = vec![create_test_challenge("test1", None, "test content")];
 
         assert!(cache.save_challenges(&repo, &challenges).is_ok());
 
@@ -141,9 +131,7 @@ mod tests {
             false,
         );
 
-        let challenges = vec![
-            create_test_challenge("test1", None, "test content"),
-        ];
+        let challenges = vec![create_test_challenge("test1", None, "test content")];
 
         assert!(cache.save_challenges(&repo, &challenges).is_ok());
 
@@ -174,9 +162,7 @@ mod tests {
             false,
         );
 
-        let challenges = vec![
-            create_test_challenge("test1", None, "test content"),
-        ];
+        let challenges = vec![create_test_challenge("test1", None, "test content")];
 
         assert!(cache.save_challenges(&repo1, &challenges).is_ok());
 
@@ -188,15 +174,9 @@ mod tests {
     fn test_cache_no_commit_hash() {
         let cache = create_test_cache();
 
-        let repo = create_test_repo(
-            "https://github.com/test/repo",
-            None,
-            false,
-        );
+        let repo = create_test_repo("https://github.com/test/repo", None, false);
 
-        let challenges = vec![
-            create_test_challenge("test1", None, "test content"),
-        ];
+        let challenges = vec![create_test_challenge("test1", None, "test content")];
 
         assert!(cache.save_challenges(&repo, &challenges).is_ok());
 

@@ -110,9 +110,14 @@ fn test_chunk_start_indentation_patterns() {
         }
 
         // Extract chunks
-        let chunks =
-            CommonExtractor::extract_chunks_from_tree(&tree, code, Path::new("test.rs"), Path::new("."), "rust")
-                .expect("Should extract chunks");
+        let chunks = CommonExtractor::extract_chunks_from_tree(
+            &tree,
+            code,
+            Path::new("test.rs"),
+            Path::new("."),
+            "rust",
+        )
+        .expect("Should extract chunks");
 
         println!("Found {} chunks", chunks.len());
 

@@ -1,4 +1,6 @@
-use crate::domain::repositories::trending_repository::{TrendingRepositoryInfo, TRENDING_REPOSITORY};
+use crate::domain::repositories::trending_repository::{
+    TrendingRepositoryInfo, TRENDING_REPOSITORY,
+};
 use crate::presentation::cli::commands::run_game_session;
 use crate::presentation::cli::views::{trending_repository_selection_view, trending_unified_view};
 use crate::presentation::cli::Cli;
@@ -50,8 +52,7 @@ pub async fn run_trending(
     }
     if let Some(name) = repo_name {
         // Direct repository selection by name
-        let repos =
-            fetch_trending_repositories_cached(&(), language.as_deref(), &period).await?;
+        let repos = fetch_trending_repositories_cached(&(), language.as_deref(), &period).await?;
 
         if let Some(repo) = select_repository_by_name(&repos, &name) {
             let repo_url = format!("https://github.com/{}", repo.repo_name);
@@ -68,8 +69,7 @@ pub async fn run_trending(
         }
     } else if language.is_some() {
         // Language provided - show repositories directly
-        let repos =
-            fetch_trending_repositories_cached(&(), language.as_deref(), &period).await?;
+        let repos = fetch_trending_repositories_cached(&(), language.as_deref(), &period).await?;
 
         if repos.is_empty() {
             return Ok(());
@@ -83,7 +83,7 @@ pub async fn run_trending(
                         repo_path: None,
                         repo: Some(repo_url),
                         langs: None,
-                                command: None,
+                        command: None,
                     };
                     return run_game_session(cli);
                 }
@@ -98,7 +98,7 @@ pub async fn run_trending(
                     repo_path: None,
                     repo: Some(repo_url),
                     langs: None,
-                        command: None,
+                    command: None,
                 };
                 return run_game_session(cli);
             }
@@ -117,7 +117,10 @@ pub async fn fetch_trending_repositories_cached(
     let cache_key = format!("{}:{}", language.unwrap_or("all"), period);
 
     // Use the unified repository method that handles both caching and API fetching
-    match TRENDING_REPOSITORY.get_trending_repositories(&cache_key, language, period).await {
+    match TRENDING_REPOSITORY
+        .get_trending_repositories(&cache_key, language, period)
+        .await
+    {
         Ok(repos) => {
             log::debug!("Retrieved trending repositories for key: {}", cache_key);
             Ok(repos)

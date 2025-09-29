@@ -57,12 +57,7 @@ impl Step for CloningStep {
 
         let progress_callback = |current: usize, total: usize| {
             if let Some(screen) = context.loading_screen {
-                screen.set_file_counts(
-                    StepType::Cloning,
-                    current,
-                    total,
-                    None,
-                );
+                screen.set_file_counts(StepType::Cloning, current, total, None);
             }
         };
 

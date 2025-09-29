@@ -1,6 +1,6 @@
-use crate::infrastructure::git::RemoteGitRepositoryClient;
 use crate::domain::models::storage::StoredRepositoryWithLanguages;
 use crate::domain::services::extractor::LanguageRegistry;
+use crate::infrastructure::git::RemoteGitRepositoryClient;
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::{

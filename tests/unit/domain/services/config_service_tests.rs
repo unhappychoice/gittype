@@ -22,7 +22,10 @@ fn test_get_config_mut() {
     let mut config_manager = ConfigService::new().unwrap();
     let config = config_manager.get_config_mut();
     config.theme.current_theme_id = "test_theme".to_string();
-    assert_eq!(config_manager.get_config().theme.current_theme_id, "test_theme");
+    assert_eq!(
+        config_manager.get_config().theme.current_theme_id,
+        "test_theme"
+    );
 }
 
 #[test]
@@ -32,11 +35,13 @@ fn test_save() {
     config_manager.save().unwrap();
 }
 
-
 #[test]
 fn test_modify_color_mode() {
     let mut config_manager = ConfigService::new().unwrap();
     let config = config_manager.get_config_mut();
     config.theme.current_color_mode = ColorMode::Light;
-    assert_eq!(config_manager.get_config().theme.current_color_mode, ColorMode::Light);
+    assert_eq!(
+        config_manager.get_config().theme.current_color_mode,
+        ColorMode::Light
+    );
 }

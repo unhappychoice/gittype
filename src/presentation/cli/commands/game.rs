@@ -18,7 +18,8 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
     let should_exit = tokio::task::block_in_place(|| {
         tokio::runtime::Handle::current().block_on(async {
             let version_service = VersionService::new()?;
-            if let Ok((has_update, current_version, latest_version)) = version_service.check().await {
+            if let Ok((has_update, current_version, latest_version)) = version_service.check().await
+            {
                 if has_update {
                     match VersionCheckScreen::show_legacy(&current_version, &latest_version)? {
                         VersionCheckResult::Continue => return Ok::<bool, GitTypeError>(false),

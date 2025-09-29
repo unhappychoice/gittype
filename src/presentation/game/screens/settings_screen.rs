@@ -1,8 +1,8 @@
 use crate::domain::models::color_mode::ColorMode;
 use crate::domain::models::theme::Theme;
 use crate::domain::models::{SessionResult, TotalResult};
-use crate::domain::services::theme_manager::THEME_MANAGER;
 use crate::domain::services::config_manager::ConfigService;
+use crate::domain::services::theme_manager::THEME_MANAGER;
 use crate::presentation::game::{Screen, ScreenTransition};
 use crate::presentation::ui::Colors;
 use crate::Result;

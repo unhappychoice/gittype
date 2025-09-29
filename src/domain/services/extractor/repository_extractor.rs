@@ -150,7 +150,6 @@ impl RepositoryExtractor {
             .extract_chunks_from_files_with_progress(files_to_process, options, progress)
     }
 
-
     fn should_process_file_compiled(
         path: &Path,
         include_patterns: &[glob::Pattern],

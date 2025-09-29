@@ -1,8 +1,8 @@
-#[cfg(not(feature = "test-mocks"))]
-use crate::{GitTypeError, Result};
+use super::AppDataProvider;
 #[cfg(feature = "test-mocks")]
 use crate::Result;
-use super::AppDataProvider;
+#[cfg(not(feature = "test-mocks"))]
+use crate::{GitTypeError, Result};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
@@ -15,7 +15,6 @@ mod real_impl {
     impl AppDataProvider for FileStorage {}
 
     impl FileStorage {
-
         /// Read and deserialize JSON from a file
         pub fn read_json<T>(&self, file_path: &Path) -> Result<Option<T>>
         where
@@ -81,7 +80,6 @@ mod mock_impl {
     impl AppDataProvider for FileStorage {}
 
     impl FileStorage {
-
         pub fn read_json<T>(&self, _file_path: &Path) -> Result<Option<T>>
         where
             T: for<'de> Deserialize<'de>,

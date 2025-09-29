@@ -1,4 +1,6 @@
-use gittype::domain::repositories::trending_repository::{TrendingRepository, TrendingRepositoryInfo};
+use gittype::domain::repositories::trending_repository::{
+    TrendingRepository, TrendingRepositoryInfo,
+};
 use std::path::PathBuf;
 
 fn create_test_trending_repository() -> TrendingRepository {
@@ -25,7 +27,9 @@ mod tests {
         let repo = create_test_trending_repository();
 
         // Cache miss should call API and return results or empty vec on failure
-        let result = repo.get_trending_repositories("test_key", Some("rust"), "daily").await;
+        let result = repo
+            .get_trending_repositories("test_key", Some("rust"), "daily")
+            .await;
         assert!(result.is_ok());
         // API call may succeed or fail, both are acceptable
     }
@@ -34,8 +38,12 @@ mod tests {
     async fn test_get_trending_repositories_with_different_keys() {
         let repo = create_test_trending_repository();
 
-        let result1 = repo.get_trending_repositories("key1", Some("rust"), "daily").await;
-        let result2 = repo.get_trending_repositories("key2", Some("python"), "weekly").await;
+        let result1 = repo
+            .get_trending_repositories("key1", Some("rust"), "daily")
+            .await;
+        let result2 = repo
+            .get_trending_repositories("key2", Some("python"), "weekly")
+            .await;
 
         assert!(result1.is_ok());
         assert!(result2.is_ok());
@@ -45,7 +53,9 @@ mod tests {
     async fn test_get_trending_repositories_with_no_language() {
         let repo = create_test_trending_repository();
 
-        let result = repo.get_trending_repositories("no_lang_key", None, "monthly").await;
+        let result = repo
+            .get_trending_repositories("no_lang_key", None, "monthly")
+            .await;
         assert!(result.is_ok());
         // API call may succeed or fail, both are acceptable
     }
@@ -55,7 +65,9 @@ mod tests {
         let repo = create_test_trending_repository();
 
         // API failure should return empty vec instead of error
-        let result = repo.get_trending_repositories("fail_key", Some("invalid"), "invalid").await;
+        let result = repo
+            .get_trending_repositories("fail_key", Some("invalid"), "invalid")
+            .await;
         assert!(result.is_ok());
         let repos = result.unwrap();
         assert!(repos.is_empty());
@@ -67,7 +79,10 @@ mod tests {
 
         assert_eq!(info.repo_name, "test/repo");
         assert_eq!(info.primary_language, Some("rust".to_string()));
-        assert_eq!(info.description, Some("Test repository description".to_string()));
+        assert_eq!(
+            info.description,
+            Some("Test repository description".to_string())
+        );
         assert_eq!(info.stars, "100");
         assert_eq!(info.forks, "50");
         assert_eq!(info.total_score, "150");

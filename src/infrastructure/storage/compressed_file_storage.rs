@@ -1,8 +1,8 @@
-#[cfg(not(feature = "test-mocks"))]
-use crate::{GitTypeError, Result};
+use super::AppDataProvider;
 #[cfg(feature = "test-mocks")]
 use crate::Result;
-use super::AppDataProvider;
+#[cfg(not(feature = "test-mocks"))]
+use crate::{GitTypeError, Result};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
@@ -19,7 +19,6 @@ mod real_impl {
     impl AppDataProvider for CompressedFileStorage {}
 
     impl CompressedFileStorage {
-
         /// Save compressed binary data to a file
         pub fn save<T: Serialize>(&self, file_path: &Path, data: &T) -> Result<()> {
             // Ensure parent directory exists
@@ -28,19 +27,22 @@ mod real_impl {
             }
 
             let binary_data = bincode::serde::encode_to_vec(data, bincode::config::standard())
-                .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to serialize data: {}", e)))?;
+                .map_err(|e| {
+                    GitTypeError::ExtractionFailed(format!("Failed to serialize data: {}", e))
+                })?;
 
             let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
-            encoder
-                .write_all(&binary_data)
-                .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to compress data: {}", e)))?;
+            encoder.write_all(&binary_data).map_err(|e| {
+                GitTypeError::ExtractionFailed(format!("Failed to compress data: {}", e))
+            })?;
 
-            let compressed_data = encoder
-                .finish()
-                .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to finish compression: {}", e)))?;
+            let compressed_data = encoder.finish().map_err(|e| {
+                GitTypeError::ExtractionFailed(format!("Failed to finish compression: {}", e))
+            })?;
 
-            fs::write(file_path, compressed_data)
-                .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to save file: {}", e)))?;
+            fs::write(file_path, compressed_data).map_err(|e| {
+                GitTypeError::ExtractionFailed(format!("Failed to save file: {}", e))
+            })?;
 
             Ok(())
         }
@@ -51,17 +53,22 @@ mod real_impl {
                 return Ok(None);
             }
 
-            let compressed_data = fs::read(file_path)
-                .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to read file: {}", e)))?;
+            let compressed_data = fs::read(file_path).map_err(|e| {
+                GitTypeError::ExtractionFailed(format!("Failed to read file: {}", e))
+            })?;
 
             let mut decoder = GzDecoder::new(&compressed_data[..]);
             let mut binary_data = Vec::new();
 
-            decoder.read_to_end(&mut binary_data)
-                .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to decompress data: {}", e)))?;
+            decoder.read_to_end(&mut binary_data).map_err(|e| {
+                GitTypeError::ExtractionFailed(format!("Failed to decompress data: {}", e))
+            })?;
 
-            let (data, _) = bincode::serde::decode_from_slice(&binary_data, bincode::config::standard())
-                .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to deserialize data: {}", e)))?;
+            let (data, _) =
+                bincode::serde::decode_from_slice(&binary_data, bincode::config::standard())
+                    .map_err(|e| {
+                        GitTypeError::ExtractionFailed(format!("Failed to deserialize data: {}", e))
+                    })?;
 
             Ok(Some(data))
         }
@@ -123,22 +130,23 @@ mod mock_impl {
     impl AppDataProvider for CompressedFileStorage {}
 
     impl CompressedFileStorage {
-
         pub fn save<T: Serialize>(&self, file_path: &Path, data: &T) -> Result<()> {
             use flate2::{write::GzEncoder, Compression};
             use std::io::Write;
 
             let binary_data = bincode::serde::encode_to_vec(data, bincode::config::standard())
-                .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to serialize data: {}", e)))?;
+                .map_err(|e| {
+                    GitTypeError::ExtractionFailed(format!("Failed to serialize data: {}", e))
+                })?;
 
             let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
-            encoder
-                .write_all(&binary_data)
-                .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to compress data: {}", e)))?;
+            encoder.write_all(&binary_data).map_err(|e| {
+                GitTypeError::ExtractionFailed(format!("Failed to compress data: {}", e))
+            })?;
 
-            let compressed_data = encoder
-                .finish()
-                .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to finish compression: {}", e)))?;
+            let compressed_data = encoder.finish().map_err(|e| {
+                GitTypeError::ExtractionFailed(format!("Failed to finish compression: {}", e))
+            })?;
 
             let mut storage = self.test_storage.lock().unwrap();
             storage.insert(file_path.to_path_buf(), compressed_data);
@@ -158,11 +166,15 @@ mod mock_impl {
             let mut decoder = GzDecoder::new(&compressed_data[..]);
             let mut binary_data = Vec::new();
 
-            decoder.read_to_end(&mut binary_data)
-                .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to decompress data: {}", e)))?;
+            decoder.read_to_end(&mut binary_data).map_err(|e| {
+                GitTypeError::ExtractionFailed(format!("Failed to decompress data: {}", e))
+            })?;
 
-            let (data, _) = bincode::serde::decode_from_slice(&binary_data, bincode::config::standard())
-                .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to deserialize data: {}", e)))?;
+            let (data, _) =
+                bincode::serde::decode_from_slice(&binary_data, bincode::config::standard())
+                    .map_err(|e| {
+                        GitTypeError::ExtractionFailed(format!("Failed to deserialize data: {}", e))
+                    })?;
 
             Ok(Some(data))
         }
@@ -193,7 +205,6 @@ mod mock_impl {
             let storage = self.test_storage.lock().unwrap();
             storage.get(file_path).map(|data| data.len() as u64)
         }
-
     }
 }
 

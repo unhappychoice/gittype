@@ -19,7 +19,7 @@ pub struct StoredRepositoryWithLanguages {
 }
 
 impl StoredRepositoryWithLanguages {
-    // TODO: Remove this and add http_url property 
+    // TODO: Remove this and add http_url property
     pub fn http_url(&self) -> String {
         GitRepositoryRefParser::parse(&self.remote_url)
             .map(|repo_ref| repo_ref.http_url())
