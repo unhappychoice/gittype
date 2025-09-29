@@ -11,6 +11,7 @@ documentation = "https://docs.rs/gittype"
 keywords = ["typing", "practice", "cli", "git", "code"]
 categories = ["command-line-utilities", "games"]
 default-run = "gittype"
+
 exclude = [
     "*.png",
     "*.gif",
@@ -72,6 +73,7 @@ env_logger = "0.11"
 tempfile = "3.23"
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 reqwest = { version = "0.12", features = ["json"] }
+async-trait = "0.1"
 atty = "0.2"
 bincode = { version = "2.0", features = ["serde"] }
 flate2 = "1.0"
@@ -80,3 +82,9 @@ sha2 = "0.10"
 [dev-dependencies]
 paste = "1.0"
 insta = "1.43"
+gittype = { path = ".", default-features = false, features = ["test-mocks"] }
+
+[features]
+default = []
+test-mocks = []
+

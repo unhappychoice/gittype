@@ -1,5 +1,5 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
-use crate::infrastructure::cache::CHALLENGE_CACHE;
+use crate::domain::repositories::challenge_repository::CHALLENGE_REPOSITORY;
 use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::style::Color;
@@ -79,7 +79,7 @@ impl Step for GeneratingStep {
 
         // Cache the generated challenges if we have git repository info
         if let Some(ref git_repo) = context.git_repository {
-            match CHALLENGE_CACHE.save(git_repo, &generated_challenges) {
+            match CHALLENGE_REPOSITORY.save_challenges(git_repo, &generated_challenges) {
                 Ok(_) => {
                     log::info!(
                         "Successfully cached {} challenges for {}",

@@ -1,10 +1,5 @@
-pub mod daos;
-pub mod database;
-pub mod migrations;
-pub mod seeders;
+pub mod app_data_provider;
+pub mod compressed_file_storage;
+pub mod file_storage;
 
-#[cfg(test)]
-pub mod integration_test;
-
-pub use daos::*;
-pub use database::{Database, HasDatabase};
+pub use app_data_provider::AppDataProvider;

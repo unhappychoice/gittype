@@ -1,0 +1,3 @@
+mod git_repository_ref_parser_test;
+mod local_git_repository_client_test;
+mod remote_git_repository_client_test;

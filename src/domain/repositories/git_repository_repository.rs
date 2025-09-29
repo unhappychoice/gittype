@@ -1,6 +1,7 @@
 use crate::domain::models::storage::StoredRepository;
 use crate::domain::models::GitRepository;
-use crate::infrastructure::storage::{daos::RepositoryDao, Database, HasDatabase};
+use crate::infrastructure::database::daos::RepositoryDao;
+use crate::infrastructure::database::database::{Database, HasDatabase};
 use crate::Result;
 use std::sync::{Arc, Mutex};
 

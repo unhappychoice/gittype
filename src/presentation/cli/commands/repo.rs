@@ -1,4 +1,5 @@
-use crate::infrastructure::storage::{Database, RepositoryDao};
+use crate::infrastructure::database::daos::RepositoryDao;
+use crate::infrastructure::database::database::Database;
 use crate::presentation::cli::commands::run_game_session;
 use crate::presentation::cli::views::{repo_list_view, repo_play_view};
 use crate::presentation::cli::Cli;
@@ -123,7 +124,6 @@ pub fn run_repo_play() -> Result<()> {
                 repo_path: None,
                 repo: Some(repo_spec),
                 langs: None,
-                config: None,
                 command: None,
             };
 

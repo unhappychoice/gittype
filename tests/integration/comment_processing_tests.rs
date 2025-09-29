@@ -11,6 +11,7 @@ use std::path::Path;
 /// Tests for the core bug: byte vs character position misalignment
 mod byte_char_position_bugs {
     use super::*;
+    use crate::integration::extract_from_file_for_test;
 
     #[test]
     fn test_original_indent_chars_fix() {
@@ -71,7 +72,7 @@ mod byte_char_position_bugs {
         let options_path = Path::new("src/domain/models/extraction_options.rs");
 
         // Extract chunks from the real file
-        let chunks = CommonExtractor::extract_from_file(options_path, "rust").unwrap();
+        let chunks = extract_from_file_for_test(options_path, "rust").unwrap();
 
         // Also extract just the comment ranges for debugging
         let content = std::fs::read_to_string(options_path).unwrap();
