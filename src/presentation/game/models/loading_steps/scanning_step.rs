@@ -1,4 +1,5 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
+use crate::domain::services::source_file_extractor::SourceFileExtractor;
 use crate::presentation::ui::Colors;
 use crate::{GitTypeError, Result};
 use ratatui::style::Color;
@@ -66,12 +67,8 @@ impl Step for ScanningStep {
             GitTypeError::ExtractionFailed("No loading screen available".to_string())
         })?;
 
-        let loader = context.repository_loader.as_ref().ok_or_else(|| {
-            GitTypeError::ExtractionFailed("No repository loader available".to_string())
-        })?;
-
-        // Use RepositoryExtractor to perform file scanning with progress
-        let scanned_files = loader.collect_source_files_with_progress(repo_path, screen)?;
-        Ok(StepResult::ScannedFiles(scanned_files))
+        SourceFileExtractor::new()
+            .collect_with_progress(repo_path, screen)
+            .map(|files| StepResult::ScannedFiles(files))
     }
 }

@@ -1,99 +1,48 @@
 use crate::domain::models::{ExtractionOptions, Languages};
+use crate::infrastructure::storage::file_storage::FileStorage;
 use crate::presentation::game::models::StepType;
 use crate::presentation::game::screens::loading_screen::ProgressReporter;
-use crate::{GitTypeError, Result};
-use ignore::WalkBuilder;
+use crate::Result;
 use std::path::{Path, PathBuf};
 
-pub struct SourceFileExtractor;
+pub struct SourceFileExtractor {
+    file_storage: FileStorage,
+}
 
 impl SourceFileExtractor {
-    pub fn new() -> Result<Self> {
-        Ok(Self)
+    pub fn new() -> Self {
+        Self {
+            file_storage: FileStorage::new(),
+        }
     }
 
-    pub fn collect_source_files_with_progress(
+    pub fn with_storage(file_storage: FileStorage) -> Self {
+        Self { file_storage }
+    }
+
+    pub fn collect_with_progress(
         &self,
         repo_path: &Path,
         progress: &dyn ProgressReporter,
     ) -> Result<Vec<PathBuf>> {
         let options = ExtractionOptions::default();
 
-        // Compile glob patterns once for faster matching
-        let include_patterns: Vec<glob::Pattern> = options
-            .include_patterns
-            .iter()
-            .filter_map(|p| glob::Pattern::new(p).ok())
-            .collect();
-        let exclude_patterns: Vec<glob::Pattern> = options
-            .exclude_patterns
-            .iter()
-            .filter_map(|p| glob::Pattern::new(p).ok())
-            .collect();
-
-        // First pass: count total files to estimate progress
-        let walker_count = WalkBuilder::new(repo_path)
-            .hidden(false) // Include hidden files
-            .git_ignore(true) // Respect .gitignore
-            .git_global(true) // Respect global gitignore
-            .git_exclude(true) // Respect .git/info/exclude
-            .build();
-
-        let mut total_files_estimated = 0;
-        for entry in walker_count {
-            let entry =
-                entry.map_err(|e| GitTypeError::ExtractionFailed(format!("Walk error: {}", e)))?;
-            let path = entry.path();
-
-            if path.is_file() {
-                total_files_estimated += 1;
-            }
+        fn compile_patterns(patterns: &[String]) -> Vec<glob::Pattern> {
+            patterns
+                .iter()
+                .filter_map(|p| glob::Pattern::new(p).ok())
+                .collect()
         }
 
-        // Second pass: collect matching files with progress
-        let walker = WalkBuilder::new(repo_path)
-            .hidden(false) // Include hidden files
-            .git_ignore(true) // Respect .gitignore
-            .git_global(true) // Respect global gitignore
-            .git_exclude(true) // Respect .git/info/exclude
-            .build();
+        let total_files_estimated = self.count_files(repo_path)?;
 
-        let mut files = Vec::new();
-        let mut processed = 0;
-
-        for entry in walker {
-            let entry =
-                entry.map_err(|e| GitTypeError::ExtractionFailed(format!("Walk error: {}", e)))?;
-            let path = entry.path();
-
-            if !path.is_file() {
-                continue;
-            }
-
-            processed += 1;
-
-            if let Some(extension) = path.extension().and_then(|e| e.to_str()) {
-                if Languages::from_extension(extension).is_some()
-                    && Self::should_process_file_compiled(
-                        path,
-                        &include_patterns,
-                        &exclude_patterns,
-                    )
-                {
-                    files.push(path.to_path_buf());
-                }
-            }
-
-            if processed % 100 == 0 || processed == total_files_estimated {
-                // Update progress with estimated total
-                progress.set_file_counts(
-                    StepType::Scanning,
-                    processed,
-                    total_files_estimated,
-                    None,
-                );
-            }
-        }
+        let files = self.collect_files(
+            repo_path,
+            &compile_patterns(&options.include_patterns),
+            &compile_patterns(&options.exclude_patterns),
+            total_files_estimated,
+            progress,
+        )?;
 
         // Ensure final progress is exactly 100%
         progress.set_file_counts(
@@ -106,7 +55,52 @@ impl SourceFileExtractor {
         Ok(files)
     }
 
-    fn should_process_file_compiled(
+    fn count_files(&self, repo_path: &Path) -> Result<usize> {
+        let entries = self.file_storage.walk_directory(repo_path)?;
+        Ok(entries.iter().filter(|entry| entry.is_file).count())
+    }
+
+    fn collect_files(
+        &self,
+        repo_path: &Path,
+        include_patterns: &[glob::Pattern],
+        exclude_patterns: &[glob::Pattern],
+        total_files_estimated: usize,
+        progress: &dyn ProgressReporter,
+    ) -> Result<Vec<PathBuf>> {
+        let entries = self.file_storage.walk_directory(repo_path)?;
+
+        let files: Vec<PathBuf> = entries
+            .into_iter()
+            .enumerate()
+            .filter(|(_, entry)| entry.is_file)
+            .inspect(|(index, _)| {
+                let processed = index + 1;
+                if processed % 100 == 0 || processed == total_files_estimated {
+                    progress.set_file_counts(
+                        StepType::Scanning,
+                        processed,
+                        total_files_estimated,
+                        None,
+                    );
+                }
+            })
+            .map(|(_, entry)| entry.path)
+            .filter(|path| self.is_supported_language(path))
+            .filter(|path| Self::should_collect(path, include_patterns, exclude_patterns))
+            .collect();
+
+        Ok(files)
+    }
+
+    fn is_supported_language(&self, path: &PathBuf) -> bool {
+        path.extension()
+            .and_then(|e| e.to_str())
+            .map(|extension| Languages::from_extension(extension).is_some())
+            .unwrap_or(false)
+    }
+
+    fn should_collect(
         path: &Path,
         include_patterns: &[glob::Pattern],
         exclude_patterns: &[glob::Pattern],

@@ -4,7 +4,13 @@ use crate::Result;
 #[cfg(not(feature = "test-mocks"))]
 use crate::{GitTypeError, Result};
 use serde::{Deserialize, Serialize};
-use std::path::Path;
+use std::path::{Path, PathBuf};
+
+#[derive(Debug, Clone)]
+pub struct FileEntry {
+    pub path: PathBuf,
+    pub is_file: bool,
+}
 
 #[cfg(not(feature = "test-mocks"))]
 mod real_impl {
@@ -15,6 +21,10 @@ mod real_impl {
     impl AppDataProvider for FileStorage {}
 
     impl FileStorage {
+        pub fn new() -> Self {
+            Self
+        }
+
         /// Read and deserialize JSON from a file
         pub fn read_json<T>(&self, file_path: &Path) -> Result<Option<T>>
         where
@@ -68,6 +78,36 @@ mod real_impl {
         pub fn file_exists(&self, file_path: &Path) -> bool {
             file_path.exists()
         }
+
+        /// Walk directory and return file entries
+        pub fn walk_directory(&self, path: &Path) -> Result<Vec<FileEntry>> {
+            use ignore::WalkBuilder;
+
+            if !path.exists() {
+                return Err(GitTypeError::ExtractionFailed(format!(
+                    "Path does not exist: {}",
+                    path.display()
+                )));
+            }
+
+            let walker = WalkBuilder::new(path)
+                .hidden(false)
+                .git_ignore(true)
+                .git_global(true)
+                .git_exclude(true)
+                .build();
+
+            walker
+                .map(|entry| {
+                    entry
+                        .map_err(|e| GitTypeError::ExtractionFailed(format!("Walk error: {}", e)))
+                        .map(|entry| FileEntry {
+                            path: entry.path().to_path_buf(),
+                            is_file: entry.path().is_file(),
+                        })
+                })
+                .collect()
+        }
     }
 }
 
@@ -75,11 +115,31 @@ mod real_impl {
 mod mock_impl {
     use super::*;
 
-    pub struct FileStorage;
+    pub struct FileStorage {
+        pub files: Vec<FileEntry>,
+    }
 
     impl AppDataProvider for FileStorage {}
 
     impl FileStorage {
+        pub fn new() -> Self {
+            Self { files: Vec::new() }
+        }
+
+        pub fn add_file<P: Into<PathBuf>>(&mut self, path: P) {
+            self.files.push(FileEntry {
+                path: path.into(),
+                is_file: true,
+            });
+        }
+
+        pub fn add_directory<P: Into<PathBuf>>(&mut self, path: P) {
+            self.files.push(FileEntry {
+                path: path.into(),
+                is_file: false,
+            });
+        }
+
         pub fn read_json<T>(&self, _file_path: &Path) -> Result<Option<T>>
         where
             T: for<'de> Deserialize<'de>,
@@ -102,6 +162,17 @@ mod mock_impl {
 
         pub fn file_exists(&self, _file_path: &Path) -> bool {
             false
+        }
+
+        pub fn walk_directory(&self, path: &Path) -> Result<Vec<FileEntry>> {
+            // For mock implementation, simulate real behavior for non-existent paths
+            if path.to_str() == Some("/nonexistent/path") {
+                return Err(crate::GitTypeError::ExtractionFailed(format!(
+                    "Path does not exist: {}",
+                    path.display()
+                )));
+            }
+            Ok(self.files.clone())
         }
     }
 }

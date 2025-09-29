@@ -1,5 +1,5 @@
-use gittype::domain::models::{ChunkType, CodeChunk, ExtractionOptions};
 use gittype::domain::models::Languages;
+use gittype::domain::models::{ChunkType, CodeChunk, ExtractionOptions};
 use gittype::domain::services::challenge_generator::ChallengeGenerator;
 use gittype::domain::services::source_code_parser::SourceCodeParser;
 use gittype::domain::services::source_file_extractor::SourceFileExtractor;
@@ -252,7 +252,7 @@ struct Person {
         .output()
         .expect("Failed to add remote");
 
-    let mut loader = SourceFileExtractor::new().unwrap();
+    let mut loader = SourceFileExtractor::new();
     let mut options = ExtractionOptions::default();
     // Remove tmp/** pattern for this test since we're using a temp directory
     options.exclude_patterns.retain(|p| p != "**/tmp/**");
@@ -276,7 +276,7 @@ struct Person {
 
 #[test]
 fn test_repository_not_found() {
-    let mut loader = SourceFileExtractor::new().unwrap();
+    let mut loader = SourceFileExtractor::new();
     let result = extract_challenges_for_test(
         &mut loader,
         Path::new("/nonexistent/path"),
