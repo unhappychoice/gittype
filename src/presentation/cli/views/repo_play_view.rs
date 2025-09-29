@@ -1,5 +1,5 @@
 use crate::domain::models::storage::StoredRepositoryWithLanguages;
-use crate::domain::services::extractor::LanguageRegistry;
+use crate::domain::services::source_code_parser::LanguageRegistry;
 use crate::infrastructure::git::RemoteGitRepositoryClient;
 use crate::presentation::ui::Colors;
 use crate::Result;

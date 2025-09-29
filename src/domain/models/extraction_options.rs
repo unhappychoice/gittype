@@ -1,4 +1,4 @@
-use crate::domain::services::extractor::LanguageRegistry;
+use crate::domain::services::source_code_parser::LanguageRegistry;
 
 #[derive(Debug, Clone)]
 pub struct ExtractionOptions {

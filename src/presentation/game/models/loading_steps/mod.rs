@@ -1,6 +1,6 @@
 use crate::domain::models::Challenge;
 use crate::domain::models::ExtractionOptions;
-use crate::domain::services::extractor::RepositoryExtractor;
+use crate::domain::services::source_file_extractor::SourceFileExtractor;
 use crate::presentation::game::screens::LoadingScreen;
 use crate::Result;
 use ratatui::style::Color;
@@ -42,7 +42,7 @@ pub struct ExecutionContext<'a> {
     pub repo_path: Option<&'a PathBuf>,
     pub extraction_options: Option<&'a ExtractionOptions>,
     pub loading_screen: Option<&'a LoadingScreen>,
-    pub repository_loader: Option<&'a mut RepositoryExtractor>,
+    pub repository_loader: Option<&'a mut SourceFileExtractor>,
     pub current_repo_path: Option<PathBuf>,
     pub git_repository: Option<crate::domain::models::GitRepository>,
     pub scanned_files: Option<Vec<PathBuf>>, // Temporary storage for step results

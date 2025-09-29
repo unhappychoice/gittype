@@ -1,3 +1,4 @@
+use crate::domain::services::source_code_parser::LanguageRegistry;
 use crate::{
     domain::models::{Challenge, GitRepository},
     presentation::ui::Colors,
@@ -34,7 +35,6 @@ impl TypingHeaderView {
 
             // Add language with color if available
             if let Some(ref language) = challenge.language {
-                use crate::domain::services::extractor::LanguageRegistry;
                 let language_color = LanguageRegistry::get_color(Some(language));
                 let display_name = LanguageRegistry::get_display_name(Some(language));
                 spans.push(Span::styled(

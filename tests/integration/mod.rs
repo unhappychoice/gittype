@@ -5,10 +5,12 @@ pub mod languages;
 pub mod missing_ascii_art_test;
 
 use gittype::domain::models::{Challenge, CodeChunk, ExtractionOptions, Language};
-use gittype::domain::services::extractor::core::CommonExtractor;
-use gittype::domain::services::extractor::parsers::parse_with_thread_local;
-use gittype::domain::services::extractor::CodeChunkExtractor;
-use gittype::domain::services::extractor::{LanguageRegistry, RepositoryExtractor};
+use gittype::domain::services::challenge_generator::ChallengeGenerator;
+use gittype::domain::services::source_code_parser::parsers::parse_with_thread_local;
+use gittype::domain::services::source_code_parser::CommonExtractor;
+use gittype::domain::services::source_code_parser::LanguageRegistry;
+use gittype::domain::services::source_code_parser::SourceCodeParser;
+use gittype::domain::services::source_file_extractor::SourceFileExtractor;
 use gittype::presentation::game::screens::loading_screen::NoOpProgressReporter;
 use gittype::GitTypeError;
 use gittype::Result;
@@ -80,7 +82,7 @@ fn extract_chunks_from_scanned_files_for_test(
 
 // Helper function to extract chunks with NoOpProgressReporter for tests
 pub fn extract_chunks_for_test(
-    _extractor: &mut CodeChunkExtractor,
+    _extractor: &mut SourceCodeParser,
     repo_path: &Path,
     _options: ExtractionOptions,
 ) -> Result<Vec<CodeChunk>> {
@@ -97,24 +99,17 @@ pub fn extract_chunks_for_test(
 }
 
 pub fn extract_challenges_for_test(
-    repo_extractor: &mut RepositoryExtractor,
+    repo_extractor: &mut SourceFileExtractor,
     repo_path: &Path,
     options: ExtractionOptions,
 ) -> gittype::Result<Vec<Challenge>> {
-    // Step 1: Collect source files
     let files =
         repo_extractor.collect_source_files_with_progress(repo_path, &NoOpProgressReporter)?;
 
-    // Step 2: Extract chunks from files (using test version)
     let chunks = extract_chunks_from_scanned_files_for_test(&files, &options)?;
 
-    // Step 3: Convert to challenges
-    let challenges = repo_extractor.convert_chunks_and_files_to_challenges_with_progress(
-        chunks,
-        files,
-        Some(repo_path),
-        &NoOpProgressReporter,
-    );
+    let converter = ChallengeGenerator::new();
+    let challenges = converter.convert_with_progress(chunks, &NoOpProgressReporter);
 
     Ok(challenges)
 }

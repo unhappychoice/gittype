@@ -1,4 +1,4 @@
-use super::super::parsers::get_parser_registry;
+use super::parsers::get_parser_registry;
 use crate::domain::models::{ChunkType, CodeChunk};
 use crate::Result;
 use std::path::Path;

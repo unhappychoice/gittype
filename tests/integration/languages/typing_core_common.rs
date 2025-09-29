@@ -1,5 +1,5 @@
-use gittype::domain::services::extractor::core::CommonExtractor;
-use gittype::domain::services::extractor::parsers::parse_with_thread_local;
+use gittype::domain::services::source_code_parser::parsers::parse_with_thread_local;
+use gittype::domain::services::source_code_parser::CommonExtractor;
 use gittype::presentation::game::typing_core::{ProcessingOptions, TypingCore};
 use insta::assert_snapshot;
 use std::fmt;

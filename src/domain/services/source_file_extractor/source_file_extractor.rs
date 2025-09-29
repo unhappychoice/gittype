@@ -1,25 +1,16 @@
-use super::{ChallengeConverter, CodeChunkExtractor, LanguageRegistry};
-use crate::domain::models::{Challenge, CodeChunk, ExtractionOptions, Language};
+use crate::domain::models::ExtractionOptions;
+use crate::domain::services::source_code_parser::LanguageRegistry;
 use crate::presentation::game::models::StepType;
 use crate::presentation::game::screens::loading_screen::ProgressReporter;
 use crate::{GitTypeError, Result};
 use ignore::WalkBuilder;
 use std::path::{Path, PathBuf};
 
-pub struct RepositoryExtractor {
-    extractor: CodeChunkExtractor,
-    converter: ChallengeConverter,
-}
+pub struct SourceFileExtractor;
 
-impl RepositoryExtractor {
+impl SourceFileExtractor {
     pub fn new() -> Result<Self> {
-        let extractor = CodeChunkExtractor::new()?;
-        let converter = ChallengeConverter::new();
-
-        Ok(Self {
-            extractor,
-            converter,
-        })
+        Ok(Self)
     }
 
     pub fn collect_source_files_with_progress(
@@ -114,40 +105,6 @@ impl RepositoryExtractor {
         );
 
         Ok(files)
-    }
-
-    pub fn convert_chunks_and_files_to_challenges_with_progress(
-        &self,
-        chunks: Vec<CodeChunk>,
-        _file_paths: Vec<PathBuf>, // No longer needed, files are processed as chunks
-        _git_root: Option<&Path>,
-        progress: &dyn ProgressReporter,
-    ) -> Vec<Challenge> {
-        self.converter
-            .convert_chunks_and_files_to_challenges_with_progress(chunks, progress)
-    }
-
-    pub fn extract_chunks_from_scanned_files_with_progress(
-        &mut self,
-        scanned_files: &[PathBuf],
-        options: &ExtractionOptions,
-        progress: &dyn ProgressReporter,
-    ) -> Result<Vec<CodeChunk>> {
-        // Convert scanned files to (path, language) pairs
-        let files_to_process: Vec<(PathBuf, Box<dyn Language>)> = scanned_files
-            .iter()
-            .filter_map(|path| {
-                if let Some(extension) = path.extension().and_then(|e| e.to_str()) {
-                    LanguageRegistry::from_extension(extension)
-                        .map(|language| (path.to_owned(), language))
-                } else {
-                    None
-                }
-            })
-            .collect();
-
-        self.extractor
-            .extract_chunks_from_files_with_progress(files_to_process, options, progress)
     }
 
     fn should_process_file_compiled(

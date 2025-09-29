@@ -1,5 +1,5 @@
 use crate::domain::models::ExtractionOptions;
-use crate::domain::services::extractor::LanguageRegistry;
+use crate::domain::services::source_code_parser::LanguageRegistry;
 use crate::domain::services::theme_manager::ThemeManager;
 use crate::domain::services::version_service::VersionService;
 use crate::infrastructure::logging;

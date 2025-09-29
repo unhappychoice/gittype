@@ -11,20 +11,20 @@ use std::sync::{
 };
 use uuid::Uuid;
 
-pub struct ChallengeConverter;
+pub struct ChallengeGenerator;
 
-impl Default for ChallengeConverter {
+impl Default for ChallengeGenerator {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl ChallengeConverter {
+impl ChallengeGenerator {
     pub fn new() -> Self {
         Self
     }
 
-    pub fn convert_chunk_to_challenge(&self, chunk: CodeChunk) -> Option<Challenge> {
+    pub fn convert(&self, chunk: CodeChunk) -> Option<Challenge> {
         // Skip empty or whitespace-only chunks
         if chunk.content.trim().is_empty() {
             return None;
@@ -48,7 +48,7 @@ impl ChallengeConverter {
         )
     }
 
-    pub fn convert_chunks_and_files_to_challenges_with_progress(
+    pub fn convert_with_progress(
         &self,
         chunks: Vec<CodeChunk>,
         progress: &dyn ProgressReporter,

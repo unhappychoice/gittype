@@ -1,7 +1,7 @@
 use crate::domain::models::Language;
 use crate::domain::models::{CodeChunk, ExtractionOptions};
-use crate::domain::services::extractor::core::extractor::CommonExtractor;
-use crate::domain::services::extractor::parsers::parse_with_thread_local;
+use crate::domain::services::source_code_parser::common_parser::CommonExtractor;
+use crate::domain::services::source_code_parser::parsers::parse_with_thread_local;
 use crate::infrastructure::git::LocalGitRepositoryClient;
 use crate::presentation::game::models::StepType;
 use crate::presentation::game::screens::loading_screen::ProgressReporter;
@@ -14,14 +14,14 @@ use std::sync::{
     Arc,
 };
 
-pub struct CodeChunkExtractor;
+pub struct SourceCodeParser;
 
-impl CodeChunkExtractor {
+impl SourceCodeParser {
     pub fn new() -> Result<Self> {
         Ok(Self)
     }
 
-    pub fn extract_chunks_from_files_with_progress<P: ProgressReporter + ?Sized>(
+    pub fn extract_chunks_with_progress<P: ProgressReporter + ?Sized>(
         &mut self,
         files_to_process: Vec<(PathBuf, Box<dyn Language>)>,
         options: &ExtractionOptions,

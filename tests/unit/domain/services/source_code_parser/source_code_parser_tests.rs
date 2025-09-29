@@ -1,7 +1,8 @@
 use gittype::domain::models::{ChunkType, CodeChunk, ExtractionOptions};
-use gittype::domain::services::extractor::{
-    ChallengeConverter, CodeChunkExtractor, LanguageRegistry, RepositoryExtractor,
-};
+use gittype::domain::models::{Language, Languages};
+use gittype::domain::services::challenge_generator::ChallengeGenerator;
+use gittype::domain::services::source_code_parser::SourceCodeParser;
+use gittype::domain::services::source_file_extractor::SourceFileExtractor;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
@@ -22,77 +23,74 @@ fn test_extraction_options_default() {
 #[test]
 fn test_language_from_extension() {
     assert_eq!(
-        LanguageRegistry::from_extension("rs").map(|l| l.name().to_string()),
+        Languages::from_extension("rs").map(|l| l.name().to_string()),
         Some("rust".to_string())
     );
     assert_eq!(
-        LanguageRegistry::from_extension("ts").map(|l| l.name().to_string()),
+        Languages::from_extension("ts").map(|l| l.name().to_string()),
         Some("typescript".to_string())
     );
     assert_eq!(
-        LanguageRegistry::from_extension("tsx").map(|l| l.name().to_string()),
+        Languages::from_extension("tsx").map(|l| l.name().to_string()),
         Some("typescript".to_string())
     );
     assert_eq!(
-        LanguageRegistry::from_extension("js").map(|l| l.name().to_string()),
+        Languages::from_extension("js").map(|l| l.name().to_string()),
         Some("javascript".to_string())
     );
     assert_eq!(
-        LanguageRegistry::from_extension("mjs").map(|l| l.name().to_string()),
+        Languages::from_extension("mjs").map(|l| l.name().to_string()),
         Some("javascript".to_string())
     );
     assert_eq!(
-        LanguageRegistry::from_extension("cjs").map(|l| l.name().to_string()),
+        Languages::from_extension("cjs").map(|l| l.name().to_string()),
         Some("javascript".to_string())
     );
     assert_eq!(
-        LanguageRegistry::from_extension("py").map(|l| l.name().to_string()),
+        Languages::from_extension("py").map(|l| l.name().to_string()),
         Some("python".to_string())
     );
     assert_eq!(
-        LanguageRegistry::from_extension("rb").map(|l| l.name().to_string()),
+        Languages::from_extension("rb").map(|l| l.name().to_string()),
         Some("ruby".to_string())
     );
     assert_eq!(
-        LanguageRegistry::from_extension("go").map(|l| l.name().to_string()),
+        Languages::from_extension("go").map(|l| l.name().to_string()),
         Some("go".to_string())
     );
     assert_eq!(
-        LanguageRegistry::from_extension("scala").map(|l| l.name().to_string()),
+        Languages::from_extension("scala").map(|l| l.name().to_string()),
         Some("scala".to_string())
     );
     assert_eq!(
-        LanguageRegistry::from_extension("sc").map(|l| l.name().to_string()),
+        Languages::from_extension("sc").map(|l| l.name().to_string()),
         Some("scala".to_string())
     );
-    assert_eq!(LanguageRegistry::from_extension("unknown"), None);
+    assert_eq!(Languages::from_extension("unknown"), None);
 }
 
 #[test]
 fn test_validate_languages() {
     let supported = vec!["rust".to_string(), "python".to_string()];
-    assert!(LanguageRegistry::validate_languages(&supported).is_ok());
+    assert!(Languages::validate_languages(&supported).is_ok());
 
     let unsupported = vec!["rust".to_string(), "brainfuck".to_string()];
-    let error = LanguageRegistry::validate_languages(&unsupported).unwrap_err();
+    let error = Languages::validate_languages(&unsupported).unwrap_err();
     assert_eq!(error, vec!["brainfuck".to_string()]);
 }
 
 #[test]
 fn test_detect_from_path_defaults_to_text() {
     let path = std::path::Path::new("/tmp/file.unknown_extension");
-    assert_eq!(LanguageRegistry::detect_from_path(path), "text".to_string());
+    assert_eq!(Languages::detect_from_path(path), "text".to_string());
 
     let rust_path = std::path::Path::new("/tmp/lib.rs");
-    assert_eq!(
-        LanguageRegistry::detect_from_path(rust_path),
-        "rust".to_string()
-    );
+    assert_eq!(Languages::detect_from_path(rust_path), "rust".to_string());
 }
 
 #[test]
 fn test_code_extractor_creation() {
-    let extractor = CodeChunkExtractor::new();
+    let extractor = SourceCodeParser::new();
     assert!(extractor.is_ok());
 }
 
@@ -135,7 +133,7 @@ struct TestStruct {
     fs::write(&target_file, rust_code).unwrap();
     fs::write(&log_file, rust_code).unwrap();
 
-    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let mut extractor = SourceCodeParser::new().unwrap();
     let mut options = ExtractionOptions::default();
     // Remove tmp/** pattern for this test since we're using a temp directory
     options.exclude_patterns.retain(|p| p != "**/tmp/**");
@@ -179,7 +177,7 @@ struct TestStruct {
 fn test_convert_chunk_to_challenge() {
     // CodeChunk is now imported from models at the top
 
-    let converter = ChallengeConverter::new();
+    let converter = ChallengeGenerator::new();
     let chunk = CodeChunk {
         content: "fn test() {\n    println!(\"test\");\n}".to_string(),
         file_path: PathBuf::from("src/main.rs"),
@@ -192,7 +190,7 @@ fn test_convert_chunk_to_challenge() {
         original_indentation: 0,
     };
 
-    let challenge = converter.convert_chunk_to_challenge(chunk).unwrap();
+    let challenge = converter.convert(chunk).unwrap();
 
     assert_eq!(
         challenge.code_content,
@@ -254,7 +252,7 @@ struct Person {
         .output()
         .expect("Failed to add remote");
 
-    let mut loader = RepositoryExtractor::new().unwrap();
+    let mut loader = SourceFileExtractor::new().unwrap();
     let mut options = ExtractionOptions::default();
     // Remove tmp/** pattern for this test since we're using a temp directory
     options.exclude_patterns.retain(|p| p != "**/tmp/**");
@@ -278,7 +276,7 @@ struct Person {
 
 #[test]
 fn test_repository_not_found() {
-    let mut loader = RepositoryExtractor::new().unwrap();
+    let mut loader = SourceFileExtractor::new().unwrap();
     let result = extract_challenges_for_test(
         &mut loader,
         Path::new("/nonexistent/path"),
@@ -342,7 +340,7 @@ class TsClass{} {{
         .unwrap();
     }
 
-    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let mut extractor = SourceCodeParser::new().unwrap();
     let mut options = ExtractionOptions::default();
     // Remove tmp/** pattern for this test since we're using a temp directory
     options.exclude_patterns.retain(|p| p != "**/tmp/**");
@@ -430,7 +428,7 @@ enum Color {
 
     fs::write(&scala_file, scala_code).unwrap();
 
-    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let mut extractor = SourceCodeParser::new().unwrap();
     let mut options = ExtractionOptions::default();
     options.exclude_patterns.retain(|p| p != "**/tmp/**");
 

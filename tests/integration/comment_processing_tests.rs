@@ -2,9 +2,9 @@
 //! This module contains all tests related to comment range extraction, processing, and display.
 
 use gittype::domain::models::ChunkType;
-use gittype::domain::services::extractor::core::CommonExtractor;
 #[cfg(test)]
-use gittype::domain::services::extractor::ChallengeConverter;
+use gittype::domain::services::challenge_generator::ChallengeGenerator;
+use gittype::domain::services::source_code_parser::CommonExtractor;
 use gittype::presentation::game::typing_core::TypingCore;
 use std::path::Path;
 
@@ -76,7 +76,7 @@ mod byte_char_position_bugs {
 
         // Also extract just the comment ranges for debugging
         let content = std::fs::read_to_string(options_path).unwrap();
-        let tree = gittype::domain::services::extractor::parsers::parse_with_thread_local(
+        let tree = gittype::domain::services::source_code_parser::parsers::parse_with_thread_local(
             "rust", &content,
         )
         .unwrap();
@@ -166,8 +166,8 @@ mod byte_char_position_bugs {
                 }
 
                 // Convert to Challenge
-                let converter = ChallengeConverter::new();
-                let challenge = converter.convert_chunk_to_challenge(chunk.clone()).unwrap();
+                let converter = ChallengeGenerator::new();
+                let challenge = converter.convert(chunk.clone()).unwrap();
                 println!("Challenge created successfully");
                 println!("Challenge comment ranges: {:?}", challenge.comment_ranges);
 

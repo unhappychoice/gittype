@@ -1,3 +1,4 @@
+use crate::domain::services::source_code_parser::LanguageRegistry;
 use crate::presentation::game::screens::analytics_screen::AnalyticsData;
 use crate::presentation::ui::Colors;
 use ratatui::{
@@ -37,7 +38,6 @@ impl LanguagesView {
             let name_width = available_width.saturating_sub(cpm_count_width);
 
             for (lang_name, avg_cpm, session_count) in data.top_languages.iter() {
-                use crate::domain::services::extractor::LanguageRegistry;
                 let display_name_full = LanguageRegistry::get_display_name(Some(lang_name));
 
                 let display_name = if display_name_full.len() > name_width {
@@ -110,7 +110,6 @@ impl LanguagesView {
             let lang_name = &lang_data.0;
             let detailed_stats = data.language_stats.get(lang_name);
 
-            use crate::domain::services::extractor::LanguageRegistry;
             let display_name = LanguageRegistry::get_display_name(Some(lang_name));
 
             let mut lines = vec![

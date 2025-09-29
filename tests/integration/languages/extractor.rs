@@ -16,7 +16,7 @@ macro_rules! test_language_extractor {
         #[test]
         fn $test_name() {
             use crate::integration::{extract_chunks_for_test, test_extraction_options};
-            use gittype::domain::services::extractor::CodeChunkExtractor;
+            use gittype::domain::services::source_code_parser::SourceCodeParser;
             use gittype::domain::models::ChunkType;
             use std::collections::HashMap;
             use std::fs;
@@ -27,7 +27,7 @@ macro_rules! test_language_extractor {
 
             fs::write(&file_path, $source).unwrap();
 
-            let mut extractor = CodeChunkExtractor::new().unwrap();
+            let mut extractor = SourceCodeParser::new().unwrap();
             let chunks = extract_chunks_for_test(
                 &mut extractor,
                 temp_dir.path(),
