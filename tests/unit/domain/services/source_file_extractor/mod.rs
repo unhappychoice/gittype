@@ -73,15 +73,15 @@ mod tests {
         // Should find .rs and .py files but not .txt
         let rs_files: Vec<_> = files
             .iter()
-            .filter(|p| p.extension().map_or(false, |e| e == "rs"))
+            .filter(|p| p.extension().is_some_and(|e| e == "rs"))
             .collect();
         let py_files: Vec<_> = files
             .iter()
-            .filter(|p| p.extension().map_or(false, |e| e == "py"))
+            .filter(|p| p.extension().is_some_and(|e| e == "py"))
             .collect();
         let txt_files: Vec<_> = files
             .iter()
-            .filter(|p| p.extension().map_or(false, |e| e == "txt"))
+            .filter(|p| p.extension().is_some_and(|e| e == "txt"))
             .collect();
 
         assert!(!rs_files.is_empty());

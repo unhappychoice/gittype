@@ -108,7 +108,8 @@ pub fn find_comment_ranges_with_parser(code: &str, language: &str) -> Vec<(usize
     if let Some(tree) = parse_with_thread_local(language, code) {
         let language_obj = gittype::domain::models::Languages::get_by_name(language)
             .unwrap_or_else(|| Box::new(gittype::domain::models::languages::Rust));
-        CommentProcessor::extract_comment_ranges(&tree, code, language_obj.as_ref(), &[]).unwrap_or_default()
+        CommentProcessor::extract_comment_ranges(&tree, code, language_obj.as_ref(), &[])
+            .unwrap_or_default()
     } else {
         Vec::new()
     }

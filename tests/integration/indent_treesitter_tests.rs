@@ -2,11 +2,13 @@
 //! This module tests how TreeSitter handles different indentation scenarios
 //! and ensures comment range extraction works correctly with indented code.
 
-use gittype::domain::models::Challenge;
 use gittype::domain::models::languages::Rust;
+use gittype::domain::models::Challenge;
 #[cfg(test)]
 use gittype::domain::services::challenge_generator::ChallengeGenerator;
-use gittype::domain::services::source_code_parser::{ChunkExtractor, CommentProcessor, IndentProcessor};
+use gittype::domain::services::source_code_parser::{
+    ChunkExtractor, CommentProcessor, IndentProcessor,
+};
 use gittype::presentation::game::typing_core::TypingCore;
 use std::path::Path;
 use tree_sitter::StreamingIterator;
@@ -148,8 +150,8 @@ fn test_chunk_start_indentation_patterns() {
             }
 
             // Convert to Challenge and test TypingCore
-            let converter = ChallengeGenerator::new();
-            let challenge = Challenge::from_chunk(&chunk, None).unwrap();
+            let _converter = ChallengeGenerator::new();
+            let challenge = Challenge::from_chunk(chunk, None).unwrap();
             let typing_core = TypingCore::from_challenge(&challenge, None);
 
             // Check display comment ranges
@@ -301,16 +303,17 @@ fn test_indent_char_extraction_accuracy() {
                     code.bytes()
                         .enumerate()
                         .filter(|(_, byte)| *byte == b'\n')
-                        .map(|(i, _)| i + 1)
+                        .map(|(i, _)| i + 1),
                 )
                 .collect();
-            let (normalized_content, extracted) = IndentProcessor::extract_and_normalize_indentation(
-                code,
-                code,
-                func_node.start_position().row,
-                byte_column,
-                &line_cache,
-            );
+            let (normalized_content, extracted) =
+                IndentProcessor::extract_and_normalize_indentation(
+                    code,
+                    code,
+                    func_node.start_position().row,
+                    byte_column,
+                    &line_cache,
+                );
             let _ = normalized_content; // We only need the extracted indent
 
             println!("Extracted indent: {:?}", extracted);

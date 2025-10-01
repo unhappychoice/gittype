@@ -4,8 +4,8 @@ pub mod indent_treesitter_tests;
 pub mod languages;
 pub mod missing_ascii_art_test;
 
-use gittype::domain::models::{Challenge, CodeChunk, ExtractionOptions, Language, Languages};
 use gittype::domain::models::languages::*;
+use gittype::domain::models::{Challenge, CodeChunk, ExtractionOptions, Language, Languages};
 use gittype::domain::services::challenge_generator::ChallengeGenerator;
 use gittype::domain::services::source_code_parser::parsers::parse_with_thread_local;
 use gittype::domain::services::source_code_parser::ChunkExtractor;

@@ -1,17 +1,20 @@
-use gittype::domain::models::{Challenge, ChunkType, CodeChunk, DifficultyLevel, ExtractionOptions, Languages};
+use gittype::domain::models::{
+    Challenge, ChunkType, CodeChunk, DifficultyLevel, ExtractionOptions, Languages,
+};
 use gittype::domain::services::challenge_generator::ChallengeGenerator;
 use gittype::domain::services::source_code_parser::SourceCodeParser;
 use gittype::presentation::game::models::StepType;
 use gittype::presentation::game::screens::loading_screen::ProgressReporter;
+use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use std::collections::HashMap;
 
 // Mock ProgressReporter for testing
 #[derive(Debug, Default)]
 struct MockProgressReporter {
     step_calls: Arc<Mutex<Vec<StepType>>>,
     file_calls: Arc<Mutex<Vec<Option<String>>>>,
+    #[allow(clippy::type_complexity)]
     count_calls: Arc<Mutex<Vec<(StepType, usize, usize, Option<String>)>>>,
 }
 
@@ -20,10 +23,12 @@ impl MockProgressReporter {
         Self::default()
     }
 
+    #[allow(dead_code)]
     fn get_step_calls(&self) -> Vec<StepType> {
         self.step_calls.lock().unwrap().clone()
     }
 
+    #[allow(dead_code)]
     fn get_file_calls(&self) -> Vec<Option<String>> {
         self.file_calls.lock().unwrap().clone()
     }
@@ -104,19 +109,29 @@ fn snapshot_test_complex_rust_service_challenges() {
     let challenges = generator.convert_with_progress(real_chunks.clone(), &progress);
 
     // Verify basic properties
-    assert!(!challenges.is_empty(), "Should generate at least some challenges");
-    assert!(challenges.len() >= real_chunks.len() / 4, "Should generate reasonable number of challenges");
+    assert!(
+        !challenges.is_empty(),
+        "Should generate at least some challenges"
+    );
+    assert!(
+        challenges.len() >= real_chunks.len() / 4,
+        "Should generate reasonable number of challenges"
+    );
 
     // Analyze challenge distribution by difficulty
     let mut difficulty_counts: HashMap<Option<DifficultyLevel>, usize> = HashMap::new();
     for challenge in &challenges {
-        *difficulty_counts.entry(challenge.difficulty_level).or_insert(0) += 1;
+        *difficulty_counts
+            .entry(challenge.difficulty_level)
+            .or_insert(0) += 1;
     }
 
     // Analyze challenge distribution by chunk type
     let mut chunk_type_counts: HashMap<ChunkType, usize> = HashMap::new();
     for chunk in &real_chunks {
-        *chunk_type_counts.entry(chunk.chunk_type.clone()).or_insert(0) += 1;
+        *chunk_type_counts
+            .entry(chunk.chunk_type.clone())
+            .or_insert(0) += 1;
     }
 
     // Sort for deterministic output
@@ -165,22 +180,30 @@ fn snapshot_test_complex_commented_rust_challenges() {
     let challenges = generator.convert_with_progress(real_chunks.clone(), &progress);
 
     // Verify basic properties
-    assert!(!challenges.is_empty(), "Should generate at least some challenges");
+    assert!(
+        !challenges.is_empty(),
+        "Should generate at least some challenges"
+    );
 
     // Analyze challenge distribution by difficulty
     let mut difficulty_counts: HashMap<Option<DifficultyLevel>, usize> = HashMap::new();
     for challenge in &challenges {
-        *difficulty_counts.entry(challenge.difficulty_level).or_insert(0) += 1;
+        *difficulty_counts
+            .entry(challenge.difficulty_level)
+            .or_insert(0) += 1;
     }
 
     // Analyze challenge distribution by chunk type
     let mut chunk_type_counts: HashMap<ChunkType, usize> = HashMap::new();
     for chunk in &real_chunks {
-        *chunk_type_counts.entry(chunk.chunk_type.clone()).or_insert(0) += 1;
+        *chunk_type_counts
+            .entry(chunk.chunk_type.clone())
+            .or_insert(0) += 1;
     }
 
     // Check comment processing
-    let challenges_with_comments = challenges.iter()
+    let challenges_with_comments = challenges
+        .iter()
         .filter(|c| !c.comment_ranges.is_empty())
         .count();
 
@@ -216,7 +239,10 @@ fn snapshot_test_complex_commented_rust_challenges() {
     insta::assert_snapshot!("complex_commented_rust_challenges", json_string);
 
     // Verify comment processing
-    assert!(challenges_with_comments > 0, "Should have some challenges with comment ranges");
+    assert!(
+        challenges_with_comments > 0,
+        "Should have some challenges with comment ranges"
+    );
 }
 
 #[test]
@@ -228,10 +254,14 @@ fn verify_challenge_content_quality() {
         panic!("No chunks available for testing");
     }
 
-    for chunk in real_chunks.iter().take(5) { // Test first 5 chunks
+    for chunk in real_chunks.iter().take(5) {
+        // Test first 5 chunks
         if let Some(challenge) = Challenge::from_chunk(chunk, None) {
             // Verify challenge has valid content
-            assert!(!challenge.code_content.is_empty(), "Challenge content should not be empty");
+            assert!(
+                !challenge.code_content.is_empty(),
+                "Challenge content should not be empty"
+            );
             assert!(!challenge.id.is_empty(), "Challenge ID should not be empty");
 
             // Verify line numbers match chunk
@@ -242,9 +272,11 @@ fn verify_challenge_content_quality() {
             assert_eq!(challenge.language, Some(chunk.language.clone()));
 
             // Verify content comes from chunk
-            assert!(chunk.content.contains(&challenge.code_content) ||
-                   challenge.code_content.contains(&chunk.content),
-                   "Challenge content should be related to chunk content");
+            assert!(
+                chunk.content.contains(&challenge.code_content)
+                    || challenge.code_content.contains(&chunk.content),
+                "Challenge content should be related to chunk content"
+            );
         }
     }
 }
@@ -267,7 +299,13 @@ fn test_progress_reporting() {
 
     // Verify final call shows completion
     let final_call = count_calls.last().unwrap();
-    assert_eq!(final_call.1, final_call.2, "Final progress call should show processed == total");
-    assert_eq!(final_call.0, StepType::Generating, "Should report generating step");
+    assert_eq!(
+        final_call.1, final_call.2,
+        "Final progress call should show processed == total"
+    );
+    assert_eq!(
+        final_call.0,
+        StepType::Generating,
+        "Should report generating step"
+    );
 }
-

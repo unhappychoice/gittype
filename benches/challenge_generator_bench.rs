@@ -10,6 +10,7 @@ use std::sync::{Arc, Mutex};
 // Mock ProgressReporter for benchmarking
 #[derive(Debug, Default)]
 struct BenchProgressReporter {
+    #[allow(clippy::type_complexity)]
     count_calls: Arc<Mutex<Vec<(StepType, usize, usize, Option<String>)>>>,
 }
 
@@ -65,10 +66,8 @@ fn benchmark_challenge_generator(c: &mut Criterion) {
 
     c.bench_function("challenge_generator_all_chunks", |b| {
         b.iter(|| {
-            let challenges = generator.convert_with_progress(
-                black_box(all_chunks.clone()),
-                black_box(&progress),
-            );
+            let challenges = generator
+                .convert_with_progress(black_box(all_chunks.clone()), black_box(&progress));
             black_box(challenges)
         })
     });

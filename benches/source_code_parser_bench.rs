@@ -1,7 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use gittype::domain::models::languages::Rust;
-use gittype::domain::services::source_code_parser::ChunkExtractor;
 use gittype::domain::services::source_code_parser::parsers::parse_with_thread_local;
+use gittype::domain::services::source_code_parser::ChunkExtractor;
 use std::path::Path;
 
 // Load test fixture files

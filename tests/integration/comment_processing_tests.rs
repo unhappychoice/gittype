@@ -52,10 +52,11 @@ mod byte_char_position_bugs {
         // Now test the fixed version (inlined)
         let line_cache: Vec<usize> = std::iter::once(0)
             .chain(
-                first_line.bytes()
+                first_line
+                    .bytes()
                     .enumerate()
                     .filter(|(_, byte)| *byte == b'\n')
-                    .map(|(i, _)| i + 1)
+                    .map(|(i, _)| i + 1),
             )
             .collect();
         let (_, fixed_indent_chars) = IndentProcessor::extract_and_normalize_indentation(
@@ -93,8 +94,13 @@ mod byte_char_position_bugs {
             "rust", &content,
         )
         .unwrap();
-        let comment_ranges =
-            CommentProcessor::extract_comment_ranges(&tree, &content, &gittype::domain::models::languages::Rust, &[]).unwrap();
+        let comment_ranges = CommentProcessor::extract_comment_ranges(
+            &tree,
+            &content,
+            &gittype::domain::models::languages::Rust,
+            &[],
+        )
+        .unwrap();
 
         println!("=== Real models/options.rs Test ===");
         println!("Found {} chunks", chunks.len());
@@ -179,8 +185,8 @@ mod byte_char_position_bugs {
                 }
 
                 // Convert to Challenge
-                let converter = ChallengeGenerator::new();
-                let challenge = Challenge::from_chunk(&chunk, None).unwrap();
+                let _converter = ChallengeGenerator::new();
+                let challenge = Challenge::from_chunk(chunk, None).unwrap();
                 println!("Challenge created successfully");
                 println!("Challenge comment ranges: {:?}", challenge.comment_ranges);
 

@@ -177,7 +177,7 @@ struct TestStruct {
 fn test_convert_chunk_to_challenge() {
     // CodeChunk is now imported from models at the top
 
-    let converter = ChallengeGenerator::new();
+    let _converter = ChallengeGenerator::new();
     let chunk = CodeChunk {
         content: "fn test() {\n    println!(\"test\");\n}".to_string(),
         file_path: PathBuf::from("src/main.rs"),
