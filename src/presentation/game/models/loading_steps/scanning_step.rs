@@ -69,6 +69,6 @@ impl Step for ScanningStep {
 
         SourceFileExtractor::new()
             .collect_with_progress(repo_path, screen)
-            .map(|files| StepResult::ScannedFiles(files))
+            .map(StepResult::ScannedFiles)
     }
 }
