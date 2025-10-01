@@ -1,6 +1,5 @@
 use super::{
-    chunk_splitter::ChunkSplitter,
-    code_character_counter::CodeCharacterCounter,
+    chunk_splitter::ChunkSplitter, code_character_counter::CodeCharacterCounter,
     progress_tracker::ProgressTracker,
 };
 use crate::domain::models::{Challenge, CodeChunk, DifficultyLevel};
@@ -40,10 +39,10 @@ impl ChallengeGenerator {
         let mut valid_chunks: Vec<_> = chunks
             .into_iter()
             .filter(|chunk| {
-                !chunk.content.trim().is_empty() &&
-                chunk.start_line > 0 &&
-                chunk.end_line > 0 &&
-                chunk.start_line <= chunk.end_line
+                !chunk.content.trim().is_empty()
+                    && chunk.start_line > 0
+                    && chunk.end_line > 0
+                    && chunk.start_line <= chunk.end_line
             })
             .collect();
 
@@ -56,7 +55,9 @@ impl ChallengeGenerator {
 
         let chunk_challenges: Vec<Challenge> = valid_chunks
             .par_iter()
-            .inspect(|_| { progress_tracker.increment_and_report(progress); })
+            .inspect(|_| {
+                progress_tracker.increment_and_report(progress);
+            })
             .flat_map(|chunk| {
                 let code_char_count = self.character_counter.count_code_characters(chunk);
 
@@ -80,27 +81,27 @@ impl ChallengeGenerator {
         code_char_count: usize,
     ) -> Vec<Challenge> {
         let (_, max_chars) = difficulty.char_limits();
-        
+
         match (difficulty, code_char_count > max_chars) {
             (DifficultyLevel::Zen | DifficultyLevel::Wild, _) | (_, false) => {
                 Challenge::from_chunk(chunk, Some(*difficulty))
                     .map(|challenge| vec![challenge])
-                    .unwrap_or_else(Vec::new)
+                    .unwrap_or_default()
             }
-            (_, true) => {
-                self.chunk_splitter.split(chunk, difficulty)
-                    .map(|(truncated_content, adjusted_comment_ranges, end_line)| {
-                        vec![Challenge::from_content_and_chunk(
-                            truncated_content,
-                            chunk,
-                            chunk.start_line,
-                            end_line,
-                            &adjusted_comment_ranges,
-                            Some(*difficulty),
-                        )]
-                    })
-                    .unwrap_or_else(Vec::new)
-            }
+            (_, true) => self
+                .chunk_splitter
+                .split(chunk, difficulty)
+                .map(|(truncated_content, adjusted_comment_ranges, end_line)| {
+                    vec![Challenge::from_content_and_chunk(
+                        truncated_content,
+                        chunk,
+                        chunk.start_line,
+                        end_line,
+                        &adjusted_comment_ranges,
+                        Some(*difficulty),
+                    )]
+                })
+                .unwrap_or_default(),
         }
     }
 }

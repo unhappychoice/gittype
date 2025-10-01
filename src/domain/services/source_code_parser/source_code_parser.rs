@@ -1,7 +1,7 @@
 use crate::domain::models::Language;
 use crate::domain::models::{CodeChunk, ExtractionOptions};
-use crate::domain::services::source_code_parser::ChunkExtractor;
 use crate::domain::services::source_code_parser::parsers::parse_with_thread_local;
+use crate::domain::services::source_code_parser::ChunkExtractor;
 use crate::infrastructure::git::LocalGitRepositoryClient;
 use crate::presentation::game::models::StepType;
 use crate::presentation::game::screens::loading_screen::ProgressReporter;
@@ -45,8 +45,14 @@ impl SourceCodeParser {
                 Self::read_and_parse_file(&git_root, &path, language).into_par_iter()
             })
             .flat_map(|(tree, content, file_path, git_root, language)| {
-                ChunkExtractor::extract_chunks_from_tree(&tree, &content, &file_path, &git_root, language.as_ref())
-                    .unwrap_or(Vec::new())
+                ChunkExtractor::extract_chunks_from_tree(
+                    &tree,
+                    &content,
+                    &file_path,
+                    &git_root,
+                    language.as_ref(),
+                )
+                .unwrap_or_default()
             })
             .collect();
 
@@ -63,9 +69,7 @@ impl SourceCodeParser {
             .first()
             .map(|(first_file, _)| first_file)
             .and_then(|path| LocalGitRepositoryClient::get_repository_root(path))
-            .ok_or_else(|| {
-                GitTypeError::ExtractionFailed("Git repository not found".to_string())
-            })
+            .ok_or_else(|| GitTypeError::ExtractionFailed("Git repository not found".to_string()))
     }
 
     fn filter_and_sort_files(
@@ -111,11 +115,18 @@ impl SourceCodeParser {
         }
     }
 
+    #[allow(clippy::type_complexity)]
     fn read_and_parse_file(
         git_root: &Path,
         file_path: &Path,
         language: Box<dyn Language>,
-    ) -> Option<(tree_sitter::Tree, String, PathBuf, PathBuf, Box<dyn Language>)> {
+    ) -> Option<(
+        tree_sitter::Tree,
+        String,
+        PathBuf,
+        PathBuf,
+        Box<dyn Language>,
+    )> {
         let content = fs::read_to_string(file_path).ok()?;
         let tree = parse_with_thread_local(language.name(), &content)?;
 
