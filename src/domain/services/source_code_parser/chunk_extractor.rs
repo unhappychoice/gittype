@@ -16,6 +16,17 @@ pub struct ParentChunk<'a> {
     pub byte_to_char_cache: &'a [usize],
 }
 
+pub struct ChunkExtractionContext<'a> {
+    pub tree: &'a Tree,
+    pub source_code: &'a str,
+    pub file_path: &'a Path,
+    pub language: &'a dyn Language,
+    pub line_cache: &'a [usize],
+    pub query: &'a tree_sitter::Query,
+    pub extractor: &'a dyn LanguageExtractor,
+    pub parent: Option<&'a ParentChunk<'a>>,
+}
+
 impl ChunkExtractor {
     pub fn extract_chunks_from_tree(
         tree: &Tree,
@@ -32,7 +43,8 @@ impl ChunkExtractor {
         let mut parser = registry.create_parser(language.name())?;
 
         let line_cache = CacheBuilder::build_line_cache(source_code);
-        let relative_file_path = file_path.strip_prefix(git_root)
+        let relative_file_path = file_path
+            .strip_prefix(git_root)
             .map(|relative| relative.to_path_buf())
             .unwrap_or_else(|_| file_path.to_path_buf());
 
@@ -46,16 +58,16 @@ impl ChunkExtractor {
         )?;
 
         // Extract standard function/class chunks
-        let standard_chunks = Self::extract_chunks(
+        let standard_chunks = Self::extract_chunks(&ChunkExtractionContext {
             tree,
             source_code,
-            &relative_file_path,
+            file_path: &relative_file_path,
             language,
-            &line_cache,
-            &query,
-            extractor.as_ref(),
-            None,
-        )?;
+            line_cache: &line_cache,
+            query: &query,
+            extractor: extractor.as_ref(),
+            parent: None,
+        })?;
 
         // Middle chunk processing
         let middle_chunks: Vec<_> = standard_chunks
@@ -72,16 +84,17 @@ impl ChunkExtractor {
                     byte_to_char_cache: &parent_byte_to_char_cache,
                 };
 
-                let chunks_from_large = Self::extract_chunks(
-                    &chunk_tree,
+                let chunks_from_large = Self::extract_chunks(&ChunkExtractionContext {
+                    tree: &chunk_tree,
                     source_code,
-                    large_chunk.file_path.as_path(),
+                    file_path: large_chunk.file_path.as_path(),
                     language,
-                    &line_cache,
-                    &middle_query,
-                    extractor.as_ref(),
-                    Some(&parent),
-                ).ok()?;
+                    line_cache: &line_cache,
+                    query: &middle_query,
+                    extractor: extractor.as_ref(),
+                    parent: Some(&parent),
+                })
+                .ok()?;
 
                 Some(chunks_from_large)
             })
@@ -132,58 +145,50 @@ impl ChunkExtractor {
         Ok(chunks)
     }
 
-    pub fn extract_chunks(
-        tree: &Tree,
-        source_code: &str,
-        file_path: &Path,
-        language: &dyn Language,
-        line_cache: &[usize],
-        query: &tree_sitter::Query,
-        extractor: &dyn LanguageExtractor,
-        parent: Option<&ParentChunk>,
-    ) -> Result<Vec<CodeChunk>> {
-        let content = parent.map(|p| p.content).unwrap_or(source_code);
+    pub fn extract_chunks(ctx: &ChunkExtractionContext) -> Result<Vec<CodeChunk>> {
+        let content = ctx.parent.map(|p| p.content).unwrap_or(ctx.source_code);
 
-        let (byte_to_char_cache, comment_ranges) = match parent {
+        let (byte_to_char_cache, comment_ranges) = match ctx.parent {
             Some(p) => {
                 // For middle chunks, reuse parent comment ranges with coordinate conversion
                 let chunk_byte_to_char_cache = CacheBuilder::build_byte_to_char_cache(content);
-                let converted_comment_ranges = CommentProcessor::convert_parent_comment_ranges_to_chunk(
-                    p.comment_ranges,
-                    p.byte_to_char_cache,
-                    source_code,
-                    content,
-                );
+                let converted_comment_ranges =
+                    CommentProcessor::convert_parent_comment_ranges_to_chunk(
+                        p.comment_ranges,
+                        p.byte_to_char_cache,
+                        ctx.source_code,
+                        content,
+                    );
                 (chunk_byte_to_char_cache, converted_comment_ranges)
             }
             None => {
                 // For standard chunks, compute comment ranges normally
                 let cache = CacheBuilder::build_byte_to_char_cache(content);
                 let ranges = CommentProcessor::extract_comment_ranges(
-                    tree,
+                    ctx.tree,
                     content,
-                    language,
+                    ctx.language,
                     &cache,
                 )?;
                 (cache, ranges)
             }
         };
 
-        let chunks: Vec<_> = Self::extract_all_captures(query, tree.root_node(), content)
+        let chunks: Vec<_> = Self::extract_all_captures(ctx.query, ctx.tree.root_node(), content)
             .into_iter()
             .filter_map(|(node, capture_index)| {
-                let capture_name = &query.capture_names()[capture_index];
+                let capture_name = &ctx.query.capture_names()[capture_index];
                 Self::build_chunk(
                     node,
-                    source_code,
-                    file_path,
-                    language.name(),
+                    ctx.source_code,
+                    ctx.file_path,
+                    ctx.language.name(),
                     capture_name,
-                    extractor,
+                    ctx.extractor,
                     &comment_ranges,
                     &byte_to_char_cache,
-                    line_cache,
-                    parent,
+                    ctx.line_cache,
+                    ctx.parent,
                 )
             })
             .collect();
@@ -206,7 +211,8 @@ impl ChunkExtractor {
     ) -> Option<CodeChunk> {
         let start_byte = node.start_byte();
         let end_byte = node.end_byte();
-        let (start_char, end_char) = Self::calculate_char_positions(byte_to_char_cache, start_byte, end_byte);
+        let (start_char, end_char) =
+            Self::calculate_char_positions(byte_to_char_cache, start_byte, end_byte);
 
         let content = match parent {
             None => &source_code[start_byte..end_byte],
@@ -273,13 +279,8 @@ impl ChunkExtractor {
             Some(parent_chunk) => parent_chunk.file_path.clone(),
         };
 
-        let (normalized_content, indent_offset_chars) = Self::process_indentation_and_content(
-            content,
-            source_code,
-            node,
-            line_cache,
-            line_row,
-        );
+        let (normalized_content, indent_offset_chars) =
+            Self::process_indentation_and_content(content, source_code, node, line_cache, line_row);
 
         let chunk_comment_ranges = Self::adjust_comment_ranges_to_chunk(
             comment_ranges,
@@ -313,7 +314,8 @@ impl ChunkExtractor {
             source_code,
             language,
             &byte_to_char_cache,
-        ).unwrap_or_default();
+        )
+        .unwrap_or_default();
 
         CodeChunk {
             content: source_code.to_string(),
@@ -364,13 +366,14 @@ impl ChunkExtractor {
         line_cache: &[usize],
         line_row: usize,
     ) -> (String, usize) {
-        let (normalized_content, original_indent_chars) = IndentProcessor::extract_and_normalize_indentation(
-            content,
-            source_code,
-            line_row,
-            node.start_position().column,
-            line_cache,
-        );
+        let (normalized_content, original_indent_chars) =
+            IndentProcessor::extract_and_normalize_indentation(
+                content,
+                source_code,
+                line_row,
+                node.start_position().column,
+                line_cache,
+            );
         let indent_offset_chars = original_indent_chars.chars().count();
         (normalized_content, indent_offset_chars)
     }
@@ -387,7 +390,7 @@ impl ChunkExtractor {
                 if comment_raw_start >= start_char && comment_raw_end <= end_char {
                     Some((
                         comment_raw_start - start_char + indent_offset_chars,
-                        comment_raw_end - start_char + indent_offset_chars
+                        comment_raw_end - start_char + indent_offset_chars,
                     ))
                 } else {
                     None
