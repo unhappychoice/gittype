@@ -9,6 +9,12 @@ pub struct SourceFileExtractor {
     file_storage: FileStorage,
 }
 
+impl Default for SourceFileExtractor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SourceFileExtractor {
     pub fn new() -> Self {
         Self {
@@ -93,7 +99,7 @@ impl SourceFileExtractor {
         Ok(files)
     }
 
-    fn is_supported_language(&self, path: &PathBuf) -> bool {
+    fn is_supported_language(&self, path: &Path) -> bool {
         path.extension()
             .and_then(|e| e.to_str())
             .map(|extension| Languages::from_extension(extension).is_some())
