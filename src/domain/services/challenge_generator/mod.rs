@@ -1,4 +1,5 @@
-pub mod challenge_generator;
+#[allow(clippy::module_inception)]
+mod challenge_generator;
 pub mod chunk_splitter;
 pub mod code_character_counter;
 pub mod progress_tracker;

@@ -3,7 +3,8 @@ pub mod chunk_extractor;
 mod comment_processor;
 mod indent_processor;
 pub mod parsers;
-pub mod source_code_parser;
+#[allow(clippy::module_inception)]
+mod source_code_parser;
 
 pub use cache_builder::CacheBuilder;
 pub use chunk_extractor::{ChunkExtractor, ParentChunk};
