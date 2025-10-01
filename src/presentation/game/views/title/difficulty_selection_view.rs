@@ -1,4 +1,4 @@
-use crate::presentation::game::DifficultyLevel;
+use crate::domain::models::DifficultyLevel;
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::{

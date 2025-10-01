@@ -4,9 +4,9 @@ use crate::domain::services::scoring::{
     SessionCalculator, SessionTracker, SessionTrackerData, StageCalculator, GLOBAL_TOTAL_TRACKER,
 };
 use crate::{
-    domain::models::{Challenge, SessionResult},
+    domain::models::{Challenge, DifficultyLevel, SessionResult},
     domain::services::scoring::{StageInput, StageResult, StageTracker, GLOBAL_SESSION_TRACKER},
-    presentation::game::{stage_repository::StageRepository, DifficultyLevel},
+    presentation::game::stage_repository::StageRepository,
     Result,
 };
 use once_cell::sync::Lazy;

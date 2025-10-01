@@ -1,6 +1,6 @@
 use crate::integration::{extract_chunks_for_test, test_extraction_options};
 use gittype::domain::models::ChunkType;
-use gittype::domain::services::extractor::CodeChunkExtractor;
+use gittype::domain::services::source_code_parser::SourceCodeParser;
 use std::fs;
 use tempfile::TempDir;
 
@@ -51,7 +51,7 @@ class Dialog extends React.Component<Props> {
 "#;
     fs::write(&file_path, tsx_code).unwrap();
 
-    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let mut extractor = SourceCodeParser::new().unwrap();
     let chunks =
         extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
             .unwrap();
@@ -150,7 +150,7 @@ function FormComponent() {
 "#;
     fs::write(&file_path, jsx_code).unwrap();
 
-    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let mut extractor = SourceCodeParser::new().unwrap();
     let chunks =
         extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
             .unwrap();
@@ -273,7 +273,7 @@ export default UserList;
 "#;
     fs::write(&file_path, mixed_code).unwrap();
 
-    let mut extractor = CodeChunkExtractor::new().unwrap();
+    let mut extractor = SourceCodeParser::new().unwrap();
     let chunks =
         extract_chunks_for_test(&mut extractor, temp_dir.path(), test_extraction_options())
             .unwrap();

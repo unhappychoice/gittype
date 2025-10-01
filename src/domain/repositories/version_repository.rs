@@ -16,7 +16,7 @@ impl VersionRepository {
     pub fn new() -> Result<Self> {
         Ok(Self {
             github_client: GitHubApiClient::new()?,
-            file_storage: FileStorage,
+            file_storage: FileStorage::new(),
         })
     }
 

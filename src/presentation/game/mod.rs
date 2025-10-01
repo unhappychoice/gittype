@@ -18,4 +18,4 @@ pub use models::{Screen, ScreenTransition, ScreenType, UpdateStrategy};
 pub use screen_manager::{RenderBackend, ScreenManager};
 pub use screens::TypingScreen;
 pub use session_manager::{SessionConfig, SessionManager, SessionState};
-pub use stage_repository::{DifficultyLevel, GameMode, StageConfig, StageRepository};
+pub use stage_repository::{GameMode, StageConfig, StageRepository};

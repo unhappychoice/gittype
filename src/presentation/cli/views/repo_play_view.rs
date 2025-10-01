@@ -1,5 +1,5 @@
 use crate::domain::models::storage::StoredRepositoryWithLanguages;
-use crate::domain::services::extractor::LanguageRegistry;
+use crate::domain::models::Languages;
 use crate::infrastructure::git::RemoteGitRepositoryClient;
 use crate::presentation::ui::Colors;
 use crate::Result;
@@ -101,8 +101,8 @@ pub fn render_repo_play_ui(
                                 ));
                             }
                             spans.push(Span::styled(
-                                LanguageRegistry::get_display_name(Some(lang)),
-                                Style::default().fg(LanguageRegistry::get_color(Some(lang))),
+                                Languages::get_display_name(Some(lang)),
+                                Style::default().fg(Languages::get_color(Some(lang))),
                             ));
                         }
                         spans

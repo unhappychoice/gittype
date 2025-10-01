@@ -1,5 +1,6 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
 use crate::domain::repositories::challenge_repository::CHALLENGE_REPOSITORY;
+use crate::domain::services::challenge_generator::ChallengeGenerator;
 use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::style::Color;
@@ -65,17 +66,8 @@ impl Step for GeneratingStep {
             crate::GitTypeError::ExtractionFailed("No loading screen available".to_string())
         })?;
 
-        let loader = context.repository_loader.as_ref().ok_or_else(|| {
-            crate::GitTypeError::ExtractionFailed("No repository loader available".to_string())
-        })?;
-
-        // Generate challenges
-        let generated_challenges = loader.convert_chunks_and_files_to_challenges_with_progress(
-            chunks,
-            vec![],
-            None,
-            screen,
-        );
+        let converter = ChallengeGenerator::new();
+        let generated_challenges = converter.convert_with_progress(chunks, screen);
 
         // Cache the generated challenges if we have git repository info
         if let Some(ref git_repo) = context.git_repository {

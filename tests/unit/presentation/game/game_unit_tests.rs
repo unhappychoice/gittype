@@ -1,5 +1,5 @@
-use gittype::domain::models::Challenge;
-use gittype::presentation::game::{DifficultyLevel, GameMode, StageRepository};
+use gittype::domain::models::{Challenge, DifficultyLevel};
+use gittype::presentation::game::{GameMode, StageRepository};
 
 fn create_test_challenges(count: usize) -> Vec<Challenge> {
     (0..count)

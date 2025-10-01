@@ -1,7 +1,10 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
+use crate::domain::models::{Language, Languages};
+use crate::domain::services::source_code_parser::SourceCodeParser;
 use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::style::Color;
+use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
 pub struct ExtractingStep;
@@ -62,22 +65,25 @@ impl Step for ExtractingStep {
             crate::GitTypeError::ExtractionFailed("No loading screen available".to_string())
         })?;
 
-        let loader = context.repository_loader.as_mut().ok_or_else(|| {
-            crate::GitTypeError::ExtractionFailed("No repository loader available".to_string())
-        })?;
-
         let scanned_files = context.scanned_files.as_ref().ok_or_else(|| {
             crate::GitTypeError::ExtractionFailed(
                 "No scanned files available from ScanningStep".to_string(),
             )
         })?;
 
-        // Use pre-scanned files for extraction
-        let chunks = loader.extract_chunks_from_scanned_files_with_progress(
-            scanned_files,
-            options,
-            screen,
-        )?;
+        let mut extractor = SourceCodeParser::new()?;
+        let files_to_process: Vec<(PathBuf, Box<dyn Language>)> = scanned_files
+            .iter()
+            .filter_map(|path| {
+                if let Some(extension) = path.extension().and_then(|e| e.to_str()) {
+                    Languages::from_extension(extension).map(|language| (path.to_owned(), language))
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        let chunks = extractor.extract_chunks_with_progress(files_to_process, options, screen)?;
 
         if chunks.is_empty() {
             return Err(crate::GitTypeError::NoSupportedFiles);

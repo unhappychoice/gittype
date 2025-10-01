@@ -1,10 +1,12 @@
+use crate::domain::models::{Challenge, DifficultyLevel, GitRepository};
 use crate::presentation::game::screens::TitleScreen;
 use crate::presentation::game::{ScreenManager, ScreenType};
-use crate::{domain::models::Challenge, domain::models::GitRepository, Result};
+use crate::Result;
 use once_cell::sync::Lazy;
 use rand::rngs::StdRng;
 use rand::seq::SliceRandom;
 use rand::{Rng, SeedableRng};
+use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone)]
@@ -17,47 +19,6 @@ pub enum GameMode {
         time_limit: Option<u64>, // seconds
         difficulty: DifficultyLevel,
     },
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
-pub enum DifficultyLevel {
-    Easy,   // ~100 characters
-    Normal, // ~200 characters
-    Hard,   // ~500 characters
-    Wild,   // Entire chunks, unpredictable length
-    Zen,    // Entire file
-}
-
-impl DifficultyLevel {
-    pub fn char_limits(&self) -> (usize, usize) {
-        match self {
-            DifficultyLevel::Easy => (20, 100),
-            DifficultyLevel::Normal => (80, 200),
-            DifficultyLevel::Hard => (180, 500),
-            DifficultyLevel::Wild => (0, usize::MAX), // No limits - full chunks
-            DifficultyLevel::Zen => (0, usize::MAX),
-        }
-    }
-
-    pub fn description(&self) -> &'static str {
-        match self {
-            DifficultyLevel::Easy => "~100 characters",
-            DifficultyLevel::Normal => "~200 characters",
-            DifficultyLevel::Hard => "~500 characters",
-            DifficultyLevel::Wild => "Full chunks",
-            DifficultyLevel::Zen => "Entire files",
-        }
-    }
-
-    pub fn subtitle(&self) -> &'static str {
-        match self {
-            DifficultyLevel::Easy => "Short code snippets",
-            DifficultyLevel::Normal => "Medium functions",
-            DifficultyLevel::Hard => "Long functions or classes",
-            DifficultyLevel::Wild => "Unpredictable length chunks",
-            DifficultyLevel::Zen => "Complete files as challenges",
-        }
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -84,7 +45,7 @@ pub struct StageRepository {
     built_stages: Vec<Challenge>,
     current_index: usize,
     // Performance optimization: difficulty-based challenge indices
-    difficulty_indices: std::collections::HashMap<DifficultyLevel, Vec<usize>>,
+    difficulty_indices: HashMap<DifficultyLevel, Vec<usize>>,
     indices_cached: bool,
     // Cache challenges for direct access (eliminates GameData dependency)
     cached_challenges: Option<Vec<Challenge>>,
@@ -102,7 +63,7 @@ impl StageRepository {
             config: StageConfig::default(),
             built_stages: Vec::new(),
             current_index: 0,
-            difficulty_indices: std::collections::HashMap::new(),
+            difficulty_indices: HashMap::new(),
             indices_cached: false,
             cached_challenges: None,
         }

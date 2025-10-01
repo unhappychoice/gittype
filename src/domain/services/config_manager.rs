@@ -11,7 +11,8 @@ impl ConfigService {
     pub fn new() -> Result<Self> {
         let config_path = Self::get_config_path()?;
 
-        let config = FileStorage
+        let storage = FileStorage::new();
+        let config = storage
             .read_json::<Config>(&config_path)?
             .unwrap_or_default();
 
@@ -28,7 +29,8 @@ impl ConfigService {
 
     pub fn save(&self) -> Result<()> {
         let config_path = Self::get_config_path()?;
-        FileStorage.write_json(&config_path, &self.config)
+        let storage = FileStorage::new();
+        storage.write_json(&config_path, &self.config)
     }
 
     fn get_config_path() -> Result<PathBuf> {

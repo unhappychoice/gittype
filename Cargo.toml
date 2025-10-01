@@ -82,9 +82,20 @@ sha2 = "0.10"
 [dev-dependencies]
 paste = "1.0"
 insta = "1.43"
+criterion = "0.5"
 gittype = { path = ".", default-features = false, features = ["test-mocks"] }
 
 [features]
 default = []
 test-mocks = []
+
+[[bench]]
+name = "challenge_generator_bench"
+harness = false
+
+[[bench]]
+name = "source_code_parser_bench"
+harness = false
+
+
 
