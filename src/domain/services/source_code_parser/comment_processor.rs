@@ -17,10 +17,12 @@ impl CommentProcessor {
         let mut comment_ranges: Vec<(usize, usize)> =
             Self::query_comment_nodes(tree, source_code, language)?
                 .into_iter()
-                .map(|node| (
-                    Self::byte_to_char_cached(byte_to_char_cache, node.start_byte()),
-                    Self::byte_to_char_cached(byte_to_char_cache, node.end_byte())
-                ))
+                .map(|node| {
+                    (
+                        Self::byte_to_char_cached(byte_to_char_cache, node.start_byte()),
+                        Self::byte_to_char_cached(byte_to_char_cache, node.end_byte()),
+                    )
+                })
                 .collect();
 
         comment_ranges.sort_by_key(|&(start, _)| start);
@@ -64,7 +66,8 @@ impl CommentProcessor {
         };
 
         // Convert byte offset to char offset in parent
-        let char_offset_in_parent = CacheBuilder::byte_to_char_cached(parent_byte_to_char_cache, byte_offset);
+        let char_offset_in_parent =
+            CacheBuilder::byte_to_char_cached(parent_byte_to_char_cache, byte_offset);
         let chunk_char_end = char_offset_in_parent + chunk_content.chars().count();
 
         // Filter and convert parent comment ranges that overlap with this chunk

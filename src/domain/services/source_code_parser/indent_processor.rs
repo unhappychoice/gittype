@@ -13,9 +13,14 @@ impl IndentProcessor {
         let original_indent_chars = if indent_byte_length == 0 {
             ""
         } else {
-            Self::extract_line_indent_chars_cached(source_code, line_row, indent_byte_length, line_cache)
+            Self::extract_line_indent_chars_cached(
+                source_code,
+                line_row,
+                indent_byte_length,
+                line_cache,
+            )
         };
-        
+
         let normalized_content = if original_indent_chars.is_empty() {
             content.to_owned()
         } else {

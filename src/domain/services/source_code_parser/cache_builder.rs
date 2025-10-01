@@ -4,7 +4,7 @@ impl CacheBuilder {
     pub fn build_byte_to_char_cache(source_code: &str) -> Vec<usize> {
         let char_positions: Vec<_> = source_code.char_indices().collect();
         let mut cache = vec![0; source_code.len() + 1];
-        
+
         char_positions
             .iter()
             .enumerate()
@@ -13,14 +13,14 @@ impl CacheBuilder {
                 (cache.len().min(byte_pos)..=byte_pos.min(cache.len() - 1))
                     .for_each(|pos| cache[pos] = char_idx);
             });
-        
+
         // Fill remaining positions with final character count
         let final_char_count = char_positions.len();
         cache
             .iter_mut()
             .skip(char_positions.last().map(|(pos, _)| *pos + 1).unwrap_or(0))
             .for_each(|pos| *pos = final_char_count);
-        
+
         cache
     }
 
@@ -31,7 +31,7 @@ impl CacheBuilder {
                     .bytes()
                     .enumerate()
                     .filter(|(_, byte)| *byte == b'\n')
-                    .map(|(i, _)| i + 1) // Next line starts after the newline
+                    .map(|(i, _)| i + 1), // Next line starts after the newline
             )
             .collect()
     }

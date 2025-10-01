@@ -1,7 +1,7 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
+use crate::domain::models::DifficultyLevel;
 use crate::domain::services::scoring::{SessionTracker, TotalTracker};
 use crate::presentation::game::GameData;
-use crate::domain::models::DifficultyLevel;
 use crate::presentation::game::{SessionConfig, SessionManager, StageRepository};
 use crate::presentation::ui::Colors;
 use crate::Result;

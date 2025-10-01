@@ -14,7 +14,11 @@ impl CodeCharacterCounter {
     }
 
     /// Helper method to count characters in arbitrary content with comment ranges
-    pub fn count_chars_in_content(&self, content: &str, comment_ranges: &[(usize, usize)]) -> usize {
+    pub fn count_chars_in_content(
+        &self,
+        content: &str,
+        comment_ranges: &[(usize, usize)],
+    ) -> usize {
         if content.is_empty() {
             return 0;
         }

@@ -41,7 +41,10 @@ impl DifficultyLevel {
     }
 
     /// Returns all applicable difficulty levels for a chunk with given character count and type
-    pub fn applicable_difficulties(chunk: &CodeChunk, code_char_count: usize) -> Vec<DifficultyLevel> {
+    pub fn applicable_difficulties(
+        chunk: &CodeChunk,
+        code_char_count: usize,
+    ) -> Vec<DifficultyLevel> {
         [
             DifficultyLevel::Easy,
             DifficultyLevel::Normal,
@@ -49,18 +52,16 @@ impl DifficultyLevel {
             DifficultyLevel::Wild,
             DifficultyLevel::Zen,
         ]
-            .iter()
-            .filter(|&difficulty| {
-                match difficulty {
-                    DifficultyLevel::Zen => matches!(chunk.chunk_type, ChunkType::File),
-                    DifficultyLevel::Wild => true,
-                    _ => {
-                        let (min_chars, _) = difficulty.char_limits();
-                        code_char_count >= min_chars
-                    }
-                }
-            })
-            .copied()
-            .collect()
+        .iter()
+        .filter(|&difficulty| match difficulty {
+            DifficultyLevel::Zen => matches!(chunk.chunk_type, ChunkType::File),
+            DifficultyLevel::Wild => true,
+            _ => {
+                let (min_chars, _) = difficulty.char_limits();
+                code_char_count >= min_chars
+            }
+        })
+        .copied()
+        .collect()
     }
 }
