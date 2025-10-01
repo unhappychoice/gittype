@@ -1,6 +1,9 @@
-use std::borrow::Cow;
-use crate::domain::models::{CodeChunk, DifficultyLevel};
 use super::code_character_counter::CodeCharacterCounter;
+use crate::domain::models::{CodeChunk, DifficultyLevel};
+use std::borrow::Cow;
+
+/// Result of splitting a chunk: (content, adjusted_comment_ranges, end_line)
+pub type SplitResult<'a> = (Cow<'a, str>, Vec<(usize, usize)>, usize);
 
 /// Handles splitting and validation of code chunks based on difficulty requirements
 pub struct ChunkSplitter {
@@ -20,7 +23,7 @@ impl ChunkSplitter {
         &self,
         chunk: &'a CodeChunk,
         difficulty: &DifficultyLevel,
-    ) -> Option<(Cow<'a, str>, Vec<(usize, usize)>, usize)> {
+    ) -> Option<SplitResult<'a>> {
         let (min_chars, max_chars) = difficulty.char_limits();
 
         // Check if content already fits within limits (common case)
@@ -29,7 +32,11 @@ impl ChunkSplitter {
         if code_char_count <= max_chars && code_char_count >= min_chars {
             // No splitting needed - return original content
             let end_line = chunk.start_line + chunk.content.lines().count().saturating_sub(1);
-            return Some((Cow::Borrowed(&chunk.content), chunk.comment_ranges.to_vec(), end_line));
+            return Some((
+                Cow::Borrowed(&chunk.content),
+                chunk.comment_ranges.to_vec(),
+                end_line,
+            ));
         }
 
         if code_char_count < min_chars {
@@ -37,7 +44,8 @@ impl ChunkSplitter {
         }
 
         // Content exceeds max_chars, need to split
-        let break_point = self.find_optimal_break_point(&chunk.content, &chunk.comment_ranges, max_chars);
+        let break_point =
+            self.find_optimal_break_point(&chunk.content, &chunk.comment_ranges, max_chars);
 
         if break_point == 0 {
             return None;
@@ -53,7 +61,9 @@ impl ChunkSplitter {
         );
 
         // Verify the truncated content meets minimum requirements
-        let truncated_code_chars = self.character_counter.count_chars_in_content(&truncated_content, &adjusted_comment_ranges);
+        let truncated_code_chars = self
+            .character_counter
+            .count_chars_in_content(&truncated_content, &adjusted_comment_ranges);
 
         if truncated_code_chars < min_chars {
             return None;
@@ -147,7 +157,11 @@ impl ChunkSplitter {
     }
 
     /// Creates a truncated version of content up to the specified line break point
-    fn truncate_content_to_line<'a>(&self, content: &'a str, break_point: usize) -> Option<Cow<'a, str>> {
+    fn truncate_content_to_line<'a>(
+        &self,
+        content: &'a str,
+        break_point: usize,
+    ) -> Option<Cow<'a, str>> {
         let lines: Vec<&str> = content.lines().collect();
 
         if break_point > lines.len() {
