@@ -1,6 +1,6 @@
 use crate::domain::models::languages::{
     CSharp, Cpp, Dart, Go, Haskell, Java, JavaScript, Kotlin, Php, Python, Ruby, Rust, Scala,
-    Swift, TypeScript, C,
+    Swift, TypeScript, Zig, C,
 };
 use crate::presentation::ui::Colors;
 use std::hash::{Hash, Hasher};
@@ -72,6 +72,7 @@ impl Languages {
             Box::new(Haskell),
             Box::new(Dart),
             Box::new(Scala),
+            Box::new(Zig),
         ]
     }
 

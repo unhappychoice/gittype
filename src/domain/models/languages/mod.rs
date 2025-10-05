@@ -14,6 +14,7 @@ pub mod rust;
 pub mod scala;
 pub mod swift;
 pub mod typescript;
+pub mod zig;
 
 pub use c::C;
 pub use cpp::Cpp;
@@ -31,3 +32,4 @@ pub use rust::Rust;
 pub use scala::Scala;
 pub use swift::Swift;
 pub use typescript::TypeScript;
+pub use zig::Zig;
