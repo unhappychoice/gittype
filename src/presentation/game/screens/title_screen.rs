@@ -33,6 +33,7 @@ pub struct TitleScreen {
     git_repository: Option<GitRepository>,
     action_result: Option<TitleAction>,
     needs_render: bool,
+    error_message: Option<String>,
 }
 
 impl Default for TitleScreen {
@@ -49,6 +50,7 @@ impl TitleScreen {
             git_repository: None,
             action_result: None,
             needs_render: true,
+            error_message: None,
         }
     }
 
@@ -77,6 +79,10 @@ impl TitleScreen {
     pub fn set_git_repository(&mut self, repo: Option<GitRepository>) {
         self.git_repository = repo;
     }
+
+    pub fn get_error_message(&self) -> Option<&String> {
+        self.error_message.as_ref()
+    }
 }
 
 impl Screen for TitleScreen {
@@ -96,9 +102,19 @@ impl Screen for TitleScreen {
     fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<ScreenTransition> {
         match key_event.code {
             KeyCode::Char(' ') => {
-                self.action_result =
-                    Some(TitleAction::Start(DIFFICULTIES[self.selected_difficulty].1));
-                Ok(ScreenTransition::Replace(ScreenType::Typing))
+                // Check if challenges are available for the selected difficulty
+                if self.challenge_counts[self.selected_difficulty] == 0 {
+                    self.error_message = Some(
+                        "No challenges available for this difficulty. Please try a different difficulty or repository.".to_string()
+                    );
+                    self.needs_render = true;
+                    Ok(ScreenTransition::None)
+                } else {
+                    self.error_message = None;
+                    self.action_result =
+                        Some(TitleAction::Start(DIFFICULTIES[self.selected_difficulty].1));
+                    Ok(ScreenTransition::Replace(ScreenType::Typing))
+                }
             }
             KeyCode::Left | KeyCode::Char('h') => {
                 self.selected_difficulty = if self.selected_difficulty == 0 {
@@ -106,11 +122,13 @@ impl Screen for TitleScreen {
                 } else {
                     self.selected_difficulty - 1
                 };
+                self.error_message = None;
                 self.needs_render = true;
                 Ok(ScreenTransition::None)
             }
             KeyCode::Right | KeyCode::Char('l') => {
                 self.selected_difficulty = (self.selected_difficulty + 1) % DIFFICULTIES.len();
+                self.error_message = None;
                 self.needs_render = true;
                 Ok(ScreenTransition::None)
             }
@@ -163,6 +181,7 @@ impl Screen for TitleScreen {
             difficulties_array,
             self.selected_difficulty,
             &self.challenge_counts,
+            self.error_message.as_ref(),
         )?;
 
         Ok(())
