@@ -18,6 +18,7 @@ impl DifficultySelectionView {
         difficulties: &[(&str, DifficultyLevel); 5],
         selected_difficulty: usize,
         challenge_counts: &[usize; 5],
+        error_message: Option<&String>,
     ) -> Result<()> {
         let start_row = center_row + 1;
         let (name, difficulty_level) = &difficulties[selected_difficulty];
@@ -75,18 +76,31 @@ impl DifficultySelectionView {
         execute!(stdout, Print(count_text))?;
         execute!(stdout, ResetColor)?;
 
-        // Line 3 & 4: Description lines
-        let descriptions = [difficulty_level.description(), difficulty_level.subtitle()];
-        for (i, description) in descriptions.iter().enumerate() {
-            let desc_col = center_col.saturating_sub(description.chars().count() as u16 / 2);
-            execute!(stdout, MoveTo(desc_col, start_row + 2 + i as u16))?;
+        // Line 3 & 4: Description lines or error message
+        if let Some(error) = error_message {
+            // Display error message in red
+            let error_col = center_col.saturating_sub(error.chars().count() as u16 / 2);
+            execute!(stdout, MoveTo(error_col, start_row + 2))?;
             execute!(
                 stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::text())),
-                SetAttribute(Attribute::Dim)
+                SetForegroundColor(Colors::to_crossterm(Colors::error())),
+                SetAttribute(Attribute::Bold)
             )?;
-            execute!(stdout, Print(description))?;
+            execute!(stdout, Print(error))?;
             execute!(stdout, ResetColor)?;
+        } else {
+            let descriptions = [difficulty_level.description(), difficulty_level.subtitle()];
+            for (i, description) in descriptions.iter().enumerate() {
+                let desc_col = center_col.saturating_sub(description.chars().count() as u16 / 2);
+                execute!(stdout, MoveTo(desc_col, start_row + 2 + i as u16))?;
+                execute!(
+                    stdout,
+                    SetForegroundColor(Colors::to_crossterm(Colors::text())),
+                    SetAttribute(Attribute::Dim)
+                )?;
+                execute!(stdout, Print(description))?;
+                execute!(stdout, ResetColor)?;
+            }
         }
 
         Ok(())
