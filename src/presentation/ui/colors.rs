@@ -153,6 +153,9 @@ impl Colors {
     pub fn lang_dart() -> Color {
         Self::get_color_scheme().lang_dart.into()
     }
+    pub fn lang_zig() -> Color {
+        Self::get_color_scheme().lang_zig.into()
+    }
     pub fn lang_default() -> Color {
         Self::get_color_scheme().lang_default.into()
     }

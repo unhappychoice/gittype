@@ -15,5 +15,6 @@
   "lang_scala": {"r": 220, "g": 50, "b": 47},
   "lang_haskell": {"r": 94, "g": 80, "b": 134},
   "lang_dart": {"r": 0, "g": 120, "b": 180},
+  "lang_zig": {"r": 189, "g": 99, "b": 0},
   "lang_default": {"r": 64, "g": 64, "b": 64}
 }

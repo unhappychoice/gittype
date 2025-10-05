@@ -1,0 +1,41 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\npub fn add(a: i32, b: i32) i32 {\n    return a + b;\n}\n\nfn subtract(a: i32, b: i32) i32 {\n    return a - b;\n}\n",
+      "end_line": 8,
+      "language": "zig",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "pub fn add(a: i32, b: i32) i32 {\n    return a + b;\n}",
+      "end_line": 4,
+      "language": "zig",
+      "name": "function",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "fn subtract(a: i32, b: i32) i32 {\n    return a - b;\n}",
+      "end_line": 8,
+      "language": "zig",
+      "name": "function",
+      "original_indentation": 0,
+      "start_line": 6
+    }
+  ],
+  "source_code": "\npub fn add(a: i32, b: i32) i32 {\n    return a + b;\n}\n\nfn subtract(a: i32, b: i32) i32 {\n    return a - b;\n}\n",
+  "test_name": "test_zig_function_extraction",
+  "total_chunks": 3
+}

@@ -15,6 +15,7 @@ pub mod rust;
 pub mod scala;
 pub mod swift;
 pub mod typescript;
+pub mod zig;
 
 // Common typing core utilities
 pub mod typing_core_common;

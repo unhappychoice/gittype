@@ -20,6 +20,7 @@
 | Scala | `.sc`, `.scala` | `sc` | `tree_sitter_scala` |
 | Swift | `.swift` | - | `tree_sitter_swift` |
 | TypeScript | `.ts`, `.tsx` | `ts` | `tree_sitter_typescript` (TSX) |
+| Zig | `.zig` | - | `tree_sitter_zig` |
 
 ## Extraction Features
 
@@ -157,6 +158,12 @@
 - **Namespaces** (`internal_module`) - Namespace declarations
 - **JSX Elements** (`jsx_element`, `jsx_self_closing_element`) - React components
 
+### Zig
+- **Functions** (`function_declaration`) - Function definitions
+- **Structs** (`variable_declaration` with `struct_declaration`) - Struct type definitions
+- **Enums** (`variable_declaration` with `enum_declaration`) - Enum type definitions
+- **Unions** (`variable_declaration` with `union_declaration`) - Union type definitions
+
 ## Language-Specific Options
 
 ### Filtering by Language
@@ -173,7 +180,7 @@ gittype --langs rust,typescript,javascript,python
 
 ```toml
 [default]
-langs = ["rust", "typescript", "javascript", "python", "go", "ruby", "swift", "kotlin", "java", "php", "csharp", "c", "cpp", "haskell", "dart", "scala"]
+langs = ["rust", "typescript", "javascript", "python", "go", "ruby", "swift", "kotlin", "java", "php", "csharp", "c", "cpp", "haskell", "dart", "scala", "zig"]
 ```
 
 ## Code Extraction Quality

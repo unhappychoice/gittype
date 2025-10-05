@@ -15,5 +15,6 @@
   "lang_scala": "red",
   "lang_haskell": "magenta",
   "lang_dart": "cyan",
+  "lang_zig": "yellow",
   "lang_default": "white"
 }

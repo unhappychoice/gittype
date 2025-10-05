@@ -66,6 +66,7 @@ fn string_to_language_obj(language: &str) -> &'static dyn Language {
         "scala" => &Scala,
         "swift" => &Swift,
         "typescript" => &TypeScript,
+        "zig" => &Zig,
         _ => panic!("Unsupported language: {}", language),
     }
 }
