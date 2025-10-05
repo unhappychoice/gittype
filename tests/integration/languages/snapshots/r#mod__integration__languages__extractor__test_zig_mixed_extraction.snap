@@ -1,0 +1,61 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nconst std = @import(\"std\");\n\npub const Vector = struct {\n    x: f32,\n    y: f32,\n\n    pub fn init(x: f32, y: f32) Vector {\n        return Vector{ .x = x, .y = y };\n    }\n\n    pub fn length(self: Vector) f32 {\n        return @sqrt(self.x * self.x + self.y * self.y);\n    }\n};\n\npub fn main() !void {\n    const stdout = std.io.getStdOut().writer();\n    try stdout.print(\"Hello, Zig!\\n\", .{});\n}\n",
+      "end_line": 20,
+      "language": "zig",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "pub const Vector = struct {\n    x: f32,\n    y: f32,\n\n    pub fn init(x: f32, y: f32) Vector {\n        return Vector{ .x = x, .y = y };\n    }\n\n    pub fn length(self: Vector) f32 {\n        return @sqrt(self.x * self.x + self.y * self.y);\n    }\n};",
+      "end_line": 15,
+      "language": "zig",
+      "name": "struct",
+      "original_indentation": 0,
+      "start_line": 4
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    pub fn init(x: f32, y: f32) Vector {\n        return Vector{ .x = x, .y = y };\n    }",
+      "end_line": 10,
+      "language": "zig",
+      "name": "function",
+      "original_indentation": 4,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    pub fn length(self: Vector) f32 {\n        return @sqrt(self.x * self.x + self.y * self.y);\n    }",
+      "end_line": 14,
+      "language": "zig",
+      "name": "function",
+      "original_indentation": 4,
+      "start_line": 12
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "pub fn main() !void {\n    const stdout = std.io.getStdOut().writer();\n    try stdout.print(\"Hello, Zig!\\n\", .{});\n}",
+      "end_line": 20,
+      "language": "zig",
+      "name": "function",
+      "original_indentation": 0,
+      "start_line": 17
+    }
+  ],
+  "source_code": "\nconst std = @import(\"std\");\n\npub const Vector = struct {\n    x: f32,\n    y: f32,\n\n    pub fn init(x: f32, y: f32) Vector {\n        return Vector{ .x = x, .y = y };\n    }\n\n    pub fn length(self: Vector) f32 {\n        return @sqrt(self.x * self.x + self.y * self.y);\n    }\n};\n\npub fn main() !void {\n    const stdout = std.io.getStdOut().writer();\n    try stdout.print(\"Hello, Zig!\\n\", .{});\n}\n",
+  "test_name": "test_zig_mixed_extraction",
+  "total_chunks": 5
+}
