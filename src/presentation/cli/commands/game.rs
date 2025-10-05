@@ -1,5 +1,5 @@
 use crate::domain::models::ExtractionOptions;
-use crate::domain::services::extractor::LanguageRegistry;
+use crate::domain::models::Languages;
 use crate::domain::services::theme_manager::ThemeManager;
 use crate::domain::services::version_service::VersionService;
 use crate::infrastructure::logging;
@@ -48,13 +48,13 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
     let mut options = ExtractionOptions::default();
 
     if let Some(langs) = cli.langs {
-        if let Err(unsupported_langs) = LanguageRegistry::validate_languages(&langs) {
+        if let Err(unsupported_langs) = Languages::validate_languages(&langs) {
             eprintln!(
                 "❌ Unsupported language(s): {}",
                 unsupported_langs.join(", ")
             );
             eprintln!("💡 Supported languages:");
-            let supported = LanguageRegistry::get_supported_languages();
+            let supported = Languages::get_supported_languages();
             let mut supported_display = supported.clone();
             supported_display.dedup();
             for chunk in supported_display.chunks(6) {

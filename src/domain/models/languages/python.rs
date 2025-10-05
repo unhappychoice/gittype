@@ -23,4 +23,9 @@ impl Language for Python {
     fn display_name(&self) -> &'static str {
         "Python"
     }
+
+    fn is_valid_comment_node(&self, node: tree_sitter::Node) -> bool {
+        let node_kind = node.kind();
+        node_kind == "comment"
+    }
 }

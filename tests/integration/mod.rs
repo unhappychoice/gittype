@@ -4,11 +4,13 @@ pub mod indent_treesitter_tests;
 pub mod languages;
 pub mod missing_ascii_art_test;
 
-use gittype::domain::models::{Challenge, CodeChunk, ExtractionOptions, Language};
-use gittype::domain::services::extractor::core::CommonExtractor;
-use gittype::domain::services::extractor::parsers::parse_with_thread_local;
-use gittype::domain::services::extractor::CodeChunkExtractor;
-use gittype::domain::services::extractor::{LanguageRegistry, RepositoryExtractor};
+use gittype::domain::models::languages::*;
+use gittype::domain::models::{Challenge, CodeChunk, ExtractionOptions, Language, Languages};
+use gittype::domain::services::challenge_generator::ChallengeGenerator;
+use gittype::domain::services::source_code_parser::parsers::parse_with_thread_local;
+use gittype::domain::services::source_code_parser::ChunkExtractor;
+use gittype::domain::services::source_code_parser::SourceCodeParser;
+use gittype::domain::services::source_file_extractor::SourceFileExtractor;
 use gittype::presentation::game::screens::loading_screen::NoOpProgressReporter;
 use gittype::GitTypeError;
 use gittype::Result;
@@ -37,8 +39,7 @@ fn collect_files_with_languages(repo_path: &Path) -> Vec<(PathBuf, Box<dyn Langu
         .filter_map(|entry| {
             let path = entry.path();
             if let Some(extension) = path.extension().and_then(|e| e.to_str()) {
-                LanguageRegistry::from_extension(extension)
-                    .map(|language| (path.to_owned(), language))
+                Languages::from_extension(extension).map(|language| (path.to_owned(), language))
             } else {
                 None
             }
@@ -47,6 +48,28 @@ fn collect_files_with_languages(repo_path: &Path) -> Vec<(PathBuf, Box<dyn Langu
 }
 
 // Test-specific helper functions
+fn string_to_language_obj(language: &str) -> &'static dyn Language {
+    match language {
+        "c" => &C,
+        "cpp" => &Cpp,
+        "csharp" => &CSharp,
+        "dart" => &Dart,
+        "go" => &Go,
+        "haskell" => &Haskell,
+        "java" => &Java,
+        "javascript" => &JavaScript,
+        "kotlin" => &Kotlin,
+        "php" => &Php,
+        "python" => &Python,
+        "ruby" => &Ruby,
+        "rust" => &Rust,
+        "scala" => &Scala,
+        "swift" => &Swift,
+        "typescript" => &TypeScript,
+        _ => panic!("Unsupported language: {}", language),
+    }
+}
+
 pub fn extract_from_file_for_test(file_path: &Path, language: &str) -> Result<Vec<CodeChunk>> {
     let content = fs::read_to_string(file_path)?;
     let tree = parse_with_thread_local(language, &content).ok_or_else(|| {
@@ -55,7 +78,8 @@ pub fn extract_from_file_for_test(file_path: &Path, language: &str) -> Result<Ve
 
     // Use parent directory as git_root for tests
     let git_root = file_path.parent().unwrap_or(Path::new("."));
-    CommonExtractor::extract_chunks_from_tree(&tree, &content, file_path, git_root, language)
+    let language_obj = string_to_language_obj(language);
+    ChunkExtractor::extract_chunks_from_tree(&tree, &content, file_path, git_root, language_obj)
 }
 
 fn extract_chunks_from_scanned_files_for_test(
@@ -67,7 +91,7 @@ fn extract_chunks_from_scanned_files_for_test(
     // Convert scanned files to chunks using test function
     for file_path in scanned_files {
         if let Some(extension) = file_path.extension().and_then(|e| e.to_str()) {
-            if let Some(language) = LanguageRegistry::from_extension(extension) {
+            if let Some(language) = Languages::from_extension(extension) {
                 if let Ok(chunks) = extract_from_file_for_test(file_path, language.name()) {
                     all_chunks.extend(chunks);
                 }
@@ -80,7 +104,7 @@ fn extract_chunks_from_scanned_files_for_test(
 
 // Helper function to extract chunks with NoOpProgressReporter for tests
 pub fn extract_chunks_for_test(
-    _extractor: &mut CodeChunkExtractor,
+    _extractor: &mut SourceCodeParser,
     repo_path: &Path,
     _options: ExtractionOptions,
 ) -> Result<Vec<CodeChunk>> {
@@ -97,24 +121,16 @@ pub fn extract_chunks_for_test(
 }
 
 pub fn extract_challenges_for_test(
-    repo_extractor: &mut RepositoryExtractor,
+    repo_extractor: &mut SourceFileExtractor,
     repo_path: &Path,
     options: ExtractionOptions,
 ) -> gittype::Result<Vec<Challenge>> {
-    // Step 1: Collect source files
-    let files =
-        repo_extractor.collect_source_files_with_progress(repo_path, &NoOpProgressReporter)?;
+    let files = repo_extractor.collect_with_progress(repo_path, &NoOpProgressReporter)?;
 
-    // Step 2: Extract chunks from files (using test version)
     let chunks = extract_chunks_from_scanned_files_for_test(&files, &options)?;
 
-    // Step 3: Convert to challenges
-    let challenges = repo_extractor.convert_chunks_and_files_to_challenges_with_progress(
-        chunks,
-        files,
-        Some(repo_path),
-        &NoOpProgressReporter,
-    );
+    let converter = ChallengeGenerator::new();
+    let challenges = converter.convert_with_progress(chunks, &NoOpProgressReporter);
 
     Ok(challenges)
 }

@@ -1,5 +1,5 @@
-use super::git_repository::GitRepository;
-use crate::presentation::game::DifficultyLevel;
+use super::{git_repository::GitRepository, DifficultyLevel};
+use std::borrow::Cow;
 use std::path::Path;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -53,6 +53,63 @@ impl Challenge {
     pub fn with_difficulty_level(mut self, difficulty_level: DifficultyLevel) -> Self {
         self.difficulty_level = Some(difficulty_level);
         self
+    }
+
+    pub fn from_chunk(
+        chunk: &crate::domain::models::CodeChunk,
+        difficulty: Option<DifficultyLevel>,
+    ) -> Option<Self> {
+        // Early validation
+        if chunk.content.trim().is_empty() {
+            return None;
+        }
+
+        use uuid;
+
+        let id = uuid::Uuid::new_v4().to_string();
+        let code_content = chunk.content.clone();
+        let source_file_path = Some(chunk.file_path.to_string_lossy().to_string());
+        let start_line = Some(chunk.start_line);
+        let end_line = Some(chunk.end_line);
+        let language = Some(chunk.language.clone());
+
+        Some(Self {
+            id,
+            code_content,
+            source_file_path,
+            start_line,
+            end_line,
+            language,
+            difficulty_level: difficulty,
+            comment_ranges: chunk.comment_ranges.clone(),
+        })
+    }
+
+    pub fn from_content_and_chunk(
+        content: Cow<str>,
+        chunk: &crate::domain::models::CodeChunk,
+        start_line: usize,
+        end_line: usize,
+        comment_ranges: &[(usize, usize)],
+        difficulty: Option<DifficultyLevel>,
+    ) -> Self {
+        use uuid;
+
+        let id = uuid::Uuid::new_v4().to_string();
+        let code_content = content.into_owned();
+        let source_file_path = Some(chunk.file_path.to_string_lossy().to_string());
+        let language = Some(chunk.language.clone());
+
+        Self {
+            id,
+            code_content,
+            source_file_path,
+            start_line: Some(start_line),
+            end_line: Some(end_line),
+            language,
+            difficulty_level: difficulty,
+            comment_ranges: comment_ranges.to_vec(),
+        }
     }
 
     pub fn get_display_title(&self) -> String {

@@ -1,5 +1,5 @@
-use gittype::domain::services::extractor::core::CommonExtractor;
-use gittype::domain::services::extractor::parsers::parse_with_thread_local;
+use gittype::domain::services::source_code_parser::parsers::parse_with_thread_local;
+use gittype::domain::services::source_code_parser::CommentProcessor;
 use gittype::presentation::game::typing_core::{ProcessingOptions, TypingCore};
 use insta::assert_snapshot;
 use std::fmt;
@@ -106,7 +106,10 @@ pub fn run_typing_core_test(test_case: TypingCoreTestCase) {
 /// Find comment ranges using the same parser as CodeChunk extraction
 pub fn find_comment_ranges_with_parser(code: &str, language: &str) -> Vec<(usize, usize)> {
     if let Some(tree) = parse_with_thread_local(language, code) {
-        CommonExtractor::extract_comment_ranges(&tree, code, language, &[]).unwrap_or_default()
+        let language_obj = gittype::domain::models::Languages::get_by_name(language)
+            .unwrap_or_else(|| Box::new(gittype::domain::models::languages::Rust));
+        CommentProcessor::extract_comment_ranges(&tree, code, language_obj.as_ref(), &[])
+            .unwrap_or_default()
     } else {
         Vec::new()
     }

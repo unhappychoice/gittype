@@ -1,6 +1,5 @@
 use crate::domain::models::Challenge;
 use crate::domain::models::ExtractionOptions;
-use crate::domain::services::extractor::RepositoryExtractor;
 use crate::presentation::game::models::{ExecutionContext, StepManager, StepType};
 use crate::presentation::game::views::LoadingMainView;
 use crate::presentation::game::{
@@ -247,14 +246,12 @@ impl LoadingScreen {
         self.show_initial()?;
 
         let step_manager = StepManager::new();
-        let mut loader = RepositoryExtractor::new()?;
 
         let mut context = ExecutionContext {
             repo_spec,
             repo_path,
             extraction_options: Some(options),
             loading_screen: Some(self),
-            repository_loader: Some(&mut loader),
             current_repo_path: None,
             git_repository: None,
             scanned_files: None,

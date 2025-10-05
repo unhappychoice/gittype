@@ -1,5 +1,5 @@
 use crate::domain::models::storage::StoredRepositoryWithLanguages;
-use crate::domain::services::extractor::LanguageRegistry;
+use crate::domain::models::Languages;
 use crate::infrastructure::git::RemoteGitRepositoryClient;
 use crate::presentation::ui::Colors;
 use crate::Result;
@@ -123,11 +123,11 @@ pub fn render_repo_list(repositories: Vec<StoredRepositoryWithLanguages>) -> Res
                                 break;
                             }
                         }
-                        let lang_name = LanguageRegistry::get_display_name(Some(lang));
+                        let lang_name = Languages::get_display_name(Some(lang));
                         if current_length + lang_name.len() <= lang_width {
                             line_spans.push(Span::styled(
                                 lang_name.clone(),
-                                Style::default().fg(LanguageRegistry::get_color(Some(lang))),
+                                Style::default().fg(Languages::get_color(Some(lang))),
                             ));
                             current_length += lang_name.len();
                         } else if current_length + 3 <= lang_width {

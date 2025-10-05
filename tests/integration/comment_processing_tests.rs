@@ -1,10 +1,10 @@
 //! Tests for comment processing functionality
 //! This module contains all tests related to comment range extraction, processing, and display.
 
-use gittype::domain::models::ChunkType;
-use gittype::domain::services::extractor::core::CommonExtractor;
+use gittype::domain::models::{Challenge, ChunkType};
 #[cfg(test)]
-use gittype::domain::services::extractor::ChallengeConverter;
+use gittype::domain::services::challenge_generator::ChallengeGenerator;
+use gittype::domain::services::source_code_parser::{CommentProcessor, IndentProcessor};
 use gittype::presentation::game::typing_core::TypingCore;
 use std::path::Path;
 
@@ -49,9 +49,23 @@ mod byte_char_position_bugs {
             comment_start_char, correct_indent_chars
         );
 
-        // Now test the fixed version
-        let fixed_indent_chars =
-            CommonExtractor::extract_line_indent_chars_corrected(first_line, 0, comment_start_byte);
+        // Now test the fixed version (inlined)
+        let line_cache: Vec<usize> = std::iter::once(0)
+            .chain(
+                first_line
+                    .bytes()
+                    .enumerate()
+                    .filter(|(_, byte)| *byte == b'\n')
+                    .map(|(i, _)| i + 1),
+            )
+            .collect();
+        let (_, fixed_indent_chars) = IndentProcessor::extract_and_normalize_indentation(
+            first_line,
+            first_line,
+            0,
+            comment_start_byte,
+            &line_cache,
+        );
 
         println!("Fixed indent (corrected method): {:?}", fixed_indent_chars);
 
@@ -76,12 +90,17 @@ mod byte_char_position_bugs {
 
         // Also extract just the comment ranges for debugging
         let content = std::fs::read_to_string(options_path).unwrap();
-        let tree = gittype::domain::services::extractor::parsers::parse_with_thread_local(
+        let tree = gittype::domain::services::source_code_parser::parsers::parse_with_thread_local(
             "rust", &content,
         )
         .unwrap();
-        let comment_ranges =
-            CommonExtractor::extract_comment_ranges(&tree, &content, "rust", &[]).unwrap();
+        let comment_ranges = CommentProcessor::extract_comment_ranges(
+            &tree,
+            &content,
+            &gittype::domain::models::languages::Rust,
+            &[],
+        )
+        .unwrap();
 
         println!("=== Real models/options.rs Test ===");
         println!("Found {} chunks", chunks.len());
@@ -166,8 +185,8 @@ mod byte_char_position_bugs {
                 }
 
                 // Convert to Challenge
-                let converter = ChallengeConverter::new();
-                let challenge = converter.convert_chunk_to_challenge(chunk.clone()).unwrap();
+                let _converter = ChallengeGenerator::new();
+                let challenge = Challenge::from_chunk(chunk, None).unwrap();
                 println!("Challenge created successfully");
                 println!("Challenge comment ranges: {:?}", challenge.comment_ranges);
 

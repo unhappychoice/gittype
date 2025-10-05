@@ -2,6 +2,7 @@ mod challenge_tests;
 mod config_tests;
 mod countdown_tests;
 mod git_repository_tests;
+mod language_tests;
 mod rank_boundaries_tests;
 mod rank_data_tests;
 mod rank_tests;
