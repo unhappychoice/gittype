@@ -26,6 +26,6 @@ impl Language for Kotlin {
 
     fn is_valid_comment_node(&self, node: tree_sitter::Node) -> bool {
         let node_kind = node.kind();
-        node_kind == "line_comment" || node_kind == "multiline_comment"
+        node_kind == "line_comment" || node_kind == "block_comment"
     }
 }

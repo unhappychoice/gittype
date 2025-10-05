@@ -20,6 +20,12 @@ mod real_impl {
 
     impl AppDataProvider for FileStorage {}
 
+    impl Default for FileStorage {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
+
     impl FileStorage {
         pub fn new() -> Self {
             Self

@@ -19,6 +19,10 @@ mod real_impl {
     impl AppDataProvider for CompressedFileStorage {}
 
     impl CompressedFileStorage {
+        pub fn new() -> Self {
+            Self
+        }
+
         /// Save compressed binary data to a file
         pub fn save<T: Serialize>(&self, file_path: &Path, data: &T) -> Result<()> {
             // Ensure parent directory exists
@@ -130,6 +134,10 @@ mod mock_impl {
     impl AppDataProvider for CompressedFileStorage {}
 
     impl CompressedFileStorage {
+        pub fn new() -> Self {
+            Self::default()
+        }
+
         pub fn save<T: Serialize>(&self, file_path: &Path, data: &T) -> Result<()> {
             use flate2::{write::GzEncoder, Compression};
             use std::io::Write;

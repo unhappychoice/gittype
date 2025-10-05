@@ -39,14 +39,14 @@ impl ChallengeRepository {
 
         Self {
             cache_dir,
-            storage: CompressedFileStorage::default(),
+            storage: CompressedFileStorage::new(),
         }
     }
 
     pub fn with_cache_dir(cache_dir: PathBuf) -> Self {
         Self {
             cache_dir,
-            storage: CompressedFileStorage::default(),
+            storage: CompressedFileStorage::new(),
         }
     }
 
