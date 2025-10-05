@@ -293,45 +293,152 @@ pub fn extract_chunks(
    tree-sitter-newlang = "0.20"
    ```
 
-2. **Create language-specific extractor:**
+2. **Create language definition:**
    ```rust
-   // src/extractor/languages/newlang.rs
-   use tree_sitter::Language;
-   
-   extern "C" {
-       fn tree_sitter_newlang() -> Language;
-   }
-   
-   pub fn language() -> Language {
-       unsafe { tree_sitter_newlang() }
-   }
-   
-   pub const QUERY: &str = r#"
-       (function_definition
-         name: (identifier) @function.name) @function.definition
-   "#;
-   ```
+   // src/domain/models/languages/newlang.rs
+   use crate::domain::models::Language;
+   use crate::presentation::ui::Colors;
+   use std::hash::Hash;
 
-3. **Update the main extractor:**
-   ```rust
-   // src/extractor/mod.rs
-   match language {
-       Language::NewLang => languages::newlang::create_extractor(),
-       // ... other languages
-   }
-   ```
+   #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+   pub struct NewLang;
 
-4. **Add tests:**
-   ```rust
-   #[test]
-   fn test_newlang_extraction() {
-       // Test with sample code
+   impl Language for NewLang {
+       fn name(&self) -> &'static str {
+           "newlang"
+       }
+       fn extensions(&self) -> Vec<&'static str> {
+           vec!["nl"]
+       }
+       fn color(&self) -> ratatui::style::Color {
+           Colors::lang_newlang()
+       }
+       fn display_name(&self) -> &'static str {
+           "NewLang"
+       }
+       fn is_valid_comment_node(&self, node: tree_sitter::Node) -> bool {
+           node.kind() == "comment"
+       }
    }
    ```
 
-5. **Update documentation:**
-   - Add to supported languages list in README.md
-   - Include examples if needed
+3. **Create language-specific extractor:**
+   ```rust
+   // src/domain/services/source_code_parser/parsers/newlang.rs
+   use super::LanguageExtractor;
+   use crate::domain::models::ChunkType;
+   use crate::{GitTypeError, Result};
+   use tree_sitter::{Node, Parser};
+
+   pub struct NewLangExtractor;
+
+   impl LanguageExtractor for NewLangExtractor {
+       fn tree_sitter_language(&self) -> tree_sitter::Language {
+           tree_sitter_newlang::LANGUAGE.into()
+       }
+
+       fn query_patterns(&self) -> &str {
+           "(function_declaration name: (identifier) @name) @function"
+       }
+
+       fn comment_query(&self) -> &str {
+           "(comment) @comment"
+       }
+
+       fn capture_name_to_chunk_type(&self, capture_name: &str) -> Option<ChunkType> {
+           match capture_name {
+               "function" => Some(ChunkType::Function),
+               _ => None,
+           }
+       }
+
+       fn extract_name(&self, node: Node, source_code: &str, _capture_name: &str) -> Option<String> {
+           // Extract identifier name from AST node
+           None
+       }
+
+       fn middle_implementation_query(&self) -> &str {
+           "" // Optional: for extracting code blocks within functions
+       }
+
+       fn middle_capture_name_to_chunk_type(&self, _capture_name: &str) -> Option<ChunkType> {
+           None
+       }
+   }
+
+   impl NewLangExtractor {
+       pub fn create_parser() -> Result<Parser> {
+           let mut parser = Parser::new();
+           parser.set_language(&tree_sitter_newlang::LANGUAGE.into())
+               .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to set NewLang language: {}", e)))?;
+           Ok(parser)
+       }
+   }
+   ```
+
+4. **Register the language:**
+   ```rust
+   // In src/domain/models/languages/mod.rs
+   pub mod newlang;
+   pub use newlang::NewLang;
+
+   // In src/domain/models/language.rs
+   pub fn all_languages() -> Vec<Box<dyn Language>> {
+       vec![
+           // ... other languages
+           Box::new(NewLang),
+       ]
+   }
+
+   // In src/domain/services/source_code_parser/parsers/mod.rs
+   pub mod newlang;
+   register_language!(NewLang, newlang, NewLangExtractor);
+   ```
+
+5. **Add color scheme support:**
+   ```rust
+   // In src/domain/models/color_scheme.rs - add field:
+   pub lang_newlang: SerializableColor,
+
+   // In src/presentation/ui/colors.rs - add method:
+   pub fn lang_newlang() -> Color {
+       Self::get_color_scheme().lang_newlang.into()
+   }
+
+   // Add to theme JSON files:
+   // assets/languages/lang_dark.json
+   // assets/languages/lang_light.json
+   // assets/languages/lang_ascii.json
+   "lang_newlang": {"r": 123, "g": 45, "b": 67}
+   ```
+
+6. **Add tests:**
+   ```rust
+   // tests/integration/languages/newlang/extractor.rs
+   use crate::integration::languages::extractor::test_language_extractor;
+
+   test_language_extractor! {
+       name: test_newlang_function_extraction,
+       language: "newlang",
+       extension: "nl",
+       source: r#"
+   function hello() {
+       print("Hello")
+   }
+   "#,
+       total_chunks: 2,
+       chunk_counts: {
+           File: 1,
+           Function: 1,
+       }
+   }
+   ```
+
+7. **Update documentation:**
+   - Add to `README.md` supported languages list
+   - Add to `docs/supported-languages.md` with extraction features
+   - Update CLI help in `src/presentation/cli/args.rs`
+   - Add example code if needed
 
 ### Query Writing Guidelines
 
