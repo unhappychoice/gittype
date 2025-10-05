@@ -1,6 +1,6 @@
 use crate::domain::models::languages::{
     CSharp, Cpp, Dart, Go, Haskell, Java, JavaScript, Kotlin, Php, Python, Ruby, Rust, Scala,
-    Swift, TypeScript, C,
+    Swift, TypeScript, Zig, C,
 };
 use crate::domain::models::ChunkType;
 use crate::domain::models::Language;
@@ -26,6 +26,7 @@ pub mod rust;
 pub mod scala;
 pub mod swift;
 pub mod typescript;
+pub mod zig;
 
 pub trait LanguageExtractor {
     fn tree_sitter_language(&self) -> tree_sitter::Language;
@@ -82,6 +83,7 @@ impl ParserRegistry {
         register_language!(Rust, rust, RustExtractor);
         register_language!(Scala, scala, ScalaExtractor);
         register_language!(Swift, swift, SwiftExtractor);
+        register_language!(Zig, zig, ZigExtractor);
 
         registry
     }
