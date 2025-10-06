@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
 pub mod domain_events;
-pub mod ui_events;
 
 pub trait Event: Send + Sync + 'static {
     fn as_any(&self) -> &dyn Any;
@@ -13,7 +12,7 @@ pub trait EventHandler<E: Event>: Send + Sync {
     fn handle(&self, event: &E);
 }
 
-type BoxedHandler = Box<dyn Fn(&dyn Event) + Send + Sync>;
+type BoxedHandler = Arc<dyn Fn(&dyn Event) + Send + Sync>;
 
 pub struct EventBus {
     subscribers: Arc<RwLock<HashMap<TypeId, Vec<BoxedHandler>>>>,
@@ -28,12 +27,19 @@ impl EventBus {
 
     pub fn publish<E: Event>(&self, event: E) {
         let type_id = TypeId::of::<E>();
-        let subscribers = self.subscribers.read().unwrap();
 
-        if let Some(handlers) = subscribers.get(&type_id) {
-            for handler in handlers {
-                handler(&event);
-            }
+        // Clone Arc<handlers> while holding the lock, then release it before calling them
+        let handlers: Vec<BoxedHandler> = {
+            let subscribers = self.subscribers.read().unwrap();
+            let h = subscribers.get(&type_id)
+                .map(|h| h.clone())
+                .unwrap_or_default();
+            h
+        }; // Lock is released here
+
+        // Call handlers without holding the lock
+        for handler in handlers.iter() {
+            handler(&event);
         }
     }
 
@@ -44,7 +50,7 @@ impl EventBus {
         let type_id = TypeId::of::<E>();
         let mut subscribers = self.subscribers.write().unwrap();
 
-        let boxed_handler: BoxedHandler = Box::new(move |event: &dyn Event| {
+        let boxed_handler: BoxedHandler = Arc::new(move |event: &dyn Event| {
             if let Some(concrete_event) = event.as_any().downcast_ref::<E>() {
                 handler(concrete_event);
             }
