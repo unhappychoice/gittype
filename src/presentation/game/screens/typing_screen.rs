@@ -2,10 +2,12 @@ use super::super::{
     context_loader::{self, CodeContext},
     typing_core::{InputResult, ProcessingOptions, TypingCore},
 };
-use crate::domain::models::{Challenge, Countdown};
-use crate::domain::services::scoring::StageInput;
+use crate::domain::events::domain_events::DomainEvent;
+use crate::domain::events::EventBus;
+use crate::domain::models::{Challenge, Countdown, SessionResult, TotalResult};
+use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::{
-    game_data::GameData, views::TypingView, Screen, ScreenTransition, UpdateStrategy,
+    game_data::GameData, views::TypingView, Screen, UpdateStrategy,
 };
 use crate::presentation::game::{ScreenType, SessionManager};
 use crate::{domain::models::GitRepository, Result};
@@ -22,6 +24,7 @@ pub struct TypingScreen {
     waiting_to_start: bool,
     dialog_shown: bool,
     typing_view: TypingView,
+    event_bus: EventBus,
 }
 
 pub enum SessionState {
@@ -36,7 +39,7 @@ pub enum SessionState {
 }
 
 impl TypingScreen {
-    pub fn new() -> Result<Self> {
+    pub fn new(event_bus: EventBus) -> Result<Self> {
         Ok(Self {
             countdown: Countdown::new(),
             git_repository: GameData::instance()
@@ -49,6 +52,7 @@ impl TypingScreen {
             waiting_to_start: true,
             dialog_shown: false,
             typing_view: TypingView::new(),
+            event_bus,
         })
     }
 
@@ -71,11 +75,11 @@ impl TypingScreen {
             self.waiting_to_start = true;
             self.dialog_shown = false;
 
-            // Update stage tracker in SessionManager
-            let _ = SessionManager::init_global_stage_tracker(
-                self.typing_core.text_to_type().to_string(),
-                challenge.source_file_path.clone(),
-            );
+            // Publish ChallengeLoaded event
+            self.event_bus.publish(DomainEvent::ChallengeLoaded {
+                text: self.typing_core.text_to_type().to_string(),
+                source_path: challenge.source_file_path.clone().unwrap_or_default(),
+            });
 
             Ok(true)
         } else {
@@ -255,28 +259,34 @@ impl TypingScreen {
     }
 
     fn handle_tab_key(&mut self) -> Result<SessionState> {
-        let _ = SessionManager::record_global_stage_input(StageInput::Keystroke {
-            ch: '\t',
+        // Publish KeyPressed event
+        self.event_bus.publish(DomainEvent::KeyPressed {
+            key: '\t',
             position: self.typing_core.current_position_to_type(),
         });
+
         let result = self.typing_core.process_tab_input();
         self.handle_input_result(result)
     }
 
     fn handle_enter_key(&mut self) -> Result<SessionState> {
-        let _ = SessionManager::record_global_stage_input(StageInput::Keystroke {
-            ch: '\n',
+        // Publish KeyPressed event
+        self.event_bus.publish(DomainEvent::KeyPressed {
+            key: '\n',
             position: self.typing_core.current_position_to_type(),
         });
+
         let result = self.typing_core.process_enter_input();
         self.handle_input_result(result)
     }
 
     fn handle_character_input(&mut self, ch: char) -> Result<SessionState> {
-        let _ = SessionManager::record_global_stage_input(StageInput::Keystroke {
-            ch,
+        // Publish KeyPressed event
+        self.event_bus.publish(DomainEvent::KeyPressed {
+            key: ch,
             position: self.typing_core.current_position_to_type(),
         });
+
         let result = self.typing_core.process_character_input(ch);
         self.handle_input_result(result)
     }
@@ -292,14 +302,18 @@ impl TypingScreen {
 
     fn open_dialog(&mut self) {
         self.dialog_shown = true;
-        let _ = SessionManager::record_global_stage_input(StageInput::Pause);
+
+        // Publish StagePaused event
+        self.event_bus.publish(DomainEvent::StagePaused);
 
         self.countdown.pause();
     }
 
     fn close_dialog(&mut self) {
         self.dialog_shown = false;
-        let _ = SessionManager::record_global_stage_input(StageInput::Resume);
+
+        // Publish StageResumed event
+        self.event_bus.publish(DomainEvent::StageResumed);
 
         self.countdown.resume();
     }
@@ -315,10 +329,10 @@ impl TypingScreen {
 
         // Update countdown and check if typing should start
         if let Some(typing_start_time) = self.countdown.update_state() {
-            // Set the start time in SessionManager and record start
-            let _ = SessionManager::set_global_stage_start_time(typing_start_time);
-            // Record Start event when countdown finishes
-            let _ = SessionManager::record_global_stage_input(StageInput::Start);
+            // Publish StageStarted event with start time
+            self.event_bus.publish(DomainEvent::StageStarted {
+                start_time: typing_start_time,
+            });
         }
     }
 }
@@ -328,32 +342,46 @@ impl Screen for TypingScreen {
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<ScreenTransition> {
+    fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()> {
         self.handle_countdown_logic();
 
         let session_state = self.handle_key(key_event)?;
 
         match session_state {
             SessionState::Complete => {
-                let _ = SessionManager::finalize_global_stage()?;
-                Ok(ScreenTransition::Replace(ScreenType::StageSummary))
+                // Publish StageFinalized event
+                self.event_bus.publish(DomainEvent::StageFinalized);
+                // Publish NavigateTo event
+                self.event_bus.publish(NavigateTo::Replace(ScreenType::StageSummary));
+                Ok(())
             }
-            SessionState::Exit => Ok(ScreenTransition::PopTo(ScreenType::Title)),
+            SessionState::Exit => {
+                // Publish NavigateTo event
+                self.event_bus.publish(NavigateTo::PopTo(ScreenType::Title));
+                Ok(())
+            }
             SessionState::Skip => {
-                let _ = SessionManager::skip_global_stage()?;
-                Ok(ScreenTransition::Replace(ScreenType::StageSummary))
+                // Publish StageSkipped event
+                self.event_bus.publish(DomainEvent::StageSkipped);
+                // Publish NavigateTo event
+                self.event_bus.publish(NavigateTo::Replace(ScreenType::StageSummary));
+                Ok(())
             }
-            SessionState::Failed => Ok(ScreenTransition::Replace(ScreenType::SessionFailure)),
-            SessionState::ShowDialog => Ok(ScreenTransition::None),
-            _ => Ok(ScreenTransition::None),
+            SessionState::Failed => {
+                // Publish NavigateTo event
+                self.event_bus.publish(NavigateTo::Replace(ScreenType::SessionFailure));
+                Ok(())
+            }
+            SessionState::ShowDialog => Ok(()),
+            _ => Ok(()),
         }
     }
 
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut Stdout,
-        _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
+        _session_result: Option<&SessionResult>,
+        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         Ok(())
     }
