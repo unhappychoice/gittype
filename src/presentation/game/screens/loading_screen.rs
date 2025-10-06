@@ -1,9 +1,11 @@
-use crate::domain::models::Challenge;
+use crate::domain::events::EventBus;
+use crate::domain::models::{Challenge, GitRepository, SessionResult, TotalResult};
 use crate::domain::models::ExtractionOptions;
+use crate::presentation::game::events::ExitRequested;
 use crate::presentation::game::models::{ExecutionContext, StepManager, StepType};
 use crate::presentation::game::views::LoadingMainView;
 use crate::presentation::game::{
-    GameData, Screen, ScreenManager, ScreenTransition, UpdateStrategy,
+    GameData, Screen, UpdateStrategy,
 };
 use crate::Result;
 use ratatui::Frame;
@@ -73,16 +75,17 @@ pub struct StepInfo {
 pub struct LoadingScreen {
     state: LoadingScreenState,
     render_handle: Option<thread::JoinHandle<Result<()>>>,
+    event_bus: EventBus,
 }
 
 #[derive(Clone)]
 pub struct ProcessingResult {
     pub challenges: Vec<Challenge>,
-    pub git_repository: Option<crate::domain::models::GitRepository>,
+    pub git_repository: Option<GitRepository>,
 }
 
 impl LoadingScreen {
-    pub fn new() -> Result<Self> {
+    pub fn new(event_bus: EventBus) -> Result<Self> {
         let step_manager = Arc::new(StepManager::new());
 
         let steps_info: Vec<StepInfo> = step_manager
@@ -108,6 +111,7 @@ impl LoadingScreen {
         Ok(Self {
             state,
             render_handle: None,
+            event_bus,
         })
     }
 
@@ -128,14 +132,13 @@ impl LoadingScreen {
         repo_path: Option<&PathBuf>,
         extraction_options: ExtractionOptions,
     ) -> Result<()> {
-        use crate::presentation::game::GameData;
-
         let state = self.state.clone();
         let repo_spec_owned = repo_spec.map(|s| s.to_string());
         let repo_path_owned = repo_path.cloned();
+        let event_bus = self.event_bus.clone();
 
         thread::spawn(move || {
-            let mut loading_screen = match LoadingScreen::new() {
+            let mut loading_screen = match LoadingScreen::new(event_bus) {
                 Ok(screen) => screen,
                 Err(e) => {
                     let _ = GameData::set_loading_failed(format!(
@@ -185,7 +188,7 @@ impl LoadingScreen {
 
     pub fn set_git_repository(
         &self,
-        git_repository: &crate::domain::models::GitRepository,
+        git_repository: &GitRepository,
     ) -> Result<()> {
         let mut parts = vec![format!(
             "📁 {}/{}",
@@ -363,24 +366,23 @@ impl Screen for LoadingScreen {
     fn handle_key_event(
         &mut self,
         key_event: crossterm::event::KeyEvent,
-    ) -> Result<ScreenTransition> {
+    ) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
 
         if key_event.code == KeyCode::Char('c')
             && key_event.modifiers.contains(KeyModifiers::CONTROL)
         {
-            ScreenManager::show_session_summary_on_interrupt();
-            std::process::exit(0);
+            self.event_bus.publish(ExitRequested);
         }
 
-        Ok(ScreenTransition::None)
+        Ok(())
     }
 
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut std::io::Stdout,
-        _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
+        _session_result: Option<&SessionResult>,
+        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         Ok(())
     }
@@ -406,8 +408,6 @@ impl Screen for LoadingScreen {
     }
 
     fn update(&mut self) -> Result<bool> {
-        use crate::presentation::game::GameData;
-
         if GameData::is_loading_completed() {
             if let Ok(mut current_step) = self.state.current_step.write() {
                 *current_step = StepType::Completed;
