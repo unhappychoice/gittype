@@ -1,16 +1,25 @@
-use crate::infrastructure::logging::log_panic_to_file;
+use crate::domain::events::EventBus;
+use crate::infrastructure::logging::{log_error_to_file, log_panic_to_file};
+use crate::presentation::game::events::ExitRequested;
+use crate::presentation::game::models::Screen;
 use crate::presentation::game::screen_manager::ScreenManager;
+use crate::presentation::game::screens::PanicScreen;
 use crate::GitTypeError;
+use crossterm::cursor::{Hide, Show};
+use crossterm::execute;
+use crossterm::terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen};
+use ratatui::backend::CrosstermBackend;
+use ratatui::Terminal;
+use std::io::{stdout, Write};
+use std::sync::{Arc, Mutex};
 
-pub fn setup_signal_handlers() {
-    std::panic::set_hook(Box::new(|panic_info| {
+pub fn setup_signal_handlers(screen_manager: Arc<Mutex<ScreenManager>>) {
+    let manager_for_panic = screen_manager.clone();
+
+    std::panic::set_hook(Box::new(move |panic_info| {
         // Restore terminal to normal state
-        let _ = crossterm::terminal::disable_raw_mode();
-        let _ = crossterm::execute!(
-            std::io::stderr(),
-            crossterm::terminal::LeaveAlternateScreen,
-            crossterm::cursor::Show
-        );
+        let _ = disable_raw_mode();
+        let _ = execute!(std::io::stderr(),LeaveAlternateScreen,Show);
 
         // Get panic message
         let message = if let Some(s) = panic_info.payload().downcast_ref::<&str>() {
@@ -39,10 +48,10 @@ pub fn setup_signal_handlers() {
 
         // Also log with our error type for consistency
         let error = GitTypeError::PanicError(full_message.clone());
-        crate::infrastructure::logging::log_error_to_file(&error);
+        log_error_to_file(&error);
 
         // Try to show panic screen - if this fails, fall back to standard panic behavior
-        if show_panic_screen(&full_message).is_err() {
+        if show_panic_screen(&full_message, &manager_for_panic).is_err() {
             // Clean up terminal using the existing static cleanup
             ScreenManager::cleanup_terminal_static();
 
@@ -56,23 +65,20 @@ pub fn setup_signal_handlers() {
     }));
 
     ctrlc::set_handler(move || {
-        ScreenManager::show_session_summary_on_interrupt();
-        std::process::exit(0);
+        // Get EventBus from ScreenManager and publish ExitRequested event
+        screen_manager.lock().ok()
+            .map(|manager| manager.get_event_bus().publish(ExitRequested))
+            .unwrap_or_else(|| {
+                // Fallback: just cleanup and exit
+                ScreenManager::cleanup_terminal_static();
+                std::process::exit(0);
+            });
     })
     .expect("Error setting Ctrl-C handler");
 }
 
 /// Show panic screen using the PanicScreen component with ratatui
-fn show_panic_screen(error_message: &str) -> anyhow::Result<()> {
-    use crate::presentation::game::{models::Screen, screens::PanicScreen};
-    use crossterm::{
-        cursor::Hide,
-        execute,
-        terminal::{enable_raw_mode, Clear, ClearType, EnterAlternateScreen},
-    };
-    use ratatui::{backend::CrosstermBackend, Terminal};
-    use std::io::stdout;
-
+fn show_panic_screen(error_message: &str, screen_manager: &Arc<Mutex<ScreenManager>>) -> anyhow::Result<()> {
     // Initialize terminal for panic screen
     let mut raw_mode_enabled = false;
     let mut terminal_initialized = false;
@@ -89,7 +95,11 @@ fn show_panic_screen(error_message: &str) -> anyhow::Result<()> {
     let backend = CrosstermBackend::new(stdout());
     let mut terminal = Terminal::new(backend)?;
 
-    let mut panic_screen = PanicScreen::with_error_message(error_message.to_string());
+    // Get EventBus from ScreenManager
+    let event_bus = screen_manager.lock().ok()
+        .map(|mgr| mgr.get_event_bus())
+        .unwrap_or_else(EventBus::new);
+    let mut panic_screen = PanicScreen::with_error_message(error_message.to_string(), event_bus);
 
     // Initialize the panic screen
     if panic_screen.init().is_err() {
@@ -107,11 +117,10 @@ fn show_panic_screen(error_message: &str) -> anyhow::Result<()> {
 
 /// Main loop for panic screen interaction using ratatui
 fn panic_screen_loop_ratatui(
-    terminal: &mut ratatui::Terminal<ratatui::backend::CrosstermBackend<std::io::Stdout>>,
-    panic_screen: &mut crate::presentation::game::screens::PanicScreen,
+    terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
+    panic_screen: &mut PanicScreen,
     error_message: &str,
 ) -> anyhow::Result<()> {
-    use crate::presentation::game::models::{Screen, ScreenTransition};
     use crossterm::event::{poll, read, Event};
     use std::time::Duration;
 
@@ -133,8 +142,7 @@ fn panic_screen_loop_ratatui(
             Ok(true) => {
                 if let Ok(Event::Key(key_event)) = read() {
                     match panic_screen.handle_key_event(key_event) {
-                        Ok(ScreenTransition::Exit | ScreenTransition::Replace(_)) => break,
-                        Ok(_) => {
+                        Ok(()) => {
                             // Only set render flag if screen state might have changed
                             needs_render = true;
                             continue;
@@ -162,12 +170,6 @@ fn panic_screen_loop_ratatui(
 
 /// Clean up terminal state after panic screen
 fn cleanup_panic_terminal(terminal_initialized: bool, raw_mode_enabled: bool) {
-    use crossterm::{
-        cursor::Show,
-        execute,
-        terminal::{disable_raw_mode, LeaveAlternateScreen},
-    };
-
     if terminal_initialized {
         // Exit alternate screen and show cursor
         let _ = execute!(std::io::stdout(), LeaveAlternateScreen, Show);
@@ -179,6 +181,5 @@ fn cleanup_panic_terminal(terminal_initialized: bool, raw_mode_enabled: bool) {
     }
 
     // Flush stdout to ensure all output is displayed
-    use std::io::Write;
     let _ = std::io::stdout().flush();
 }

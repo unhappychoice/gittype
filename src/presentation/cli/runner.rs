@@ -1,3 +1,4 @@
+use crate::domain::repositories::challenge_repository::CHALLENGE_REPOSITORY;
 use crate::infrastructure::logging::{setup_console_logging, setup_logging};
 use crate::presentation::cli::args::{CacheCommands, RepoCommands};
 use crate::presentation::cli::commands::{
@@ -5,7 +6,7 @@ use crate::presentation::cli::commands::{
     run_stats, run_trending,
 };
 use crate::presentation::cli::{Cli, Commands};
-use crate::Result;
+use crate::{GitTypeError, Result};
 
 pub async fn run_cli(cli: Cli) -> Result<()> {
     // Initialize logging first for all commands
@@ -31,8 +32,6 @@ pub async fn run_cli(cli: Cli) -> Result<()> {
 }
 
 fn run_cache_command(cache_command: &CacheCommands) -> Result<()> {
-    use crate::domain::repositories::challenge_repository::CHALLENGE_REPOSITORY;
-
     match cache_command {
         CacheCommands::Stats => match CHALLENGE_REPOSITORY.get_cache_stats() {
             Ok((file_count, total_bytes)) => {
@@ -60,7 +59,7 @@ fn run_cache_command(cache_command: &CacheCommands) -> Result<()> {
             }
             Err(e) => {
                 eprintln!("Error getting cache stats: {}", e);
-                return Err(crate::GitTypeError::TerminalError(e));
+                return Err(GitTypeError::TerminalError(e));
             }
         },
         CacheCommands::Clear => match CHALLENGE_REPOSITORY.clear_cache() {
@@ -69,7 +68,7 @@ fn run_cache_command(cache_command: &CacheCommands) -> Result<()> {
             }
             Err(e) => {
                 eprintln!("Error clearing cache: {}", e);
-                return Err(crate::GitTypeError::TerminalError(e));
+                return Err(GitTypeError::TerminalError(e));
             }
         },
         CacheCommands::List => match CHALLENGE_REPOSITORY.list_cache_keys() {
@@ -85,7 +84,7 @@ fn run_cache_command(cache_command: &CacheCommands) -> Result<()> {
             }
             Err(e) => {
                 eprintln!("Error listing cache keys: {}", e);
-                return Err(crate::GitTypeError::TerminalError(e));
+                return Err(GitTypeError::TerminalError(e));
             }
         },
     }
