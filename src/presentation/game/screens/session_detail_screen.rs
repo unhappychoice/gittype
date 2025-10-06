@@ -1,9 +1,12 @@
+use crate::domain::events::EventBus;
 use crate::domain::models::storage::{
     SessionResultData, SessionStageResult, StoredRepository, StoredSession,
 };
+use crate::domain::models::{SessionResult, TotalResult};
 use crate::domain::repositories::SessionRepository;
+use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::{PerformanceMetricsView, SessionInfoView, StageDetailsView};
-use crate::presentation::game::{Screen, ScreenTransition, UpdateStrategy};
+use crate::presentation::game::{Screen, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::{
@@ -30,10 +33,11 @@ pub struct SessionDetailScreen {
     session_data: SessionDisplayData,
     stage_results: Vec<SessionStageResult>,
     stage_scroll_offset: usize,
+    event_bus: EventBus,
 }
 
 impl SessionDetailScreen {
-    pub fn new_for_screen_manager() -> Result<Self> {
+    pub fn new_for_screen_manager(event_bus: EventBus) -> Result<Self> {
         let screen = Self {
             session_data: SessionDisplayData {
                 session: StoredSession {
@@ -54,6 +58,7 @@ impl SessionDetailScreen {
             },
             stage_results: Vec::new(),
             stage_scroll_offset: 0,
+            event_bus,
         };
 
         Ok(screen)
@@ -129,35 +134,39 @@ impl Screen for SessionDetailScreen {
     fn handle_key_event(
         &mut self,
         key_event: crossterm::event::KeyEvent,
-    ) -> Result<ScreenTransition> {
+    ) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
 
         match key_event.code {
-            KeyCode::Esc => Ok(ScreenTransition::Pop),
+            KeyCode::Esc => {
+                self.event_bus.publish(NavigateTo::Pop);
+                Ok(())
+            }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                Ok(ScreenTransition::Exit)
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
             }
             KeyCode::Up => {
                 if self.stage_scroll_offset > 0 {
                     self.stage_scroll_offset -= 1;
                 }
-                Ok(ScreenTransition::None)
+                Ok(())
             }
             KeyCode::Down => {
                 if self.stage_scroll_offset + 1 < self.stage_results.len() {
                     self.stage_scroll_offset += 1;
                 }
-                Ok(ScreenTransition::None)
+                Ok(())
             }
-            _ => Ok(ScreenTransition::None),
+            _ => Ok(()),
         }
     }
 
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut Stdout,
-        _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
+        _session_result: Option<&SessionResult>,
+        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         Ok(())
     }

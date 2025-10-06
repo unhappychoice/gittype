@@ -1,6 +1,6 @@
 use crate::domain::models::{Challenge, DifficultyLevel, GitRepository};
 use crate::presentation::game::screens::TitleScreen;
-use crate::presentation::game::{ScreenManager, ScreenType};
+use crate::presentation::game::{GameData, ScreenManager, ScreenType};
 use crate::Result;
 use once_cell::sync::Lazy;
 use rand::rngs::StdRng;
@@ -114,7 +114,6 @@ impl StageRepository {
     where
         F: FnOnce(&Vec<Challenge>) -> R,
     {
-        use crate::presentation::game::GameData;
         GameData::with_challenges(f)
     }
 

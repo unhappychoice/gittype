@@ -1,9 +1,12 @@
-use crate::domain::repositories::session_repository::SessionRepository;
+use crate::domain::events::EventBus;
+use crate::domain::models::{SessionResult, TotalResult};
+use crate::domain::repositories::session_repository::{BestStatus, SessionRepository};
+use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::{
     BestRecordsView, ControlsView, HeaderView, StageResultsView,
 };
 use crate::presentation::game::{
-    GameData, Screen, ScreenTransition, SessionManager, UpdateStrategy,
+    GameData, Screen, SessionManager, UpdateStrategy,
 };
 use crate::{domain::models::GitRepository, Result};
 use ratatui::{
@@ -13,23 +16,19 @@ use ratatui::{
 use std::io::Stdout;
 
 pub struct SessionDetailsDialog {
-    session_result: Option<crate::domain::models::SessionResult>,
+    session_result: Option<SessionResult>,
     repo_info: Option<GitRepository>,
-    best_status: Option<crate::domain::repositories::session_repository::BestStatus>,
-}
-
-impl Default for SessionDetailsDialog {
-    fn default() -> Self {
-        Self::new()
-    }
+    best_status: Option<BestStatus>,
+    event_bus: EventBus,
 }
 
 impl SessionDetailsDialog {
-    pub fn new() -> Self {
+    pub fn new(event_bus: EventBus) -> Self {
         Self {
             session_result: None,
             repo_info: None,
             best_status: None,
+            event_bus,
         }
     }
 
@@ -130,22 +129,26 @@ impl Screen for SessionDetailsDialog {
     fn handle_key_event(
         &mut self,
         key_event: crossterm::event::KeyEvent,
-    ) -> Result<ScreenTransition> {
+    ) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
         match key_event.code {
-            KeyCode::Esc => Ok(ScreenTransition::Pop),
-            KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                Ok(ScreenTransition::Exit)
+            KeyCode::Esc => {
+                self.event_bus.publish(NavigateTo::Pop);
+                Ok(())
             }
-            _ => Ok(ScreenTransition::None),
+            KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
+            }
+            _ => Ok(()),
         }
     }
 
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut Stdout,
-        _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
+        _session_result: Option<&SessionResult>,
+        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         Ok(())
     }

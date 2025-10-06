@@ -1,9 +1,11 @@
-use crate::domain::models::Rank;
+use crate::domain::events::EventBus;
+use crate::domain::models::{Rank, SessionResult, TotalResult};
+use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::{
     OptionsView, RankView, ScoreView, SessionSummaryHeaderView, SummaryView,
 };
 use crate::presentation::game::{
-    GameData, Screen, ScreenTransition, ScreenType, SessionManager, UpdateStrategy,
+    GameData, Screen, ScreenType, SessionManager, UpdateStrategy,
 };
 use crate::{domain::models::GitRepository, Result};
 use crossterm::{
@@ -25,18 +27,14 @@ pub enum ResultAction {
 
 pub struct SessionSummaryScreen {
     action_result: Option<ResultAction>,
-}
-
-impl Default for SessionSummaryScreen {
-    fn default() -> Self {
-        Self::new()
-    }
+    event_bus: EventBus,
 }
 
 impl SessionSummaryScreen {
-    pub fn new() -> Self {
+    pub fn new(event_bus: EventBus) -> Self {
         Self {
             action_result: None,
+            event_bus,
         }
     }
 
@@ -46,7 +44,7 @@ impl SessionSummaryScreen {
 
     fn show_session_summary(
         &mut self,
-        session_result: &crate::domain::models::SessionResult,
+        session_result: &SessionResult,
         _repo_info: &Option<GitRepository>,
     ) -> Result<()> {
         let mut stdout = stdout();
@@ -113,43 +111,48 @@ impl Screen for SessionSummaryScreen {
     fn handle_key_event(
         &mut self,
         key_event: crossterm::event::KeyEvent,
-    ) -> Result<ScreenTransition> {
+    ) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
 
         match key_event.code {
             KeyCode::Char('d') | KeyCode::Char('D') => {
-                Ok(ScreenTransition::Push(ScreenType::DetailsDialog))
+                self.event_bus.publish(NavigateTo::Push(ScreenType::DetailsDialog));
+                Ok(())
             }
             KeyCode::Char('r') | KeyCode::Char('R') => {
                 self.action_result = Some(ResultAction::Retry);
-                Ok(ScreenTransition::Replace(ScreenType::Typing))
+                self.event_bus.publish(NavigateTo::Replace(ScreenType::Typing));
+                Ok(())
             }
             KeyCode::Char('s') | KeyCode::Char('S') => {
-                // Show sharing screen
                 self.action_result = Some(ResultAction::Share);
-                Ok(ScreenTransition::Push(ScreenType::SessionSharing))
+                self.event_bus.publish(NavigateTo::Push(ScreenType::SessionSharing));
+                Ok(())
             }
             KeyCode::Char('t') | KeyCode::Char('T') => {
                 self.action_result = Some(ResultAction::BackToTitle);
-                Ok(ScreenTransition::PopTo(ScreenType::Title))
+                self.event_bus.publish(NavigateTo::PopTo(ScreenType::Title));
+                Ok(())
             }
             KeyCode::Esc => {
                 self.action_result = Some(ResultAction::Quit);
-                Ok(ScreenTransition::Exit)
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
                 self.action_result = Some(ResultAction::Quit);
-                Ok(ScreenTransition::Exit)
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
             }
-            _ => Ok(ScreenTransition::None),
+            _ => Ok(()),
         }
     }
 
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut std::io::Stdout,
-        session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
+        session_result: Option<&SessionResult>,
+        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         if let Some(session_result) = session_result {
             // Get git repository from global GameData

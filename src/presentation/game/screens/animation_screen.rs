@@ -1,7 +1,10 @@
+use crate::domain::events::EventBus;
+use crate::domain::models::{RankTier, SessionResult, TotalResult};
 use crate::domain::services::scoring::Rank;
+use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::typing::typing_animation_view::AnimationPhase;
 use crate::presentation::game::views::TypingAnimationView;
-use crate::presentation::game::{Screen, ScreenTransition, ScreenType, UpdateStrategy};
+use crate::presentation::game::{Screen, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyModifiers};
@@ -17,27 +20,23 @@ use std::time::Duration;
 
 pub struct AnimationScreen {
     animation: Option<TypingAnimationView>,
-    session_result: Option<crate::domain::models::SessionResult>,
+    session_result: Option<SessionResult>,
     animation_initialized: bool,
-}
-
-impl Default for AnimationScreen {
-    fn default() -> Self {
-        Self::new()
-    }
+    event_bus: EventBus,
 }
 
 impl AnimationScreen {
-    pub fn new() -> Self {
+    pub fn new(event_bus: EventBus) -> Self {
         Self {
             animation: None,
             session_result: None,
             animation_initialized: false,
+            event_bus,
         }
     }
 
     /// Pre-inject session result from ScreenManager (avoids RefCell conflicts)
-    pub fn inject_session_result(&mut self, session_result: crate::domain::models::SessionResult) {
+    pub fn inject_session_result(&mut self, session_result: SessionResult) {
         self.session_result = Some(session_result);
 
         if let Some(ref session_result) = self.session_result {
@@ -158,12 +157,12 @@ impl AnimationScreen {
         frame.render_widget(skip_paragraph, skip_area);
     }
 
-    fn get_tier_from_rank_name(rank_name: &str) -> crate::domain::models::RankTier {
+    fn get_tier_from_rank_name(rank_name: &str) -> RankTier {
         Rank::all_ranks()
             .iter()
             .find(|rank| rank.name() == rank_name)
             .map(|rank| rank.tier().clone())
-            .unwrap_or(crate::domain::models::RankTier::Beginner)
+            .unwrap_or(RankTier::Beginner)
     }
 }
 
@@ -180,23 +179,25 @@ impl Screen for AnimationScreen {
     fn handle_key_event(
         &mut self,
         key_event: crossterm::event::KeyEvent,
-    ) -> Result<ScreenTransition> {
+    ) -> Result<()> {
         match key_event.code {
             KeyCode::Char('s') | KeyCode::Char('S') => {
-                Ok(ScreenTransition::Replace(ScreenType::SessionSummary))
+                self.event_bus.publish(NavigateTo::Replace(ScreenType::SessionSummary));
+                Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                Ok(ScreenTransition::Exit)
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
             }
-            _ => Ok(ScreenTransition::None),
+            _ => Ok(()),
         }
     }
 
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut Stdout,
-        _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
+        _session_result: Option<&SessionResult>,
+        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         Ok(())
     }

@@ -1,5 +1,8 @@
+use crate::domain::events::EventBus;
+use crate::domain::models::{SessionResult, TotalResult};
 use crate::infrastructure::logging::get_current_log_file_path;
-use crate::presentation::game::{Screen, ScreenTransition, UpdateStrategy};
+use crate::presentation::game::events::NavigateTo;
+use crate::presentation::game::{Screen, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::{
@@ -14,26 +17,23 @@ use std::io::Stdout;
 pub struct PanicScreen {
     error_message: String,
     timestamp: String,
-}
-
-impl Default for PanicScreen {
-    fn default() -> Self {
-        Self::new()
-    }
+    event_bus: EventBus,
 }
 
 impl PanicScreen {
-    pub fn new() -> Self {
+    pub fn new(event_bus: EventBus) -> Self {
         Self {
             error_message: "An unexpected error occurred".to_string(),
             timestamp: Self::get_current_timestamp(),
+            event_bus,
         }
     }
 
-    pub fn with_error_message(error_message: String) -> Self {
+    pub fn with_error_message(error_message: String, event_bus: EventBus) -> Self {
         Self {
             error_message,
             timestamp: Self::get_current_timestamp(),
+            event_bus,
         }
     }
 
@@ -162,19 +162,22 @@ impl Screen for PanicScreen {
     fn handle_key_event(
         &mut self,
         key_event: crossterm::event::KeyEvent,
-    ) -> Result<ScreenTransition> {
+    ) -> Result<()> {
         use crossterm::event::KeyCode;
         match key_event.code {
-            KeyCode::Esc => Ok(ScreenTransition::Exit),
-            _ => Ok(ScreenTransition::None),
+            KeyCode::Esc => {
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
+            }
+            _ => Ok(()),
         }
     }
 
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut Stdout,
-        _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
+        _session_result: Option<&SessionResult>,
+        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         // This is a fallback - panic screen should use ratatui
         Ok(())

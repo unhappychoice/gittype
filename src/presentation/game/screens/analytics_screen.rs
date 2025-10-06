@@ -1,10 +1,14 @@
+use crate::domain::events::EventBus;
+use crate::domain::models::{SessionResult, TotalResult};
 use crate::domain::repositories::{GitRepositoryRepository, SessionRepository};
+use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::analytics::{
     LanguagesView, OverviewView, RepositoriesView, TrendsView,
 };
-use crate::presentation::game::{Screen, ScreenTransition, ScreenType, UpdateStrategy};
+use crate::presentation::game::{Screen, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
+use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Modifier, Style},
@@ -117,14 +121,15 @@ pub struct AnalyticsScreen {
     repository_scroll_state: ScrollbarState,
     language_scroll_state: ScrollbarState,
     action_result: Option<AnalyticsAction>,
+    event_bus: EventBus,
 }
 
 impl AnalyticsScreen {
-    pub fn new_for_screen_manager() -> Result<Self> {
-        Self::new()
+    pub fn new_for_screen_manager(event_bus: EventBus) -> Result<Self> {
+        Self::new(event_bus)
     }
 
-    fn new() -> Result<Self> {
+    fn new(event_bus: EventBus) -> Result<Self> {
         let mut repository_list_state = ListState::default();
         repository_list_state.select(Some(0));
         let mut language_list_state = ListState::default();
@@ -138,6 +143,7 @@ impl AnalyticsScreen {
             repository_scroll_state: ScrollbarState::default(),
             language_scroll_state: ScrollbarState::default(),
             action_result: None,
+            event_bus,
         })
     }
 
@@ -603,25 +609,25 @@ impl Screen for AnalyticsScreen {
     fn handle_key_event(
         &mut self,
         key_event: crossterm::event::KeyEvent,
-    ) -> Result<ScreenTransition> {
-        use crossterm::event::{KeyCode, KeyModifiers};
-
+    ) -> Result<()> {
         match key_event.code {
             KeyCode::Esc => {
                 self.action_result = Some(AnalyticsAction::Return);
-                Ok(ScreenTransition::Replace(ScreenType::Title))
+                self.event_bus.publish(NavigateTo::Replace(ScreenType::Title));
+                Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
                 self.action_result = Some(AnalyticsAction::Return);
-                Ok(ScreenTransition::Exit)
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
             }
             KeyCode::Left | KeyCode::Char('h') => {
                 self.view_mode = self.view_mode.previous();
-                Ok(ScreenTransition::None)
+                Ok(())
             }
             KeyCode::Right | KeyCode::Char('l') => {
                 self.view_mode = self.view_mode.next();
-                Ok(ScreenTransition::None)
+                Ok(())
             }
             KeyCode::Up | KeyCode::Char('k') => {
                 match self.view_mode {
@@ -629,7 +635,7 @@ impl Screen for AnalyticsScreen {
                     ViewMode::Languages => self.previous_language(),
                     _ => {}
                 }
-                Ok(ScreenTransition::None)
+                Ok(())
             }
             KeyCode::Down | KeyCode::Char('j') => {
                 match self.view_mode {
@@ -637,23 +643,23 @@ impl Screen for AnalyticsScreen {
                     ViewMode::Languages => self.next_language(),
                     _ => {}
                 }
-                Ok(ScreenTransition::None)
+                Ok(())
             }
             KeyCode::Char('r') => {
                 if let Err(e) = self.load_data() {
                     eprintln!("Error loading data: {}", e);
                 }
-                Ok(ScreenTransition::None)
+                Ok(())
             }
-            _ => Ok(ScreenTransition::None),
+            _ => Ok(()),
         }
     }
 
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut std::io::Stdout,
-        _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
+        _session_result: Option<&SessionResult>,
+        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         Ok(())
     }

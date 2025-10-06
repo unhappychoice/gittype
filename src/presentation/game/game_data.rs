@@ -1,6 +1,6 @@
 use crate::domain::models::ExtractionOptions;
 use crate::domain::models::{Challenge, GitRepository};
-use crate::Result;
+use crate::{GitTypeError, Result};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, OnceLock};
 
@@ -159,7 +159,7 @@ impl GameData {
             data.git_repository = git_repository;
             Ok(())
         } else {
-            Err(crate::GitTypeError::TerminalError(
+            Err(GitTypeError::TerminalError(
                 "GameData not initialized".to_string(),
             ))
         }

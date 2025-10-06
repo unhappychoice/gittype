@@ -1,4 +1,4 @@
-use crate::domain::models::{GitRepository, Rank};
+use crate::domain::models::{GitRepository, Rank, SessionResult};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::{
@@ -12,7 +12,7 @@ pub struct PreviewView;
 
 impl PreviewView {
     pub fn render(
-        metrics: &crate::domain::models::SessionResult,
+        metrics: &SessionResult,
         repo_info: &Option<GitRepository>,
         center_col: u16,
         center_row: u16,

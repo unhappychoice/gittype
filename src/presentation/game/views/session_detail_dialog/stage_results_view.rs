@@ -1,4 +1,4 @@
-use crate::domain::models::GitRepository;
+use crate::domain::models::{GitRepository, SessionResult};
 use crate::presentation::ui::Colors;
 use ratatui::{
     layout::{Alignment, Rect},
@@ -14,7 +14,7 @@ impl StageResultsView {
     pub fn render(
         f: &mut Frame,
         area: Rect,
-        session_result: &crate::domain::models::SessionResult,
+        session_result: &SessionResult,
         repo_info: &Option<GitRepository>,
     ) {
         if !session_result.stage_results.is_empty() {

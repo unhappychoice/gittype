@@ -1,3 +1,4 @@
+use crate::domain::models::SessionResult;
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::{
@@ -11,7 +12,7 @@ pub struct SummaryView;
 
 impl SummaryView {
     pub fn render(
-        session_result: &crate::domain::models::SessionResult,
+        session_result: &SessionResult,
         center_col: u16,
         summary_start_row: u16,
     ) -> Result<()> {

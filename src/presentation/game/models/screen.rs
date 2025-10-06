@@ -1,3 +1,4 @@
+use crate::domain::models::{SessionResult, TotalResult};
 use crate::Result;
 use crossterm::event::KeyEvent;
 use std::io::Stdout;
@@ -60,6 +61,13 @@ pub enum ScreenTransition {
     Exit,
 }
 
+// Implement Event trait for ScreenTransition to use as NavigateTo event
+impl crate::domain::events::Event for ScreenTransition {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+}
+
 /// The Screen trait defines the interface that all screens must implement
 pub trait Screen: Send {
     /// Initialize the screen - called when screen becomes active
@@ -67,15 +75,15 @@ pub trait Screen: Send {
         Ok(())
     }
 
-    /// Handle keyboard input events and return appropriate screen transition
-    fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<ScreenTransition>;
+    /// Handle keyboard input events
+    fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()>;
 
     /// Render the screen with access to shared data
     fn render_crossterm_with_data(
         &mut self,
         stdout: &mut Stdout,
-        session_result: Option<&crate::domain::models::SessionResult>,
-        total_result: Option<&crate::domain::services::scoring::TotalResult>,
+        session_result: Option<&SessionResult>,
+        total_result: Option<&TotalResult>,
     ) -> Result<()>;
 
     /// Render the screen using ratatui backend (optional)

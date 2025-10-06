@@ -2,7 +2,7 @@ use super::{ExecutionContext, Step, StepResult, StepType};
 use crate::domain::models::{Language, Languages};
 use crate::domain::services::source_code_parser::SourceCodeParser;
 use crate::presentation::ui::Colors;
-use crate::Result;
+use crate::{GitTypeError, Result};
 use ratatui::style::Color;
 use std::path::PathBuf;
 
@@ -58,15 +58,15 @@ impl Step for ExtractingStep {
 
     fn execute(&self, context: &mut ExecutionContext) -> Result<StepResult> {
         let options = context.extraction_options.ok_or_else(|| {
-            crate::GitTypeError::ExtractionFailed("No extraction options available".to_string())
+            GitTypeError::ExtractionFailed("No extraction options available".to_string())
         })?;
 
         let screen = context.loading_screen.ok_or_else(|| {
-            crate::GitTypeError::ExtractionFailed("No loading screen available".to_string())
+            GitTypeError::ExtractionFailed("No loading screen available".to_string())
         })?;
 
         let scanned_files = context.scanned_files.as_ref().ok_or_else(|| {
-            crate::GitTypeError::ExtractionFailed(
+            GitTypeError::ExtractionFailed(
                 "No scanned files available from ScanningStep".to_string(),
             )
         })?;
@@ -86,7 +86,7 @@ impl Step for ExtractingStep {
         let chunks = extractor.extract_chunks_with_progress(files_to_process, options, screen)?;
 
         if chunks.is_empty() {
-            return Err(crate::GitTypeError::NoSupportedFiles);
+            return Err(GitTypeError::NoSupportedFiles);
         }
 
         Ok(StepResult::Chunks(chunks))

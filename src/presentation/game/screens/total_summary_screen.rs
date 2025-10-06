@@ -1,8 +1,12 @@
-use crate::domain::models::TotalResult;
+use crate::domain::events::EventBus;
+use crate::domain::models::{SessionResult, TotalResult};
+use crate::domain::services::scoring::{TotalCalculator, GLOBAL_TOTAL_TRACKER};
+use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::{AsciiScoreView, SharingView, StatisticsView};
-use crate::presentation::game::{Screen, ScreenTransition, ScreenType, UpdateStrategy};
+use crate::presentation::game::{Screen, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
+use crossterm::event::{KeyCode, KeyModifiers};
 use crossterm::{
     cursor::MoveTo,
     event::{self},
@@ -21,17 +25,15 @@ pub enum ExitAction {
 
 pub struct TotalSummaryScreen {
     displayed: bool,
-}
-
-impl Default for TotalSummaryScreen {
-    fn default() -> Self {
-        Self::new()
-    }
+    event_bus: EventBus,
 }
 
 impl TotalSummaryScreen {
-    pub fn new() -> Self {
-        Self { displayed: false }
+    pub fn new(event_bus: EventBus) -> Self {
+        Self {
+            displayed: false,
+            event_bus,
+        }
     }
 
     fn show(total_summary: &TotalResult) -> Result<()> {
@@ -69,9 +71,7 @@ impl TotalSummaryScreen {
         Ok(())
     }
 
-    fn get_total_result_from_tracker() -> Option<crate::domain::services::scoring::TotalResult> {
-        use crate::domain::services::scoring::{TotalCalculator, GLOBAL_TOTAL_TRACKER};
-
+    fn get_total_result_from_tracker() -> Option<TotalResult> {
         if let Ok(global_total_tracker) = GLOBAL_TOTAL_TRACKER.lock() {
             (*global_total_tracker)
                 .as_ref()
@@ -88,26 +88,29 @@ impl Screen for TotalSummaryScreen {
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: event::KeyEvent) -> Result<ScreenTransition> {
-        use crossterm::event::{KeyCode, KeyModifiers};
-
+    fn handle_key_event(&mut self, key_event: event::KeyEvent) -> Result<()> {
         match key_event.code {
             KeyCode::Char('s') | KeyCode::Char('S') => {
-                Ok(ScreenTransition::Push(ScreenType::TotalSummaryShare))
+                self.event_bus.publish(NavigateTo::Push(ScreenType::TotalSummaryShare));
+                Ok(())
             }
-            KeyCode::Esc => Ok(ScreenTransition::Exit),
+            KeyCode::Esc => {
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
+            }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                Ok(ScreenTransition::Exit)
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
             }
-            _ => Ok(ScreenTransition::None),
+            _ => Ok(()),
         }
     }
 
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut Stdout,
-        _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
+        _session_result: Option<&SessionResult>,
+        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         if !self.displayed {
             let mut total_result = Self::get_total_result_from_tracker().unwrap_or_default();

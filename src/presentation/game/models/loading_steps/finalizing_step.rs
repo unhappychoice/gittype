@@ -4,7 +4,7 @@ use crate::domain::services::scoring::{SessionTracker, TotalTracker};
 use crate::presentation::game::GameData;
 use crate::presentation::game::{SessionConfig, SessionManager, StageRepository};
 use crate::presentation::ui::Colors;
-use crate::Result;
+use crate::{GitTypeError, Result};
 use ratatui::style::Color;
 
 #[derive(Debug, Clone)]
@@ -62,7 +62,7 @@ impl Step for FinalizingStep {
         let challenge_count = GameData::with_challenges(|c| c.len()).unwrap_or(0);
 
         if challenge_count == 0 {
-            return Err(crate::GitTypeError::ExtractionFailed(
+            return Err(GitTypeError::ExtractionFailed(
                 "No challenges available for finalization".to_string(),
             ));
         }

@@ -1,7 +1,9 @@
-use crate::domain::models::{DifficultyLevel, GitRepository};
+use crate::domain::events::EventBus;
+use crate::domain::models::{DifficultyLevel, GitRepository, SessionResult, TotalResult};
+use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::title::{DifficultySelectionView, StaticElementsView};
 use crate::presentation::game::{
-    GameData, Screen, ScreenTransition, ScreenType, StageRepository, UpdateStrategy,
+    GameData, Screen, ScreenType, StageRepository, UpdateStrategy,
 };
 use crate::Result;
 use crossterm::{
@@ -34,16 +36,11 @@ pub struct TitleScreen {
     action_result: Option<TitleAction>,
     needs_render: bool,
     error_message: Option<String>,
-}
-
-impl Default for TitleScreen {
-    fn default() -> Self {
-        Self::new()
-    }
+    event_bus: EventBus,
 }
 
 impl TitleScreen {
-    pub fn new() -> Self {
+    pub fn new(event_bus: EventBus) -> Self {
         Self {
             selected_difficulty: 1,
             challenge_counts: [0, 0, 0, 0, 0],
@@ -51,6 +48,7 @@ impl TitleScreen {
             action_result: None,
             needs_render: true,
             error_message: None,
+            event_bus,
         }
     }
 
@@ -99,7 +97,7 @@ impl Screen for TitleScreen {
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<ScreenTransition> {
+    fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()> {
         match key_event.code {
             KeyCode::Char(' ') => {
                 // Check if challenges are available for the selected difficulty
@@ -108,12 +106,13 @@ impl Screen for TitleScreen {
                         "No challenges available for this difficulty. Please try a different difficulty or repository.".to_string()
                     );
                     self.needs_render = true;
-                    Ok(ScreenTransition::None)
+                    Ok(())
                 } else {
                     self.error_message = None;
                     self.action_result =
                         Some(TitleAction::Start(DIFFICULTIES[self.selected_difficulty].1));
-                    Ok(ScreenTransition::Replace(ScreenType::Typing))
+                    self.event_bus.publish(NavigateTo::Replace(ScreenType::Typing));
+                    Ok(())
                 }
             }
             KeyCode::Left | KeyCode::Char('h') => {
@@ -124,44 +123,52 @@ impl Screen for TitleScreen {
                 };
                 self.error_message = None;
                 self.needs_render = true;
-                Ok(ScreenTransition::None)
+                Ok(())
             }
             KeyCode::Right | KeyCode::Char('l') => {
                 self.selected_difficulty = (self.selected_difficulty + 1) % DIFFICULTIES.len();
                 self.error_message = None;
                 self.needs_render = true;
-                Ok(ScreenTransition::None)
+                Ok(())
             }
             KeyCode::Esc => {
                 self.action_result = Some(TitleAction::Quit);
-                Ok(ScreenTransition::Exit)
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
                 self.action_result = Some(TitleAction::Quit);
-                Ok(ScreenTransition::Exit)
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
             }
-            KeyCode::Char('i') | KeyCode::Char('?') => Ok(ScreenTransition::Push(ScreenType::Help)),
+            KeyCode::Char('i') | KeyCode::Char('?') => {
+                self.event_bus.publish(NavigateTo::Push(ScreenType::Help));
+                Ok(())
+            }
             KeyCode::Char('r') | KeyCode::Char('R') => {
                 self.action_result = Some(TitleAction::Records);
-                Ok(ScreenTransition::Replace(ScreenType::Records))
+                self.event_bus.publish(NavigateTo::Replace(ScreenType::Records));
+                Ok(())
             }
             KeyCode::Char('a') | KeyCode::Char('A') => {
                 self.action_result = Some(TitleAction::Analytics);
-                Ok(ScreenTransition::Replace(ScreenType::Analytics))
+                self.event_bus.publish(NavigateTo::Replace(ScreenType::Analytics));
+                Ok(())
             }
             KeyCode::Char('s') | KeyCode::Char('S') => {
                 self.action_result = Some(TitleAction::Settings);
-                Ok(ScreenTransition::Push(ScreenType::Settings))
+                self.event_bus.publish(NavigateTo::Push(ScreenType::Settings));
+                Ok(())
             }
-            _ => Ok(ScreenTransition::None),
+            _ => Ok(()),
         }
     }
 
     fn render_crossterm_with_data(
         &mut self,
         stdout: &mut Stdout,
-        _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
+        _session_result: Option<&SessionResult>,
+        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         let (terminal_width, terminal_height) = terminal::size()?;
         let center_row = terminal_height / 2;

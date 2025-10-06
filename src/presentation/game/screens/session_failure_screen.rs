@@ -1,8 +1,10 @@
-use crate::domain::models::GitRepository;
+use crate::domain::events::EventBus;
+use crate::domain::models::{GitRepository, SessionResult, TotalResult};
 use crate::domain::services::scoring::StageTracker;
+use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::session_failure::{content_view, footer_view, header_view};
 use crate::presentation::game::{
-    GameData, Screen, ScreenTransition, ScreenType, SessionManager, UpdateStrategy,
+    GameData, Screen, ScreenType, SessionManager, UpdateStrategy,
 };
 use crate::Result;
 use crossterm::{
@@ -19,21 +21,17 @@ pub struct SessionFailureScreen {
     completed_stages: usize,
     stage_trackers: Vec<(String, StageTracker)>,
     repo_info: Option<GitRepository>,
-}
-
-impl Default for SessionFailureScreen {
-    fn default() -> Self {
-        Self::new()
-    }
+    event_bus: EventBus,
 }
 
 impl SessionFailureScreen {
-    pub fn new() -> Self {
+    pub fn new(event_bus: EventBus) -> Self {
         Self {
             total_stages: 1,
             completed_stages: 0,
             stage_trackers: vec![],
             repo_info: None,
+            event_bus,
         }
     }
 
@@ -77,28 +75,34 @@ impl Screen for SessionFailureScreen {
     fn handle_key_event(
         &mut self,
         key_event: crossterm::event::KeyEvent,
-    ) -> Result<ScreenTransition> {
+    ) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
         match key_event.code {
             KeyCode::Char('r') | KeyCode::Char('R') => {
-                Ok(ScreenTransition::Replace(ScreenType::Typing))
+                self.event_bus.publish(NavigateTo::Replace(ScreenType::Typing));
+                Ok(())
             }
             KeyCode::Char('t') | KeyCode::Char('T') => {
-                Ok(ScreenTransition::Replace(ScreenType::Title))
+                self.event_bus.publish(NavigateTo::Replace(ScreenType::Title));
+                Ok(())
             }
-            KeyCode::Esc => Ok(ScreenTransition::Exit),
+            KeyCode::Esc => {
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
+            }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                Ok(ScreenTransition::Exit)
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
             }
-            _ => Ok(ScreenTransition::None),
+            _ => Ok(()),
         }
     }
 
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut Stdout,
-        _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
+        _session_result: Option<&SessionResult>,
+        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         let mut stdout = stdout();
 
