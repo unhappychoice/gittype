@@ -1,11 +1,9 @@
 use crate::domain::events::EventBus;
-use crate::domain::models::{GitRepository, SessionResult, TotalResult};
+use crate::domain::models::GitRepository;
 use crate::domain::services::scoring::StageTracker;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::session_failure::{content_view, footer_view, header_view};
-use crate::presentation::game::{
-    GameData, Screen, ScreenType, SessionManager, UpdateStrategy,
-};
+use crate::presentation::game::{GameData, RenderBackend, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy};
 use crate::Result;
 use crossterm::{
     cursor::MoveTo,
@@ -15,6 +13,60 @@ use crossterm::{
 };
 use std::io::Stdout;
 use std::io::{stdout, Write};
+use std::sync::{Arc, Mutex};
+
+pub struct SessionFailureScreenData {
+    pub total_stages: usize,
+    pub completed_stages: usize,
+    pub stage_trackers: Vec<(String, StageTracker)>,
+    pub repo_info: Option<GitRepository>,
+}
+
+pub struct SessionFailureScreenDataProvider {
+    session_manager: Arc<Mutex<SessionManager>>,
+    game_data: Arc<Mutex<GameData>>,
+}
+
+impl ScreenDataProvider for SessionFailureScreenDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        let total_stages = if let Ok(session_manager) = self.session_manager.lock() {
+            session_manager.get_stage_info()?.1
+        } else {
+            1
+        };
+
+        let (completed_stages, stage_trackers) = if let Ok(session_manager) = self.session_manager.lock() {
+            let stage_results = session_manager.get_stage_results();
+            let completed = stage_results
+                .iter()
+                .filter(|sr| !sr.was_skipped && !sr.was_failed)
+                .count();
+
+            let trackers = if let Some(current_tracker) = session_manager.get_current_stage_tracker() {
+                vec![("current_stage".to_string(), current_tracker.clone())]
+            } else {
+                vec![]
+            };
+
+            (completed, trackers)
+        } else {
+            (0, vec![])
+        };
+
+        let repo_info = if let Ok(game_data) = self.game_data.lock() {
+            game_data.git_repository.clone()
+        } else {
+            None
+        };
+
+        Ok(Box::new(SessionFailureScreenData {
+            total_stages,
+            completed_stages,
+            stage_trackers,
+            repo_info,
+        }))
+    }
+}
 
 pub struct SessionFailureScreen {
     total_stages: usize,
@@ -34,43 +86,38 @@ impl SessionFailureScreen {
             event_bus,
         }
     }
-
-    fn load_global_data(&mut self) -> Result<()> {
-        // Get total stages from the global API
-        if let Ok((_, total)) = SessionManager::get_global_stage_info() {
-            self.total_stages = total;
-        }
-
-        if let Ok(session_manager) = SessionManager::instance().lock() {
-            let stage_results = session_manager.get_stage_results();
-
-            // Count only successfully completed stages (not skipped or failed)
-            self.completed_stages = stage_results
-                .iter()
-                .filter(|sr| !sr.was_skipped && !sr.was_failed)
-                .count();
-
-            // Get current stage tracker for the failed stage
-            if let Some(current_tracker) = session_manager.get_current_stage_tracker() {
-                self.stage_trackers = vec![("current_stage".to_string(), current_tracker.clone())];
-            } else {
-                self.stage_trackers = vec![];
-            }
-        }
-
-        if let Ok(game_data) = GameData::instance().lock() {
-            self.repo_info = game_data.git_repository.clone();
-        }
-
-        Ok(())
-    }
 }
 
 impl Screen for SessionFailureScreen {
-    fn init(&mut self) -> Result<()> {
-        self.load_global_data()?;
+    fn get_type(&self) -> ScreenType {
+        ScreenType::SessionFailure
+    }
+
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(SessionFailureScreenDataProvider {
+            session_manager: SessionManager::instance(),
+            game_data: GameData::instance(),
+        })
+    }
+
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Crossterm
+    }
+
+    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
+        let screen_data = data.downcast::<SessionFailureScreenData>()?;
+
+        self.total_stages = screen_data.total_stages;
+        self.completed_stages = screen_data.completed_stages;
+        self.stage_trackers = screen_data.stage_trackers;
+        self.repo_info = screen_data.repo_info;
+
         Ok(())
     }
+
 
     fn handle_key_event(
         &mut self,
@@ -101,8 +148,6 @@ impl Screen for SessionFailureScreen {
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut Stdout,
-        _session_result: Option<&SessionResult>,
-        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         let mut stdout = stdout();
 
