@@ -1,11 +1,12 @@
 use crate::domain::events::EventBus;
-use crate::domain::models::{SessionResult, TotalResult};
-use crate::domain::services::scoring::{TotalCalculator, GLOBAL_TOTAL_TRACKER};
+use crate::domain::models::TotalResult;
+use crate::domain::services::scoring::{TotalCalculator, TotalTracker, GLOBAL_TOTAL_TRACKER};
 use crate::presentation::game::events::NavigateTo;
+use crate::presentation::game::models::screen::ScreenDataProvider;
 use crate::presentation::game::views::{AsciiScoreView, SharingView, StatisticsView};
-use crate::presentation::game::{Screen, ScreenType, UpdateStrategy};
+use crate::presentation::game::{RenderBackend, Screen, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
-use crate::Result;
+use crate::{GitTypeError, Result};
 use crossterm::event::{KeyCode, KeyModifiers};
 use crossterm::{
     cursor::MoveTo,
@@ -16,6 +17,32 @@ use crossterm::{
 };
 use std::io::Stdout;
 use std::io::{stdout, Write};
+use std::sync::{Arc, Mutex};
+
+pub struct TotalSummaryScreenData {
+    pub total_result: TotalResult,
+}
+
+pub struct TotalSummaryScreenDataProvider {
+    total_tracker: Arc<Mutex<Option<TotalTracker>>>,
+}
+
+impl ScreenDataProvider for TotalSummaryScreenDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        let total_result = self.total_tracker
+            .lock()
+            .map_err(|e| GitTypeError::TerminalError(format!("Failed to lock total tracker: {}", e)))?
+            .as_ref()
+            .map(|tracker| {
+                let mut result = TotalCalculator::calculate(tracker);
+                result.finalize();
+                result
+            })
+            .ok_or_else(|| GitTypeError::TerminalError("No total tracker available".to_string()))?;
+
+        Ok(Box::new(TotalSummaryScreenData { total_result }))
+    }
+}
 
 #[derive(Debug)]
 pub enum ExitAction {
@@ -25,6 +52,7 @@ pub enum ExitAction {
 
 pub struct TotalSummaryScreen {
     displayed: bool,
+    total_result: Option<TotalResult>,
     event_bus: EventBus,
 }
 
@@ -32,6 +60,7 @@ impl TotalSummaryScreen {
     pub fn new(event_bus: EventBus) -> Self {
         Self {
             displayed: false,
+            total_result: None,
             event_bus,
         }
     }
@@ -71,22 +100,33 @@ impl TotalSummaryScreen {
         Ok(())
     }
 
-    fn get_total_result_from_tracker() -> Option<TotalResult> {
-        if let Ok(global_total_tracker) = GLOBAL_TOTAL_TRACKER.lock() {
-            (*global_total_tracker)
-                .as_ref()
-                .map(TotalCalculator::calculate)
-        } else {
-            None
-        }
-    }
 }
 
 impl Screen for TotalSummaryScreen {
-    fn init(&mut self) -> Result<()> {
-        self.displayed = false;
+    fn get_type(&self) -> ScreenType {
+        ScreenType::TotalSummary
+    }
+
+    fn default_provider() -> Box<dyn crate::presentation::game::ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(TotalSummaryScreenDataProvider {
+            total_tracker: GLOBAL_TOTAL_TRACKER.clone(),
+        })
+    }
+
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Crossterm
+    }
+
+    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
+        let screen_data = data.downcast::<TotalSummaryScreenData>()?;
+        self.total_result = Some(screen_data.total_result);
+        self.displayed = false; // Reset displayed flag to allow re-rendering
         Ok(())
     }
+
 
     fn handle_key_event(&mut self, key_event: event::KeyEvent) -> Result<()> {
         match key_event.code {
@@ -109,15 +149,12 @@ impl Screen for TotalSummaryScreen {
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut Stdout,
-        _session_result: Option<&SessionResult>,
-        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         if !self.displayed {
-            let mut total_result = Self::get_total_result_from_tracker().unwrap_or_default();
-            total_result.finalize(); // Ensure MAX values are converted to 0.0
-
-            let _ = TotalSummaryScreen::show(&total_result);
-            self.displayed = true;
+            if let Some(total_result) = &self.total_result {
+                let _ = TotalSummaryScreen::show(total_result);
+                self.displayed = true;
+            }
         }
         Ok(())
     }
