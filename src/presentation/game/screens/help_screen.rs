@@ -1,8 +1,7 @@
 use crate::domain::events::EventBus;
 use crate::domain::models::rank::{Rank, RankTier};
-use crate::domain::models::{SessionResult, TotalResult};
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::{Screen, UpdateStrategy};
+use crate::presentation::game::{RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyModifiers};
@@ -1036,7 +1035,34 @@ impl HelpScreen {
     }
 }
 
+pub struct HelpScreenDataProvider;
+
+impl ScreenDataProvider for HelpScreenDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        Ok(Box::new(()))
+    }
+}
+
 impl Screen for HelpScreen {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::Help
+    }
+
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(HelpScreenDataProvider)
+    }
+
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Ratatui
+    }
+
+    fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> crate::Result<()> {
+        Ok(())
+    }
+
     fn handle_key_event(
         &mut self,
         key_event: crossterm::event::KeyEvent,
@@ -1119,8 +1145,6 @@ impl Screen for HelpScreen {
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut std::io::Stdout,
-        _session_result: Option<&SessionResult>,
-        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         // HelpScreen only supports ratatui rendering
         Ok(())

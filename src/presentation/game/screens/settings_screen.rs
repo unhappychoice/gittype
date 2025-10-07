@@ -1,11 +1,10 @@
 use crate::domain::events::EventBus;
 use crate::domain::models::color_mode::ColorMode;
 use crate::domain::models::theme::Theme;
-use crate::domain::models::{SessionResult, TotalResult};
 use crate::domain::services::config_manager::ConfigService;
 use crate::domain::services::theme_manager::THEME_MANAGER;
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::{Screen};
+use crate::presentation::game::{RenderBackend, Screen, ScreenType};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
@@ -310,7 +309,34 @@ impl SettingsScreen {
     }
 }
 
+pub struct SettingsScreenDataProvider;
+
+impl crate::presentation::game::ScreenDataProvider for SettingsScreenDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        Ok(Box::new(()))
+    }
+}
+
 impl Screen for SettingsScreen {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::Settings
+    }
+
+    fn default_provider() -> Box<dyn crate::presentation::game::ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(SettingsScreenDataProvider)
+    }
+
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Ratatui
+    }
+
+    fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
+        Ok(())
+    }
+
     fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()> {
         match key_event.code {
             KeyCode::Left | KeyCode::Char('h') => {
@@ -396,8 +422,6 @@ impl Screen for SettingsScreen {
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut Stdout,
-        _session_result: Option<&SessionResult>,
-        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         // This should not be used for ratatui screens
         Ok(())
