@@ -1,16 +1,16 @@
 use crate::domain::events::EventBus;
-use crate::domain::models::{DifficultyLevel, GitRepository, SessionResult, TotalResult};
+use crate::domain::models::{DifficultyLevel, GitRepository};
 use crate::presentation::game::events::NavigateTo;
+use crate::presentation::game::models::ScreenDataProvider;
 use crate::presentation::game::views::title::{DifficultySelectionView, StaticElementsView};
-use crate::presentation::game::{
-    GameData, Screen, ScreenType, StageRepository, UpdateStrategy,
-};
-use crate::Result;
+use crate::presentation::game::{GameData, RenderBackend, Screen, ScreenType, StageRepository, UpdateStrategy};
+use crate::{GitTypeError, Result};
 use crossterm::{
     event::{KeyCode, KeyEvent, KeyModifiers},
     terminal::{self},
 };
 use std::io::Stdout;
+use std::sync::{Arc, Mutex};
 
 const DIFFICULTIES: [(&str, DifficultyLevel); 5] = [
     ("Easy", DifficultyLevel::Easy),
@@ -19,6 +19,35 @@ const DIFFICULTIES: [(&str, DifficultyLevel); 5] = [
     ("Wild", DifficultyLevel::Wild),
     ("Zen", DifficultyLevel::Zen),
 ];
+
+pub struct TitleScreenData {
+    pub challenge_counts: [usize; 5],
+    pub git_repository: Option<GitRepository>,
+}
+
+pub struct TitleScreenDataProvider {
+    stage_repository: Arc<Mutex<StageRepository>>,
+    game_data: Arc<Mutex<GameData>>,
+}
+
+impl ScreenDataProvider for TitleScreenDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        let challenge_counts = self.stage_repository
+            .lock()
+            .map_err(|e| GitTypeError::TerminalError(format!("Failed to lock StageRepository: {}", e)))?
+            .count_challenges_by_difficulty();
+
+        let git_repository = self.game_data
+            .lock()
+            .map_err(|e| GitTypeError::TerminalError(format!("Failed to lock GameData: {}", e)))?
+            .repository();
+
+        Ok(Box::new(TitleScreenData {
+            challenge_counts,
+            git_repository,
+        }))
+    }
+}
 
 #[derive(Clone, Debug)]
 pub enum TitleAction {
@@ -84,18 +113,35 @@ impl TitleScreen {
 }
 
 impl Screen for TitleScreen {
-    fn init(&mut self) -> Result<()> {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::Title
+    }
+
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(TitleScreenDataProvider {
+            stage_repository: StageRepository::instance(),
+            game_data: GameData::instance(),
+        })
+    }
+
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Crossterm
+    }
+
+    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         self.action_result = None;
         self.needs_render = true;
 
-        // Update challenge counts from StageRepository when initializing
-        if let Ok(stage_repo) = StageRepository::instance().lock() {
-            let challenge_counts = stage_repo.count_challenges_by_difficulty();
-            self.challenge_counts = challenge_counts;
-        }
+        let screen_data = data.downcast::<TitleScreenData>()?;
+        self.challenge_counts = screen_data.challenge_counts;
+        self.git_repository = screen_data.git_repository;
 
         Ok(())
     }
+
 
     fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()> {
         match key_event.code {
@@ -167,16 +213,13 @@ impl Screen for TitleScreen {
     fn render_crossterm_with_data(
         &mut self,
         stdout: &mut Stdout,
-        _session_result: Option<&SessionResult>,
-        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         let (terminal_width, terminal_height) = terminal::size()?;
         let center_row = terminal_height / 2;
         let center_col = terminal_width / 2;
 
-        // Get git repository from global GameData or use local one as fallback
-        let binding = GameData::get_git_repository();
-        let git_repo_to_use = binding.as_ref().or(self.git_repository.as_ref());
+        // Use local git repository
+        let git_repo_to_use = self.git_repository.as_ref();
         let difficulties_array = &DIFFICULTIES;
 
         StaticElementsView::draw(stdout, center_row, center_col, git_repo_to_use)?;

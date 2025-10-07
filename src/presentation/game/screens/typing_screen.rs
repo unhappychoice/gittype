@@ -4,15 +4,14 @@ use super::super::{
 };
 use crate::domain::events::domain_events::DomainEvent;
 use crate::domain::events::EventBus;
-use crate::domain::models::{Challenge, Countdown, SessionResult, TotalResult};
+use crate::domain::models::{Challenge, Countdown};
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::{
-    game_data::GameData, views::TypingView, Screen, UpdateStrategy,
-};
+use crate::presentation::game::{game_data::GameData, views::TypingView, RenderBackend, Screen, ScreenDataProvider, UpdateStrategy};
 use crate::presentation::game::{ScreenType, SessionManager};
 use crate::{domain::models::GitRepository, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use std::io::Stdout;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 pub struct TypingScreen {
@@ -25,6 +24,7 @@ pub struct TypingScreen {
     dialog_shown: bool,
     typing_view: TypingView,
     event_bus: EventBus,
+    session_manager: Arc<Mutex<SessionManager>>,
 }
 
 pub enum SessionState {
@@ -39,8 +39,8 @@ pub enum SessionState {
 }
 
 impl TypingScreen {
-    pub fn new(event_bus: EventBus) -> Result<Self> {
-        Ok(Self {
+    pub fn new(event_bus: EventBus) -> Self {
+        Self {
             countdown: Countdown::new(),
             git_repository: GameData::instance()
                 .lock()
@@ -53,12 +53,19 @@ impl TypingScreen {
             dialog_shown: false,
             typing_view: TypingView::new(),
             event_bus,
-        })
+            session_manager: SessionManager::instance(),
+        }
     }
 
     /// Load the current challenge from global SessionManager
     pub fn load_current_challenge(&mut self) -> Result<bool> {
-        if let Some(challenge) = SessionManager::get_global_current_challenge()? {
+        let challenge = if let Ok(session_manager) = self.session_manager.lock() {
+            session_manager.get_current_challenge()?
+        } else {
+            None
+        };
+
+        if let Some(challenge) = challenge {
             let comment_ranges = &challenge.comment_ranges;
             let options = ProcessingOptions {
                 preserve_empty_lines: true,
@@ -71,7 +78,11 @@ impl TypingScreen {
             self.countdown = Countdown::new();
             self.challenge = Some(challenge.clone());
             // Update git_repository from GameData
-            self.git_repository = GameData::get_git_repository();
+            self.git_repository = if let Ok(game_data) = GameData::instance().lock() {
+                game_data.repository()
+            } else {
+                None
+            };
             self.waiting_to_start = true;
             self.dialog_shown = false;
 
@@ -250,7 +261,11 @@ impl TypingScreen {
 
     fn handle_skip_action(&mut self) -> Result<SessionState> {
         self.close_dialog();
-        let skips_remaining = SessionManager::get_global_skips_remaining().unwrap_or(0);
+        let skips_remaining = if let Ok(session_manager) = self.session_manager.lock() {
+            session_manager.get_skips_remaining().unwrap_or(0)
+        } else {
+            0
+        };
         if skips_remaining > 0 {
             Ok(SessionState::Skip)
         } else {
@@ -337,10 +352,34 @@ impl TypingScreen {
     }
 }
 
+pub struct TypingScreenDataProvider;
+
+impl ScreenDataProvider for TypingScreenDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        Ok(Box::new(()))
+    }
+}
+
 impl Screen for TypingScreen {
-    fn init(&mut self) -> Result<()> {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::Typing
+    }
+
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(TypingScreenDataProvider)
+    }
+
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Ratatui
+    }
+
+    fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
         Ok(())
     }
+
 
     fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()> {
         self.handle_countdown_logic();
@@ -380,8 +419,6 @@ impl Screen for TypingScreen {
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut Stdout,
-        _session_result: Option<&SessionResult>,
-        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         Ok(())
     }
@@ -390,7 +427,11 @@ impl Screen for TypingScreen {
         self.handle_countdown_logic();
 
         let chars: Vec<char> = self.typing_core.text_to_display().chars().collect();
-        let skips_remaining = SessionManager::get_global_skips_remaining().unwrap_or(0);
+        let skips_remaining = if let Ok(session_manager) = self.session_manager.lock() {
+            session_manager.get_skips_remaining().unwrap_or(0)
+        } else {
+            0
+        };
 
         self.typing_view.render(
             frame,
