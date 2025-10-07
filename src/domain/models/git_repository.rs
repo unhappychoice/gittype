@@ -1,3 +1,4 @@
+use crate::GitTypeError;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
@@ -14,9 +15,9 @@ pub struct GitRepository {
 
 impl GitRepository {
     /// Create a GitRepository from a local path
-    pub fn new_local(path: &PathBuf) -> Result<Self, crate::GitTypeError> {
+    pub fn new_local(path: &PathBuf) -> Result<Self, GitTypeError> {
         let repo = git2::Repository::open(path)
-            .map_err(|e| crate::GitTypeError::TerminalError(format!("Failed to open git repository: {}", e)))?;
+            .map_err(|e| GitTypeError::TerminalError(format!("Failed to open git repository: {}", e)))?;
 
         // Get remote URL (origin)
         let remote_url = repo.find_remote("origin")

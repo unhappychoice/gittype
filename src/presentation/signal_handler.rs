@@ -101,12 +101,6 @@ fn show_panic_screen(error_message: &str, screen_manager: &Arc<Mutex<ScreenManag
         .unwrap_or_else(EventBus::new);
     let mut panic_screen = PanicScreen::with_error_message(error_message.to_string(), event_bus);
 
-    // Initialize the panic screen
-    if panic_screen.init().is_err() {
-        cleanup_panic_terminal(terminal_initialized, raw_mode_enabled);
-        return Err(anyhow::anyhow!("Failed to initialize panic screen"));
-    }
-
     let result = panic_screen_loop_ratatui(&mut terminal, &mut panic_screen, error_message);
 
     // Always clean up terminal state
