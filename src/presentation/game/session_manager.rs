@@ -320,7 +320,7 @@ impl SessionManager {
     ) -> Result<()> {
         let instance = Self::instance();
         let mut manager = instance.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
+            GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
         })?;
 
         manager.git_repository = git_repository;
@@ -336,7 +336,7 @@ impl SessionManager {
     ) -> Result<()> {
         let instance = Self::instance();
         let mut manager = instance.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
+            GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
         })?;
 
         manager.stage_trackers.push((stage_name, stage_tracker));
@@ -354,9 +354,56 @@ impl SessionManager {
     }
 
     /// Calculate remaining skips for this session
-    pub fn get_skips_remaining(&self) -> usize {
+    pub fn get_skips_remaining(&self) -> Result<usize> {
         let used = self.get_skips_used();
-        self.config.max_skips.saturating_sub(used)
+        Ok(self.config.max_skips.saturating_sub(used))
+    }
+
+    /// Get stage info (current_stage, total_stages)
+    pub fn get_stage_info(&self) -> Result<(usize, usize)> {
+        let current = match self.state {
+            SessionState::InProgress { current_stage, .. } => current_stage,
+            SessionState::Completed { .. } => {
+                let completed = self
+                    .stage_results
+                    .iter()
+                    .filter(|sr| !sr.was_skipped && !sr.was_failed)
+                    .count();
+                completed.max(1).min(self.config.max_stages)
+            }
+            _ => 0,
+        };
+        Ok((current, self.config.max_stages))
+    }
+
+    /// Check if session is completed
+    pub fn is_session_completed(&self) -> Result<bool> {
+        Ok(matches!(self.state, SessionState::Completed { .. }))
+    }
+
+    /// Get current challenge for the session
+    pub fn get_current_challenge(&self) -> Result<Option<Challenge>> {
+        if matches!(self.state, SessionState::InProgress { .. }) {
+            StageRepository::get_global_challenge_for_difficulty(self.config.difficulty)
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// Get best status for a given score
+    pub fn get_best_status_for_score(&self, score: f64) -> Result<Option<BestStatus>> {
+        log::debug!(
+            "SessionManager::get_best_status_for_score: score={}, best_records_at_start={:?}",
+            score,
+            self.best_records_at_start
+        );
+
+        let best_status = SessionRepository::determine_best_status_with_start_records(
+            score,
+            self.best_records_at_start.as_ref(),
+        );
+
+        Ok(Some(best_status))
     }
 
     /// Start the session
@@ -526,11 +573,6 @@ impl SessionManager {
     // StageTracker Management Methods
     // ============================================
 
-    /// Get current challenge (used by global API)
-    fn get_current_challenge(&self) -> Option<Challenge> {
-        self.get_next_challenge().unwrap_or_default()
-    }
-
     /// Get current stage number (used by global API)
     fn current_stage(&self) -> usize {
         match self.state {
@@ -595,7 +637,7 @@ impl SessionManager {
     /// Complete the current stage and calculate results
     /// Flow: StageTracker -> StageCalculator -> SessionTracker -> SessionCalculator
     pub fn skip_current_stage(&mut self) -> Result<(StageResult, usize, bool)> {
-        if self.get_skips_remaining() == 0 {
+        if self.get_skips_remaining()? == 0 {
             return Err(GitTypeError::TerminalError(
                 "No skips remaining".to_string(),
             ));
@@ -618,7 +660,7 @@ impl SessionManager {
 
                     // Collect data before borrowing conflicts - move tracker out
                     let tracker_clone = self.current_stage_tracker.clone();
-                    let current_challenge = self.get_current_challenge();
+                    let current_challenge = self.get_current_challenge().ok().flatten();
                     let stage_name = format!("Stage {}", self.current_stage());
 
                     // Clear current stage tracker for new challenge
@@ -638,7 +680,7 @@ impl SessionManager {
                     self.stage_results.push(stage_result.clone());
 
                     // Return true to indicate new challenge should be generated
-                    let skips_remaining = self.get_skips_remaining();
+                    let skips_remaining = self.get_skips_remaining()?;
                     Ok((stage_result, skips_remaining, true))
                 } else {
                     Err(GitTypeError::TerminalError(
@@ -670,7 +712,7 @@ impl SessionManager {
 
         // 4. Collect data before borrowing conflicts - move tracker out to avoid borrowing issues
         let tracker_clone = self.current_stage_tracker.clone();
-        let current_challenge = self.get_current_challenge();
+        let current_challenge = self.get_current_challenge().ok().flatten();
         let stage_name = format!("Stage {}", self.current_stage());
 
         // Clear current stage tracker to avoid borrow issues
@@ -707,6 +749,11 @@ impl SessionManager {
         &self.state
     }
 
+    /// Get session result (instance method)
+    pub fn get_session_result(&self) -> Option<SessionResult> {
+        self.generate_session_result()
+    }
+
     /// Set difficulty level for the session
     pub fn set_difficulty(&mut self, difficulty: DifficultyLevel) {
         self.config.difficulty = difficulty;
@@ -721,7 +768,7 @@ impl SessionManager {
     pub fn start_global_session() -> Result<()> {
         let instance = Self::instance();
         let mut manager = instance.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
+            GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
         })?;
 
         manager.start_session()
@@ -730,16 +777,16 @@ impl SessionManager {
     pub fn get_global_current_challenge() -> Result<Option<Challenge>> {
         let instance = Self::instance();
         let manager = instance.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
+            GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
         })?;
 
-        Ok(manager.get_current_challenge())
+        manager.get_current_challenge()
     }
 
     pub fn get_global_stage_info() -> Result<(usize, usize)> {
         let instance = Self::instance();
         let manager = instance.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
+            GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
         })?;
 
         Ok((manager.current_stage(), manager.total_stages()))
@@ -748,7 +795,7 @@ impl SessionManager {
     pub fn is_global_session_completed() -> Result<bool> {
         let instance = Self::instance();
         let manager = instance.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
+            GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
         })?;
 
         Ok(manager.is_completed())
@@ -757,7 +804,7 @@ impl SessionManager {
     pub fn is_global_session_in_progress() -> Result<bool> {
         let instance = Self::instance();
         let manager = instance.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
+            GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
         })?;
 
         Ok(manager.is_in_progress())
@@ -766,28 +813,20 @@ impl SessionManager {
     pub fn get_global_session_result() -> Result<Option<SessionResult>> {
         let instance = Self::instance();
         let manager = instance.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
+            GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
         })?;
 
         Ok(manager.generate_session_result())
     }
 
-    /// Get best status using session start records
-    pub fn get_best_status_for_score(session_score: f64) -> Result<Option<BestStatus>> {
+    /// Get best status using session start records (static method)
+    pub fn get_global_best_status_for_score(session_score: f64) -> Result<Option<BestStatus>> {
         let instance = Self::instance();
         let manager = instance.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
+            GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
         })?;
 
-        log::debug!("SessionManager::get_best_status_for_score: session_score={}, best_records_at_start={:?}", 
-                   session_score, manager.best_records_at_start);
-
-        let best_status = SessionRepository::determine_best_status_with_start_records(
-            session_score,
-            manager.best_records_at_start.as_ref(),
-        );
-
-        Ok(Some(best_status))
+        manager.get_best_status_for_score(session_score)
     }
 
     // ============================================
@@ -801,7 +840,7 @@ impl SessionManager {
     ) -> Result<()> {
         let instance = Self::instance();
         let mut manager = instance.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
+            GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
         })?;
 
         manager.init_stage_tracker(target_text, challenge_path)
@@ -811,7 +850,7 @@ impl SessionManager {
     pub fn set_global_stage_start_time(start_time: Instant) -> Result<()> {
         let instance = Self::instance();
         let mut manager = instance.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
+            GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
         })?;
 
         manager.set_stage_start_time(start_time)
@@ -821,17 +860,17 @@ impl SessionManager {
     pub fn get_global_skips_remaining() -> Result<usize> {
         let instance = Self::instance();
         let manager = instance.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
+            GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
         })?;
 
-        Ok(manager.get_skips_remaining())
+        manager.get_skips_remaining()
     }
 
     /// Reset global SessionManager instance
     pub fn reset_global_session() -> Result<()> {
         let instance = Self::instance();
         let mut manager = instance.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
+            GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
         })?;
 
         manager.reduce(SessionAction::Reset)
@@ -845,7 +884,7 @@ impl SessionManager {
     pub fn on_session_start() -> Result<()> {
         let instance = Self::instance();
         let mut manager = instance.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
+            GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
         })?;
 
         manager.reduce(SessionAction::Start)
@@ -860,7 +899,7 @@ impl SessionManager {
     pub fn on_session_complete() -> Result<()> {
         let instance = Self::instance();
         let manager = instance.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
+            GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
         })?;
 
         manager.record_and_update_trackers()
@@ -870,7 +909,7 @@ impl SessionManager {
     pub fn on_session_retry() -> Result<()> {
         let instance = Self::instance();
         let mut manager = instance.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
+            GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
         })?;
 
         manager.reset();
@@ -881,7 +920,7 @@ impl SessionManager {
     pub fn on_session_failure() -> Result<()> {
         let instance = Self::instance();
         let mut manager = instance.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
+            GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
         })?;
 
         if let Some(ref mut tracker) = manager.current_stage_tracker {

@@ -1,7 +1,7 @@
 use crate::domain::models::{Challenge, DifficultyLevel, GitRepository};
 use crate::presentation::game::screens::TitleScreen;
 use crate::presentation::game::{GameData, ScreenManager, ScreenType};
-use crate::Result;
+use crate::{GitTypeError, Result};
 use once_cell::sync::Lazy;
 use rand::rngs::StdRng;
 use rand::seq::SliceRandom;
@@ -317,7 +317,7 @@ impl StageRepository {
     /// Initialize the global StageRepository
     pub fn initialize_global(git_repository: Option<GitRepository>) -> Result<()> {
         let mut repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!(
+            GitTypeError::TerminalError(format!(
                 "Failed to lock global StageRepository: {}",
                 e
             ))
@@ -331,7 +331,7 @@ impl StageRepository {
     /// Initialize the global StageRepository and build stages
     pub fn initialize_global_with_stages(git_repository: Option<GitRepository>) -> Result<()> {
         let mut repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!(
+            GitTypeError::TerminalError(format!(
                 "Failed to lock global StageRepository: {}",
                 e
             ))
@@ -345,7 +345,7 @@ impl StageRepository {
     /// Set difficulty for the global repository and rebuild stages
     pub fn set_global_difficulty(difficulty: DifficultyLevel) -> Result<()> {
         let mut repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!(
+            GitTypeError::TerminalError(format!(
                 "Failed to lock global StageRepository: {}",
                 e
             ))
@@ -376,7 +376,7 @@ impl StageRepository {
     /// Get the next challenge from the global repository
     pub fn get_next_global_challenge() -> Result<Option<Challenge>> {
         let mut repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!(
+            GitTypeError::TerminalError(format!(
                 "Failed to lock global StageRepository: {}",
                 e
             ))
@@ -394,7 +394,7 @@ impl StageRepository {
     /// Check if there are more challenges available without consuming them
     pub fn has_next_global_challenge() -> Result<bool> {
         let repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!(
+            GitTypeError::TerminalError(format!(
                 "Failed to lock global StageRepository: {}",
                 e
             ))
@@ -406,7 +406,7 @@ impl StageRepository {
     /// Get current stage info (current stage number, total stages)
     pub fn get_global_stage_info() -> Result<(usize, usize)> {
         let repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!(
+            GitTypeError::TerminalError(format!(
                 "Failed to lock global StageRepository: {}",
                 e
             ))
@@ -456,7 +456,7 @@ impl StageRepository {
         difficulty: DifficultyLevel,
     ) -> Result<Option<Challenge>> {
         let mut repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!(
+            GitTypeError::TerminalError(format!(
                 "Failed to lock global StageRepository: {}",
                 e
             ))
@@ -468,7 +468,7 @@ impl StageRepository {
     /// Build difficulty indices for global repository
     pub fn build_global_difficulty_indices() -> Result<()> {
         let mut repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            crate::GitTypeError::TerminalError(format!(
+            GitTypeError::TerminalError(format!(
                 "Failed to lock global StageRepository: {}",
                 e
             ))
