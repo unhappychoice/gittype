@@ -219,5 +219,10 @@ fn handle_game_error(e: GitTypeError) -> Result<()> {
             eprintln!("❌ {}", msg);
             std::process::exit(1);
         }
+        GitTypeError::ScreenInitializationError(msg) => {
+            eprintln!("❌ Screen initialization error: {}", msg);
+            eprintln!("💡 This is an internal error. Please report this issue.");
+            std::process::exit(1);
+        }
     }
 }
