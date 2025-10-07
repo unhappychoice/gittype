@@ -15,8 +15,8 @@ pub mod typing_core;
 pub mod views;
 
 pub use game_data::GameData;
-pub use models::{Screen, ScreenTransition, ScreenType, UpdateStrategy};
-pub use screen_manager::{RenderBackend, ScreenManager};
+pub use models::{RenderBackend, Screen, ScreenDataProvider, ScreenTransition, ScreenType, UpdateStrategy};
+pub use screen_manager::ScreenManager;
 pub use screens::TypingScreen;
 pub use session_manager::{SessionConfig, SessionManager, SessionState};
 pub use stage_repository::{GameMode, StageConfig, StageRepository};
