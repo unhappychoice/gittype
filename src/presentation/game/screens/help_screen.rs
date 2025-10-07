@@ -1,7 +1,9 @@
 use crate::domain::events::EventBus;
 use crate::domain::models::rank::{Rank, RankTier};
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::{RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::game::{
+    RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
+};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyModifiers};
@@ -1063,10 +1065,7 @@ impl Screen for HelpScreen {
         Ok(())
     }
 
-    fn handle_key_event(
-        &mut self,
-        key_event: crossterm::event::KeyEvent,
-    ) -> crate::Result<()> {
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> crate::Result<()> {
         if self.github_fallback.is_some() {
             match key_event.code {
                 KeyCode::Esc => {
@@ -1142,10 +1141,7 @@ impl Screen for HelpScreen {
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut std::io::Stdout,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut std::io::Stdout) -> Result<()> {
         // HelpScreen only supports ratatui rendering
         Ok(())
     }

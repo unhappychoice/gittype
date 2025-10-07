@@ -44,7 +44,7 @@ pub struct ExecutionContext<'a> {
     pub current_repo_path: Option<PathBuf>,
     pub git_repository: Option<GitRepository>,
     pub scanned_files: Option<Vec<PathBuf>>, // Temporary storage for step results
-    pub chunks: Option<Vec<CodeChunk>>, // Chunks from ExtractingStep
+    pub chunks: Option<Vec<CodeChunk>>,      // Chunks from ExtractingStep
     pub cache_used: bool, // Flag to indicate cache was used and remaining steps should be skipped
 }
 

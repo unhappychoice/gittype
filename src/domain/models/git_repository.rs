@@ -16,11 +16,13 @@ pub struct GitRepository {
 impl GitRepository {
     /// Create a GitRepository from a local path
     pub fn new_local(path: &PathBuf) -> Result<Self, GitTypeError> {
-        let repo = git2::Repository::open(path)
-            .map_err(|e| GitTypeError::TerminalError(format!("Failed to open git repository: {}", e)))?;
+        let repo = git2::Repository::open(path).map_err(|e| {
+            GitTypeError::TerminalError(format!("Failed to open git repository: {}", e))
+        })?;
 
         // Get remote URL (origin)
-        let remote_url = repo.find_remote("origin")
+        let remote_url = repo
+            .find_remote("origin")
             .ok()
             .and_then(|remote| remote.url().map(|s| s.to_string()))
             .unwrap_or_else(|| format!("file://{}", path.display()));
@@ -28,7 +30,8 @@ impl GitRepository {
         // Extract user_name and repository_name from path or URL
         let (user_name, repository_name) = if remote_url.starts_with("file://") {
             // Use directory name as repository name
-            let repo_name = path.file_name()
+            let repo_name = path
+                .file_name()
                 .and_then(|n| n.to_str())
                 .unwrap_or("unknown")
                 .to_string();
@@ -38,16 +41,21 @@ impl GitRepository {
         };
 
         // Get current branch
-        let branch = repo.head().ok()
+        let branch = repo
+            .head()
+            .ok()
             .and_then(|head| head.shorthand().map(|s| s.to_string()));
 
         // Get current commit hash
-        let commit_hash = repo.head().ok()
+        let commit_hash = repo
+            .head()
+            .ok()
             .and_then(|head| head.target())
             .map(|oid| oid.to_string());
 
         // Check if repository is dirty
-        let is_dirty = repo.statuses(None)
+        let is_dirty = repo
+            .statuses(None)
             .map(|statuses| !statuses.is_empty())
             .unwrap_or(false);
 
@@ -75,10 +83,16 @@ impl GitRepository {
             }
         }
 
-        if let Some(url_without_protocol) = url.strip_prefix("https://").or_else(|| url.strip_prefix("http://")) {
+        if let Some(url_without_protocol) = url
+            .strip_prefix("https://")
+            .or_else(|| url.strip_prefix("http://"))
+        {
             let parts: Vec<&str> = url_without_protocol.split('/').collect();
             if parts.len() >= 3 {
-                return (parts[1].to_string(), parts[2].trim_end_matches(".git").to_string());
+                return (
+                    parts[1].to_string(),
+                    parts[2].trim_end_matches(".git").to_string(),
+                );
             }
         }
 

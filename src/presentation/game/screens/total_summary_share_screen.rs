@@ -24,11 +24,13 @@ pub struct TotalSummaryShareDataProvider {
 
 impl ScreenDataProvider for TotalSummaryShareDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let total_result = self.total_tracker.lock()
+        let total_result = self
+            .total_tracker
+            .lock()
             .map_err(|_| GitTypeError::TerminalError("Failed to lock TotalTracker".to_string()))?
             .as_ref()
             .ok_or_else(|| GitTypeError::TerminalError("No total tracker available".to_string()))
-            .map(|tracker| TotalCalculator::calculate(tracker))?;
+            .map(TotalCalculator::calculate)?;
 
         Ok(Box::new(TotalSummaryShareData { total_result }))
     }
@@ -172,10 +174,7 @@ impl Screen for TotalSummaryShareScreen {
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        stdout: &mut Stdout,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, stdout: &mut Stdout) -> Result<()> {
         let current_fallback_state = self.fallback_url.is_some();
 
         if current_fallback_state != self.last_fallback_state {

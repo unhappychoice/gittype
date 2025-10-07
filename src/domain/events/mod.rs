@@ -31,9 +31,7 @@ impl EventBus {
         // Clone Arc<handlers> while holding the lock, then release it before calling them
         let handlers: Vec<BoxedHandler> = {
             let subscribers = self.subscribers.read().unwrap();
-            let h = subscribers.get(&type_id)
-                .map(|h| h.clone())
-                .unwrap_or_default();
+            let h = subscribers.get(&type_id).cloned().unwrap_or_default();
             h
         }; // Lock is released here
 
@@ -56,10 +54,7 @@ impl EventBus {
             }
         });
 
-        subscribers
-            .entry(type_id)
-            .or_insert_with(Vec::new)
-            .push(boxed_handler);
+        subscribers.entry(type_id).or_default().push(boxed_handler);
     }
 }
 

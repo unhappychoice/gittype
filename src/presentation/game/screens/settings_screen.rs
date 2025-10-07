@@ -419,10 +419,7 @@ impl Screen for SettingsScreen {
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut Stdout,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
         // This should not be used for ratatui screens
         Ok(())
     }

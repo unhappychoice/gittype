@@ -55,10 +55,7 @@ impl Challenge {
         self
     }
 
-    pub fn from_chunk(
-        chunk: &CodeChunk,
-        difficulty: Option<DifficultyLevel>,
-    ) -> Option<Self> {
+    pub fn from_chunk(chunk: &CodeChunk, difficulty: Option<DifficultyLevel>) -> Option<Self> {
         // Early validation
         if chunk.content.trim().is_empty() {
             return None;

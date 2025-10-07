@@ -39,13 +39,18 @@ use crate::presentation::game::screens::{
     SessionSummaryScreen, SessionSummaryShareScreen, SettingsScreen, StageSummaryScreen,
     TitleAction, TitleScreen, TotalSummaryScreen, TotalSummaryShareScreen, VersionCheckScreen,
 };
-use crate::presentation::game::{GameData, RenderBackend, Screen, ScreenDataProvider, ScreenTransition, ScreenType, SessionManager, StageRepository, TypingScreen, UpdateStrategy};
+use crate::presentation::game::{
+    GameData, RenderBackend, Screen, ScreenDataProvider, ScreenTransition, ScreenType,
+    SessionManager, StageRepository, TypingScreen, UpdateStrategy,
+};
 use crate::{GitTypeError, Result};
 use crossterm::cursor::{Hide, Show};
 use crossterm::event::{poll, read, Event, KeyCode, KeyEventKind, KeyModifiers};
 use crossterm::execute;
 use crossterm::style::ResetColor;
-use crossterm::terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen};
+use crossterm::terminal::{
+    disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen,
+};
 use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
 use std::collections::HashMap;
@@ -110,9 +115,9 @@ impl ScreenManager {
         {
             let pending_transition_clone = pending_transition.clone();
             event_bus.subscribe(move |event: &NavigateTo| {
-                pending_transition_clone.lock().ok().map(|mut pending| {
+                if let Ok(mut pending) = pending_transition_clone.lock() {
                     *pending = Some(event.clone());
-                });
+                }
             });
         }
 
@@ -120,12 +125,12 @@ impl ScreenManager {
         {
             let manager_weak_clone = manager_weak.clone();
             event_bus.subscribe(move |_event: &ExitRequested| {
-                manager_weak_clone.upgrade().map(|arc| {
-                    arc.lock().ok().map(|mut manager| {
+                if let Some(arc) = manager_weak_clone.upgrade() {
+                    if let Ok(mut manager) = arc.lock() {
                         manager.show_session_summary_on_interrupt();
                         std::process::exit(0);
-                    });
-                });
+                    }
+                }
             });
         }
     }
@@ -211,10 +216,9 @@ impl ScreenManager {
 
     pub fn cleanup_terminal(&mut self) -> Result<()> {
         if self.terminal_initialized {
-            execute!(stdout(),LeaveAlternateScreen,Show)
-                .map_err(|e| {
-                    GitTypeError::TerminalError(format!("Failed to restore terminal: {}", e))
-                })?;
+            execute!(stdout(), LeaveAlternateScreen, Show).map_err(|e| {
+                GitTypeError::TerminalError(format!("Failed to restore terminal: {}", e))
+            })?;
 
             disable_raw_mode().map_err(|e| {
                 GitTypeError::TerminalError(format!("Failed to disable raw mode: {}", e))
@@ -345,7 +349,10 @@ impl ScreenManager {
 
         // Call on_pushed_from to allow the new screen to extract data from source screen
         // We need to split borrow screens HashMap to access both source and destination
-        let source_ptr = self.screens.get(&source_screen_type).map(|s| s.as_ref() as *const dyn Screen);
+        let source_ptr = self
+            .screens
+            .get(&source_screen_type)
+            .map(|s| s.as_ref() as *const dyn Screen);
 
         if let Some(source_ptr) = source_ptr {
             if let Some(new_screen) = self.screens.get_mut(&self.current_screen_type) {
@@ -387,17 +394,14 @@ impl ScreenManager {
                 self.prepare_screen_if_needed(&screen_type)?;
                 self.push_screen(screen_type)
             }
-            ScreenTransition::Pop => {
-                self.pop_screen()
-            }
+            ScreenTransition::Pop => self.pop_screen(),
             ScreenTransition::Replace(screen_type) => {
                 // Use ScreenTransitionManager to handle transition with side effects
                 let validated_screen_type =
                     ScreenTransitionManager::reduce(self.current_screen_type.clone(), screen_type)?;
 
                 self.prepare_screen_if_needed(&validated_screen_type)?;
-                let result = self.set_current_screen(validated_screen_type);
-                result
+                self.set_current_screen(validated_screen_type)
             }
             ScreenTransition::PopTo(screen_type) => {
                 // Use ScreenTransitionManager to handle transition with side effects
@@ -425,7 +429,9 @@ impl ScreenManager {
         match screen_type {
             ScreenType::Typing => {
                 // Check if coming from Title screen and apply selected difficulty
-                let selected_difficulty = self.screens.get(&ScreenType::Title)
+                let selected_difficulty = self
+                    .screens
+                    .get(&ScreenType::Title)
                     .and_then(|title_screen| title_screen.as_any().downcast_ref::<TitleScreen>())
                     .and_then(|title| title.get_action_result())
                     .and_then(|action| match action {
@@ -434,20 +440,22 @@ impl ScreenManager {
                     });
 
                 // Apply difficulty to global repositories if found
-                selected_difficulty.map(|difficulty| {
-                    StageRepository::set_global_difficulty(difficulty)?;
+                selected_difficulty
+                    .map(|difficulty| {
+                        StageRepository::set_global_difficulty(difficulty)?;
 
-                    // Also set difficulty in SessionManager
-                    SessionManager::instance()
-                        .lock()
-                        .ok()
-                        .map(|mut session_manager| session_manager.set_difficulty(difficulty));
+                        // Also set difficulty in SessionManager
+                        if let Ok(mut session_manager) = SessionManager::instance().lock() {
+                            session_manager.set_difficulty(difficulty);
+                        }
 
-                    Ok::<_, GitTypeError>(())
-                }).transpose()?;
+                        Ok::<_, GitTypeError>(())
+                    })
+                    .transpose()?;
 
                 // Load next challenge in TypingScreen
-                self.screens.get_mut(&ScreenType::Typing)
+                self.screens
+                    .get_mut(&ScreenType::Typing)
                     .and_then(|screen| screen.as_any_mut().downcast_mut::<TypingScreen>())
                     .map(|screen| screen.load_current_challenge())
                     .transpose()?
@@ -455,7 +463,9 @@ impl ScreenManager {
                         if loaded {
                             Ok(())
                         } else {
-                            Err(GitTypeError::TerminalError("No challenges available. ".to_string()))
+                            Err(GitTypeError::TerminalError(
+                                "No challenges available. ".to_string(),
+                            ))
                         }
                     })
                     .transpose()?;
@@ -472,11 +482,13 @@ impl ScreenManager {
 
     fn configure_session_detail_from_history(&mut self) -> Result<()> {
         // Get the selected session data from History screen and configure SessionDetail screen
-        self.screens.get(&ScreenType::Records)
+        self.screens
+            .get(&ScreenType::Records)
             .and_then(|records_screen| records_screen.as_any().downcast_ref::<RecordsScreen>())
             .and_then(|records| records.get_selected_session_for_detail().clone())
             .map(|session_data| {
-                self.screens.get_mut(&ScreenType::SessionDetail)
+                self.screens
+                    .get_mut(&ScreenType::SessionDetail)
                     .and_then(|screen| screen.as_any_mut().downcast_mut::<SessionDetailScreen>())
                     .map(|screen| screen.set_session_data(session_data))
                     .transpose()?;
@@ -501,7 +513,9 @@ impl ScreenManager {
 
             // Check for pending screen transitions
             let pending_transition = {
-                self.pending_transition.lock().ok()
+                self.pending_transition
+                    .lock()
+                    .ok()
                     .and_then(|mut pending| pending.take())
             };
 
@@ -631,13 +645,12 @@ impl ScreenManager {
                         self.render_current_screen()?;
                     } else {
                         // For Crossterm screens, check if update is needed
-                        let needs_render = if let Some(screen) =
-                            self.screens.get_mut(&self.current_screen_type)
-                        {
-                            screen.update()?
-                        } else {
-                            false
-                        };
+                        let needs_render =
+                            if let Some(screen) = self.screens.get_mut(&self.current_screen_type) {
+                                screen.update()?
+                            } else {
+                                false
+                            };
 
                         if needs_render {
                             self.render_current_screen()?;

@@ -6,7 +6,12 @@ use crate::domain::repositories::SessionRepository;
 use crate::domain::services::scoring::{
     SessionCalculator, SessionTracker, StageCalculator, GLOBAL_TOTAL_TRACKER,
 };
-use crate::{domain::models::{Challenge, DifficultyLevel, SessionResult}, domain::services::scoring::{StageInput, StageResult, StageTracker, GLOBAL_SESSION_TRACKER}, presentation::game::stage_repository::StageRepository, GitTypeError, Result};
+use crate::{
+    domain::models::{Challenge, DifficultyLevel, SessionResult},
+    domain::services::scoring::{StageInput, StageResult, StageTracker, GLOBAL_SESSION_TRACKER},
+    presentation::game::stage_repository::StageRepository,
+    GitTypeError, Result,
+};
 use once_cell::sync::Lazy;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -102,7 +107,8 @@ impl SessionManager {
         let instance_arc = Self::instance();
         let instance_weak = Arc::downgrade(&instance_arc);
 
-        let event_bus = instance_arc.lock()
+        let event_bus = instance_arc
+            .lock()
             .ok()
             .map(|mgr| mgr.event_bus.clone())
             .expect("Failed to get EventBus from SessionManager");
@@ -114,7 +120,10 @@ impl SessionManager {
         self.event_bus.clone()
     }
 
-    fn setup_event_subscriptions_internal(bus: &EventBus, instance: &std::sync::Weak<Mutex<SessionManager>>) {
+    fn setup_event_subscriptions_internal(
+        bus: &EventBus,
+        instance: &std::sync::Weak<Mutex<SessionManager>>,
+    ) {
         let instance = instance.clone();
 
         // Subscribe to unified DomainEvent with pattern matching
@@ -125,7 +134,11 @@ impl SessionManager {
                         DomainEvent::ChallengeLoaded { text, source_path } => {
                             let _ = manager.init_stage_tracker(
                                 text.clone(),
-                                if source_path.is_empty() { None } else { Some(source_path.clone()) }
+                                if source_path.is_empty() {
+                                    None
+                                } else {
+                                    Some(source_path.clone())
+                                },
                             );
                         }
                         DomainEvent::StageStarted { start_time } => {
@@ -315,9 +328,7 @@ impl SessionManager {
     }
 
     /// Set git repository context for the session
-    pub fn set_git_repository(
-        git_repository: Option<GitRepository>,
-    ) -> Result<()> {
+    pub fn set_git_repository(git_repository: Option<GitRepository>) -> Result<()> {
         let instance = Self::instance();
         let mut manager = instance.lock().map_err(|e| {
             GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
@@ -503,10 +514,7 @@ impl SessionManager {
     }
 
     /// Record session to database
-    fn record_session_to_database(
-        &self,
-        session_result: &SessionResult,
-    ) -> Result<()> {
+    fn record_session_to_database(&self, session_result: &SessionResult) -> Result<()> {
         // Get game mode and difficulty from global repositories or session config
         let game_mode = format!("{:?}", self.config.difficulty);
 
@@ -929,8 +937,7 @@ impl SessionManager {
             manager.reduce(SessionAction::CompleteStage(stage_result))?;
         }
 
-        let result = manager.reduce(SessionAction::Abort);
-        result
+        manager.reduce(SessionAction::Abort)
     }
 }
 

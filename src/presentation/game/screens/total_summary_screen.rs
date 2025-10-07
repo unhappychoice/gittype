@@ -29,9 +29,12 @@ pub struct TotalSummaryScreenDataProvider {
 
 impl ScreenDataProvider for TotalSummaryScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let total_result = self.total_tracker
+        let total_result = self
+            .total_tracker
             .lock()
-            .map_err(|e| GitTypeError::TerminalError(format!("Failed to lock total tracker: {}", e)))?
+            .map_err(|e| {
+                GitTypeError::TerminalError(format!("Failed to lock total tracker: {}", e))
+            })?
             .as_ref()
             .map(|tracker| {
                 let mut result = TotalCalculator::calculate(tracker);
@@ -99,7 +102,6 @@ impl TotalSummaryScreen {
         stdout.flush()?;
         Ok(())
     }
-
 }
 
 impl Screen for TotalSummaryScreen {
@@ -127,11 +129,11 @@ impl Screen for TotalSummaryScreen {
         Ok(())
     }
 
-
     fn handle_key_event(&mut self, key_event: event::KeyEvent) -> Result<()> {
         match key_event.code {
             KeyCode::Char('s') | KeyCode::Char('S') => {
-                self.event_bus.publish(NavigateTo::Push(ScreenType::TotalSummaryShare));
+                self.event_bus
+                    .publish(NavigateTo::Push(ScreenType::TotalSummaryShare));
                 Ok(())
             }
             KeyCode::Esc => {
@@ -146,10 +148,7 @@ impl Screen for TotalSummaryScreen {
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut Stdout,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
         if !self.displayed {
             if let Some(total_result) = &self.total_result {
                 let _ = TotalSummaryScreen::show(total_result);

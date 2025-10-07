@@ -101,16 +101,18 @@ pub struct LoadingScreenDataProvider {
 
 impl ScreenDataProvider for LoadingScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let processing_params = self.game_data.lock()
+        let processing_params = self
+            .game_data
+            .lock()
             .map_err(|e| GitTypeError::TerminalError(format!("Failed to lock game data: {}", e)))?
             .processing_parameters()
-            .map(|(repo_spec, repo_path, extraction_options)| {
-                ProcessingParams {
+            .map(
+                |(repo_spec, repo_path, extraction_options)| ProcessingParams {
                     repo_spec,
                     repo_path,
                     extraction_options,
-                }
-            });
+                },
+            );
 
         Ok(Box::new(LoadingScreenData { processing_params }))
     }
@@ -209,10 +211,7 @@ impl LoadingScreen {
         Ok(())
     }
 
-    pub fn set_git_repository(
-        &self,
-        git_repository: &GitRepository,
-    ) -> Result<()> {
+    pub fn set_git_repository(&self, git_repository: &GitRepository) -> Result<()> {
         let mut parts = vec![format!(
             "📁 {}/{}",
             git_repository.user_name, git_repository.repository_name
@@ -390,8 +389,11 @@ impl Screen for LoadingScreen {
     fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         let loading_data = data.downcast::<LoadingScreenData>()?;
 
-        let params = loading_data.processing_params
-            .ok_or_else(|| GitTypeError::ScreenInitializationError("No processing parameters found in LoadingScreenData".to_string()))?;
+        let params = loading_data.processing_params.ok_or_else(|| {
+            GitTypeError::ScreenInitializationError(
+                "No processing parameters found in LoadingScreenData".to_string(),
+            )
+        })?;
 
         self.start_background_processing(
             params.repo_spec.as_deref(),
@@ -402,11 +404,7 @@ impl Screen for LoadingScreen {
         self.show_initial()
     }
 
-
-    fn handle_key_event(
-        &mut self,
-        key_event: crossterm::event::KeyEvent,
-    ) -> Result<()> {
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
 
         if key_event.code == KeyCode::Char('c')
@@ -418,10 +416,7 @@ impl Screen for LoadingScreen {
         Ok(())
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut std::io::Stdout,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut std::io::Stdout) -> Result<()> {
         Ok(())
     }
 
@@ -446,9 +441,12 @@ impl Screen for LoadingScreen {
     }
 
     fn update(&mut self) -> Result<bool> {
-        if self.game_data.lock()
+        if self
+            .game_data
+            .lock()
             .map_err(|e| GitTypeError::TerminalError(format!("Failed to lock game data: {}", e)))?
-            .completed() {
+            .completed()
+        {
             if let Ok(mut current_step) = self.state.current_step.write() {
                 *current_step = StepType::Completed;
             }
@@ -456,9 +454,12 @@ impl Screen for LoadingScreen {
             return Ok(false);
         }
 
-        if self.game_data.lock()
+        if self
+            .game_data
+            .lock()
             .map_err(|e| GitTypeError::TerminalError(format!("Failed to lock game data: {}", e)))?
-            .failed() {
+            .failed()
+        {
             return Ok(false);
         }
 

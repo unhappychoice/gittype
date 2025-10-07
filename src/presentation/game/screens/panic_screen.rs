@@ -1,7 +1,9 @@
 use crate::domain::events::EventBus;
 use crate::infrastructure::logging::get_current_log_file_path;
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::{RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::game::{
+    RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
+};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::{
@@ -181,11 +183,7 @@ impl Screen for PanicScreen {
         Ok(())
     }
 
-
-    fn handle_key_event(
-        &mut self,
-        key_event: crossterm::event::KeyEvent,
-    ) -> Result<()> {
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         use crossterm::event::KeyCode;
         match key_event.code {
             KeyCode::Esc => {
@@ -196,10 +194,7 @@ impl Screen for PanicScreen {
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut Stdout,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
         // This is a fallback - panic screen should use ratatui
         Ok(())
     }

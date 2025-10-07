@@ -58,9 +58,7 @@ impl Step for GeneratingStep {
 
     fn execute(&self, context: &mut ExecutionContext) -> Result<StepResult> {
         let chunks = context.chunks.take().ok_or_else(|| {
-            GitTypeError::ExtractionFailed(
-                "No chunks available from ExtractingStep".to_string(),
-            )
+            GitTypeError::ExtractionFailed("No chunks available from ExtractingStep".to_string())
         })?;
 
         let screen = context.loading_screen.ok_or_else(|| {

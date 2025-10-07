@@ -1,4 +1,3 @@
-use crate::domain::events::EventBus;
 use crate::infrastructure::logging::{log_error_to_file, log_panic_to_file};
 use crate::presentation::game::events::ExitRequested;
 use crate::presentation::game::models::Screen;
@@ -7,7 +6,9 @@ use crate::presentation::game::screens::PanicScreen;
 use crate::GitTypeError;
 use crossterm::cursor::{Hide, Show};
 use crossterm::execute;
-use crossterm::terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen};
+use crossterm::terminal::{
+    disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen,
+};
 use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
 use std::io::{stdout, Write};
@@ -19,7 +20,7 @@ pub fn setup_signal_handlers(screen_manager: Arc<Mutex<ScreenManager>>) {
     std::panic::set_hook(Box::new(move |panic_info| {
         // Restore terminal to normal state
         let _ = disable_raw_mode();
-        let _ = execute!(std::io::stderr(),LeaveAlternateScreen,Show);
+        let _ = execute!(std::io::stderr(), LeaveAlternateScreen, Show);
 
         // Get panic message
         let message = if let Some(s) = panic_info.payload().downcast_ref::<&str>() {
@@ -66,7 +67,9 @@ pub fn setup_signal_handlers(screen_manager: Arc<Mutex<ScreenManager>>) {
 
     ctrlc::set_handler(move || {
         // Get EventBus from ScreenManager and publish ExitRequested event
-        screen_manager.lock().ok()
+        screen_manager
+            .lock()
+            .ok()
             .map(|manager| manager.get_event_bus().publish(ExitRequested))
             .unwrap_or_else(|| {
                 // Fallback: just cleanup and exit
@@ -78,7 +81,10 @@ pub fn setup_signal_handlers(screen_manager: Arc<Mutex<ScreenManager>>) {
 }
 
 /// Show panic screen using the PanicScreen component with ratatui
-fn show_panic_screen(error_message: &str, screen_manager: &Arc<Mutex<ScreenManager>>) -> anyhow::Result<()> {
+fn show_panic_screen(
+    error_message: &str,
+    screen_manager: &Arc<Mutex<ScreenManager>>,
+) -> anyhow::Result<()> {
     // Initialize terminal for panic screen
     let mut raw_mode_enabled = false;
     let mut terminal_initialized = false;
@@ -96,9 +102,11 @@ fn show_panic_screen(error_message: &str, screen_manager: &Arc<Mutex<ScreenManag
     let mut terminal = Terminal::new(backend)?;
 
     // Get EventBus from ScreenManager
-    let event_bus = screen_manager.lock().ok()
+    let event_bus = screen_manager
+        .lock()
+        .ok()
         .map(|mgr| mgr.get_event_bus())
-        .unwrap_or_else(EventBus::new);
+        .unwrap_or_default();
     let mut panic_screen = PanicScreen::with_error_message(error_message.to_string(), event_bus);
 
     let result = panic_screen_loop_ratatui(&mut terminal, &mut panic_screen, error_message);

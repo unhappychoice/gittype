@@ -4,7 +4,9 @@ use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::{
     OptionsView, RankView, ScoreView, SessionSummaryHeaderView, SummaryView,
 };
-use crate::presentation::game::{GameData, RenderBackend, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy};
+use crate::presentation::game::{
+    GameData, RenderBackend, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
+};
 use crate::{domain::models::GitRepository, GitTypeError, Result};
 use crossterm::{
     cursor::{Hide, MoveTo},
@@ -28,12 +30,14 @@ pub struct SessionSummaryScreenDataProvider {
 
 impl ScreenDataProvider for SessionSummaryScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let session_result = self.session_manager
+        let session_result = self
+            .session_manager
             .lock()
             .map_err(|_| GitTypeError::TerminalError("Failed to lock SessionManager".to_string()))?
             .get_session_result();
 
-        let git_repository = self.game_data
+        let git_repository = self
+            .game_data
             .lock()
             .map_err(|_| GitTypeError::TerminalError("Failed to lock GameData".to_string()))?
             .git_repository
@@ -101,13 +105,15 @@ impl SessionSummaryScreen {
         let best_rank = Rank::for_score(session_result.session_score);
 
         // Get best status using session start records from SessionManager instance
-        let best_status = self.session_manager
+        let best_status = self
+            .session_manager
             .as_ref()
+            .and_then(|manager| manager.lock().ok())
             .and_then(|manager| {
-                manager.lock().ok()
-            })
-            .and_then(|manager| {
-                manager.get_best_status_for_score(session_result.session_score).ok().flatten()
+                manager
+                    .get_best_status_for_score(session_result.session_score)
+                    .ok()
+                    .flatten()
             });
 
         let total_content_height = 4 + 5 + 1 + 3 + 1 + 4 + 2 + 2;
@@ -180,26 +186,25 @@ impl Screen for SessionSummaryScreen {
         Ok(())
     }
 
-
-    fn handle_key_event(
-        &mut self,
-        key_event: crossterm::event::KeyEvent,
-    ) -> Result<()> {
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
 
         match key_event.code {
             KeyCode::Char('d') | KeyCode::Char('D') => {
-                self.event_bus.publish(NavigateTo::Push(ScreenType::DetailsDialog));
+                self.event_bus
+                    .publish(NavigateTo::Push(ScreenType::DetailsDialog));
                 Ok(())
             }
             KeyCode::Char('r') | KeyCode::Char('R') => {
                 self.action_result = Some(ResultAction::Retry);
-                self.event_bus.publish(NavigateTo::Replace(ScreenType::Typing));
+                self.event_bus
+                    .publish(NavigateTo::Replace(ScreenType::Typing));
                 Ok(())
             }
             KeyCode::Char('s') | KeyCode::Char('S') => {
                 self.action_result = Some(ResultAction::Share);
-                self.event_bus.publish(NavigateTo::Push(ScreenType::SessionSharing));
+                self.event_bus
+                    .publish(NavigateTo::Push(ScreenType::SessionSharing));
                 Ok(())
             }
             KeyCode::Char('t') | KeyCode::Char('T') => {
@@ -221,10 +226,7 @@ impl Screen for SessionSummaryScreen {
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut std::io::Stdout,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut std::io::Stdout) -> Result<()> {
         if self.session_result.is_some() {
             let session_result = self.session_result.as_ref().unwrap();
             let git_repository = &self.git_repository;

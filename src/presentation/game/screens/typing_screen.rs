@@ -6,7 +6,10 @@ use crate::domain::events::domain_events::DomainEvent;
 use crate::domain::events::EventBus;
 use crate::domain::models::{Challenge, Countdown};
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::{game_data::GameData, views::TypingView, RenderBackend, Screen, ScreenDataProvider, UpdateStrategy};
+use crate::presentation::game::{
+    game_data::GameData, views::TypingView, RenderBackend, Screen, ScreenDataProvider,
+    UpdateStrategy,
+};
 use crate::presentation::game::{ScreenType, SessionManager};
 use crate::{domain::models::GitRepository, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
@@ -380,7 +383,6 @@ impl Screen for TypingScreen {
         Ok(())
     }
 
-
     fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()> {
         self.handle_countdown_logic();
 
@@ -391,7 +393,8 @@ impl Screen for TypingScreen {
                 // Publish StageFinalized event
                 self.event_bus.publish(DomainEvent::StageFinalized);
                 // Publish NavigateTo event
-                self.event_bus.publish(NavigateTo::Replace(ScreenType::StageSummary));
+                self.event_bus
+                    .publish(NavigateTo::Replace(ScreenType::StageSummary));
                 Ok(())
             }
             SessionState::Exit => {
@@ -403,12 +406,14 @@ impl Screen for TypingScreen {
                 // Publish StageSkipped event
                 self.event_bus.publish(DomainEvent::StageSkipped);
                 // Publish NavigateTo event
-                self.event_bus.publish(NavigateTo::Replace(ScreenType::StageSummary));
+                self.event_bus
+                    .publish(NavigateTo::Replace(ScreenType::StageSummary));
                 Ok(())
             }
             SessionState::Failed => {
                 // Publish NavigateTo event
-                self.event_bus.publish(NavigateTo::Replace(ScreenType::SessionFailure));
+                self.event_bus
+                    .publish(NavigateTo::Replace(ScreenType::SessionFailure));
                 Ok(())
             }
             SessionState::ShowDialog => Ok(()),
@@ -416,10 +421,7 @@ impl Screen for TypingScreen {
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut Stdout,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
         Ok(())
     }
 

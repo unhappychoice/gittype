@@ -24,9 +24,9 @@ impl GameData {
     /// Initialize the global game data instance
     pub fn initialize() -> Result<()> {
         let game_data = Arc::new(Mutex::new(GameData::default()));
-        GLOBAL_GAME_DATA.set(game_data).map_err(|_| {
-            GitTypeError::TerminalError("GameData already initialized".to_string())
-        })?;
+        GLOBAL_GAME_DATA
+            .set(game_data)
+            .map_err(|_| GitTypeError::TerminalError("GameData already initialized".to_string()))?;
         Ok(())
     }
 

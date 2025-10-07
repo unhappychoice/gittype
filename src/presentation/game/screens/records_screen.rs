@@ -5,7 +5,9 @@ use crate::domain::repositories::SessionRepository;
 use crate::infrastructure::database::daos::SessionDao;
 use crate::infrastructure::database::database::{Database, HasDatabase};
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::{RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::game::{
+    RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
+};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use chrono::{DateTime, Local};
@@ -496,17 +498,14 @@ impl Screen for RecordsScreen {
         Ok(())
     }
 
-
-    fn handle_key_event(
-        &mut self,
-        key_event: crossterm::event::KeyEvent,
-    ) -> Result<()> {
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
 
         match key_event.code {
             KeyCode::Esc => {
                 self.action_result = Some(RecordsAction::Return);
-                self.event_bus.publish(NavigateTo::Replace(ScreenType::Title));
+                self.event_bus
+                    .publish(NavigateTo::Replace(ScreenType::Title));
                 Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
@@ -533,7 +532,8 @@ impl Screen for RecordsScreen {
                     if let Some(session) = self.sessions.get(selected_index) {
                         // Store session data for the transition
                         self.selected_session_for_detail = Some(session.clone());
-                        self.event_bus.publish(NavigateTo::Push(ScreenType::SessionDetail));
+                        self.event_bus
+                            .publish(NavigateTo::Push(ScreenType::SessionDetail));
                         return Ok(());
                     }
                 }
@@ -557,10 +557,7 @@ impl Screen for RecordsScreen {
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut std::io::Stdout,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut std::io::Stdout) -> Result<()> {
         // NOTE: History screen should use render_ratatui() instead
         // This render_crossterm_with_data() should not be used
         eprintln!("Warning: Records screen render_crossterm_with_data() called - this should use ratatui backend");

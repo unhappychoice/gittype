@@ -3,7 +3,9 @@ use crate::domain::models::GitRepository;
 use crate::domain::services::scoring::StageTracker;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::session_failure::{content_view, footer_view, header_view};
-use crate::presentation::game::{GameData, RenderBackend, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy};
+use crate::presentation::game::{
+    GameData, RenderBackend, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
+};
 use crate::Result;
 use crossterm::{
     cursor::MoveTo,
@@ -35,23 +37,25 @@ impl ScreenDataProvider for SessionFailureScreenDataProvider {
             1
         };
 
-        let (completed_stages, stage_trackers) = if let Ok(session_manager) = self.session_manager.lock() {
-            let stage_results = session_manager.get_stage_results();
-            let completed = stage_results
-                .iter()
-                .filter(|sr| !sr.was_skipped && !sr.was_failed)
-                .count();
+        let (completed_stages, stage_trackers) =
+            if let Ok(session_manager) = self.session_manager.lock() {
+                let stage_results = session_manager.get_stage_results();
+                let completed = stage_results
+                    .iter()
+                    .filter(|sr| !sr.was_skipped && !sr.was_failed)
+                    .count();
 
-            let trackers = if let Some(current_tracker) = session_manager.get_current_stage_tracker() {
-                vec![("current_stage".to_string(), current_tracker.clone())]
+                let trackers =
+                    if let Some(current_tracker) = session_manager.get_current_stage_tracker() {
+                        vec![("current_stage".to_string(), current_tracker.clone())]
+                    } else {
+                        vec![]
+                    };
+
+                (completed, trackers)
             } else {
-                vec![]
+                (0, vec![])
             };
-
-            (completed, trackers)
-        } else {
-            (0, vec![])
-        };
 
         let repo_info = if let Ok(game_data) = self.game_data.lock() {
             game_data.git_repository.clone()
@@ -118,19 +122,17 @@ impl Screen for SessionFailureScreen {
         Ok(())
     }
 
-
-    fn handle_key_event(
-        &mut self,
-        key_event: crossterm::event::KeyEvent,
-    ) -> Result<()> {
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
         match key_event.code {
             KeyCode::Char('r') | KeyCode::Char('R') => {
-                self.event_bus.publish(NavigateTo::Replace(ScreenType::Typing));
+                self.event_bus
+                    .publish(NavigateTo::Replace(ScreenType::Typing));
                 Ok(())
             }
             KeyCode::Char('t') | KeyCode::Char('T') => {
-                self.event_bus.publish(NavigateTo::Replace(ScreenType::Title));
+                self.event_bus
+                    .publish(NavigateTo::Replace(ScreenType::Title));
                 Ok(())
             }
             KeyCode::Esc => {
@@ -145,10 +147,7 @@ impl Screen for SessionFailureScreen {
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut Stdout,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
         let mut stdout = stdout();
 
         execute!(stdout, MoveTo(0, 0))?;

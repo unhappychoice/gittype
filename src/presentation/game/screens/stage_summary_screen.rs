@@ -24,8 +24,12 @@ pub struct StageSummaryDataProvider {
 
 impl ScreenDataProvider for StageSummaryDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let stage_result = self.session_tracker.lock()
-            .map_err(|e| GitTypeError::TerminalError(format!("Failed to lock session tracker: {}", e)))?
+        let stage_result = self
+            .session_tracker
+            .lock()
+            .map_err(|e| {
+                GitTypeError::TerminalError(format!("Failed to lock session tracker: {}", e))
+            })?
             .as_ref()
             .and_then(|t| {
                 let data = t.get_data();
@@ -33,16 +37,16 @@ impl ScreenDataProvider for StageSummaryDataProvider {
             })
             .ok_or_else(|| GitTypeError::TerminalError("No stage result available".to_string()))?;
 
-        let session_manager = self.session_manager
-            .lock()
-            .map_err(|e| GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e)))?;
+        let session_manager = self.session_manager.lock().map_err(|e| {
+            GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
+        })?;
 
         let (current_stage, total_stages) = session_manager
             .get_stage_info()
             .map_err(|e| GitTypeError::TerminalError(format!("Failed to get stage info: {}", e)))?;
-        let is_completed = session_manager
-            .is_session_completed()
-            .map_err(|e| GitTypeError::TerminalError(format!("Failed to check if session completed: {}", e)))?;
+        let is_completed = session_manager.is_session_completed().map_err(|e| {
+            GitTypeError::TerminalError(format!("Failed to check if session completed: {}", e))
+        })?;
 
         Ok(Box::new(StageSummaryData {
             stage_result,
@@ -118,29 +122,34 @@ impl Screen for StageSummaryScreen {
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: KeyEvent, ) -> Result<()> {
+    fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()> {
         match key_event.code {
             KeyCode::Esc => {
                 self.action_result = Some(ResultAction::BackToTitle);
-                self.event_bus.publish(NavigateTo::Replace(ScreenType::SessionFailure));
+                self.event_bus
+                    .publish(NavigateTo::Replace(ScreenType::SessionFailure));
                 Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
                 self.action_result = Some(ResultAction::Quit);
-                self.event_bus.publish(NavigateTo::Replace(ScreenType::SessionFailure));
+                self.event_bus
+                    .publish(NavigateTo::Replace(ScreenType::SessionFailure));
                 Ok(())
             }
             KeyCode::Char(' ') => {
-                let is_session_completed = self.session_manager
+                let is_session_completed = self
+                    .session_manager
                     .lock()
                     .ok()
                     .and_then(|sm| sm.is_session_completed().ok())
                     .unwrap_or(true);
 
                 if !is_session_completed {
-                    self.event_bus.publish(NavigateTo::Replace(ScreenType::Typing));
+                    self.event_bus
+                        .publish(NavigateTo::Replace(ScreenType::Typing));
                 } else {
-                    self.event_bus.publish(NavigateTo::Replace(ScreenType::Animation));
+                    self.event_bus
+                        .publish(NavigateTo::Replace(ScreenType::Animation));
                 }
                 Ok(())
             }
@@ -148,10 +157,7 @@ impl Screen for StageSummaryScreen {
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut std::io::Stdout,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut std::io::Stdout) -> Result<()> {
         if let Some(ref stage_result) = self.stage_result {
             // Calculate the stage number that was just completed
             let completed_stage = if self.is_completed {

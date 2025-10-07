@@ -1,7 +1,9 @@
 use crate::domain::events::EventBus;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::VersionCheckView;
-use crate::presentation::game::{RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::game::{
+    RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
+};
 use crate::Result;
 use crossterm::{
     event::{self, Event, KeyCode},
@@ -111,10 +113,7 @@ impl Screen for VersionCheckScreen {
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut Stdout,
-    ) -> crate::Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> crate::Result<()> {
         // Version check is now handled by ScreenManager
         // let current_version = env!("CARGO_PKG_VERSION");
         // let _ = VersionCheckScreen::show(current_version, "1.1.0");

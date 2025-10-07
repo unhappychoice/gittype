@@ -1,6 +1,8 @@
 use crate::domain::events::EventBus;
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::{RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::game::{
+    RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
+};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyModifiers};
@@ -282,10 +284,7 @@ impl Screen for InfoDialogScreen {
         Ok(())
     }
 
-    fn handle_key_event(
-        &mut self,
-        key_event: crossterm::event::KeyEvent,
-    ) -> crate::Result<()> {
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> crate::Result<()> {
         match &mut self.state {
             InfoDialogState::Menu { selected_option } => {
                 let options = Self::get_options();
@@ -328,10 +327,7 @@ impl Screen for InfoDialogScreen {
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut std::io::Stdout,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut std::io::Stdout) -> Result<()> {
         // InfoDialog only supports ratatui rendering now
         // This method is kept for trait compatibility but does nothing
         Ok(())

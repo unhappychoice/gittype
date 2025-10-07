@@ -317,10 +317,7 @@ impl StageRepository {
     /// Initialize the global StageRepository
     pub fn initialize_global(git_repository: Option<GitRepository>) -> Result<()> {
         let mut repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            GitTypeError::TerminalError(format!(
-                "Failed to lock global StageRepository: {}",
-                e
-            ))
+            GitTypeError::TerminalError(format!("Failed to lock global StageRepository: {}", e))
         })?;
 
         *repo = Self::new(git_repository);
@@ -331,10 +328,7 @@ impl StageRepository {
     /// Initialize the global StageRepository and build stages
     pub fn initialize_global_with_stages(git_repository: Option<GitRepository>) -> Result<()> {
         let mut repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            GitTypeError::TerminalError(format!(
-                "Failed to lock global StageRepository: {}",
-                e
-            ))
+            GitTypeError::TerminalError(format!("Failed to lock global StageRepository: {}", e))
         })?;
 
         *repo = Self::new(git_repository);
@@ -345,10 +339,7 @@ impl StageRepository {
     /// Set difficulty for the global repository and rebuild stages
     pub fn set_global_difficulty(difficulty: DifficultyLevel) -> Result<()> {
         let mut repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            GitTypeError::TerminalError(format!(
-                "Failed to lock global StageRepository: {}",
-                e
-            ))
+            GitTypeError::TerminalError(format!("Failed to lock global StageRepository: {}", e))
         })?;
 
         // Create new config with the difficulty
@@ -376,10 +367,7 @@ impl StageRepository {
     /// Get the next challenge from the global repository
     pub fn get_next_global_challenge() -> Result<Option<Challenge>> {
         let mut repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            GitTypeError::TerminalError(format!(
-                "Failed to lock global StageRepository: {}",
-                e
-            ))
+            GitTypeError::TerminalError(format!("Failed to lock global StageRepository: {}", e))
         })?;
 
         if repo.current_index < repo.built_stages.len() {
@@ -394,10 +382,7 @@ impl StageRepository {
     /// Check if there are more challenges available without consuming them
     pub fn has_next_global_challenge() -> Result<bool> {
         let repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            GitTypeError::TerminalError(format!(
-                "Failed to lock global StageRepository: {}",
-                e
-            ))
+            GitTypeError::TerminalError(format!("Failed to lock global StageRepository: {}", e))
         })?;
 
         Ok(repo.current_index < repo.built_stages.len())
@@ -406,10 +391,7 @@ impl StageRepository {
     /// Get current stage info (current stage number, total stages)
     pub fn get_global_stage_info() -> Result<(usize, usize)> {
         let repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            GitTypeError::TerminalError(format!(
-                "Failed to lock global StageRepository: {}",
-                e
-            ))
+            GitTypeError::TerminalError(format!("Failed to lock global StageRepository: {}", e))
         })?;
 
         Ok((repo.current_index + 1, repo.built_stages.len()))
@@ -456,10 +438,7 @@ impl StageRepository {
         difficulty: DifficultyLevel,
     ) -> Result<Option<Challenge>> {
         let mut repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            GitTypeError::TerminalError(format!(
-                "Failed to lock global StageRepository: {}",
-                e
-            ))
+            GitTypeError::TerminalError(format!("Failed to lock global StageRepository: {}", e))
         })?;
 
         Ok(repo.get_challenge_for_difficulty(difficulty))
@@ -468,10 +447,7 @@ impl StageRepository {
     /// Build difficulty indices for global repository
     pub fn build_global_difficulty_indices() -> Result<()> {
         let mut repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            GitTypeError::TerminalError(format!(
-                "Failed to lock global StageRepository: {}",
-                e
-            ))
+            GitTypeError::TerminalError(format!("Failed to lock global StageRepository: {}", e))
         })?;
 
         repo.build_difficulty_indices();

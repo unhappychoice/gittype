@@ -29,12 +29,14 @@ pub struct SessionDetailsDialogDataProvider {
 
 impl ScreenDataProvider for SessionDetailsDialogDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let session_result = self.session_manager
+        let session_result = self
+            .session_manager
             .lock()
             .map_err(|_| GitTypeError::TerminalError("Failed to lock SessionManager".to_string()))?
             .get_session_result();
 
-        let repo_info = self.game_data
+        let repo_info = self
+            .game_data
             .lock()
             .map_err(|_| GitTypeError::TerminalError("Failed to lock GameData".to_string()))?
             .git_repository
@@ -43,7 +45,9 @@ impl ScreenDataProvider for SessionDetailsDialogDataProvider {
         let best_status = if let Some(ref result) = session_result {
             self.session_manager
                 .lock()
-                .map_err(|_| GitTypeError::TerminalError("Failed to lock SessionManager".to_string()))?
+                .map_err(|_| {
+                    GitTypeError::TerminalError("Failed to lock SessionManager".to_string())
+                })?
                 .get_best_status_for_score(result.session_score)
                 .ok()
                 .flatten()
@@ -179,11 +183,7 @@ impl Screen for SessionDetailsDialog {
         Ok(())
     }
 
-
-    fn handle_key_event(
-        &mut self,
-        key_event: crossterm::event::KeyEvent,
-    ) -> Result<()> {
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
         match key_event.code {
             KeyCode::Esc => {
@@ -198,10 +198,7 @@ impl Screen for SessionDetailsDialog {
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut Stdout,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
         Ok(())
     }
 

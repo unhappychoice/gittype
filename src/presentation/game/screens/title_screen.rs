@@ -3,7 +3,9 @@ use crate::domain::models::{DifficultyLevel, GitRepository};
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::models::ScreenDataProvider;
 use crate::presentation::game::views::title::{DifficultySelectionView, StaticElementsView};
-use crate::presentation::game::{GameData, RenderBackend, Screen, ScreenType, StageRepository, UpdateStrategy};
+use crate::presentation::game::{
+    GameData, RenderBackend, Screen, ScreenType, StageRepository, UpdateStrategy,
+};
 use crate::{GitTypeError, Result};
 use crossterm::{
     event::{KeyCode, KeyEvent, KeyModifiers},
@@ -32,12 +34,16 @@ pub struct TitleScreenDataProvider {
 
 impl ScreenDataProvider for TitleScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let challenge_counts = self.stage_repository
+        let challenge_counts = self
+            .stage_repository
             .lock()
-            .map_err(|e| GitTypeError::TerminalError(format!("Failed to lock StageRepository: {}", e)))?
+            .map_err(|e| {
+                GitTypeError::TerminalError(format!("Failed to lock StageRepository: {}", e))
+            })?
             .count_challenges_by_difficulty();
 
-        let git_repository = self.game_data
+        let git_repository = self
+            .game_data
             .lock()
             .map_err(|e| GitTypeError::TerminalError(format!("Failed to lock GameData: {}", e)))?
             .repository();
@@ -142,7 +148,6 @@ impl Screen for TitleScreen {
         Ok(())
     }
 
-
     fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()> {
         match key_event.code {
             KeyCode::Char(' ') => {
@@ -157,7 +162,8 @@ impl Screen for TitleScreen {
                     self.error_message = None;
                     self.action_result =
                         Some(TitleAction::Start(DIFFICULTIES[self.selected_difficulty].1));
-                    self.event_bus.publish(NavigateTo::Replace(ScreenType::Typing));
+                    self.event_bus
+                        .publish(NavigateTo::Replace(ScreenType::Typing));
                     Ok(())
                 }
             }
@@ -193,27 +199,27 @@ impl Screen for TitleScreen {
             }
             KeyCode::Char('r') | KeyCode::Char('R') => {
                 self.action_result = Some(TitleAction::Records);
-                self.event_bus.publish(NavigateTo::Replace(ScreenType::Records));
+                self.event_bus
+                    .publish(NavigateTo::Replace(ScreenType::Records));
                 Ok(())
             }
             KeyCode::Char('a') | KeyCode::Char('A') => {
                 self.action_result = Some(TitleAction::Analytics);
-                self.event_bus.publish(NavigateTo::Replace(ScreenType::Analytics));
+                self.event_bus
+                    .publish(NavigateTo::Replace(ScreenType::Analytics));
                 Ok(())
             }
             KeyCode::Char('s') | KeyCode::Char('S') => {
                 self.action_result = Some(TitleAction::Settings);
-                self.event_bus.publish(NavigateTo::Push(ScreenType::Settings));
+                self.event_bus
+                    .publish(NavigateTo::Push(ScreenType::Settings));
                 Ok(())
             }
             _ => Ok(()),
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        stdout: &mut Stdout,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, stdout: &mut Stdout) -> Result<()> {
         let (terminal_width, terminal_height) = terminal::size()?;
         let center_row = terminal_height / 2;
         let center_col = terminal_width / 2;

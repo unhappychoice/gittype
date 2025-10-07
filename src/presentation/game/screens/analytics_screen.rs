@@ -4,7 +4,9 @@ use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::analytics::{
     LanguagesView, OverviewView, RepositoriesView, TrendsView,
 };
-use crate::presentation::game::{RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::game::{
+    RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
+};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyModifiers};
@@ -130,7 +132,8 @@ pub struct AnalyticsScreenDataProvider {
 
 impl ScreenDataProvider for AnalyticsScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        self.load_data().map(|data| Box::new(data) as Box<dyn std::any::Any>)
+        self.load_data()
+            .map(|data| Box::new(data) as Box<dyn std::any::Any>)
     }
 }
 
@@ -425,7 +428,6 @@ impl AnalyticsScreen {
         }
     }
 
-
     fn next_repository(&mut self) {
         if let Some(data) = &self.data {
             let i = match self.repository_list_state.selected() {
@@ -612,8 +614,10 @@ impl Screen for AnalyticsScreen {
         Self: Sized,
     {
         Box::new(AnalyticsScreenDataProvider {
-            session_repository: SessionRepository::new().expect("Failed to create SessionRepository"),
-            git_repository_repository: GitRepositoryRepository::new().expect("Failed to create GitRepositoryRepository"),
+            session_repository: SessionRepository::new()
+                .expect("Failed to create SessionRepository"),
+            git_repository_repository: GitRepositoryRepository::new()
+                .expect("Failed to create GitRepositoryRepository"),
         })
     }
 
@@ -631,14 +635,12 @@ impl Screen for AnalyticsScreen {
         Ok(())
     }
 
-    fn handle_key_event(
-        &mut self,
-        key_event: crossterm::event::KeyEvent,
-    ) -> Result<()> {
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         match key_event.code {
             KeyCode::Esc => {
                 self.action_result = Some(AnalyticsAction::Return);
-                self.event_bus.publish(NavigateTo::Replace(ScreenType::Title));
+                self.event_bus
+                    .publish(NavigateTo::Replace(ScreenType::Title));
                 Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
@@ -683,10 +685,7 @@ impl Screen for AnalyticsScreen {
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut std::io::Stdout,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut std::io::Stdout) -> Result<()> {
         Ok(())
     }
 

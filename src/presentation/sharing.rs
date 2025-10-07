@@ -93,10 +93,7 @@ impl SharingService {
         }
     }
 
-    fn create_share_text(
-        metrics: &SessionResult,
-        repo_info: &Option<GitRepository>,
-    ) -> String {
+    fn create_share_text(metrics: &SessionResult, repo_info: &Option<GitRepository>) -> String {
         let best_rank = Rank::for_score(metrics.session_score);
         if let Some(repo) = repo_info {
             format!(

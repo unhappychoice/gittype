@@ -4,7 +4,9 @@ use crate::domain::services::scoring::Rank;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::typing::typing_animation_view::AnimationPhase;
 use crate::presentation::game::views::TypingAnimationView;
-use crate::presentation::game::{RenderBackend, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy};
+use crate::presentation::game::{
+    RenderBackend, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
+};
 use crate::presentation::ui::Colors;
 use crate::{GitTypeError, Result};
 use crossterm::event::{KeyCode, KeyModifiers};
@@ -29,11 +31,14 @@ pub struct AnimationDataProvider {
 
 impl ScreenDataProvider for AnimationDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let session_result = self.session_manager
+        let session_result = self
+            .session_manager
             .lock()
             .map_err(|_| GitTypeError::TerminalError("Failed to lock SessionManager".to_string()))?
             .get_session_result()
-            .ok_or_else(|| GitTypeError::TerminalError("No session result available".to_string()))?;
+            .ok_or_else(|| {
+                GitTypeError::TerminalError("No session result available".to_string())
+            })?;
 
         Ok(Box::new(AnimationData { session_result }))
     }
@@ -55,7 +60,6 @@ impl AnimationScreen {
             event_bus,
         }
     }
-
 
     /// Pre-inject session result from ScreenManager (avoids RefCell conflicts)
     pub fn set_session_result(&mut self, session_result: SessionResult) {
@@ -206,7 +210,6 @@ impl Screen for AnimationScreen {
         RenderBackend::Ratatui
     }
 
-
     fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         // Initialize state
         if self.animation.is_none() {
@@ -220,13 +223,11 @@ impl Screen for AnimationScreen {
         Ok(())
     }
 
-    fn handle_key_event(
-        &mut self,
-        key_event: crossterm::event::KeyEvent,
-    ) -> Result<()> {
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         match key_event.code {
             KeyCode::Char('s') | KeyCode::Char('S') => {
-                self.event_bus.publish(NavigateTo::Replace(ScreenType::SessionSummary));
+                self.event_bus
+                    .publish(NavigateTo::Replace(ScreenType::SessionSummary));
                 Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
@@ -237,10 +238,7 @@ impl Screen for AnimationScreen {
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut Stdout,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
         Ok(())
     }
 

@@ -6,7 +6,9 @@ use crate::domain::repositories::SessionRepository;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::screens::RecordsScreen;
 use crate::presentation::game::views::{PerformanceMetricsView, SessionInfoView, StageDetailsView};
-use crate::presentation::game::{RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::game::{
+    RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
+};
 use crate::presentation::ui::Colors;
 use crate::{GitTypeError, Result};
 use ratatui::{
@@ -165,14 +167,11 @@ impl Screen for SessionDetailScreen {
         }
 
         Err(GitTypeError::ScreenInitializationError(
-            "SessionDetail must be pushed from Records screen with selected session".to_string()
+            "SessionDetail must be pushed from Records screen with selected session".to_string(),
         ))
     }
 
-    fn handle_key_event(
-        &mut self,
-        key_event: crossterm::event::KeyEvent,
-    ) -> Result<()> {
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
 
         match key_event.code {
@@ -200,10 +199,7 @@ impl Screen for SessionDetailScreen {
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut Stdout,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
         Ok(())
     }
 
