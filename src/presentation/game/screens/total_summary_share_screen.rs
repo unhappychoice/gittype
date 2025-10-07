@@ -1,8 +1,9 @@
 use crate::domain::events::EventBus;
-use crate::domain::models::{SessionResult, TotalResult};
+use crate::domain::models::TotalResult;
+use crate::domain::services::scoring::{TotalCalculator, TotalTracker, GLOBAL_TOTAL_TRACKER};
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::SharingView;
-use crate::presentation::game::{Screen, UpdateStrategy};
+use crate::presentation::game::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::sharing::SharingPlatform;
 use crate::{GitTypeError, Result};
 use crossterm::{
@@ -11,6 +12,27 @@ use crossterm::{
     terminal::{self, ClearType},
 };
 use std::io::Stdout;
+use std::sync::{Arc, Mutex};
+
+pub struct TotalSummaryShareData {
+    pub total_result: TotalResult,
+}
+
+pub struct TotalSummaryShareDataProvider {
+    total_tracker: Arc<Mutex<Option<TotalTracker>>>,
+}
+
+impl ScreenDataProvider for TotalSummaryShareDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        let total_result = self.total_tracker.lock()
+            .map_err(|_| GitTypeError::TerminalError("Failed to lock TotalTracker".to_string()))?
+            .as_ref()
+            .ok_or_else(|| GitTypeError::TerminalError("No total tracker available".to_string()))
+            .map(|tracker| TotalCalculator::calculate(tracker))?;
+
+        Ok(Box::new(TotalSummaryShareData { total_result }))
+    }
+}
 
 #[derive(Debug)]
 pub enum ShareAction {
@@ -26,13 +48,17 @@ pub struct TotalSummaryShareScreen {
 }
 
 impl TotalSummaryShareScreen {
-    pub fn new(total_result: TotalResult, event_bus: EventBus) -> Self {
+    pub fn new(event_bus: EventBus) -> Self {
         Self {
-            total_result,
+            total_result: TotalResult::new(),
             fallback_url: None,
             last_fallback_state: false,
             event_bus,
         }
+    }
+
+    pub fn set_total_result(&mut self, total_result: TotalResult) {
+        self.total_result = total_result;
     }
 
     fn handle_share_platform(&mut self, platform: SharingPlatform) -> Result<()> {
@@ -100,8 +126,25 @@ impl TotalSummaryShareScreen {
 }
 
 impl Screen for TotalSummaryShareScreen {
-    fn init(&mut self) -> crate::Result<()> {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::TotalSummaryShare
+    }
+
+    fn default_provider() -> Box<dyn crate::presentation::game::ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(TotalSummaryShareDataProvider {
+            total_tracker: GLOBAL_TOTAL_TRACKER.clone(),
+        })
+    }
+
+    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         self.last_fallback_state = false;
+
+        let data = data.downcast::<TotalSummaryShareData>()?;
+        self.total_result = data.total_result;
+
         Ok(())
     }
 
@@ -132,8 +175,6 @@ impl Screen for TotalSummaryShareScreen {
     fn render_crossterm_with_data(
         &mut self,
         stdout: &mut Stdout,
-        _session_result: Option<&SessionResult>,
-        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         let current_fallback_state = self.fallback_url.is_some();
 

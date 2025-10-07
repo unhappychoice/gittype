@@ -1,14 +1,46 @@
 use crate::domain::events::EventBus;
-use crate::domain::models::{SessionResult, TotalResult};
+use crate::domain::models::SessionResult;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::{
     ShareBackOptionView, SharePlatformOptionsView, SharePreviewView, ShareTitleView,
 };
-use crate::presentation::game::{GameData, Screen, UpdateStrategy};
+use crate::presentation::game::{GameData, RenderBackend, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy};
 use crate::presentation::sharing::{SharingPlatform, SharingService};
-use crate::{domain::models::GitRepository, Result};
+use crate::{domain::models::GitRepository, GitTypeError, Result};
 use crossterm::terminal::{self};
 use std::io::Stdout;
+use std::sync::{Arc, Mutex};
+
+pub struct SessionSummaryShareData {
+    pub session_result: SessionResult,
+    pub git_repository: Option<GitRepository>,
+}
+
+pub struct SessionSummaryShareDataProvider {
+    session_manager: Arc<Mutex<SessionManager>>,
+    game_data: Arc<Mutex<GameData>>,
+}
+
+impl ScreenDataProvider for SessionSummaryShareDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        let session_result = self.session_manager
+            .lock()
+            .map_err(|_| GitTypeError::TerminalError("Failed to lock SessionManager".to_string()))?
+            .get_session_result()
+            .ok_or_else(|| GitTypeError::TerminalError("No session result available".to_string()))?;
+
+        let git_repository = self.game_data
+            .lock()
+            .map_err(|_| GitTypeError::TerminalError("Failed to lock GameData".to_string()))?
+            .git_repository
+            .clone();
+
+        Ok(Box::new(SessionSummaryShareData {
+            session_result,
+            git_repository,
+        }))
+    }
+}
 
 pub struct SessionSummaryShareScreen {
     session_result: Option<SessionResult>,
@@ -46,6 +78,34 @@ impl SessionSummaryShareScreen {
 }
 
 impl Screen for SessionSummaryShareScreen {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::SessionSharing
+    }
+
+    fn default_provider() -> Box<dyn crate::presentation::game::ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(SessionSummaryShareDataProvider {
+            session_manager: SessionManager::instance(),
+            game_data: GameData::instance(),
+        })
+    }
+
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Crossterm
+    }
+
+    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
+        let data = data.downcast::<SessionSummaryShareData>()?;
+
+        self.session_result = Some(data.session_result);
+        self.git_repository = data.git_repository;
+
+        Ok(())
+    }
+
+
     fn handle_key_event(
         &mut self,
         key_event: crossterm::event::KeyEvent,
@@ -111,16 +171,9 @@ impl Screen for SessionSummaryShareScreen {
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut Stdout,
-        session_result: Option<&SessionResult>,
-        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
-        self.session_result = session_result.cloned();
-        // Get git repository from global GameData
-        let git_repository = GameData::get_git_repository();
-        self.git_repository = git_repository.clone();
-
-        if let Some(session_result) = session_result {
-            Self::render(session_result, &git_repository)?;
+        if let Some(ref session_result) = self.session_result {
+            Self::render(session_result, &self.git_repository)?;
         }
         Ok(())
     }
