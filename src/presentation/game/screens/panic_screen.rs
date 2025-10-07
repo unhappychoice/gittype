@@ -1,8 +1,7 @@
 use crate::domain::events::EventBus;
-use crate::domain::models::{SessionResult, TotalResult};
 use crate::infrastructure::logging::get_current_log_file_path;
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::{Screen, UpdateStrategy};
+use crate::presentation::game::{RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::{
@@ -154,10 +153,34 @@ impl PanicScreen {
     }
 }
 
+pub struct PanicScreenDataProvider;
+
+impl ScreenDataProvider for PanicScreenDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        Ok(Box::new(()))
+    }
+}
+
 impl Screen for PanicScreen {
-    fn init(&mut self) -> Result<()> {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::Panic
+    }
+
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(PanicScreenDataProvider)
+    }
+
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Ratatui
+    }
+
+    fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
         Ok(())
     }
+
 
     fn handle_key_event(
         &mut self,
@@ -176,8 +199,6 @@ impl Screen for PanicScreen {
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut Stdout,
-        _session_result: Option<&SessionResult>,
-        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         // This is a fallback - panic screen should use ratatui
         Ok(())

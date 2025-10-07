@@ -1,8 +1,7 @@
 use crate::domain::events::EventBus;
-use crate::domain::models::{SessionResult, TotalResult};
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::VersionCheckView;
-use crate::presentation::game::{Screen, UpdateStrategy};
+use crate::presentation::game::{RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::Result;
 use crossterm::{
     event::{self, Event, KeyCode},
@@ -69,7 +68,34 @@ impl VersionCheckScreen {
     }
 }
 
+pub struct VersionCheckScreenDataProvider;
+
+impl ScreenDataProvider for VersionCheckScreenDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        Ok(Box::new(()))
+    }
+}
+
 impl Screen for VersionCheckScreen {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::VersionCheck
+    }
+
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(VersionCheckScreenDataProvider)
+    }
+
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Ratatui
+    }
+
+    fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
+        Ok(())
+    }
+
     fn handle_key_event(&mut self, key_event: event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
         match key_event.code {
@@ -88,8 +114,6 @@ impl Screen for VersionCheckScreen {
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut Stdout,
-        _session_result: Option<&SessionResult>,
-        _total_result: Option<&TotalResult>,
     ) -> crate::Result<()> {
         // Version check is now handled by ScreenManager
         // let current_version = env!("CARGO_PKG_VERSION");
