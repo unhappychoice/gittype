@@ -15,26 +15,24 @@
 //! ## Usage Example
 //!
 //! ```rust,no_run
-//! use gittype::presentation::game::{ScreenManager, ScreenType};
+//! use gittype::domain::events::EventBus;
+//! use gittype::presentation::game::ScreenManager;
 //! use gittype::presentation::game::screens::title_screen::TitleScreen;
 //!
 //! fn example() -> gittype::Result<()> {
-//!     let screen = TitleScreen::new();
-//!     
-//!     ScreenManager::with_instance(|manager| {
-//!         let mut manager = manager.borrow_mut();
-//!         manager.register_screen(ScreenType::Title, Box::new(screen));
-//!     });
-//!     
-//!     ScreenManager::run_global()
+//!     let event_bus = EventBus::new();
+//!     let screen = TitleScreen::new(event_bus.clone());
+//!
+//!     let mut manager = ScreenManager::new(event_bus);
+//!     manager.register_screen(screen);
+//!     manager.initialize_terminal()?;
+//!     manager.run()
 //! }
 //! ```
 //!
-use crate::domain::models::TotalResult;
-use crate::domain::services::scoring::TotalCalculator;
-use crate::domain::services::scoring::GLOBAL_TOTAL_TRACKER;
+use crate::domain::events::EventBus;
+use crate::presentation::game::events::{ExitRequested, NavigateTo};
 use crate::presentation::game::screen_transition_manager::ScreenTransitionManager;
-use crate::presentation::game::screens::session_detail_screen::SessionDisplayData;
 use crate::presentation::game::screens::{
     AnalyticsScreen, AnimationScreen, HelpScreen, InfoDialogScreen, LoadingScreen, PanicScreen,
     RecordsScreen, SessionDetailScreen, SessionDetailsDialog, SessionFailureScreen,
@@ -42,14 +40,23 @@ use crate::presentation::game::screens::{
     TitleAction, TitleScreen, TotalSummaryScreen, TotalSummaryShareScreen, VersionCheckScreen,
 };
 use crate::presentation::game::{
-    Screen, ScreenTransition, ScreenType, SessionManager, StageRepository, TypingScreen,
-    UpdateStrategy,
+    GameData, RenderBackend, Screen, ScreenDataProvider, ScreenTransition, ScreenType,
+    SessionManager, StageRepository, TypingScreen, UpdateStrategy,
 };
 use crate::{GitTypeError, Result};
-use crossterm::event::{Event, KeyEventKind};
-use std::cell::RefCell;
+use crossterm::cursor::{Hide, Show};
+use crossterm::event::{poll, read, Event, KeyCode, KeyEventKind, KeyModifiers};
+use crossterm::execute;
+use crossterm::style::ResetColor;
+use crossterm::terminal::{
+    disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen,
+};
+use ratatui::backend::CrosstermBackend;
+use ratatui::Terminal;
 use std::collections::HashMap;
-use std::io::Stdout;
+use std::io::{stdout, Stdout, Write};
+use std::sync::{Arc, Mutex};
+use std::thread::sleep;
 use std::time::{Duration, Instant};
 
 /// Central manager for screen transitions, rendering, and input handling
@@ -60,33 +67,18 @@ pub struct ScreenManager {
     terminal_initialized: bool,
     last_update: Instant,
     render_backend: RenderBackend,
-    ratatui_terminal: Option<ratatui::Terminal<ratatui::backend::CrosstermBackend<Stdout>>>,
+    ratatui_terminal: Option<Terminal<CrosstermBackend<Stdout>>>,
     exit_requested: bool,
 
-    // Shared data for screens
-    pub shared_session_result: Option<crate::domain::models::SessionResult>,
-    pub shared_git_repository: Option<crate::domain::models::GitRepository>,
-    pub shared_total_result: Option<crate::domain::services::scoring::TotalResult>,
-    pub shared_stage_result: Option<crate::domain::models::StageResult>,
-    pending_screen_transition: Option<ScreenType>,
-}
+    // Pending screen transition - shared across threads
+    pending_transition: Arc<Mutex<Option<ScreenTransition>>>,
 
-thread_local! {
-    static GLOBAL_SCREEN_MANAGER: RefCell<ScreenManager> = RefCell::new(ScreenManager::new());
-}
-
-/// Rendering backend options
-#[derive(Debug, Clone, Copy)]
-pub enum RenderBackend {
-    /// Use crossterm for rendering (default)
-    Crossterm,
-    /// Use ratatui for rendering
-    Ratatui,
+    // Event bus for UI events
+    event_bus: EventBus,
 }
 
 impl ScreenManager {
-    /// Create a new ScreenManager with default settings
-    pub fn new() -> Self {
+    pub fn new(event_bus: EventBus) -> Self {
         Self {
             screens: HashMap::new(),
             screen_stack: Vec::new(),
@@ -96,103 +88,82 @@ impl ScreenManager {
             render_backend: RenderBackend::Crossterm,
             ratatui_terminal: None,
             exit_requested: false,
-            shared_session_result: None,
-            shared_git_repository: None,
-            shared_total_result: None,
-            shared_stage_result: None,
-            pending_screen_transition: None,
+            pending_transition: Arc::new(Mutex::new(None)),
+            event_bus: event_bus.clone(),
         }
     }
 
-    /// Access the global ScreenManager instance
-    pub fn with_instance<F, R>(f: F) -> R
-    where
-        F: FnOnce(&RefCell<ScreenManager>) -> R,
-    {
-        GLOBAL_SCREEN_MANAGER.with(f)
+    pub fn get_event_bus(&self) -> EventBus {
+        self.event_bus.clone()
+    }
+
+    /// Set up event subscriptions for navigation events
+    /// Takes a weak reference to avoid circular references
+    pub fn setup_event_subscriptions(manager_ref: &Arc<Mutex<Self>>) {
+        let manager_weak = Arc::downgrade(manager_ref);
+        let event_bus = {
+            let manager = manager_ref.lock().unwrap();
+            manager.event_bus.clone()
+        }; // Release lock before subscribing
+
+        let pending_transition = {
+            let manager = manager_ref.lock().unwrap();
+            manager.pending_transition.clone()
+        };
+
+        // Subscribe to NavigateTo events
+        {
+            let pending_transition_clone = pending_transition.clone();
+            event_bus.subscribe(move |event: &NavigateTo| {
+                if let Ok(mut pending) = pending_transition_clone.lock() {
+                    *pending = Some(event.clone());
+                }
+            });
+        }
+
+        // Subscribe to ExitRequested events
+        {
+            let manager_weak_clone = manager_weak.clone();
+            event_bus.subscribe(move |_event: &ExitRequested| {
+                if let Some(arc) = manager_weak_clone.upgrade() {
+                    if let Ok(mut manager) = arc.lock() {
+                        manager.show_session_summary_on_interrupt();
+                        std::process::exit(0);
+                    }
+                }
+            });
+        }
     }
 
     /// Initialize ScreenManager with all screens
     pub fn initialize_all_screens(&mut self) -> Result<()> {
-        self.register_screen(ScreenType::Title, Box::new(TitleScreen::new()));
-        self.register_screen(ScreenType::Loading, Box::new(LoadingScreen::new()?));
-        self.register_screen(
-            ScreenType::SessionFailure,
-            Box::new(SessionFailureScreen::new()),
-        );
-        self.register_screen(
-            ScreenType::StageSummary,
-            Box::new(StageSummaryScreen::new()),
-        );
-        self.register_screen(
-            ScreenType::SessionSummary,
-            Box::new(SessionSummaryScreen::new()),
-        );
-        self.register_screen(
-            ScreenType::TotalSummary,
-            Box::new(TotalSummaryScreen::new()),
-        );
-
-        if let Ok(typing_screen) = TypingScreen::new() {
-            self.register_screen(ScreenType::Typing, Box::new(typing_screen));
-        }
-
-        self.register_screen(
-            ScreenType::SessionDetail,
-            Box::new(SessionDetailScreen::new_for_screen_manager().unwrap()),
-        );
-        self.register_screen(ScreenType::Animation, Box::new(AnimationScreen::new()));
-        self.register_screen(
-            ScreenType::VersionCheck,
-            Box::new(VersionCheckScreen::new()),
-        );
-        self.register_screen(
-            ScreenType::SessionSharing,
-            Box::new(SessionSummaryShareScreen::new()),
-        );
-        self.register_screen(
-            ScreenType::TotalSummaryShare,
-            Box::new(TotalSummaryShareScreen::new(
-                TotalResult::new(), // Placeholder - will be updated when transitioning
-            )),
-        );
-        self.register_screen(ScreenType::InfoDialog, Box::new(InfoDialogScreen::new()));
-        self.register_screen(ScreenType::Help, Box::new(HelpScreen::new()));
-        self.register_screen(
-            ScreenType::DetailsDialog,
-            Box::new(SessionDetailsDialog::new()),
-        );
-        self.register_screen(ScreenType::Panic, Box::new(PanicScreen::new()));
-
-        if let Ok(records_screen) = RecordsScreen::new_for_screen_manager() {
-            self.register_screen(ScreenType::Records, Box::new(records_screen));
-        }
-
-        if let Ok(analytics_screen) = AnalyticsScreen::new_for_screen_manager() {
-            self.register_screen(ScreenType::Analytics, Box::new(analytics_screen));
-        }
-
-        self.register_screen(ScreenType::Settings, Box::new(SettingsScreen::default()));
+        self.register_screen(TitleScreen::new(self.event_bus.clone()));
+        self.register_screen(LoadingScreen::new(self.event_bus.clone()));
+        self.register_screen(SessionFailureScreen::new(self.event_bus.clone()));
+        self.register_screen(StageSummaryScreen::new(self.event_bus.clone()));
+        self.register_screen(SessionSummaryScreen::new(self.event_bus.clone()));
+        self.register_screen(TotalSummaryScreen::new(self.event_bus.clone()));
+        self.register_screen(TypingScreen::new(self.event_bus.clone()));
+        self.register_screen(SessionDetailScreen::new(self.event_bus.clone()));
+        self.register_screen(AnimationScreen::new(self.event_bus.clone()));
+        self.register_screen(VersionCheckScreen::new(self.event_bus.clone()));
+        self.register_screen(SessionSummaryShareScreen::new(self.event_bus.clone()));
+        self.register_screen(TotalSummaryShareScreen::new(self.event_bus.clone()));
+        self.register_screen(InfoDialogScreen::new(self.event_bus.clone()));
+        self.register_screen(HelpScreen::new(self.event_bus.clone()));
+        self.register_screen(SessionDetailsDialog::new(self.event_bus.clone()));
+        self.register_screen(PanicScreen::new(self.event_bus.clone()));
+        self.register_screen(RecordsScreen::new(self.event_bus.clone()));
+        self.register_screen(AnalyticsScreen::new(self.event_bus.clone()));
+        self.register_screen(SettingsScreen::new(self.event_bus.clone()));
 
         Ok(())
     }
 
     /// Register a screen with the manager
-    pub fn register_screen(&mut self, screen_type: ScreenType, screen: Box<dyn Screen>) {
-        self.screens.insert(screen_type, screen);
-    }
-
-    /// Get current total result from GLOBAL_TOTAL_TRACKER
-    fn get_current_total_result(&self) -> Option<TotalResult> {
-        use crate::domain::services::scoring::{TotalCalculator, GLOBAL_TOTAL_TRACKER};
-
-        if let Ok(global_total_tracker) = GLOBAL_TOTAL_TRACKER.lock() {
-            (*global_total_tracker)
-                .as_ref()
-                .map(TotalCalculator::calculate)
-        } else {
-            None
-        }
+    pub fn register_screen(&mut self, screen: impl Screen + 'static) {
+        let screen_type = screen.get_type();
+        self.screens.insert(screen_type, Box::new(screen));
     }
 
     /// Set the rendering backend (crossterm or ratatui)
@@ -203,9 +174,6 @@ impl ScreenManager {
     /// Initialize terminal for raw mode and alternate screen
     pub fn initialize_terminal(&mut self) -> Result<()> {
         if !self.terminal_initialized {
-            use crossterm::{cursor, execute, terminal};
-            use std::io::stdout;
-
             // Check if we're running in a valid terminal environment using atty
             if !atty::is(atty::Stream::Stdout) {
                 return Err(GitTypeError::TerminalError(
@@ -215,12 +183,12 @@ impl ScreenManager {
             }
 
             // Enable raw mode with better error handling for WSL
-            match terminal::enable_raw_mode() {
+            match enable_raw_mode() {
                 Ok(()) => {}
                 Err(e) => {
                     // In WSL, sometimes raw mode fails initially, try after a short delay
-                    std::thread::sleep(Duration::from_millis(10));
-                    terminal::enable_raw_mode().map_err(|e2| {
+                    sleep(Duration::from_millis(10));
+                    enable_raw_mode().map_err(|e2| {
                         GitTypeError::TerminalError(format!(
                             "Failed to enable raw mode: {} (retry also failed: {})",
                             e, e2
@@ -230,12 +198,12 @@ impl ScreenManager {
             }
 
             // Try to enter alternate screen, but continue without it if it fails
-            match execute!(stdout(), terminal::EnterAlternateScreen, cursor::Hide) {
+            match execute!(stdout(), EnterAlternateScreen, Hide) {
                 Ok(()) => {}
                 Err(e) => {
                     eprintln!("Warning: Could not enter alternate screen mode: {}. Running in normal mode.", e);
                     // Try to at least hide the cursor
-                    if let Err(e2) = execute!(stdout(), cursor::Hide) {
+                    if let Err(e2) = execute!(stdout(), Hide) {
                         eprintln!("Warning: Could not hide cursor: {}", e2);
                     }
                 }
@@ -248,18 +216,11 @@ impl ScreenManager {
 
     pub fn cleanup_terminal(&mut self) -> Result<()> {
         if self.terminal_initialized {
-            use crossterm::{cursor, execute, terminal};
-
-            execute!(
-                std::io::stdout(),
-                terminal::LeaveAlternateScreen,
-                cursor::Show
-            )
-            .map_err(|e| {
+            execute!(stdout(), LeaveAlternateScreen, Show).map_err(|e| {
                 GitTypeError::TerminalError(format!("Failed to restore terminal: {}", e))
             })?;
 
-            terminal::disable_raw_mode().map_err(|e| {
+            disable_raw_mode().map_err(|e| {
                 GitTypeError::TerminalError(format!("Failed to disable raw mode: {}", e))
             })?;
 
@@ -275,10 +236,8 @@ impl ScreenManager {
     }
 
     pub fn set_current_screen(&mut self, screen_type: ScreenType) -> Result<()> {
-        use std::io::{stdout, Write};
-
         if !self.screens.contains_key(&screen_type) {
-            return Err(crate::GitTypeError::TerminalError(format!(
+            return Err(GitTypeError::TerminalError(format!(
                 "Screen not registered: {:?}",
                 screen_type
             )));
@@ -294,46 +253,16 @@ impl ScreenManager {
         }
 
         // Clear screen after cleanup and flush again
-        use crossterm::{execute, terminal};
-        execute!(stdout(), terminal::Clear(terminal::ClearType::All)).map_err(|e| {
+        execute!(stdout(), Clear(ClearType::All)).map_err(|e| {
             GitTypeError::TerminalError(format!("Failed to clear screen during transition: {}", e))
         })?;
         stdout().flush().map_err(|e| {
             GitTypeError::TerminalError(format!("Failed to flush after screen clear: {}", e))
         })?;
 
-        // Set appropriate render backend for the screen
-        match screen_type {
-            ScreenType::Records
-            | ScreenType::Analytics
-            | ScreenType::DetailsDialog
-            | ScreenType::InfoDialog
-            | ScreenType::Help
-            | ScreenType::Loading
-            | ScreenType::SessionDetail
-            | ScreenType::Typing
-            | ScreenType::Settings
-            | ScreenType::Panic => {
-                self.render_backend = RenderBackend::Ratatui;
-            }
-            ScreenType::Animation => {
-                // Ensure session result is available for animation
-                self.create_session_result_from_trackers()?;
-                self.render_backend = RenderBackend::Ratatui;
-            }
-            ScreenType::StageSummary => {
-                // Ensure stage result is available for stage summary
-                self.get_latest_stage_result_from_session_tracker();
-                self.render_backend = RenderBackend::Crossterm;
-            }
-            ScreenType::SessionSummary => {
-                // Ensure session result is available for session summary
-                self.create_session_result_from_trackers()?;
-                self.render_backend = RenderBackend::Crossterm;
-            }
-            _ => {
-                self.render_backend = RenderBackend::Crossterm;
-            }
+        // Get render backend from the screen itself
+        if let Some(screen) = self.screens.get(&screen_type) {
+            self.render_backend = screen.get_render_backend();
         }
 
         self.current_screen_type = screen_type;
@@ -342,31 +271,16 @@ impl ScreenManager {
         self.clear_screen()?;
 
         if let Some(new_screen) = self.screens.get_mut(&self.current_screen_type) {
-            // Pre-inject data BEFORE calling init() to avoid RefCell conflicts
-            match self.current_screen_type {
-                ScreenType::StageSummary => {
-                    if let Some(stage_summary_screen) =
-                        new_screen.as_any_mut().downcast_mut::<StageSummaryScreen>()
-                    {
-                        if let Some(ref stage_result) = self.shared_stage_result {
-                            stage_summary_screen.stage_result = Some(stage_result.clone());
-                        }
-                    }
-                }
-                ScreenType::Animation => {
-                    if let Some(animation_screen) =
-                        new_screen.as_any_mut().downcast_mut::<AnimationScreen>()
-                    {
-                        if let Some(ref session_result) = self.shared_session_result {
-                            animation_screen.inject_session_result(session_result.clone());
-                        }
-                    }
-                }
-                _ => {}
-            }
-
             log::info!("Initializing screen: {:?}", self.current_screen_type);
-            new_screen.init()?;
+
+            // Get data using provider and call init_with_data
+            let data = Self::get_screen_data(self.current_screen_type.clone())?;
+            new_screen.init_with_data(data).map_err(|e| {
+                GitTypeError::ScreenInitializationError(format!(
+                    "Failed to initialize screen {:?}: {}",
+                    self.current_screen_type, e
+                ))
+            })?;
         }
 
         // Force immediate render of the new screen
@@ -380,13 +294,36 @@ impl ScreenManager {
         Ok(())
     }
 
+    fn get_screen_data(screen_type: ScreenType) -> Result<Box<dyn std::any::Any>> {
+        let provider: Box<dyn ScreenDataProvider> = match screen_type {
+            ScreenType::Title => TitleScreen::default_provider(),
+            ScreenType::Loading => LoadingScreen::default_provider(),
+            ScreenType::Typing => TypingScreen::default_provider(),
+            ScreenType::StageSummary => StageSummaryScreen::default_provider(),
+            ScreenType::SessionSummary => SessionSummaryScreen::default_provider(),
+            ScreenType::TotalSummary => TotalSummaryScreen::default_provider(),
+            ScreenType::TotalSummaryShare => TotalSummaryShareScreen::default_provider(),
+            ScreenType::SessionFailure => SessionFailureScreen::default_provider(),
+            ScreenType::Records => RecordsScreen::default_provider(),
+            ScreenType::Analytics => AnalyticsScreen::default_provider(),
+            ScreenType::SessionDetail => SessionDetailScreen::default_provider(),
+            ScreenType::SessionSharing => SessionSummaryShareScreen::default_provider(),
+            ScreenType::Animation => AnimationScreen::default_provider(),
+            ScreenType::VersionCheck => VersionCheckScreen::default_provider(),
+            ScreenType::InfoDialog => InfoDialogScreen::default_provider(),
+            ScreenType::Help => HelpScreen::default_provider(),
+            ScreenType::DetailsDialog => SessionDetailsDialog::default_provider(),
+            ScreenType::Settings => SettingsScreen::default_provider(),
+            ScreenType::Panic => PanicScreen::default_provider(),
+        };
+
+        provider.provide()
+    }
+
     fn clear_screen(&mut self) -> Result<()> {
         match self.render_backend {
             RenderBackend::Crossterm => {
-                use crossterm::{execute, terminal};
-                use std::io::stdout;
-
-                execute!(stdout(), terminal::Clear(terminal::ClearType::All)).map_err(|e| {
+                execute!(stdout(), Clear(ClearType::All)).map_err(|e| {
                     GitTypeError::TerminalError(format!("Failed to clear screen: {}", e))
                 })?;
             }
@@ -406,17 +343,26 @@ impl ScreenManager {
     }
 
     pub fn push_screen(&mut self, screen_type: ScreenType) -> Result<()> {
-        // Special handling for TotalSummaryShare - update with current total result
-        if screen_type == ScreenType::TotalSummaryShare {
-            if let Some(total_result) = self.get_current_total_result() {
-                let share_screen = TotalSummaryShareScreen::new(total_result);
-                self.screens
-                    .insert(ScreenType::TotalSummaryShare, Box::new(share_screen));
+        let source_screen_type = self.current_screen_type.clone();
+        self.screen_stack.push(source_screen_type.clone());
+        self.set_current_screen(screen_type)?;
+
+        // Call on_pushed_from to allow the new screen to extract data from source screen
+        // We need to split borrow screens HashMap to access both source and destination
+        let source_ptr = self
+            .screens
+            .get(&source_screen_type)
+            .map(|s| s.as_ref() as *const dyn Screen);
+
+        if let Some(source_ptr) = source_ptr {
+            if let Some(new_screen) = self.screens.get_mut(&self.current_screen_type) {
+                // Safe because we're accessing different keys in the HashMap
+                let source_screen = unsafe { &*source_ptr };
+                new_screen.on_pushed_from(source_screen)?;
             }
         }
 
-        self.screen_stack.push(self.current_screen_type.clone());
-        self.set_current_screen(screen_type)
+        Ok(())
     }
 
     pub fn pop_screen(&mut self) -> Result<()> {
@@ -480,123 +426,112 @@ impl ScreenManager {
     }
 
     fn prepare_screen_if_needed(&mut self, screen_type: &ScreenType) -> Result<()> {
-        if *screen_type == ScreenType::Typing {
-            // Check if coming from Title screen and apply selected difficulty
-            let selected_difficulty =
-                if let Some(title_screen) = self.screens.get(&ScreenType::Title) {
-                    if let Some(title) = title_screen.as_any().downcast_ref::<TitleScreen>() {
-                        if let Some(action) = title.get_action_result() {
-                            match action {
-                                TitleAction::Start(difficulty) => Some(*difficulty),
-                                _ => None,
-                            }
-                        } else {
-                            None
+        match screen_type {
+            ScreenType::Typing => {
+                // Check if coming from Title screen and apply selected difficulty
+                let selected_difficulty = self
+                    .screens
+                    .get(&ScreenType::Title)
+                    .and_then(|title_screen| title_screen.as_any().downcast_ref::<TitleScreen>())
+                    .and_then(|title| title.get_action_result())
+                    .and_then(|action| match action {
+                        TitleAction::Start(difficulty) => Some(*difficulty),
+                        _ => None,
+                    });
+
+                // Apply difficulty to global repositories if found
+                selected_difficulty
+                    .map(|difficulty| {
+                        StageRepository::set_global_difficulty(difficulty)?;
+
+                        // Also set difficulty in SessionManager
+                        if let Ok(mut session_manager) = SessionManager::instance().lock() {
+                            session_manager.set_difficulty(difficulty);
                         }
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                };
 
-            // Apply difficulty to global repositories if found
-            if let Some(difficulty) = selected_difficulty {
-                StageRepository::set_global_difficulty(difficulty)?;
+                        Ok::<_, GitTypeError>(())
+                    })
+                    .transpose()?;
 
-                // Also set difficulty in SessionManager
-                let session_instance = SessionManager::instance();
-                if let Ok(mut session_manager) = session_instance.lock() {
-                    session_manager.set_difficulty(difficulty);
-                };
+                // Load next challenge in TypingScreen
+                self.screens
+                    .get_mut(&ScreenType::Typing)
+                    .and_then(|screen| screen.as_any_mut().downcast_mut::<TypingScreen>())
+                    .map(|screen| screen.load_current_challenge())
+                    .transpose()?
+                    .map(|loaded| {
+                        if loaded {
+                            Ok(())
+                        } else {
+                            Err(GitTypeError::TerminalError(
+                                "No challenges available. ".to_string(),
+                            ))
+                        }
+                    })
+                    .transpose()?;
+
+                Ok(())
             }
-
-            // Session management is handled by ScreenTransitionManager
-            // This prepare_screen_if_needed should only handle screen-specific setup
-
-            // Load next challenge in TypingScreen
-            if let Some(typing_screen) = self.screens.get_mut(&ScreenType::Typing) {
-                if let Some(screen) = typing_screen.as_any_mut().downcast_mut::<TypingScreen>() {
-                    if !screen.load_current_challenge()? {
-                        // No more challenges available, create session result and go to session summary
-                        self.create_session_result_from_trackers()?;
-
-                        // Session completion is handled by ScreenTransitionManager
-                        // Use proper transition instead of direct screen setting
-                        self.handle_transition(ScreenTransition::Replace(ScreenType::Animation))?;
-                        return Ok(());
-                    }
-                }
+            ScreenType::SessionDetail => {
+                // Configure SessionDetail screen with data from History screen
+                self.configure_session_detail_from_history()
             }
-        } else if *screen_type == ScreenType::SessionDetail {
-            // Configure SessionDetail screen with data from History screen
-            self.configure_session_detail_from_history()?;
-        } else if *screen_type == ScreenType::TotalSummary {
-            // Calculate total result from GLOBAL_TOTAL_TRACKER before showing ExitSummary
-            if let Ok(global_total_tracker) = GLOBAL_TOTAL_TRACKER.lock() {
-                if let Some(ref tracker) = *global_total_tracker {
-                    self.shared_total_result = Some(TotalCalculator::calculate(tracker));
-                }
-            }
+            _ => Ok(()),
         }
-
-        Ok(())
     }
 
     fn configure_session_detail_from_history(&mut self) -> Result<()> {
-        // Get the selected session data from History screen
-        let session_data_to_use =
-            if let Some(records_screen) = self.screens.get(&ScreenType::Records) {
-                if let Some(records) = records_screen.as_any().downcast_ref::<RecordsScreen>() {
-                    records.get_selected_session_for_detail().clone()
-                } else {
-                    None
-                }
-            } else {
-                None
-            };
-
-        // Configure SessionDetail screen with the selected session data
-        if let Some(session_data) = session_data_to_use {
-            self.configure_session_detail_screen(session_data)?;
-        }
+        // Get the selected session data from History screen and configure SessionDetail screen
+        self.screens
+            .get(&ScreenType::Records)
+            .and_then(|records_screen| records_screen.as_any().downcast_ref::<RecordsScreen>())
+            .and_then(|records| records.get_selected_session_for_detail().clone())
+            .map(|session_data| {
+                self.screens
+                    .get_mut(&ScreenType::SessionDetail)
+                    .and_then(|screen| screen.as_any_mut().downcast_mut::<SessionDetailScreen>())
+                    .map(|screen| screen.set_session_data(session_data))
+                    .transpose()?;
+                Ok::<_, GitTypeError>(())
+            })
+            .transpose()?;
 
         Ok(())
     }
 
-    /// Run the global ScreenManager instance
-    pub fn run_global() -> Result<()> {
-        // Run main loop - terminal already initialized in game.rs
-        Self::run_main_loop()
-    }
-
-    /// Run main loop with short-term borrows
-    fn run_main_loop() -> Result<()> {
+    /// Run the ScreenManager main loop
+    pub fn run(&mut self) -> Result<()> {
         // Initialize current screen and force initial render
-        Self::with_instance(|screen_manager| -> Result<()> {
-            let mut manager = screen_manager.borrow_mut();
-            manager.render_current_screen()
-        })?;
+        self.render_current_screen()?;
 
         loop {
-            // Separate each operation to minimize borrow time
-            Self::with_instance(|screen_manager| -> Result<()> {
-                let mut manager = screen_manager.borrow_mut();
-                manager.update_and_render()
-            })?;
+            // Update and render
+            self.update_and_render()?;
 
-            let should_exit = Self::with_instance(|screen_manager| -> Result<bool> {
-                let mut manager = screen_manager.borrow_mut();
-                manager.handle_input()?;
+            // Handle input
+            self.handle_input()?;
 
-                // Check if exit was requested from ExitSummary screen
-                Ok(manager.exit_requested)
-            })?;
+            // Check for pending screen transitions
+            let pending_transition = {
+                self.pending_transition
+                    .lock()
+                    .ok()
+                    .and_then(|mut pending| pending.take())
+            };
 
-            if should_exit {
+            if let Some(transition) = pending_transition {
+                let _ = self.handle_transition(transition);
+            }
+
+            // Check if exit was requested
+            if self.exit_requested {
                 break;
             }
         }
+
+        // Clean up on exit
+        self.cleanup_terminal()?;
+
         Ok(())
     }
 
@@ -620,7 +555,6 @@ impl ScreenManager {
                 // Special handling for LoadingScreen auto-transition
                 if self.current_screen_type == ScreenType::Loading && !needs_render {
                     // LoadingScreen completed, transition to Title
-                    use crate::presentation::game::GameData;
                     if GameData::is_loading_completed() {
                         // Update TitleScreen data with challenge counts after loading is complete
                         self.handle_transition(ScreenTransition::Replace(ScreenType::Title))?;
@@ -664,8 +598,6 @@ impl ScreenManager {
     }
 
     fn handle_input(&mut self) -> Result<()> {
-        use crossterm::event::{poll, read, KeyCode, KeyModifiers};
-
         let timeout = if let Some(screen) = self.screens.get(&self.current_screen_type) {
             match screen.get_update_strategy() {
                 UpdateStrategy::InputOnly => Duration::from_millis(100),
@@ -702,57 +634,36 @@ impl ScreenManager {
                         return Ok(());
                     }
 
-                    let transition =
-                        if let Some(screen) = self.screens.get_mut(&self.current_screen_type) {
-                            screen.handle_key_event(key_event)?
-                        } else {
-                            ScreenTransition::None
-                        };
+                    if let Some(screen) = self.screens.get_mut(&self.current_screen_type) {
+                        screen.handle_key_event(key_event)?;
+                    }
 
-                    // Handle screen transitions
-                    let screen_changed = !matches!(transition, ScreenTransition::None);
-                    self.handle_transition(transition)?;
-
-                    if screen_changed {
-                        // Screen changed, force render
+                    // For History/Analytics screens using Ratatui, always re-render on key input
+                    // as they may have internal state changes (list selection, etc.)
+                    if matches!(self.render_backend, RenderBackend::Ratatui) {
+                        // Force render for Ratatui screens on any key input
                         self.render_current_screen()?;
                     } else {
-                        // No screen transition but key was pressed
-                        // For History/Analytics screens using Ratatui, always re-render on key input
-                        // as they may have internal state changes (list selection, etc.)
-                        if matches!(self.render_backend, RenderBackend::Ratatui) {
-                            // Force render for Ratatui screens on any key input
-                            self.render_current_screen()?;
-                        } else {
-                            // For Crossterm screens, check if update is needed
-                            let needs_render = if let Some(screen) =
-                                self.screens.get_mut(&self.current_screen_type)
-                            {
+                        // For Crossterm screens, check if update is needed
+                        let needs_render =
+                            if let Some(screen) = self.screens.get_mut(&self.current_screen_type) {
                                 screen.update()?
                             } else {
                                 false
                             };
 
-                            if needs_render {
-                                self.render_current_screen()?;
-                            }
+                        if needs_render {
+                            self.render_current_screen()?;
                         }
                     }
                 }
             }
         }
 
-        // Handle pending screen transitions
-        if let Some(next_screen_type) = self.pending_screen_transition.take() {
-            let _ = self.handle_transition(ScreenTransition::Replace(next_screen_type));
-        }
-
         Ok(())
     }
 
     pub fn render_current_screen(&mut self) -> Result<()> {
-        use std::io::{stdout, Write};
-
         match self.render_backend {
             RenderBackend::Crossterm => {
                 let mut stdout_handle = stdout();
@@ -762,41 +673,8 @@ impl ScreenManager {
                     GitTypeError::TerminalError(format!("Failed to flush before rendering: {}", e))
                 })?;
 
-                // Special handling for TypingScreen which needs mutable access
-                if self.current_screen_type == ScreenType::StageSummary {
-                    // Special handling for StageSummaryScreen to inject stage_result
-                    if let Some(screen) = self.screens.get_mut(&self.current_screen_type) {
-                        if let Some(stage_summary_screen) =
-                            screen.as_any_mut().downcast_mut::<StageSummaryScreen>()
-                        {
-                            // Inject stage_result if not already set
-                            if stage_summary_screen.stage_result.is_none() {
-                                if let Some(ref stage_result) = self.shared_stage_result {
-                                    stage_summary_screen.stage_result = Some(stage_result.clone());
-                                }
-                            }
-                        }
-                        screen.render_crossterm_with_data(
-                            &mut stdout_handle,
-                            self.shared_session_result.as_ref(),
-                            self.shared_total_result.as_ref(),
-                        )?;
-                    }
-                } else if self.current_screen_type == ScreenType::SessionSummary {
-                    // Special handling for SessionSummary to check for animation transition
-                    if let Some(screen) = self.screens.get_mut(&self.current_screen_type) {
-                        screen.render_crossterm_with_data(
-                            &mut stdout_handle,
-                            self.shared_session_result.as_ref(),
-                            self.shared_total_result.as_ref(),
-                        )?;
-                    }
-                } else if let Some(screen) = self.screens.get_mut(&self.current_screen_type) {
-                    screen.render_crossterm_with_data(
-                        &mut stdout_handle,
-                        self.shared_session_result.as_ref(),
-                        self.shared_total_result.as_ref(),
-                    )?;
+                if let Some(screen) = self.screens.get_mut(&self.current_screen_type) {
+                    screen.render_crossterm_with_data(&mut stdout_handle)?;
                 }
 
                 // Flush after rendering to ensure display is updated
@@ -807,9 +685,6 @@ impl ScreenManager {
             RenderBackend::Ratatui => {
                 // Initialize ratatui terminal if not already done
                 if self.ratatui_terminal.is_none() {
-                    use ratatui::{backend::CrosstermBackend, Terminal};
-                    use std::io::stdout;
-
                     let backend = CrosstermBackend::new(stdout());
                     let terminal = Terminal::new(backend).map_err(|e| {
                         GitTypeError::TerminalError(format!(
@@ -844,21 +719,6 @@ impl ScreenManager {
         &self.current_screen_type
     }
 
-    pub fn configure_session_detail_screen(
-        &mut self,
-        session_data: SessionDisplayData,
-    ) -> Result<()> {
-        if let Some(screen) = self.screens.get_mut(&ScreenType::SessionDetail) {
-            if let Some(session_detail_screen) =
-                screen.as_any_mut().downcast_mut::<SessionDetailScreen>()
-            {
-                session_detail_screen.set_session_data(session_data)?;
-            }
-        }
-
-        Ok(())
-    }
-
     pub fn get_screen_stack(&self) -> &Vec<ScreenType> {
         &self.screen_stack
     }
@@ -875,31 +735,34 @@ impl ScreenManager {
         self.terminal_initialized
     }
 
-    /// Get latest stage result from SessionTracker and store in shared data
-    fn get_latest_stage_result_from_session_tracker(&mut self) {
-        use crate::domain::services::scoring::GLOBAL_SESSION_TRACKER;
-        if let Ok(global_session_tracker) = GLOBAL_SESSION_TRACKER.lock() {
-            if let Some(ref session_tracker) = *global_session_tracker {
-                let session_data = session_tracker.get_data();
-                if let Some(latest_stage_result) = session_data.stage_results.last() {
-                    self.shared_stage_result = Some(latest_stage_result.clone());
-                }
-            }
+    /// Static cleanup function for use when ScreenManager instance is not available
+    pub fn cleanup_terminal_static() {
+        // Disable raw mode first
+        if let Err(e) = disable_raw_mode() {
+            eprintln!("Warning: Failed to disable raw mode: {}", e);
         }
+
+        // Exit alternate screen and restore cursor with explicit error handling
+        if let Err(e) = execute!(
+            stdout(),
+            LeaveAlternateScreen,
+            Show,
+            ResetColor,
+            Clear(ClearType::All)
+        ) {
+            eprintln!("Warning: Failed to cleanup terminal: {}", e);
+        }
+
+        let _ = stdout().flush();
     }
 
-    /// Create session result from global trackers and store in shared data
-    fn create_session_result_from_trackers(&mut self) -> Result<()> {
-        // Get session result from SessionManager
-        match SessionManager::get_global_session_result() {
-            Ok(Some(session_result)) => {
-                self.shared_session_result = Some(session_result);
-            }
-            Ok(None) => {}
-            Err(_) => {}
-        }
-
-        Ok(())
+    /// Show session summary on interrupt (Ctrl+C handler)
+    fn show_session_summary_on_interrupt(&mut self) {
+        // Set the screen to TotalSummary and render it once before cleanup
+        let _ = self.set_current_screen(ScreenType::TotalSummary);
+        // Force one render cycle to show the summary
+        let _ = self.render_current_screen();
+        Self::cleanup_terminal_static();
     }
 }
 
@@ -911,45 +774,6 @@ impl Drop for ScreenManager {
 
 impl Default for ScreenManager {
     fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl ScreenManager {
-    /// Static cleanup function for use when ScreenManager instance is not available
-    pub fn cleanup_terminal_static() {
-        use crossterm::{execute, terminal};
-        use std::io::{stdout, Write};
-
-        // Disable raw mode first
-        if let Err(e) = terminal::disable_raw_mode() {
-            eprintln!("Warning: Failed to disable raw mode: {}", e);
-        }
-
-        // Exit alternate screen and restore cursor with explicit error handling
-        if let Err(e) = execute!(
-            stdout(),
-            terminal::LeaveAlternateScreen,
-            crossterm::cursor::Show,
-            crossterm::style::ResetColor,
-            terminal::Clear(terminal::ClearType::All)
-        ) {
-            eprintln!("Warning: Failed to cleanup terminal: {}", e);
-        }
-
-        let _ = stdout().flush();
-    }
-
-    /// Show session summary on interrupt (Ctrl+C handler)
-    pub fn show_session_summary_on_interrupt() {
-        // Use ScreenManager to show ExitSummary properly (consistent with run() method)
-        Self::with_instance(|screen_manager| {
-            let mut manager = screen_manager.borrow_mut();
-            // Set the screen to ExitSummary and render it once before cleanup
-            let _ = manager.set_current_screen(ScreenType::TotalSummary);
-            // Force one render cycle to show the summary
-            let _ = manager.render_current_screen();
-        });
-        Self::cleanup_terminal_static();
+        Self::new(EventBus::new())
     }
 }

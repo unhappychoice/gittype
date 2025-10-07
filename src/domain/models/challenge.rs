@@ -1,4 +1,4 @@
-use super::{git_repository::GitRepository, DifficultyLevel};
+use super::{git_repository::GitRepository, CodeChunk, DifficultyLevel};
 use std::borrow::Cow;
 use std::path::Path;
 
@@ -55,10 +55,7 @@ impl Challenge {
         self
     }
 
-    pub fn from_chunk(
-        chunk: &crate::domain::models::CodeChunk,
-        difficulty: Option<DifficultyLevel>,
-    ) -> Option<Self> {
+    pub fn from_chunk(chunk: &CodeChunk, difficulty: Option<DifficultyLevel>) -> Option<Self> {
         // Early validation
         if chunk.content.trim().is_empty() {
             return None;

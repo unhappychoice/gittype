@@ -1,5 +1,9 @@
+use crate::domain::events::EventBus;
 use crate::domain::models::rank::{Rank, RankTier};
-use crate::presentation::game::{Screen, ScreenTransition, UpdateStrategy};
+use crate::presentation::game::events::NavigateTo;
+use crate::presentation::game::{
+    RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
+};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyModifiers};
@@ -59,22 +63,18 @@ pub struct HelpScreen {
     scroll_position: u16,
     content_height: u16,
     viewport_height: u16,
-}
-
-impl Default for HelpScreen {
-    fn default() -> Self {
-        Self::new()
-    }
+    event_bus: EventBus,
 }
 
 impl HelpScreen {
-    pub fn new() -> Self {
+    pub fn new(event_bus: EventBus) -> Self {
         Self {
             current_section: HelpSection::CLI,
             github_fallback: None,
             scroll_position: 0,
             content_height: 0,
             viewport_height: 0,
+            event_bus,
         }
     }
 
@@ -1037,21 +1037,46 @@ impl HelpScreen {
     }
 }
 
+pub struct HelpScreenDataProvider;
+
+impl ScreenDataProvider for HelpScreenDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        Ok(Box::new(()))
+    }
+}
+
 impl Screen for HelpScreen {
-    fn handle_key_event(
-        &mut self,
-        key_event: crossterm::event::KeyEvent,
-    ) -> crate::Result<ScreenTransition> {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::Help
+    }
+
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(HelpScreenDataProvider)
+    }
+
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Ratatui
+    }
+
+    fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> crate::Result<()> {
+        Ok(())
+    }
+
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> crate::Result<()> {
         if self.github_fallback.is_some() {
             match key_event.code {
                 KeyCode::Esc => {
                     self.github_fallback = None;
-                    Ok(ScreenTransition::None)
+                    Ok(())
                 }
                 KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                    Ok(ScreenTransition::Exit)
+                    self.event_bus.publish(NavigateTo::Exit);
+                    Ok(())
                 }
-                _ => Ok(ScreenTransition::None),
+                _ => Ok(()),
             }
         } else {
             let sections = HelpSection::all();
@@ -1069,17 +1094,17 @@ impl Screen for HelpScreen {
                     };
                     self.current_section = sections[new_index];
                     self.scroll_position = 0; // Reset scroll when changing sections
-                    Ok(ScreenTransition::None)
+                    Ok(())
                 }
                 KeyCode::Right | KeyCode::Char('l') => {
                     let new_index = (current_index + 1) % sections.len();
                     self.current_section = sections[new_index];
                     self.scroll_position = 0; // Reset scroll when changing sections
-                    Ok(ScreenTransition::None)
+                    Ok(())
                 }
                 KeyCode::Up | KeyCode::Char('k') => {
                     self.scroll_position = self.scroll_position.saturating_sub(1);
-                    Ok(ScreenTransition::None)
+                    Ok(())
                 }
                 KeyCode::Down | KeyCode::Char('j') => {
                     // Calculate actual maximum scroll based on content and viewport
@@ -1092,32 +1117,31 @@ impl Screen for HelpScreen {
                     if self.scroll_position < max_scroll {
                         self.scroll_position = self.scroll_position.saturating_add(1);
                     }
-                    Ok(ScreenTransition::None)
+                    Ok(())
                 }
                 KeyCode::Char('g') => {
                     if Self::try_open_github()? {
-                        Ok(ScreenTransition::None)
+                        Ok(())
                     } else {
                         self.github_fallback =
                             Some("https://github.com/unhappychoice/gittype".to_string());
-                        Ok(ScreenTransition::None)
+                        Ok(())
                     }
                 }
-                KeyCode::Esc => Ok(ScreenTransition::Pop),
-                KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                    Ok(ScreenTransition::Exit)
+                KeyCode::Esc => {
+                    self.event_bus.publish(NavigateTo::Pop);
+                    Ok(())
                 }
-                _ => Ok(ScreenTransition::None),
+                KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
+                    self.event_bus.publish(NavigateTo::Exit);
+                    Ok(())
+                }
+                _ => Ok(()),
             }
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut std::io::Stdout,
-        _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut std::io::Stdout) -> Result<()> {
         // HelpScreen only supports ratatui rendering
         Ok(())
     }

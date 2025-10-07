@@ -1,11 +1,16 @@
+use crate::domain::events::EventBus;
 use crate::domain::models::storage::{
     SessionResultData, SessionStageResult, StoredRepository, StoredSession,
 };
 use crate::domain::repositories::SessionRepository;
+use crate::presentation::game::events::NavigateTo;
+use crate::presentation::game::screens::RecordsScreen;
 use crate::presentation::game::views::{PerformanceMetricsView, SessionInfoView, StageDetailsView};
-use crate::presentation::game::{Screen, ScreenTransition, UpdateStrategy};
+use crate::presentation::game::{
+    RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
+};
 use crate::presentation::ui::Colors;
-use crate::Result;
+use crate::{GitTypeError, Result};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
     style::{Modifier, Style},
@@ -30,11 +35,12 @@ pub struct SessionDetailScreen {
     session_data: SessionDisplayData,
     stage_results: Vec<SessionStageResult>,
     stage_scroll_offset: usize,
+    event_bus: EventBus,
 }
 
 impl SessionDetailScreen {
-    pub fn new_for_screen_manager() -> Result<Self> {
-        let screen = Self {
+    pub fn new(event_bus: EventBus) -> Self {
+        Self {
             session_data: SessionDisplayData {
                 session: StoredSession {
                     id: 0,
@@ -54,9 +60,8 @@ impl SessionDetailScreen {
             },
             stage_results: Vec::new(),
             stage_scroll_offset: 0,
-        };
-
-        Ok(screen)
+            event_bus,
+        }
     }
 
     pub fn set_session_data(&mut self, session_data: SessionDisplayData) -> Result<()> {
@@ -125,40 +130,76 @@ impl SessionDetailScreen {
     }
 }
 
+pub struct SessionDetailScreenDataProvider;
+
+impl ScreenDataProvider for SessionDetailScreenDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        Ok(Box::new(()))
+    }
+}
+
 impl Screen for SessionDetailScreen {
-    fn handle_key_event(
-        &mut self,
-        key_event: crossterm::event::KeyEvent,
-    ) -> Result<ScreenTransition> {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::SessionDetail
+    }
+
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(SessionDetailScreenDataProvider)
+    }
+
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Ratatui
+    }
+
+    fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
+        Ok(())
+    }
+
+    fn on_pushed_from(&mut self, source_screen: &dyn Screen) -> Result<()> {
+        if let Some(records) = source_screen.as_any().downcast_ref::<RecordsScreen>() {
+            if let Some(session_data) = records.get_selected_session_for_detail() {
+                self.set_session_data(session_data.clone())?;
+                return Ok(());
+            }
+        }
+
+        Err(GitTypeError::ScreenInitializationError(
+            "SessionDetail must be pushed from Records screen with selected session".to_string(),
+        ))
+    }
+
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
 
         match key_event.code {
-            KeyCode::Esc => Ok(ScreenTransition::Pop),
+            KeyCode::Esc => {
+                self.event_bus.publish(NavigateTo::Pop);
+                Ok(())
+            }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                Ok(ScreenTransition::Exit)
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
             }
             KeyCode::Up => {
                 if self.stage_scroll_offset > 0 {
                     self.stage_scroll_offset -= 1;
                 }
-                Ok(ScreenTransition::None)
+                Ok(())
             }
             KeyCode::Down => {
                 if self.stage_scroll_offset + 1 < self.stage_results.len() {
                     self.stage_scroll_offset += 1;
                 }
-                Ok(ScreenTransition::None)
+                Ok(())
             }
-            _ => Ok(ScreenTransition::None),
+            _ => Ok(()),
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut Stdout,
-        _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
         Ok(())
     }
 

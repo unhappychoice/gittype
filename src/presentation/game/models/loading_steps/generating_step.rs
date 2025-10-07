@@ -1,8 +1,9 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
 use crate::domain::repositories::challenge_repository::CHALLENGE_REPOSITORY;
 use crate::domain::services::challenge_generator::ChallengeGenerator;
+use crate::presentation::game::GameData;
 use crate::presentation::ui::Colors;
-use crate::Result;
+use crate::{GitTypeError, Result};
 use ratatui::style::Color;
 
 #[derive(Debug, Clone)]
@@ -57,13 +58,11 @@ impl Step for GeneratingStep {
 
     fn execute(&self, context: &mut ExecutionContext) -> Result<StepResult> {
         let chunks = context.chunks.take().ok_or_else(|| {
-            crate::GitTypeError::ExtractionFailed(
-                "No chunks available from ExtractingStep".to_string(),
-            )
+            GitTypeError::ExtractionFailed("No chunks available from ExtractingStep".to_string())
         })?;
 
         let screen = context.loading_screen.ok_or_else(|| {
-            crate::GitTypeError::ExtractionFailed("No loading screen available".to_string())
+            GitTypeError::ExtractionFailed("No loading screen available".to_string())
         })?;
 
         let converter = ChallengeGenerator::new();
@@ -86,7 +85,6 @@ impl Step for GeneratingStep {
         }
 
         // Store challenges in GameData
-        use crate::presentation::game::GameData;
         GameData::set_results(generated_challenges, context.git_repository.take())?;
 
         Ok(StepResult::Skipped)

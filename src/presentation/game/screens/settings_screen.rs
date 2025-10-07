@@ -1,9 +1,10 @@
+use crate::domain::events::EventBus;
 use crate::domain::models::color_mode::ColorMode;
 use crate::domain::models::theme::Theme;
-use crate::domain::models::{SessionResult, TotalResult};
 use crate::domain::services::config_manager::ConfigService;
 use crate::domain::services::theme_manager::THEME_MANAGER;
-use crate::presentation::game::{Screen, ScreenTransition};
+use crate::presentation::game::events::NavigateTo;
+use crate::presentation::game::{RenderBackend, Screen, ScreenType};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
@@ -51,10 +52,11 @@ pub struct SettingsScreen {
     original_theme: Theme,
     original_color_mode: ColorMode,
     is_preview_mode: bool,
+    event_bus: EventBus,
 }
 
-impl Default for SettingsScreen {
-    fn default() -> Self {
+impl SettingsScreen {
+    pub fn new(event_bus: EventBus) -> Self {
         let mut color_mode_state = ListState::default();
         let mut theme_state = ListState::default();
 
@@ -83,6 +85,7 @@ impl Default for SettingsScreen {
             original_theme: current_theme,
             original_color_mode: current_color_mode,
             is_preview_mode: false,
+            event_bus,
         }
     }
 }
@@ -306,8 +309,35 @@ impl SettingsScreen {
     }
 }
 
+pub struct SettingsScreenDataProvider;
+
+impl crate::presentation::game::ScreenDataProvider for SettingsScreenDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        Ok(Box::new(()))
+    }
+}
+
 impl Screen for SettingsScreen {
-    fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<ScreenTransition> {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::Settings
+    }
+
+    fn default_provider() -> Box<dyn crate::presentation::game::ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(SettingsScreenDataProvider)
+    }
+
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Ratatui
+    }
+
+    fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
+        Ok(())
+    }
+
+    fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()> {
         match key_event.code {
             KeyCode::Left | KeyCode::Char('h') => {
                 let sections = SettingsSection::all();
@@ -321,7 +351,7 @@ impl Screen for SettingsScreen {
                     current_index - 1
                 };
                 self.current_section = sections[new_index];
-                Ok(ScreenTransition::None)
+                Ok(())
             }
             KeyCode::Right | KeyCode::Char('l') => {
                 let sections = SettingsSection::all();
@@ -331,7 +361,7 @@ impl Screen for SettingsScreen {
                     .unwrap_or(0);
                 let new_index = (current_index + 1) % sections.len();
                 self.current_section = sections[new_index];
-                Ok(ScreenTransition::None)
+                Ok(())
             }
             KeyCode::Up | KeyCode::Char('k') => {
                 match self.current_section {
@@ -350,7 +380,7 @@ impl Screen for SettingsScreen {
                         }
                     }
                 }
-                Ok(ScreenTransition::None)
+                Ok(())
             }
             KeyCode::Down | KeyCode::Char('j') => {
                 match self.current_section {
@@ -369,29 +399,27 @@ impl Screen for SettingsScreen {
                         }
                     }
                 }
-                Ok(ScreenTransition::None)
+                Ok(())
             }
             KeyCode::Char(' ') => {
                 self.save_settings();
-                Ok(ScreenTransition::Pop)
+                self.event_bus.publish(NavigateTo::Pop);
+                Ok(())
             }
             KeyCode::Esc => {
                 self.revert_to_original();
-                Ok(ScreenTransition::Pop)
+                self.event_bus.publish(NavigateTo::Pop);
+                Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                Ok(ScreenTransition::Exit)
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
             }
-            _ => Ok(ScreenTransition::None),
+            _ => Ok(()),
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut Stdout,
-        _session_result: Option<&SessionResult>,
-        _total_result: Option<&TotalResult>,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
         // This should not be used for ratatui screens
         Ok(())
     }

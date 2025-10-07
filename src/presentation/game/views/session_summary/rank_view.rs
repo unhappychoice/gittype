@@ -1,3 +1,4 @@
+use crate::domain::models::Rank;
 use crate::domain::services::scoring::RankCalculator;
 use crate::presentation::game::ascii_rank_titles_generated::get_rank_display;
 use crate::presentation::ui::Colors;
@@ -36,7 +37,7 @@ impl RankView {
     }
 
     pub fn render(
-        best_rank: crate::domain::services::scoring::Rank,
+        best_rank: Rank,
         session_score: f64,
         center_col: u16,
         rank_start_row: u16,

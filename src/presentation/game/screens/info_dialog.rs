@@ -1,4 +1,8 @@
-use crate::presentation::game::{Screen, ScreenTransition, UpdateStrategy};
+use crate::domain::events::EventBus;
+use crate::presentation::game::events::NavigateTo;
+use crate::presentation::game::{
+    RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
+};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyModifiers};
@@ -23,24 +27,21 @@ pub enum InfoDialogState {
 
 pub struct InfoDialogScreen {
     state: InfoDialogState,
-}
-
-impl Default for InfoDialogScreen {
-    fn default() -> Self {
-        Self::new()
-    }
+    event_bus: EventBus,
 }
 
 impl InfoDialogScreen {
-    pub fn new() -> Self {
+    pub fn new(event_bus: EventBus) -> Self {
         Self {
             state: InfoDialogState::Menu { selected_option: 0 },
+            event_bus,
         }
     }
 
-    pub fn new_fallback(title: String, url: String) -> Self {
+    pub fn new_fallback(title: String, url: String, event_bus: EventBus) -> Self {
         Self {
             state: InfoDialogState::Fallback { title, url },
+            event_bus,
         }
     }
 
@@ -52,35 +53,41 @@ impl InfoDialogScreen {
         ]
     }
 
-    fn handle_option_select(&mut self) -> Result<ScreenTransition> {
+    fn handle_option_select(&mut self) -> Result<()> {
         if let InfoDialogState::Menu { selected_option } = &self.state {
             match selected_option {
                 0 => {
                     if Self::try_open_github()? {
-                        Ok(ScreenTransition::Pop)
+                        self.event_bus.publish(NavigateTo::Pop);
+                        Ok(())
                     } else {
                         self.state = InfoDialogState::Fallback {
                             title: "GitHub Repository".to_string(),
                             url: "https://github.com/unhappychoice/gittype".to_string(),
                         };
-                        Ok(ScreenTransition::None)
+                        Ok(())
                     }
                 }
                 1 => {
                     if Self::try_open_x()? {
-                        Ok(ScreenTransition::Pop)
+                        self.event_bus.publish(NavigateTo::Pop);
+                        Ok(())
                     } else {
                         self.state = InfoDialogState::Fallback {
                             title: "X Search".to_string(),
                             url: "https://x.com/search?q=%23gittype".to_string(),
                         };
-                        Ok(ScreenTransition::None)
+                        Ok(())
                     }
                 }
-                _ => Ok(ScreenTransition::Pop),
+                _ => {
+                    self.event_bus.publish(NavigateTo::Pop);
+                    Ok(())
+                }
             }
         } else {
-            Ok(ScreenTransition::Pop)
+            self.event_bus.publish(NavigateTo::Pop);
+            Ok(())
         }
     }
 
@@ -249,11 +256,35 @@ impl InfoDialogScreen {
     }
 }
 
+pub struct InfoDialogScreenDataProvider;
+
+impl ScreenDataProvider for InfoDialogScreenDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        Ok(Box::new(()))
+    }
+}
+
 impl Screen for InfoDialogScreen {
-    fn handle_key_event(
-        &mut self,
-        key_event: crossterm::event::KeyEvent,
-    ) -> crate::Result<ScreenTransition> {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::InfoDialog
+    }
+
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(InfoDialogScreenDataProvider)
+    }
+
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Ratatui
+    }
+
+    fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
+        Ok(())
+    }
+
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> crate::Result<()> {
         match &mut self.state {
             InfoDialogState::Menu { selected_option } => {
                 let options = Self::get_options();
@@ -265,38 +296,38 @@ impl Screen for InfoDialogScreen {
                         } else {
                             *selected_option - 1
                         };
-                        Ok(ScreenTransition::None)
+                        Ok(())
                     }
                     KeyCode::Down | KeyCode::Char('j') => {
                         *selected_option = (*selected_option + 1) % options.len();
-                        Ok(ScreenTransition::None)
+                        Ok(())
                     }
-                    KeyCode::Esc => Ok(ScreenTransition::Pop),
+                    KeyCode::Esc => {
+                        self.event_bus.publish(NavigateTo::Pop);
+                        Ok(())
+                    }
                     KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                        Ok(ScreenTransition::Exit)
+                        self.event_bus.publish(NavigateTo::Exit);
+                        Ok(())
                     }
-                    _ => Ok(ScreenTransition::None),
+                    _ => Ok(()),
                 }
             }
             InfoDialogState::Fallback { .. } => match key_event.code {
                 KeyCode::Esc => {
                     self.state = InfoDialogState::Menu { selected_option: 0 };
-                    Ok(ScreenTransition::None)
+                    Ok(())
                 }
                 KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                    Ok(ScreenTransition::Exit)
+                    self.event_bus.publish(NavigateTo::Exit);
+                    Ok(())
                 }
-                _ => Ok(ScreenTransition::None),
+                _ => Ok(()),
             },
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut std::io::Stdout,
-        _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut std::io::Stdout) -> Result<()> {
         // InfoDialog only supports ratatui rendering now
         // This method is kept for trait compatibility but does nothing
         Ok(())

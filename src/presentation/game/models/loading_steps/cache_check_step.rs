@@ -1,6 +1,7 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
 use crate::domain::repositories::challenge_repository::CHALLENGE_REPOSITORY;
 use crate::presentation::game::screens::loading_screen::ProgressReporter;
+use crate::presentation::game::GameData;
 use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::style::Color;
@@ -100,7 +101,6 @@ impl Step for CacheCheckStep {
 
         let challenge_count = cached_challenges.len();
 
-        use crate::presentation::game::GameData;
         GameData::set_results(cached_challenges, context.git_repository.clone())?;
 
         // Mark that cache was used so other steps can skip

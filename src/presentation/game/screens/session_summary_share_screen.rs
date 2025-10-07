@@ -1,35 +1,69 @@
+use crate::domain::events::EventBus;
+use crate::domain::models::SessionResult;
+use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::{
     ShareBackOptionView, SharePlatformOptionsView, SharePreviewView, ShareTitleView,
 };
-use crate::presentation::game::{GameData, Screen, ScreenTransition, UpdateStrategy};
+use crate::presentation::game::{
+    GameData, RenderBackend, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
+};
 use crate::presentation::sharing::{SharingPlatform, SharingService};
-use crate::{domain::models::GitRepository, Result};
+use crate::{domain::models::GitRepository, GitTypeError, Result};
 use crossterm::terminal::{self};
 use std::io::Stdout;
+use std::sync::{Arc, Mutex};
 
-pub struct SessionSummaryShareScreen {
-    session_result: Option<crate::domain::models::SessionResult>,
-    git_repository: Option<crate::domain::models::GitRepository>,
+pub struct SessionSummaryShareData {
+    pub session_result: SessionResult,
+    pub git_repository: Option<GitRepository>,
 }
 
-impl Default for SessionSummaryShareScreen {
-    fn default() -> Self {
-        Self::new()
+pub struct SessionSummaryShareDataProvider {
+    session_manager: Arc<Mutex<SessionManager>>,
+    game_data: Arc<Mutex<GameData>>,
+}
+
+impl ScreenDataProvider for SessionSummaryShareDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        let session_result = self
+            .session_manager
+            .lock()
+            .map_err(|_| GitTypeError::TerminalError("Failed to lock SessionManager".to_string()))?
+            .get_session_result()
+            .ok_or_else(|| {
+                GitTypeError::TerminalError("No session result available".to_string())
+            })?;
+
+        let git_repository = self
+            .game_data
+            .lock()
+            .map_err(|_| GitTypeError::TerminalError("Failed to lock GameData".to_string()))?
+            .git_repository
+            .clone();
+
+        Ok(Box::new(SessionSummaryShareData {
+            session_result,
+            git_repository,
+        }))
     }
+}
+
+pub struct SessionSummaryShareScreen {
+    session_result: Option<SessionResult>,
+    git_repository: Option<GitRepository>,
+    event_bus: EventBus,
 }
 
 impl SessionSummaryShareScreen {
-    pub fn new() -> Self {
+    pub fn new(event_bus: EventBus) -> Self {
         Self {
             session_result: None,
             git_repository: None,
+            event_bus,
         }
     }
 
-    fn render(
-        metrics: &crate::domain::models::SessionResult,
-        repo_info: &Option<GitRepository>,
-    ) -> Result<()> {
+    fn render(metrics: &SessionResult, repo_info: &Option<GitRepository>) -> Result<()> {
         let (terminal_width, terminal_height) = terminal::size()?;
         let center_row = terminal_height / 2;
         let center_col = terminal_width / 2;
@@ -47,10 +81,34 @@ impl SessionSummaryShareScreen {
 }
 
 impl Screen for SessionSummaryShareScreen {
-    fn handle_key_event(
-        &mut self,
-        key_event: crossterm::event::KeyEvent,
-    ) -> Result<ScreenTransition> {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::SessionSharing
+    }
+
+    fn default_provider() -> Box<dyn crate::presentation::game::ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(SessionSummaryShareDataProvider {
+            session_manager: SessionManager::instance(),
+            game_data: GameData::instance(),
+        })
+    }
+
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Crossterm
+    }
+
+    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
+        let data = data.downcast::<SessionSummaryShareData>()?;
+
+        self.session_result = Some(data.session_result);
+        self.git_repository = data.git_repository;
+
+        Ok(())
+    }
+
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
         match key_event.code {
             KeyCode::Char('1') => {
@@ -61,7 +119,8 @@ impl Screen for SessionSummaryShareScreen {
                         &self.git_repository,
                     );
                 }
-                Ok(ScreenTransition::Pop)
+                self.event_bus.publish(NavigateTo::Pop);
+                Ok(())
             }
             KeyCode::Char('2') => {
                 if let Some(ref session_result) = self.session_result {
@@ -71,7 +130,8 @@ impl Screen for SessionSummaryShareScreen {
                         &self.git_repository,
                     );
                 }
-                Ok(ScreenTransition::Pop)
+                self.event_bus.publish(NavigateTo::Pop);
+                Ok(())
             }
             KeyCode::Char('3') => {
                 if let Some(ref session_result) = self.session_result {
@@ -81,7 +141,8 @@ impl Screen for SessionSummaryShareScreen {
                         &self.git_repository,
                     );
                 }
-                Ok(ScreenTransition::Pop)
+                self.event_bus.publish(NavigateTo::Pop);
+                Ok(())
             }
             KeyCode::Char('4') => {
                 if let Some(ref session_result) = self.session_result {
@@ -91,29 +152,24 @@ impl Screen for SessionSummaryShareScreen {
                         &self.git_repository,
                     );
                 }
-                Ok(ScreenTransition::Pop)
+                self.event_bus.publish(NavigateTo::Pop);
+                Ok(())
             }
-            KeyCode::Esc => Ok(ScreenTransition::Pop),
+            KeyCode::Esc => {
+                self.event_bus.publish(NavigateTo::Pop);
+                Ok(())
+            }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                Ok(ScreenTransition::Exit)
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
             }
-            _ => Ok(ScreenTransition::None),
+            _ => Ok(()),
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut Stdout,
-        session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
-    ) -> Result<()> {
-        self.session_result = session_result.cloned();
-        // Get git repository from global GameData
-        let git_repository = GameData::get_git_repository();
-        self.git_repository = git_repository.clone();
-
-        if let Some(session_result) = session_result {
-            Self::render(session_result, &git_repository)?;
+    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
+        if let Some(ref session_result) = self.session_result {
+            Self::render(session_result, &self.git_repository)?;
         }
         Ok(())
     }

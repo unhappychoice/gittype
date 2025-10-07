@@ -1,16 +1,18 @@
-use crate::domain::models::Challenge;
+use crate::domain::events::EventBus;
 use crate::domain::models::ExtractionOptions;
+use crate::domain::models::{Challenge, GitRepository};
+use crate::presentation::game::events::ExitRequested;
 use crate::presentation::game::models::{ExecutionContext, StepManager, StepType};
 use crate::presentation::game::views::LoadingMainView;
 use crate::presentation::game::{
-    GameData, Screen, ScreenManager, ScreenTransition, UpdateStrategy,
+    GameData, RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
 };
-use crate::Result;
+use crate::{GitTypeError, Result};
 use ratatui::Frame;
 use std::path::PathBuf;
 use std::sync::{
     atomic::{AtomicBool, AtomicUsize, Ordering},
-    Arc, RwLock,
+    Arc, Mutex, RwLock,
 };
 use std::thread;
 use std::time::Duration;
@@ -73,16 +75,51 @@ pub struct StepInfo {
 pub struct LoadingScreen {
     state: LoadingScreenState,
     render_handle: Option<thread::JoinHandle<Result<()>>>,
+    event_bus: EventBus,
+    game_data: Arc<Mutex<GameData>>,
 }
 
 #[derive(Clone)]
 pub struct ProcessingResult {
     pub challenges: Vec<Challenge>,
-    pub git_repository: Option<crate::domain::models::GitRepository>,
+    pub git_repository: Option<GitRepository>,
+}
+
+pub struct ProcessingParams {
+    pub repo_spec: Option<String>,
+    pub repo_path: Option<PathBuf>,
+    pub extraction_options: ExtractionOptions,
+}
+
+pub struct LoadingScreenData {
+    pub processing_params: Option<ProcessingParams>,
+}
+
+pub struct LoadingScreenDataProvider {
+    game_data: Arc<Mutex<GameData>>,
+}
+
+impl ScreenDataProvider for LoadingScreenDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        let processing_params = self
+            .game_data
+            .lock()
+            .map_err(|e| GitTypeError::TerminalError(format!("Failed to lock game data: {}", e)))?
+            .processing_parameters()
+            .map(
+                |(repo_spec, repo_path, extraction_options)| ProcessingParams {
+                    repo_spec,
+                    repo_path,
+                    extraction_options,
+                },
+            );
+
+        Ok(Box::new(LoadingScreenData { processing_params }))
+    }
 }
 
 impl LoadingScreen {
-    pub fn new() -> Result<Self> {
+    pub fn new(event_bus: EventBus) -> Self {
         let step_manager = Arc::new(StepManager::new());
 
         let steps_info: Vec<StepInfo> = step_manager
@@ -105,10 +142,12 @@ impl LoadingScreen {
             all_steps: Arc::new(RwLock::new(steps_info)),
         };
 
-        Ok(Self {
+        Self {
             state,
             render_handle: None,
-        })
+            event_bus,
+            game_data: GameData::instance(),
+        }
     }
 
     pub fn show_initial(&mut self) -> Result<()> {
@@ -128,23 +167,13 @@ impl LoadingScreen {
         repo_path: Option<&PathBuf>,
         extraction_options: ExtractionOptions,
     ) -> Result<()> {
-        use crate::presentation::game::GameData;
-
         let state = self.state.clone();
         let repo_spec_owned = repo_spec.map(|s| s.to_string());
         let repo_path_owned = repo_path.cloned();
+        let event_bus = self.event_bus.clone();
 
         thread::spawn(move || {
-            let mut loading_screen = match LoadingScreen::new() {
-                Ok(screen) => screen,
-                Err(e) => {
-                    let _ = GameData::set_loading_failed(format!(
-                        "Failed to initialize LoadingScreen: {}",
-                        e
-                    ));
-                    return;
-                }
-            };
+            let mut loading_screen = LoadingScreen::new(event_bus);
 
             loading_screen.state = state;
 
@@ -163,10 +192,9 @@ impl LoadingScreen {
                 }
                 Err(e) => {
                     log::error!("Repository processing failed: {}", e);
-                    let _ = GameData::set_loading_failed(format!(
-                        "Repository processing failed: {}",
-                        e
-                    ));
+                    if let Ok(mut data) = loading_screen.game_data.lock() {
+                        data.mark_failed(format!("Repository processing failed: {}", e));
+                    }
                 }
             }
 
@@ -183,10 +211,7 @@ impl LoadingScreen {
         Ok(())
     }
 
-    pub fn set_git_repository(
-        &self,
-        git_repository: &crate::domain::models::GitRepository,
-    ) -> Result<()> {
+    pub fn set_git_repository(&self, git_repository: &GitRepository) -> Result<()> {
         let mut parts = vec![format!(
             "📁 {}/{}",
             git_repository.user_name, git_repository.repository_name
@@ -344,44 +369,54 @@ impl ProgressReporter for LoadingScreen {
 }
 
 impl Screen for LoadingScreen {
-    fn init(&mut self) -> Result<()> {
-        if let Some((repo_spec, repo_path, extraction_options)) =
-            GameData::get_processing_parameters()
-        {
-            self.start_background_processing(
-                repo_spec.as_deref(),
-                repo_path.as_ref(),
-                extraction_options,
-            )?;
-        } else {
-            log::error!("No processing parameters found in GameData");
-        }
+    fn get_type(&self) -> ScreenType {
+        ScreenType::Loading
+    }
+
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(LoadingScreenDataProvider {
+            game_data: GameData::instance(),
+        })
+    }
+
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Ratatui
+    }
+
+    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
+        let loading_data = data.downcast::<LoadingScreenData>()?;
+
+        let params = loading_data.processing_params.ok_or_else(|| {
+            GitTypeError::ScreenInitializationError(
+                "No processing parameters found in LoadingScreenData".to_string(),
+            )
+        })?;
+
+        self.start_background_processing(
+            params.repo_spec.as_deref(),
+            params.repo_path.as_ref(),
+            params.extraction_options,
+        )?;
 
         self.show_initial()
     }
 
-    fn handle_key_event(
-        &mut self,
-        key_event: crossterm::event::KeyEvent,
-    ) -> Result<ScreenTransition> {
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
 
         if key_event.code == KeyCode::Char('c')
             && key_event.modifiers.contains(KeyModifiers::CONTROL)
         {
-            ScreenManager::show_session_summary_on_interrupt();
-            std::process::exit(0);
+            self.event_bus.publish(ExitRequested);
         }
 
-        Ok(ScreenTransition::None)
+        Ok(())
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut std::io::Stdout,
-        _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut std::io::Stdout) -> Result<()> {
         Ok(())
     }
 
@@ -406,9 +441,12 @@ impl Screen for LoadingScreen {
     }
 
     fn update(&mut self) -> Result<bool> {
-        use crate::presentation::game::GameData;
-
-        if GameData::is_loading_completed() {
+        if self
+            .game_data
+            .lock()
+            .map_err(|e| GitTypeError::TerminalError(format!("Failed to lock game data: {}", e)))?
+            .completed()
+        {
             if let Ok(mut current_step) = self.state.current_step.write() {
                 *current_step = StepType::Completed;
             }
@@ -416,7 +454,12 @@ impl Screen for LoadingScreen {
             return Ok(false);
         }
 
-        if GameData::is_loading_failed() {
+        if self
+            .game_data
+            .lock()
+            .map_err(|e| GitTypeError::TerminalError(format!("Failed to lock game data: {}", e)))?
+            .failed()
+        {
             return Ok(false);
         }
 

@@ -1,9 +1,14 @@
+use crate::domain::events::EventBus;
+use crate::domain::models::{RankTier, SessionResult};
 use crate::domain::services::scoring::Rank;
+use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::typing::typing_animation_view::AnimationPhase;
 use crate::presentation::game::views::TypingAnimationView;
-use crate::presentation::game::{Screen, ScreenTransition, ScreenType, UpdateStrategy};
+use crate::presentation::game::{
+    RenderBackend, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
+};
 use crate::presentation::ui::Colors;
-use crate::Result;
+use crate::{GitTypeError, Result};
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
@@ -13,31 +18,51 @@ use ratatui::{
     Frame,
 };
 use std::io::Stdout;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-pub struct AnimationScreen {
-    animation: Option<TypingAnimationView>,
-    session_result: Option<crate::domain::models::SessionResult>,
-    animation_initialized: bool,
+pub struct AnimationData {
+    pub session_result: SessionResult,
 }
 
-impl Default for AnimationScreen {
-    fn default() -> Self {
-        Self::new()
+pub struct AnimationDataProvider {
+    session_manager: Arc<Mutex<SessionManager>>,
+}
+
+impl ScreenDataProvider for AnimationDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        let session_result = self
+            .session_manager
+            .lock()
+            .map_err(|_| GitTypeError::TerminalError("Failed to lock SessionManager".to_string()))?
+            .get_session_result()
+            .ok_or_else(|| {
+                GitTypeError::TerminalError("No session result available".to_string())
+            })?;
+
+        Ok(Box::new(AnimationData { session_result }))
     }
 }
 
+pub struct AnimationScreen {
+    animation: Option<TypingAnimationView>,
+    session_result: Option<SessionResult>,
+    animation_initialized: bool,
+    event_bus: EventBus,
+}
+
 impl AnimationScreen {
-    pub fn new() -> Self {
+    pub fn new(event_bus: EventBus) -> Self {
         Self {
             animation: None,
             session_result: None,
             animation_initialized: false,
+            event_bus,
         }
     }
 
     /// Pre-inject session result from ScreenManager (avoids RefCell conflicts)
-    pub fn inject_session_result(&mut self, session_result: crate::domain::models::SessionResult) {
+    pub fn set_session_result(&mut self, session_result: SessionResult) {
         self.session_result = Some(session_result);
 
         if let Some(ref session_result) = self.session_result {
@@ -158,46 +183,62 @@ impl AnimationScreen {
         frame.render_widget(skip_paragraph, skip_area);
     }
 
-    fn get_tier_from_rank_name(rank_name: &str) -> crate::domain::models::RankTier {
+    fn get_tier_from_rank_name(rank_name: &str) -> RankTier {
         Rank::all_ranks()
             .iter()
             .find(|rank| rank.name() == rank_name)
             .map(|rank| rank.tier().clone())
-            .unwrap_or(crate::domain::models::RankTier::Beginner)
+            .unwrap_or(RankTier::Beginner)
     }
 }
 
 impl Screen for AnimationScreen {
-    fn init(&mut self) -> Result<()> {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::Animation
+    }
+
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(AnimationDataProvider {
+            session_manager: SessionManager::instance(),
+        })
+    }
+
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Ratatui
+    }
+
+    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
+        // Initialize state
         if self.animation.is_none() {
             self.animation_initialized = false;
             self.session_result = None;
         }
 
+        let data = data.downcast::<AnimationData>()?;
+
+        self.set_session_result(data.session_result);
         Ok(())
     }
 
-    fn handle_key_event(
-        &mut self,
-        key_event: crossterm::event::KeyEvent,
-    ) -> Result<ScreenTransition> {
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         match key_event.code {
             KeyCode::Char('s') | KeyCode::Char('S') => {
-                Ok(ScreenTransition::Replace(ScreenType::SessionSummary))
+                self.event_bus
+                    .publish(NavigateTo::Replace(ScreenType::SessionSummary));
+                Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                Ok(ScreenTransition::Exit)
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
             }
-            _ => Ok(ScreenTransition::None),
+            _ => Ok(()),
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut Stdout,
-        _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
         Ok(())
     }
 

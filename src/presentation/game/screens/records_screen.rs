@@ -1,9 +1,13 @@
 use super::session_detail_screen::SessionDisplayData;
+use crate::domain::events::EventBus;
 use crate::domain::models::storage::{SessionResultData, StoredRepository};
 use crate::domain::repositories::SessionRepository;
 use crate::infrastructure::database::daos::SessionDao;
 use crate::infrastructure::database::database::{Database, HasDatabase};
-use crate::presentation::game::{Screen, ScreenTransition, ScreenType, UpdateStrategy};
+use crate::presentation::game::events::NavigateTo;
+use crate::presentation::game::{
+    RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
+};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use chrono::{DateTime, Local};
@@ -93,6 +97,26 @@ impl Default for FilterState {
     }
 }
 
+pub struct RecordsScreenData {
+    pub sessions: Vec<SessionDisplayData>,
+    pub repositories: Vec<StoredRepository>,
+}
+
+pub struct RecordsScreenDataProvider {
+    repository: SessionRepository,
+}
+
+impl ScreenDataProvider for RecordsScreenDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        let repositories = self.repository.get_all_repositories()?;
+
+        Ok(Box::new(RecordsScreenData {
+            sessions: Vec::new(),
+            repositories,
+        }))
+    }
+}
+
 #[derive(Clone)]
 pub enum RecordsAction {
     Return,
@@ -107,17 +131,17 @@ pub struct RecordsScreen {
     scroll_state: ScrollbarState,
     action_result: Option<RecordsAction>,
     selected_session_for_detail: Option<SessionDisplayData>,
+    event_bus: EventBus,
 }
 
 impl RecordsScreen {
-    pub fn new_for_screen_manager() -> Result<Self> {
-        Self::new()
-    }
-
-    fn new() -> Result<Self> {
-        let session_repo = SessionRepository::new()?;
-        let repositories = session_repo.get_all_repositories()?;
-        let sessions = Vec::new();
+    pub fn new(event_bus: EventBus) -> Self {
+        let (sessions, repositories) = SessionRepository::new()
+            .and_then(|repo| {
+                let repositories = repo.get_all_repositories()?;
+                Ok((Vec::new(), repositories))
+            })
+            .unwrap_or_default();
 
         let mut list_state = ListState::default();
         list_state.select(Some(0));
@@ -130,10 +154,11 @@ impl RecordsScreen {
             scroll_state: ScrollbarState::default(),
             action_result: None,
             selected_session_for_detail: None,
+            event_bus,
         };
 
-        screen.refresh_sessions()?;
-        Ok(screen)
+        let _ = screen.refresh_sessions();
+        screen
     }
 
     pub fn get_selected_session_for_detail(&self) -> &Option<SessionDisplayData> {
@@ -445,77 +470,94 @@ impl SessionResultExt for Database {
 }
 
 impl Screen for RecordsScreen {
-    fn init(&mut self) -> Result<()> {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::Records
+    }
+
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(RecordsScreenDataProvider {
+            repository: SessionRepository::new().expect("Failed to create SessionRepository"),
+        })
+    }
+
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Ratatui
+    }
+
+    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         self.action_result = None;
+
+        let screen_data = data.downcast::<RecordsScreenData>()?;
+
+        self.repositories = screen_data.repositories;
         self.refresh_sessions()?;
+
         Ok(())
     }
 
-    fn handle_key_event(
-        &mut self,
-        key_event: crossterm::event::KeyEvent,
-    ) -> Result<ScreenTransition> {
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
 
         match key_event.code {
             KeyCode::Esc => {
                 self.action_result = Some(RecordsAction::Return);
-                // Return to Title screen
-                Ok(ScreenTransition::Replace(ScreenType::Title))
+                self.event_bus
+                    .publish(NavigateTo::Replace(ScreenType::Title));
+                Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
                 self.action_result = Some(RecordsAction::Return);
-                Ok(ScreenTransition::Exit)
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
             }
             KeyCode::Up | KeyCode::Char('k') => {
                 self.previous_item();
-                Ok(ScreenTransition::None)
+                Ok(())
             }
             KeyCode::Down | KeyCode::Char('j') => {
                 self.next_item();
-                Ok(ScreenTransition::None)
+                Ok(())
             }
             KeyCode::Char('r') => {
                 if let Err(e) = self.refresh_sessions() {
                     eprintln!("Error refreshing sessions: {}", e);
                 }
-                Ok(ScreenTransition::None)
+                Ok(())
             }
             KeyCode::Enter | KeyCode::Char(' ') => {
                 if let Some(selected_index) = self.list_state.selected() {
                     if let Some(session) = self.sessions.get(selected_index) {
                         // Store session data for the transition
                         self.selected_session_for_detail = Some(session.clone());
-
-                        return Ok(ScreenTransition::Push(ScreenType::SessionDetail));
+                        self.event_bus
+                            .publish(NavigateTo::Push(ScreenType::SessionDetail));
+                        return Ok(());
                     }
                 }
-                Ok(ScreenTransition::None)
+                Ok(())
             }
             KeyCode::Char('s') => {
                 self.cycle_sort();
                 if let Err(e) = self.refresh_sessions() {
                     eprintln!("Error refreshing sessions after sort change: {}", e);
                 }
-                Ok(ScreenTransition::None)
+                Ok(())
             }
             KeyCode::Char('f') => {
                 self.cycle_date_filter();
                 if let Err(e) = self.refresh_sessions() {
                     eprintln!("Error refreshing sessions after filter change: {}", e);
                 }
-                Ok(ScreenTransition::None)
+                Ok(())
             }
-            _ => Ok(ScreenTransition::None),
+            _ => Ok(()),
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut std::io::Stdout,
-        _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut std::io::Stdout) -> Result<()> {
         // NOTE: History screen should use render_ratatui() instead
         // This render_crossterm_with_data() should not be used
         eprintln!("Warning: Records screen render_crossterm_with_data() called - this should use ratatui backend");

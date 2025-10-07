@@ -1,6 +1,9 @@
+use crate::domain::events::EventBus;
 use crate::domain::models::TotalResult;
+use crate::domain::services::scoring::{TotalCalculator, TotalTracker, GLOBAL_TOTAL_TRACKER};
+use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::SharingView;
-use crate::presentation::game::{Screen, ScreenTransition, UpdateStrategy};
+use crate::presentation::game::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::sharing::SharingPlatform;
 use crate::{GitTypeError, Result};
 use crossterm::{
@@ -9,6 +12,29 @@ use crossterm::{
     terminal::{self, ClearType},
 };
 use std::io::Stdout;
+use std::sync::{Arc, Mutex};
+
+pub struct TotalSummaryShareData {
+    pub total_result: TotalResult,
+}
+
+pub struct TotalSummaryShareDataProvider {
+    total_tracker: Arc<Mutex<Option<TotalTracker>>>,
+}
+
+impl ScreenDataProvider for TotalSummaryShareDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        let total_result = self
+            .total_tracker
+            .lock()
+            .map_err(|_| GitTypeError::TerminalError("Failed to lock TotalTracker".to_string()))?
+            .as_ref()
+            .ok_or_else(|| GitTypeError::TerminalError("No total tracker available".to_string()))
+            .map(TotalCalculator::calculate)?;
+
+        Ok(Box::new(TotalSummaryShareData { total_result }))
+    }
+}
 
 #[derive(Debug)]
 pub enum ShareAction {
@@ -20,23 +46,32 @@ pub struct TotalSummaryShareScreen {
     total_result: TotalResult,
     fallback_url: Option<(String, SharingPlatform)>,
     last_fallback_state: bool,
+    event_bus: EventBus,
 }
 
 impl TotalSummaryShareScreen {
-    pub fn new(total_result: TotalResult) -> Self {
+    pub fn new(event_bus: EventBus) -> Self {
         Self {
-            total_result,
+            total_result: TotalResult::new(),
             fallback_url: None,
             last_fallback_state: false,
+            event_bus,
         }
     }
 
-    fn handle_share_platform(&mut self, platform: SharingPlatform) -> Result<ScreenTransition> {
+    pub fn set_total_result(&mut self, total_result: TotalResult) {
+        self.total_result = total_result;
+    }
+
+    fn handle_share_platform(&mut self, platform: SharingPlatform) -> Result<()> {
         let text = self.total_result.create_share_text();
         let url = self.generate_share_url(&text, &platform);
 
         match self.open_browser(&url) {
-            Ok(()) => Ok(ScreenTransition::Pop),
+            Ok(()) => {
+                self.event_bus.publish(NavigateTo::Pop);
+                Ok(())
+            }
             Err(_) => {
                 log::warn!(
                     "Failed to open browser for {}. URL: {}",
@@ -44,7 +79,7 @@ impl TotalSummaryShareScreen {
                     url
                 );
                 self.fallback_url = Some((url.clone(), platform));
-                Ok(ScreenTransition::None)
+                Ok(())
             }
         }
     }
@@ -93,12 +128,29 @@ impl TotalSummaryShareScreen {
 }
 
 impl Screen for TotalSummaryShareScreen {
-    fn init(&mut self) -> crate::Result<()> {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::TotalSummaryShare
+    }
+
+    fn default_provider() -> Box<dyn crate::presentation::game::ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(TotalSummaryShareDataProvider {
+            total_tracker: GLOBAL_TOTAL_TRACKER.clone(),
+        })
+    }
+
+    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         self.last_fallback_state = false;
+
+        let data = data.downcast::<TotalSummaryShareData>()?;
+        self.total_result = data.total_result;
+
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: event::KeyEvent) -> Result<ScreenTransition> {
+    fn handle_key_event(&mut self, key_event: event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
         match key_event.code {
             KeyCode::Char('1') => self.handle_share_platform(SharingPlatform::X),
@@ -108,24 +160,21 @@ impl Screen for TotalSummaryShareScreen {
             KeyCode::Esc => {
                 if self.fallback_url.is_some() {
                     self.fallback_url = None;
-                    Ok(ScreenTransition::None)
+                    Ok(())
                 } else {
-                    Ok(ScreenTransition::Pop)
+                    self.event_bus.publish(NavigateTo::Pop);
+                    Ok(())
                 }
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                Ok(ScreenTransition::Exit)
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
             }
-            _ => Ok(ScreenTransition::None),
+            _ => Ok(()),
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        stdout: &mut Stdout,
-        _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&TotalResult>,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, stdout: &mut Stdout) -> Result<()> {
         let current_fallback_state = self.fallback_url.is_some();
 
         if current_fallback_state != self.last_fallback_state {

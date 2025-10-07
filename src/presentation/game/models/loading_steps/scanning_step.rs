@@ -63,6 +63,14 @@ impl Step for ScanningStep {
                 GitTypeError::ExtractionFailed("No repository path available".to_string())
             })?;
 
+        // If git_repository is not set yet, try to create it from repo_path
+        if context.git_repository.is_none() {
+            if let Some(repo_path) = context.repo_path {
+                context.git_repository =
+                    crate::domain::models::GitRepository::new_local(repo_path).ok();
+            }
+        }
+
         let screen = context.loading_screen.ok_or_else(|| {
             GitTypeError::ExtractionFailed("No loading screen available".to_string())
         })?;

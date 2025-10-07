@@ -1,6 +1,6 @@
 use crate::domain::models::ExtractionOptions;
 use crate::domain::models::{Challenge, GitRepository};
-use crate::Result;
+use crate::{GitTypeError, Result};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, OnceLock};
 
@@ -24,9 +24,9 @@ impl GameData {
     /// Initialize the global game data instance
     pub fn initialize() -> Result<()> {
         let game_data = Arc::new(Mutex::new(GameData::default()));
-        GLOBAL_GAME_DATA.set(game_data).map_err(|_| {
-            crate::GitTypeError::TerminalError("GameData already initialized".to_string())
-        })?;
+        GLOBAL_GAME_DATA
+            .set(game_data)
+            .map_err(|_| GitTypeError::TerminalError("GameData already initialized".to_string()))?;
         Ok(())
     }
 
@@ -159,9 +159,45 @@ impl GameData {
             data.git_repository = git_repository;
             Ok(())
         } else {
-            Err(crate::GitTypeError::TerminalError(
+            Err(GitTypeError::TerminalError(
                 "GameData not initialized".to_string(),
             ))
         }
+    }
+
+    // Instance methods
+
+    /// Get processing parameters from this instance
+    pub fn processing_parameters(
+        &self,
+    ) -> Option<(Option<String>, Option<PathBuf>, ExtractionOptions)> {
+        self.extraction_options.as_ref().map(|options| {
+            (
+                self.repo_spec.clone(),
+                self.repo_path.clone(),
+                options.clone(),
+            )
+        })
+    }
+
+    /// Get git repository from this instance
+    pub fn repository(&self) -> Option<GitRepository> {
+        self.git_repository.clone()
+    }
+
+    /// Check if loading is completed for this instance
+    pub fn completed(&self) -> bool {
+        self.loading_completed
+    }
+
+    /// Check if loading failed for this instance
+    pub fn failed(&self) -> bool {
+        self.loading_failed
+    }
+
+    /// Set loading failed state for this instance
+    pub fn mark_failed(&mut self, error: String) {
+        self.loading_failed = true;
+        self.error_message = Some(error);
     }
 }

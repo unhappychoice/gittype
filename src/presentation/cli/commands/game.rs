@@ -1,3 +1,4 @@
+use crate::domain::events::EventBus;
 use crate::domain::models::ExtractionOptions;
 use crate::domain::models::Languages;
 use crate::domain::services::theme_manager::ThemeManager;
@@ -7,12 +8,17 @@ use crate::presentation::cli::args::Cli;
 use crate::presentation::game::models::ScreenType;
 use crate::presentation::game::screen_manager::ScreenManager;
 use crate::presentation::game::screens::{VersionCheckResult, VersionCheckScreen};
-use crate::presentation::game::GameData;
+use crate::presentation::game::{GameData, SessionManager};
+use crate::presentation::signal_handler::setup_signal_handlers;
 use crate::{GitTypeError, Result};
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 
 pub fn run_game_session(cli: Cli) -> Result<()> {
     log::info!("Starting GitType game session");
+
+    // Create single EventBus instance for the entire application
+    let event_bus = EventBus::new();
 
     // Check for updates before starting the game session
     let should_exit = tokio::task::block_in_place(|| {
@@ -79,25 +85,34 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
     GameData::initialize()?;
     GameData::set_processing_parameters(repo_spec, initial_repo_path, &options)?;
 
-    // Initialize ScreenManager with all screens
-    ScreenManager::with_instance(|screen_manager| -> Result<()> {
-        let mut manager = screen_manager.borrow_mut();
+    log::info!(
+        "Initializing all screens with GameData parameters: repo_spec={:?}, repo_path={:?}",
+        repo_spec,
+        initial_repo_path
+    );
 
-        log::info!(
-            "Initializing all screens with GameData parameters: repo_spec={:?}, repo_path={:?}",
-            repo_spec,
-            initial_repo_path
-        );
+    let _ = SessionManager::set_global_event_bus(event_bus.clone());
+    SessionManager::setup_event_subscriptions_after_init();
+
+    // Create and initialize ScreenManager
+    let screen_manager = Arc::new(Mutex::new(ScreenManager::new(event_bus.clone())));
+
+    // Set up signal handlers with ScreenManager reference
+    setup_signal_handlers(screen_manager.clone());
+
+    {
+        let mut manager = screen_manager.lock().unwrap();
         manager.initialize_all_screens()?;
-
         manager.initialize_terminal()?;
         manager.set_current_screen(ScreenType::Loading)?;
-        Ok(())
-    })?;
+    }
 
-    // Run ScreenManager normally - LoadingScreen will handle processing internally
+    // Set up event subscriptions after initialization
+    ScreenManager::setup_event_subscriptions(&screen_manager);
+
+    // Run ScreenManager - LoadingScreen will handle processing internally
     // StageRepository and SessionManager will be initialized automatically when data is ready
-    let session_result = ScreenManager::run_global();
+    let session_result = screen_manager.lock().unwrap().run();
 
     match session_result {
         Ok(_) => {
@@ -202,6 +217,11 @@ fn handle_game_error(e: GitTypeError) -> Result<()> {
         }
         GitTypeError::ValidationError(msg) => {
             eprintln!("❌ {}", msg);
+            std::process::exit(1);
+        }
+        GitTypeError::ScreenInitializationError(msg) => {
+            eprintln!("❌ Screen initialization error: {}", msg);
+            eprintln!("💡 This is an internal error. Please report this issue.");
             std::process::exit(1);
         }
     }

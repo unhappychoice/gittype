@@ -1,5 +1,9 @@
+use crate::domain::events::EventBus;
+use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::VersionCheckView;
-use crate::presentation::game::{Screen, ScreenTransition, UpdateStrategy};
+use crate::presentation::game::{
+    RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
+};
 use crate::Result;
 use crossterm::{
     event::{self, Event, KeyCode},
@@ -15,17 +19,13 @@ pub enum VersionCheckResult {
     Exit,
 }
 
-pub struct VersionCheckScreen;
-
-impl Default for VersionCheckScreen {
-    fn default() -> Self {
-        Self::new()
-    }
+pub struct VersionCheckScreen {
+    event_bus: EventBus,
 }
 
 impl VersionCheckScreen {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(event_bus: EventBus) -> Self {
+        Self { event_bus }
     }
 
     pub fn show_legacy(current_version: &str, latest_version: &str) -> Result<VersionCheckResult> {
@@ -70,24 +70,50 @@ impl VersionCheckScreen {
     }
 }
 
+pub struct VersionCheckScreenDataProvider;
+
+impl ScreenDataProvider for VersionCheckScreenDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        Ok(Box::new(()))
+    }
+}
+
 impl Screen for VersionCheckScreen {
-    fn handle_key_event(&mut self, key_event: event::KeyEvent) -> Result<ScreenTransition> {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::VersionCheck
+    }
+
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(VersionCheckScreenDataProvider)
+    }
+
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Ratatui
+    }
+
+    fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
+        Ok(())
+    }
+
+    fn handle_key_event(&mut self, key_event: event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
         match key_event.code {
-            KeyCode::Esc => Ok(ScreenTransition::Exit),
-            KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                Ok(ScreenTransition::Exit)
+            KeyCode::Esc => {
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
             }
-            _ => Ok(ScreenTransition::None),
+            KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
+            }
+            _ => Ok(()),
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut Stdout,
-        _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
-    ) -> crate::Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> crate::Result<()> {
         // Version check is now handled by ScreenManager
         // let current_version = env!("CARGO_PKG_VERSION");
         // let _ = VersionCheckScreen::show(current_version, "1.1.0");

@@ -1,11 +1,13 @@
-use crate::domain::models::Rank;
+use crate::domain::events::EventBus;
+use crate::domain::models::{Rank, SessionResult};
+use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::{
     OptionsView, RankView, ScoreView, SessionSummaryHeaderView, SummaryView,
 };
 use crate::presentation::game::{
-    GameData, Screen, ScreenTransition, ScreenType, SessionManager, UpdateStrategy,
+    GameData, RenderBackend, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
 };
-use crate::{domain::models::GitRepository, Result};
+use crate::{domain::models::GitRepository, GitTypeError, Result};
 use crossterm::{
     cursor::{Hide, MoveTo},
     execute,
@@ -13,6 +15,41 @@ use crossterm::{
     terminal::{self, ClearType},
 };
 use std::io::{stdout, Write};
+use std::sync::{Arc, Mutex};
+
+pub struct SessionSummaryScreenData {
+    pub session_result: Option<SessionResult>,
+    pub git_repository: Option<GitRepository>,
+    pub session_manager: Arc<Mutex<SessionManager>>,
+}
+
+pub struct SessionSummaryScreenDataProvider {
+    session_manager: Arc<Mutex<SessionManager>>,
+    game_data: Arc<Mutex<GameData>>,
+}
+
+impl ScreenDataProvider for SessionSummaryScreenDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        let session_result = self
+            .session_manager
+            .lock()
+            .map_err(|_| GitTypeError::TerminalError("Failed to lock SessionManager".to_string()))?
+            .get_session_result();
+
+        let git_repository = self
+            .game_data
+            .lock()
+            .map_err(|_| GitTypeError::TerminalError("Failed to lock GameData".to_string()))?
+            .git_repository
+            .clone();
+
+        Ok(Box::new(SessionSummaryScreenData {
+            session_result,
+            git_repository,
+            session_manager: Arc::clone(&self.session_manager),
+        }))
+    }
+}
 
 #[derive(Debug, Clone)]
 pub enum ResultAction {
@@ -25,18 +62,20 @@ pub enum ResultAction {
 
 pub struct SessionSummaryScreen {
     action_result: Option<ResultAction>,
-}
-
-impl Default for SessionSummaryScreen {
-    fn default() -> Self {
-        Self::new()
-    }
+    session_result: Option<SessionResult>,
+    git_repository: Option<GitRepository>,
+    session_manager: Option<Arc<Mutex<SessionManager>>>,
+    event_bus: EventBus,
 }
 
 impl SessionSummaryScreen {
-    pub fn new() -> Self {
+    pub fn new(event_bus: EventBus) -> Self {
         Self {
             action_result: None,
+            session_result: None,
+            git_repository: None,
+            session_manager: None,
+            event_bus,
         }
     }
 
@@ -45,8 +84,8 @@ impl SessionSummaryScreen {
     }
 
     fn show_session_summary(
-        &mut self,
-        session_result: &crate::domain::models::SessionResult,
+        &self,
+        session_result: &SessionResult,
         _repo_info: &Option<GitRepository>,
     ) -> Result<()> {
         let mut stdout = stdout();
@@ -65,10 +104,17 @@ impl SessionSummaryScreen {
 
         let best_rank = Rank::for_score(session_result.session_score);
 
-        // Get best status using session start records from SessionManager
-        let best_status = SessionManager::get_best_status_for_score(session_result.session_score)
-            .ok()
-            .flatten();
+        // Get best status using session start records from SessionManager instance
+        let best_status = self
+            .session_manager
+            .as_ref()
+            .and_then(|manager| manager.lock().ok())
+            .and_then(|manager| {
+                manager
+                    .get_best_status_for_score(session_result.session_score)
+                    .ok()
+                    .flatten()
+            });
 
         let total_content_height = 4 + 5 + 1 + 3 + 1 + 4 + 2 + 2;
         let rank_start_row = if total_content_height < terminal_height {
@@ -105,56 +151,86 @@ impl SessionSummaryScreen {
 }
 
 impl Screen for SessionSummaryScreen {
-    fn init(&mut self) -> Result<()> {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::SessionSummary
+    }
+
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(SessionSummaryScreenDataProvider {
+            session_manager: SessionManager::instance(),
+            game_data: GameData::instance(),
+        })
+    }
+
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Crossterm
+    }
+
+    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         self.action_result = None;
+
+        let screen_data = data.downcast::<SessionSummaryScreenData>()?;
+
+        self.session_result = screen_data.session_result.clone();
+        self.git_repository = screen_data.git_repository.clone();
+        self.session_manager = Some(Arc::clone(&screen_data.session_manager));
+
+        // Show session summary on initialization
+        if let Some(ref session_result) = self.session_result {
+            self.show_session_summary(session_result, &self.git_repository)?;
+        }
+
         Ok(())
     }
 
-    fn handle_key_event(
-        &mut self,
-        key_event: crossterm::event::KeyEvent,
-    ) -> Result<ScreenTransition> {
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
 
         match key_event.code {
             KeyCode::Char('d') | KeyCode::Char('D') => {
-                Ok(ScreenTransition::Push(ScreenType::DetailsDialog))
+                self.event_bus
+                    .publish(NavigateTo::Push(ScreenType::DetailsDialog));
+                Ok(())
             }
             KeyCode::Char('r') | KeyCode::Char('R') => {
                 self.action_result = Some(ResultAction::Retry);
-                Ok(ScreenTransition::Replace(ScreenType::Typing))
+                self.event_bus
+                    .publish(NavigateTo::Replace(ScreenType::Typing));
+                Ok(())
             }
             KeyCode::Char('s') | KeyCode::Char('S') => {
-                // Show sharing screen
                 self.action_result = Some(ResultAction::Share);
-                Ok(ScreenTransition::Push(ScreenType::SessionSharing))
+                self.event_bus
+                    .publish(NavigateTo::Push(ScreenType::SessionSharing));
+                Ok(())
             }
             KeyCode::Char('t') | KeyCode::Char('T') => {
                 self.action_result = Some(ResultAction::BackToTitle);
-                Ok(ScreenTransition::PopTo(ScreenType::Title))
+                self.event_bus.publish(NavigateTo::PopTo(ScreenType::Title));
+                Ok(())
             }
             KeyCode::Esc => {
                 self.action_result = Some(ResultAction::Quit);
-                Ok(ScreenTransition::Exit)
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
                 self.action_result = Some(ResultAction::Quit);
-                Ok(ScreenTransition::Exit)
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
             }
-            _ => Ok(ScreenTransition::None),
+            _ => Ok(()),
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut std::io::Stdout,
-        session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
-    ) -> Result<()> {
-        if let Some(session_result) = session_result {
-            // Get git repository from global GameData
-            let git_repository = GameData::get_git_repository();
-            let _ = self.show_session_summary(session_result, &git_repository);
+    fn render_crossterm_with_data(&mut self, _stdout: &mut std::io::Stdout) -> Result<()> {
+        if self.session_result.is_some() {
+            let session_result = self.session_result.as_ref().unwrap();
+            let git_repository = &self.git_repository;
+            let _ = self.show_session_summary(session_result, git_repository);
         }
         Ok(())
     }

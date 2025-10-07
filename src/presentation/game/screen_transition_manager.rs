@@ -141,7 +141,8 @@ impl ScreenTransitionManager {
     }
 
     fn handle_game_failure() -> Result<()> {
-        SessionManager::on_session_failure()?;
+        let result = SessionManager::on_session_failure();
+        result?;
         Ok(())
     }
 

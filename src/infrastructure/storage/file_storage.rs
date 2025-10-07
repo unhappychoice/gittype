@@ -120,6 +120,7 @@ mod real_impl {
 #[cfg(feature = "test-mocks")]
 mod mock_impl {
     use super::*;
+    use crate::GitTypeError;
 
     pub struct FileStorage {
         pub files: Vec<FileEntry>,
@@ -179,7 +180,7 @@ mod mock_impl {
         pub fn walk_directory(&self, path: &Path) -> Result<Vec<FileEntry>> {
             // For mock implementation, simulate real behavior for non-existent paths
             if path.to_str() == Some("/nonexistent/path") {
-                return Err(crate::GitTypeError::ExtractionFailed(format!(
+                return Err(GitTypeError::ExtractionFailed(format!(
                     "Path does not exist: {}",
                     path.display()
                 )));

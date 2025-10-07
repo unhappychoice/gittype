@@ -1,35 +1,82 @@
-use crate::domain::repositories::session_repository::SessionRepository;
+use crate::domain::events::EventBus;
+use crate::domain::models::SessionResult;
+use crate::domain::repositories::session_repository::{BestStatus, SessionRepository};
+use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::{
     BestRecordsView, ControlsView, HeaderView, StageResultsView,
 };
 use crate::presentation::game::{
-    GameData, Screen, ScreenTransition, SessionManager, UpdateStrategy,
+    GameData, RenderBackend, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
 };
-use crate::{domain::models::GitRepository, Result};
+use crate::{domain::models::GitRepository, GitTypeError, Result};
 use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
 };
 use std::io::Stdout;
+use std::sync::{Arc, Mutex};
 
-pub struct SessionDetailsDialog {
-    session_result: Option<crate::domain::models::SessionResult>,
-    repo_info: Option<GitRepository>,
-    best_status: Option<crate::domain::repositories::session_repository::BestStatus>,
+pub struct SessionDetailsDialogData {
+    pub session_result: Option<SessionResult>,
+    pub repo_info: Option<GitRepository>,
+    pub best_status: Option<BestStatus>,
 }
 
-impl Default for SessionDetailsDialog {
-    fn default() -> Self {
-        Self::new()
+pub struct SessionDetailsDialogDataProvider {
+    session_manager: Arc<Mutex<SessionManager>>,
+    game_data: Arc<Mutex<GameData>>,
+}
+
+impl ScreenDataProvider for SessionDetailsDialogDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        let session_result = self
+            .session_manager
+            .lock()
+            .map_err(|_| GitTypeError::TerminalError("Failed to lock SessionManager".to_string()))?
+            .get_session_result();
+
+        let repo_info = self
+            .game_data
+            .lock()
+            .map_err(|_| GitTypeError::TerminalError("Failed to lock GameData".to_string()))?
+            .git_repository
+            .clone();
+
+        let best_status = if let Some(ref result) = session_result {
+            self.session_manager
+                .lock()
+                .map_err(|_| {
+                    GitTypeError::TerminalError("Failed to lock SessionManager".to_string())
+                })?
+                .get_best_status_for_score(result.session_score)
+                .ok()
+                .flatten()
+        } else {
+            None
+        };
+
+        Ok(Box::new(SessionDetailsDialogData {
+            session_result,
+            repo_info,
+            best_status,
+        }))
     }
 }
 
+pub struct SessionDetailsDialog {
+    session_result: Option<SessionResult>,
+    repo_info: Option<GitRepository>,
+    best_status: Option<BestStatus>,
+    event_bus: EventBus,
+}
+
 impl SessionDetailsDialog {
-    pub fn new() -> Self {
+    pub fn new(event_bus: EventBus) -> Self {
         Self {
             session_result: None,
             repo_info: None,
             best_status: None,
+            event_bus,
         }
     }
 
@@ -108,45 +155,50 @@ impl SessionDetailsDialog {
 }
 
 impl Screen for SessionDetailsDialog {
-    fn init(&mut self) -> Result<()> {
-        if let Ok(Some(session_result)) = SessionManager::get_global_session_result() {
-            let game_data = GameData::instance();
-            let data = game_data.lock().unwrap();
-            let repo_info = data.git_repository.clone();
-            drop(data);
+    fn get_type(&self) -> ScreenType {
+        ScreenType::DetailsDialog
+    }
 
-            // Calculate best_status once during initialization
-            self.best_status =
-                SessionManager::get_best_status_for_score(session_result.session_score)
-                    .ok()
-                    .flatten();
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(SessionDetailsDialogDataProvider {
+            session_manager: SessionManager::instance(),
+            game_data: GameData::instance(),
+        })
+    }
 
-            self.session_result = Some(session_result);
-            self.repo_info = repo_info;
-        }
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Ratatui
+    }
+
+    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
+        let dialog_data = data.downcast::<SessionDetailsDialogData>()?;
+
+        self.session_result = dialog_data.session_result;
+        self.repo_info = dialog_data.repo_info;
+        self.best_status = dialog_data.best_status;
+
         Ok(())
     }
 
-    fn handle_key_event(
-        &mut self,
-        key_event: crossterm::event::KeyEvent,
-    ) -> Result<ScreenTransition> {
+    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
         match key_event.code {
-            KeyCode::Esc => Ok(ScreenTransition::Pop),
-            KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                Ok(ScreenTransition::Exit)
+            KeyCode::Esc => {
+                self.event_bus.publish(NavigateTo::Pop);
+                Ok(())
             }
-            _ => Ok(ScreenTransition::None),
+            KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.event_bus.publish(NavigateTo::Exit);
+                Ok(())
+            }
+            _ => Ok(()),
         }
     }
 
-    fn render_crossterm_with_data(
-        &mut self,
-        _stdout: &mut Stdout,
-        _session_result: Option<&crate::domain::models::SessionResult>,
-        _total_result: Option<&crate::domain::services::scoring::TotalResult>,
-    ) -> Result<()> {
+    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
         Ok(())
     }
 

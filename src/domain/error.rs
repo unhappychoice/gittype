@@ -1,5 +1,18 @@
 use std::path::PathBuf;
 
+// Implement From for Box<dyn Any> downcast errors
+impl From<Box<dyn std::any::Any + Send>> for GitTypeError {
+    fn from(_: Box<dyn std::any::Any + Send>) -> Self {
+        GitTypeError::ScreenInitializationError("Data type mismatch".to_string())
+    }
+}
+
+impl From<Box<dyn std::any::Any>> for GitTypeError {
+    fn from(_: Box<dyn std::any::Any>) -> Self {
+        GitTypeError::ScreenInitializationError("Data type mismatch".to_string())
+    }
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum GitTypeError {
     #[error("Repository path does not exist: {0}")]
@@ -25,6 +38,9 @@ pub enum GitTypeError {
 
     #[error("Terminal error: {0}")]
     TerminalError(String),
+
+    #[error("Screen initialization error: {0}")]
+    ScreenInitializationError(String),
 
     #[error("Walk directory error: {0}")]
     WalkDirError(#[from] walkdir::Error),

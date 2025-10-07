@@ -1,4 +1,4 @@
-use crate::domain::models::GitRepository;
+use crate::domain::models::{GitRepository, SessionResult};
 use crate::domain::services::scoring::Rank;
 use crate::presentation::ui::Colors;
 use anyhow::Result;
@@ -31,7 +31,7 @@ pub struct SharingService;
 
 impl SharingService {
     pub fn share_result(
-        metrics: &crate::domain::models::SessionResult,
+        metrics: &SessionResult,
         platform: SharingPlatform,
         repo_info: &Option<GitRepository>,
     ) -> Result<()> {
@@ -50,7 +50,7 @@ impl SharingService {
     }
 
     fn generate_share_url(
-        metrics: &crate::domain::models::SessionResult,
+        metrics: &SessionResult,
         platform: &SharingPlatform,
         repo_info: &Option<GitRepository>,
     ) -> String {
@@ -93,10 +93,7 @@ impl SharingService {
         }
     }
 
-    fn create_share_text(
-        metrics: &crate::domain::models::SessionResult,
-        repo_info: &Option<GitRepository>,
-    ) -> String {
+    fn create_share_text(metrics: &SessionResult, repo_info: &Option<GitRepository>) -> String {
         let best_rank = Rank::for_score(metrics.session_score);
         if let Some(repo) = repo_info {
             format!(
