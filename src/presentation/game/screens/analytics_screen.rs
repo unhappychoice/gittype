@@ -1,11 +1,10 @@
 use crate::domain::events::EventBus;
-use crate::domain::models::{SessionResult, TotalResult};
 use crate::domain::repositories::{GitRepositoryRepository, SessionRepository};
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::analytics::{
     LanguagesView, OverviewView, RepositoriesView, TrendsView,
 };
-use crate::presentation::game::{Screen, ScreenType, UpdateStrategy};
+use crate::presentation::game::{RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyModifiers};
@@ -124,36 +123,25 @@ pub struct AnalyticsScreen {
     event_bus: EventBus,
 }
 
-impl AnalyticsScreen {
-    pub fn new_for_screen_manager(event_bus: EventBus) -> Result<Self> {
-        Self::new(event_bus)
+pub struct AnalyticsScreenDataProvider {
+    session_repository: SessionRepository,
+    git_repository_repository: GitRepositoryRepository,
+}
+
+impl ScreenDataProvider for AnalyticsScreenDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        self.load_data().map(|data| Box::new(data) as Box<dyn std::any::Any>)
     }
+}
 
-    fn new(event_bus: EventBus) -> Result<Self> {
-        let mut repository_list_state = ListState::default();
-        repository_list_state.select(Some(0));
-        let mut language_list_state = ListState::default();
-        language_list_state.select(Some(0));
-
-        Ok(Self {
-            view_mode: ViewMode::Overview,
-            data: None,
-            repository_list_state,
-            language_list_state,
-            repository_scroll_state: ScrollbarState::default(),
-            language_scroll_state: ScrollbarState::default(),
-            action_result: None,
-            event_bus,
-        })
-    }
-
-    fn load_data(&mut self) -> Result<()> {
-        let session_repo = SessionRepository::new()?;
-        let git_repo_repo = GitRepositoryRepository::new()?;
+impl AnalyticsScreenDataProvider {
+    fn load_data(&self) -> Result<AnalyticsData> {
+        let session_repo = &self.session_repository;
+        let git_repo_repo = &self.git_repository_repository;
         let sessions = session_repo.get_sessions_filtered(None, Some(90), "date", true)?;
 
         if sessions.is_empty() {
-            self.data = Some(AnalyticsData {
+            return Ok(AnalyticsData {
                 total_sessions: 0,
                 avg_cpm: 0.0,
                 avg_accuracy: 0.0,
@@ -170,7 +158,6 @@ impl AnalyticsScreen {
                 repository_stats: HashMap::new(),
                 language_stats: HashMap::new(),
             });
-            return Ok(());
         }
 
         let mut total_cpm = 0.0;
@@ -399,7 +386,7 @@ impl AnalyticsScreen {
             }
         }
 
-        self.data = Some(AnalyticsData {
+        Ok(AnalyticsData {
             total_sessions: session_count,
             avg_cpm,
             avg_accuracy,
@@ -415,10 +402,29 @@ impl AnalyticsScreen {
             current_streak: 0,
             repository_stats,
             language_stats,
-        });
-
-        Ok(())
+        })
     }
+}
+
+impl AnalyticsScreen {
+    pub fn new(event_bus: EventBus) -> Self {
+        let mut repository_list_state = ListState::default();
+        repository_list_state.select(Some(0));
+        let mut language_list_state = ListState::default();
+        language_list_state.select(Some(0));
+
+        Self {
+            view_mode: ViewMode::Overview,
+            data: None,
+            repository_list_state,
+            language_list_state,
+            repository_scroll_state: ScrollbarState::default(),
+            language_scroll_state: ScrollbarState::default(),
+            action_result: None,
+            event_bus,
+        }
+    }
+
 
     fn next_repository(&mut self) {
         if let Some(data) = &self.data {
@@ -597,12 +603,31 @@ impl AnalyticsScreen {
 }
 
 impl Screen for AnalyticsScreen {
-    fn init(&mut self) -> Result<()> {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::Analytics
+    }
+
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(AnalyticsScreenDataProvider {
+            session_repository: SessionRepository::new().expect("Failed to create SessionRepository"),
+            git_repository_repository: GitRepositoryRepository::new().expect("Failed to create GitRepositoryRepository"),
+        })
+    }
+
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Ratatui
+    }
+
+    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         self.action_result = None;
 
-        if let Err(e) = self.load_data() {
-            eprintln!("Warning: Failed to load analytics data: {}", e);
-        }
+        let analytics_data = data.downcast::<AnalyticsData>()?;
+
+        self.data = Some(*analytics_data);
+
         Ok(())
     }
 
@@ -646,8 +671,11 @@ impl Screen for AnalyticsScreen {
                 Ok(())
             }
             KeyCode::Char('r') => {
-                if let Err(e) = self.load_data() {
-                    eprintln!("Error loading data: {}", e);
+                let provider = Self::default_provider();
+                if let Ok(data) = provider.provide() {
+                    if let Ok(analytics_data) = data.downcast::<AnalyticsData>() {
+                        self.data = Some(*analytics_data);
+                    }
                 }
                 Ok(())
             }
@@ -658,8 +686,6 @@ impl Screen for AnalyticsScreen {
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut std::io::Stdout,
-        _session_result: Option<&SessionResult>,
-        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         Ok(())
     }

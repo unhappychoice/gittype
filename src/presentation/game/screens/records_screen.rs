@@ -1,12 +1,11 @@
 use super::session_detail_screen::SessionDisplayData;
 use crate::domain::events::EventBus;
 use crate::domain::models::storage::{SessionResultData, StoredRepository};
-use crate::domain::models::{SessionResult, TotalResult};
 use crate::domain::repositories::SessionRepository;
 use crate::infrastructure::database::daos::SessionDao;
 use crate::infrastructure::database::database::{Database, HasDatabase};
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::{Screen, ScreenType, UpdateStrategy};
+use crate::presentation::game::{RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use chrono::{DateTime, Local};
@@ -96,6 +95,26 @@ impl Default for FilterState {
     }
 }
 
+pub struct RecordsScreenData {
+    pub sessions: Vec<SessionDisplayData>,
+    pub repositories: Vec<StoredRepository>,
+}
+
+pub struct RecordsScreenDataProvider {
+    repository: SessionRepository,
+}
+
+impl ScreenDataProvider for RecordsScreenDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        let repositories = self.repository.get_all_repositories()?;
+
+        Ok(Box::new(RecordsScreenData {
+            sessions: Vec::new(),
+            repositories,
+        }))
+    }
+}
+
 #[derive(Clone)]
 pub enum RecordsAction {
     Return,
@@ -114,14 +133,13 @@ pub struct RecordsScreen {
 }
 
 impl RecordsScreen {
-    pub fn new_for_screen_manager(event_bus: EventBus) -> Result<Self> {
-        Self::new(event_bus)
-    }
-
-    fn new(event_bus: EventBus) -> Result<Self> {
-        let session_repo = SessionRepository::new()?;
-        let repositories = session_repo.get_all_repositories()?;
-        let sessions = Vec::new();
+    pub fn new(event_bus: EventBus) -> Self {
+        let (sessions, repositories) = SessionRepository::new()
+            .and_then(|repo| {
+                let repositories = repo.get_all_repositories()?;
+                Ok((Vec::new(), repositories))
+            })
+            .unwrap_or_default();
 
         let mut list_state = ListState::default();
         list_state.select(Some(0));
@@ -137,8 +155,8 @@ impl RecordsScreen {
             event_bus,
         };
 
-        screen.refresh_sessions()?;
-        Ok(screen)
+        let _ = screen.refresh_sessions();
+        screen
     }
 
     pub fn get_selected_session_for_detail(&self) -> &Option<SessionDisplayData> {
@@ -450,11 +468,34 @@ impl SessionResultExt for Database {
 }
 
 impl Screen for RecordsScreen {
-    fn init(&mut self) -> Result<()> {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::Records
+    }
+
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(RecordsScreenDataProvider {
+            repository: SessionRepository::new().expect("Failed to create SessionRepository"),
+        })
+    }
+
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Ratatui
+    }
+
+    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         self.action_result = None;
+
+        let screen_data = data.downcast::<RecordsScreenData>()?;
+
+        self.repositories = screen_data.repositories;
         self.refresh_sessions()?;
+
         Ok(())
     }
+
 
     fn handle_key_event(
         &mut self,
@@ -519,8 +560,6 @@ impl Screen for RecordsScreen {
     fn render_crossterm_with_data(
         &mut self,
         _stdout: &mut std::io::Stdout,
-        _session_result: Option<&SessionResult>,
-        _total_result: Option<&TotalResult>,
     ) -> Result<()> {
         // NOTE: History screen should use render_ratatui() instead
         // This render_crossterm_with_data() should not be used
