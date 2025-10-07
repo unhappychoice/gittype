@@ -1,8 +1,13 @@
-use crate::domain::models::{SessionResult, TotalResult};
 use crate::Result;
 use crossterm::event::KeyEvent;
 use std::io::Stdout;
 use std::time::Duration;
+
+/// Trait for screen data providers
+pub trait ScreenDataProvider: Send {
+    /// Provide data for screen initialization
+    fn provide(&self) -> Result<Box<dyn std::any::Any>>;
+}
 
 /// Screen type identifiers for different application screens
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -26,6 +31,15 @@ pub enum ScreenType {
     DetailsDialog,
     Settings,
     Panic,
+}
+
+/// Rendering backend options
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RenderBackend {
+    /// Use crossterm for rendering (default)
+    Crossterm,
+    /// Use ratatui for rendering
+    Ratatui,
 }
 
 /// Update strategy defines how and when a screen should be updated and re-rendered
@@ -70,21 +84,29 @@ impl crate::domain::events::Event for ScreenTransition {
 
 /// The Screen trait defines the interface that all screens must implement
 pub trait Screen: Send {
-    /// Initialize the screen - called when screen becomes active
-    fn init(&mut self) -> Result<()> {
+    /// Get the type of this screen
+    fn get_type(&self) -> ScreenType;
+
+    /// Get the default data provider for this screen type
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized;
+
+    /// Initialize the screen with data (for screens that need data injection)
+    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()>;
+
+    /// Called when this screen is pushed from another screen
+    /// Allows the screen to extract data from the source screen
+    fn on_pushed_from(&mut self, _source_screen: &dyn Screen) -> Result<()> {
+        // Default implementation does nothing
         Ok(())
     }
 
     /// Handle keyboard input events
     fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()>;
 
-    /// Render the screen with access to shared data
-    fn render_crossterm_with_data(
-        &mut self,
-        stdout: &mut Stdout,
-        session_result: Option<&SessionResult>,
-        total_result: Option<&TotalResult>,
-    ) -> Result<()>;
+    /// Render the screen using crossterm backend
+    fn render_crossterm_with_data(&mut self, stdout: &mut Stdout) -> Result<()>;
 
     /// Render the screen using ratatui backend (optional)
     fn render_ratatui(&mut self, _frame: &mut ratatui::Frame) -> Result<()> {
@@ -96,6 +118,11 @@ pub trait Screen: Send {
     /// Clean up screen resources - called when screen becomes inactive
     fn cleanup(&mut self) -> Result<()> {
         Ok(())
+    }
+
+    /// Get the render backend for this screen
+    fn get_render_backend(&self) -> RenderBackend {
+        RenderBackend::Crossterm
     }
 
     /// Get the update strategy for this screen
