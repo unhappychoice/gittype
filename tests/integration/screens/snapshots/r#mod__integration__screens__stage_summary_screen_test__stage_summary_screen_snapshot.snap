@@ -1,0 +1,33 @@
+---
+source: tests/integration/screens/stage_summary_screen_test.rs
+expression: output
+---
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                === STAGE 1 COMPLETE ===                                                
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                          SCORE                                                         
+                                                   ___    ___     __                                                    
+                                                  ( _ )  | __|   /  \                                                   
+                                                  / _ \  |__ \  | () |                                                  
+                                                  \___/  |___/   \__/                                                   
+                                                                                                                        
+                                                                                                                        
+                                            CPM: 280 | WPM: 56 | Time: 12.5s                                            
+                                     Keystrokes: 58 | Mistakes: 3 | Accuracy: 95.5%                                     
+                                                                                                                        
+                                                      Stage 1 of 3                                                      
+                                                                                                                        
+                                                 Next stage starting...                                                 
+                                                                                                                        
+                                              [SPACE] Continue  [ESC] Quit

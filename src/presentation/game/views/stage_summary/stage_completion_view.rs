@@ -1,77 +1,119 @@
 use crate::domain::models::Rank;
 use crate::domain::services::scoring::StageResult;
-use crate::presentation::game::ascii_digits::get_digit_patterns;
-use crate::presentation::ui::Colors;
-use crate::Result;
-use crossterm::{
-    cursor::MoveTo,
-    execute,
-    style::{Attribute, Print, ResetColor, SetAttribute, SetForegroundColor},
-    terminal::{self, ClearType},
+use crate::presentation::game::{ascii_digits::get_digit_patterns, rank_colors};
+use crate::presentation::ui::{Colors, GradationText};
+use ratatui::{
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::{Modifier, Style},
+    text::{Line, Span},
+    widgets::Paragraph,
+    Frame,
 };
-use std::io::{stdout, Write};
 
 pub struct StageCompletionView;
 
 impl StageCompletionView {
-    pub fn render_complete(
+    pub fn render(
+        frame: &mut Frame,
         metrics: &StageResult,
         current_stage: usize,
         total_stages: usize,
         has_next_stage: bool,
         keystrokes: usize,
-    ) -> Result<()> {
-        let mut stdout = stdout();
+    ) {
+        let area = frame.area();
 
-        // Comprehensive screen reset
-        execute!(stdout, terminal::Clear(ClearType::All))?;
-        execute!(stdout, MoveTo(0, 0))?;
-        execute!(stdout, ResetColor)?;
-        stdout.flush()?;
+        // Calculate total content height
+        let title_height = 1;
+        let title_spacing = 3;
+        let score_label_height = 1;
+        let ascii_score_height = 4;
+        let ascii_spacing = if !metrics.was_failed && !metrics.was_skipped {
+            2 // 2 lines before metrics
+        } else {
+            1 // 1 line before progress
+        };
+        let metrics_height = if !metrics.was_failed && !metrics.was_skipped {
+            2
+        } else {
+            0
+        };
+        let metrics_spacing = if !metrics.was_failed && !metrics.was_skipped {
+            1
+        } else {
+            0
+        };
+        let progress_height = if has_next_stage { 3 } else { 1 };
+        let progress_spacing = 1;
+        let options_height = 1;
 
-        // Short delay to ensure terminal state is reset
-        std::thread::sleep(std::time::Duration::from_millis(10));
+        let total_content_height = title_height
+            + title_spacing
+            + score_label_height
+            + ascii_score_height
+            + ascii_spacing
+            + metrics_height
+            + metrics_spacing
+            + progress_height
+            + progress_spacing
+            + options_height;
 
-        let (terminal_width, terminal_height) = terminal::size()?;
-        let center_row = terminal_height / 2;
-        let center_col = terminal_width / 2;
+        let top_padding = (area.height.saturating_sub(total_content_height as u16)) / 2;
 
-        // Render stage title
-        Self::render_stage_title(&mut stdout, metrics, current_stage, center_col, center_row)?;
+        let mut constraints = vec![
+            Constraint::Length(top_padding),
+            Constraint::Length(title_height as u16),
+            Constraint::Length(title_spacing as u16),
+            Constraint::Length(score_label_height as u16),
+            Constraint::Length(ascii_score_height as u16),
+            Constraint::Length(ascii_spacing as u16),
+        ];
 
-        // Render score section
-        let ascii_height =
-            Self::render_score_section(&mut stdout, metrics, center_col, center_row)?;
-        let score_start_row = center_row.saturating_sub(3) + 1;
-
-        // Display metrics only for completed (non-failed, non-skipped) challenges
         if !metrics.was_failed && !metrics.was_skipped {
-            let metrics_row = score_start_row + ascii_height + 1;
-            Self::render_metrics(&mut stdout, metrics, keystrokes, center_col, metrics_row)?;
+            constraints.push(Constraint::Length(metrics_height as u16));
+            constraints.push(Constraint::Length(metrics_spacing as u16));
         }
 
-        // Show progress indicator after metrics or ASCII score
-        let progress_start_row = if !metrics.was_failed && !metrics.was_skipped {
-            score_start_row + ascii_height + 3 // ASCII + gap + metrics lines + gap
-        } else {
-            score_start_row + ascii_height + 1 // ASCII + gap
-        };
+        constraints.push(Constraint::Length(progress_height as u16));
+        constraints.push(Constraint::Length(progress_spacing as u16));
+        constraints.push(Constraint::Length(options_height as u16));
+        constraints.push(Constraint::Min(0)); // bottom
 
-        let options_row = Self::render_progress_indicator(
-            &mut stdout,
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(constraints)
+            .split(area);
+
+        let mut chunk_idx = 1;
+
+        // Render stage title
+        Self::render_stage_title(frame, chunks[chunk_idx], metrics, current_stage);
+        chunk_idx += 2; // title + spacing
+
+        // Render score section
+        Self::render_score_label(frame, chunks[chunk_idx], metrics);
+        chunk_idx += 1;
+        Self::render_score_ascii(frame, chunks[chunk_idx], metrics);
+        chunk_idx += 2; // ascii + spacing
+
+        // Display metrics only for completed challenges
+        if !metrics.was_failed && !metrics.was_skipped {
+            Self::render_metrics(frame, chunks[chunk_idx], metrics, keystrokes);
+            chunk_idx += 2; // metrics + spacing
+        }
+
+        // Render progress indicator
+        Self::render_progress_indicator(
+            frame,
+            chunks[chunk_idx],
             current_stage,
             total_stages,
             has_next_stage,
-            center_col,
-            progress_start_row,
-        )?;
+        );
+        chunk_idx += 2; // progress + spacing
 
-        // Show stage completion options with color coding
-        Self::render_options(&mut stdout, center_col, options_row)?;
-
-        stdout.flush()?;
-
-        Ok(())
+        // Render options
+        Self::render_options(frame, chunks[chunk_idx]);
     }
 
     fn create_ascii_numbers(score: &str) -> Vec<String> {
@@ -93,12 +135,11 @@ impl StageCompletionView {
     }
 
     fn render_stage_title(
-        stdout: &mut std::io::Stdout,
+        frame: &mut Frame,
+        area: ratatui::layout::Rect,
         metrics: &StageResult,
         current_stage: usize,
-        center_col: u16,
-        center_row: u16,
-    ) -> Result<()> {
+    ) {
         let stage_title = if metrics.was_failed {
             format!("=== STAGE {} FAILED ===", current_stage)
         } else if metrics.was_skipped {
@@ -107,41 +148,24 @@ impl StageCompletionView {
             format!("=== STAGE {} COMPLETE ===", current_stage)
         };
 
-        let title_col = center_col.saturating_sub(stage_title.len() as u16 / 2);
-
-        execute!(stdout, MoveTo(title_col, center_row.saturating_sub(6)))?;
-        execute!(stdout, SetAttribute(Attribute::Bold))?;
-        if metrics.was_failed {
-            execute!(
-                stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::error()))
-            )?;
+        let color = if metrics.was_failed {
+            Colors::error()
         } else if metrics.was_skipped {
-            execute!(
-                stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::warning()))
-            )?;
+            Colors::warning()
         } else {
-            execute!(
-                stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::success()))
-            )?;
-        }
-        execute!(stdout, Print(&stage_title))?;
-        execute!(stdout, ResetColor)?;
+            Colors::success()
+        };
 
-        Ok(())
+        let title = Paragraph::new(Line::from(vec![Span::styled(
+            stage_title,
+            Style::default().fg(color).add_modifier(Modifier::BOLD),
+        )]))
+        .alignment(Alignment::Center);
+
+        frame.render_widget(title, area);
     }
 
-    fn render_score_section(
-        stdout: &mut std::io::Stdout,
-        metrics: &StageResult,
-        center_col: u16,
-        center_row: u16,
-    ) -> Result<u16> {
-        let score_label_row = center_row.saturating_sub(3);
-
-        // Display score label
+    fn render_score_label(frame: &mut Frame, area: ratatui::layout::Rect, metrics: &StageResult) {
         let score_label = if metrics.was_failed {
             "FAILED AFTER"
         } else if metrics.was_skipped {
@@ -150,29 +174,22 @@ impl StageCompletionView {
             "SCORE"
         };
 
-        let score_label_col = center_col.saturating_sub(score_label.len() as u16 / 2);
-        execute!(stdout, MoveTo(score_label_col, score_label_row))?;
-        execute!(stdout, SetAttribute(Attribute::Bold))?;
-        if metrics.was_failed {
-            execute!(
-                stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::error()))
-            )?;
-        } else if metrics.was_skipped {
-            execute!(
-                stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::error()))
-            )?;
+        let color = if metrics.was_failed || metrics.was_skipped {
+            Colors::error()
         } else {
-            execute!(
-                stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::success()))
-            )?;
-        }
-        execute!(stdout, Print(score_label))?;
-        execute!(stdout, ResetColor)?;
+            Colors::success()
+        };
 
-        // Display large ASCII art score
+        let label = Paragraph::new(Line::from(vec![Span::styled(
+            score_label,
+            Style::default().fg(color).add_modifier(Modifier::BOLD),
+        )]))
+        .alignment(Alignment::Center);
+
+        frame.render_widget(label, area);
+    }
+
+    fn render_score_ascii(frame: &mut Frame, area: ratatui::layout::Rect, metrics: &StageResult) {
         let score_value = if metrics.was_failed {
             format!("{:.1}", metrics.completion_time.as_secs_f64())
         } else if metrics.was_skipped {
@@ -182,212 +199,157 @@ impl StageCompletionView {
         };
 
         let ascii_numbers = Self::create_ascii_numbers(&score_value);
-        let score_start_row = score_label_row + 1;
 
-        for (row_index, line) in ascii_numbers.iter().enumerate() {
-            let line_col = center_col.saturating_sub(line.len() as u16 / 2);
-            execute!(stdout, MoveTo(line_col, score_start_row + row_index as u16))?;
-            execute!(stdout, SetAttribute(Attribute::Bold))?;
-            if metrics.was_failed {
-                execute!(
-                    stdout,
-                    SetForegroundColor(Colors::to_crossterm(Colors::error()))
-                )?;
-            } else if metrics.was_skipped {
-                execute!(
-                    stdout,
-                    SetForegroundColor(Colors::to_crossterm(Colors::warning()))
-                )?;
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(vec![Constraint::Length(1); 4])
+            .split(area);
+
+        if metrics.was_failed || metrics.was_skipped {
+            // For failed/skipped, use solid color
+            let color = if metrics.was_failed {
+                Colors::error()
             } else {
-                let best_rank = Rank::for_score(metrics.challenge_score);
-                execute!(stdout, SetForegroundColor(best_rank.terminal_color()))?;
-            }
-            execute!(stdout, Print(line))?;
-            execute!(stdout, ResetColor)?;
-        }
+                Colors::warning()
+            };
 
-        Ok(ascii_numbers.len() as u16)
+            for (i, line) in ascii_numbers.iter().enumerate() {
+                let para = Paragraph::new(Line::from(vec![Span::styled(
+                    line.as_str(),
+                    Style::default().fg(color).add_modifier(Modifier::BOLD),
+                )]))
+                .alignment(Alignment::Center);
+                frame.render_widget(para, chunks[i]);
+            }
+        } else {
+            // For completed challenges, use gradation
+            let rank = Rank::for_score(metrics.challenge_score);
+            let tier_colors = rank_colors::get_tier_colors(&rank.tier);
+
+            for (i, line) in ascii_numbers.iter().enumerate() {
+                let widget =
+                    GradationText::new(line.as_str(), tier_colors).alignment(Alignment::Center);
+                frame.render_widget(widget, chunks[i]);
+            }
+        }
     }
 
     fn render_metrics(
-        stdout: &mut std::io::Stdout,
+        frame: &mut Frame,
+        area: ratatui::layout::Rect,
         metrics: &StageResult,
         keystrokes: usize,
-        center_col: u16,
-        metrics_row: u16,
-    ) -> Result<()> {
-        // Line 1: CPM, WPM, Time with colors
+    ) {
         let time_secs = metrics.completion_time.as_secs_f64();
-        let line1_text = format!(
-            "CPM: {:.0} | WPM: {:.0} | Time: {:.1}s",
-            metrics.cpm, metrics.wpm, time_secs
+
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([Constraint::Length(1), Constraint::Length(1)])
+            .split(area);
+
+        // Line 1: CPM, WPM, Time
+        let line1 = Line::from(vec![
+            Span::styled("CPM: ", Style::default().fg(Colors::cpm_wpm())),
+            Span::styled(
+                format!("{:.0}", metrics.cpm),
+                Style::default().fg(Colors::text()),
+            ),
+            Span::styled(" | ", Style::default().fg(Colors::text())),
+            Span::styled("WPM: ", Style::default().fg(Colors::cpm_wpm())),
+            Span::styled(
+                format!("{:.0}", metrics.wpm),
+                Style::default().fg(Colors::text()),
+            ),
+            Span::styled(" | ", Style::default().fg(Colors::text())),
+            Span::styled("Time: ", Style::default().fg(Colors::duration())),
+            Span::styled(
+                format!("{:.1}s", time_secs),
+                Style::default().fg(Colors::text()),
+            ),
+        ]);
+        frame.render_widget(
+            Paragraph::new(line1).alignment(Alignment::Center),
+            chunks[0],
         );
-        let line1_col = center_col.saturating_sub(line1_text.len() as u16 / 2);
-        execute!(stdout, MoveTo(line1_col, metrics_row))?;
 
-        // CPM label and value
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::cpm_wpm()))
-        )?;
-        execute!(stdout, Print("CPM: "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(format!("{:.0}", metrics.cpm)))?;
-        execute!(stdout, Print(" | "))?;
-
-        // WPM label and value
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::cpm_wpm()))
-        )?;
-        execute!(stdout, Print("WPM: "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(format!("{:.0}", metrics.wpm)))?;
-        execute!(stdout, Print(" | "))?;
-
-        // Time label and value
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::duration()))
-        )?;
-        execute!(stdout, Print("Time: "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(format!("{:.1}s", time_secs)))?;
-        execute!(stdout, ResetColor)?;
-
-        // Line 2: Keystrokes, Mistakes, Accuracy with colors
-        let line2_text = format!(
-            "Keystrokes: {} | Mistakes: {} | Accuracy: {:.1}%",
-            keystrokes, metrics.mistakes, metrics.accuracy
+        // Line 2: Keystrokes, Mistakes, Accuracy
+        let line2 = Line::from(vec![
+            Span::styled("Keystrokes: ", Style::default().fg(Colors::stage_info())),
+            Span::styled(
+                format!("{}", keystrokes),
+                Style::default().fg(Colors::text()),
+            ),
+            Span::styled(" | ", Style::default().fg(Colors::text())),
+            Span::styled("Mistakes: ", Style::default().fg(Colors::error())),
+            Span::styled(
+                format!("{}", metrics.mistakes),
+                Style::default().fg(Colors::text()),
+            ),
+            Span::styled(" | ", Style::default().fg(Colors::text())),
+            Span::styled("Accuracy: ", Style::default().fg(Colors::accuracy())),
+            Span::styled(
+                format!("{:.1}%", metrics.accuracy),
+                Style::default().fg(Colors::text()),
+            ),
+        ]);
+        frame.render_widget(
+            Paragraph::new(line2).alignment(Alignment::Center),
+            chunks[1],
         );
-        let line2_col = center_col.saturating_sub(line2_text.len() as u16 / 2);
-        execute!(stdout, MoveTo(line2_col, metrics_row + 1))?;
-
-        // Keystrokes label and value
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::stage_info()))
-        )?;
-        execute!(stdout, Print("Keystrokes: "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(format!("{}", keystrokes)))?;
-        execute!(stdout, Print(" | "))?;
-
-        // Mistakes label and value
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::error()))
-        )?;
-        execute!(stdout, Print("Mistakes: "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(format!("{}", metrics.mistakes)))?;
-        execute!(stdout, Print(" | "))?;
-
-        // Accuracy label and value
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::accuracy()))
-        )?;
-        execute!(stdout, Print("Accuracy: "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(format!("{:.1}%", metrics.accuracy)))?;
-        execute!(stdout, ResetColor)?;
-
-        Ok(())
     }
 
     fn render_progress_indicator(
-        stdout: &mut std::io::Stdout,
+        frame: &mut Frame,
+        area: ratatui::layout::Rect,
         current_stage: usize,
         total_stages: usize,
         has_next_stage: bool,
-        center_col: u16,
-        progress_start_row: u16,
-    ) -> Result<u16> {
-        // Progress bar
-        let progress_text = format!("Stage {} of {}", current_stage, total_stages);
-        let progress_col = center_col.saturating_sub(progress_text.len() as u16 / 2);
-
-        execute!(stdout, MoveTo(progress_col, progress_start_row))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(&progress_text))?;
-        execute!(stdout, ResetColor)?;
-
-        let mut next_row = progress_start_row + 1;
-
-        // Show next stage message if there are more stages
+    ) {
         if has_next_stage {
-            execute!(stdout, MoveTo(0, progress_start_row + 1))?;
-            execute!(stdout, Print(""))?;
+            let chunks = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Length(1), // progress
+                    Constraint::Length(1), // spacing
+                    Constraint::Length(1), // next message
+                ])
+                .split(area);
+
+            let progress_text = format!("Stage {} of {}", current_stage, total_stages);
+            let progress = Paragraph::new(Line::from(vec![Span::styled(
+                progress_text,
+                Style::default().fg(Colors::text()),
+            )]))
+            .alignment(Alignment::Center);
+            frame.render_widget(progress, chunks[0]);
 
             let next_text = "Next stage starting...";
-            let next_col = center_col.saturating_sub(next_text.len() as u16 / 2);
-            execute!(stdout, MoveTo(next_col, progress_start_row + 2))?;
-            execute!(
-                stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::warning()))
-            )?;
-            execute!(stdout, Print(next_text))?;
-            execute!(stdout, ResetColor)?;
-            next_row = progress_start_row + 4;
+            let next = Paragraph::new(Line::from(vec![Span::styled(
+                next_text,
+                Style::default().fg(Colors::warning()),
+            )]))
+            .alignment(Alignment::Center);
+            frame.render_widget(next, chunks[2]);
+        } else {
+            let progress_text = format!("Stage {} of {}", current_stage, total_stages);
+            let progress = Paragraph::new(Line::from(vec![Span::styled(
+                progress_text,
+                Style::default().fg(Colors::text()),
+            )]))
+            .alignment(Alignment::Center);
+            frame.render_widget(progress, area);
         }
-
-        Ok(next_row)
     }
 
-    fn render_options(
-        stdout: &mut std::io::Stdout,
-        center_col: u16,
-        options_row: u16,
-    ) -> Result<()> {
-        // Calculate position for centered text
-        let total_text_length = "[SPACE] Continue  [ESC] Quit".len();
-        let start_col = center_col.saturating_sub(total_text_length as u16 / 2);
+    fn render_options(frame: &mut Frame, area: ratatui::layout::Rect) {
+        let options = Line::from(vec![
+            Span::styled("[SPACE]", Style::default().fg(Colors::success())),
+            Span::styled(" Continue  ", Style::default().fg(Colors::text())),
+            Span::styled("[ESC]", Style::default().fg(Colors::error())),
+            Span::styled(" Quit", Style::default().fg(Colors::text())),
+        ]);
 
-        execute!(stdout, MoveTo(start_col, options_row))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::success()))
-        )?;
-        execute!(stdout, Print("[SPACE]"))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(" Continue  "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::error()))
-        )?;
-        execute!(stdout, Print("[ESC]"))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(" Quit"))?;
-        execute!(stdout, ResetColor)?;
-
-        Ok(())
+        let options_widget = Paragraph::new(options).alignment(Alignment::Center);
+        frame.render_widget(options_widget, area);
     }
 }
