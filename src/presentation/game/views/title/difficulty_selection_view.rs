@@ -1,63 +1,53 @@
 use crate::domain::models::DifficultyLevel;
 use crate::presentation::ui::Colors;
-use crate::Result;
-use crossterm::{
-    cursor::MoveTo,
-    execute,
-    style::{Attribute, Print, ResetColor, SetAttribute, SetForegroundColor},
+use ratatui::{
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::{Modifier, Style},
+    text::{Line, Span},
+    widgets::Paragraph,
+    Frame,
 };
-use std::io::Stdout;
 
 pub struct DifficultySelectionView;
 
 impl DifficultySelectionView {
-    pub fn draw(
-        stdout: &mut Stdout,
-        center_row: u16,
-        center_col: u16,
+    pub fn render(
+        frame: &mut Frame,
+        area: ratatui::layout::Rect,
         difficulties: &[(&str, DifficultyLevel); 5],
         selected_difficulty: usize,
         challenge_counts: &[usize; 5],
         error_message: Option<&String>,
-    ) -> Result<()> {
-        let start_row = center_row + 1;
+    ) {
         let (name, difficulty_level) = &difficulties[selected_difficulty];
         let count = challenge_counts[selected_difficulty];
 
-        // Clear previous difficulty display (multiple lines)
-        for i in 0..4 {
-            execute!(stdout, MoveTo(0, start_row + i))?;
-            execute!(stdout, Print(" ".repeat(120)))?;
-        }
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Length(1), // Difficulty selection
+                Constraint::Length(1), // Challenge count
+                Constraint::Length(1), // Description line 1 / Error
+                Constraint::Length(1), // Description line 2
+            ])
+            .split(area);
 
         // Line 1: Difficulty selection
-        let difficulty_text = format!("Difficulty: ← {} →", name);
-        let difficulty_col = center_col.saturating_sub(difficulty_text.chars().count() as u16 / 2);
-
-        execute!(stdout, MoveTo(difficulty_col, start_row))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print("Difficulty: "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::accuracy()))
-        )?;
-        execute!(stdout, Print("← "))?;
-        execute!(
-            stdout,
-            SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(name))?;
-        execute!(
-            stdout,
-            ResetColor,
-            SetForegroundColor(Colors::to_crossterm(Colors::accuracy()))
-        )?;
-        execute!(stdout, Print(" →"))?;
-        execute!(stdout, ResetColor)?;
+        let difficulty_line = Line::from(vec![
+            Span::styled("Difficulty: ", Style::default().fg(Colors::text())),
+            Span::styled("← ", Style::default().fg(Colors::accuracy())),
+            Span::styled(
+                name.to_string(),
+                Style::default()
+                    .fg(Colors::text())
+                    .add_modifier(Modifier::BOLD),
+            ),
+            Span::styled(" →", Style::default().fg(Colors::accuracy())),
+        ]);
+        frame.render_widget(
+            Paragraph::new(difficulty_line).alignment(Alignment::Center),
+            chunks[0],
+        );
 
         // Line 2: Challenge count
         let count_text = if count > 0 {
@@ -65,44 +55,38 @@ impl DifficultySelectionView {
         } else {
             "Challenge count will be displayed after loading".to_string()
         };
-        let count_col = center_col.saturating_sub(count_text.chars().count() as u16 / 2);
-
-        execute!(stdout, MoveTo(count_col, start_row + 1))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::info())),
-            SetAttribute(Attribute::Dim)
-        )?;
-        execute!(stdout, Print(count_text))?;
-        execute!(stdout, ResetColor)?;
+        let count_line = Paragraph::new(Line::from(vec![Span::styled(
+            count_text,
+            Style::default()
+                .fg(Colors::info())
+                .add_modifier(Modifier::DIM),
+        )]))
+        .alignment(Alignment::Center);
+        frame.render_widget(count_line, chunks[1]);
 
         // Line 3 & 4: Description lines or error message
         if let Some(error) = error_message {
             // Display error message in red
-            let error_col = center_col.saturating_sub(error.chars().count() as u16 / 2);
-            execute!(stdout, MoveTo(error_col, start_row + 2))?;
-            execute!(
-                stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::error())),
-                SetAttribute(Attribute::Bold)
-            )?;
-            execute!(stdout, Print(error))?;
-            execute!(stdout, ResetColor)?;
+            let error_line = Paragraph::new(Line::from(vec![Span::styled(
+                error.as_str(),
+                Style::default()
+                    .fg(Colors::error())
+                    .add_modifier(Modifier::BOLD),
+            )]))
+            .alignment(Alignment::Center);
+            frame.render_widget(error_line, chunks[2]);
         } else {
             let descriptions = [difficulty_level.description(), difficulty_level.subtitle()];
             for (i, description) in descriptions.iter().enumerate() {
-                let desc_col = center_col.saturating_sub(description.chars().count() as u16 / 2);
-                execute!(stdout, MoveTo(desc_col, start_row + 2 + i as u16))?;
-                execute!(
-                    stdout,
-                    SetForegroundColor(Colors::to_crossterm(Colors::text())),
-                    SetAttribute(Attribute::Dim)
-                )?;
-                execute!(stdout, Print(description))?;
-                execute!(stdout, ResetColor)?;
+                let desc_line = Paragraph::new(Line::from(vec![Span::styled(
+                    *description,
+                    Style::default()
+                        .fg(Colors::text())
+                        .add_modifier(Modifier::DIM),
+                )]))
+                .alignment(Alignment::Center);
+                frame.render_widget(desc_line, chunks[2 + i]);
             }
         }
-
-        Ok(())
     }
 }

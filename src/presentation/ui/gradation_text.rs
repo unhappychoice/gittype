@@ -377,7 +377,7 @@ mod tests {
         let widget = GradationText::new("Hello", &[30, 66, 72]);
         let line = widget.apply_gradation();
         // Should have multiple spans for smooth gradation
-        assert!(line.spans.len() > 0);
+        assert!(!line.spans.is_empty());
     }
 
     #[test]
@@ -385,7 +385,7 @@ mod tests {
         let widget = GradationText::new("Hello", &[30, 66, 72]).smooth(false);
         let line = widget.apply_gradation();
         // Should have spans equal to number of colors
-        assert!(line.spans.len() > 0);
+        assert!(!line.spans.is_empty());
     }
 
     #[test]
@@ -401,7 +401,7 @@ mod tests {
         let colors = [Rgb::new(255, 0, 0), Rgb::new(0, 0, 255)];
         let widget = GradationText::new_rgb("Test", &colors);
         let line = widget.apply_gradation();
-        assert!(line.spans.len() > 0);
+        assert!(!line.spans.is_empty());
     }
 
     #[test]

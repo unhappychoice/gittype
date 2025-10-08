@@ -1,21 +1,19 @@
 use crate::domain::models::GitRepository;
 use crate::presentation::ui::Colors;
-use crate::Result;
-use crossterm::{
-    cursor::MoveTo,
-    execute,
-    style::{Print, ResetColor, SetForegroundColor},
-    terminal,
+use ratatui::{
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::Style,
+    text::{Line, Span},
+    widgets::Paragraph,
+    Frame,
 };
-use std::io::Stdout;
 
 pub struct GitRepositoryView;
 
 impl GitRepositoryView {
-    pub fn draw(stdout: &mut Stdout, git_repository: Option<&GitRepository>) -> Result<()> {
+    pub fn render(frame: &mut Frame, git_repository: Option<&GitRepository>) {
         if let Some(info) = git_repository {
-            let (terminal_width, terminal_height) = terminal::size()?;
-            let bottom_row = terminal_height - 1;
+            let area = frame.area();
 
             // Build git info string
             let mut parts = vec![format!("📁 {}/{}", info.user_name, info.repository_name)];
@@ -33,22 +31,19 @@ impl GitRepositoryView {
 
             let git_text = parts.join(" • ");
 
-            // Calculate approximate display width considering emoji width
-            // Each emoji takes about 2 characters worth of width
-            let emoji_count = git_text.chars().filter(|c| *c as u32 > 127).count();
-            let approximate_width = git_text.chars().count() + emoji_count;
+            // Place at bottom of screen
+            let bottom_chunks = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([Constraint::Min(0), Constraint::Length(1)])
+                .split(area);
 
-            // Center the text using approximate width
-            let git_col = terminal_width.saturating_sub(approximate_width as u16) / 2;
+            let git_info = Paragraph::new(Line::from(vec![Span::styled(
+                git_text,
+                Style::default().fg(Colors::text_secondary()),
+            )]))
+            .alignment(Alignment::Center);
 
-            execute!(stdout, MoveTo(git_col, bottom_row))?;
-            execute!(
-                stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::text_secondary()))
-            )?;
-            execute!(stdout, Print(&git_text))?;
-            execute!(stdout, ResetColor)?;
+            frame.render_widget(git_info, bottom_chunks[1]);
         }
-        Ok(())
     }
 }
