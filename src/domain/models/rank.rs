@@ -32,12 +32,17 @@ impl RankTier {
 
     /// Get the terminal color for this tier
     pub fn terminal_color(&self) -> crossterm::style::Color {
+        Colors::to_crossterm(self.color())
+    }
+
+    /// Get the ratatui color for this tier
+    pub fn color(&self) -> ratatui::style::Color {
         match self {
-            RankTier::Beginner => Colors::to_crossterm(Colors::info()),
-            RankTier::Intermediate => Colors::to_crossterm(Colors::border()),
-            RankTier::Advanced => Colors::to_crossterm(Colors::cpm_wpm()),
-            RankTier::Expert => Colors::to_crossterm(Colors::accuracy()),
-            RankTier::Legendary => Colors::to_crossterm(Colors::error()),
+            RankTier::Beginner => Colors::tier_beginner(),
+            RankTier::Intermediate => Colors::tier_intermediate(),
+            RankTier::Advanced => Colors::tier_advanced(),
+            RankTier::Expert => Colors::tier_expert(),
+            RankTier::Legendary => Colors::tier_legendary(),
         }
     }
 }
@@ -79,6 +84,11 @@ impl Rank {
     /// Get the terminal color for this rank
     pub fn terminal_color(&self) -> crossterm::style::Color {
         self.tier.terminal_color()
+    }
+
+    /// Get the ratatui color for this rank
+    pub fn color(&self) -> ratatui::style::Color {
+        self.tier.color()
     }
 
     /// Get all ranks in order from lowest to highest score

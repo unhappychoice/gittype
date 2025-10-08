@@ -159,6 +159,23 @@ impl Colors {
     pub fn lang_default() -> Color {
         Self::get_color_scheme().lang_default.into()
     }
+
+    // Rank tier colors (from ascii_rank_titles_generated.rs)
+    pub fn tier_beginner() -> Color {
+        Color::Rgb(135, 175, 255) // #87afff - light blue
+    }
+    pub fn tier_intermediate() -> Color {
+        Color::Rgb(0, 215, 255) // #00d7ff - cyan
+    }
+    pub fn tier_advanced() -> Color {
+        Color::Rgb(95, 175, 135) // #5faf87 - green
+    }
+    pub fn tier_expert() -> Color {
+        Color::Rgb(255, 175, 0) // #ffaf00 - orange/gold
+    }
+    pub fn tier_legendary() -> Color {
+        Color::Rgb(255, 0, 95) // #ff005f - pink/red
+    }
 }
 
 impl Colors {
