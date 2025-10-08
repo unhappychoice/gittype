@@ -1,0 +1,44 @@
+---
+source: tests/integration/screens/help_screen_test.rs
+expression: output
+---
+┌Help──────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ CLI Usage │ Scoring System │ Rank System │ Game Help │ Community │ About & Credits │ Third-Party Licenses            │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  Rank Tiers:                                                                                                         ▲
+│                                                                                                                      █
+│  Beginner (0-5600)                                                                                                   █
+│  Fresh developers learning the basics                                                                                █
+│                                                                                                                      █
+│  Intermediate (5601-7500)                                                                                            █
+│  Solid developers with growing skills                                                                                █
+│                                                                                                                      █
+│  Advanced (7501-9500)                                                                                                █
+│  Senior developers mastering their craft                                                                             █
+│                                                                                                                      █
+│  Expert (9501-11400)                                                                                                 ║
+│  Elite developers becoming legendary                                                                                 ║
+│                                                                                                                      ║
+│  Legendary (11401-∞)                                                                                                 ║
+│  Mythical entities beyond comprehension                                                                              ║
+│                                                                                                                      ║
+│  All Ranks:                                                                                                          ║
+│                                                                                                                      ║
+│  Beginner:                                                                                                           ║
+│  • Hello World (0-800)                                                                                               ║
+│  • Syntax Error (801-1200)                                                                                           ║
+│  • Rubber Duck (1201-1600)                                                                                           ║
+│  • Script Kid (1601-2000)                                                                                            ║
+│  • Bash Newbie (2001-2450)                                                                                           ║
+│  • CLI Wanderer (2451-2900)                                                                                          ║
+│  • Tab Tamer (2901-3300)                                                                                             ║
+│  • Bracket Juggler (3301-3700)                                                                                       ║
+│  • Copy-Paste Engineer (3701-4150)                                                                                   ║
+│  • Linter Apprentice (4151-4550)                                                                                     ║
+│  • Unit Test Trainee (4551-5000)                                                                                     ▼
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                                                                                        
+                 ★ Star us on GitHub (https://github.com/unhappychoice/gittype) if you enjoy GitType! ★                 
+                                                                                                                        
+                                [←→/HL] Switch tabs [↑↓/JK] Scroll [G] GitHub [ESC] Close

@@ -1,0 +1,44 @@
+---
+source: tests/integration/screens/help_screen_test.rs
+expression: output
+---
+┌Help──────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ CLI Usage │ Scoring System │ Rank System │ Game Help │ Community │ About & Credits │ Third-Party Licenses            │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  Basic Usage:                                                                                                        ▲
+│                                                                                                                      █
+│  gittype                          # Start with current directory                                                     █
+│  gittype /path/to/repo            # Use specific repository path                                                     █
+│  gittype --repo owner/repo        # Clone and use GitHub repository                                                  █
+│  gittype --langs rust,python      # Filter by programming languages                                                  █
+│                                                                                                                      █
+│  Repository Commands:                                                                                                █
+│                                                                                                                      █
+│  gittype repo list                # List all cached repositories                                                     █
+│  gittype repo clear               # Clear all cached repositories                                                    █
+│  gittype repo clear --force       # Force clear without confirmation                                                 █
+│  gittype repo play                # Play a cached repository interactively                                           █
+│                                                                                                                      █
+│  Cache Management:                                                                                                   █
+│                                                                                                                      █
+│  gittype cache stats              # Show cache statistics                                                            █
+│  gittype cache clear              # Clear all cached challenges                                                      █
+│  gittype cache list               # List cached repository keys                                                      █
+│                                                                                                                      █
+│  Cache Locations:                                                                                                    █
+│                                                                                                                      █
+│  ~/.gittype/                      # Main cache directory                                                             █
+│  ~/.gittype/repos/                # Repository data cache                                                            █
+│  ~/.gittype/cache/                # Challenge cache                                                                  █
+│  ~/.gittype/gittype.db            # Session history database                                                         █
+│                                                                                                                      █
+│  Examples:                                                                                                           █
+│                                                                                                                      █
+│  gittype --repo rust-lang/rust                                                                                       ║
+│  gittype --repo facebook/react                                                                                       ▼
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                                                                                        
+                 ★ Star us on GitHub (https://github.com/unhappychoice/gittype) if you enjoy GitType! ★                 
+                                                                                                                        
+                                [←→/HL] Switch tabs [↑↓/JK] Scroll [G] GitHub [ESC] Close
