@@ -10,5 +10,6 @@ mod info_dialog_test;
 mod panic_screen_test;
 mod records_screen_test;
 mod session_failure_screen_test;
+mod session_summary_screen_test;
 mod session_summary_share_screen_test;
 mod settings_screen_test;

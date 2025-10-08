@@ -3,13 +3,13 @@ use crate::domain::repositories::session_repository::BestStatus;
 use crate::domain::repositories::SessionRepository;
 use crate::presentation::game::ascii_digits::get_digit_patterns;
 use crate::presentation::ui::Colors;
-use crate::Result;
-use crossterm::{
-    cursor::MoveTo,
-    execute,
-    style::{Attribute, Print, ResetColor, SetAttribute, SetForegroundColor},
+use ratatui::{
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::{Modifier, Style},
+    text::{Line, Span},
+    widgets::Paragraph,
+    Frame,
 };
-use std::io::{stdout, Write};
 
 pub struct ScoreView;
 
@@ -33,14 +33,12 @@ impl ScoreView {
     }
 
     pub fn render(
+        frame: &mut Frame,
+        area: ratatui::layout::Rect,
         session_result: &SessionResult,
-        best_rank: Rank,
-        center_col: u16,
-        score_label_row: u16,
+        best_rank: &Rank,
         best_status: Option<&BestStatus>,
-    ) -> Result<u16> {
-        let mut stdout = stdout();
-
+    ) -> usize {
         let (updated_best_type, comparison_score) = if let Some(status) = best_status {
             // For comparison, always use the most relevant previous score
             let comparison_score = if status.best_type.as_deref() == Some("ALL TIME") {
@@ -99,49 +97,9 @@ impl ScoreView {
             (updated_best_type, comparison_score)
         };
 
-        let score_label = "SESSION SCORE";
-        let label_col = center_col.saturating_sub(score_label.len() as u16 / 2);
-        execute!(stdout, MoveTo(label_col, score_label_row))?;
-        execute!(
-            stdout,
-            SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(Colors::score()))
-        )?;
-        execute!(stdout, Print(score_label))?;
-        execute!(stdout, ResetColor)?;
-
-        if let Some(best_type) = updated_best_type {
-            let best_label = format!("*** {} BEST ***", best_type);
-            let best_label_col = center_col.saturating_sub(best_label.len() as u16 / 2);
-            execute!(stdout, MoveTo(best_label_col, score_label_row + 1))?;
-            execute!(stdout, SetAttribute(Attribute::Bold))?;
-            execute!(
-                stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::warning()))
-            )?;
-            execute!(stdout, Print(&best_label))?;
-            execute!(stdout, ResetColor)?;
-        }
-
         let score_value = format!("{:.0}", session_result.session_score);
         let ascii_numbers = Self::create_ascii_numbers(&score_value);
-        let score_start_row = if updated_best_type.is_some() {
-            score_label_row + 2
-        } else {
-            score_label_row + 1
-        };
-
-        for (row_index, line) in ascii_numbers.iter().enumerate() {
-            let line_col = center_col.saturating_sub(line.len() as u16 / 2);
-            execute!(stdout, MoveTo(line_col, score_start_row + row_index as u16))?;
-            execute!(
-                stdout,
-                SetAttribute(Attribute::Bold),
-                SetForegroundColor(best_rank.terminal_color())
-            )?;
-            execute!(stdout, Print(line))?;
-            execute!(stdout, ResetColor)?;
-        }
+        let ascii_height = ascii_numbers.len();
 
         let score_diff = session_result.session_score - comparison_score;
         let diff_text = if score_diff > 0.0 {
@@ -152,34 +110,82 @@ impl ScoreView {
             "(±0)".to_string()
         };
 
-        let diff_col = center_col.saturating_sub(diff_text.len() as u16 / 2);
-        execute!(
-            stdout,
-            MoveTo(diff_col, score_start_row + ascii_numbers.len() as u16 + 1)
-        )?;
-        execute!(stdout, SetAttribute(Attribute::Bold))?;
-        if score_diff > 0.0 {
-            execute!(
-                stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::success()))
-            )?;
+        let diff_color = if score_diff > 0.0 {
+            Colors::success()
         } else if score_diff < 0.0 {
-            execute!(
-                stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::error()))
-            )?;
+            Colors::error()
         } else {
-            execute!(
-                stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::text()))
-            )?;
+            Colors::text()
+        };
+
+        // Build layout
+        let mut constraints = vec![
+            Constraint::Length(1), // Score label
+        ];
+        if updated_best_type.is_some() {
+            constraints.push(Constraint::Length(1)); // Best label
         }
-        execute!(stdout, Print(&diff_text))?;
-        execute!(stdout, ResetColor)?;
+        for _ in 0..ascii_height {
+            constraints.push(Constraint::Length(1)); // ASCII number lines
+        }
+        constraints.push(Constraint::Length(1)); // Spacing
+        constraints.push(Constraint::Length(1)); // Diff text
 
-        stdout.flush()?;
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(constraints)
+            .split(area);
 
-        let ascii_height = ascii_numbers.len() as u16;
-        Ok(score_start_row + ascii_height + 3)
+        // Render score label
+        let score_label = Paragraph::new(Line::from(vec![Span::styled(
+            "SESSION SCORE",
+            Style::default()
+                .fg(Colors::score())
+                .add_modifier(Modifier::BOLD),
+        )]))
+        .alignment(Alignment::Center);
+        frame.render_widget(score_label, chunks[0]);
+
+        let mut chunk_index = 1;
+
+        // Render best label if present
+        if let Some(best_type) = updated_best_type {
+            let best_label = format!("*** {} BEST ***", best_type);
+            let best_widget = Paragraph::new(Line::from(vec![Span::styled(
+                best_label,
+                Style::default()
+                    .fg(Colors::warning())
+                    .add_modifier(Modifier::BOLD),
+            )]))
+            .alignment(Alignment::Center);
+            frame.render_widget(best_widget, chunks[chunk_index]);
+            chunk_index += 1;
+        }
+
+        // Render ASCII numbers
+        for (i, line) in ascii_numbers.iter().enumerate() {
+            let ascii_line = Paragraph::new(Line::from(vec![Span::styled(
+                line.as_str(),
+                Style::default()
+                    .fg(best_rank.color())
+                    .add_modifier(Modifier::BOLD),
+            )]))
+            .alignment(Alignment::Center);
+            frame.render_widget(ascii_line, chunks[chunk_index + i]);
+        }
+        chunk_index += ascii_height;
+
+        // Skip spacing
+        chunk_index += 1;
+
+        // Render diff text
+        let diff_widget = Paragraph::new(Line::from(vec![Span::styled(
+            diff_text,
+            Style::default().fg(diff_color).add_modifier(Modifier::BOLD),
+        )]))
+        .alignment(Alignment::Center);
+        frame.render_widget(diff_widget, chunks[chunk_index]);
+
+        ascii_height + 3
     }
 }
