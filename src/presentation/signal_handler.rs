@@ -107,7 +107,8 @@ fn show_panic_screen(
         .ok()
         .map(|mgr| mgr.get_event_bus())
         .unwrap_or_default();
-    let mut panic_screen = PanicScreen::with_error_message(error_message.to_string(), event_bus);
+    let mut panic_screen =
+        PanicScreen::with_error_message(error_message.to_string(), event_bus, None);
 
     let result = panic_screen_loop_ratatui(&mut terminal, &mut panic_screen, error_message);
 

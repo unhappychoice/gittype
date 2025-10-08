@@ -30,10 +30,14 @@ impl PanicScreen {
         }
     }
 
-    pub fn with_error_message(error_message: String, event_bus: EventBus) -> Self {
+    pub fn with_error_message(
+        error_message: String,
+        event_bus: EventBus,
+        timestamp: Option<String>,
+    ) -> Self {
         Self {
             error_message,
-            timestamp: Self::get_current_timestamp(),
+            timestamp: timestamp.unwrap_or_else(Self::get_current_timestamp),
             event_bus,
         }
     }
