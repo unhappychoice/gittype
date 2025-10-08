@@ -175,17 +175,36 @@ impl Screen for SessionSummaryScreen {
                         .flatten()
                 });
 
+            // Get actual rank ASCII height
+            let rank_patterns =
+                crate::presentation::game::ascii_rank_titles::get_all_rank_patterns();
+            let rank_lines = rank_patterns.get(best_rank.name());
+            let rank_ascii_height = rank_lines.map(|l| l.len()).unwrap_or(0);
+
+            // Check if last line is empty to determine spacing needed
+            let last_line_is_empty = rank_lines
+                .and_then(|lines| lines.last())
+                .map(|line| line.trim().is_empty())
+                .unwrap_or(false);
+
+            let rank_total_height = if last_line_is_empty {
+                rank_ascii_height + 1 // ASCII + tier info
+            } else {
+                rank_ascii_height + 2 // ASCII + spacing + tier info
+            };
+
             // Calculate content height
             let header_height = 4; // Header (title + spacing + YOU'RE)
-            let rank_ascii_height = 6; // Estimated ASCII art height
             let score_height = 8; // Score label + best label + ASCII + diff
             let summary_height = 2; // Two lines of metrics
             let options_height = 2; // Two lines of options
             let total_content_height = header_height
-                + rank_ascii_height
+                + rank_total_height
+                + 2 // spacing before score
                 + score_height
+                + 1 // spacing after score
                 + summary_height
-                + 4
+                + 2 // spacing
                 + options_height;
 
             let top_spacing = (area.height.saturating_sub(total_content_height as u16)) / 2;
@@ -194,12 +213,14 @@ impl Screen for SessionSummaryScreen {
                 .direction(Direction::Vertical)
                 .constraints([
                     Constraint::Length(top_spacing),
-                    Constraint::Length(4),                            // Header
-                    Constraint::Length(rank_ascii_height as u16 + 2), // Rank + tier info
-                    Constraint::Length(score_height as u16),          // Score
-                    Constraint::Length(2),                            // Summary
-                    Constraint::Length(2),                            // Spacing
-                    Constraint::Length(2),                            // Options
+                    Constraint::Length(4),                        // Header
+                    Constraint::Length(rank_total_height as u16), // Rank + tier info (with spacing if needed)
+                    Constraint::Length(2),                        // Spacing before score
+                    Constraint::Length(score_height as u16),      // Score
+                    Constraint::Length(1),                        // Spacing after score
+                    Constraint::Length(2),                        // Summary
+                    Constraint::Length(2),                        // Spacing
+                    Constraint::Length(2),                        // Options
                     Constraint::Min(0),
                 ])
                 .split(area);
@@ -208,13 +229,13 @@ impl Screen for SessionSummaryScreen {
             RankView::render(frame, chunks[2], &best_rank, session_result.session_score);
             ScoreView::render(
                 frame,
-                chunks[3],
+                chunks[4],
                 session_result,
                 &best_rank,
                 best_status.as_ref(),
             );
-            SummaryView::render(frame, chunks[4], session_result);
-            OptionsView::render(frame, chunks[6]);
+            SummaryView::render(frame, chunks[6], session_result);
+            OptionsView::render(frame, chunks[8]);
         }
         Ok(())
     }

@@ -49,6 +49,7 @@ tree-sitter-scala = "0.24"
 tree-sitter-zig = "1.0"
 crossterm = "0.29"
 ratatui = "0.29"
+ansi-to-tui = "7.0.0"
 rusqlite = { version = "0.37", features = ["bundled"] }
 anyhow = "1.0"
 thiserror = "2.0"

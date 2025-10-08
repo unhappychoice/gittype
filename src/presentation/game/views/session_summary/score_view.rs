@@ -2,7 +2,8 @@ use crate::domain::models::{Rank, SessionResult};
 use crate::domain::repositories::session_repository::BestStatus;
 use crate::domain::repositories::SessionRepository;
 use crate::presentation::game::ascii_digits::get_digit_patterns;
-use crate::presentation::ui::Colors;
+use crate::presentation::game::rank_colors;
+use crate::presentation::ui::{Colors, GradationText};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
     style::{Modifier, Style},
@@ -162,16 +163,12 @@ impl ScoreView {
             chunk_index += 1;
         }
 
-        // Render ASCII numbers
+        // Render ASCII numbers with gradation
+        let tier_colors = rank_colors::get_tier_colors(&best_rank.tier);
         for (i, line) in ascii_numbers.iter().enumerate() {
-            let ascii_line = Paragraph::new(Line::from(vec![Span::styled(
-                line.as_str(),
-                Style::default()
-                    .fg(best_rank.color())
-                    .add_modifier(Modifier::BOLD),
-            )]))
-            .alignment(Alignment::Center);
-            frame.render_widget(ascii_line, chunks[chunk_index + i]);
+            let widget =
+                GradationText::new(line.as_str(), tier_colors).alignment(Alignment::Center);
+            frame.render_widget(widget, chunks[chunk_index + i]);
         }
         chunk_index += ascii_height;
 

@@ -160,7 +160,7 @@ impl Colors {
         Self::get_color_scheme().lang_default.into()
     }
 
-    // Rank tier colors (from ascii_rank_titles_generated.rs)
+    // Rank tier colors (from rank_colors.rs)
     pub fn tier_beginner() -> Color {
         Color::Rgb(135, 175, 255) // #87afff - light blue
     }

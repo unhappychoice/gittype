@@ -1,21 +1,23 @@
 use gittype::domain::models::Rank;
-use gittype::presentation::game::ascii_rank_titles_generated::get_rank_display;
+use gittype::presentation::game::ascii_rank_titles::get_all_rank_patterns;
 
 #[test]
 fn test_identify_missing_ascii_art() {
     let titles = Rank::all_ranks();
+    let patterns = get_all_rank_patterns();
 
     let mut missing_art = Vec::new();
     let mut has_art = Vec::new();
 
     for title in &titles {
-        let ascii_art = get_rank_display(title.name());
-
-        if ascii_art.len() == 1 && ascii_art[0] == title.name() {
-            // This is fallback behavior - no actual ASCII art
-            missing_art.push(title.name());
+        if let Some(ascii_art) = patterns.get(title.name()) {
+            if !ascii_art.is_empty() {
+                has_art.push(title.name());
+            } else {
+                missing_art.push(title.name());
+            }
         } else {
-            has_art.push(title.name());
+            missing_art.push(title.name());
         }
     }
 
