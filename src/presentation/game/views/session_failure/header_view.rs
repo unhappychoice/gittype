@@ -1,22 +1,23 @@
 use crate::presentation::ui::Colors;
-use crate::Result;
-use crossterm::{
-    cursor::MoveTo,
-    execute,
-    style::{Attribute, Print, ResetColor, SetAttribute, SetForegroundColor},
+use ratatui::{
+    layout::Alignment,
+    style::{Modifier, Style},
+    text::{Line, Span},
+    widgets::Paragraph,
+    Frame,
 };
-use std::io::Stdout;
 
-pub fn render_header(stdout: &mut Stdout, terminal_width: u16, center_y: u16) -> Result<()> {
-    let header_text = "=== SESSION FAILED ===";
-    let header_x = (terminal_width - header_text.len() as u16) / 2;
-    execute!(stdout, MoveTo(header_x, center_y.saturating_sub(6)))?;
-    execute!(
-        stdout,
-        SetForegroundColor(Colors::to_crossterm(Colors::error())),
-        SetAttribute(Attribute::Bold)
-    )?;
-    execute!(stdout, Print(header_text))?;
-    execute!(stdout, ResetColor)?;
-    Ok(())
+pub struct HeaderView;
+
+impl HeaderView {
+    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect) {
+        let header = Paragraph::new(Line::from(vec![Span::styled(
+            "=== SESSION FAILED ===",
+            Style::default()
+                .fg(Colors::error())
+                .add_modifier(Modifier::BOLD),
+        )]))
+        .alignment(Alignment::Center);
+        frame.render_widget(header, area);
+    }
 }

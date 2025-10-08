@@ -1,112 +1,98 @@
-use crate::domain::services::scoring::{StageCalculator, StageInput, StageTracker};
+use crate::domain::models::SessionResult;
 use crate::presentation::ui::Colors;
-use crate::Result;
-use crossterm::{
-    cursor::MoveTo,
-    execute,
-    style::{Print, SetForegroundColor},
+use ratatui::{
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::Style,
+    text::{Line, Span},
+    widgets::Paragraph,
+    Frame,
 };
-use std::io::Stdout;
 
-pub fn render_stage_progress(
-    stdout: &mut Stdout,
-    terminal_width: u16,
-    center_y: u16,
-    total_stages: usize,
-    completed_stages: usize,
-) -> Result<()> {
-    let stage_text = format!("Stages: {}/{}", completed_stages, total_stages);
-    let stage_x = (terminal_width - stage_text.len() as u16) / 2;
-    execute!(stdout, MoveTo(stage_x, center_y.saturating_sub(2)))?;
-    execute!(
-        stdout,
-        SetForegroundColor(Colors::to_crossterm(Colors::info()))
-    )?;
-    execute!(stdout, Print(stage_text))?;
-    Ok(())
-}
+pub struct ContentView;
 
-pub fn render_metrics(
-    stdout: &mut Stdout,
-    terminal_width: u16,
-    center_y: u16,
-    stage_trackers: &[(String, StageTracker)],
-) -> Result<()> {
-    if !stage_trackers.is_empty() {
-        let (_last_stage_name, last_tracker) = stage_trackers.last().unwrap();
-        let mut tracker = last_tracker.clone();
-        tracker.record(StageInput::Fail);
-        let metrics = StageCalculator::calculate(&tracker);
+impl ContentView {
+    pub fn render(
+        frame: &mut Frame,
+        area: ratatui::layout::Rect,
+        session_result: &SessionResult,
+        total_stages: usize,
+    ) {
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Length(1), // Stage progress
+                Constraint::Length(1), // Spacing
+                Constraint::Length(1), // Metrics line 1
+                Constraint::Length(1), // Metrics line 2
+                Constraint::Length(1), // Spacing
+                Constraint::Length(1), // Failure message
+            ])
+            .split(area);
 
-        execute!(stdout, MoveTo(0, center_y))?;
+        // Stage progress
+        let stage_text = format!(
+            "Stages: {}/{}",
+            session_result.stages_completed, total_stages
+        );
+        let stage_progress = Paragraph::new(Line::from(vec![Span::styled(
+            stage_text,
+            Style::default().fg(Colors::info()),
+        )]))
+        .alignment(Alignment::Center);
+        frame.render_widget(stage_progress, chunks[0]);
 
-        let cpm_text = "CPM: ";
-        let wpm_text = " | WPM: ";
-        let accuracy_text = " | Accuracy: ";
-        let cpm_value = format!("{:.0}", metrics.cpm);
-        let wpm_value = format!("{:.0}", metrics.wpm);
-        let accuracy_value = format!("{:.0}%", metrics.accuracy);
+        // Metrics
+        let total_keystrokes = session_result.valid_keystrokes + session_result.invalid_keystrokes;
+        let total_mistakes = session_result.valid_mistakes + session_result.invalid_mistakes;
 
-        let total_width = cpm_text.len()
-            + cpm_value.len()
-            + wpm_text.len()
-            + wpm_value.len()
-            + accuracy_text.len()
-            + accuracy_value.len();
-        let metrics_x = (terminal_width - total_width as u16) / 2;
-        execute!(stdout, MoveTo(metrics_x, center_y))?;
+        // Line 1: CPM | WPM | Time
+        let metrics_line1 = Line::from(vec![
+            Span::styled("CPM: ", Style::default().fg(Colors::cpm_wpm())),
+            Span::styled(
+                format!("{:.0}", session_result.overall_cpm),
+                Style::default().fg(Colors::text()),
+            ),
+            Span::styled(" | WPM: ", Style::default().fg(Colors::cpm_wpm())),
+            Span::styled(
+                format!("{:.0}", session_result.overall_wpm),
+                Style::default().fg(Colors::text()),
+            ),
+            Span::styled(" | Time: ", Style::default().fg(Colors::duration())),
+            Span::styled(
+                format!("{:.1}s", session_result.session_duration.as_secs_f64()),
+                Style::default().fg(Colors::text()),
+            ),
+        ]);
+        let metrics_widget1 = Paragraph::new(metrics_line1).alignment(Alignment::Center);
+        frame.render_widget(metrics_widget1, chunks[2]);
 
-        // CPM label and value
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::cpm_wpm()))
-        )?;
-        execute!(stdout, Print(cpm_text))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(cpm_value))?;
+        // Line 2: Keystrokes | Mistakes | Accuracy
+        let metrics_line2 = Line::from(vec![
+            Span::styled("Keystrokes: ", Style::default().fg(Colors::stage_info())),
+            Span::styled(
+                format!("{}", total_keystrokes),
+                Style::default().fg(Colors::text()),
+            ),
+            Span::styled(" | Mistakes: ", Style::default().fg(Colors::error())),
+            Span::styled(
+                format!("{}", total_mistakes),
+                Style::default().fg(Colors::text()),
+            ),
+            Span::styled(" | Accuracy: ", Style::default().fg(Colors::accuracy())),
+            Span::styled(
+                format!("{:.1}%", session_result.overall_accuracy),
+                Style::default().fg(Colors::text()),
+            ),
+        ]);
+        let metrics_widget2 = Paragraph::new(metrics_line2).alignment(Alignment::Center);
+        frame.render_widget(metrics_widget2, chunks[3]);
 
-        // WPM label and value
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::cpm_wpm()))
-        )?;
-        execute!(stdout, Print(wpm_text))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(wpm_value))?;
-
-        // Accuracy label and value
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::accuracy()))
-        )?;
-        execute!(stdout, Print(accuracy_text))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(accuracy_value))?;
+        // Failure message
+        let fail_msg = Paragraph::new(Line::from(vec![Span::styled(
+            "Challenge failed. Better luck next time!",
+            Style::default().fg(Colors::error()),
+        )]))
+        .alignment(Alignment::Center);
+        frame.render_widget(fail_msg, chunks[5]);
     }
-    Ok(())
-}
-
-pub fn render_failure_message(
-    stdout: &mut Stdout,
-    terminal_width: u16,
-    center_y: u16,
-) -> Result<()> {
-    let fail_text = "Challenge failed. Better luck next time!";
-    let fail_x = (terminal_width - fail_text.len() as u16) / 2;
-    execute!(stdout, MoveTo(fail_x, center_y + 2))?;
-    execute!(
-        stdout,
-        SetForegroundColor(Colors::to_crossterm(Colors::error()))
-    )?;
-    execute!(stdout, Print(fail_text))?;
-    Ok(())
 }

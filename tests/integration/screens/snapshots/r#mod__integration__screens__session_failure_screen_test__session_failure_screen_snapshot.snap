@@ -1,0 +1,31 @@
+---
+source: tests/integration/screens/session_failure_screen_test.rs
+expression: output
+---
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                 === SESSION FAILED ===                                                 
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                       Stages: 1/3                                                      
+                                                                                                                        
+                                             CPM: 30 | WPM: 6 | Time: 60.0s                                             
+                                     Keystrokes: 35 | Mistakes: 5 | Accuracy: 85.7%                                     
+                                                                                                                        
+                                        Challenge failed. Better luck next time!                                        
+                                                                                                                        
+                              [R] Retry | [T] Back to Title | [ESC] Session Summary & Exit
