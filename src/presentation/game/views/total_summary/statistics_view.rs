@@ -1,258 +1,134 @@
 use crate::domain::models::TotalResult;
 use crate::presentation::ui::Colors;
-use crate::Result;
-use crossterm::{
-    cursor::MoveTo,
-    execute,
-    style::{Print, ResetColor, SetForegroundColor},
+use ratatui::{
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::Style,
+    text::{Line, Span},
+    widgets::Paragraph,
+    Frame,
 };
-use std::io::{Stdout, Write};
 
 pub struct StatisticsView;
 
 impl StatisticsView {
-    pub fn render(
-        stdout: &mut Stdout,
-        total_summary: &TotalResult,
-        center_col: u16,
-        stats_start_row: u16,
-    ) -> Result<()> {
-        // Line 1: Overall CPM, WPM, Accuracy with colors
-        let line1_text = format!(
-            "Overall CPM: {:.1} | WPM: {:.1} | Accuracy: {:.1}%",
-            total_summary.overall_cpm, total_summary.overall_wpm, total_summary.overall_accuracy
+    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect, total_summary: &TotalResult) {
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Length(1), // Line 1: CPM, WPM, Accuracy
+                Constraint::Length(1), // Line 2: Sessions and Stages
+                Constraint::Length(1), // Line 3: Keystrokes, Mistakes, Skipped
+                Constraint::Length(1), // Line 4: Best/Worst sessions
+            ])
+            .split(area);
+
+        // Line 1: Overall CPM, WPM, Accuracy
+        let line1 = Line::from(vec![
+            Span::styled("Overall ", Style::default().fg(Colors::text())),
+            Span::styled("CPM: ", Style::default().fg(Colors::cpm_wpm())),
+            Span::styled(
+                format!("{:.1}", total_summary.overall_cpm),
+                Style::default().fg(Colors::text()),
+            ),
+            Span::styled(" | ", Style::default().fg(Colors::text())),
+            Span::styled("WPM: ", Style::default().fg(Colors::cpm_wpm())),
+            Span::styled(
+                format!("{:.1}", total_summary.overall_wpm),
+                Style::default().fg(Colors::text()),
+            ),
+            Span::styled(" | ", Style::default().fg(Colors::text())),
+            Span::styled("Accuracy: ", Style::default().fg(Colors::accuracy())),
+            Span::styled(
+                format!("{:.1}%", total_summary.overall_accuracy),
+                Style::default().fg(Colors::text()),
+            ),
+        ]);
+        frame.render_widget(
+            Paragraph::new(line1).alignment(Alignment::Center),
+            chunks[0],
         );
-        let line1_col = center_col.saturating_sub(line1_text.len() as u16 / 2);
-        execute!(stdout, MoveTo(line1_col, stats_start_row))?;
-
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print("Overall "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::cpm_wpm()))
-        )?;
-        execute!(stdout, Print("CPM: "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(format!("{:.1}", total_summary.overall_cpm)))?;
-        execute!(stdout, Print(" | "))?;
-
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::cpm_wpm()))
-        )?;
-        execute!(stdout, Print("WPM: "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(format!("{:.1}", total_summary.overall_wpm)))?;
-        execute!(stdout, Print(" | "))?;
-
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::accuracy()))
-        )?;
-        execute!(stdout, Print("Accuracy: "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(
-            stdout,
-            Print(format!("{:.1}%", total_summary.overall_accuracy))
-        )?;
-        execute!(stdout, ResetColor)?;
 
         // Line 2: Sessions and Stages
-        let line2_text = format!(
-            "Total Sessions: {} | Completed: {} | Stages: {}/{}",
-            total_summary.total_sessions_attempted,
-            total_summary.total_sessions_completed,
-            total_summary.total_stages_completed,
-            total_summary.total_stages_attempted
+        let line2 = Line::from(vec![
+            Span::styled("Total ", Style::default().fg(Colors::text())),
+            Span::styled("Sessions: ", Style::default().fg(Colors::stage_info())),
+            Span::styled(
+                format!("{}", total_summary.total_sessions_attempted),
+                Style::default().fg(Colors::text()),
+            ),
+            Span::styled(" | ", Style::default().fg(Colors::text())),
+            Span::styled("Completed: ", Style::default().fg(Colors::success())),
+            Span::styled(
+                format!("{}", total_summary.total_sessions_completed),
+                Style::default().fg(Colors::text()),
+            ),
+            Span::styled(" | ", Style::default().fg(Colors::text())),
+            Span::styled("Stages: ", Style::default().fg(Colors::stage_info())),
+            Span::styled(
+                format!(
+                    "{}/{}",
+                    total_summary.total_stages_completed, total_summary.total_stages_attempted
+                ),
+                Style::default().fg(Colors::text()),
+            ),
+        ]);
+        frame.render_widget(
+            Paragraph::new(line2).alignment(Alignment::Center),
+            chunks[1],
         );
-        let line2_col = center_col.saturating_sub(line2_text.len() as u16 / 2);
-        execute!(stdout, MoveTo(line2_col, stats_start_row + 1))?;
-
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print("Total "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::stage_info()))
-        )?;
-        execute!(stdout, Print("Sessions: "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(
-            stdout,
-            Print(format!("{}", total_summary.total_sessions_attempted))
-        )?;
-        execute!(stdout, Print(" | "))?;
-
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::success()))
-        )?;
-        execute!(stdout, Print("Completed: "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(
-            stdout,
-            Print(format!("{}", total_summary.total_sessions_completed))
-        )?;
-        execute!(stdout, Print(" | "))?;
-
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::stage_info()))
-        )?;
-        execute!(stdout, Print("Stages: "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(
-            stdout,
-            Print(format!(
-                "{}/{}",
-                total_summary.total_stages_completed, total_summary.total_stages_attempted
-            ))
-        )?;
-        execute!(stdout, ResetColor)?;
 
         // Line 3: Keystrokes, Mistakes, Skipped
-        let line3_text = format!(
-            "Total Keystrokes: {} | Mistakes: {} | Skipped: {}",
-            total_summary.total_keystrokes,
-            total_summary.total_mistakes,
-            total_summary.total_stages_skipped
+        let line3 = Line::from(vec![
+            Span::styled("Total ", Style::default().fg(Colors::text())),
+            Span::styled("Keystrokes: ", Style::default().fg(Colors::stage_info())),
+            Span::styled(
+                format!("{}", total_summary.total_keystrokes),
+                Style::default().fg(Colors::text()),
+            ),
+            Span::styled(" | ", Style::default().fg(Colors::text())),
+            Span::styled("Mistakes: ", Style::default().fg(Colors::error())),
+            Span::styled(
+                format!("{}", total_summary.total_mistakes),
+                Style::default().fg(Colors::text()),
+            ),
+            Span::styled(" | ", Style::default().fg(Colors::text())),
+            Span::styled("Skipped: ", Style::default().fg(Colors::warning())),
+            Span::styled(
+                format!("{}", total_summary.total_stages_skipped),
+                Style::default().fg(Colors::text()),
+            ),
+        ]);
+        frame.render_widget(
+            Paragraph::new(line3).alignment(Alignment::Center),
+            chunks[2],
         );
-        let line3_col = center_col.saturating_sub(line3_text.len() as u16 / 2);
-        execute!(stdout, MoveTo(line3_col, stats_start_row + 2))?;
-
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print("Total "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::stage_info()))
-        )?;
-        execute!(stdout, Print("Keystrokes: "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(format!("{}", total_summary.total_keystrokes)))?;
-        execute!(stdout, Print(" | "))?;
-
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::error()))
-        )?;
-        execute!(stdout, Print("Mistakes: "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(format!("{}", total_summary.total_mistakes)))?;
-        execute!(stdout, Print(" | "))?;
-
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::warning()))
-        )?;
-        execute!(stdout, Print("Skipped: "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(
-            stdout,
-            Print(format!("{}", total_summary.total_stages_skipped))
-        )?;
-        execute!(stdout, ResetColor)?;
 
         // Line 4: Best/Worst sessions
-        let line4_text = format!(
-            "Best Session: {:.1} WPM, {:.1}% | Worst: {:.1} WPM, {:.1}%",
-            total_summary.best_session_wpm,
-            total_summary.best_session_accuracy,
-            total_summary.worst_session_wpm,
-            total_summary.worst_session_accuracy
+        let line4 = Line::from(vec![
+            Span::styled("Best Session: ", Style::default().fg(Colors::text())),
+            Span::styled(
+                format!("{:.0} CPM", total_summary.best_session_wpm * 5.0),
+                Style::default().fg(Colors::cpm_wpm()),
+            ),
+            Span::styled(", ", Style::default().fg(Colors::text())),
+            Span::styled(
+                format!("{:.1}%", total_summary.best_session_accuracy),
+                Style::default().fg(Colors::accuracy()),
+            ),
+            Span::styled(" | Worst: ", Style::default().fg(Colors::text())),
+            Span::styled(
+                format!("{:.0} CPM", total_summary.worst_session_wpm * 5.0),
+                Style::default().fg(Colors::cpm_wpm()),
+            ),
+            Span::styled(", ", Style::default().fg(Colors::text())),
+            Span::styled(
+                format!("{:.1}%", total_summary.worst_session_accuracy),
+                Style::default().fg(Colors::accuracy()),
+            ),
+        ]);
+        frame.render_widget(
+            Paragraph::new(line4).alignment(Alignment::Center),
+            chunks[3],
         );
-        let line4_col = center_col.saturating_sub(line4_text.len() as u16 / 2);
-        execute!(stdout, MoveTo(line4_col, stats_start_row + 3))?;
-
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print("Best Session: "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::cpm_wpm()))
-        )?;
-        execute!(
-            stdout,
-            Print(format!("{:.1} WPM", total_summary.best_session_wpm))
-        )?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(", "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::accuracy()))
-        )?;
-        execute!(
-            stdout,
-            Print(format!("{:.1}%", total_summary.best_session_accuracy))
-        )?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(" | Worst: "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::cpm_wpm()))
-        )?;
-        execute!(
-            stdout,
-            Print(format!("{:.1} WPM", total_summary.worst_session_wpm))
-        )?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(", "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::accuracy()))
-        )?;
-        execute!(
-            stdout,
-            Print(format!("{:.1}%", total_summary.worst_session_accuracy))
-        )?;
-        execute!(stdout, ResetColor)?;
-
-        stdout.flush()?;
-        Ok(())
     }
 }

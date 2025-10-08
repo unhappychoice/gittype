@@ -7,16 +7,15 @@ use crate::presentation::game::views::{AsciiScoreView, SharingView, StatisticsVi
 use crate::presentation::game::{RenderBackend, Screen, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::{GitTypeError, Result};
-use crossterm::event::{KeyCode, KeyModifiers};
-use crossterm::{
-    cursor::MoveTo,
-    event::{self},
-    execute,
-    style::{Attribute, Print, ResetColor, SetAttribute, SetForegroundColor},
-    terminal::{self},
+use crossterm::event::{self, KeyCode, KeyModifiers};
+use ratatui::{
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::{Modifier, Style},
+    text::{Line, Span},
+    widgets::Paragraph,
+    Frame,
 };
 use std::io::Stdout;
-use std::io::{stdout, Write};
 use std::sync::{Arc, Mutex};
 
 pub struct TotalSummaryScreenData {
@@ -67,41 +66,6 @@ impl TotalSummaryScreen {
             event_bus,
         }
     }
-
-    fn show(total_summary: &TotalResult) -> Result<()> {
-        let mut stdout = stdout();
-
-        let (terminal_width, terminal_height) = terminal::size()?;
-        let center_row = terminal_height / 2;
-        let center_col = terminal_width / 2;
-
-        let title = "=== TOTAL SUMMARY ===";
-        let title_col = center_col.saturating_sub(title.len() as u16 / 2);
-        execute!(stdout, MoveTo(title_col, center_row.saturating_sub(8)))?;
-        execute!(
-            stdout,
-            SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(Colors::info()))
-        )?;
-        execute!(stdout, Print(title))?;
-        execute!(stdout, ResetColor)?;
-
-        AsciiScoreView::render(
-            &mut stdout,
-            total_summary.total_score,
-            center_col,
-            center_row,
-        )?;
-
-        let stats_start_row = center_row.saturating_sub(1);
-        let options_start = stats_start_row + 8;
-
-        StatisticsView::render(&mut stdout, total_summary, center_col, stats_start_row)?;
-        SharingView::render_exit_options(&mut stdout, center_col, options_start)?;
-
-        stdout.flush()?;
-        Ok(())
-    }
 }
 
 impl Screen for TotalSummaryScreen {
@@ -119,7 +83,7 @@ impl Screen for TotalSummaryScreen {
     }
 
     fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Crossterm
+        RenderBackend::Ratatui
     }
 
     fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
@@ -149,11 +113,63 @@ impl Screen for TotalSummaryScreen {
     }
 
     fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
-        if !self.displayed {
-            if let Some(total_result) = &self.total_result {
-                let _ = TotalSummaryScreen::show(total_result);
-                self.displayed = true;
-            }
+        Ok(())
+    }
+
+    fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {
+        if let Some(ref total_result) = self.total_result {
+            let area = frame.area();
+
+            // Calculate content heights
+            let title_height = 1;
+            let score_height = 4; // ASCII digits height
+            let stats_height = 4; // 4 lines of statistics
+            let options_height = 5; // Thanks, GitHub, spacing, Share, Exit
+            let spacing = 2; // Spacing between sections
+
+            let total_content_height = title_height
+                + spacing
+                + score_height
+                + spacing
+                + stats_height
+                + spacing
+                + options_height;
+
+            let top_spacing = (area.height.saturating_sub(total_content_height as u16)) / 2;
+
+            let chunks = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Length(top_spacing),
+                    Constraint::Length(1), // Title
+                    Constraint::Length(2), // Spacing
+                    Constraint::Length(4), // Score
+                    Constraint::Length(2), // Spacing
+                    Constraint::Length(4), // Statistics
+                    Constraint::Length(2), // Spacing
+                    Constraint::Length(5), // Options
+                    Constraint::Min(0),
+                ])
+                .split(area);
+
+            // Title
+            let title = Paragraph::new(Line::from(vec![Span::styled(
+                "=== TOTAL SUMMARY ===",
+                Style::default()
+                    .fg(Colors::info())
+                    .add_modifier(Modifier::BOLD),
+            )]))
+            .alignment(Alignment::Center);
+            frame.render_widget(title, chunks[1]);
+
+            // Score
+            AsciiScoreView::render(frame, chunks[3], total_result.total_score);
+
+            // Statistics
+            StatisticsView::render(frame, chunks[5], total_result);
+
+            // Options
+            SharingView::render_exit_options(frame, chunks[7]);
         }
         Ok(())
     }

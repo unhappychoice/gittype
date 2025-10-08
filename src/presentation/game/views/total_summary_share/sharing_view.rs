@@ -7,6 +7,13 @@ use crossterm::{
     execute,
     style::{Attribute, Print, ResetColor, SetAttribute, SetForegroundColor},
 };
+use ratatui::{
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::{Modifier, Style},
+    text::{Line, Span},
+    widgets::Paragraph,
+    Frame,
+};
 use std::io::{Stdout, Write};
 
 pub struct SharingView;
@@ -236,58 +243,51 @@ impl SharingView {
         Ok(())
     }
 
-    pub fn render_exit_options(
-        stdout: &mut Stdout,
-        center_col: u16,
-        options_start: u16,
-    ) -> Result<()> {
-        // Show thanks message
-        let thanks_message = "Thanks for playing GitType!";
-        let thanks_col = center_col.saturating_sub(thanks_message.len() as u16 / 2);
-        execute!(stdout, MoveTo(thanks_col, options_start))?;
-        execute!(
-            stdout,
-            SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(Colors::success()))
-        )?;
-        execute!(stdout, Print(thanks_message))?;
-        execute!(stdout, ResetColor)?;
+    pub fn render_exit_options(frame: &mut Frame, area: ratatui::layout::Rect) {
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Length(1), // Thanks message
+                Constraint::Length(1), // GitHub link
+                Constraint::Length(1), // Spacing
+                Constraint::Length(1), // Share option
+                Constraint::Length(1), // Exit option
+            ])
+            .split(area);
 
-        // Show GitHub link and star message
-        let github_message = "⭐ Star us on GitHub: https://github.com/unhappychoice/gittype";
-        let github_col = center_col.saturating_sub(github_message.len() as u16 / 2);
-        execute!(stdout, MoveTo(github_col, options_start + 1))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::warning()))
-        )?;
-        execute!(stdout, Print(github_message))?;
-        execute!(stdout, ResetColor)?;
+        // Thanks message
+        let thanks = Paragraph::new(Line::from(vec![Span::styled(
+            "Thanks for playing GitType!",
+            Style::default()
+                .fg(Colors::success())
+                .add_modifier(Modifier::BOLD),
+        )]))
+        .alignment(Alignment::Center);
+        frame.render_widget(thanks, chunks[0]);
 
-        let options_data = [
-            (
-                "[S]",
-                " Share Result",
-                Colors::to_crossterm(Colors::success()),
-            ),
-            ("[ESC]", " Exit", Colors::to_crossterm(Colors::error())),
-        ];
+        // GitHub link
+        let github = Paragraph::new(Line::from(vec![Span::styled(
+            "✨ Star us on GitHub: https://github.com/unhappychoice/gittype",
+            Style::default().fg(Colors::warning()),
+        )]))
+        .alignment(Alignment::Center);
+        frame.render_widget(github, chunks[1]);
 
-        for (i, (key, label, key_color)) in options_data.iter().enumerate() {
-            let full_text_len = key.len() + label.len();
-            let option_col = center_col.saturating_sub(full_text_len as u16 / 2);
-            execute!(stdout, MoveTo(option_col, options_start + 3 + i as u16))?;
-            execute!(stdout, SetForegroundColor(*key_color))?;
-            execute!(stdout, Print(key))?;
-            execute!(
-                stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::text()))
-            )?;
-            execute!(stdout, Print(label))?;
-            execute!(stdout, ResetColor)?;
-        }
+        // Share option
+        let share = Line::from(vec![
+            Span::styled("[S]", Style::default().fg(Colors::success())),
+            Span::styled(" Share Result", Style::default().fg(Colors::text())),
+        ]);
+        frame.render_widget(
+            Paragraph::new(share).alignment(Alignment::Center),
+            chunks[3],
+        );
 
-        stdout.flush()?;
-        Ok(())
+        // Exit option
+        let exit = Line::from(vec![
+            Span::styled("[ESC]", Style::default().fg(Colors::error())),
+            Span::styled(" Exit", Style::default().fg(Colors::text())),
+        ]);
+        frame.render_widget(Paragraph::new(exit).alignment(Alignment::Center), chunks[4]);
     }
 }

@@ -762,7 +762,7 @@ impl HelpScreen {
             )),
             Line::from(""),
             Line::from(Span::styled(
-                "⭐ Star the repository if you enjoy GitType!",
+                "✨ Star the repository if you enjoy GitType!",
                 Style::default().fg(Colors::text()),
             )),
             Line::from(""),
