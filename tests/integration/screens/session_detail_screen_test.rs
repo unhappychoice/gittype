@@ -2,7 +2,6 @@ use crate::integration::screens::mocks::records_screen_mock::MockRecordsDataProv
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::models::ScreenDataProvider;
 use gittype::presentation::game::screens::{RecordsScreen, SessionDetailScreen};
-use gittype::presentation::game::Screen;
 
 screen_snapshot_test!(
     test_session_detail_screen_snapshot,

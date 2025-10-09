@@ -3,7 +3,6 @@ use gittype::domain::models::storage::{SessionResultData, StoredRepository, Stor
 use gittype::presentation::game::models::ScreenDataProvider;
 use gittype::presentation::game::screens::records_screen::RecordsScreenData;
 use gittype::presentation::game::screens::session_detail_screen::SessionDisplayData;
-use gittype::presentation::game::{Screen, ScreenType, UpdateStrategy};
 use gittype::Result;
 
 pub struct MockRecordsDataProvider;
@@ -136,110 +135,5 @@ impl ScreenDataProvider for MockRecordsDataProvider {
         };
 
         Ok(Box::new(data))
-    }
-}
-
-pub struct MockRecordsScreen {
-    session_data: Option<SessionDisplayData>,
-}
-
-impl MockRecordsScreen {
-    pub fn new() -> Self {
-        let session = StoredSession {
-            id: 1,
-            repository_id: Some(1),
-            started_at: Utc::now(),
-            completed_at: Some(Utc::now()),
-            branch: Some("main".to_string()),
-            commit_hash: Some("abc123".to_string()),
-            is_dirty: false,
-            game_mode: "default".to_string(),
-            difficulty_level: Some("Normal".to_string()),
-            max_stages: Some(3),
-            time_limit_seconds: Some(300),
-        };
-
-        let repository = StoredRepository {
-            id: 1,
-            user_name: "testuser".to_string(),
-            repository_name: "testrepo".to_string(),
-            remote_url: "https://github.com/testuser/testrepo".to_string(),
-        };
-
-        let session_result = SessionResultData {
-            keystrokes: 500,
-            mistakes: 20,
-            duration_ms: 120000,
-            wpm: 75.0,
-            cpm: 240.0,
-            accuracy: 96.0,
-            stages_completed: 3,
-            stages_attempted: 3,
-            stages_skipped: 0,
-            score: 1500.0,
-            rank_name: Some("Expert".to_string()),
-            tier_name: Some("Platinum".to_string()),
-            rank_position: Some(5),
-            rank_total: Some(100),
-            position: Some(5),
-            total: Some(100),
-        };
-
-        Self {
-            session_data: Some(SessionDisplayData {
-                session,
-                repository: Some(repository),
-                session_result: Some(session_result),
-            }),
-        }
-    }
-
-    pub fn get_selected_session_for_detail(&self) -> Option<&SessionDisplayData> {
-        self.session_data.as_ref()
-    }
-}
-
-impl Screen for MockRecordsScreen {
-    fn get_type(&self) -> ScreenType {
-        ScreenType::Records
-    }
-
-    fn default_provider() -> Box<dyn ScreenDataProvider>
-    where
-        Self: Sized,
-    {
-        unimplemented!()
-    }
-
-    fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
-        Ok(())
-    }
-
-    fn handle_key_event(&mut self, _key_event: crossterm::event::KeyEvent) -> Result<()> {
-        Ok(())
-    }
-
-    fn render_ratatui(&mut self, _frame: &mut ratatui::Frame) -> Result<()> {
-        Ok(())
-    }
-
-    fn cleanup(&mut self) -> Result<()> {
-        Ok(())
-    }
-
-    fn get_update_strategy(&self) -> UpdateStrategy {
-        UpdateStrategy::InputOnly
-    }
-
-    fn update(&mut self) -> Result<bool> {
-        Ok(false)
-    }
-
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
     }
 }
