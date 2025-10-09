@@ -3,14 +3,13 @@ use crate::domain::models::{GitRepository, SessionResult};
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::session_failure::{ContentView, FooterView, HeaderView};
 use crate::presentation::game::{
-    GameData, RenderBackend, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
+    GameData, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
 };
 use crate::Result;
 use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
 };
-use std::io::Stdout;
 use std::sync::{Arc, Mutex};
 
 pub struct SessionFailureScreenData {
@@ -86,10 +85,6 @@ impl Screen for SessionFailureScreen {
         })
     }
 
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Ratatui
-    }
-
     fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         let screen_data = data.downcast::<SessionFailureScreenData>()?;
 
@@ -123,10 +118,6 @@ impl Screen for SessionFailureScreen {
             }
             _ => Ok(()),
         }
-    }
-
-    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
-        Ok(())
     }
 
     fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {

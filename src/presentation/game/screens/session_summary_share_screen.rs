@@ -5,7 +5,7 @@ use crate::presentation::game::views::{
     ShareBackOptionView, SharePlatformOptionsView, SharePreviewView, ShareTitleView,
 };
 use crate::presentation::game::{
-    GameData, RenderBackend, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
+    GameData, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
 };
 use crate::presentation::sharing::{SharingPlatform, SharingService};
 use crate::{domain::models::GitRepository, GitTypeError, Result};
@@ -13,7 +13,6 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
 };
-use std::io::Stdout;
 use std::sync::{Arc, Mutex};
 
 pub struct SessionSummaryShareData {
@@ -82,10 +81,6 @@ impl Screen for SessionSummaryShareScreen {
         })
     }
 
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Ratatui
-    }
-
     fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         let data = data.downcast::<SessionSummaryShareData>()?;
 
@@ -152,10 +147,6 @@ impl Screen for SessionSummaryShareScreen {
             }
             _ => Ok(()),
         }
-    }
-
-    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
-        Ok(())
     }
 
     fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {

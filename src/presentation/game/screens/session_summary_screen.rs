@@ -5,14 +5,13 @@ use crate::presentation::game::views::{
     OptionsView, RankView, ScoreView, SessionSummaryHeaderView, SummaryView,
 };
 use crate::presentation::game::{
-    GameData, RenderBackend, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
+    GameData, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
 };
 use crate::{domain::models::GitRepository, GitTypeError, Result};
 use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
 };
-use std::io::Stdout;
 use std::sync::{Arc, Mutex};
 
 pub struct SessionSummaryScreenData {
@@ -97,10 +96,6 @@ impl Screen for SessionSummaryScreen {
         })
     }
 
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Ratatui
-    }
-
     fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         self.action_result = None;
 
@@ -151,10 +146,6 @@ impl Screen for SessionSummaryScreen {
             }
             _ => Ok(()),
         }
-    }
-
-    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
-        Ok(())
     }
 
     fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {

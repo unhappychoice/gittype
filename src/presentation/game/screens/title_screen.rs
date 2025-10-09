@@ -3,16 +3,13 @@ use crate::domain::models::{DifficultyLevel, GitRepository};
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::models::ScreenDataProvider;
 use crate::presentation::game::views::title::{DifficultySelectionView, StaticElementsView};
-use crate::presentation::game::{
-    GameData, RenderBackend, Screen, ScreenType, StageRepository, UpdateStrategy,
-};
+use crate::presentation::game::{GameData, Screen, ScreenType, StageRepository, UpdateStrategy};
 use crate::{GitTypeError, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
 };
-use std::io::Stdout;
 use std::sync::{Arc, Mutex};
 
 const DIFFICULTIES: [(&str, DifficultyLevel); 5] = [
@@ -134,10 +131,6 @@ impl Screen for TitleScreen {
         })
     }
 
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Ratatui
-    }
-
     fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         self.action_result = None;
         self.needs_render = true;
@@ -218,10 +211,6 @@ impl Screen for TitleScreen {
             }
             _ => Ok(()),
         }
-    }
-
-    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
-        Ok(())
     }
 
     fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {

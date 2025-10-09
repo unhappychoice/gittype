@@ -4,9 +4,7 @@ use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::analytics::{
     LanguagesView, OverviewView, RepositoriesView, TrendsView,
 };
-use crate::presentation::game::{
-    RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
-};
+use crate::presentation::game::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyModifiers};
@@ -621,10 +619,6 @@ impl Screen for AnalyticsScreen {
         })
     }
 
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Ratatui
-    }
-
     fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         self.action_result = None;
 
@@ -683,10 +677,6 @@ impl Screen for AnalyticsScreen {
             }
             _ => Ok(()),
         }
-    }
-
-    fn render_crossterm_with_data(&mut self, _stdout: &mut std::io::Stdout) -> Result<()> {
-        Ok(())
     }
 
     fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()> {

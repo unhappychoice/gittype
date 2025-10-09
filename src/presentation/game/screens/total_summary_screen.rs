@@ -4,7 +4,7 @@ use crate::domain::services::scoring::{TotalCalculator, TotalTracker, GLOBAL_TOT
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::models::screen::ScreenDataProvider;
 use crate::presentation::game::views::{AsciiScoreView, SharingView, StatisticsView};
-use crate::presentation::game::{RenderBackend, Screen, ScreenType, UpdateStrategy};
+use crate::presentation::game::{Screen, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::{GitTypeError, Result};
 use crossterm::event::{self, KeyCode, KeyModifiers};
@@ -15,7 +15,6 @@ use ratatui::{
     widgets::Paragraph,
     Frame,
 };
-use std::io::Stdout;
 use std::sync::{Arc, Mutex};
 
 pub struct TotalSummaryScreenData {
@@ -82,10 +81,6 @@ impl Screen for TotalSummaryScreen {
         })
     }
 
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Ratatui
-    }
-
     fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         let screen_data = data.downcast::<TotalSummaryScreenData>()?;
         self.total_result = Some(screen_data.total_result);
@@ -110,10 +105,6 @@ impl Screen for TotalSummaryScreen {
             }
             _ => Ok(()),
         }
-    }
-
-    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
-        Ok(())
     }
 
     fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {

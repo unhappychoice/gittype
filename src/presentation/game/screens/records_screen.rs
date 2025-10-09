@@ -5,9 +5,7 @@ use crate::domain::repositories::SessionRepository;
 use crate::infrastructure::database::daos::SessionDao;
 use crate::infrastructure::database::database::{Database, HasDatabase};
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::{
-    RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
-};
+use crate::presentation::game::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use chrono::{DateTime, Local};
@@ -503,10 +501,6 @@ impl Screen for RecordsScreen {
         })
     }
 
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Ratatui
-    }
-
     fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         self.action_result = None;
 
@@ -575,13 +569,6 @@ impl Screen for RecordsScreen {
             }
             _ => Ok(()),
         }
-    }
-
-    fn render_crossterm_with_data(&mut self, _stdout: &mut std::io::Stdout) -> Result<()> {
-        // NOTE: History screen should use render_ratatui() instead
-        // This render_crossterm_with_data() should not be used
-        eprintln!("Warning: Records screen render_crossterm_with_data() called - this should use ratatui backend");
-        Ok(())
     }
 
     fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()> {

@@ -7,13 +7,11 @@ use crate::domain::events::EventBus;
 use crate::domain::models::{Challenge, Countdown};
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::{
-    game_data::GameData, views::TypingView, RenderBackend, Screen, ScreenDataProvider,
-    UpdateStrategy,
+    game_data::GameData, views::TypingView, Screen, ScreenDataProvider, UpdateStrategy,
 };
 use crate::presentation::game::{ScreenType, SessionManager};
 use crate::{domain::models::GitRepository, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
-use std::io::Stdout;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -375,10 +373,6 @@ impl Screen for TypingScreen {
         Box::new(TypingScreenDataProvider)
     }
 
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Ratatui
-    }
-
     fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
         Ok(())
     }
@@ -419,10 +413,6 @@ impl Screen for TypingScreen {
             SessionState::ShowDialog => Ok(()),
             _ => Ok(()),
         }
-    }
-
-    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
-        Ok(())
     }
 
     fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()> {

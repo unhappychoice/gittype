@@ -1,9 +1,7 @@
 use crate::domain::events::EventBus;
 use crate::infrastructure::logging::get_current_log_file_path;
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::{
-    RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
-};
+use crate::presentation::game::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::{
@@ -13,7 +11,6 @@ use ratatui::{
     widgets::{Block, Borders, Padding, Paragraph, Wrap},
     Frame,
 };
-use std::io::Stdout;
 
 pub struct PanicScreen {
     error_message: String,
@@ -179,10 +176,6 @@ impl Screen for PanicScreen {
         Box::new(PanicScreenDataProvider)
     }
 
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Ratatui
-    }
-
     fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
         Ok(())
     }
@@ -196,11 +189,6 @@ impl Screen for PanicScreen {
             }
             _ => Ok(()),
         }
-    }
-
-    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
-        // This is a fallback - panic screen should use ratatui
-        Ok(())
     }
 
     fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {

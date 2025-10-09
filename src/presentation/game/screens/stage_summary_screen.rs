@@ -4,12 +4,11 @@ use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::screens::ResultAction;
 use crate::presentation::game::views::StageCompletionView;
 use crate::presentation::game::{
-    RenderBackend, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
+    Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
 };
 use crate::{GitTypeError, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::Frame;
-use std::io::Stdout;
 use std::sync::{Arc, Mutex};
 
 pub struct StageSummaryData {
@@ -101,10 +100,6 @@ impl Screen for StageSummaryScreen {
         ScreenType::StageSummary
     }
 
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Ratatui
-    }
-
     fn default_provider() -> Box<dyn ScreenDataProvider>
     where
         Self: Sized,
@@ -161,10 +156,6 @@ impl Screen for StageSummaryScreen {
             }
             _ => Ok(()),
         }
-    }
-
-    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
-        Ok(())
     }
 
     fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {

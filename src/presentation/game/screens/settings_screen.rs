@@ -4,7 +4,7 @@ use crate::domain::models::theme::Theme;
 use crate::domain::services::config_manager::ConfigService;
 use crate::domain::services::theme_manager::THEME_MANAGER;
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::{RenderBackend, Screen, ScreenDataProvider, ScreenType};
+use crate::presentation::game::{Screen, ScreenDataProvider, ScreenType};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
@@ -15,7 +15,6 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, ListState, Padding, Paragraph, Tabs, Wrap},
     Frame,
 };
-use std::io::Stdout;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum SettingsSection {
@@ -324,10 +323,6 @@ impl Screen for SettingsScreen {
         Box::new(SettingsScreenDataProvider)
     }
 
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Ratatui
-    }
-
     fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         let data = data.downcast::<SettingsScreenData>()?;
 
@@ -435,11 +430,6 @@ impl Screen for SettingsScreen {
             }
             _ => Ok(()),
         }
-    }
-
-    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
-        // This should not be used for ratatui screens
-        Ok(())
     }
 
     fn render_ratatui(&mut self, f: &mut Frame) -> Result<()> {

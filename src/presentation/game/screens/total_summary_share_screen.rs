@@ -3,14 +3,11 @@ use crate::domain::models::TotalResult;
 use crate::domain::services::scoring::{TotalCalculator, TotalTracker, GLOBAL_TOTAL_TRACKER};
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::SharingView;
-use crate::presentation::game::{
-    RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
-};
+use crate::presentation::game::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::sharing::SharingPlatform;
 use crate::{GitTypeError, Result};
 use crossterm::event::{self};
 use ratatui::Frame;
-use std::io::Stdout;
 use std::sync::{Arc, Mutex};
 
 pub struct TotalSummaryShareData {
@@ -173,20 +170,12 @@ impl Screen for TotalSummaryShareScreen {
         }
     }
 
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Ratatui
-    }
-
     fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {
         if let Some((url, platform)) = &self.fallback_url {
             SharingView::render_fallback_url(frame, url, platform);
         } else {
             SharingView::render_menu(frame, &self.total_result);
         }
-        Ok(())
-    }
-
-    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
         Ok(())
     }
 

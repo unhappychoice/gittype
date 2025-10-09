@@ -6,9 +6,7 @@ use crate::domain::repositories::SessionRepository;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::screens::RecordsScreen;
 use crate::presentation::game::views::{PerformanceMetricsView, SessionInfoView, StageDetailsView};
-use crate::presentation::game::{
-    RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
-};
+use crate::presentation::game::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::{GitTypeError, Result};
 use ratatui::{
@@ -18,7 +16,6 @@ use ratatui::{
     widgets::Paragraph,
     Frame,
 };
-use std::io::Stdout;
 
 #[derive(Debug, Clone)]
 pub struct SessionDisplayData {
@@ -150,10 +147,6 @@ impl Screen for SessionDetailScreen {
         Box::new(SessionDetailScreenDataProvider)
     }
 
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Ratatui
-    }
-
     fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
         Ok(())
     }
@@ -197,10 +190,6 @@ impl Screen for SessionDetailScreen {
             }
             _ => Ok(()),
         }
-    }
-
-    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
-        Ok(())
     }
 
     fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()> {

@@ -1,6 +1,5 @@
 use crate::Result;
 use crossterm::event::KeyEvent;
-use std::io::Stdout;
 use std::time::Duration;
 
 /// Trait for screen data providers
@@ -31,15 +30,6 @@ pub enum ScreenType {
     DetailsDialog,
     Settings,
     Panic,
-}
-
-/// Rendering backend options
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum RenderBackend {
-    /// Use crossterm for rendering (default)
-    Crossterm,
-    /// Use ratatui for rendering
-    Ratatui,
 }
 
 /// Update strategy defines how and when a screen should be updated and re-rendered
@@ -105,24 +95,12 @@ pub trait Screen: Send {
     /// Handle keyboard input events
     fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()>;
 
-    /// Render the screen using crossterm backend
-    fn render_crossterm_with_data(&mut self, stdout: &mut Stdout) -> Result<()>;
-
-    /// Render the screen using ratatui backend (optional)
-    fn render_ratatui(&mut self, _frame: &mut ratatui::Frame) -> Result<()> {
-        // Default implementation for backward compatibility
-        // Individual screens can override this when ratatui support is needed
-        Ok(())
-    }
+    /// Render the screen using ratatui
+    fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()>;
 
     /// Clean up screen resources - called when screen becomes inactive
     fn cleanup(&mut self) -> Result<()> {
         Ok(())
-    }
-
-    /// Get the render backend for this screen
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Crossterm
     }
 
     /// Get the update strategy for this screen
