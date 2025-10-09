@@ -8,6 +8,7 @@ use crate::presentation::game::{
 };
 use crate::{GitTypeError, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use ratatui::Frame;
 use std::sync::{Arc, Mutex};
 
 pub struct StageSummaryData {
@@ -157,7 +158,7 @@ impl Screen for StageSummaryScreen {
         }
     }
 
-    fn render_crossterm_with_data(&mut self, _stdout: &mut std::io::Stdout) -> Result<()> {
+    fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {
         if let Some(ref stage_result) = self.stage_result {
             // Calculate the stage number that was just completed
             let completed_stage = if self.is_completed {
@@ -171,18 +172,17 @@ impl Screen for StageSummaryScreen {
 
             let has_next = !self.is_completed;
 
-            StageCompletionView::render_complete(
+            StageCompletionView::render(
+                frame,
                 stage_result,
                 completed_stage,
                 self.total_stages,
                 has_next,
                 stage_result.keystrokes,
-            )?;
-
-            Ok(())
-        } else {
-            Ok(())
+            );
         }
+
+        Ok(())
     }
 
     fn get_update_strategy(&self) -> UpdateStrategy {

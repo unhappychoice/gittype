@@ -1,8 +1,6 @@
 use crate::domain::events::EventBus;
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::{
-    RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
-};
+use crate::presentation::game::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyModifiers};
@@ -276,10 +274,6 @@ impl Screen for InfoDialogScreen {
         Box::new(InfoDialogScreenDataProvider)
     }
 
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Ratatui
-    }
-
     fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
         Ok(())
     }
@@ -325,12 +319,6 @@ impl Screen for InfoDialogScreen {
                 _ => Ok(()),
             },
         }
-    }
-
-    fn render_crossterm_with_data(&mut self, _stdout: &mut std::io::Stdout) -> Result<()> {
-        // InfoDialog only supports ratatui rendering now
-        // This method is kept for trait compatibility but does nothing
-        Ok(())
     }
 
     fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {

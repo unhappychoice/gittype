@@ -8,7 +8,7 @@
 //! - **Centralized Rendering Loop**: Single loop manages all screen rendering
 //! - **Input Handling**: Centralized input handling with event dispatching
 //! - **Screen Management**: Stack-based screen management for dialogs and navigation
-//! - **Dual Rendering Support**: Supports both crossterm and ratatui backends
+//! - **Ratatui Rendering**: Uses ratatui for all terminal UI rendering
 //! - **Flexible Update Strategy**: Screens can define their update frequency needs
 //! - **Terminal Lifecycle Management**: Proper terminal setup and cleanup
 //!
@@ -40,8 +40,8 @@ use crate::presentation::game::screens::{
     TitleAction, TitleScreen, TotalSummaryScreen, TotalSummaryShareScreen, VersionCheckScreen,
 };
 use crate::presentation::game::{
-    GameData, RenderBackend, Screen, ScreenDataProvider, ScreenTransition, ScreenType,
-    SessionManager, StageRepository, TypingScreen, UpdateStrategy,
+    GameData, Screen, ScreenDataProvider, ScreenTransition, ScreenType, SessionManager,
+    StageRepository, TypingScreen, UpdateStrategy,
 };
 use crate::{GitTypeError, Result};
 use crossterm::cursor::{Hide, Show};
@@ -66,7 +66,6 @@ pub struct ScreenManager {
     current_screen_type: ScreenType,
     terminal_initialized: bool,
     last_update: Instant,
-    render_backend: RenderBackend,
     ratatui_terminal: Option<Terminal<CrosstermBackend<Stdout>>>,
     exit_requested: bool,
 
@@ -85,7 +84,6 @@ impl ScreenManager {
             current_screen_type: ScreenType::Title,
             terminal_initialized: false,
             last_update: Instant::now(),
-            render_backend: RenderBackend::Crossterm,
             ratatui_terminal: None,
             exit_requested: false,
             pending_transition: Arc::new(Mutex::new(None)),
@@ -164,11 +162,6 @@ impl ScreenManager {
     pub fn register_screen(&mut self, screen: impl Screen + 'static) {
         let screen_type = screen.get_type();
         self.screens.insert(screen_type, Box::new(screen));
-    }
-
-    /// Set the rendering backend (crossterm or ratatui)
-    pub fn set_render_backend(&mut self, backend: RenderBackend) {
-        self.render_backend = backend;
     }
 
     /// Initialize terminal for raw mode and alternate screen
@@ -260,11 +253,6 @@ impl ScreenManager {
             GitTypeError::TerminalError(format!("Failed to flush after screen clear: {}", e))
         })?;
 
-        // Get render backend from the screen itself
-        if let Some(screen) = self.screens.get(&screen_type) {
-            self.render_backend = screen.get_render_backend();
-        }
-
         self.current_screen_type = screen_type;
 
         // Clear the terminal screen before switching to new screen
@@ -321,23 +309,11 @@ impl ScreenManager {
     }
 
     fn clear_screen(&mut self) -> Result<()> {
-        match self.render_backend {
-            RenderBackend::Crossterm => {
-                execute!(stdout(), Clear(ClearType::All)).map_err(|e| {
-                    GitTypeError::TerminalError(format!("Failed to clear screen: {}", e))
-                })?;
-            }
-            RenderBackend::Ratatui => {
-                // For ratatui, we need to clear the terminal buffer
-                if let Some(terminal) = &mut self.ratatui_terminal {
-                    terminal.clear().map_err(|e| {
-                        GitTypeError::TerminalError(format!(
-                            "Failed to clear ratatui terminal: {}",
-                            e
-                        ))
-                    })?;
-                }
-            }
+        // Clear the ratatui terminal buffer
+        if let Some(terminal) = &mut self.ratatui_terminal {
+            terminal.clear().map_err(|e| {
+                GitTypeError::TerminalError(format!("Failed to clear ratatui terminal: {}", e))
+            })?;
         }
         Ok(())
     }
@@ -638,24 +614,9 @@ impl ScreenManager {
                         screen.handle_key_event(key_event)?;
                     }
 
-                    // For History/Analytics screens using Ratatui, always re-render on key input
+                    // Always re-render on key input for ratatui screens
                     // as they may have internal state changes (list selection, etc.)
-                    if matches!(self.render_backend, RenderBackend::Ratatui) {
-                        // Force render for Ratatui screens on any key input
-                        self.render_current_screen()?;
-                    } else {
-                        // For Crossterm screens, check if update is needed
-                        let needs_render =
-                            if let Some(screen) = self.screens.get_mut(&self.current_screen_type) {
-                                screen.update()?
-                            } else {
-                                false
-                            };
-
-                        if needs_render {
-                            self.render_current_screen()?;
-                        }
-                    }
+                    self.render_current_screen()?;
                 }
             }
         }
@@ -664,54 +625,28 @@ impl ScreenManager {
     }
 
     pub fn render_current_screen(&mut self) -> Result<()> {
-        match self.render_backend {
-            RenderBackend::Crossterm => {
-                let mut stdout_handle = stdout();
+        // Initialize ratatui terminal if not already done
+        if self.ratatui_terminal.is_none() {
+            let backend = CrosstermBackend::new(stdout());
+            let terminal = Terminal::new(backend).map_err(|e| {
+                GitTypeError::TerminalError(format!("Failed to create ratatui terminal: {}", e))
+            })?;
+            self.ratatui_terminal = Some(terminal);
+        }
 
-                // Flush before rendering to clear any pending output
-                stdout_handle.flush().map_err(|e| {
-                    GitTypeError::TerminalError(format!("Failed to flush before rendering: {}", e))
-                })?;
-
-                if let Some(screen) = self.screens.get_mut(&self.current_screen_type) {
-                    screen.render_crossterm_with_data(&mut stdout_handle)?;
-                }
-
-                // Flush after rendering to ensure display is updated
-                stdout_handle.flush().map_err(|e| {
-                    GitTypeError::TerminalError(format!("Failed to flush after rendering: {}", e))
-                })?;
-            }
-            RenderBackend::Ratatui => {
-                // Initialize ratatui terminal if not already done
-                if self.ratatui_terminal.is_none() {
-                    let backend = CrosstermBackend::new(stdout());
-                    let terminal = Terminal::new(backend).map_err(|e| {
-                        GitTypeError::TerminalError(format!(
-                            "Failed to create ratatui terminal: {}",
-                            e
-                        ))
+        // Use the persistent terminal instance
+        if let Some(terminal) = &mut self.ratatui_terminal {
+            if let Some(screen) = self.screens.get_mut(&self.current_screen_type) {
+                terminal
+                    .draw(|frame| {
+                        let _ = screen.render_ratatui(frame);
+                    })
+                    .map_err(|e| {
+                        GitTypeError::TerminalError(format!("Failed to draw ratatui frame: {}", e))
                     })?;
-                    self.ratatui_terminal = Some(terminal);
-                }
-
-                // Use the persistent terminal instance
-                if let Some(terminal) = &mut self.ratatui_terminal {
-                    if let Some(screen) = self.screens.get_mut(&self.current_screen_type) {
-                        terminal
-                            .draw(|frame| {
-                                let _ = screen.render_ratatui(frame);
-                            })
-                            .map_err(|e| {
-                                GitTypeError::TerminalError(format!(
-                                    "Failed to draw ratatui frame: {}",
-                                    e
-                                ))
-                            })?;
-                    }
-                }
             }
         }
+
         Ok(())
     }
 

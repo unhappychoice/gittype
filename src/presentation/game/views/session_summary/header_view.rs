@@ -1,41 +1,41 @@
 use crate::presentation::ui::Colors;
-use crate::Result;
-use crossterm::{
-    cursor::MoveTo,
-    execute,
-    style::{Attribute, Print, ResetColor, SetAttribute, SetForegroundColor},
+use ratatui::{
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::{Modifier, Style},
+    text::{Line, Span},
+    widgets::Paragraph,
+    Frame,
 };
-use std::io::{stdout, Write};
 
 pub struct HeaderView;
 
 impl HeaderView {
-    pub fn render(center_col: u16, start_row: u16) -> Result<()> {
-        let mut stdout = stdout();
+    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect) {
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Length(1), // Session title
+                Constraint::Length(2), // Spacing
+                Constraint::Length(1), // YOU'RE label
+            ])
+            .split(area);
 
-        let session_title = "=== SESSION COMPLETE ===";
-        let title_col = center_col.saturating_sub(session_title.len() as u16 / 2);
-        execute!(stdout, MoveTo(title_col, start_row.saturating_sub(4)))?;
-        execute!(
-            stdout,
-            SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(Colors::info()))
-        )?;
-        execute!(stdout, Print(session_title))?;
-        execute!(stdout, ResetColor)?;
+        let session_title = Paragraph::new(Line::from(vec![Span::styled(
+            "=== SESSION COMPLETE ===",
+            Style::default()
+                .fg(Colors::info())
+                .add_modifier(Modifier::BOLD),
+        )]))
+        .alignment(Alignment::Center);
+        frame.render_widget(session_title, chunks[0]);
 
-        let youre_label = "YOU'RE:";
-        let youre_col = center_col.saturating_sub(youre_label.len() as u16 / 2);
-        execute!(stdout, MoveTo(youre_col, start_row.saturating_sub(1)))?;
-        execute!(
-            stdout,
-            SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(Colors::info()))
-        )?;
-        execute!(stdout, Print(youre_label))?;
-        execute!(stdout, ResetColor)?;
-
-        stdout.flush()?;
-        Ok(())
+        let youre_label = Paragraph::new(Line::from(vec![Span::styled(
+            "YOU'RE:",
+            Style::default()
+                .fg(Colors::info())
+                .add_modifier(Modifier::BOLD),
+        )]))
+        .alignment(Alignment::Center);
+        frame.render_widget(youre_label, chunks[2]);
     }
 }

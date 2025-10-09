@@ -5,12 +5,14 @@ use crate::presentation::game::views::{
     ShareBackOptionView, SharePlatformOptionsView, SharePreviewView, ShareTitleView,
 };
 use crate::presentation::game::{
-    GameData, RenderBackend, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
+    GameData, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
 };
 use crate::presentation::sharing::{SharingPlatform, SharingService};
 use crate::{domain::models::GitRepository, GitTypeError, Result};
-use crossterm::terminal::{self};
-use std::io::Stdout;
+use ratatui::{
+    layout::{Constraint, Direction, Layout},
+    Frame,
+};
 use std::sync::{Arc, Mutex};
 
 pub struct SessionSummaryShareData {
@@ -62,22 +64,6 @@ impl SessionSummaryShareScreen {
             event_bus,
         }
     }
-
-    fn render(metrics: &SessionResult, repo_info: &Option<GitRepository>) -> Result<()> {
-        let (terminal_width, terminal_height) = terminal::size()?;
-        let center_row = terminal_height / 2;
-        let center_col = terminal_width / 2;
-
-        let platforms = SharingPlatform::all();
-        let start_row = center_row.saturating_sub(2);
-
-        ShareTitleView::render(center_col, center_row)?;
-        SharePreviewView::render(metrics, repo_info, center_col, center_row)?;
-        SharePlatformOptionsView::render(center_col, start_row)?;
-        ShareBackOptionView::render(center_col, start_row + platforms.len() as u16 + 2)?;
-
-        Ok(())
-    }
 }
 
 impl Screen for SessionSummaryShareScreen {
@@ -93,10 +79,6 @@ impl Screen for SessionSummaryShareScreen {
             session_manager: SessionManager::instance(),
             game_data: GameData::instance(),
         })
-    }
-
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Crossterm
     }
 
     fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
@@ -167,9 +149,32 @@ impl Screen for SessionSummaryShareScreen {
         }
     }
 
-    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
+    fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {
         if let Some(ref session_result) = self.session_result {
-            Self::render(session_result, &self.git_repository)?;
+            let area = frame.area();
+
+            let content_height = 12;
+            let top_spacing = (area.height.saturating_sub(content_height)) / 2;
+
+            let chunks = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Length(top_spacing),
+                    Constraint::Length(1),
+                    Constraint::Length(3),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(4),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Min(0),
+                ])
+                .split(area);
+
+            ShareTitleView::render(frame, chunks[1]);
+            SharePreviewView::render(frame, chunks[3], session_result, &self.git_repository);
+            SharePlatformOptionsView::render(frame, chunks[5]);
+            ShareBackOptionView::render(frame, chunks[7]);
         }
         Ok(())
     }

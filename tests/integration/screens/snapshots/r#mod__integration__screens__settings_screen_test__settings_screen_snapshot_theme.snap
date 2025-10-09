@@ -1,0 +1,44 @@
+---
+source: tests/integration/screens/settings_screen_test.rs
+expression: output
+---
+┌Settings──────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ Color Mode │ Theme                                                                                                   │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌Theme─────────────────────────────────────────────────────┐┌Description───────────────────────────────────────────────┐
+│  Default                                                 ││  Select theme - preview changes instantly                │
+│  Original                                                ││                                                          │
+│  ASCII                                                   ││  Default theme with softened contrast and balanced       │
+│  Aurora                                                  ││  palette for comfortable readability                     │
+│  Blood Oath                                              ││                                                          │
+│  Cyber Void                                              ││  Color Preview:                                          │
+│  Eclipse                                                 ││  ● This is Border color                                  │
+│  Glacier                                                 ││  ● This is Title color                                   │
+│  Inferno                                                 ││  ● This is Text color                                    │
+│  Neon Abyss                                              ││  ● This is Text Secondary color                          │
+│  Oblivion                                                ││  ● This is Success color                                 │
+│  Runic                                                   ││  ● This is Error color                                   │
+│  Spectral                                                ││  ● This is Warning color                                 │
+│  Starforge                                               ││  ● This is Info color                                    │
+│  Venom                                                   ││  ● This is Key Action color                              │
+│                                                          ││  ● This is Key Navigation color                          │
+│                                                          ││  ● This is Key Back color                                │
+│                                                          ││  ● This is Typed Text color                              │
+│                                                          ││  ● This is Cursor color                                  │
+│                                                          ││  ● This is Mistake color                                 │
+│                                                          ││  ● This is Untyped Text color                            │
+│                                                          ││                                                          │
+│                                                          ││                                                          │
+│                                                          ││                                                          │
+│                                                          ││                                                          │
+│                                                          ││                                                          │
+│                                                          ││                                                          │
+│                                                          ││                                                          │
+│                                                          ││                                                          │
+│                                                          ││                                                          │
+│                                                          ││                                                          │
+│                                                          ││                                                          │
+│                                                          ││                                                          │
+│                                                          ││                                                          │
+└──────────────────────────────────────────────────────────┘└──────────────────────────────────────────────────────────┘
+                             [←→/HL] Switch tabs [↑↓/JK] Navigate [SPACE] Save [ESC] Cancel

@@ -5,16 +5,13 @@ use crate::presentation::game::views::{
     OptionsView, RankView, ScoreView, SessionSummaryHeaderView, SummaryView,
 };
 use crate::presentation::game::{
-    GameData, RenderBackend, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
+    GameData, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
 };
 use crate::{domain::models::GitRepository, GitTypeError, Result};
-use crossterm::{
-    cursor::{Hide, MoveTo},
-    execute,
-    style::ResetColor,
-    terminal::{self, ClearType},
+use ratatui::{
+    layout::{Constraint, Direction, Layout},
+    Frame,
 };
-use std::io::{stdout, Write};
 use std::sync::{Arc, Mutex};
 
 pub struct SessionSummaryScreenData {
@@ -82,72 +79,6 @@ impl SessionSummaryScreen {
     pub fn get_action_result(&self) -> Option<ResultAction> {
         self.action_result.clone()
     }
-
-    fn show_session_summary(
-        &self,
-        session_result: &SessionResult,
-        _repo_info: &Option<GitRepository>,
-    ) -> Result<()> {
-        let mut stdout = stdout();
-
-        execute!(stdout, terminal::Clear(ClearType::All))?;
-        execute!(stdout, MoveTo(0, 0))?;
-        execute!(stdout, Hide)?;
-        execute!(stdout, ResetColor)?;
-        stdout.flush()?;
-
-        std::thread::sleep(std::time::Duration::from_millis(10));
-
-        let (terminal_width, terminal_height) = terminal::size()?;
-        let center_row = terminal_height / 2;
-        let center_col = terminal_width / 2;
-
-        let best_rank = Rank::for_score(session_result.session_score);
-
-        // Get best status using session start records from SessionManager instance
-        let best_status = self
-            .session_manager
-            .as_ref()
-            .and_then(|manager| manager.lock().ok())
-            .and_then(|manager| {
-                manager
-                    .get_best_status_for_score(session_result.session_score)
-                    .ok()
-                    .flatten()
-            });
-
-        let total_content_height = 4 + 5 + 1 + 3 + 1 + 4 + 2 + 2;
-        let rank_start_row = if total_content_height < terminal_height {
-            center_row.saturating_sub(total_content_height / 2)
-        } else {
-            3
-        };
-
-        SessionSummaryHeaderView::render(center_col, rank_start_row)?;
-
-        let rank_height = RankView::render(
-            best_rank.clone(),
-            session_result.session_score,
-            center_col,
-            rank_start_row,
-        )?;
-
-        let score_label_row = rank_start_row + rank_height + 4;
-        let summary_start_row = ScoreView::render(
-            session_result,
-            best_rank,
-            center_col,
-            score_label_row,
-            best_status.as_ref(),
-        )?;
-
-        SummaryView::render(session_result, center_col, summary_start_row)?;
-
-        let options_start = summary_start_row + 2 + 2;
-        OptionsView::render(center_col, options_start)?;
-
-        Ok(())
-    }
 }
 
 impl Screen for SessionSummaryScreen {
@@ -165,10 +96,6 @@ impl Screen for SessionSummaryScreen {
         })
     }
 
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Crossterm
-    }
-
     fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         self.action_result = None;
 
@@ -177,11 +104,6 @@ impl Screen for SessionSummaryScreen {
         self.session_result = screen_data.session_result.clone();
         self.git_repository = screen_data.git_repository.clone();
         self.session_manager = Some(Arc::clone(&screen_data.session_manager));
-
-        // Show session summary on initialization
-        if let Some(ref session_result) = self.session_result {
-            self.show_session_summary(session_result, &self.git_repository)?;
-        }
 
         Ok(())
     }
@@ -226,11 +148,85 @@ impl Screen for SessionSummaryScreen {
         }
     }
 
-    fn render_crossterm_with_data(&mut self, _stdout: &mut std::io::Stdout) -> Result<()> {
-        if self.session_result.is_some() {
-            let session_result = self.session_result.as_ref().unwrap();
-            let git_repository = &self.git_repository;
-            let _ = self.show_session_summary(session_result, git_repository);
+    fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {
+        if let Some(ref session_result) = self.session_result {
+            let area = frame.area();
+
+            let best_rank = Rank::for_score(session_result.session_score);
+
+            // Get best status using session start records from SessionManager instance
+            let best_status = self
+                .session_manager
+                .as_ref()
+                .and_then(|manager| manager.lock().ok())
+                .and_then(|manager| {
+                    manager
+                        .get_best_status_for_score(session_result.session_score)
+                        .ok()
+                        .flatten()
+                });
+
+            // Get actual rank ASCII height
+            let rank_patterns =
+                crate::presentation::game::ascii_rank_titles::get_all_rank_patterns();
+            let rank_lines = rank_patterns.get(best_rank.name());
+            let rank_ascii_height = rank_lines.map(|l| l.len()).unwrap_or(0);
+
+            // Check if last line is empty to determine spacing needed
+            let last_line_is_empty = rank_lines
+                .and_then(|lines| lines.last())
+                .map(|line| line.trim().is_empty())
+                .unwrap_or(false);
+
+            let rank_total_height = if last_line_is_empty {
+                rank_ascii_height + 1 // ASCII + tier info
+            } else {
+                rank_ascii_height + 2 // ASCII + spacing + tier info
+            };
+
+            // Calculate content height
+            let header_height = 4; // Header (title + spacing + YOU'RE)
+            let score_height = 8; // Score label + best label + ASCII + diff
+            let summary_height = 2; // Two lines of metrics
+            let options_height = 2; // Two lines of options
+            let total_content_height = header_height
+                + rank_total_height
+                + 2 // spacing before score
+                + score_height
+                + 1 // spacing after score
+                + summary_height
+                + 2 // spacing
+                + options_height;
+
+            let top_spacing = (area.height.saturating_sub(total_content_height as u16)) / 2;
+
+            let chunks = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Length(top_spacing),
+                    Constraint::Length(4),                        // Header
+                    Constraint::Length(rank_total_height as u16), // Rank + tier info (with spacing if needed)
+                    Constraint::Length(2),                        // Spacing before score
+                    Constraint::Length(score_height as u16),      // Score
+                    Constraint::Length(1),                        // Spacing after score
+                    Constraint::Length(2),                        // Summary
+                    Constraint::Length(2),                        // Spacing
+                    Constraint::Length(2),                        // Options
+                    Constraint::Min(0),
+                ])
+                .split(area);
+
+            SessionSummaryHeaderView::render(frame, chunks[1]);
+            RankView::render(frame, chunks[2], &best_rank, session_result.session_score);
+            ScoreView::render(
+                frame,
+                chunks[4],
+                session_result,
+                &best_rank,
+                best_status.as_ref(),
+            );
+            SummaryView::render(frame, chunks[6], session_result);
+            OptionsView::render(frame, chunks[8]);
         }
         Ok(())
     }

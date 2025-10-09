@@ -1,0 +1,44 @@
+---
+source: tests/integration/screens/help_screen_test.rs
+expression: output
+---
+┌Help──────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ CLI Usage │ Scoring System │ Rank System │ Game Help │ Community │ About & Credits │ Third-Party Licenses            │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  Social Media:                                                                                                       ▲
+│                                                                                                                      █
+│  Share your progress with #gittype                                                                                   █
+│  https://x.com/search?q=%23gittype                                                                                   █
+│                                                                                                                      █
+│  Join the Community!                                                                                                 █
+│                                                                                                                      █
+│  GitHub Repository:                                                                                                  █
+│  https://github.com/unhappychoice/gittype                                                                            █
+│                                                                                                                      █
+│  ✨  Star the repository if you enjoy GitType!                                                                        █
+│                                                                                                                      █
+│  Contributing:                                                                                                       █
+│                                                                                                                      █
+│  • Report bugs and suggest features via GitHub Issues                                                                █
+│  • Submit pull requests for improvements                                                                             █
+│  • Add support for new programming languages                                                                         █
+│  • Improve code extraction algorithms                                                                                █
+│  • Enhance UI/UX design                                                                                              █
+│                                                                                                                      █
+│  Bug Reporting:                                                                                                      █
+│                                                                                                                      █
+│  When reporting bugs, please include:                                                                                █
+│  • Operating system and terminal details                                                                             █
+│  • Steps to reproduce the issue                                                                                      █
+│  • Expected vs actual behavior                                                                                       █
+│  • Any error messages or logs                                                                                        █
+│                                                                                                                      █
+│  License:                                                                                                            █
+│                                                                                                                      █
+│  GitType is open-source software.                                                                                    ▼
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                                                                                        
+                 ★ Star us on GitHub (https://github.com/unhappychoice/gittype) if you enjoy GitType! ★                 
+                                                                                                                        
+                                [←→/HL] Switch tabs [↑↓/JK] Scroll [G] GitHub [ESC] Close

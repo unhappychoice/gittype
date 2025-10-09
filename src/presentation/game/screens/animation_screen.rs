@@ -5,7 +5,7 @@ use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::typing::typing_animation_view::AnimationPhase;
 use crate::presentation::game::views::TypingAnimationView;
 use crate::presentation::game::{
-    RenderBackend, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
+    Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
 };
 use crate::presentation::ui::Colors;
 use crate::{GitTypeError, Result};
@@ -17,7 +17,6 @@ use ratatui::{
     widgets::Paragraph,
     Frame,
 };
-use std::io::Stdout;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -206,10 +205,6 @@ impl Screen for AnimationScreen {
         })
     }
 
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Ratatui
-    }
-
     fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         // Initialize state
         if self.animation.is_none() {
@@ -236,10 +231,6 @@ impl Screen for AnimationScreen {
             }
             _ => Ok(()),
         }
-    }
-
-    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
-        Ok(())
     }
 
     fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()> {

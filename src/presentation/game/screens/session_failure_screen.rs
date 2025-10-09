@@ -1,26 +1,20 @@
 use crate::domain::events::EventBus;
-use crate::domain::models::GitRepository;
-use crate::domain::services::scoring::StageTracker;
+use crate::domain::models::{GitRepository, SessionResult};
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::views::session_failure::{content_view, footer_view, header_view};
+use crate::presentation::game::views::session_failure::{ContentView, FooterView, HeaderView};
 use crate::presentation::game::{
-    GameData, RenderBackend, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
+    GameData, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
 };
 use crate::Result;
-use crossterm::{
-    cursor::MoveTo,
-    execute,
-    style::ResetColor,
-    terminal::{self},
+use ratatui::{
+    layout::{Constraint, Direction, Layout},
+    Frame,
 };
-use std::io::Stdout;
-use std::io::{stdout, Write};
 use std::sync::{Arc, Mutex};
 
 pub struct SessionFailureScreenData {
+    pub session_result: SessionResult,
     pub total_stages: usize,
-    pub completed_stages: usize,
-    pub stage_trackers: Vec<(String, StageTracker)>,
     pub repo_info: Option<GitRepository>,
 }
 
@@ -31,51 +25,36 @@ pub struct SessionFailureScreenDataProvider {
 
 impl ScreenDataProvider for SessionFailureScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let total_stages = if let Ok(session_manager) = self.session_manager.lock() {
-            session_manager.get_stage_info()?.1
-        } else {
-            1
-        };
+        let session_manager = self.session_manager.lock().map_err(|e| {
+            crate::GitTypeError::TerminalError(format!("SessionManager lock failed: {}", e))
+        })?;
 
-        let (completed_stages, stage_trackers) =
-            if let Ok(session_manager) = self.session_manager.lock() {
-                let stage_results = session_manager.get_stage_results();
-                let completed = stage_results
-                    .iter()
-                    .filter(|sr| !sr.was_skipped && !sr.was_failed)
-                    .count();
+        let session_result = session_manager
+            .get_session_result()
+            .unwrap_or_else(SessionResult::default);
 
-                let trackers =
-                    if let Some(current_tracker) = session_manager.get_current_stage_tracker() {
-                        vec![("current_stage".to_string(), current_tracker.clone())]
-                    } else {
-                        vec![]
-                    };
+        let total_stages = session_manager
+            .get_stage_info()
+            .map(|(_, total)| total)
+            .unwrap_or(1);
 
-                (completed, trackers)
-            } else {
-                (0, vec![])
-            };
+        let game_data = self.game_data.lock().map_err(|e| {
+            crate::GitTypeError::TerminalError(format!("GameData lock failed: {}", e))
+        })?;
 
-        let repo_info = if let Ok(game_data) = self.game_data.lock() {
-            game_data.git_repository.clone()
-        } else {
-            None
-        };
+        let repo_info = game_data.git_repository.clone();
 
         Ok(Box::new(SessionFailureScreenData {
+            session_result,
             total_stages,
-            completed_stages,
-            stage_trackers,
             repo_info,
         }))
     }
 }
 
 pub struct SessionFailureScreen {
+    session_result: SessionResult,
     total_stages: usize,
-    completed_stages: usize,
-    stage_trackers: Vec<(String, StageTracker)>,
     repo_info: Option<GitRepository>,
     event_bus: EventBus,
 }
@@ -83,9 +62,8 @@ pub struct SessionFailureScreen {
 impl SessionFailureScreen {
     pub fn new(event_bus: EventBus) -> Self {
         Self {
+            session_result: SessionResult::default(),
             total_stages: 1,
-            completed_stages: 0,
-            stage_trackers: vec![],
             repo_info: None,
             event_bus,
         }
@@ -107,16 +85,11 @@ impl Screen for SessionFailureScreen {
         })
     }
 
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Crossterm
-    }
-
     fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         let screen_data = data.downcast::<SessionFailureScreenData>()?;
 
+        self.session_result = screen_data.session_result;
         self.total_stages = screen_data.total_stages;
-        self.completed_stages = screen_data.completed_stages;
-        self.stage_trackers = screen_data.stage_trackers;
         self.repo_info = screen_data.repo_info;
 
         Ok(())
@@ -147,31 +120,30 @@ impl Screen for SessionFailureScreen {
         }
     }
 
-    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> Result<()> {
-        let mut stdout = stdout();
+    fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {
+        let area = frame.area();
 
-        execute!(stdout, MoveTo(0, 0))?;
-        execute!(stdout, ResetColor)?;
-        stdout.flush()?;
+        // Calculate vertical centering
+        let content_height = 10; // header + 3 spacing + content (6 lines) + 1 spacing + nav
+        let top_spacing = (area.height.saturating_sub(content_height)) / 2;
 
-        let (terminal_width, terminal_height) = terminal::size()?;
-        let center_y = terminal_height / 2;
+        // Create vertical layout
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Length(top_spacing), // Top spacing
+                Constraint::Length(1),           // Header
+                Constraint::Length(3),           // Spacing after header
+                Constraint::Length(6), // Content (stage + spacing + metrics*2 + spacing + message)
+                Constraint::Length(1), // Spacing
+                Constraint::Length(1), // Navigation
+                Constraint::Min(0),    // Bottom spacing
+            ])
+            .split(area);
 
-        header_view::render_header(&mut stdout, terminal_width, center_y)?;
-
-        content_view::render_stage_progress(
-            &mut stdout,
-            terminal_width,
-            center_y,
-            self.total_stages,
-            self.completed_stages,
-        )?;
-
-        content_view::render_metrics(&mut stdout, terminal_width, center_y, &self.stage_trackers)?;
-        content_view::render_failure_message(&mut stdout, terminal_width, center_y)?;
-        footer_view::render_navigation(&mut stdout, terminal_width, center_y)?;
-
-        execute!(stdout, ResetColor)?;
+        HeaderView::render(frame, chunks[1]);
+        ContentView::render(frame, chunks[3], &self.session_result, self.total_stages);
+        FooterView::render(frame, chunks[5]);
 
         Ok(())
     }

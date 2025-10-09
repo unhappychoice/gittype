@@ -1,35 +1,40 @@
 use crate::presentation::game::ascii_digits::get_digit_patterns;
 use crate::presentation::ui::Colors;
-use crate::Result;
-use crossterm::{
-    cursor::MoveTo,
-    execute,
-    style::{Attribute, Print, ResetColor, SetAttribute, SetForegroundColor},
+use ratatui::{
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::{Modifier, Style},
+    text::{Line, Span},
+    widgets::Paragraph,
+    Frame,
 };
-use std::io::{Stdout, Write};
 
 pub struct AsciiScoreView;
 
 impl AsciiScoreView {
-    pub fn render(stdout: &mut Stdout, score: f64, center_col: u16, center_row: u16) -> Result<()> {
+    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect, score: f64) {
         let score_value = format!("{:.0}", score);
         let ascii_numbers = Self::create_ascii_numbers(&score_value);
-        let score_start_row = center_row.saturating_sub(6);
 
-        for (row_index, line) in ascii_numbers.iter().enumerate() {
-            let line_col = center_col.saturating_sub(line.len() as u16 / 2);
-            execute!(stdout, MoveTo(line_col, score_start_row + row_index as u16))?;
-            execute!(
-                stdout,
-                SetAttribute(Attribute::Bold),
-                SetForegroundColor(Colors::to_crossterm(Colors::score()))
-            )?;
-            execute!(stdout, Print(line))?;
-            execute!(stdout, ResetColor)?;
+        let mut constraints = vec![];
+        for _ in &ascii_numbers {
+            constraints.push(Constraint::Length(1));
         }
 
-        stdout.flush()?;
-        Ok(())
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(constraints)
+            .split(area);
+
+        for (i, line) in ascii_numbers.iter().enumerate() {
+            let widget = Paragraph::new(Line::from(vec![Span::styled(
+                line.as_str(),
+                Style::default()
+                    .fg(Colors::score())
+                    .add_modifier(Modifier::BOLD),
+            )]))
+            .alignment(Alignment::Center);
+            frame.render_widget(widget, chunks[i]);
+        }
     }
 
     fn create_ascii_numbers(score: &str) -> Vec<String> {

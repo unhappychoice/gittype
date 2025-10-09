@@ -5,9 +5,7 @@ use crate::domain::repositories::SessionRepository;
 use crate::infrastructure::database::daos::SessionDao;
 use crate::infrastructure::database::database::{Database, HasDatabase};
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::{
-    RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
-};
+use crate::presentation::game::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use chrono::{DateTime, Local};
@@ -110,8 +108,38 @@ impl ScreenDataProvider for RecordsScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
         let repositories = self.repository.get_all_repositories()?;
 
+        // Get sessions with default filter (Last 30 days, sorted by date descending)
+        let sessions = self.repository.get_sessions_filtered(
+            None,     // repository_filter
+            Some(30), // date_filter: Last 30 days
+            "date",   // sort_by
+            true,     // sort_descending
+        )?;
+
+        // Convert to SessionDisplayData with session results and repository info
+        let mut session_display_data = Vec::new();
+        let repository_map: std::collections::HashMap<i64, StoredRepository> = repositories
+            .iter()
+            .map(|repo| (repo.id, repo.clone()))
+            .collect();
+
+        for session in sessions {
+            let session_result = {
+                let db = self.repository.db_with_lock()?;
+                db.get_session_result(session.id).unwrap_or(None)
+            };
+            let repository = session
+                .repository_id
+                .and_then(|id| repository_map.get(&id).cloned());
+            session_display_data.push(SessionDisplayData {
+                session,
+                repository,
+                session_result,
+            });
+        }
+
         Ok(Box::new(RecordsScreenData {
-            sessions: Vec::new(),
+            sessions: session_display_data,
             repositories,
         }))
     }
@@ -136,29 +164,19 @@ pub struct RecordsScreen {
 
 impl RecordsScreen {
     pub fn new(event_bus: EventBus) -> Self {
-        let (sessions, repositories) = SessionRepository::new()
-            .and_then(|repo| {
-                let repositories = repo.get_all_repositories()?;
-                Ok((Vec::new(), repositories))
-            })
-            .unwrap_or_default();
-
         let mut list_state = ListState::default();
         list_state.select(Some(0));
 
-        let mut screen = Self {
-            sessions,
-            repositories,
+        Self {
+            sessions: Vec::new(),
+            repositories: Vec::new(),
             filter_state: FilterState::default(),
             list_state,
             scroll_state: ScrollbarState::default(),
             action_result: None,
             selected_session_for_detail: None,
             event_bus,
-        };
-
-        let _ = screen.refresh_sessions();
-        screen
+        }
     }
 
     pub fn get_selected_session_for_detail(&self) -> &Option<SessionDisplayData> {
@@ -483,17 +501,13 @@ impl Screen for RecordsScreen {
         })
     }
 
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Ratatui
-    }
-
     fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         self.action_result = None;
 
         let screen_data = data.downcast::<RecordsScreenData>()?;
 
+        self.sessions = screen_data.sessions;
         self.repositories = screen_data.repositories;
-        self.refresh_sessions()?;
 
         Ok(())
     }
@@ -555,13 +569,6 @@ impl Screen for RecordsScreen {
             }
             _ => Ok(()),
         }
-    }
-
-    fn render_crossterm_with_data(&mut self, _stdout: &mut std::io::Stdout) -> Result<()> {
-        // NOTE: History screen should use render_ratatui() instead
-        // This render_crossterm_with_data() should not be used
-        eprintln!("Warning: Records screen render_crossterm_with_data() called - this should use ratatui backend");
-        Ok(())
     }
 
     fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()> {

@@ -1,34 +1,32 @@
 use crate::presentation::sharing::SharingPlatform;
 use crate::presentation::ui::Colors;
-use crate::Result;
-use crossterm::{
-    cursor::MoveTo,
-    execute,
-    style::{Print, ResetColor, SetForegroundColor},
+use ratatui::{
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::Style,
+    text::{Line, Span},
+    widgets::Paragraph,
+    Frame,
 };
-use std::io::{stdout, Write};
 
 pub struct PlatformOptionsView;
 
 impl PlatformOptionsView {
-    pub fn render(center_col: u16, start_row: u16) -> Result<()> {
-        let mut stdout = stdout();
-
+    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect) {
         let platforms = SharingPlatform::all();
+
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(vec![Constraint::Length(1); platforms.len()])
+            .split(area);
 
         for (i, platform) in platforms.iter().enumerate() {
             let option_text = format!("[{}] {}", i + 1, platform.name());
-            let option_col = center_col.saturating_sub(option_text.len() as u16 / 2);
-            execute!(stdout, MoveTo(option_col, start_row + i as u16))?;
-            execute!(
-                stdout,
-                SetForegroundColor(Colors::to_crossterm(Colors::text()))
-            )?;
-            execute!(stdout, Print(&option_text))?;
-            execute!(stdout, ResetColor)?;
+            let option_line = Line::from(vec![Span::styled(
+                option_text,
+                Style::default().fg(Colors::text()),
+            )]);
+            let option_widget = Paragraph::new(option_line).alignment(Alignment::Center);
+            frame.render_widget(option_widget, chunks[i]);
         }
-
-        stdout.flush()?;
-        Ok(())
     }
 }

@@ -1,0 +1,44 @@
+---
+source: tests/integration/screens/help_screen_test.rs
+expression: output
+---
+┌Help──────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ CLI Usage │ Scoring System │ Rank System │ Game Help │ Community │ About & Credits │ Third-Party Licenses            │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  Score Calculation Formula:                                                                                          │
+│                                                                                                                      │
+│  Base Score = CPM × (Accuracy / 100) × 10                                                                            │
+│                                                                                                                      │
+│  CPM (Characters Per Minute): Total characters typed / minutes                                                       │
+│  WPM (Words Per Minute): CPM / 5 (average word length)                                                               │
+│  Accuracy: (Total chars - Mistakes) / Total chars × 100%                                                             │
+│                                                                                                                      │
+│  Bonuses & Penalties:                                                                                                │
+│                                                                                                                      │
+│  • Consistency Bonus: Up to 70% extra for high accuracy                                                              │
+│  • Time Bonus: Extra points for fast completion                                                                      │
+│  • Mistake Penalty: -5 points per error                                                                              │
+│                                                                                                                      │
+│  Final Score = (Base + Consistency + Time - Penalties) × 2 + 100                                                     │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                                                                                        
+                 ★ Star us on GitHub (https://github.com/unhappychoice/gittype) if you enjoy GitType! ★                 
+                                                                                                                        
+                                [←→/HL] Switch tabs [↑↓/JK] Scroll [G] GitHub [ESC] Close

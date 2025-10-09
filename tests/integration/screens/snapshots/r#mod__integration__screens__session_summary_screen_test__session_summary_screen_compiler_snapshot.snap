@@ -1,0 +1,38 @@
+---
+source: tests/integration/screens/session_summary_screen_test.rs
+expression: output
+---
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                === SESSION COMPLETE ===                                                
+                                                                                                                        
+                                                                                                                        
+                                                         YOU'RE:                                                        
+                                          ____                      _ _                                                 
+                                         / ___|___  _ __ ___  _ __ (_) | ___ _ __                                       
+                                        | |   / _ \| '_ ` _ \| '_ \| | |/ _ \ '__|                                      
+                                        | |__| (_) | | | | | | |_) | | |  __/ |                                         
+                                         \____\___/|_| |_| |_| .__/|_|_|\___|_|                                         
+                                                             |_|                                                        
+                                                                                                                        
+                                           Expert tier - 12/12 (overall 27/63)                                          
+                                                                                                                        
+                                                                                                                        
+                                                      SESSION SCORE                                                     
+                                                  *** TODAY'S BEST ***                                                  
+                                               ___     __     __      __                                                
+                                              / _ \   / /    /  \    /  \                                               
+                                              \_, /  / _ \  | () |  | () |                                              
+                                               /_/   \___/   \__/    \__/                                               
+                                                                                                                        
+                                                         (+9600)                                                        
+                                                                                                                        
+                                            CPM: 400 | WPM: 80 | Time: 180.0s                                           
+                                    Keystrokes: 1210 | Mistakes: 50 | Accuracy: 96.0%                                   
+                                                                                                                        
+                                                                                                                        
+                                            [D] Show Detail  [S] Share Result                                           
+                                        [R] Retry  [T] Back to Title  [ESC] Quit

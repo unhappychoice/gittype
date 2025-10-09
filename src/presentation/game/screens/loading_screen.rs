@@ -4,9 +4,7 @@ use crate::domain::models::{Challenge, GitRepository};
 use crate::presentation::game::events::ExitRequested;
 use crate::presentation::game::models::{ExecutionContext, StepManager, StepType};
 use crate::presentation::game::views::LoadingMainView;
-use crate::presentation::game::{
-    GameData, RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
-};
+use crate::presentation::game::{GameData, Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::{GitTypeError, Result};
 use ratatui::Frame;
 use std::path::PathBuf;
@@ -382,10 +380,6 @@ impl Screen for LoadingScreen {
         })
     }
 
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Ratatui
-    }
-
     fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         let loading_data = data.downcast::<LoadingScreenData>()?;
 
@@ -413,10 +407,6 @@ impl Screen for LoadingScreen {
             self.event_bus.publish(ExitRequested);
         }
 
-        Ok(())
-    }
-
-    fn render_crossterm_with_data(&mut self, _stdout: &mut std::io::Stdout) -> Result<()> {
         Ok(())
     }
 

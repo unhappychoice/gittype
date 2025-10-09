@@ -3,6 +3,7 @@ pub mod comment_processing_tests;
 pub mod indent_treesitter_tests;
 pub mod languages;
 pub mod missing_ascii_art_test;
+pub mod screens;
 
 use gittype::domain::models::languages::*;
 use gittype::domain::models::{Challenge, CodeChunk, ExtractionOptions, Language, Languages};

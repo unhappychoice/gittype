@@ -1,0 +1,44 @@
+---
+source: tests/integration/screens/help_screen_test.rs
+expression: output
+---
+┌Help──────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ CLI Usage │ Scoring System │ Rank System │ Game Help │ Community │ About & Credits │ Third-Party Licenses            │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  Game Modes:                                                                                                         ▲
+│                                                                                                                      █
+│  • Standard: Type code from popular repositories                                                                     █
+│  • Difficulty: Choose Easy, Normal, Hard, Wild, or Zen                                                               █
+│                                                                                                                      █
+│  Code Challenge Types:                                                                                               █
+│                                                                                                                      █
+│  GitType extracts real code constructs from repositories:                                                            █
+│                                                                                                                      █
+│  • Functions, methods, and procedures                                                                                █
+│  • Classes, structs, and interfaces                                                                                  █
+│  • Enums, traits, and type definitions                                                                               █
+│  • Variables, constants, and modules                                                                                 █
+│  • React components and namespaces                                                                                   █
+│  • Control flow (loops, conditionals)                                                                                █
+│                                                                                                                      █
+│  Typing Tips:                                                                                                        █
+│                                                                                                                      █
+│  • Focus on accuracy over speed initially                                                                            █
+│  • Use proper finger positioning                                                                                     █
+│  • Practice regularly to improve muscle memory                                                                       █
+│  • Don't look at the keyboard while typing                                                                           ║
+│  • Take breaks to avoid fatigue                                                                                      ║
+│                                                                                                                      ║
+│  Advanced Typing Tips:                                                                                               ║
+│                                                                                                                      ║
+│  • Use simultaneous key presses for efficiency:                                                                      ║
+│  - For 'knock': press 'kno' with right hand almost simultaneously,                                                   ║
+│  then 'ck' together                                                                                                  ║
+│  - Practice common letter combinations as single motions                                                             ║
+│                                                                                                                      ▼
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                                                                                        
+                 ★ Star us on GitHub (https://github.com/unhappychoice/gittype) if you enjoy GitType! ★                 
+                                                                                                                        
+                                [←→/HL] Switch tabs [↑↓/JK] Scroll [G] GitHub [ESC] Close

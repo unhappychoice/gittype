@@ -1,149 +1,94 @@
 use crate::domain::models::GitRepository;
-use crate::presentation::game::views::title::GitRepositoryView;
-use crate::presentation::ui::Colors;
-use crate::Result;
-use crossterm::{
-    cursor::MoveTo,
-    execute,
-    style::{Print, ResetColor, SetForegroundColor},
+use crate::presentation::game::views::title::{logo, GitRepositoryView};
+use crate::presentation::ui::{Colors, GradationText};
+use ratatui::{
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::Style,
+    text::{Line, Span},
+    widgets::Paragraph,
+    Frame,
 };
-use std::io::Stdout;
 
 pub struct StaticElementsView;
 
 impl StaticElementsView {
-    pub fn draw(
-        stdout: &mut Stdout,
-        center_row: u16,
-        center_col: u16,
+    pub fn render(
+        frame: &mut Frame,
+        logo_area: ratatui::layout::Rect,
+        subtitle_area: ratatui::layout::Rect,
+        instructions_area: ratatui::layout::Rect,
         git_repository: Option<&GitRepository>,
-    ) -> Result<()> {
-        // ASCII logo lines from oh-my-logo "GitType" purple
-        let logo_lines = [
-            "\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m_\x1b[39m\x1b[38;5;104m_\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m_\x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m",
-            "\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m/\x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m_\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m(\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;74m)\x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m|\x1b[39m\x1b[38;5;74m|\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;32m_\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m_\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m_\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m \x1b[39m",
-            "\x1b[38;5;104m \x1b[39m\x1b[38;5;104m|\x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m|\x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m|\x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;74m|\x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m_\x1b[39m\x1b[38;5;74m_\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m|\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m'\x1b[39m\x1b[38;5;32m_\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m\\\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m/\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m\\\x1b[39m",
-            "\x1b[38;5;104m \x1b[39m\x1b[38;5;104m|\x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m|\x1b[39m\x1b[38;5;104m_\x1b[39m\x1b[38;5;68m|\x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;68m|\x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;74m|\x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m|\x1b[39m\x1b[38;5;74m_\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m|\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m|\x1b[39m\x1b[38;5;32m_\x1b[39m\x1b[38;5;33m)\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m|\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m/\x1b[39m",
-            "\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m\\\x1b[39m\x1b[38;5;104m_\x1b[39m\x1b[38;5;104m_\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;68m|\x1b[39m\x1b[38;5;68m_\x1b[39m\x1b[38;5;74m|\x1b[39m\x1b[38;5;74m\\\x1b[39m\x1b[38;5;74m_\x1b[39m\x1b[38;5;74m_\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m\\\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m,\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m|\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;32m.\x1b[39m\x1b[38;5;32m_\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m/\x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m\\\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m_\x1b[39m\x1b[38;5;33m|\x1b[39m",
-            "\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;104m \x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;68m \x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;74m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m \x1b[39m\x1b[38;5;38m|\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;38m_\x1b[39m\x1b[38;5;32m/\x1b[39m\x1b[38;5;32m|\x1b[39m\x1b[38;5;32m_\x1b[39m\x1b[38;5;32m|\x1b[39m\x1b[38;5;32m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m\x1b[38;5;33m \x1b[39m",
-        ];
-
-        // Display ASCII logo
-        // GitType logo width is approximately 47 visible characters
-        let logo_width = 47u16;
-        let logo_start_col = center_col.saturating_sub(logo_width / 2) + 5;
-        let logo_start_row = center_row.saturating_sub(8);
+    ) {
+        // Render logo
+        let logo_lines = logo::get_logo_lines();
+        let logo_colors = logo::get_logo_colors();
+        let logo_chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(vec![Constraint::Length(1); 6])
+            .split(logo_area);
 
         for (i, line) in logo_lines.iter().enumerate() {
-            execute!(stdout, MoveTo(logo_start_col, logo_start_row + i as u16))?;
-            execute!(stdout, Print(line))?;
+            let widget = GradationText::new(line, logo_colors).alignment(Alignment::Center);
+            frame.render_widget(widget, logo_chunks[i]);
         }
 
-        // Display subtitle
-        let subtitle = "Code Typing Challenge";
-        let subtitle_col = center_col.saturating_sub(subtitle.len() as u16 / 2);
-        execute!(stdout, MoveTo(subtitle_col, center_row - 1))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text_secondary()))
-        )?;
-        execute!(stdout, Print(subtitle))?;
-        execute!(stdout, ResetColor)?;
+        // Render subtitle
+        let subtitle = Paragraph::new(Line::from(vec![Span::styled(
+            "Code Typing Challenge",
+            Style::default().fg(Colors::text_secondary()),
+        )]))
+        .alignment(Alignment::Center);
+        frame.render_widget(subtitle, subtitle_area);
 
-        // Display instructions in organized 3-tier structure
-        let instructions_start_row = center_row + 6;
+        // Render instructions
+        let instructions_chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Length(1), // Tier 1: Change Difficulty
+                Constraint::Length(1), // Tier 2: Secondary actions
+                Constraint::Length(1), // Tier 3: Primary actions
+            ])
+            .split(instructions_area);
 
-        // Tier 1: Change Difficulty (Difficulty selection controls)
-        let change_display_width = 26u16; // "[←→/HL] Change Difficulty"
-        let change_col = center_col.saturating_sub(change_display_width / 2) + 2;
-        execute!(stdout, MoveTo(change_col, instructions_start_row))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::key_navigation()))
-        )?;
-        execute!(stdout, Print("[←→/HL]"))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(" Change Difficulty"))?;
-        execute!(stdout, ResetColor)?;
+        // Tier 1: Change Difficulty
+        let tier1 = Line::from(vec![
+            Span::styled("[←→/HL]", Style::default().fg(Colors::key_navigation())),
+            Span::styled(" Change Difficulty", Style::default().fg(Colors::text())),
+        ]);
+        frame.render_widget(
+            Paragraph::new(tier1).alignment(Alignment::Center),
+            instructions_chunks[0],
+        );
 
-        // Tier 2: Secondary actions (records analytics settings help)
-        let secondary_display_width = 50u16; // "[R] Records  [A] Analytics  [S] Settings  [I/?] Help"
-        let secondary_col = center_col.saturating_sub(secondary_display_width / 2) + 2;
-        execute!(stdout, MoveTo(secondary_col, instructions_start_row + 1))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::info()))
-        )?;
-        execute!(stdout, Print("[R]"))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(" Records  "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::info()))
-        )?;
-        execute!(stdout, Print("[A]"))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(" Analytics  "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::info()))
-        )?;
-        execute!(stdout, Print("[S]"))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(" Settings  "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::info()))
-        )?;
-        execute!(stdout, Print("[I/?]"))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(" Help"))?;
-        execute!(stdout, ResetColor)?;
+        // Tier 2: Secondary actions
+        let tier2 = Line::from(vec![
+            Span::styled("[R]", Style::default().fg(Colors::info())),
+            Span::styled(" Records  ", Style::default().fg(Colors::text())),
+            Span::styled("[A]", Style::default().fg(Colors::info())),
+            Span::styled(" Analytics  ", Style::default().fg(Colors::text())),
+            Span::styled("[S]", Style::default().fg(Colors::info())),
+            Span::styled(" Settings  ", Style::default().fg(Colors::text())),
+            Span::styled("[I/?]", Style::default().fg(Colors::info())),
+            Span::styled(" Help", Style::default().fg(Colors::text())),
+        ]);
+        frame.render_widget(
+            Paragraph::new(tier2).alignment(Alignment::Center),
+            instructions_chunks[1],
+        );
 
-        // Tier 3: Primary actions (Start Quit)
-        let primary_display_width = 22u16; // "[SPACE] Start  [ESC] Quit"
-        let primary_col = center_col.saturating_sub(primary_display_width / 2) + 2;
-        execute!(stdout, MoveTo(primary_col, instructions_start_row + 2))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::success()))
-        )?;
-        execute!(stdout, Print("[SPACE]"))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(" Start  "))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::error()))
-        )?;
-        execute!(stdout, Print("[ESC]"))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
-        )?;
-        execute!(stdout, Print(" Quit"))?;
-        execute!(stdout, ResetColor)?;
+        // Tier 3: Primary actions
+        let tier3 = Line::from(vec![
+            Span::styled("[SPACE]", Style::default().fg(Colors::success())),
+            Span::styled(" Start  ", Style::default().fg(Colors::text())),
+            Span::styled("[ESC]", Style::default().fg(Colors::error())),
+            Span::styled(" Quit", Style::default().fg(Colors::text())),
+        ]);
+        frame.render_widget(
+            Paragraph::new(tier3).alignment(Alignment::Center),
+            instructions_chunks[2],
+        );
 
-        // Display git info at bottom
-        GitRepositoryView::draw(stdout, git_repository)?;
-
-        Ok(())
+        // Render git repository info
+        GitRepositoryView::render(frame, git_repository);
     }
 }

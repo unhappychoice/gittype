@@ -1,0 +1,34 @@
+---
+source: tests/integration/screens/total_summary_screen_test.rs
+expression: output
+---
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                  === TOTAL SUMMARY ===                                                 
+                                                                                                                        
+                                                                                                                        
+                                               ___    ___     __      __                                                
+                                              / _ \  ( _ )   /  \    /  \                                               
+                                              \_, /  / _ \  | () |  | () |                                              
+                                               /_/   \___/   \__/    \__/                                               
+                                                                                                                        
+                                                                                                                        
+                                    Overall CPM: 275.0 | WPM: 55.0 | Accuracy: 95.5%                                    
+                                    Total Sessions: 3 | Completed: 3 | Stages: 15/15                                    
+                                   Total Keystrokes: 4125 | Mistakes: 185 | Skipped: 0                                  
+                                  Best Session: 300 CPM, 98.0% | Worst: 250 CPM, 93.0%                                  
+                                                                                                                        
+                                                                                                                        
+                                               Thanks for playing GitType!                                              
+                             ✨  Star us on GitHub: https://github.com/unhappychoice/gittype                             
+                                                                                                                        
+                                                    [S] Share Result                                                    
+                                                       [ESC] Exit

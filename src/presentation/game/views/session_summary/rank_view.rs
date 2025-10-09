@@ -1,63 +1,33 @@
 use crate::domain::models::Rank;
 use crate::domain::services::scoring::RankCalculator;
-use crate::presentation::game::ascii_rank_titles_generated::get_rank_display;
-use crate::presentation::ui::Colors;
-use crate::Result;
-use crossterm::{
-    cursor::MoveTo,
-    execute,
-    style::{Attribute, Print, ResetColor, SetAttribute, SetForegroundColor},
+use crate::presentation::game::ascii_rank_titles;
+use crate::presentation::game::rank_colors;
+use crate::presentation::ui::GradationText;
+use ratatui::{
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::{Modifier, Style},
+    text::{Line, Span},
+    widgets::Paragraph,
+    Frame,
 };
-use std::io::{stdout, Write};
 
 pub struct RankView;
 
 impl RankView {
-    fn calculate_display_width(text: &str) -> u16 {
-        let mut width = 0;
-        let mut chars = text.chars().peekable();
-
-        while let Some(ch) = chars.next() {
-            if ch == '\x1b' {
-                // Skip ANSI escape sequence
-                if chars.peek() == Some(&'[') {
-                    chars.next(); // consume '['
-                    for seq_ch in chars.by_ref() {
-                        if seq_ch.is_ascii_alphabetic() {
-                            break; // End of escape sequence
-                        }
-                    }
-                }
-            } else if !ch.is_control() {
-                width += 1;
-            }
-        }
-
-        width as u16
-    }
-
     pub fn render(
-        best_rank: Rank,
+        frame: &mut Frame,
+        area: ratatui::layout::Rect,
+        best_rank: &Rank,
         session_score: f64,
-        center_col: u16,
-        rank_start_row: u16,
-    ) -> Result<u16> {
-        let mut stdout = stdout();
-
-        let rank_lines = get_rank_display(best_rank.name());
-        let rank_height = rank_lines.len() as u16;
+    ) -> usize {
+        let rank_patterns = ascii_rank_titles::get_all_rank_patterns();
+        let rank_lines = match rank_patterns.get(best_rank.name()) {
+            Some(lines) => lines,
+            None => return 0,
+        };
+        let rank_height = rank_lines.len();
 
         let tier_info_values = RankCalculator::calculate_tier_info(session_score);
-
-        for (row_index, line) in rank_lines.iter().enumerate() {
-            let display_width = Self::calculate_display_width(line);
-            let line_col = center_col.saturating_sub(display_width / 2);
-            execute!(stdout, MoveTo(line_col, rank_start_row + row_index as u16))?;
-            execute!(stdout, Print(line))?;
-            execute!(stdout, ResetColor)?;
-        }
-
-        let tier_info_row = rank_start_row + rank_height + 1;
         let tier_info = format!(
             "{} tier - {}/{} (overall {}/{})",
             tier_info_values.0,
@@ -66,24 +36,58 @@ impl RankView {
             tier_info_values.3,
             tier_info_values.4
         );
-        let tier_info_col = center_col.saturating_sub(tier_info.len() as u16 / 2);
-        execute!(stdout, MoveTo(tier_info_col, tier_info_row))?;
-        execute!(stdout, SetAttribute(Attribute::Bold))?;
 
-        let tier_color = match best_rank.tier() {
-            crate::domain::models::RankTier::Beginner => Colors::to_crossterm(Colors::border()),
-            crate::domain::models::RankTier::Intermediate => {
-                Colors::to_crossterm(Colors::success())
-            }
-            crate::domain::models::RankTier::Advanced => Colors::to_crossterm(Colors::info()),
-            crate::domain::models::RankTier::Expert => Colors::to_crossterm(Colors::warning()),
-            crate::domain::models::RankTier::Legendary => Colors::to_crossterm(Colors::error()),
+        // Get tier colors for gradation
+        let tier_colors = rank_colors::get_tier_colors(&best_rank.tier);
+
+        // Check if the last line is empty (all spaces)
+        let last_line_is_empty = rank_lines
+            .last()
+            .map(|line| line.trim().is_empty())
+            .unwrap_or(false);
+
+        let mut constraints = vec![];
+        for _ in rank_lines.iter() {
+            constraints.push(Constraint::Length(1));
+        }
+        if !last_line_is_empty {
+            constraints.push(Constraint::Length(1)); // Spacing line if needed
+        }
+        constraints.push(Constraint::Length(1)); // Tier info
+
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(constraints)
+            .split(area);
+
+        // Render rank ASCII art lines with gradation
+        for (i, line) in rank_lines.iter().enumerate() {
+            let widget = GradationText::new(line, tier_colors).alignment(Alignment::Center);
+            frame.render_widget(widget, chunks[i]);
+        }
+
+        // Render tier info at the appropriate chunk index
+        let tier_info_index = if last_line_is_empty {
+            rank_height
+        } else {
+            rank_height + 1
         };
-        execute!(stdout, SetForegroundColor(tier_color))?;
-        execute!(stdout, Print(&tier_info))?;
-        execute!(stdout, ResetColor)?;
 
-        stdout.flush()?;
-        Ok(rank_height)
+        let tier_info_span = Span::styled(
+            tier_info,
+            Style::default()
+                .fg(best_rank.color())
+                .add_modifier(Modifier::BOLD),
+        );
+        let tier_info_widget =
+            Paragraph::new(Line::from(vec![tier_info_span])).alignment(Alignment::Center);
+        frame.render_widget(tier_info_widget, chunks[tier_info_index]);
+
+        // Return total height (ASCII art + spacing if needed + tier info)
+        if last_line_is_empty {
+            rank_height + 1
+        } else {
+            rank_height + 2
+        }
     }
 }

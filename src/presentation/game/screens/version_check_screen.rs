@@ -1,9 +1,7 @@
 use crate::domain::events::EventBus;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::VersionCheckView;
-use crate::presentation::game::{
-    RenderBackend, Screen, ScreenDataProvider, ScreenType, UpdateStrategy,
-};
+use crate::presentation::game::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::Result;
 use crossterm::{
     event::{self, Event, KeyCode},
@@ -11,8 +9,7 @@ use crossterm::{
     ExecutableCommand,
 };
 use ratatui::{backend::CrosstermBackend, Terminal};
-use std::io::stdout;
-use std::io::Stdout;
+use std::io::{stdout, Stdout};
 
 pub enum VersionCheckResult {
     Continue,
@@ -21,11 +18,17 @@ pub enum VersionCheckResult {
 
 pub struct VersionCheckScreen {
     event_bus: EventBus,
+    current_version: String,
+    latest_version: String,
 }
 
 impl VersionCheckScreen {
     pub fn new(event_bus: EventBus) -> Self {
-        Self { event_bus }
+        Self {
+            event_bus,
+            current_version: String::new(),
+            latest_version: String::new(),
+        }
     }
 
     pub fn show_legacy(current_version: &str, latest_version: &str) -> Result<VersionCheckResult> {
@@ -90,10 +93,6 @@ impl Screen for VersionCheckScreen {
         Box::new(VersionCheckScreenDataProvider)
     }
 
-    fn get_render_backend(&self) -> RenderBackend {
-        RenderBackend::Ratatui
-    }
-
     fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
         Ok(())
     }
@@ -113,19 +112,17 @@ impl Screen for VersionCheckScreen {
         }
     }
 
-    fn render_crossterm_with_data(&mut self, _stdout: &mut Stdout) -> crate::Result<()> {
-        // Version check is now handled by ScreenManager
-        // let current_version = env!("CARGO_PKG_VERSION");
-        // let _ = VersionCheckScreen::show(current_version, "1.1.0");
-        Ok(())
-    }
-
     fn get_update_strategy(&self) -> UpdateStrategy {
         UpdateStrategy::InputOnly
     }
 
     fn update(&mut self) -> crate::Result<bool> {
         Ok(false)
+    }
+
+    fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()> {
+        VersionCheckView::draw_ui(frame, &self.current_version, &self.latest_version);
+        Ok(())
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
