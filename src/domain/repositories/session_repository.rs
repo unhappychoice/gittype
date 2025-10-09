@@ -10,6 +10,10 @@ use std::sync::{Arc, Mutex};
 
 type StageResultTuple = (String, StageResult, usize, Option<Challenge>);
 
+pub trait SessionRepositoryTrait: Send {
+    fn get_session_stage_results(&self, session_id: i64) -> Result<Vec<SessionStageResult>>;
+}
+
 /// Repository for session business logic
 pub struct SessionRepository {
     database: Arc<Mutex<Database>>,
@@ -471,6 +475,12 @@ impl BestStatus {
             weekly_best_score: 0.0,
             all_time_best_score: 0.0,
         }
+    }
+}
+
+impl SessionRepositoryTrait for SessionRepository {
+    fn get_session_stage_results(&self, session_id: i64) -> Result<Vec<SessionStageResult>> {
+        SessionRepository::get_session_stage_results(self, session_id)
     }
 }
 

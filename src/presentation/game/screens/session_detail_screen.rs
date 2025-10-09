@@ -2,7 +2,7 @@ use crate::domain::events::EventBus;
 use crate::domain::models::storage::{
     SessionResultData, SessionStageResult, StoredRepository, StoredSession,
 };
-use crate::domain::repositories::SessionRepository;
+use crate::domain::repositories::session_repository::{SessionRepository, SessionRepositoryTrait};
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::screens::RecordsScreen;
 use crate::presentation::game::views::{PerformanceMetricsView, SessionInfoView, StageDetailsView};
@@ -33,6 +33,7 @@ pub struct SessionDetailScreen {
     stage_results: Vec<SessionStageResult>,
     stage_scroll_offset: usize,
     event_bus: EventBus,
+    session_repository: Option<Box<dyn SessionRepositoryTrait>>,
 }
 
 impl SessionDetailScreen {
@@ -58,7 +59,16 @@ impl SessionDetailScreen {
             stage_results: Vec::new(),
             stage_scroll_offset: 0,
             event_bus,
+            session_repository: None,
         }
+    }
+
+    pub fn with_session_repository<T: SessionRepositoryTrait + 'static>(
+        mut self,
+        session_repository: T,
+    ) -> Self {
+        self.session_repository = Some(Box::new(session_repository));
+        self
     }
 }
 
@@ -107,8 +117,12 @@ impl Screen for SessionDetailScreen {
                 )
             })?;
 
-        let session_repo = SessionRepository::new()?;
-        let stage_results = session_repo.get_session_stage_results(session_data.session.id)?;
+        let stage_results = if let Some(ref repo) = self.session_repository {
+            repo.get_session_stage_results(session_data.session.id)?
+        } else {
+            let repo = SessionRepository::new()?;
+            repo.get_session_stage_results(session_data.session.id)?
+        };
 
         self.session_data = session_data;
         self.stage_results = stage_results;

@@ -1,4 +1,5 @@
 use crate::integration::screens::mocks::records_screen_mock::MockRecordsDataProvider;
+use crate::integration::screens::mocks::session_repository_mock::MockSessionRepository;
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::models::ScreenDataProvider;
 use gittype::presentation::game::screens::{RecordsScreen, SessionDetailScreen};
@@ -6,7 +7,7 @@ use gittype::presentation::game::screens::{RecordsScreen, SessionDetailScreen};
 screen_snapshot_test!(
     test_session_detail_screen_snapshot,
     SessionDetailScreen,
-    SessionDetailScreen::new(EventBus::new()),
+    SessionDetailScreen::new(EventBus::new()).with_session_repository(MockSessionRepository::new()),
     pushed_from = {
         let mut records = RecordsScreen::new(EventBus::new());
         let data = MockRecordsDataProvider.provide().unwrap();

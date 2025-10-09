@@ -550,7 +550,6 @@ impl Screen for RecordsScreen {
             KeyCode::Enter | KeyCode::Char(' ') => {
                 if let Some(selected_index) = self.list_state.selected() {
                     if let Some(session) = self.sessions.get(selected_index) {
-                        // Store session data for the transition
                         self.selected_session_for_detail = Some(session.clone());
                         self.event_bus
                             .publish(NavigateTo::Push(ScreenType::SessionDetail));
