@@ -4,7 +4,7 @@ use crate::domain::models::theme::Theme;
 use crate::domain::services::config_manager::ConfigService;
 use crate::domain::services::theme_manager::THEME_MANAGER;
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::{RenderBackend, Screen, ScreenType};
+use crate::presentation::game::{RenderBackend, Screen, ScreenDataProvider, ScreenType};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
@@ -43,6 +43,13 @@ impl SettingsSection {
     }
 }
 
+pub struct SettingsScreenData {
+    pub color_modes: Vec<ColorMode>,
+    pub themes: Vec<Theme>,
+    pub current_theme: Theme,
+    pub current_color_mode: ColorMode,
+}
+
 pub struct SettingsScreen {
     current_section: SettingsSection,
     color_mode_state: ListState,
@@ -57,33 +64,14 @@ pub struct SettingsScreen {
 
 impl SettingsScreen {
     pub fn new(event_bus: EventBus) -> Self {
-        let mut color_mode_state = ListState::default();
-        let mut theme_state = ListState::default();
-
-        let theme_manager = THEME_MANAGER.read().unwrap();
-        let current_color_mode = theme_manager.current_color_mode.clone();
-        let current_theme = theme_manager.current_theme.clone();
-
-        let color_modes = vec![ColorMode::Dark, ColorMode::Light];
-        let themes = theme_manager.get_available_themes();
-        drop(theme_manager); // Release the lock early
-
-        // Set initial selections
-        if let Some(pos) = color_modes.iter().position(|m| m == &current_color_mode) {
-            color_mode_state.select(Some(pos));
-        }
-        if let Some(pos) = themes.iter().position(|t| t.id == current_theme.id) {
-            theme_state.select(Some(pos));
-        }
-
         Self {
             current_section: SettingsSection::ColorMode,
-            color_mode_state,
-            theme_state,
-            color_modes,
-            themes,
-            original_theme: current_theme,
-            original_color_mode: current_color_mode,
+            color_mode_state: ListState::default(),
+            theme_state: ListState::default(),
+            color_modes: vec![],
+            themes: vec![],
+            original_theme: Theme::default(),
+            original_color_mode: ColorMode::Dark,
             is_preview_mode: false,
             event_bus,
         }
@@ -311,9 +299,16 @@ impl SettingsScreen {
 
 pub struct SettingsScreenDataProvider;
 
-impl crate::presentation::game::ScreenDataProvider for SettingsScreenDataProvider {
+impl ScreenDataProvider for SettingsScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        Ok(Box::new(()))
+        let theme_manager = THEME_MANAGER.read().unwrap();
+        let data = SettingsScreenData {
+            color_modes: vec![ColorMode::Dark, ColorMode::Light],
+            themes: theme_manager.get_available_themes(),
+            current_theme: theme_manager.current_theme.clone(),
+            current_color_mode: theme_manager.current_color_mode.clone(),
+        };
+        Ok(Box::new(data))
     }
 }
 
@@ -322,7 +317,7 @@ impl Screen for SettingsScreen {
         ScreenType::Settings
     }
 
-    fn default_provider() -> Box<dyn crate::presentation::game::ScreenDataProvider>
+    fn default_provider() -> Box<dyn ScreenDataProvider>
     where
         Self: Sized,
     {
@@ -333,7 +328,22 @@ impl Screen for SettingsScreen {
         RenderBackend::Ratatui
     }
 
-    fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
+    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
+        let data = data.downcast::<SettingsScreenData>()?;
+
+        self.color_modes = data.color_modes;
+        self.themes = data.themes;
+        self.original_theme = data.current_theme.clone();
+        self.original_color_mode = data.current_color_mode.clone();
+
+        // Set initial selections
+        if let Some(pos) = self.color_modes.iter().position(|m| m == &data.current_color_mode) {
+            self.color_mode_state.select(Some(pos));
+        }
+        if let Some(pos) = self.themes.iter().position(|t| t.id == data.current_theme.id) {
+            self.theme_state.select(Some(pos));
+        }
+
         Ok(())
     }
 
