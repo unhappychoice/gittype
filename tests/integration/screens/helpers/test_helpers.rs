@@ -22,6 +22,9 @@ macro_rules! screen_snapshot_test {
             use ratatui::backend::TestBackend;
             use ratatui::Terminal;
 
+            // Set timezone to UTC for consistent snapshots across environments
+            std::env::set_var("TZ", "UTC");
+
             let mut screen: $screen_type = $screen_init;
 
             // Initialize screen with data from the provided mock provider
@@ -65,6 +68,9 @@ macro_rules! screen_snapshot_test {
             use gittype::presentation::game::models::ScreenDataProvider;
             use ratatui::backend::TestBackend;
             use ratatui::Terminal;
+
+            // Set timezone to UTC for consistent snapshots across environments
+            std::env::set_var("TZ", "UTC");
 
             let mut screen: $screen_type = $screen_init;
 

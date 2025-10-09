@@ -21,7 +21,7 @@ expression: output
 │  Spectral                                                ││  ● This is Warning color                                 │
 │  Starforge                                               ││  ● This is Info color                                    │
 │  Venom                                                   ││  ● This is Key Action color                              │
-│  Custom                                                  ││  ● This is Key Navigation color                          │
+│                                                          ││  ● This is Key Navigation color                          │
 │                                                          ││  ● This is Key Back color                                │
 │                                                          ││  ● This is Typed Text color                              │
 │                                                          ││  ● This is Cursor color                                  │
