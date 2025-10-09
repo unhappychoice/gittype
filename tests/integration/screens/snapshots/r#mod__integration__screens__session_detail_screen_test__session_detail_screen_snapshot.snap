@@ -1,0 +1,44 @@
+---
+source: tests/integration/screens/session_detail_screen_test.rs
+expression: output
+---
+Session Details                                                                                                         
+┌Session───────────────────────────────────────────────────┐┌Performance───────────────────────────────────────────────┐
+│                                                          ││                                                          │
+│  Repository: unhappychoice/gittype                       ││  Tier/Rank: Gold/Advanced                                │
+│  Started: 2024-10-07 12:30:00                            ││  Score: 1200.0                                           │
+│  Branch: main                                            ││  CPM: 375.0                                              │
+│  Commit: abc123                                          ││  WPM: 75.0                                               │
+│                                                          ││  Accuracy: 96.0%                                         │
+│                                                          ││  Duration: 1m 0s                                         │
+│                                                          ││  Completed Stage: 3/3                                    │
+│                                                          ││                                                          │
+│                                                          ││                                                          │
+└──────────────────────────────────────────────────────────┘└──────────────────────────────────────────────────────────┘
+┌Stage Details (5 stages)──────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                                                      │
+│  Stage #1 [COMPLETED]                                                                                                │
+│    File: ./tests/unit/extractor_unit_tests.rs:70-73                                                                  │
+│    Score: 11419.0  CPM: 387.2    WPM: 77.4                                                                           │
+│    Keystrokes: 77  Mistakes: 3  Accuracy: 96.1%  Duration: 11467ms                                                   │
+│                                                                                                                      │
+│  Stage #2 [SKIPPED]                                                                                                  │
+│    File: ./src/game/screens/version_check_screen.rs:20-23                                                            │
+│    Score: 100.0  CPM: 0.1    WPM: 0.0                                                                                │
+│    Keystrokes: 0  Mistakes: 0  Accuracy: 0.0%  Duration: 655ms                                                       │
+│                                                                                                                      │
+│  Stage #3 [COMPLETED]                                                                                                │
+│    File: ./tests/unit/scoring/tracker/stage.rs:19-20                                                                 │
+│    Score: 11773.6  CPM: 365.8    WPM: 73.2                                                                           │
+│    Keystrokes: 101  Mistakes: 2  Accuracy: 98.0%  Duration: 16239ms                                                  │
+│                                                                                                                      │
+│  Stage #4 [SKIPPED]                                                                                                  │
+│    File: ./src/scoring/calculator/session.rs:6-6                                                                     │
+│    Score: 100.0  CPM: 0.1    WPM: 0.0                                                                                │
+│    Keystrokes: 0  Mistakes: 0  Accuracy: 0.0%  Duration: 147ms                                                       │
+│                                                                                                                      │
+│  Stage #5 [COMPLETED]                                                                                                │
+│    File: ./src/scoring/tracker/session.rs:44-46                                                                      │
+│    Score: 10321.3  CPM: 330.3    WPM: 66.1                                                                           │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                            [↑↓/JK] Scroll Stages  [ESC] Back

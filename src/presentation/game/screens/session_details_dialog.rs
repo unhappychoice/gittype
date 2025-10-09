@@ -1,6 +1,6 @@
 use crate::domain::events::EventBus;
 use crate::domain::models::SessionResult;
-use crate::domain::repositories::session_repository::{BestStatus, SessionRepository};
+use crate::domain::repositories::session_repository::{BestRecords, BestStatus, SessionRepository};
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::{
     BestRecordsView, ControlsView, HeaderView, StageResultsView,
@@ -19,6 +19,7 @@ pub struct SessionDetailsDialogData {
     pub session_result: Option<SessionResult>,
     pub repo_info: Option<GitRepository>,
     pub best_status: Option<BestStatus>,
+    pub best_records: Option<BestRecords>,
 }
 
 pub struct SessionDetailsDialogDataProvider {
@@ -54,10 +55,13 @@ impl ScreenDataProvider for SessionDetailsDialogDataProvider {
             None
         };
 
+        let best_records = SessionRepository::get_best_records_global().ok().flatten();
+
         Ok(Box::new(SessionDetailsDialogData {
             session_result,
             repo_info,
             best_status,
+            best_records,
         }))
     }
 }
@@ -66,6 +70,7 @@ pub struct SessionDetailsDialog {
     session_result: Option<SessionResult>,
     repo_info: Option<GitRepository>,
     best_status: Option<BestStatus>,
+    best_records: Option<BestRecords>,
     event_bus: EventBus,
 }
 
@@ -75,6 +80,7 @@ impl SessionDetailsDialog {
             session_result: None,
             repo_info: None,
             best_status: None,
+            best_records: None,
             event_bus,
         }
     }
@@ -87,7 +93,7 @@ impl SessionDetailsDialog {
 
         // Calculate required content height dynamically
         let stage_count = session_result.stage_results.len();
-        let best_records_lines = if let Ok(Some(_)) = SessionRepository::get_best_records_global() {
+        let best_records_lines = if self.best_records.is_some() {
             5 // Header + 3 records + padding
         } else {
             3 // Just header and no records message
@@ -142,11 +148,12 @@ impl SessionDetailsDialog {
             ])
             .split(main_chunks[2]);
 
-        BestRecordsView::render_with_best_status(
+        BestRecordsView::render(
             f,
             content_chunks[0],
             session_result,
             self.best_status.as_ref(),
+            self.best_records.as_ref(),
         );
         StageResultsView::render(f, content_chunks[1], session_result, &self.repo_info);
         ControlsView::render(f, main_chunks[4]);
@@ -174,6 +181,7 @@ impl Screen for SessionDetailsDialog {
         self.session_result = dialog_data.session_result;
         self.repo_info = dialog_data.repo_info;
         self.best_status = dialog_data.best_status;
+        self.best_records = dialog_data.best_records;
 
         Ok(())
     }

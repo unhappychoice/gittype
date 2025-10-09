@@ -1,6 +1,5 @@
 use crate::domain::models::SessionResult;
-use crate::domain::repositories::session_repository::BestStatus;
-use crate::domain::repositories::session_repository::SessionRepository;
+use crate::domain::repositories::session_repository::{BestRecords, BestStatus};
 use crate::presentation::ui::Colors;
 use ratatui::{
     layout::{Alignment, Rect},
@@ -13,17 +12,14 @@ use ratatui::{
 pub struct BestRecordsView;
 
 impl BestRecordsView {
-    pub fn render(f: &mut Frame, area: Rect, session_result: &SessionResult) {
-        Self::render_with_best_status(f, area, session_result, None)
-    }
-
-    pub fn render_with_best_status(
+    pub fn render(
         f: &mut Frame,
         area: Rect,
         session_result: &SessionResult,
         best_status: Option<&BestStatus>,
+        best_records: Option<&BestRecords>,
     ) {
-        if let Ok(Some(best_records)) = SessionRepository::get_best_records_global() {
+        if let Some(best_records) = best_records {
             let mut lines = vec![
                 Line::from(Span::styled(
                     "BEST RECORDS",

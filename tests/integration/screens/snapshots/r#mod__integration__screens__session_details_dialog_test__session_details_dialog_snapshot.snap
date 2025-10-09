@@ -1,0 +1,33 @@
+---
+source: tests/integration/screens/session_details_dialog_test.rs
+expression: output
+---
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                 === SESSION DETAILS ===                                                
+                                                                                                                        
+                                                      BEST RECORDS                                                      
+                                                                                                                        
+                               *** NEW PB!  Today's Best: Score 1200 | CPM 375 | Acc 96.0%                              
+                                   Weekly Best: Score 1500 | CPM 425 | Acc 97.5% (-300)                                 
+                                 All time Best: Score 1800 | CPM 475 | Acc 98.5% (-600)                                 
+                                         Stage Results: [unhappychoice/gittype]                                         
+                                                                                                                        
+                                                      src/main.rs:                                                      
+                                            Score: 380 | CPM: 350 | Acc: 96.7%                                          
+                                                       src/lib.rs:                                                      
+                                            Score: 420 | CPM: 375 | Acc: 96.0%                                          
+                                                      src/utils.rs:                                                     
+                                            Score: 400 | CPM: 400 | Acc: 95.3%                                          
+                                                                                                                        
+                                                      [ESC] Return

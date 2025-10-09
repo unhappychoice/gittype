@@ -111,4 +111,41 @@ macro_rules! screen_snapshot_test {
     ($test_name:ident, $screen_type:ty, $screen_init:expr, keys = [$($key:expr),*]) => {
         screen_snapshot_test!($test_name, $screen_type, $screen_init, provider = $crate::integration::screens::helpers::EmptyMockProvider, keys = [$($key),*]);
     };
+
+    // Version with on_pushed_from
+    ($test_name:ident, $screen_type:ty, $screen_init:expr, pushed_from = $source_screen:expr) => {
+        #[test]
+        fn $test_name() {
+            use gittype::presentation::game::Screen;
+            use ratatui::backend::TestBackend;
+            use ratatui::Terminal;
+
+            std::env::set_var("TZ", "UTC");
+
+            let source = $source_screen;
+            let mut screen: $screen_type = $screen_init;
+
+            screen.on_pushed_from(&source).unwrap();
+
+            let backend = TestBackend::new(120, 40);
+            let mut terminal = Terminal::new(backend).unwrap();
+
+            terminal
+                .draw(|frame| {
+                    screen.render_ratatui(frame).unwrap();
+                })
+                .unwrap();
+
+            let buffer = terminal.backend().buffer();
+            let mut output = String::new();
+            for y in 0..buffer.area.height {
+                for x in 0..buffer.area.width {
+                    let cell = &buffer[(x, y)];
+                    output.push_str(cell.symbol());
+                }
+                output.push('\n');
+            }
+            insta::assert_snapshot!(output);
+        }
+    };
 }
