@@ -337,10 +337,18 @@ impl Screen for SettingsScreen {
         self.original_color_mode = data.current_color_mode.clone();
 
         // Set initial selections
-        if let Some(pos) = self.color_modes.iter().position(|m| m == &data.current_color_mode) {
+        if let Some(pos) = self
+            .color_modes
+            .iter()
+            .position(|m| m == &data.current_color_mode)
+        {
             self.color_mode_state.select(Some(pos));
         }
-        if let Some(pos) = self.themes.iter().position(|t| t.id == data.current_theme.id) {
+        if let Some(pos) = self
+            .themes
+            .iter()
+            .position(|t| t.id == data.current_theme.id)
+        {
             self.theme_state.select(Some(pos));
         }
 

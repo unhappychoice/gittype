@@ -162,7 +162,7 @@ impl Colors {
 
     // Rank tier colors (from rank_colors.rs)
     pub fn tier_beginner() -> Color {
-        Color::Rgb(135, 175, 255) // #87afff - light blue
+        Color::Rgb(95, 175, 255) // #5fafff - light blue
     }
     pub fn tier_intermediate() -> Color {
         Color::Rgb(0, 215, 255) // #00d7ff - cyan
@@ -174,7 +174,7 @@ impl Colors {
         Color::Rgb(255, 175, 0) // #ffaf00 - orange/gold
     }
     pub fn tier_legendary() -> Color {
-        Color::Rgb(255, 0, 95) // #ff005f - pink/red
+        Color::Rgb(215, 95, 95) // #d75f5f - red
     }
 }
 
