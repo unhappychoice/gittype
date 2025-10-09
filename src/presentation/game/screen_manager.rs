@@ -271,9 +271,6 @@ impl ScreenManager {
             })?;
         }
 
-        // Force immediate render of the new screen
-        self.render_current_screen()?;
-
         // Flush after initializing new screen
         stdout().flush().map_err(|e| {
             GitTypeError::TerminalError(format!("Failed to flush after screen init: {}", e))
@@ -368,31 +365,33 @@ impl ScreenManager {
             ScreenTransition::None => Ok(()),
             ScreenTransition::Push(screen_type) => {
                 self.prepare_screen_if_needed(&screen_type)?;
-                self.push_screen(screen_type)
+                self.push_screen(screen_type)?;
+                self.render_current_screen()
             }
-            ScreenTransition::Pop => self.pop_screen(),
+            ScreenTransition::Pop => {
+                self.pop_screen()?;
+                self.render_current_screen()
+            }
             ScreenTransition::Replace(screen_type) => {
-                // Use ScreenTransitionManager to handle transition with side effects
                 let validated_screen_type =
                     ScreenTransitionManager::reduce(self.current_screen_type.clone(), screen_type)?;
 
                 self.prepare_screen_if_needed(&validated_screen_type)?;
-                self.set_current_screen(validated_screen_type)
+                self.set_current_screen(validated_screen_type)?;
+                self.render_current_screen()
             }
             ScreenTransition::PopTo(screen_type) => {
-                // Use ScreenTransitionManager to handle transition with side effects
                 let validated_screen_type =
                     ScreenTransitionManager::reduce(self.current_screen_type.clone(), screen_type)?;
 
                 self.prepare_screen_if_needed(&validated_screen_type)?;
-                self.pop_to_screen(validated_screen_type)
+                self.pop_to_screen(validated_screen_type)?;
+                self.render_current_screen()
             }
             ScreenTransition::Exit => {
-                // If we're already on ExitSummary, mark exit requested
                 if self.current_screen_type == ScreenType::TotalSummary {
                     self.exit_requested = true;
                 } else {
-                    // Otherwise, go to ExitSummary screen
                     let _ =
                         self.handle_transition(ScreenTransition::Replace(ScreenType::TotalSummary));
                 }
@@ -448,31 +447,8 @@ impl ScreenManager {
 
                 Ok(())
             }
-            ScreenType::SessionDetail => {
-                // Configure SessionDetail screen with data from History screen
-                self.configure_session_detail_from_history()
-            }
             _ => Ok(()),
         }
-    }
-
-    fn configure_session_detail_from_history(&mut self) -> Result<()> {
-        // Get the selected session data from History screen and configure SessionDetail screen
-        self.screens
-            .get(&ScreenType::Records)
-            .and_then(|records_screen| records_screen.as_any().downcast_ref::<RecordsScreen>())
-            .and_then(|records| records.get_selected_session_for_detail().clone())
-            .map(|session_data| {
-                self.screens
-                    .get_mut(&ScreenType::SessionDetail)
-                    .and_then(|screen| screen.as_any_mut().downcast_mut::<SessionDetailScreen>())
-                    .map(|screen| screen.set_session_data(session_data))
-                    .transpose()?;
-                Ok::<_, GitTypeError>(())
-            })
-            .transpose()?;
-
-        Ok(())
     }
 
     /// Run the ScreenManager main loop

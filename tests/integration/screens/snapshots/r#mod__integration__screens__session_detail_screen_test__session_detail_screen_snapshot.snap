@@ -1,0 +1,44 @@
+---
+source: tests/integration/screens/session_detail_screen_test.rs
+expression: output
+---
+Session Details                                                                                                         
+┌Session───────────────────────────────────────────────────┐┌Performance───────────────────────────────────────────────┐
+│                                                          ││                                                          │
+│  Repository: unhappychoice/gittype                       ││  Tier/Rank: Gold/Advanced                                │
+│  Started: 2024-10-07 12:30:00                            ││  Score: 1200.0                                           │
+│  Branch: main                                            ││  CPM: 375.0                                              │
+│  Commit: abc123                                          ││  WPM: 75.0                                               │
+│                                                          ││  Accuracy: 96.0%                                         │
+│                                                          ││  Duration: 1m 0s                                         │
+│                                                          ││  Completed Stage: 3/3                                    │
+│                                                          ││                                                          │
+│                                                          ││                                                          │
+└──────────────────────────────────────────────────────────┘└──────────────────────────────────────────────────────────┘
+┌Stage Details (3 stages)──────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                                                      │
+│  Stage #1 [COMPLETED]                                                                                                │
+│    File: src/main.rs:1-20                                                                                            │
+│    Score: 400.0  CPM: 375.0    WPM: 75.0                                                                             │
+│    Keystrokes: 150  Mistakes: 5  Accuracy: 96.7%  Duration: 20000ms                                                  │
+│                                                                                                                      │
+│  Stage #2 [COMPLETED]                                                                                                │
+│    File: src/lib.rs:10-30                                                                                            │
+│    Score: 380.0  CPM: 360.0    WPM: 72.0                                                                             │
+│    Keystrokes: 175  Mistakes: 8  Accuracy: 95.4%  Duration: 22000ms                                                  │
+│                                                                                                                      │
+│  Stage #3 [COMPLETED]                                                                                                │
+│    File: src/domain/mod.rs:5-25                                                                                      │
+│    Score: 420.0  CPM: 390.0    WPM: 78.0                                                                             │
+│    Keystrokes: 175  Mistakes: 7  Accuracy: 96.0%  Duration: 18000ms                                                  │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                            [↑↓/JK] Scroll Stages  [ESC] Back

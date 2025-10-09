@@ -183,6 +183,12 @@ impl RecordsScreen {
         &self.selected_session_for_detail
     }
 
+    pub fn set_selected_session_from_index(&mut self, index: usize) {
+        if let Some(session) = self.sessions.get(index) {
+            self.selected_session_for_detail = Some(session.clone());
+        }
+    }
+
     fn render_session_list(&mut self, f: &mut Frame) {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
@@ -544,7 +550,6 @@ impl Screen for RecordsScreen {
             KeyCode::Enter | KeyCode::Char(' ') => {
                 if let Some(selected_index) = self.list_state.selected() {
                     if let Some(session) = self.sessions.get(selected_index) {
-                        // Store session data for the transition
                         self.selected_session_for_detail = Some(session.clone());
                         self.event_bus
                             .publish(NavigateTo::Push(ScreenType::SessionDetail));
