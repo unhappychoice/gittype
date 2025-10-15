@@ -34,20 +34,33 @@ macro_rules! test_language_extractor {
                 test_extraction_options()
             ).unwrap();
 
-            // Check total chunk count
-            assert_eq!(
-                chunks.len(),
-                $total,
-                "Expected {} total chunks, got {}",
-                $total,
-                chunks.len()
-            );
 
             // Check chunk counts by type
             let mut chunk_counts: HashMap<ChunkType, usize> = HashMap::new();
             for chunk in &chunks {
                 *chunk_counts.entry(chunk.chunk_type.clone()).or_insert(0) += 1;
             }
+
+            // Check total chunk count
+            assert_eq!(
+                chunks.len(),
+                $total,
+                "Expected {} total chunks, got {}\nExpected: {:?}",
+                $total,
+                chunks.len(),
+                chunk_counts
+            );
+
+            // Verify that the sum of expected chunk counts equals total_chunks
+            let expected_sum: usize = 0 $(+ $count)*;
+            assert_eq!(
+                expected_sum,
+                $total,
+                "Sum of chunk_counts ({}) must equal total_chunks ({}).\nThis ensures all chunk types are accounted for.\nExpected: {:?}",
+                expected_sum,
+                $total,
+                chunk_counts
+            );
 
             $(
                 let expected_count = $count;
