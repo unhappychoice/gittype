@@ -259,14 +259,8 @@ impl ChunkExtractor {
 
         let chunk_type = match parent {
             None => {
-                // Standard chunk: use hard-coded mapping for now
-                // TODO: Use extractor.capture_name_to_chunk_type() instead of hard-coding
-                match capture_name {
-                    "function" => ChunkType::Function,
-                    "class" => ChunkType::Class,
-                    "method" => ChunkType::Method,
-                    _ => ChunkType::CodeBlock,
-                }
+                // Standard chunk: use extractor method
+                extractor.capture_name_to_chunk_type(capture_name)?
             }
             Some(_) => {
                 // Middle chunk: use extractor method
@@ -289,8 +283,17 @@ impl ChunkExtractor {
             indent_offset_chars,
         );
 
+        let extract_source = match parent {
+            None => source_code,
+            Some(p) => p.content,
+        };
+
+        let chunk_name = extractor
+            .extract_name(node, extract_source, capture_name)
+            .unwrap_or_else(|| capture_name.to_owned());
+
         Some(CodeChunk {
-            name: capture_name.to_owned(),
+            name: chunk_name,
             content: normalized_content,
             chunk_type,
             language: language.to_owned(),
