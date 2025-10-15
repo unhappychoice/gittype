@@ -144,3 +144,33 @@ fn test_rgb_and_name_serialization() {
     let color: Color = name_color.into();
     assert_eq!(color, Color::Cyan);
 }
+
+#[test]
+fn test_config_default() {
+    use gittype::domain::models::config::Config;
+
+    let config = Config::default();
+    assert_eq!(config.theme.current_theme_id, "default");
+    assert_eq!(config.theme.current_color_mode, ColorMode::Dark);
+}
+
+#[test]
+fn test_config_serialize_deserialize() {
+    use gittype::domain::models::config::Config;
+
+    let config = Config::default();
+    let serialized = serde_json::to_string(&config).unwrap();
+    let deserialized: Config = serde_json::from_str(&serialized).unwrap();
+
+    assert_eq!(config.theme.current_theme_id, deserialized.theme.current_theme_id);
+    assert_eq!(config.theme.current_color_mode, deserialized.theme.current_color_mode);
+}
+
+#[test]
+fn test_theme_config_clone() {
+    let config = ThemeConfig::default();
+    let cloned = config.clone();
+
+    assert_eq!(config.current_theme_id, cloned.current_theme_id);
+    assert_eq!(config.current_color_mode, cloned.current_color_mode);
+}

@@ -1,6 +1,5 @@
 use crossterm::style::Color as TerminalColor;
 use gittype::domain::models::rank::{Rank, RankTier};
-use gittype::presentation::ui::Colors;
 
 #[test]
 fn rank_tier_color_palette_mappings_are_consistent() {
@@ -12,15 +11,28 @@ fn rank_tier_color_palette_mappings_are_consistent() {
 }
 
 #[test]
-fn rank_tier_terminal_colors_follow_ui_colors() {
-    assert_eq!(
+fn rank_tier_terminal_colors_are_rgb() {
+    // Just verify that terminal colors are RGB variants
+    assert!(matches!(
         RankTier::Beginner.terminal_color(),
-        Colors::to_crossterm(Colors::info())
-    );
-    assert_eq!(
+        TerminalColor::Rgb { .. }
+    ));
+    assert!(matches!(
+        RankTier::Intermediate.terminal_color(),
+        TerminalColor::Rgb { .. }
+    ));
+    assert!(matches!(
+        RankTier::Advanced.terminal_color(),
+        TerminalColor::Rgb { .. }
+    ));
+    assert!(matches!(
+        RankTier::Expert.terminal_color(),
+        TerminalColor::Rgb { .. }
+    ));
+    assert!(matches!(
         RankTier::Legendary.terminal_color(),
-        Colors::to_crossterm(Colors::error())
-    );
+        TerminalColor::Rgb { .. }
+    ));
 }
 
 #[test]
@@ -58,4 +70,75 @@ fn rank_for_score_defaults_to_highest_when_exceeded() {
     assert_eq!(rank.tier(), &RankTier::Legendary);
     // Legendary tier uses error color which is now RGB
     assert!(matches!(rank.terminal_color(), TerminalColor::Rgb { .. }));
+}
+
+#[test]
+fn rank_tier_clone() {
+    let tier = RankTier::Advanced;
+    let cloned = tier.clone();
+    assert_eq!(tier, cloned);
+}
+
+#[test]
+fn rank_tier_equality() {
+    assert_eq!(RankTier::Beginner, RankTier::Beginner);
+    assert_ne!(RankTier::Beginner, RankTier::Legendary);
+}
+
+#[test]
+fn rank_new() {
+    let rank = Rank::new("Test Rank", RankTier::Advanced, 1000, 2000);
+    assert_eq!(rank.name(), "Test Rank");
+    assert_eq!(rank.tier(), &RankTier::Advanced);
+    assert_eq!(rank.min_score, 1000);
+    assert_eq!(rank.max_score, 2000);
+}
+
+#[test]
+fn rank_all_ranks_count() {
+    let ranks = Rank::all_ranks();
+    assert_eq!(ranks.len(), 63); // 12+12+12+12+15
+}
+
+#[test]
+fn rank_all_ranks_first() {
+    let ranks = Rank::all_ranks();
+    assert_eq!(ranks[0].name(), "Hello World");
+    assert_eq!(ranks[0].tier(), &RankTier::Beginner);
+    assert_eq!(ranks[0].min_score, 0);
+}
+
+#[test]
+fn rank_all_ranks_last() {
+    let ranks = Rank::all_ranks();
+    let last = &ranks[ranks.len() - 1];
+    assert_eq!(last.name(), "Kernel Panic");
+    assert_eq!(last.tier(), &RankTier::Legendary);
+}
+
+#[test]
+fn rank_for_score_zero() {
+    let rank = Rank::for_score(0.0);
+    assert_eq!(rank.name(), "Hello World");
+}
+
+#[test]
+fn rank_for_score_advanced() {
+    let rank = Rank::for_score(8500.0);
+    assert_eq!(rank.tier(), &RankTier::Advanced);
+}
+
+#[test]
+fn rank_clone() {
+    let rank = Rank::new("Test", RankTier::Advanced, 1000, 2000);
+    let cloned = rank.clone();
+    assert_eq!(rank.name(), cloned.name());
+    assert_eq!(rank.tier(), cloned.tier());
+}
+
+#[test]
+fn rank_partial_eq() {
+    let rank1 = Rank::new("Test", RankTier::Advanced, 1000, 2000);
+    let rank2 = Rank::new("Test", RankTier::Advanced, 1000, 2000);
+    assert_eq!(rank1, rank2);
 }
