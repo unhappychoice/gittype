@@ -13,6 +13,10 @@ fn create_test_repository() -> GitRepository {
     }
 }
 
+fn create_test_repo_repository() -> GitRepositoryRepository {
+    GitRepositoryRepository::new_test().expect("Failed to create test repository")
+}
+
 #[test]
 fn new_creates_repository() {
     let result = GitRepositoryRepository::new();
@@ -27,7 +31,7 @@ fn default_creates_repository() {
 
 #[test]
 fn ensure_repository_returns_id() {
-    let repo_repo = GitRepositoryRepository::new().expect("Failed to create repository");
+    let repo_repo = create_test_repo_repository();
     let git_repo = create_test_repository();
 
     let result = repo_repo.ensure_repository(&git_repo);
@@ -37,35 +41,35 @@ fn ensure_repository_returns_id() {
 
 #[test]
 fn get_all_repositories_returns_result() {
-    let repo_repo = GitRepositoryRepository::new().expect("Failed to create repository");
+    let repo_repo = create_test_repo_repository();
     let result = repo_repo.get_all_repositories();
     assert!(result.is_ok());
 }
 
 #[test]
 fn get_repository_by_id_returns_result() {
-    let repo_repo = GitRepositoryRepository::new().expect("Failed to create repository");
+    let repo_repo = create_test_repo_repository();
     let result = repo_repo.get_repository_by_id(1);
     assert!(result.is_ok());
 }
 
 #[test]
 fn find_repository_returns_result() {
-    let repo_repo = GitRepositoryRepository::new().expect("Failed to create repository");
+    let repo_repo = create_test_repo_repository();
     let result = repo_repo.find_repository("testuser", "testrepo");
     assert!(result.is_ok());
 }
 
 #[test]
 fn get_user_repositories_returns_result() {
-    let repo_repo = GitRepositoryRepository::new().expect("Failed to create repository");
+    let repo_repo = create_test_repo_repository();
     let result = repo_repo.get_user_repositories("testuser");
     assert!(result.is_ok());
 }
 
 #[test]
 fn ensure_repository_twice_returns_same_id() {
-    let repo_repo = GitRepositoryRepository::new().expect("Failed to create repository");
+    let repo_repo = create_test_repo_repository();
     let git_repo = create_test_repository();
 
     let id1 = repo_repo
@@ -80,7 +84,7 @@ fn ensure_repository_twice_returns_same_id() {
 
 #[test]
 fn get_repository_by_id_finds_inserted_repository() {
-    let repo_repo = GitRepositoryRepository::new().expect("Failed to create repository");
+    let repo_repo = create_test_repo_repository();
     let git_repo = create_test_repository();
 
     let id = repo_repo
@@ -98,7 +102,7 @@ fn get_repository_by_id_finds_inserted_repository() {
 
 #[test]
 fn find_repository_finds_inserted_repository() {
-    let repo_repo = GitRepositoryRepository::new().expect("Failed to create repository");
+    let repo_repo = create_test_repo_repository();
     let git_repo = create_test_repository();
 
     repo_repo
@@ -116,7 +120,7 @@ fn find_repository_finds_inserted_repository() {
 
 #[test]
 fn get_user_repositories_filters_by_user() {
-    let repo_repo = GitRepositoryRepository::new().expect("Failed to create repository");
+    let repo_repo = create_test_repo_repository();
 
     let mut repo1 = create_test_repository();
     repo1.user_name = "user1".to_string();

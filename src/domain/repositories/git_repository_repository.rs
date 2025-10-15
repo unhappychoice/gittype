@@ -18,6 +18,16 @@ impl GitRepositoryRepository {
         })
     }
 
+    /// Create a new repository with an in-memory database for testing
+    #[doc(hidden)]
+    pub fn new_test() -> Result<Self> {
+        let database = Database::new_test()?;
+        database.init()?;
+        Ok(Self {
+            database: Arc::new(Mutex::new(database)),
+        })
+    }
+
     /// Get or create a repository record
     pub fn ensure_repository(&self, git_repo: &GitRepository) -> Result<i64> {
         let db = self.db_with_lock()?;
