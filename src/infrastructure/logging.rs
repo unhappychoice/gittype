@@ -190,7 +190,7 @@ fn format_panic_info(panic_info: &std::panic::PanicHookInfo) -> String {
     info
 }
 
-fn get_environment_context() -> String {
+pub fn get_environment_context() -> String {
     use std::env;
 
     let mut context = String::new();
@@ -267,55 +267,4 @@ fn write_to_log_file(path: &str, content: &str) -> std::io::Result<()> {
 
     writeln!(file, "{}", content)?;
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_get_log_directory() {
-        // Skip test if running in a Nix build environment
-        if std::env::var("IN_NIX_SHELL").is_ok() || std::env::var("NIX_BUILD_CORES").is_ok() {
-            eprintln!("Skipping test in Nix build environment.");
-            return;
-        }
-
-        let log_dir = get_log_directory().unwrap();
-
-        if cfg!(debug_assertions) {
-            // In debug mode, should be project directory
-            assert!(log_dir.ends_with("logs"));
-        } else {
-            // In release mode, should be ~/.gittype/logs
-            assert!(log_dir.to_string_lossy().contains(".gittype"));
-        }
-    }
-
-    #[test]
-    fn test_setup_console_logging() {
-        // This should not panic
-        setup_console_logging();
-    }
-
-    #[test]
-    fn test_format_panic_info() {
-        // This is a simplified test since creating PanicInfo manually is complex
-        let context = get_environment_context();
-
-        assert!(context.contains("EXECUTABLE:"));
-        assert!(context.contains("WORKING_DIR:"));
-        assert!(context.contains("COMMAND_ARGS:"));
-    }
-
-    #[test]
-    fn test_get_environment_context() {
-        let context = get_environment_context();
-
-        assert!(context.contains("EXECUTABLE:"));
-        assert!(context.contains("WORKING_DIR:"));
-        assert!(context.contains("COMMAND_ARGS:"));
-        assert!(context.contains("OS:"));
-        assert!(context.contains("ARCH:"));
-    }
 }
