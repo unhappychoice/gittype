@@ -35,6 +35,7 @@ impl LanguageExtractor for DartExtractor {
             "mixin" => Some(ChunkType::Class),
             "extension" => Some(ChunkType::Class),
             "variable" => Some(ChunkType::Variable),
+            "name" => Some(ChunkType::CodeBlock),            
             _ => None,
         }
     }

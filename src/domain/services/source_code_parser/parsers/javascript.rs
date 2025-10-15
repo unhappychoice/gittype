@@ -36,6 +36,7 @@ impl LanguageExtractor for JavaScriptExtractor {
             "jsx_element" => Some(ChunkType::Component),
             "jsx_self_closing_element" => Some(ChunkType::Component),
             "variable" => Some(ChunkType::Variable),
+            "name" => Some(ChunkType::CodeBlock),            
             _ => None,
         }
     }

@@ -33,6 +33,7 @@ impl LanguageExtractor for RubyExtractor {
             "attr_accessor" => Some(ChunkType::Method),
             "class" => Some(ChunkType::Class),
             "module" => Some(ChunkType::Module),
+            "name" => Some(ChunkType::CodeBlock),            
             _ => None,
         }
     }

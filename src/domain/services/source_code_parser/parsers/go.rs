@@ -41,6 +41,7 @@ impl LanguageExtractor for GoExtractor {
             "const_block" => Some(ChunkType::Const),
             "var_block" => Some(ChunkType::Variable),
             "type_alias" => Some(ChunkType::TypeAlias),
+            "name" => Some(ChunkType::CodeBlock),
             _ => None,
         }
     }

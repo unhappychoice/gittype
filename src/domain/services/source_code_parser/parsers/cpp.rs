@@ -91,6 +91,7 @@ impl LanguageExtractor for CppExtractor {
             "type.definition" => Some(ChunkType::Struct),
             "enum.definition" => Some(ChunkType::Struct),
             "variable.definition" => Some(ChunkType::Variable),
+            "function.name" | "method.name" | "class.name" | "struct.name" | "namespace.name" | "template_class.name" | "template_function.name" | "type.name" | "enum.name" | "variable.name" => Some(ChunkType::CodeBlock),
             _ => None,
         }
     }

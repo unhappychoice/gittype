@@ -35,6 +35,7 @@ impl LanguageExtractor for SwiftExtractor {
             "struct" => Some(ChunkType::Struct),
             "enum" => Some(ChunkType::Enum),
             "protocol" => Some(ChunkType::Interface),
+            "name" => Some(ChunkType::CodeBlock),            
             _ => None,
         }
     }

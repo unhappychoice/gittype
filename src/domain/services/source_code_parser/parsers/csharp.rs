@@ -45,6 +45,7 @@ impl LanguageExtractor for CSharpExtractor {
             "field" => Some(ChunkType::Variable),
             "delegate" => Some(ChunkType::Method),
             "namespace" => Some(ChunkType::Namespace),
+            "name" => Some(ChunkType::CodeBlock),
             _ => None,
         }
     }

@@ -29,6 +29,7 @@ impl LanguageExtractor for ZigExtractor {
             "struct" => Some(ChunkType::Struct),
             "enum" => Some(ChunkType::Enum),
             "union" => Some(ChunkType::Struct),
+            "name" => Some(ChunkType::CodeBlock),
             _ => None,
         }
     }
