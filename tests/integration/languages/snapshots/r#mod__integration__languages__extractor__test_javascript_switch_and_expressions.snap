@@ -1,0 +1,71 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nfunction processStatus(status) {\n    switch (status) {\n        case 'pending':\n            return 'Processing...';\n        case 'success':\n            return 'Completed!';\n        case 'error':\n            return 'Failed!';\n        default:\n            return 'Unknown';\n    }\n}\n\nconst genFunc = function*() {\n    yield 1;\n    yield 2;\n};\n\nconst normalFunc = function(x) {\n    return x * 2;\n};\n",
+      "end_line": 22,
+      "language": "javascript",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "function processStatus",
+      "end_line": 2,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 9,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "function processStatus(status) {\n    switch (status) {\n        case 'pending':\n            return 'Processing...';\n        case 'success':\n            return 'Completed!';\n        case 'error':\n            return 'Failed!';\n        default:\n            return 'Unknown';\n    }\n}",
+      "end_line": 13,
+      "language": "javascript",
+      "name": "processStatus",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "    switch (status) {\n        case 'pending':\n            return 'Processing...';\n        case 'success':\n            return 'Completed!';\n        case 'error':\n            return 'Failed!';\n        default:\n            return 'Unknown';\n    }",
+      "end_line": 12,
+      "language": "javascript",
+      "name": "switch_block",
+      "original_indentation": 4,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "const genFunc = function*() {\n    yield 1;\n    yield 2;\n}",
+      "end_line": 18,
+      "language": "javascript",
+      "name": "genFunc",
+      "original_indentation": 6,
+      "start_line": 15
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "const normalFunc = function(x) {\n    return x * 2;\n}",
+      "end_line": 22,
+      "language": "javascript",
+      "name": "normalFunc",
+      "original_indentation": 6,
+      "start_line": 20
+    }
+  ],
+  "source_code": "\nfunction processStatus(status) {\n    switch (status) {\n        case 'pending':\n            return 'Processing...';\n        case 'success':\n            return 'Completed!';\n        case 'error':\n            return 'Failed!';\n        default:\n            return 'Unknown';\n    }\n}\n\nconst genFunc = function*() {\n    yield 1;\n    yield 2;\n};\n\nconst normalFunc = function(x) {\n    return x * 2;\n};\n",
+  "test_name": "test_javascript_switch_and_expressions",
+  "total_chunks": 6
+}

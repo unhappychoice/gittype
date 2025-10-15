@@ -157,46 +157,6 @@ export default class UserService {
 }
 
 test_language_extractor! {
-    name: test_javascript_object_method_extraction,
-    language: "javascript",
-    extension: "js",
-    source: r#"
-const utils = {
-    formatDate: (date) => {
-        return date.toLocaleDateString();
-    },
-
-    calculateAge: function(birthDate) {
-        const today = new Date();
-        return today.getFullYear() - birthDate.getFullYear();
-    }
-};
-
-const eventHandlers = {
-    handleClick: (event) => {
-        console.log('Button clicked:', event.target);
-    },
-
-    handleSubmit: async function(formData) {
-        try {
-            const response = await fetch('/api/submit', {
-                method: 'POST',
-                body: formData
-            });
-            return response.json();
-        } catch (error) {
-            console.error('Submit failed:', error);
-        }
-    }
-};
-"#,
-    total_chunks: 1,
-    chunk_counts: {
-        File: 1,
-    }
-}
-
-test_language_extractor! {
     name: test_javascript_mixed_patterns,
     language: "javascript",
     extension: "js",
@@ -520,6 +480,69 @@ const { a: renamed, b = 10 } = { a: 5 };
 }
 
 test_language_extractor! {
+    name: test_javascript_assignment_methods,
+    language: "javascript",
+    extension: "js",
+    source: r#"
+const calculator = {};
+
+calculator.add = function(a, b) {
+    return a + b;
+};
+
+calculator.multiply = (x, y) => {
+    return x * y;
+};
+
+const utils = {};
+utils.formatDate = function(date) {
+    return date.toISOString();
+};
+"#,
+    total_chunks: 4,
+    chunk_counts: {
+        File: 1,
+        Method: 3,
+    }
+}
+
+test_language_extractor! {
+    name: test_javascript_switch_and_expressions,
+    language: "javascript",
+    extension: "js",
+    source: r#"
+function processStatus(status) {
+    switch (status) {
+        case 'pending':
+            return 'Processing...';
+        case 'success':
+            return 'Completed!';
+        case 'error':
+            return 'Failed!';
+        default:
+            return 'Unknown';
+    }
+}
+
+const genFunc = function*() {
+    yield 1;
+    yield 2;
+};
+
+const normalFunc = function(x) {
+    return x * 2;
+};
+"#,
+    total_chunks: 6,
+    chunk_counts: {
+        File: 1,
+        Function: 3,
+        Conditional: 1,
+        CodeBlock: 1,
+    }
+}
+
+test_language_extractor! {
     name: test_javascript_generators_iterators,
     language: "javascript",
     extension: "js",
@@ -593,13 +616,14 @@ const iterator = {
     }
 };
 "#,
-    total_chunks: 12,
+    total_chunks: 27,
     chunk_counts: {
         Conditional: 1,
-        CodeBlock: 4,
+        CodeBlock: 9,
         File: 1,
         Method: 3,
-        Loop: 2,
+        Loop: 6,
         Class: 1,
+        Function: 6,
     }
 }

@@ -1,0 +1,51 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nconst calculator = {};\n\ncalculator.add = function(a, b) {\n    return a + b;\n};\n\ncalculator.multiply = (x, y) => {\n    return x * y;\n};\n\nconst utils = {};\nutils.formatDate = function(date) {\n    return date.toISOString();\n};\n",
+      "end_line": 15,
+      "language": "javascript",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "calculator.add = function(a, b) {\n    return a + b;\n}",
+      "end_line": 6,
+      "language": "javascript",
+      "name": "method",
+      "original_indentation": 0,
+      "start_line": 4
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "calculator.multiply = (x, y) => {\n    return x * y;\n}",
+      "end_line": 10,
+      "language": "javascript",
+      "name": "method",
+      "original_indentation": 0,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "utils.formatDate = function(date) {\n    return date.toISOString();\n}",
+      "end_line": 15,
+      "language": "javascript",
+      "name": "method",
+      "original_indentation": 0,
+      "start_line": 13
+    }
+  ],
+  "source_code": "\nconst calculator = {};\n\ncalculator.add = function(a, b) {\n    return a + b;\n};\n\ncalculator.multiply = (x, y) => {\n    return x * y;\n};\n\nconst utils = {};\nutils.formatDate = function(date) {\n    return date.toISOString();\n};\n",
+  "test_name": "test_javascript_assignment_methods",
+  "total_chunks": 4
+}

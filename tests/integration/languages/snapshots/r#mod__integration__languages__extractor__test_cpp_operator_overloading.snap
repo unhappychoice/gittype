@@ -77,53 +77,73 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 9
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "    Vector2D operator+(const Vector2D& other) const {\n        return Vector2D(x + other.x, y + other.y);\n    }",
       "end_line": 14,
       "language": "cpp",
-      "name": "code_block",
-      "original_indentation": 52,
+      "name": "operator+",
+      "original_indentation": 4,
       "start_line": 12
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "    Vector2D operator-(const Vector2D& other) const {\n        return Vector2D(x - other.x, y - other.y);\n    }",
       "end_line": 18,
       "language": "cpp",
-      "name": "code_block",
-      "original_indentation": 52,
+      "name": "operator-",
+      "original_indentation": 4,
       "start_line": 16
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "    Vector2D operator*(double scalar) const {\n        return Vector2D(x * scalar, y * scalar);\n    }",
       "end_line": 22,
       "language": "cpp",
-      "name": "code_block",
-      "original_indentation": 44,
+      "name": "operator*",
+      "original_indentation": 4,
       "start_line": 20
     },
     {
       "chunk_type": "CodeBlock",
       "comment_ranges": [],
+      "content": "    bool operator==",
+      "end_line": 25,
+      "language": "cpp",
+      "name": "operator.name",
+      "original_indentation": 9,
+      "start_line": 25
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
       "content": "    bool operator==(const Vector2D& other) const {\n        return x == other.x && y == other.y;\n    }",
       "end_line": 27,
       "language": "cpp",
-      "name": "code_block",
-      "original_indentation": 49,
+      "name": "operator==",
+      "original_indentation": 4,
       "start_line": 25
     },
     {
       "chunk_type": "CodeBlock",
       "comment_ranges": [],
+      "content": "    bool operator!=",
+      "end_line": 29,
+      "language": "cpp",
+      "name": "operator.name",
+      "original_indentation": 9,
+      "start_line": 29
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
       "content": "    bool operator!=(const Vector2D& other) const {\n        return !(*this == other);\n    }",
       "end_line": 31,
       "language": "cpp",
-      "name": "code_block",
-      "original_indentation": 49,
+      "name": "operator!=",
+      "original_indentation": 4,
       "start_line": 29
     },
     {
@@ -159,11 +179,21 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     {
       "chunk_type": "CodeBlock",
       "comment_ranges": [],
+      "content": "    Vector2D operator++",
+      "end_line": 51,
+      "language": "cpp",
+      "name": "operator.name",
+      "original_indentation": 13,
+      "start_line": 51
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
       "content": "    Vector2D operator++(int) {\n        Vector2D temp = *this;\n        ++(*this);\n        return temp;\n    }",
       "end_line": 55,
       "language": "cpp",
-      "name": "code_block",
-      "original_indentation": 29,
+      "name": "operator++",
+      "original_indentation": 4,
       "start_line": 51
     },
     {
@@ -179,5 +209,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\n#include <iostream>\n\nclass Vector2D {\nprivate:\n    double x, y;\n\npublic:\n    Vector2D(double x = 0, double y = 0) : x(x), y(y) {}\n\n    // Arithmetic operators\n    Vector2D operator+(const Vector2D& other) const {\n        return Vector2D(x + other.x, y + other.y);\n    }\n\n    Vector2D operator-(const Vector2D& other) const {\n        return Vector2D(x - other.x, y - other.y);\n    }\n\n    Vector2D operator*(double scalar) const {\n        return Vector2D(x * scalar, y * scalar);\n    }\n\n    // Comparison operators\n    bool operator==(const Vector2D& other) const {\n        return x == other.x && y == other.y;\n    }\n\n    bool operator!=(const Vector2D& other) const {\n        return !(*this == other);\n    }\n\n    // Stream operator\n    friend std::ostream& operator<<(std::ostream& os, const Vector2D& v) {\n        os << \"(\" << v.x << \", \" << v.y << \")\";\n        return os;\n    }\n\n    // Subscript operator\n    double& operator[](int index) {\n        return index == 0 ? x : y;\n    }\n\n    // Increment operators\n    Vector2D& operator++() {\n        ++x;\n        ++y;\n        return *this;\n    }\n\n    Vector2D operator++(int) {\n        Vector2D temp = *this;\n        ++(*this);\n        return temp;\n    }\n};\n",
   "test_name": "test_cpp_operator_overloading",
-  "total_chunks": 13
+  "total_chunks": 16
 }

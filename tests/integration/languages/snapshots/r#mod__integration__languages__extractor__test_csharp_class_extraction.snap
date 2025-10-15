@@ -55,6 +55,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 7
     },
     {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "        private readonly IUserRepository _repository;",
+      "end_line": 9,
+      "language": "csharp",
+      "name": "_repository",
+      "original_indentation": 8,
+      "start_line": 9
+    },
+    {
       "chunk_type": "CodeBlock",
       "comment_ranges": [],
       "content": "        public UserService",
@@ -147,5 +157,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nusing System;\nusing System.Collections.Generic;\n\nnamespace MyApplication.Services\n{\n    public class UserService\n    {\n        private readonly IUserRepository _repository;\n\n        public UserService(IUserRepository repository)\n        {\n            _repository = repository ?? throw new ArgumentNullException(nameof(repository));\n        }\n\n        public async Task<User> GetUserAsync(int id)\n        {\n            var user = await _repository.GetByIdAsync(id);\n            return user;\n        }\n\n        public IEnumerable<User> GetActiveUsers()\n        {\n            return _repository.GetAll().Where(u => u.IsActive);\n        }\n    }\n}\n",
   "test_name": "test_csharp_class_extraction",
-  "total_chunks": 14
+  "total_chunks": 15
 }

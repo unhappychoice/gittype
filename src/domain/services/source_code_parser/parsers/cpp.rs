@@ -21,6 +21,18 @@ impl LanguageExtractor for CppExtractor {
 
     fn query_patterns(&self) -> &str {
         r#"
+            ; Operator overloading (must be before regular methods to take precedence)
+            (function_definition
+                declarator: (function_declarator
+                    declarator: (operator_name) @operator.name)
+                body: (compound_statement)) @operator.definition
+
+            ; Destructor definitions
+            (function_definition
+                declarator: (function_declarator
+                    declarator: (destructor_name) @destructor.name)
+                body: (compound_statement)) @destructor.definition
+
             ; Function definitions (global functions)
             (function_definition
                 declarator: (function_declarator
@@ -83,6 +95,8 @@ impl LanguageExtractor for CppExtractor {
         match capture_name {
             "function.definition" => Some(ChunkType::Function),
             "method.definition" => Some(ChunkType::Function),
+            "operator.definition" => Some(ChunkType::Function),
+            "destructor.definition" => Some(ChunkType::Function),
             "class.definition" => Some(ChunkType::Struct),
             "struct.definition" => Some(ChunkType::Struct),
             "namespace.definition" => Some(ChunkType::Struct),
@@ -93,6 +107,8 @@ impl LanguageExtractor for CppExtractor {
             "variable.definition" => Some(ChunkType::Variable),
             "function.name"
             | "method.name"
+            | "operator.name"
+            | "destructor.name"
             | "class.name"
             | "struct.name"
             | "namespace.name"

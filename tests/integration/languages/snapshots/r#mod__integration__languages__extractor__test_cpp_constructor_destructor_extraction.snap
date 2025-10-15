@@ -117,13 +117,13 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 19
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "    ~Resource() {\n        delete[] data;\n    }",
       "end_line": 27,
       "language": "cpp",
-      "name": "code_block",
-      "original_indentation": 16,
+      "name": "destructor.definition",
+      "original_indentation": 4,
       "start_line": 25
     },
     {

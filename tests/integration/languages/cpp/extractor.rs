@@ -247,11 +247,11 @@ int main() {
     total_chunks: 16,
     chunk_counts: {
         Struct: 1,
-        Function: 4,
+        Function: 5,
         Variable: 4,
         Loop: 2,
         Conditional: 1,
-        CodeBlock: 3,
+        CodeBlock: 2,
         File: 1,
     }
 }
@@ -513,13 +513,13 @@ public:
     }
 };
 "#,
-    total_chunks: 13,
+    total_chunks: 16,
     chunk_counts: {
-        CodeBlock: 9,
-        Variable: 1,
-        Function: 1,
+        CodeBlock: 6,
         Struct: 1,
         File: 1,
+        Function: 7,
+        Variable: 1,
     }
 }
 
@@ -590,10 +590,10 @@ int main() {
     return 0;
 }
 "#,
-    total_chunks: 16,
+    total_chunks: 17,
     chunk_counts: {
         Struct: 3,
-        Function: 9,
+        Function: 10,
         CodeBlock: 1,
         File: 1,
         Variable: 2,

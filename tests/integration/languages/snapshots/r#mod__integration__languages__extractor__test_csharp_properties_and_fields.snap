@@ -47,6 +47,26 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     {
       "chunk_type": "Variable",
       "comment_ranges": [],
+      "content": "        private int _id;",
+      "end_line": 6,
+      "language": "csharp",
+      "name": "_id",
+      "original_indentation": 8,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "        private string _email;",
+      "end_line": 7,
+      "language": "csharp",
+      "name": "_email",
+      "original_indentation": 8,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
       "content": "        public string Name { get; set; }",
       "end_line": 9,
       "language": "csharp",
@@ -117,5 +137,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\nnamespace MyApplication.Models\n{\n    public class User\n    {\n        private int _id;\n        private string _email;\n\n        public string Name { get; set; }\n        public DateTime CreatedAt { get; private set; }\n\n        public string FullName => $\"{FirstName} {LastName}\";\n\n        public string FirstName { get; set; }\n        public string LastName { get; set; }\n\n        public User(int id, string email)\n        {\n            _id = id;\n            _email = email;\n            CreatedAt = DateTime.Now;\n        }\n    }\n}\n",
   "test_name": "test_csharp_properties_and_fields",
-  "total_chunks": 11
+  "total_chunks": 13
 }

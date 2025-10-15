@@ -32,11 +32,12 @@ namespace MyApplication.Services
     }
 }
 "#,
-    total_chunks: 14,
+    total_chunks: 15,
     chunk_counts: {
         Namespace: 1,
         Class: 1,
         Method: 3,
+        Variable: 1,
         CodeBlock: 8,
         File: 1,
     }
@@ -157,12 +158,12 @@ namespace MyApplication.Models
     }
 }
 "#,
-    total_chunks: 11,
+    total_chunks: 13,
     chunk_counts: {
         Namespace: 1,
         Class: 1,
         Method: 1,
-        Variable: 5,
+        Variable: 7,
         CodeBlock: 2,
         File: 1,
     }
@@ -355,12 +356,12 @@ namespace DataProcessing
     }
 }
 "#,
-    total_chunks: 42,
+    total_chunks: 45,
     chunk_counts: {
         Namespace: 1,
         Class: 2,
         Method: 3,
-        Variable: 6,
+        Variable: 9,
         Loop: 3,
         Conditional: 7,
         CodeBlock: 19,
@@ -499,13 +500,14 @@ namespace AsyncOperations
     }
 }
 "#,
-    total_chunks: 31,
+    total_chunks: 32,
     chunk_counts: {
         File: 1,
         Namespace: 1,
         Method: 5,
         Loop: 2,
         Class: 1,
+        Variable: 1,
         Conditional: 1,
         CodeBlock: 18,
         ErrorHandling: 2,

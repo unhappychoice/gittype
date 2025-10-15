@@ -37,6 +37,16 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     {
       "chunk_type": "Function",
       "comment_ranges": [],
+      "content": "    virtual ~Shape() {}",
+      "end_line": 11,
+      "language": "cpp",
+      "name": "destructor.definition",
+      "original_indentation": 4,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
       "content": "    std::string getName() const { return name; }",
       "end_line": 16,
       "language": "cpp",
@@ -167,5 +177,5 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
   ],
   "source_code": "\n#include <string>\n#include <vector>\n\nclass Shape {\nprotected:\n    std::string name;\n\npublic:\n    Shape(const std::string& n) : name(n) {}\n    virtual ~Shape() {}\n\n    virtual double area() const = 0;\n    virtual double perimeter() const = 0;\n\n    std::string getName() const { return name; }\n};\n\nclass Circle : public Shape {\nprivate:\n    double radius;\n\npublic:\n    Circle(double r) : Shape(\"Circle\"), radius(r) {}\n\n    double area() const override {\n        return 3.14159 * radius * radius;\n    }\n\n    double perimeter() const override {\n        return 2 * 3.14159 * radius;\n    }\n};\n\nclass Rectangle : public Shape {\nprivate:\n    double width, height;\n\npublic:\n    Rectangle(double w, double h) : Shape(\"Rectangle\"), width(w), height(h) {}\n\n    double area() const override {\n        return width * height;\n    }\n\n    double perimeter() const override {\n        return 2 * (width + height);\n    }\n};\n\nint main() {\n    std::vector<Shape*> shapes;\n    shapes.push_back(new Circle(5.0));\n    shapes.push_back(new Rectangle(4.0, 6.0));\n\n    for (const auto& shape : shapes) {\n        double a = shape->area();\n        double p = shape->perimeter();\n    }\n\n    return 0;\n}\n",
   "test_name": "test_cpp_inheritance_polymorphism",
-  "total_chunks": 16
+  "total_chunks": 17
 }

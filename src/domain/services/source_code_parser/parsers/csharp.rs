@@ -22,6 +22,7 @@ impl LanguageExtractor for CSharpExtractor {
             (destructor_declaration name: (identifier) @name) @method
             (property_declaration name: (identifier) @name) @property
             (event_declaration name: (identifier) @name) @event
+            (field_declaration) @field
             (delegate_declaration name: (identifier) @name) @delegate
             (namespace_declaration name: (_) @name) @namespace
         "
