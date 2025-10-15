@@ -33,8 +33,7 @@ fn test_best_status_default() {
 #[test]
 fn test_determine_best_status_no_previous_records() {
     let session_score = 100.0;
-    let status =
-        SessionRepository::determine_best_status_with_start_records(session_score, None);
+    let status = SessionRepository::determine_best_status_with_start_records(session_score, None);
 
     assert!(status.is_todays_best);
     assert!(!status.is_weekly_best);
@@ -571,9 +570,7 @@ fn test_record_session_with_repository() {
     // Verify repository was created
     let repositories = repo.get_all_repositories().unwrap();
     assert!(repositories.len() > 0);
-    assert!(repositories
-        .iter()
-        .any(|r| r.repository_name == "testrepo"));
+    assert!(repositories.iter().any(|r| r.repository_name == "testrepo"));
 
     // Verify session was recorded
     let stage_results = repo.get_session_stage_results(session_id).unwrap();
