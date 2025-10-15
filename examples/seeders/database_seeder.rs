@@ -1,6 +1,6 @@
 use super::data::SeedData;
-use crate::infrastructure::database::database::{Database, HasDatabase};
-use crate::Result;
+use gittype::infrastructure::database::database::{Database, HasDatabase};
+use gittype::Result;
 use std::sync::{Arc, Mutex};
 
 pub struct DatabaseSeeder {
