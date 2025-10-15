@@ -1,0 +1,301 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nusing System;\n\nnamespace ModernCSharp\n{\n    public record Person(string FirstName, string LastName, int Age);\n\n    public record Employee(string FirstName, string LastName, int Age, string Department)\n        : Person(FirstName, LastName, Age);\n\n    public abstract record Shape;\n    public record Circle(double Radius) : Shape;\n    public record Rectangle(double Width, double Height) : Shape;\n    public record Triangle(double Base, double Height) : Shape;\n\n    public class ShapeAnalyzer\n    {\n        public double CalculateArea(Shape shape)\n        {\n            return shape switch\n            {\n                Circle c => Math.PI * c.Radius * c.Radius,\n                Rectangle r => r.Width * r.Height,\n                Triangle t => 0.5 * t.Base * t.Height,\n                _ => throw new ArgumentException(\"Unknown shape\")\n            };\n        }\n\n        public string DescribePerson(Person person)\n        {\n            return person switch\n            {\n                Employee { Department: \"Engineering\" } emp => $\"{emp.FirstName} is an engineer\",\n                Employee emp => $\"{emp.FirstName} works in {emp.Department}\",\n                Person { Age: >= 65 } p => $\"{p.FirstName} is a senior\",\n                Person { Age: < 18 } p => $\"{p.FirstName} is a minor\",\n                Person p => $\"{p.FirstName} is {p.Age} years old\"\n            };\n        }\n\n        public bool IsValidShape(Shape shape)\n        {\n            return shape is Circle { Radius: > 0 } or\n                   Rectangle { Width: > 0, Height: > 0 } or\n                   Triangle { Base: > 0, Height: > 0 };\n        }\n\n        public string GetShapeType(Shape shape)\n        {\n            if (shape is Circle circle)\n            {\n                return $\"Circle with radius {circle.Radius}\";\n            }\n            else if (shape is Rectangle rect)\n            {\n                return $\"Rectangle {rect.Width}x{rect.Height}\";\n            }\n            else if (shape is Triangle triangle)\n            {\n                return $\"Triangle with base {triangle.Base}\";\n            }\n            return \"Unknown\";\n        }\n    }\n}\n",
+      "end_line": 65,
+      "language": "csharp",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "namespace ModernCSharp",
+      "end_line": 4,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 10,
+      "start_line": 4
+    },
+    {
+      "chunk_type": "Namespace",
+      "comment_ranges": [],
+      "content": "namespace ModernCSharp\n{\n    public record Person(string FirstName, string LastName, int Age);\n\n    public record Employee(string FirstName, string LastName, int Age, string Department)\n        : Person(FirstName, LastName, Age);\n\n    public abstract record Shape;\n    public record Circle(double Radius) : Shape;\n    public record Rectangle(double Width, double Height) : Shape;\n    public record Triangle(double Base, double Height) : Shape;\n\n    public class ShapeAnalyzer\n    {\n        public double CalculateArea(Shape shape)\n        {\n            return shape switch\n            {\n                Circle c => Math.PI * c.Radius * c.Radius,\n                Rectangle r => r.Width * r.Height,\n                Triangle t => 0.5 * t.Base * t.Height,\n                _ => throw new ArgumentException(\"Unknown shape\")\n            };\n        }\n\n        public string DescribePerson(Person person)\n        {\n            return person switch\n            {\n                Employee { Department: \"Engineering\" } emp => $\"{emp.FirstName} is an engineer\",\n                Employee emp => $\"{emp.FirstName} works in {emp.Department}\",\n                Person { Age: >= 65 } p => $\"{p.FirstName} is a senior\",\n                Person { Age: < 18 } p => $\"{p.FirstName} is a minor\",\n                Person p => $\"{p.FirstName} is {p.Age} years old\"\n            };\n        }\n\n        public bool IsValidShape(Shape shape)\n        {\n            return shape is Circle { Radius: > 0 } or\n                   Rectangle { Width: > 0, Height: > 0 } or\n                   Triangle { Base: > 0, Height: > 0 };\n        }\n\n        public string GetShapeType(Shape shape)\n        {\n            if (shape is Circle circle)\n            {\n                return $\"Circle with radius {circle.Radius}\";\n            }\n            else if (shape is Rectangle rect)\n            {\n                return $\"Rectangle {rect.Width}x{rect.Height}\";\n            }\n            else if (shape is Triangle triangle)\n            {\n                return $\"Triangle with base {triangle.Base}\";\n            }\n            return \"Unknown\";\n        }\n    }\n}",
+      "end_line": 65,
+      "language": "csharp",
+      "name": "ModernCSharp",
+      "original_indentation": 0,
+      "start_line": 4
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "    public record Person(string FirstName, string LastName, int Age);",
+      "end_line": 6,
+      "language": "csharp",
+      "name": "Person",
+      "original_indentation": 4,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "    public record Employee(string FirstName, string LastName, int Age, string Department)\n        : Person(FirstName, LastName, Age);",
+      "end_line": 9,
+      "language": "csharp",
+      "name": "Employee",
+      "original_indentation": 4,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "    public abstract record Shape;",
+      "end_line": 11,
+      "language": "csharp",
+      "name": "Shape",
+      "original_indentation": 4,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "    public record Circle(double Radius) : Shape;",
+      "end_line": 12,
+      "language": "csharp",
+      "name": "Circle",
+      "original_indentation": 4,
+      "start_line": 12
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "    public record Rectangle(double Width, double Height) : Shape;",
+      "end_line": 13,
+      "language": "csharp",
+      "name": "Rectangle",
+      "original_indentation": 4,
+      "start_line": 13
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "    public record Triangle(double Base, double Height) : Shape;",
+      "end_line": 14,
+      "language": "csharp",
+      "name": "Triangle",
+      "original_indentation": 4,
+      "start_line": 14
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    public class ShapeAnalyzer",
+      "end_line": 16,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 17,
+      "start_line": 16
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "    public class ShapeAnalyzer\n    {\n        public double CalculateArea(Shape shape)\n        {\n            return shape switch\n            {\n                Circle c => Math.PI * c.Radius * c.Radius,\n                Rectangle r => r.Width * r.Height,\n                Triangle t => 0.5 * t.Base * t.Height,\n                _ => throw new ArgumentException(\"Unknown shape\")\n            };\n        }\n\n        public string DescribePerson(Person person)\n        {\n            return person switch\n            {\n                Employee { Department: \"Engineering\" } emp => $\"{emp.FirstName} is an engineer\",\n                Employee emp => $\"{emp.FirstName} works in {emp.Department}\",\n                Person { Age: >= 65 } p => $\"{p.FirstName} is a senior\",\n                Person { Age: < 18 } p => $\"{p.FirstName} is a minor\",\n                Person p => $\"{p.FirstName} is {p.Age} years old\"\n            };\n        }\n\n        public bool IsValidShape(Shape shape)\n        {\n            return shape is Circle { Radius: > 0 } or\n                   Rectangle { Width: > 0, Height: > 0 } or\n                   Triangle { Base: > 0, Height: > 0 };\n        }\n\n        public string GetShapeType(Shape shape)\n        {\n            if (shape is Circle circle)\n            {\n                return $\"Circle with radius {circle.Radius}\";\n            }\n            else if (shape is Rectangle rect)\n            {\n                return $\"Rectangle {rect.Width}x{rect.Height}\";\n            }\n            else if (shape is Triangle triangle)\n            {\n                return $\"Triangle with base {triangle.Base}\";\n            }\n            return \"Unknown\";\n        }\n    }",
+      "end_line": 64,
+      "language": "csharp",
+      "name": "ShapeAnalyzer",
+      "original_indentation": 4,
+      "start_line": 16
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        public double CalculateArea",
+      "end_line": 18,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 22,
+      "start_line": 18
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "        public double CalculateArea(Shape shape)\n        {\n            return shape switch\n            {\n                Circle c => Math.PI * c.Radius * c.Radius,\n                Rectangle r => r.Width * r.Height,\n                Triangle t => 0.5 * t.Base * t.Height,\n                _ => throw new ArgumentException(\"Unknown shape\")\n            };\n        }",
+      "end_line": 27,
+      "language": "csharp",
+      "name": "CalculateArea",
+      "original_indentation": 8,
+      "start_line": 18
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        {\n            return shape switch\n            {\n                Circle c => Math.PI * c.Radius * c.Radius,\n                Rectangle r => r.Width * r.Height,\n                Triangle t => 0.5 * t.Base * t.Height,\n                _ => throw new ArgumentException(\"Unknown shape\")\n            };\n        }",
+      "end_line": 27,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 19
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        public string DescribePerson",
+      "end_line": 29,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 22,
+      "start_line": 29
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "        public string DescribePerson(Person person)\n        {\n            return person switch\n            {\n                Employee { Department: \"Engineering\" } emp => $\"{emp.FirstName} is an engineer\",\n                Employee emp => $\"{emp.FirstName} works in {emp.Department}\",\n                Person { Age: >= 65 } p => $\"{p.FirstName} is a senior\",\n                Person { Age: < 18 } p => $\"{p.FirstName} is a minor\",\n                Person p => $\"{p.FirstName} is {p.Age} years old\"\n            };\n        }",
+      "end_line": 39,
+      "language": "csharp",
+      "name": "DescribePerson",
+      "original_indentation": 8,
+      "start_line": 29
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        {\n            return person switch\n            {\n                Employee { Department: \"Engineering\" } emp => $\"{emp.FirstName} is an engineer\",\n                Employee emp => $\"{emp.FirstName} works in {emp.Department}\",\n                Person { Age: >= 65 } p => $\"{p.FirstName} is a senior\",\n                Person { Age: < 18 } p => $\"{p.FirstName} is a minor\",\n                Person p => $\"{p.FirstName} is {p.Age} years old\"\n            };\n        }",
+      "end_line": 39,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 30
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        public bool IsValidShape",
+      "end_line": 41,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 20,
+      "start_line": 41
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "        public bool IsValidShape(Shape shape)\n        {\n            return shape is Circle { Radius: > 0 } or\n                   Rectangle { Width: > 0, Height: > 0 } or\n                   Triangle { Base: > 0, Height: > 0 };\n        }",
+      "end_line": 46,
+      "language": "csharp",
+      "name": "IsValidShape",
+      "original_indentation": 8,
+      "start_line": 41
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        {\n            return shape is Circle { Radius: > 0 } or\n                   Rectangle { Width: > 0, Height: > 0 } or\n                   Triangle { Base: > 0, Height: > 0 };\n        }",
+      "end_line": 46,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 42
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        public string GetShapeType",
+      "end_line": 48,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 22,
+      "start_line": 48
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "        public string GetShapeType(Shape shape)\n        {\n            if (shape is Circle circle)\n            {\n                return $\"Circle with radius {circle.Radius}\";\n            }\n            else if (shape is Rectangle rect)\n            {\n                return $\"Rectangle {rect.Width}x{rect.Height}\";\n            }\n            else if (shape is Triangle triangle)\n            {\n                return $\"Triangle with base {triangle.Base}\";\n            }\n            return \"Unknown\";\n        }",
+      "end_line": 63,
+      "language": "csharp",
+      "name": "GetShapeType",
+      "original_indentation": 8,
+      "start_line": 48
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        {\n            if (shape is Circle circle)\n            {\n                return $\"Circle with radius {circle.Radius}\";\n            }\n            else if (shape is Rectangle rect)\n            {\n                return $\"Rectangle {rect.Width}x{rect.Height}\";\n            }\n            else if (shape is Triangle triangle)\n            {\n                return $\"Triangle with base {triangle.Base}\";\n            }\n            return \"Unknown\";\n        }",
+      "end_line": 63,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 49
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if (shape is Circle circle)\n            {\n                return $\"Circle with radius {circle.Radius}\";\n            }\n            else if (shape is Rectangle rect)\n            {\n                return $\"Rectangle {rect.Width}x{rect.Height}\";\n            }\n            else if (shape is Triangle triangle)\n            {\n                return $\"Triangle with base {triangle.Base}\";\n            }",
+      "end_line": 61,
+      "language": "csharp",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 50
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "            {\n                return $\"Circle with radius {circle.Radius}\";\n            }",
+      "end_line": 53,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 12,
+      "start_line": 51
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            else if (shape is Rectangle rect)\n            {\n                return $\"Rectangle {rect.Width}x{rect.Height}\";\n            }\n            else if (shape is Triangle triangle)\n            {\n                return $\"Triangle with base {triangle.Base}\";\n            }",
+      "end_line": 61,
+      "language": "csharp",
+      "name": "if_block",
+      "original_indentation": 17,
+      "start_line": 54
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "            {\n                return $\"Rectangle {rect.Width}x{rect.Height}\";\n            }",
+      "end_line": 57,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 12,
+      "start_line": 55
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            else if (shape is Triangle triangle)\n            {\n                return $\"Triangle with base {triangle.Base}\";\n            }",
+      "end_line": 61,
+      "language": "csharp",
+      "name": "if_block",
+      "original_indentation": 17,
+      "start_line": 58
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "            {\n                return $\"Triangle with base {triangle.Base}\";\n            }",
+      "end_line": 61,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 12,
+      "start_line": 59
+    }
+  ],
+  "source_code": "\nusing System;\n\nnamespace ModernCSharp\n{\n    public record Person(string FirstName, string LastName, int Age);\n\n    public record Employee(string FirstName, string LastName, int Age, string Department)\n        : Person(FirstName, LastName, Age);\n\n    public abstract record Shape;\n    public record Circle(double Radius) : Shape;\n    public record Rectangle(double Width, double Height) : Shape;\n    public record Triangle(double Base, double Height) : Shape;\n\n    public class ShapeAnalyzer\n    {\n        public double CalculateArea(Shape shape)\n        {\n            return shape switch\n            {\n                Circle c => Math.PI * c.Radius * c.Radius,\n                Rectangle r => r.Width * r.Height,\n                Triangle t => 0.5 * t.Base * t.Height,\n                _ => throw new ArgumentException(\"Unknown shape\")\n            };\n        }\n\n        public string DescribePerson(Person person)\n        {\n            return person switch\n            {\n                Employee { Department: \"Engineering\" } emp => $\"{emp.FirstName} is an engineer\",\n                Employee emp => $\"{emp.FirstName} works in {emp.Department}\",\n                Person { Age: >= 65 } p => $\"{p.FirstName} is a senior\",\n                Person { Age: < 18 } p => $\"{p.FirstName} is a minor\",\n                Person p => $\"{p.FirstName} is {p.Age} years old\"\n            };\n        }\n\n        public bool IsValidShape(Shape shape)\n        {\n            return shape is Circle { Radius: > 0 } or\n                   Rectangle { Width: > 0, Height: > 0 } or\n                   Triangle { Base: > 0, Height: > 0 };\n        }\n\n        public string GetShapeType(Shape shape)\n        {\n            if (shape is Circle circle)\n            {\n                return $\"Circle with radius {circle.Radius}\";\n            }\n            else if (shape is Rectangle rect)\n            {\n                return $\"Rectangle {rect.Width}x{rect.Height}\";\n            }\n            else if (shape is Triangle triangle)\n            {\n                return $\"Triangle with base {triangle.Base}\";\n            }\n            return \"Unknown\";\n        }\n    }\n}\n",
+  "test_name": "test_csharp_records_and_pattern_matching",
+  "total_chunks": 29
+}

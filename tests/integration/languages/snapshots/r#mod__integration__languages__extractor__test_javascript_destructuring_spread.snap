@@ -1,0 +1,81 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nconst user = {\n    name: 'John Doe',\n    age: 30,\n    email: 'john@example.com',\n    address: {\n        city: 'New York',\n        country: 'USA'\n    }\n};\n\nconst { name, age, address: { city } } = user;\n\nfunction processUser({ name, email, ...rest }) {\n    return {\n        displayName: name,\n        contact: email,\n        metadata: rest\n    };\n}\n\nconst numbers = [1, 2, 3, 4, 5];\nconst [first, second, ...remaining] = numbers;\n\nfunction mergeArrays(arr1, arr2) {\n    return [...arr1, ...arr2];\n}\n\nconst defaults = { theme: 'dark', language: 'en' };\nconst userPrefs = { language: 'ja', fontSize: 14 };\nconst config = { ...defaults, ...userPrefs };\n\nfunction sumAll(...numbers) {\n    return numbers.reduce((sum, n) => sum + n, 0);\n}\n\nconst createUser = ({ name = 'Anonymous', age = 0 } = {}) => {\n    return { name, age, createdAt: Date.now() };\n};\n\nconst [, , third] = [1, 2, 3, 4];\nconst { a: renamed, b = 10 } = { a: 5 };\n",
+      "end_line": 42,
+      "language": "javascript",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "function processUser",
+      "end_line": 14,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 9,
+      "start_line": 14
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "function processUser({ name, email, ...rest }) {\n    return {\n        displayName: name,\n        contact: email,\n        metadata: rest\n    };\n}",
+      "end_line": 20,
+      "language": "javascript",
+      "name": "processUser",
+      "original_indentation": 0,
+      "start_line": 14
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "function mergeArrays",
+      "end_line": 25,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 9,
+      "start_line": 25
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "function mergeArrays(arr1, arr2) {\n    return [...arr1, ...arr2];\n}",
+      "end_line": 27,
+      "language": "javascript",
+      "name": "mergeArrays",
+      "original_indentation": 0,
+      "start_line": 25
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "function sumAll(...numbers) {\n    return numbers.reduce((sum, n) => sum + n, 0);\n}",
+      "end_line": 35,
+      "language": "javascript",
+      "name": "sumAll",
+      "original_indentation": 0,
+      "start_line": 33
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "const createUser = ({ name = 'Anonymous', age = 0 } = {}) => {\n    return { name, age, createdAt: Date.now() };\n}",
+      "end_line": 39,
+      "language": "javascript",
+      "name": "createUser",
+      "original_indentation": 6,
+      "start_line": 37
+    }
+  ],
+  "source_code": "\nconst user = {\n    name: 'John Doe',\n    age: 30,\n    email: 'john@example.com',\n    address: {\n        city: 'New York',\n        country: 'USA'\n    }\n};\n\nconst { name, age, address: { city } } = user;\n\nfunction processUser({ name, email, ...rest }) {\n    return {\n        displayName: name,\n        contact: email,\n        metadata: rest\n    };\n}\n\nconst numbers = [1, 2, 3, 4, 5];\nconst [first, second, ...remaining] = numbers;\n\nfunction mergeArrays(arr1, arr2) {\n    return [...arr1, ...arr2];\n}\n\nconst defaults = { theme: 'dark', language: 'en' };\nconst userPrefs = { language: 'ja', fontSize: 14 };\nconst config = { ...defaults, ...userPrefs };\n\nfunction sumAll(...numbers) {\n    return numbers.reduce((sum, n) => sum + n, 0);\n}\n\nconst createUser = ({ name = 'Anonymous', age = 0 } = {}) => {\n    return { name, age, createdAt: Date.now() };\n};\n\nconst [, , third] = [1, 2, 3, 4];\nconst { a: renamed, b = 10 } = { a: 5 };\n",
+  "test_name": "test_javascript_destructuring_spread",
+  "total_chunks": 7
+}

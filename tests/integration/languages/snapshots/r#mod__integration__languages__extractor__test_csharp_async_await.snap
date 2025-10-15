@@ -1,0 +1,321 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nusing System;\nusing System.Collections.Generic;\nusing System.Threading;\nusing System.Threading.Tasks;\n\nnamespace AsyncOperations\n{\n    public class AsyncDataFetcher\n    {\n        private readonly HttpClient _httpClient;\n\n        public AsyncDataFetcher(HttpClient httpClient)\n        {\n            _httpClient = httpClient;\n        }\n\n        public async Task<string> FetchDataAsync(string url)\n        {\n            try\n            {\n                var response = await _httpClient.GetAsync(url);\n                response.EnsureSuccessStatusCode();\n                return await response.Content.ReadAsStringAsync();\n            }\n            catch (HttpRequestException ex)\n            {\n                Console.WriteLine($\"Request failed: {ex.Message}\");\n                return null;\n            }\n        }\n\n        public async Task<List<string>> FetchMultipleAsync(List<string> urls)\n        {\n            var tasks = urls.Select(url => FetchDataAsync(url)).ToList();\n            var results = await Task.WhenAll(tasks);\n            return results.Where(r => r != null).ToList();\n        }\n\n        public async Task<T> RetryAsync<T>(Func<Task<T>> operation, int maxRetries)\n        {\n            for (int i = 0; i < maxRetries; i++)\n            {\n                try\n                {\n                    return await operation();\n                }\n                catch (Exception)\n                {\n                    if (i == maxRetries - 1)\n                        throw;\n                    await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, i)));\n                }\n            }\n            throw new InvalidOperationException(\"Should not reach here\");\n        }\n\n        public async Task ProcessWithCancellationAsync(CancellationToken cancellationToken)\n        {\n            while (!cancellationToken.IsCancellationRequested)\n            {\n                await Task.Delay(1000, cancellationToken);\n                Console.WriteLine(\"Processing...\");\n            }\n        }\n    }\n}\n",
+      "end_line": 67,
+      "language": "csharp",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "namespace AsyncOperations",
+      "end_line": 7,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 10,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Namespace",
+      "comment_ranges": [],
+      "content": "namespace AsyncOperations\n{\n    public class AsyncDataFetcher\n    {\n        private readonly HttpClient _httpClient;\n\n        public AsyncDataFetcher(HttpClient httpClient)\n        {\n            _httpClient = httpClient;\n        }\n\n        public async Task<string> FetchDataAsync(string url)\n        {\n            try\n            {\n                var response = await _httpClient.GetAsync(url);\n                response.EnsureSuccessStatusCode();\n                return await response.Content.ReadAsStringAsync();\n            }\n            catch (HttpRequestException ex)\n            {\n                Console.WriteLine($\"Request failed: {ex.Message}\");\n                return null;\n            }\n        }\n\n        public async Task<List<string>> FetchMultipleAsync(List<string> urls)\n        {\n            var tasks = urls.Select(url => FetchDataAsync(url)).ToList();\n            var results = await Task.WhenAll(tasks);\n            return results.Where(r => r != null).ToList();\n        }\n\n        public async Task<T> RetryAsync<T>(Func<Task<T>> operation, int maxRetries)\n        {\n            for (int i = 0; i < maxRetries; i++)\n            {\n                try\n                {\n                    return await operation();\n                }\n                catch (Exception)\n                {\n                    if (i == maxRetries - 1)\n                        throw;\n                    await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, i)));\n                }\n            }\n            throw new InvalidOperationException(\"Should not reach here\");\n        }\n\n        public async Task ProcessWithCancellationAsync(CancellationToken cancellationToken)\n        {\n            while (!cancellationToken.IsCancellationRequested)\n            {\n                await Task.Delay(1000, cancellationToken);\n                Console.WriteLine(\"Processing...\");\n            }\n        }\n    }\n}",
+      "end_line": 67,
+      "language": "csharp",
+      "name": "AsyncOperations",
+      "original_indentation": 0,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    public class AsyncDataFetcher",
+      "end_line": 9,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 17,
+      "start_line": 9
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "    public class AsyncDataFetcher\n    {\n        private readonly HttpClient _httpClient;\n\n        public AsyncDataFetcher(HttpClient httpClient)\n        {\n            _httpClient = httpClient;\n        }\n\n        public async Task<string> FetchDataAsync(string url)\n        {\n            try\n            {\n                var response = await _httpClient.GetAsync(url);\n                response.EnsureSuccessStatusCode();\n                return await response.Content.ReadAsStringAsync();\n            }\n            catch (HttpRequestException ex)\n            {\n                Console.WriteLine($\"Request failed: {ex.Message}\");\n                return null;\n            }\n        }\n\n        public async Task<List<string>> FetchMultipleAsync(List<string> urls)\n        {\n            var tasks = urls.Select(url => FetchDataAsync(url)).ToList();\n            var results = await Task.WhenAll(tasks);\n            return results.Where(r => r != null).ToList();\n        }\n\n        public async Task<T> RetryAsync<T>(Func<Task<T>> operation, int maxRetries)\n        {\n            for (int i = 0; i < maxRetries; i++)\n            {\n                try\n                {\n                    return await operation();\n                }\n                catch (Exception)\n                {\n                    if (i == maxRetries - 1)\n                        throw;\n                    await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, i)));\n                }\n            }\n            throw new InvalidOperationException(\"Should not reach here\");\n        }\n\n        public async Task ProcessWithCancellationAsync(CancellationToken cancellationToken)\n        {\n            while (!cancellationToken.IsCancellationRequested)\n            {\n                await Task.Delay(1000, cancellationToken);\n                Console.WriteLine(\"Processing...\");\n            }\n        }\n    }",
+      "end_line": 66,
+      "language": "csharp",
+      "name": "AsyncDataFetcher",
+      "original_indentation": 4,
+      "start_line": 9
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        public AsyncDataFetcher",
+      "end_line": 13,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 15,
+      "start_line": 13
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "        public AsyncDataFetcher(HttpClient httpClient)\n        {\n            _httpClient = httpClient;\n        }",
+      "end_line": 16,
+      "language": "csharp",
+      "name": "AsyncDataFetcher",
+      "original_indentation": 8,
+      "start_line": 13
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        {\n            _httpClient = httpClient;\n        }",
+      "end_line": 16,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 14
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        public async Task<string> FetchDataAsync",
+      "end_line": 18,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 34,
+      "start_line": 18
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "        public async Task<string> FetchDataAsync(string url)\n        {\n            try\n            {\n                var response = await _httpClient.GetAsync(url);\n                response.EnsureSuccessStatusCode();\n                return await response.Content.ReadAsStringAsync();\n            }\n            catch (HttpRequestException ex)\n            {\n                Console.WriteLine($\"Request failed: {ex.Message}\");\n                return null;\n            }\n        }",
+      "end_line": 31,
+      "language": "csharp",
+      "name": "FetchDataAsync",
+      "original_indentation": 8,
+      "start_line": 18
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        {\n            try\n            {\n                var response = await _httpClient.GetAsync(url);\n                response.EnsureSuccessStatusCode();\n                return await response.Content.ReadAsStringAsync();\n            }\n            catch (HttpRequestException ex)\n            {\n                Console.WriteLine($\"Request failed: {ex.Message}\");\n                return null;\n            }\n        }",
+      "end_line": 31,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 19
+    },
+    {
+      "chunk_type": "ErrorHandling",
+      "comment_ranges": [],
+      "content": "            try\n            {\n                var response = await _httpClient.GetAsync(url);\n                response.EnsureSuccessStatusCode();\n                return await response.Content.ReadAsStringAsync();\n            }\n            catch (HttpRequestException ex)\n            {\n                Console.WriteLine($\"Request failed: {ex.Message}\");\n                return null;\n            }",
+      "end_line": 30,
+      "language": "csharp",
+      "name": "try_block",
+      "original_indentation": 12,
+      "start_line": 20
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "            {\n                var response = await _httpClient.GetAsync(url);\n                response.EnsureSuccessStatusCode();\n                return await response.Content.ReadAsStringAsync();\n            }",
+      "end_line": 25,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 12,
+      "start_line": 21
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "            {\n                Console.WriteLine($\"Request failed: {ex.Message}\");\n                return null;\n            }",
+      "end_line": 30,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 12,
+      "start_line": 27
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        public async Task<List<string>> FetchMultipleAsync",
+      "end_line": 33,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 40,
+      "start_line": 33
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "        public async Task<List<string>> FetchMultipleAsync(List<string> urls)\n        {\n            var tasks = urls.Select(url => FetchDataAsync(url)).ToList();\n            var results = await Task.WhenAll(tasks);\n            return results.Where(r => r != null).ToList();\n        }",
+      "end_line": 38,
+      "language": "csharp",
+      "name": "FetchMultipleAsync",
+      "original_indentation": 8,
+      "start_line": 33
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        {\n            var tasks = urls.Select(url => FetchDataAsync(url)).ToList();\n            var results = await Task.WhenAll(tasks);\n            return results.Where(r => r != null).ToList();\n        }",
+      "end_line": 38,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 34
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        public async Task<T> RetryAsync",
+      "end_line": 40,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 29,
+      "start_line": 40
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "        public async Task<T> RetryAsync<T>(Func<Task<T>> operation, int maxRetries)\n        {\n            for (int i = 0; i < maxRetries; i++)\n            {\n                try\n                {\n                    return await operation();\n                }\n                catch (Exception)\n                {\n                    if (i == maxRetries - 1)\n                        throw;\n                    await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, i)));\n                }\n            }\n            throw new InvalidOperationException(\"Should not reach here\");\n        }",
+      "end_line": 56,
+      "language": "csharp",
+      "name": "RetryAsync",
+      "original_indentation": 8,
+      "start_line": 40
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        {\n            for (int i = 0; i < maxRetries; i++)\n            {\n                try\n                {\n                    return await operation();\n                }\n                catch (Exception)\n                {\n                    if (i == maxRetries - 1)\n                        throw;\n                    await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, i)));\n                }\n            }\n            throw new InvalidOperationException(\"Should not reach here\");\n        }",
+      "end_line": 56,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 41
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [],
+      "content": "            for (int i = 0; i < maxRetries; i++)\n            {\n                try\n                {\n                    return await operation();\n                }\n                catch (Exception)\n                {\n                    if (i == maxRetries - 1)\n                        throw;\n                    await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, i)));\n                }\n            }",
+      "end_line": 54,
+      "language": "csharp",
+      "name": "for_loop",
+      "original_indentation": 12,
+      "start_line": 42
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "            {\n                try\n                {\n                    return await operation();\n                }\n                catch (Exception)\n                {\n                    if (i == maxRetries - 1)\n                        throw;\n                    await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, i)));\n                }\n            }",
+      "end_line": 54,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 12,
+      "start_line": 43
+    },
+    {
+      "chunk_type": "ErrorHandling",
+      "comment_ranges": [],
+      "content": "                try\n                {\n                    return await operation();\n                }\n                catch (Exception)\n                {\n                    if (i == maxRetries - 1)\n                        throw;\n                    await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, i)));\n                }",
+      "end_line": 53,
+      "language": "csharp",
+      "name": "try_block",
+      "original_indentation": 16,
+      "start_line": 44
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "                {\n                    return await operation();\n                }",
+      "end_line": 47,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 16,
+      "start_line": 45
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "                {\n                    if (i == maxRetries - 1)\n                        throw;\n                    await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, i)));\n                }",
+      "end_line": 53,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 16,
+      "start_line": 49
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "                    if (i == maxRetries - 1)\n                        throw;",
+      "end_line": 51,
+      "language": "csharp",
+      "name": "if_block",
+      "original_indentation": 20,
+      "start_line": 50
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        public async Task ProcessWithCancellationAsync",
+      "end_line": 58,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 26,
+      "start_line": 58
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "        public async Task ProcessWithCancellationAsync(CancellationToken cancellationToken)\n        {\n            while (!cancellationToken.IsCancellationRequested)\n            {\n                await Task.Delay(1000, cancellationToken);\n                Console.WriteLine(\"Processing...\");\n            }\n        }",
+      "end_line": 65,
+      "language": "csharp",
+      "name": "Task",
+      "original_indentation": 8,
+      "start_line": 58
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        {\n            while (!cancellationToken.IsCancellationRequested)\n            {\n                await Task.Delay(1000, cancellationToken);\n                Console.WriteLine(\"Processing...\");\n            }\n        }",
+      "end_line": 65,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 59
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [],
+      "content": "            while (!cancellationToken.IsCancellationRequested)\n            {\n                await Task.Delay(1000, cancellationToken);\n                Console.WriteLine(\"Processing...\");\n            }",
+      "end_line": 64,
+      "language": "csharp",
+      "name": "while_loop",
+      "original_indentation": 12,
+      "start_line": 60
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "            {\n                await Task.Delay(1000, cancellationToken);\n                Console.WriteLine(\"Processing...\");\n            }",
+      "end_line": 64,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 12,
+      "start_line": 61
+    }
+  ],
+  "source_code": "\nusing System;\nusing System.Collections.Generic;\nusing System.Threading;\nusing System.Threading.Tasks;\n\nnamespace AsyncOperations\n{\n    public class AsyncDataFetcher\n    {\n        private readonly HttpClient _httpClient;\n\n        public AsyncDataFetcher(HttpClient httpClient)\n        {\n            _httpClient = httpClient;\n        }\n\n        public async Task<string> FetchDataAsync(string url)\n        {\n            try\n            {\n                var response = await _httpClient.GetAsync(url);\n                response.EnsureSuccessStatusCode();\n                return await response.Content.ReadAsStringAsync();\n            }\n            catch (HttpRequestException ex)\n            {\n                Console.WriteLine($\"Request failed: {ex.Message}\");\n                return null;\n            }\n        }\n\n        public async Task<List<string>> FetchMultipleAsync(List<string> urls)\n        {\n            var tasks = urls.Select(url => FetchDataAsync(url)).ToList();\n            var results = await Task.WhenAll(tasks);\n            return results.Where(r => r != null).ToList();\n        }\n\n        public async Task<T> RetryAsync<T>(Func<Task<T>> operation, int maxRetries)\n        {\n            for (int i = 0; i < maxRetries; i++)\n            {\n                try\n                {\n                    return await operation();\n                }\n                catch (Exception)\n                {\n                    if (i == maxRetries - 1)\n                        throw;\n                    await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, i)));\n                }\n            }\n            throw new InvalidOperationException(\"Should not reach here\");\n        }\n\n        public async Task ProcessWithCancellationAsync(CancellationToken cancellationToken)\n        {\n            while (!cancellationToken.IsCancellationRequested)\n            {\n                await Task.Delay(1000, cancellationToken);\n                Console.WriteLine(\"Processing...\");\n            }\n        }\n    }\n}\n",
+  "test_name": "test_csharp_async_await",
+  "total_chunks": 31
+}

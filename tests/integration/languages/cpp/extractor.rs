@@ -451,3 +451,223 @@ public:
         File: 1,
     }
 }
+
+test_language_extractor! {
+    name: test_cpp_operator_overloading,
+    language: "cpp",
+    extension: "cpp",
+    source: r#"
+#include <iostream>
+
+class Vector2D {
+private:
+    double x, y;
+
+public:
+    Vector2D(double x = 0, double y = 0) : x(x), y(y) {}
+
+    // Arithmetic operators
+    Vector2D operator+(const Vector2D& other) const {
+        return Vector2D(x + other.x, y + other.y);
+    }
+
+    Vector2D operator-(const Vector2D& other) const {
+        return Vector2D(x - other.x, y - other.y);
+    }
+
+    Vector2D operator*(double scalar) const {
+        return Vector2D(x * scalar, y * scalar);
+    }
+
+    // Comparison operators
+    bool operator==(const Vector2D& other) const {
+        return x == other.x && y == other.y;
+    }
+
+    bool operator!=(const Vector2D& other) const {
+        return !(*this == other);
+    }
+
+    // Stream operator
+    friend std::ostream& operator<<(std::ostream& os, const Vector2D& v) {
+        os << "(" << v.x << ", " << v.y << ")";
+        return os;
+    }
+
+    // Subscript operator
+    double& operator[](int index) {
+        return index == 0 ? x : y;
+    }
+
+    // Increment operators
+    Vector2D& operator++() {
+        ++x;
+        ++y;
+        return *this;
+    }
+
+    Vector2D operator++(int) {
+        Vector2D temp = *this;
+        ++(*this);
+        return temp;
+    }
+};
+"#,
+    total_chunks: 13,
+    chunk_counts: {
+        CodeBlock: 9,
+        Variable: 1,
+        Function: 1,
+        Struct: 1,
+        File: 1,
+    }
+}
+
+test_language_extractor! {
+    name: test_cpp_inheritance_polymorphism,
+    language: "cpp",
+    extension: "cpp",
+    source: r#"
+#include <string>
+#include <vector>
+
+class Shape {
+protected:
+    std::string name;
+
+public:
+    Shape(const std::string& n) : name(n) {}
+    virtual ~Shape() {}
+
+    virtual double area() const = 0;
+    virtual double perimeter() const = 0;
+
+    std::string getName() const { return name; }
+};
+
+class Circle : public Shape {
+private:
+    double radius;
+
+public:
+    Circle(double r) : Shape("Circle"), radius(r) {}
+
+    double area() const override {
+        return 3.14159 * radius * radius;
+    }
+
+    double perimeter() const override {
+        return 2 * 3.14159 * radius;
+    }
+};
+
+class Rectangle : public Shape {
+private:
+    double width, height;
+
+public:
+    Rectangle(double w, double h) : Shape("Rectangle"), width(w), height(h) {}
+
+    double area() const override {
+        return width * height;
+    }
+
+    double perimeter() const override {
+        return 2 * (width + height);
+    }
+};
+
+int main() {
+    std::vector<Shape*> shapes;
+    shapes.push_back(new Circle(5.0));
+    shapes.push_back(new Rectangle(4.0, 6.0));
+
+    for (const auto& shape : shapes) {
+        double a = shape->area();
+        double p = shape->perimeter();
+    }
+
+    return 0;
+}
+"#,
+    total_chunks: 16,
+    chunk_counts: {
+        Struct: 3,
+        Function: 9,
+        CodeBlock: 1,
+        File: 1,
+        Variable: 2,
+    }
+}
+
+test_language_extractor! {
+    name: test_cpp_smart_pointers,
+    language: "cpp",
+    extension: "cpp",
+    source: r#"
+#include <memory>
+#include <vector>
+
+class Node {
+public:
+    int value;
+    std::shared_ptr<Node> next;
+    std::weak_ptr<Node> prev;
+
+    Node(int val) : value(val) {}
+};
+
+class LinkedList {
+private:
+    std::shared_ptr<Node> head;
+    std::shared_ptr<Node> tail;
+
+public:
+    void append(int value) {
+        auto new_node = std::make_shared<Node>(value);
+
+        if (!head) {
+            head = new_node;
+            tail = new_node;
+        } else {
+            tail->next = new_node;
+            new_node->prev = tail;
+            tail = new_node;
+        }
+    }
+
+    std::unique_ptr<std::vector<int>> toVector() const {
+        auto result = std::make_unique<std::vector<int>>();
+        auto current = head;
+
+        while (current) {
+            result->push_back(current->value);
+            current = current->next;
+        }
+
+        return result;
+    }
+};
+
+int main() {
+    LinkedList list;
+    list.append(1);
+    list.append(2);
+    list.append(3);
+
+    auto vec = list.toVector();
+
+    return 0;
+}
+"#,
+    total_chunks: 16,
+    chunk_counts: {
+        Struct: 2,
+        Conditional: 1,
+        Loop: 1,
+        CodeBlock: 3,
+        Function: 4,
+        Variable: 4,
+        File: 1,
+    }
+}

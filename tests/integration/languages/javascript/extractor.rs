@@ -404,3 +404,202 @@ const dataAnalyzer = {
         File: 1,
     }
 }
+
+test_language_extractor! {
+    name: test_javascript_promises_callbacks,
+    language: "javascript",
+    extension: "js",
+    source: r#"
+function fetchWithCallback(url, callback) {
+    setTimeout(() => {
+        const data = { status: 'success', url: url };
+        callback(null, data);
+    }, 1000);
+}
+
+function promiseExample() {
+    return new Promise((resolve, reject) => {
+        const success = Math.random() > 0.5;
+        if (success) {
+            resolve({ message: 'Success!' });
+        } else {
+            reject(new Error('Failed'));
+        }
+    });
+}
+
+async function chainedPromises() {
+    try {
+        const result1 = await promiseExample();
+        const result2 = await promiseExample();
+        return [result1, result2];
+    } catch (error) {
+        console.error('Promise chain failed:', error);
+        throw error;
+    }
+}
+
+const promiseAllExample = async (urls) => {
+    const promises = urls.map(url => fetch(url));
+    const results = await Promise.all(promises);
+    return results.map(r => r.json());
+};
+
+Promise.race([
+    new Promise((resolve) => setTimeout(() => resolve('fast'), 100)),
+    new Promise((resolve) => setTimeout(() => resolve('slow'), 500))
+]).then(result => {
+    console.log('Winner:', result);
+});
+"#,
+    total_chunks: 16,
+    chunk_counts: {
+        CodeBlock: 7,
+        Function: 4,
+        File: 1,
+        Conditional: 1,
+        ErrorHandling: 1,
+        Lambda: 1,
+        FunctionCall: 1,
+    }
+}
+
+test_language_extractor! {
+    name: test_javascript_destructuring_spread,
+    language: "javascript",
+    extension: "js",
+    source: r#"
+const user = {
+    name: 'John Doe',
+    age: 30,
+    email: 'john@example.com',
+    address: {
+        city: 'New York',
+        country: 'USA'
+    }
+};
+
+const { name, age, address: { city } } = user;
+
+function processUser({ name, email, ...rest }) {
+    return {
+        displayName: name,
+        contact: email,
+        metadata: rest
+    };
+}
+
+const numbers = [1, 2, 3, 4, 5];
+const [first, second, ...remaining] = numbers;
+
+function mergeArrays(arr1, arr2) {
+    return [...arr1, ...arr2];
+}
+
+const defaults = { theme: 'dark', language: 'en' };
+const userPrefs = { language: 'ja', fontSize: 14 };
+const config = { ...defaults, ...userPrefs };
+
+function sumAll(...numbers) {
+    return numbers.reduce((sum, n) => sum + n, 0);
+}
+
+const createUser = ({ name = 'Anonymous', age = 0 } = {}) => {
+    return { name, age, createdAt: Date.now() };
+};
+
+const [, , third] = [1, 2, 3, 4];
+const { a: renamed, b = 10 } = { a: 5 };
+"#,
+    total_chunks: 7,
+    chunk_counts: {
+        CodeBlock: 2,
+        Function: 4,
+        File: 1,
+    }
+}
+
+test_language_extractor! {
+    name: test_javascript_generators_iterators,
+    language: "javascript",
+    extension: "js",
+    source: r#"
+function* simpleGenerator() {
+    yield 1;
+    yield 2;
+    yield 3;
+}
+
+function* infiniteSequence() {
+    let i = 0;
+    while (true) {
+        yield i++;
+    }
+}
+
+function* fibonacci() {
+    let [prev, curr] = [0, 1];
+    while (true) {
+        yield curr;
+        [prev, curr] = [curr, prev + curr];
+    }
+}
+
+function* rangeGenerator(start, end, step = 1) {
+    for (let i = start; i < end; i += step) {
+        yield i;
+    }
+}
+
+async function* asyncGenerator() {
+    for (let i = 0; i < 5; i++) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        yield i;
+    }
+}
+
+class CustomIterable {
+    constructor(data) {
+        this.data = data;
+    }
+
+    *[Symbol.iterator]() {
+        for (const item of this.data) {
+            yield item * 2;
+        }
+    }
+
+    async *asyncIterator() {
+        for (const item of this.data) {
+            await new Promise(resolve => setTimeout(resolve, 10));
+            yield item;
+        }
+    }
+}
+
+function* delegatingGenerator() {
+    yield* [1, 2, 3];
+    yield* simpleGenerator();
+}
+
+const iterator = {
+    data: [1, 2, 3],
+    index: 0,
+    next() {
+        if (this.index < this.data.length) {
+            return { value: this.data[this.index++], done: false };
+        }
+        return { done: true };
+    }
+};
+"#,
+    total_chunks: 12,
+    chunk_counts: {
+        Conditional: 1,
+        CodeBlock: 4,
+        File: 1,
+        Method: 3,
+        Loop: 2,
+        Class: 1,
+    }
+}
