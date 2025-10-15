@@ -19,6 +19,16 @@ impl StageRepository {
         })
     }
 
+    /// Create a new repository with an in-memory database for testing
+    #[doc(hidden)]
+    pub fn new_test() -> Result<Self> {
+        let database = Database::new_test()?;
+        database.init()?;
+        Ok(Self {
+            database: Arc::new(Mutex::new(database)),
+        })
+    }
+
     /// Get completed stages for a specific repository (excludes skipped/failed)
     pub fn get_completed_stages(
         &self,
