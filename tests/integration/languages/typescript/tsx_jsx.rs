@@ -113,10 +113,10 @@ class Dialog extends React.Component<Props> {
     println!("Function names: {:?}", function_names);
     // Based on output, function names are actual names like UserCard, WelcomeComponent, App, Button
     assert!(
-        function_names.contains(&&"UserCard".to_string()) ||
-        function_names.contains(&&"WelcomeComponent".to_string()) ||
-        function_names.contains(&&"App".to_string()) ||
-        function_names.contains(&&"Button".to_string()),
+        function_names.contains(&&"UserCard".to_string())
+            || function_names.contains(&&"WelcomeComponent".to_string())
+            || function_names.contains(&&"App".to_string())
+            || function_names.contains(&&"Button".to_string()),
         "Should find actual function names in function chunks"
     );
 

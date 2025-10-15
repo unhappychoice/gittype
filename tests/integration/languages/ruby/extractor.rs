@@ -44,7 +44,7 @@ end
         File: 1,
         Class: 1,
         Method: 3,
-        CodeBlock: 1,        
+        CodeBlock: 1,
     }
 }
 
