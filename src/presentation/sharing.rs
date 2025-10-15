@@ -1,5 +1,6 @@
 use crate::domain::models::{GitRepository, SessionResult};
 use crate::domain::services::scoring::Rank;
+use crate::infrastructure::browser;
 use crate::presentation::ui::Colors;
 use anyhow::Result;
 use crossterm::event::KeyCode;
@@ -117,7 +118,7 @@ impl SharingService {
     }
 
     fn open_browser(url: &str) -> Result<()> {
-        open::that(url).map_err(|e| anyhow::anyhow!("Failed to open browser: {}", e))
+        browser::open_url(url).map_err(|e| anyhow::anyhow!("Failed to open browser: {}", e))
     }
 
     fn display_url_fallback(url: &str, platform: &SharingPlatform) -> Result<()> {

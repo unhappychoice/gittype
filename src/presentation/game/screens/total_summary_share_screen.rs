@@ -1,6 +1,7 @@
 use crate::domain::events::EventBus;
 use crate::domain::models::TotalResult;
 use crate::domain::services::scoring::{TotalCalculator, TotalTracker, GLOBAL_TOTAL_TRACKER};
+use crate::infrastructure::browser;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::views::SharingView;
 use crate::presentation::game::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
@@ -118,7 +119,7 @@ impl TotalSummaryShareScreen {
     }
 
     fn open_browser(&self, url: &str) -> crate::Result<()> {
-        open::that(url)
+        browser::open_url(url)
             .map_err(|e| GitTypeError::TerminalError(format!("Failed to open browser: {}", e)))
     }
 }

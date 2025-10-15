@@ -1,4 +1,5 @@
 use crate::domain::events::EventBus;
+use crate::infrastructure::browser;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
@@ -91,12 +92,12 @@ impl InfoDialogScreen {
 
     fn try_open_github() -> Result<bool> {
         let url = "https://github.com/unhappychoice/gittype";
-        Ok(open::that(url).is_ok())
+        Ok(browser::open_url(url).is_ok())
     }
 
     fn try_open_x() -> Result<bool> {
         let url = "https://x.com/search?q=%23gittype";
-        Ok(open::that(url).is_ok())
+        Ok(browser::open_url(url).is_ok())
     }
 
     fn render_menu_ratatui(&self, frame: &mut Frame, selected_option: usize) {
