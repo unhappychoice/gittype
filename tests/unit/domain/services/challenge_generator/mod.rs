@@ -1,1 +1,4 @@
 mod challenge_generator_tests;
+mod chunk_splitter_tests;
+mod code_character_counter_tests;
+mod progress_tracker_tests;
