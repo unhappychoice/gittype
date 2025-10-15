@@ -1,7 +1,7 @@
 use crate::infrastructure::http::OssInsightClient;
+use crate::infrastructure::storage::file_storage::FileStorage;
 use crate::Result;
 use serde::{Deserialize, Serialize};
-use std::fs;
 use std::path::PathBuf;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
@@ -27,6 +27,7 @@ pub struct TrendingRepository {
     cache_dir: PathBuf,
     ttl_seconds: u64,
     oss_insight_client: OssInsightClient,
+    file_storage: FileStorage,
 }
 
 impl Default for TrendingRepository {
@@ -47,6 +48,7 @@ impl TrendingRepository {
             cache_dir,
             ttl_seconds,
             oss_insight_client: OssInsightClient::new(),
+            file_storage: FileStorage::new(),
         }
     }
 
@@ -57,6 +59,7 @@ impl TrendingRepository {
             cache_dir,
             ttl_seconds,
             oss_insight_client: OssInsightClient::new(),
+            file_storage: FileStorage::new(),
         }
     }
 
@@ -96,12 +99,11 @@ impl TrendingRepository {
     /// Get data from cache if valid
     fn get_from_cache(&self, key: &str) -> Option<Vec<TrendingRepositoryInfo>> {
         let cache_file = self.get_cache_file(key);
-        if !cache_file.exists() {
+        if !self.file_storage.file_exists(&cache_file) {
             return None;
         }
 
-        let content = fs::read_to_string(&cache_file).ok()?;
-        let cache_data: TrendingCacheData = serde_json::from_str(&content).ok()?;
+        let cache_data: TrendingCacheData = self.file_storage.read_json(&cache_file).ok()??;
 
         let current_time = SystemTime::now()
             .duration_since(UNIX_EPOCH)
@@ -113,15 +115,13 @@ impl TrendingRepository {
             Some(cache_data.repositories)
         } else {
             // Remove expired cache file
-            let _ = fs::remove_file(&cache_file);
+            let _ = self.file_storage.delete_file(&cache_file);
             None
         }
     }
 
     /// Save data to cache
     fn save_to_cache(&self, key: &str, repositories: &[TrendingRepositoryInfo]) {
-        let _ = fs::create_dir_all(&self.cache_dir);
-
         let current_time = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap_or_else(|_| Duration::from_secs(0))
@@ -134,9 +134,7 @@ impl TrendingRepository {
         };
 
         let cache_file = self.get_cache_file(key);
-        if let Ok(content) = serde_json::to_string_pretty(&cache_data) {
-            let _ = fs::write(&cache_file, content);
-        }
+        let _ = self.file_storage.write_json(&cache_file, &cache_data);
     }
 
     /// Fetch fresh data from API
