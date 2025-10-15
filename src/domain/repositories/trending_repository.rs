@@ -60,6 +60,12 @@ impl TrendingRepository {
         }
     }
 
+    /// Create a new repository for testing that doesn't make HTTP requests
+    #[doc(hidden)]
+    pub fn new_test() -> Self {
+        Self::with_cache_dir(PathBuf::from("/mock/trending_cache"))
+    }
+
     /// Get trending repositories with caching and fallback to fresh data
     pub async fn get_trending_repositories(
         &self,

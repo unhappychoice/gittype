@@ -27,6 +27,16 @@ impl SessionRepository {
         })
     }
 
+    /// Create a new repository with an in-memory database for testing
+    #[doc(hidden)]
+    pub fn new_test() -> Result<Self> {
+        let database = Database::new_test()?;
+        database.init()?;
+        Ok(Self {
+            database: Arc::new(Mutex::new(database)),
+        })
+    }
+
     /// Record a completed session to the database
     pub fn record_session(
         &self,

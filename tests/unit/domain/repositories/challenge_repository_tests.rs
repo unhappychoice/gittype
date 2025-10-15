@@ -32,7 +32,7 @@ mod tests {
     use super::*;
 
     fn create_test_cache() -> ChallengeRepository {
-        ChallengeRepository::with_cache_dir(PathBuf::from("/mock/cache"))
+        ChallengeRepository::new_test()
     }
 
     #[test]
