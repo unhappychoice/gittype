@@ -1,4 +1,4 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, Criterion};
 use gittype::domain::models::languages::Rust;
 use gittype::domain::services::source_code_parser::parsers::parse_with_thread_local;
 use gittype::domain::services::source_code_parser::ChunkExtractor;
@@ -23,12 +23,12 @@ fn bench_chunk_extractor(c: &mut Criterion) {
         let git_root = Path::new(".");
 
         b.iter(|| {
-            black_box(ChunkExtractor::extract_chunks_from_tree(
-                black_box(&tree),
-                black_box(&rust_code),
-                black_box(file_path),
-                black_box(git_root),
-                black_box(&Rust),
+            std::hint::black_box(ChunkExtractor::extract_chunks_from_tree(
+                std::hint::black_box(&tree),
+                std::hint::black_box(&rust_code),
+                std::hint::black_box(file_path),
+                std::hint::black_box(git_root),
+                std::hint::black_box(&Rust),
             ))
         })
     });

@@ -1,4 +1,4 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, Criterion};
 use gittype::domain::models::{CodeChunk, ExtractionOptions, Languages};
 use gittype::domain::services::challenge_generator::ChallengeGenerator;
 use gittype::domain::services::source_code_parser::SourceCodeParser;
@@ -66,9 +66,11 @@ fn benchmark_challenge_generator(c: &mut Criterion) {
 
     c.bench_function("challenge_generator_all_chunks", |b| {
         b.iter(|| {
-            let challenges = generator
-                .convert_with_progress(black_box(all_chunks.clone()), black_box(&progress));
-            black_box(challenges)
+            let challenges = generator.convert_with_progress(
+                std::hint::black_box(all_chunks.clone()),
+                std::hint::black_box(&progress),
+            );
+            std::hint::black_box(challenges)
         })
     });
 }
