@@ -1,0 +1,139 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [
+        [
+          721,
+          737
+        ],
+        [
+          866,
+          879
+        ]
+      ],
+      "content": "package main\n\nimport (\n    \"fmt\"\n    \"sync\"\n    \"time\"\n)\n\ntype Worker struct {\n    id       int\n    taskChan chan Task\n    wg       *sync.WaitGroup\n}\n\ntype Task struct {\n    ID   int\n    Data string\n}\n\nfunc NewWorker(id int, taskChan chan Task, wg *sync.WaitGroup) *Worker {\n    return &Worker{\n        id:       id,\n        taskChan: taskChan,\n        wg:       wg,\n    }\n}\n\nfunc (w *Worker) Start() {\n    go func() {\n        defer w.wg.Done()\n\n        for task := range w.taskChan {\n            fmt.Printf(\"Worker %d processing task %d: %s\\n\", w.id, task.ID, task.Data)\n            time.Sleep(100 * time.Millisecond)\n        }\n    }()\n}\n\nfunc main() {\n    var wg sync.WaitGroup\n    taskChan := make(chan Task, 10)\n\n    // Start workers\n    for i := 1; i <= 3; i++ {\n        worker := NewWorker(i, taskChan, &wg)\n        wg.Add(1)\n        worker.Start()\n    }\n\n    // Send tasks\n    for i := 1; i <= 5; i++ {\n        taskChan <- Task{ID: i, Data: fmt.Sprintf(\"data-%d\", i)}\n    }\n\n    close(taskChan)\n    wg.Wait()\n}\n",
+      "end_line": 57,
+      "language": "go",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "type Worker struct {\n    id       int\n    taskChan chan Task\n    wg       *sync.WaitGroup\n}",
+      "end_line": 13,
+      "language": "go",
+      "name": "Worker",
+      "original_indentation": 5,
+      "start_line": 9
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "type Task struct {\n    ID   int\n    Data string\n}",
+      "end_line": 18,
+      "language": "go",
+      "name": "Task",
+      "original_indentation": 5,
+      "start_line": 15
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "func NewWorker(id int, taskChan chan Task, wg *sync.WaitGroup) *Worker {\n    return &Worker{\n        id:       id,\n        taskChan: taskChan,\n        wg:       wg,\n    }\n}",
+      "end_line": 26,
+      "language": "go",
+      "name": "NewWorker",
+      "original_indentation": 0,
+      "start_line": 20
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "func (w *Worker) Start() {\n    go func() {\n        defer w.wg.Done()\n\n        for task := range w.taskChan {\n            fmt.Printf(\"Worker %d processing task %d: %s\\n\", w.id, task.ID, task.Data)\n            time.Sleep(100 * time.Millisecond)\n        }\n    }()\n}",
+      "end_line": 37,
+      "language": "go",
+      "name": "Start",
+      "original_indentation": 0,
+      "start_line": 28
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "    go func() {\n        defer w.wg.Done()\n\n        for task := range w.taskChan {\n            fmt.Printf(\"Worker %d processing task %d: %s\\n\", w.id, task.ID, task.Data)\n            time.Sleep(100 * time.Millisecond)\n        }\n    }()",
+      "end_line": 36,
+      "language": "go",
+      "name": "function_call",
+      "original_indentation": 7,
+      "start_line": 29
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [],
+      "content": "        for task := range w.taskChan {\n            fmt.Printf(\"Worker %d processing task %d: %s\\n\", w.id, task.ID, task.Data)\n            time.Sleep(100 * time.Millisecond)\n        }",
+      "end_line": 35,
+      "language": "go",
+      "name": "for_loop",
+      "original_indentation": 8,
+      "start_line": 32
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [
+        [
+          81,
+          97
+        ],
+        [
+          226,
+          239
+        ]
+      ],
+      "content": "func main() {\n    var wg sync.WaitGroup\n    taskChan := make(chan Task, 10)\n\n    // Start workers\n    for i := 1; i <= 3; i++ {\n        worker := NewWorker(i, taskChan, &wg)\n        wg.Add(1)\n        worker.Start()\n    }\n\n    // Send tasks\n    for i := 1; i <= 5; i++ {\n        taskChan <- Task{ID: i, Data: fmt.Sprintf(\"data-%d\", i)}\n    }\n\n    close(taskChan)\n    wg.Wait()\n}",
+      "end_line": 57,
+      "language": "go",
+      "name": "main",
+      "original_indentation": 0,
+      "start_line": 39
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    var wg sync.WaitGroup",
+      "end_line": 40,
+      "language": "go",
+      "name": "wg",
+      "original_indentation": 4,
+      "start_line": 40
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [],
+      "content": "    for i := 1; i <= 3; i++ {\n        worker := NewWorker(i, taskChan, &wg)\n        wg.Add(1)\n        worker.Start()\n    }",
+      "end_line": 48,
+      "language": "go",
+      "name": "for_loop",
+      "original_indentation": 4,
+      "start_line": 44
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [],
+      "content": "    for i := 1; i <= 5; i++ {\n        taskChan <- Task{ID: i, Data: fmt.Sprintf(\"data-%d\", i)}\n    }",
+      "end_line": 53,
+      "language": "go",
+      "name": "for_loop",
+      "original_indentation": 4,
+      "start_line": 51
+    }
+  ],
+  "source_code": "package main\n\nimport (\n    \"fmt\"\n    \"sync\"\n    \"time\"\n)\n\ntype Worker struct {\n    id       int\n    taskChan chan Task\n    wg       *sync.WaitGroup\n}\n\ntype Task struct {\n    ID   int\n    Data string\n}\n\nfunc NewWorker(id int, taskChan chan Task, wg *sync.WaitGroup) *Worker {\n    return &Worker{\n        id:       id,\n        taskChan: taskChan,\n        wg:       wg,\n    }\n}\n\nfunc (w *Worker) Start() {\n    go func() {\n        defer w.wg.Done()\n\n        for task := range w.taskChan {\n            fmt.Printf(\"Worker %d processing task %d: %s\\n\", w.id, task.ID, task.Data)\n            time.Sleep(100 * time.Millisecond)\n        }\n    }()\n}\n\nfunc main() {\n    var wg sync.WaitGroup\n    taskChan := make(chan Task, 10)\n\n    // Start workers\n    for i := 1; i <= 3; i++ {\n        worker := NewWorker(i, taskChan, &wg)\n        wg.Add(1)\n        worker.Start()\n    }\n\n    // Send tasks\n    for i := 1; i <= 5; i++ {\n        taskChan <- Task{ID: i, Data: fmt.Sprintf(\"data-%d\", i)}\n    }\n\n    close(taskChan)\n    wg.Wait()\n}\n",
+  "test_name": "test_go_concurrency_patterns",
+  "total_chunks": 11
+}

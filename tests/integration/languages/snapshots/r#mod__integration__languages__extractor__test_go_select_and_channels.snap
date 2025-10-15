@@ -1,0 +1,101 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "package main\n\nimport (\n    \"fmt\"\n    \"time\"\n)\n\ntype Message struct {\n    Content string\n    Sender  string\n}\n\nfunc sender(ch chan<- Message, name string) {\n    for i := 0; i < 3; i++ {\n        msg := Message{\n            Content: fmt.Sprintf(\"Message %d\", i),\n            Sender:  name,\n        }\n        ch <- msg\n        time.Sleep(100 * time.Millisecond)\n    }\n    close(ch)\n}\n\nfunc receiver(ch1, ch2 <-chan Message, done chan<- bool) {\n    for {\n        select {\n        case msg, ok := <-ch1:\n            if !ok {\n                ch1 = nil\n                continue\n            }\n            fmt.Printf(\"Received from ch1: %s from %s\\n\", msg.Content, msg.Sender)\n\n        case msg, ok := <-ch2:\n            if !ok {\n                ch2 = nil\n                continue\n            }\n            fmt.Printf(\"Received from ch2: %s from %s\\n\", msg.Content, msg.Sender)\n\n        case <-time.After(500 * time.Millisecond):\n            if ch1 == nil && ch2 == nil {\n                done <- true\n                return\n            }\n            fmt.Println(\"Timeout waiting for messages\")\n        }\n    }\n}\n",
+      "end_line": 50,
+      "language": "go",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "type Message struct {\n    Content string\n    Sender  string\n}",
+      "end_line": 11,
+      "language": "go",
+      "name": "Message",
+      "original_indentation": 5,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "func sender(ch chan<- Message, name string) {\n    for i := 0; i < 3; i++ {\n        msg := Message{\n            Content: fmt.Sprintf(\"Message %d\", i),\n            Sender:  name,\n        }\n        ch <- msg\n        time.Sleep(100 * time.Millisecond)\n    }\n    close(ch)\n}",
+      "end_line": 23,
+      "language": "go",
+      "name": "sender",
+      "original_indentation": 0,
+      "start_line": 13
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [],
+      "content": "    for i := 0; i < 3; i++ {\n        msg := Message{\n            Content: fmt.Sprintf(\"Message %d\", i),\n            Sender:  name,\n        }\n        ch <- msg\n        time.Sleep(100 * time.Millisecond)\n    }",
+      "end_line": 21,
+      "language": "go",
+      "name": "for_loop",
+      "original_indentation": 4,
+      "start_line": 14
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "func receiver(ch1, ch2 <-chan Message, done chan<- bool) {\n    for {\n        select {\n        case msg, ok := <-ch1:\n            if !ok {\n                ch1 = nil\n                continue\n            }\n            fmt.Printf(\"Received from ch1: %s from %s\\n\", msg.Content, msg.Sender)\n\n        case msg, ok := <-ch2:\n            if !ok {\n                ch2 = nil\n                continue\n            }\n            fmt.Printf(\"Received from ch2: %s from %s\\n\", msg.Content, msg.Sender)\n\n        case <-time.After(500 * time.Millisecond):\n            if ch1 == nil && ch2 == nil {\n                done <- true\n                return\n            }\n            fmt.Println(\"Timeout waiting for messages\")\n        }\n    }\n}",
+      "end_line": 50,
+      "language": "go",
+      "name": "receiver",
+      "original_indentation": 0,
+      "start_line": 25
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [],
+      "content": "    for {\n        select {\n        case msg, ok := <-ch1:\n            if !ok {\n                ch1 = nil\n                continue\n            }\n            fmt.Printf(\"Received from ch1: %s from %s\\n\", msg.Content, msg.Sender)\n\n        case msg, ok := <-ch2:\n            if !ok {\n                ch2 = nil\n                continue\n            }\n            fmt.Printf(\"Received from ch2: %s from %s\\n\", msg.Content, msg.Sender)\n\n        case <-time.After(500 * time.Millisecond):\n            if ch1 == nil && ch2 == nil {\n                done <- true\n                return\n            }\n            fmt.Println(\"Timeout waiting for messages\")\n        }\n    }",
+      "end_line": 49,
+      "language": "go",
+      "name": "for_loop",
+      "original_indentation": 4,
+      "start_line": 26
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if !ok {\n                ch1 = nil\n                continue\n            }",
+      "end_line": 32,
+      "language": "go",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 29
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if !ok {\n                ch2 = nil\n                continue\n            }",
+      "end_line": 39,
+      "language": "go",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 36
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "            if ch1 == nil && ch2 == nil {\n                done <- true\n                return\n            }",
+      "end_line": 46,
+      "language": "go",
+      "name": "if_block",
+      "original_indentation": 12,
+      "start_line": 43
+    }
+  ],
+  "source_code": "package main\n\nimport (\n    \"fmt\"\n    \"time\"\n)\n\ntype Message struct {\n    Content string\n    Sender  string\n}\n\nfunc sender(ch chan<- Message, name string) {\n    for i := 0; i < 3; i++ {\n        msg := Message{\n            Content: fmt.Sprintf(\"Message %d\", i),\n            Sender:  name,\n        }\n        ch <- msg\n        time.Sleep(100 * time.Millisecond)\n    }\n    close(ch)\n}\n\nfunc receiver(ch1, ch2 <-chan Message, done chan<- bool) {\n    for {\n        select {\n        case msg, ok := <-ch1:\n            if !ok {\n                ch1 = nil\n                continue\n            }\n            fmt.Printf(\"Received from ch1: %s from %s\\n\", msg.Content, msg.Sender)\n\n        case msg, ok := <-ch2:\n            if !ok {\n                ch2 = nil\n                continue\n            }\n            fmt.Printf(\"Received from ch2: %s from %s\\n\", msg.Content, msg.Sender)\n\n        case <-time.After(500 * time.Millisecond):\n            if ch1 == nil && ch2 == nil {\n                done <- true\n                return\n            }\n            fmt.Println(\"Timeout waiting for messages\")\n        }\n    }\n}\n",
+  "test_name": "test_go_select_and_channels",
+  "total_chunks": 9
+}

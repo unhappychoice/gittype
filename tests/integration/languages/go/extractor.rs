@@ -313,3 +313,215 @@ func (dp *DataProcessor) AnalyzePatterns(items []ProcessedItem) map[string]inter
         File: 1,
     }
 }
+
+test_language_extractor! {
+    name: test_go_concurrency_patterns,
+    language: "go",
+    extension: "go",
+    source: r#"package main
+
+import (
+    "fmt"
+    "sync"
+    "time"
+)
+
+type Worker struct {
+    id       int
+    taskChan chan Task
+    wg       *sync.WaitGroup
+}
+
+type Task struct {
+    ID   int
+    Data string
+}
+
+func NewWorker(id int, taskChan chan Task, wg *sync.WaitGroup) *Worker {
+    return &Worker{
+        id:       id,
+        taskChan: taskChan,
+        wg:       wg,
+    }
+}
+
+func (w *Worker) Start() {
+    go func() {
+        defer w.wg.Done()
+
+        for task := range w.taskChan {
+            fmt.Printf("Worker %d processing task %d: %s\n", w.id, task.ID, task.Data)
+            time.Sleep(100 * time.Millisecond)
+        }
+    }()
+}
+
+func main() {
+    var wg sync.WaitGroup
+    taskChan := make(chan Task, 10)
+
+    // Start workers
+    for i := 1; i <= 3; i++ {
+        worker := NewWorker(i, taskChan, &wg)
+        wg.Add(1)
+        worker.Start()
+    }
+
+    // Send tasks
+    for i := 1; i <= 5; i++ {
+        taskChan <- Task{ID: i, Data: fmt.Sprintf("data-%d", i)}
+    }
+
+    close(taskChan)
+    wg.Wait()
+}
+"#,
+    total_chunks: 11,
+    chunk_counts: {
+        Variable: 1,
+        File: 1,
+        Struct: 2,
+        Method: 1,
+        Loop: 3,
+        FunctionCall: 1,
+        Function: 2,
+    }
+}
+
+test_language_extractor! {
+    name: test_go_defer_and_error_handling,
+    language: "go",
+    extension: "go",
+    source: r#"package main
+
+import (
+    "errors"
+    "fmt"
+    "io"
+    "os"
+)
+
+var (
+    ErrInvalidInput = errors.New("invalid input")
+    ErrNotFound     = errors.New("not found")
+)
+
+type FileProcessor struct {
+    filename string
+}
+
+func NewFileProcessor(filename string) *FileProcessor {
+    return &FileProcessor{filename: filename}
+}
+
+func (fp *FileProcessor) Process() error {
+    file, err := os.Open(fp.filename)
+    if err != nil {
+        return fmt.Errorf("failed to open file: %w", err)
+    }
+    defer file.Close()
+
+    data := make([]byte, 1024)
+    n, err := file.Read(data)
+    if err != nil && err != io.EOF {
+        return fmt.Errorf("failed to read file: %w", err)
+    }
+
+    defer func() {
+        fmt.Println("Processing completed")
+    }()
+
+    if n == 0 {
+        return ErrInvalidInput
+    }
+
+    return nil
+}
+
+func cleanup() {
+    defer func() {
+        if r := recover(); r != nil {
+            fmt.Printf("Recovered from panic: %v\n", r)
+        }
+    }()
+
+    panic("something went wrong")
+}
+"#,
+    total_chunks: 14,
+    chunk_counts: {
+        CodeBlock: 2,
+        File: 1,
+        Function: 2,
+        FunctionCall: 2,
+        Variable: 1,
+        Method: 1,
+        Struct: 1,
+        Conditional: 4,
+    }
+}
+
+test_language_extractor! {
+    name: test_go_select_and_channels,
+    language: "go",
+    extension: "go",
+    source: r#"package main
+
+import (
+    "fmt"
+    "time"
+)
+
+type Message struct {
+    Content string
+    Sender  string
+}
+
+func sender(ch chan<- Message, name string) {
+    for i := 0; i < 3; i++ {
+        msg := Message{
+            Content: fmt.Sprintf("Message %d", i),
+            Sender:  name,
+        }
+        ch <- msg
+        time.Sleep(100 * time.Millisecond)
+    }
+    close(ch)
+}
+
+func receiver(ch1, ch2 <-chan Message, done chan<- bool) {
+    for {
+        select {
+        case msg, ok := <-ch1:
+            if !ok {
+                ch1 = nil
+                continue
+            }
+            fmt.Printf("Received from ch1: %s from %s\n", msg.Content, msg.Sender)
+
+        case msg, ok := <-ch2:
+            if !ok {
+                ch2 = nil
+                continue
+            }
+            fmt.Printf("Received from ch2: %s from %s\n", msg.Content, msg.Sender)
+
+        case <-time.After(500 * time.Millisecond):
+            if ch1 == nil && ch2 == nil {
+                done <- true
+                return
+            }
+            fmt.Println("Timeout waiting for messages")
+        }
+    }
+}
+"#,
+    total_chunks: 9,
+    chunk_counts: {
+        Struct: 1,
+        Conditional: 3,
+        File: 1,
+        Function: 2,
+        Loop: 2,
+    }
+}

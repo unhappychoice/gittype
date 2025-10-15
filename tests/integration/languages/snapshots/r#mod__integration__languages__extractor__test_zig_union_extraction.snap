@@ -1,0 +1,61 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nconst Value = union(enum) {\n    int: i32,\n    float: f64,\n    boolean: bool,\n\n    pub fn print(self: Value) void {\n        switch (self) {\n            .int => |val| std.debug.print(\"int: {}\\n\", .{val}),\n            .float => |val| std.debug.print(\"float: {}\\n\", .{val}),\n            .boolean => |val| std.debug.print(\"bool: {}\\n\", .{val}),\n        }\n    }\n};\n\nconst Result = union {\n    Ok: i32,\n    Err: []const u8,\n};\n",
+      "end_line": 19,
+      "language": "zig",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "const Value = union(enum) {\n    int: i32,\n    float: f64,\n    boolean: bool,\n\n    pub fn print(self: Value) void {\n        switch (self) {\n            .int => |val| std.debug.print(\"int: {}\\n\", .{val}),\n            .float => |val| std.debug.print(\"float: {}\\n\", .{val}),\n            .boolean => |val| std.debug.print(\"bool: {}\\n\", .{val}),\n        }\n    }\n};",
+      "end_line": 14,
+      "language": "zig",
+      "name": "Value",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    pub fn print(self: Value) void {\n        switch (self) {\n            .int => |val| std.debug.print(\"int: {}\\n\", .{val}),\n            .float => |val| std.debug.print(\"float: {}\\n\", .{val}),\n            .boolean => |val| std.debug.print(\"bool: {}\\n\", .{val}),\n        }\n    }",
+      "end_line": 13,
+      "language": "zig",
+      "name": "print",
+      "original_indentation": 4,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "        switch (self) {\n            .int => |val| std.debug.print(\"int: {}\\n\", .{val}),\n            .float => |val| std.debug.print(\"float: {}\\n\", .{val}),\n            .boolean => |val| std.debug.print(\"bool: {}\\n\", .{val}),\n        }",
+      "end_line": 12,
+      "language": "zig",
+      "name": "self",
+      "original_indentation": 8,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "const Result = union {\n    Ok: i32,\n    Err: []const u8,\n};",
+      "end_line": 19,
+      "language": "zig",
+      "name": "Result",
+      "original_indentation": 0,
+      "start_line": 16
+    }
+  ],
+  "source_code": "\nconst Value = union(enum) {\n    int: i32,\n    float: f64,\n    boolean: bool,\n\n    pub fn print(self: Value) void {\n        switch (self) {\n            .int => |val| std.debug.print(\"int: {}\\n\", .{val}),\n            .float => |val| std.debug.print(\"float: {}\\n\", .{val}),\n            .boolean => |val| std.debug.print(\"bool: {}\\n\", .{val}),\n        }\n    }\n};\n\nconst Result = union {\n    Ok: i32,\n    Err: []const u8,\n};\n",
+  "test_name": "test_zig_union_extraction",
+  "total_chunks": 5
+}

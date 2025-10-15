@@ -1,0 +1,41 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nconst std = @import(\"std\");\n\nconst FileError = error {\n    AccessDenied,\n    NotFound,\n    OutOfMemory,\n};\n\npub fn readFile(path: []const u8) FileError![]const u8 {\n    if (path.len == 0) {\n        return FileError.NotFound;\n    }\n    return \"file contents\";\n}\n\ntest \"basic addition\" {\n    const result = 2 + 2;\n    try std.testing.expect(result == 4);\n}\n\ntest \"file reading\" {\n    const contents = try readFile(\"test.txt\");\n    try std.testing.expect(contents.len > 0);\n}\n",
+      "end_line": 25,
+      "language": "zig",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "pub fn readFile(path: []const u8) FileError![]const u8 {\n    if (path.len == 0) {\n        return FileError.NotFound;\n    }\n    return \"file contents\";\n}",
+      "end_line": 15,
+      "language": "zig",
+      "name": "readFile",
+      "original_indentation": 0,
+      "start_line": 10
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "    if (path.len == 0) {\n        return FileError.NotFound;\n    }",
+      "end_line": 13,
+      "language": "zig",
+      "name": "if_block",
+      "original_indentation": 4,
+      "start_line": 11
+    }
+  ],
+  "source_code": "\nconst std = @import(\"std\");\n\nconst FileError = error {\n    AccessDenied,\n    NotFound,\n    OutOfMemory,\n};\n\npub fn readFile(path: []const u8) FileError![]const u8 {\n    if (path.len == 0) {\n        return FileError.NotFound;\n    }\n    return \"file contents\";\n}\n\ntest \"basic addition\" {\n    const result = 2 + 2;\n    try std.testing.expect(result == 4);\n}\n\ntest \"file reading\" {\n    const contents = try readFile(\"test.txt\");\n    try std.testing.expect(contents.len > 0);\n}\n",
+  "test_name": "test_zig_error_and_test_blocks",
+  "total_chunks": 3
+}

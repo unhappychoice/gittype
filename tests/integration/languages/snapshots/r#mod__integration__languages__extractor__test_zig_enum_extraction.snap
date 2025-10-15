@@ -1,0 +1,61 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nconst Color = enum {\n    Red,\n    Green,\n    Blue,\n\n    pub fn toRGB(self: Color) [3]u8 {\n        return switch (self) {\n            .Red => [_]u8{255, 0, 0},\n            .Green => [_]u8{0, 255, 0},\n            .Blue => [_]u8{0, 0, 255},\n        };\n    }\n};\n\nconst Status = enum(u8) {\n    Ok = 0,\n    Error = 1,\n    Pending = 2,\n};\n",
+      "end_line": 20,
+      "language": "zig",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Enum",
+      "comment_ranges": [],
+      "content": "const Color = enum {\n    Red,\n    Green,\n    Blue,\n\n    pub fn toRGB(self: Color) [3]u8 {\n        return switch (self) {\n            .Red => [_]u8{255, 0, 0},\n            .Green => [_]u8{0, 255, 0},\n            .Blue => [_]u8{0, 0, 255},\n        };\n    }\n};",
+      "end_line": 14,
+      "language": "zig",
+      "name": "Color",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    pub fn toRGB(self: Color) [3]u8 {\n        return switch (self) {\n            .Red => [_]u8{255, 0, 0},\n            .Green => [_]u8{0, 255, 0},\n            .Blue => [_]u8{0, 0, 255},\n        };\n    }",
+      "end_line": 13,
+      "language": "zig",
+      "name": "toRGB",
+      "original_indentation": 4,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "        return switch (self) {\n            .Red => [_]u8{255, 0, 0},\n            .Green => [_]u8{0, 255, 0},\n            .Blue => [_]u8{0, 0, 255},\n        }",
+      "end_line": 12,
+      "language": "zig",
+      "name": "self",
+      "original_indentation": 15,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "Enum",
+      "comment_ranges": [],
+      "content": "const Status = enum(u8) {\n    Ok = 0,\n    Error = 1,\n    Pending = 2,\n};",
+      "end_line": 20,
+      "language": "zig",
+      "name": "Status",
+      "original_indentation": 0,
+      "start_line": 16
+    }
+  ],
+  "source_code": "\nconst Color = enum {\n    Red,\n    Green,\n    Blue,\n\n    pub fn toRGB(self: Color) [3]u8 {\n        return switch (self) {\n            .Red => [_]u8{255, 0, 0},\n            .Green => [_]u8{0, 255, 0},\n            .Blue => [_]u8{0, 0, 255},\n        };\n    }\n};\n\nconst Status = enum(u8) {\n    Ok = 0,\n    Error = 1,\n    Pending = 2,\n};\n",
+  "test_name": "test_zig_enum_extraction",
+  "total_chunks": 5
+}
