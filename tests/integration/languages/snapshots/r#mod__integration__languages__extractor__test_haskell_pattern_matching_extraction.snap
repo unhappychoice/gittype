@@ -15,12 +15,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "head' :: [a] -> a",
       "end_line": 2,
       "language": "haskell",
-      "name": "signature",
+      "name": "head'",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -30,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "head' [] = error \"Empty list\"",
       "end_line": 3,
       "language": "haskell",
-      "name": "function",
+      "name": "head'",
       "original_indentation": 0,
       "start_line": 3
     },
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "head' (x:_) = x",
       "end_line": 4,
       "language": "haskell",
-      "name": "function",
+      "name": "head'",
       "original_indentation": 0,
       "start_line": 4
     },
@@ -50,8 +50,8 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "length' :: [a] -> Int",
       "end_line": 6,
       "language": "haskell",
-      "name": "function",
-      "original_indentation": 11,
+      "name": "length'",
+      "original_indentation": 0,
       "start_line": 6
     },
     {
@@ -60,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "length' [] = 0",
       "end_line": 7,
       "language": "haskell",
-      "name": "function",
+      "name": "length'",
       "original_indentation": 0,
       "start_line": 7
     },
@@ -70,7 +70,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "length' (_:xs) = 1 + length' xs",
       "end_line": 8,
       "language": "haskell",
-      "name": "function",
+      "name": "length'",
       "original_indentation": 0,
       "start_line": 8
     },
@@ -80,8 +80,8 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "map' :: (a -> b) -> [a] -> [b]",
       "end_line": 10,
       "language": "haskell",
-      "name": "function",
-      "original_indentation": 8,
+      "name": "map'",
+      "original_indentation": 0,
       "start_line": 10
     },
     {
@@ -90,7 +90,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "map' _ [] = []",
       "end_line": 11,
       "language": "haskell",
-      "name": "function",
+      "name": "map'",
       "original_indentation": 0,
       "start_line": 11
     },
@@ -100,7 +100,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "map' f (x:xs) = f x : map' f xs",
       "end_line": 12,
       "language": "haskell",
-      "name": "function",
+      "name": "map'",
       "original_indentation": 0,
       "start_line": 12
     }

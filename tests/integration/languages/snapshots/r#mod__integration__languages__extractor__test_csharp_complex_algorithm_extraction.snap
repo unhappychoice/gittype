@@ -58,7 +58,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 6
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Namespace",
       "comment_ranges": [
         [
           993,
@@ -96,7 +96,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "namespace DataProcessing\n{\n    public class ProcessedItem\n    {\n        public int Id { get; set; }\n        public int OriginalValue { get; set; }\n        public int TransformedValue { get; set; }\n        public string Category { get; set; }\n        public DateTime Timestamp { get; set; }\n        public Dictionary<string, object> Metadata { get; set; }\n    }\n\n    public class DataProcessor<T> where T : IComparable<T>\n    {\n        private readonly Dictionary<string, ProcessedItem> _cache;\n        private readonly List<ProcessedItem> _processingLog;\n        private readonly T _threshold;\n\n        public DataProcessor(T threshold)\n        {\n            _cache = new Dictionary<string, ProcessedItem>();\n            _processingLog = new List<ProcessedItem>();\n            _threshold = threshold;\n        }\n\n        public List<ProcessedItem> ProcessComplexData(List<T> input)\n        {\n            var results = new List<ProcessedItem>();\n            var processedCount = 0;\n\n            // Main processing algorithm - extractable middle chunk\n            for (int i = 0; i < input.Count; i++)\n            {\n                var value = input[i];\n                var cacheKey = $\"item_{i}_{value}\";\n\n                if (_cache.TryGetValue(cacheKey, out var cachedItem))\n                {\n                    results.Add(cachedItem);\n                    continue;\n                }\n\n                var processedItem = new ProcessedItem\n                {\n                    Id = i,\n                    OriginalValue = Convert.ToInt32(value),\n                    Timestamp = DateTime.Now,\n                    Metadata = new Dictionary<string, object>()\n                };\n\n                if (value.CompareTo(_threshold) > 0)\n                {\n                    processedItem.TransformedValue = processedItem.OriginalValue * 2;\n                    processedItem.Category = processedItem.TransformedValue > Convert.ToInt32(_threshold) * 3 ? \"HIGH\" : \"MEDIUM\";\n                    processedCount++;\n\n                    // Additional processing for high values\n                    if (processedItem.TransformedValue > 100)\n                    {\n                        processedItem.Metadata[\"bonus\"] = true;\n                        processedItem.TransformedValue += 10;\n                    }\n                }\n                else if (value.CompareTo(default(T)) > 0)\n                {\n                    processedItem.TransformedValue = processedItem.OriginalValue + Convert.ToInt32(_threshold);\n                    processedItem.Category = \"LOW\";\n                }\n                else\n                {\n                    continue; // skip invalid values\n                }\n\n                _cache[cacheKey] = processedItem;\n                _processingLog.Add(processedItem);\n                results.Add(processedItem);\n            }\n\n            // Finalization logic\n            if (processedCount > 0)\n            {\n                var average = results.Average(r => r.TransformedValue);\n                Console.WriteLine($\"Processing complete. Average: {average:F2}\");\n\n                // Add summary metadata\n                foreach (var item in results)\n                {\n                    item.Metadata[\"processing_average\"] = average;\n                }\n            }\n\n            return results;\n        }\n\n        public Dictionary<string, object> AnalyzePatterns(List<ProcessedItem> items)\n        {\n            var analysis = new Dictionary<string, object>();\n            var categoryGroups = items.GroupBy(i => i.Category).ToDictionary(g => g.Key, g => g.ToList());\n\n            // Pattern analysis logic - extractable middle chunk\n            foreach (var categoryGroup in categoryGroups)\n            {\n                var category = categoryGroup.Key;\n                var categoryItems = categoryGroup.Value;\n\n                var categoryAnalysis = new Dictionary<string, object>\n                {\n                    [\"count\"] = categoryItems.Count,\n                    [\"percentage\"] = (double)categoryItems.Count / items.Count * 100,\n                    [\"avg_value\"] = categoryItems.Average(i => i.TransformedValue),\n                    [\"min_value\"] = categoryItems.Min(i => i.TransformedValue),\n                    [\"max_value\"] = categoryItems.Max(i => i.TransformedValue)\n                };\n\n                // Time-based analysis\n                var recentItems = categoryItems.Where(i => (DateTime.Now - i.Timestamp).TotalMinutes < 1).ToList();\n                if (recentItems.Any())\n                {\n                    categoryAnalysis[\"recent_count\"] = recentItems.Count;\n                    categoryAnalysis[\"recent_avg\"] = recentItems.Average(i => i.TransformedValue);\n                }\n\n                // High-value analysis\n                var highValueItems = categoryItems.Where(i => i.TransformedValue > 1000).ToList();\n                if (highValueItems.Any())\n                {\n                    categoryAnalysis[\"high_value_count\"] = highValueItems.Count;\n                }\n\n                analysis[category] = categoryAnalysis;\n            }\n\n            analysis[\"total_items\"] = items.Count;\n            analysis[\"processing_time\"] = DateTime.Now;\n\n            return analysis;\n        }\n    }\n}",
       "end_line": 144,
       "language": "csharp",
-      "name": "namespace",
+      "name": "DataProcessing",
       "original_indentation": 0,
       "start_line": 6
     },
@@ -116,67 +116,67 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    public class ProcessedItem\n    {\n        public int Id { get; set; }\n        public int OriginalValue { get; set; }\n        public int TransformedValue { get; set; }\n        public string Category { get; set; }\n        public DateTime Timestamp { get; set; }\n        public Dictionary<string, object> Metadata { get; set; }\n    }",
       "end_line": 16,
       "language": "csharp",
-      "name": "class",
+      "name": "ProcessedItem",
       "original_indentation": 4,
       "start_line": 8
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "        public int Id { get; set; }",
       "end_line": 10,
       "language": "csharp",
-      "name": "property",
+      "name": "Id",
       "original_indentation": 8,
       "start_line": 10
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "        public int OriginalValue { get; set; }",
       "end_line": 11,
       "language": "csharp",
-      "name": "property",
+      "name": "OriginalValue",
       "original_indentation": 8,
       "start_line": 11
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "        public int TransformedValue { get; set; }",
       "end_line": 12,
       "language": "csharp",
-      "name": "property",
+      "name": "TransformedValue",
       "original_indentation": 8,
       "start_line": 12
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "        public string Category { get; set; }",
       "end_line": 13,
       "language": "csharp",
-      "name": "property",
+      "name": "Category",
       "original_indentation": 8,
       "start_line": 13
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "        public DateTime Timestamp { get; set; }",
       "end_line": 14,
       "language": "csharp",
-      "name": "property",
+      "name": "DateTime",
       "original_indentation": 8,
       "start_line": 14
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "        public Dictionary<string, object> Metadata { get; set; }",
       "end_line": 15,
       "language": "csharp",
-      "name": "property",
+      "name": "Metadata",
       "original_indentation": 8,
       "start_line": 15
     },
@@ -229,7 +229,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    public class DataProcessor<T> where T : IComparable<T>\n    {\n        private readonly Dictionary<string, ProcessedItem> _cache;\n        private readonly List<ProcessedItem> _processingLog;\n        private readonly T _threshold;\n\n        public DataProcessor(T threshold)\n        {\n            _cache = new Dictionary<string, ProcessedItem>();\n            _processingLog = new List<ProcessedItem>();\n            _threshold = threshold;\n        }\n\n        public List<ProcessedItem> ProcessComplexData(List<T> input)\n        {\n            var results = new List<ProcessedItem>();\n            var processedCount = 0;\n\n            // Main processing algorithm - extractable middle chunk\n            for (int i = 0; i < input.Count; i++)\n            {\n                var value = input[i];\n                var cacheKey = $\"item_{i}_{value}\";\n\n                if (_cache.TryGetValue(cacheKey, out var cachedItem))\n                {\n                    results.Add(cachedItem);\n                    continue;\n                }\n\n                var processedItem = new ProcessedItem\n                {\n                    Id = i,\n                    OriginalValue = Convert.ToInt32(value),\n                    Timestamp = DateTime.Now,\n                    Metadata = new Dictionary<string, object>()\n                };\n\n                if (value.CompareTo(_threshold) > 0)\n                {\n                    processedItem.TransformedValue = processedItem.OriginalValue * 2;\n                    processedItem.Category = processedItem.TransformedValue > Convert.ToInt32(_threshold) * 3 ? \"HIGH\" : \"MEDIUM\";\n                    processedCount++;\n\n                    // Additional processing for high values\n                    if (processedItem.TransformedValue > 100)\n                    {\n                        processedItem.Metadata[\"bonus\"] = true;\n                        processedItem.TransformedValue += 10;\n                    }\n                }\n                else if (value.CompareTo(default(T)) > 0)\n                {\n                    processedItem.TransformedValue = processedItem.OriginalValue + Convert.ToInt32(_threshold);\n                    processedItem.Category = \"LOW\";\n                }\n                else\n                {\n                    continue; // skip invalid values\n                }\n\n                _cache[cacheKey] = processedItem;\n                _processingLog.Add(processedItem);\n                results.Add(processedItem);\n            }\n\n            // Finalization logic\n            if (processedCount > 0)\n            {\n                var average = results.Average(r => r.TransformedValue);\n                Console.WriteLine($\"Processing complete. Average: {average:F2}\");\n\n                // Add summary metadata\n                foreach (var item in results)\n                {\n                    item.Metadata[\"processing_average\"] = average;\n                }\n            }\n\n            return results;\n        }\n\n        public Dictionary<string, object> AnalyzePatterns(List<ProcessedItem> items)\n        {\n            var analysis = new Dictionary<string, object>();\n            var categoryGroups = items.GroupBy(i => i.Category).ToDictionary(g => g.Key, g => g.ToList());\n\n            // Pattern analysis logic - extractable middle chunk\n            foreach (var categoryGroup in categoryGroups)\n            {\n                var category = categoryGroup.Key;\n                var categoryItems = categoryGroup.Value;\n\n                var categoryAnalysis = new Dictionary<string, object>\n                {\n                    [\"count\"] = categoryItems.Count,\n                    [\"percentage\"] = (double)categoryItems.Count / items.Count * 100,\n                    [\"avg_value\"] = categoryItems.Average(i => i.TransformedValue),\n                    [\"min_value\"] = categoryItems.Min(i => i.TransformedValue),\n                    [\"max_value\"] = categoryItems.Max(i => i.TransformedValue)\n                };\n\n                // Time-based analysis\n                var recentItems = categoryItems.Where(i => (DateTime.Now - i.Timestamp).TotalMinutes < 1).ToList();\n                if (recentItems.Any())\n                {\n                    categoryAnalysis[\"recent_count\"] = recentItems.Count;\n                    categoryAnalysis[\"recent_avg\"] = recentItems.Average(i => i.TransformedValue);\n                }\n\n                // High-value analysis\n                var highValueItems = categoryItems.Where(i => i.TransformedValue > 1000).ToList();\n                if (highValueItems.Any())\n                {\n                    categoryAnalysis[\"high_value_count\"] = highValueItems.Count;\n                }\n\n                analysis[category] = categoryAnalysis;\n            }\n\n            analysis[\"total_items\"] = items.Count;\n            analysis[\"processing_time\"] = DateTime.Now;\n\n            return analysis;\n        }\n    }",
       "end_line": 143,
       "language": "csharp",
-      "name": "class",
+      "name": "DataProcessor",
       "original_indentation": 4,
       "start_line": 18
     },
@@ -249,7 +249,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        public DataProcessor(T threshold)\n        {\n            _cache = new Dictionary<string, ProcessedItem>();\n            _processingLog = new List<ProcessedItem>();\n            _threshold = threshold;\n        }",
       "end_line": 29,
       "language": "csharp",
-      "name": "method",
+      "name": "DataProcessor",
       "original_indentation": 8,
       "start_line": 24
     },
@@ -300,7 +300,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        public List<ProcessedItem> ProcessComplexData(List<T> input)\n        {\n            var results = new List<ProcessedItem>();\n            var processedCount = 0;\n\n            // Main processing algorithm - extractable middle chunk\n            for (int i = 0; i < input.Count; i++)\n            {\n                var value = input[i];\n                var cacheKey = $\"item_{i}_{value}\";\n\n                if (_cache.TryGetValue(cacheKey, out var cachedItem))\n                {\n                    results.Add(cachedItem);\n                    continue;\n                }\n\n                var processedItem = new ProcessedItem\n                {\n                    Id = i,\n                    OriginalValue = Convert.ToInt32(value),\n                    Timestamp = DateTime.Now,\n                    Metadata = new Dictionary<string, object>()\n                };\n\n                if (value.CompareTo(_threshold) > 0)\n                {\n                    processedItem.TransformedValue = processedItem.OriginalValue * 2;\n                    processedItem.Category = processedItem.TransformedValue > Convert.ToInt32(_threshold) * 3 ? \"HIGH\" : \"MEDIUM\";\n                    processedCount++;\n\n                    // Additional processing for high values\n                    if (processedItem.TransformedValue > 100)\n                    {\n                        processedItem.Metadata[\"bonus\"] = true;\n                        processedItem.TransformedValue += 10;\n                    }\n                }\n                else if (value.CompareTo(default(T)) > 0)\n                {\n                    processedItem.TransformedValue = processedItem.OriginalValue + Convert.ToInt32(_threshold);\n                    processedItem.Category = \"LOW\";\n                }\n                else\n                {\n                    continue; // skip invalid values\n                }\n\n                _cache[cacheKey] = processedItem;\n                _processingLog.Add(processedItem);\n                results.Add(processedItem);\n            }\n\n            // Finalization logic\n            if (processedCount > 0)\n            {\n                var average = results.Average(r => r.TransformedValue);\n                Console.WriteLine($\"Processing complete. Average: {average:F2}\");\n\n                // Add summary metadata\n                foreach (var item in results)\n                {\n                    item.Metadata[\"processing_average\"] = average;\n                }\n            }\n\n            return results;\n        }",
       "end_line": 98,
       "language": "csharp",
-      "name": "method",
+      "name": "ProcessComplexData",
       "original_indentation": 8,
       "start_line": 31
     },
@@ -492,7 +492,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "                foreach (var item in results)\n                {\n                    item.Metadata[\"processing_average\"] = average;\n                }",
       "end_line": 94,
       "language": "csharp",
-      "name": "foreach_loop",
+      "name": "item",
       "original_indentation": 16,
       "start_line": 91
     },
@@ -535,7 +535,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        public Dictionary<string, object> AnalyzePatterns(List<ProcessedItem> items)\n        {\n            var analysis = new Dictionary<string, object>();\n            var categoryGroups = items.GroupBy(i => i.Category).ToDictionary(g => g.Key, g => g.ToList());\n\n            // Pattern analysis logic - extractable middle chunk\n            foreach (var categoryGroup in categoryGroups)\n            {\n                var category = categoryGroup.Key;\n                var categoryItems = categoryGroup.Value;\n\n                var categoryAnalysis = new Dictionary<string, object>\n                {\n                    [\"count\"] = categoryItems.Count,\n                    [\"percentage\"] = (double)categoryItems.Count / items.Count * 100,\n                    [\"avg_value\"] = categoryItems.Average(i => i.TransformedValue),\n                    [\"min_value\"] = categoryItems.Min(i => i.TransformedValue),\n                    [\"max_value\"] = categoryItems.Max(i => i.TransformedValue)\n                };\n\n                // Time-based analysis\n                var recentItems = categoryItems.Where(i => (DateTime.Now - i.Timestamp).TotalMinutes < 1).ToList();\n                if (recentItems.Any())\n                {\n                    categoryAnalysis[\"recent_count\"] = recentItems.Count;\n                    categoryAnalysis[\"recent_avg\"] = recentItems.Average(i => i.TransformedValue);\n                }\n\n                // High-value analysis\n                var highValueItems = categoryItems.Where(i => i.TransformedValue > 1000).ToList();\n                if (highValueItems.Any())\n                {\n                    categoryAnalysis[\"high_value_count\"] = highValueItems.Count;\n                }\n\n                analysis[category] = categoryAnalysis;\n            }\n\n            analysis[\"total_items\"] = items.Count;\n            analysis[\"processing_time\"] = DateTime.Now;\n\n            return analysis;\n        }",
       "end_line": 142,
       "language": "csharp",
-      "name": "method",
+      "name": "AnalyzePatterns",
       "original_indentation": 8,
       "start_line": 100
     },
@@ -577,7 +577,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "            foreach (var categoryGroup in categoryGroups)\n            {\n                var category = categoryGroup.Key;\n                var categoryItems = categoryGroup.Value;\n\n                var categoryAnalysis = new Dictionary<string, object>\n                {\n                    [\"count\"] = categoryItems.Count,\n                    [\"percentage\"] = (double)categoryItems.Count / items.Count * 100,\n                    [\"avg_value\"] = categoryItems.Average(i => i.TransformedValue),\n                    [\"min_value\"] = categoryItems.Min(i => i.TransformedValue),\n                    [\"max_value\"] = categoryItems.Max(i => i.TransformedValue)\n                };\n\n                // Time-based analysis\n                var recentItems = categoryItems.Where(i => (DateTime.Now - i.Timestamp).TotalMinutes < 1).ToList();\n                if (recentItems.Any())\n                {\n                    categoryAnalysis[\"recent_count\"] = recentItems.Count;\n                    categoryAnalysis[\"recent_avg\"] = recentItems.Average(i => i.TransformedValue);\n                }\n\n                // High-value analysis\n                var highValueItems = categoryItems.Where(i => i.TransformedValue > 1000).ToList();\n                if (highValueItems.Any())\n                {\n                    categoryAnalysis[\"high_value_count\"] = highValueItems.Count;\n                }\n\n                analysis[category] = categoryAnalysis;\n            }",
       "end_line": 136,
       "language": "csharp",
-      "name": "foreach_loop",
+      "name": "categoryGroup",
       "original_indentation": 12,
       "start_line": 106
     },

@@ -93,7 +93,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 11
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "    private val cache = mutableMapOf<String, ProcessedItem>()",
       "end_line": 12,
@@ -103,7 +103,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 12
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "    private val processingLog = mutableListOf<ProcessedItem>()",
       "end_line": 13,
@@ -136,7 +136,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 15
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "        val results = mutableListOf<ProcessedItem>()",
       "end_line": 16,
@@ -146,7 +146,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 16
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "        var processedCount = 0",
       "end_line": 17,
@@ -171,7 +171,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 20
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "            val cacheKey = \"item_${index}_$value\"",
       "end_line": 21,
@@ -191,7 +191,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 23
     },
     {
-      "chunk_type": "Conditional",
+      "chunk_type": "Variable",
       "comment_ranges": [
         [
           1326,
@@ -201,12 +201,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "            val processedItem = when {\n                value > threshold -> {\n                    val transformedValue = value * 2\n                    val category = if (transformedValue > threshold * 3) \"HIGH\" else \"MEDIUM\"\n                    val bonusValue = if (transformedValue > 100) transformedValue + 10 else transformedValue\n\n                    ProcessedItem(\n                        id = index,\n                        originalValue = value,\n                        transformedValue = bonusValue,\n                        category = category,\n                        metadata = mutableMapOf(\n                            \"processed\" to true,\n                            \"multiplier\" to 2,\n                            \"processor\" to \"enhanced\"\n                        )\n                    ).also { processedCount++ }\n                }\n                value > 0 -> ProcessedItem(\n                    id = index,\n                    originalValue = value,\n                    transformedValue = value + threshold,\n                    category = \"LOW\",\n                    metadata = mutableMapOf(\n                        \"processed\" to true,\n                        \"adjusted\" to true,\n                        \"processor\" to \"basic\"\n                    )\n                )\n                else -> return@forEachIndexed // skip negative values\n            }",
       "end_line": 58,
       "language": "kotlin",
-      "name": "when_block",
-      "original_indentation": 32,
+      "name": "property",
+      "original_indentation": 12,
       "start_line": 28
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "                    val transformedValue = value * 2",
       "end_line": 30,
@@ -216,7 +216,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 30
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "                    val category = if (transformedValue > threshold * 3) \"HIGH\" else \"MEDIUM\"",
       "end_line": 31,
@@ -226,7 +226,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 31
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "                    val bonusValue = if (transformedValue > 100) transformedValue + 10 else transformedValue",
       "end_line": 32,
@@ -286,7 +286,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 66
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "            val average = results.map { it.transformedValue }.average()",
       "end_line": 67,
@@ -333,7 +333,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 78
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "        val analysis = mutableMapOf<String, Map<String, Any>>()",
       "end_line": 79,
@@ -343,7 +343,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 79
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "        val categoryGroups = items.groupBy { it.category }",
       "end_line": 80,
@@ -376,7 +376,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 83
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "            val values = categoryItems.map { it.transformedValue.toDouble() }",
       "end_line": 84,
@@ -386,17 +386,17 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 84
     },
     {
-      "chunk_type": "FunctionCall",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "            val categoryAnalysis = mapOf(\n                \"count\" to categoryItems.size,\n                \"percentage\" to (categoryItems.size.toDouble() / items.size * 100),\n                \"avg_value\" to values.average(),\n                \"min_value\" to values.minOrNull(),\n                \"max_value\" to values.maxOrNull()\n            ).toMutableMap()",
       "end_line": 91,
       "language": "kotlin",
-      "name": "function_call",
-      "original_indentation": 35,
+      "name": "property",
+      "original_indentation": 12,
       "start_line": 85
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "            val currentTime = System.currentTimeMillis()",
       "end_line": 94,
@@ -406,7 +406,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 94
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "            val recentItems = categoryItems.filter { currentTime - it.timestamp < 60000 }",
       "end_line": 95,
@@ -426,7 +426,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 96
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "            val highValueItems = categoryItems.filter { it.transformedValue > 1000 }",
       "end_line": 102,

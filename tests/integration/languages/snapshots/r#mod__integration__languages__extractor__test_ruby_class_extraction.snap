@@ -20,17 +20,17 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class Person\n  attr_accessor :name, :age\n\n  def initialize(name, age)\n    @name = name\n    @age = age\n  end\n\n  def greet\n    puts \"Hello, I'm #{@name}!\"\n  end\nend",
       "end_line": 13,
       "language": "ruby",
-      "name": "class",
+      "name": "Person",
       "original_indentation": 0,
       "start_line": 2
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Method",
       "comment_ranges": [],
       "content": "  attr_accessor :name, :age",
       "end_line": 3,
       "language": "ruby",
-      "name": "attr_accessor",
+      "name": "name, age (2)",
       "original_indentation": 2,
       "start_line": 3
     },
@@ -50,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "  def initialize(name, age)\n    @name = name\n    @age = age\n  end",
       "end_line": 8,
       "language": "ruby",
-      "name": "method",
+      "name": "initialize",
       "original_indentation": 2,
       "start_line": 5
     },
@@ -60,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "  def greet\n    puts \"Hello, I'm #{@name}!\"\n  end",
       "end_line": 12,
       "language": "ruby",
-      "name": "method",
+      "name": "greet",
       "original_indentation": 2,
       "start_line": 10
     }

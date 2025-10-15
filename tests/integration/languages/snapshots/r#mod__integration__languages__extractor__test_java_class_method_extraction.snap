@@ -20,7 +20,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "public class HelloWorld {\n    private String message;\n\n    public HelloWorld(String message) {\n        this.message = message;\n    }\n\n    public void printMessage() {\n        System.out.println(this.message);\n    }\n\n    public static void main(String[] args) {\n        HelloWorld hello = new HelloWorld(\"Hello, World!\");\n        hello.printMessage();\n    }\n\n    private int calculateLength() {\n        return this.message.length();\n    }\n}",
       "end_line": 20,
       "language": "java",
-      "name": "class",
+      "name": "HelloWorld",
       "original_indentation": 0,
       "start_line": 1
     },
@@ -35,12 +35,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "    private String message;",
       "end_line": 2,
       "language": "java",
-      "name": "field",
+      "name": "message",
       "original_indentation": 4,
       "start_line": 2
     },
@@ -60,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    public HelloWorld(String message) {\n        this.message = message;\n    }",
       "end_line": 6,
       "language": "java",
-      "name": "method",
+      "name": "HelloWorld",
       "original_indentation": 4,
       "start_line": 4
     },
@@ -80,7 +80,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    public void printMessage() {\n        System.out.println(this.message);\n    }",
       "end_line": 10,
       "language": "java",
-      "name": "method",
+      "name": "printMessage",
       "original_indentation": 4,
       "start_line": 8
     },
@@ -90,7 +90,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    public static void main(String[] args) {\n        HelloWorld hello = new HelloWorld(\"Hello, World!\");\n        hello.printMessage();\n    }",
       "end_line": 15,
       "language": "java",
-      "name": "method",
+      "name": "main",
       "original_indentation": 4,
       "start_line": 12
     },
@@ -110,7 +110,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    private int calculateLength() {\n        return this.message.length();\n    }",
       "end_line": 19,
       "language": "java",
-      "name": "method",
+      "name": "calculateLength",
       "original_indentation": 4,
       "start_line": 17
     }

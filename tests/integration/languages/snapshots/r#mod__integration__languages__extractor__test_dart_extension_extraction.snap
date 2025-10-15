@@ -25,12 +25,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 2
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "extension StringExtensions on String {\n  bool get isEmail {\n    return contains('@') && contains('.');\n  }\n\n  String capitalize() {\n    if (isEmpty) return this;\n    return this[0].toUpperCase() + substring(1);\n  }\n}",
       "end_line": 11,
       "language": "dart",
-      "name": "extension",
+      "name": "StringExtensions",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -45,12 +45,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 3
     },
     {
-      "chunk_type": "Method",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "  String capitalize()",
       "end_line": 7,
       "language": "dart",
-      "name": "method",
+      "name": "capitalize",
       "original_indentation": 2,
       "start_line": 7
     },
@@ -75,12 +75,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 13
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "extension IntExtensions on int {\n  bool get isEven => this % 2 == 0;\n  bool get isOdd => !isEven;\n\n  int get squared => this * this;\n}",
       "end_line": 18,
       "language": "dart",
-      "name": "extension",
+      "name": "IntExtensions",
       "original_indentation": 0,
       "start_line": 13
     }

@@ -15,12 +15,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "object Main {\n    def main(args: Array[String]): Unit = {\n        println(\"Hello, world!\")\n    }\n\n    val PI = 3.14159\n}",
       "end_line": 8,
       "language": "scala",
-      "name": "object",
+      "name": "Main",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -30,17 +30,17 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def main(args: Array[String]): Unit = {\n        println(\"Hello, world!\")\n    }",
       "end_line": 5,
       "language": "scala",
-      "name": "function",
+      "name": "main",
       "original_indentation": 4,
       "start_line": 3
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "object MathUtils {\n    def factorial(n: Int): Int = {\n        if (n <= 1) 1 else n * factorial(n - 1)\n    }\n}",
       "end_line": 14,
       "language": "scala",
-      "name": "object",
+      "name": "MathUtils",
       "original_indentation": 0,
       "start_line": 10
     },
@@ -50,17 +50,17 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def factorial(n: Int): Int = {\n        if (n <= 1) 1 else n * factorial(n - 1)\n    }",
       "end_line": 13,
       "language": "scala",
-      "name": "function",
+      "name": "factorial",
       "original_indentation": 4,
       "start_line": 11
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "case object Singleton {\n    def process(): String = \"processing\"\n}",
       "end_line": 18,
       "language": "scala",
-      "name": "object",
+      "name": "Singleton",
       "original_indentation": 0,
       "start_line": 16
     },
@@ -70,7 +70,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def process(): String = \"processing\"",
       "end_line": 17,
       "language": "scala",
-      "name": "function",
+      "name": "process",
       "original_indentation": 4,
       "start_line": 17
     }

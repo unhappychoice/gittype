@@ -26,8 +26,9 @@ double calculate_area(double radius) {
 "#,
     total_chunks: 7,
     chunk_counts: {
-        CodeBlock: 6,
+        Function: 4,
         File: 1,
+        CodeBlock: 2,
     }
 }
 
@@ -74,7 +75,9 @@ int main() {
 "#,
     total_chunks: 15,
     chunk_counts: {
-        CodeBlock: 14,
+        Struct: 2,
+        Function: 8,
+        Variable: 4,
         File: 1,
     }
 }
@@ -112,7 +115,9 @@ int main() {
 "#,
     total_chunks: 9,
     chunk_counts: {
-        CodeBlock: 8,
+        Function: 4,
+        Variable: 2,
+        CodeBlock: 2,
         File: 1,
     }
 }
@@ -171,7 +176,12 @@ int main() {
 "#,
     total_chunks: 14,
     chunk_counts: {
-        CodeBlock: 11,
+        Struct: 2,
+        Function: 6,
+        Variable: 2,
+        Loop: 1,
+        Conditional: 1,
+        CodeBlock: 1,
         File: 1,
     }
 }
@@ -236,7 +246,12 @@ int main() {
 "#,
     total_chunks: 16,
     chunk_counts: {
-        CodeBlock: 12,
+        Struct: 1,
+        Function: 4,
+        Variable: 4,
+        Loop: 2,
+        Conditional: 1,
+        CodeBlock: 3,
         File: 1,
     }
 }
@@ -275,8 +290,11 @@ int main() {
 "#,
     total_chunks: 12,
     chunk_counts: {
-        CodeBlock: 11,
+        Struct: 2,
+        Function: 5,
+        Variable: 3,
         File: 1,
+        CodeBlock: 1,
     }
 }
 
@@ -424,7 +442,12 @@ public:
 "#,
     total_chunks: 45,
     chunk_counts: {
-        CodeBlock: 31,
+        Struct: 3,
+        Function: 4,
+        Variable: 10,
+        Loop: 2,
+        Conditional: 11,
+        CodeBlock: 14,
         File: 1,
     }
 }

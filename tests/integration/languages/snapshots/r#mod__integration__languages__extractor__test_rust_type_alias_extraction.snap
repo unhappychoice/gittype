@@ -15,32 +15,32 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "TypeAlias",
       "comment_ranges": [],
       "content": "pub type UserId = u64;",
       "end_line": 2,
       "language": "rust",
-      "name": "type_alias",
+      "name": "UserId",
       "original_indentation": 0,
       "start_line": 2
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "TypeAlias",
       "comment_ranges": [],
       "content": "pub type DatabaseResult<T> = Result<T, String>;",
       "end_line": 3,
       "language": "rust",
-      "name": "type_alias",
+      "name": "DatabaseResult",
       "original_indentation": 0,
       "start_line": 3
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "TypeAlias",
       "comment_ranges": [],
       "content": "type Point = (f64, f64);",
       "end_line": 4,
       "language": "rust",
-      "name": "type_alias",
+      "name": "Point",
       "original_indentation": 0,
       "start_line": 4
     }

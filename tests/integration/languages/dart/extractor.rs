@@ -19,9 +19,9 @@ void processData(List<String> data) {
 "#,
     total_chunks: 6,
     chunk_counts: {
+        Function: 3,
         CodeBlock: 2,
         File: 1,
-        Function: 3,
     }
 }
 
@@ -53,10 +53,10 @@ class Calculator {
 "#,
     total_chunks: 8,
     chunk_counts: {
+        Class: 2,
+        Function: 3,
         CodeBlock: 2,
         File: 1,
-        Class: 2,
-        Method: 3,
     }
 }
 
@@ -85,10 +85,10 @@ class Duck with Flyable, Swimmable {
 "#,
     total_chunks: 8,
     chunk_counts: {
-        Class: 1,
-        CodeBlock: 3,
+        Class: 3,
         File: 1,
-        Method: 3,
+        Function: 3,
+        CodeBlock: 1,
     }
 }
 
@@ -123,9 +123,8 @@ class Circle extends Shape {
     total_chunks: 7,
     chunk_counts: {
         Class: 2,
+        Function: 2,
         CodeBlock: 2,
-        File: 1,
-        Method: 2,
         File: 1,
     }
 }
@@ -156,8 +155,8 @@ enum Status { pending, completed, failed }
 "#,
     total_chunks: 3,
     chunk_counts: {
-        CodeBlock: 2,
         File: 1,
+        Enum: 2,
     }
 }
 
@@ -180,8 +179,8 @@ late DatabaseConnection db;
 "#,
     total_chunks: 9,
     chunk_counts: {
-        CodeBlock: 8,
         File: 1,
+        Variable: 8,
     }
 }
 
@@ -210,9 +209,10 @@ extension IntExtensions on int {
 "#,
     total_chunks: 8,
     chunk_counts: {
-        CodeBlock: 6,
+        Class: 2,
+        Function: 1,
+        CodeBlock: 4,
         File: 1,
-        Method: 1,
     }
 }
 
@@ -390,9 +390,11 @@ class DataProcessor {
     total_chunks: 45,
     chunk_counts: {
         Class: 2,
-        CodeBlock: 28,
+        Function: 2,
+        Variable: 20,
+        Loop: 4,
+        Conditional: 8,
+        CodeBlock: 8,
         File: 1,
-        Method: 2,
-        Function: 0,
     }
 }

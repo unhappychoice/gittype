@@ -5,12 +5,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Enum",
       "comment_ranges": [],
       "content": "public enum Color {\n    RED(\"red\", \"#FF0000\"),\n    GREEN(\"green\", \"#00FF00\"),\n    BLUE(\"blue\", \"#0000FF\");\n\n    private final String name;\n    private final String hexCode;\n\n    Color(String name, String hexCode) {\n        this.name = name;\n        this.hexCode = hexCode;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public String getHexCode() {\n        return hexCode;\n    }\n}",
       "end_line": 21,
       "language": "java",
-      "name": "enum",
+      "name": "Color",
       "original_indentation": 0,
       "start_line": 1
     },
@@ -25,22 +25,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "    private final String name;",
       "end_line": 6,
       "language": "java",
-      "name": "field",
+      "name": "name",
       "original_indentation": 4,
       "start_line": 6
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "    private final String hexCode;",
       "end_line": 7,
       "language": "java",
-      "name": "field",
+      "name": "hexCode",
       "original_indentation": 4,
       "start_line": 7
     },
@@ -50,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    Color(String name, String hexCode) {\n        this.name = name;\n        this.hexCode = hexCode;\n    }",
       "end_line": 12,
       "language": "java",
-      "name": "method",
+      "name": "Color",
       "original_indentation": 4,
       "start_line": 9
     },
@@ -60,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    public String getName() {\n        return name;\n    }",
       "end_line": 16,
       "language": "java",
-      "name": "method",
+      "name": "getName",
       "original_indentation": 4,
       "start_line": 14
     },
@@ -80,7 +80,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    public String getHexCode() {\n        return hexCode;\n    }",
       "end_line": 20,
       "language": "java",
-      "name": "method",
+      "name": "getHexCode",
       "original_indentation": 4,
       "start_line": 18
     },
@@ -90,7 +90,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "public class ColorTest {\n    public void testColor() {\n        Color color = Color.RED;\n        System.out.println(color.getName());\n    }\n}",
       "end_line": 28,
       "language": "java",
-      "name": "class",
+      "name": "ColorTest",
       "original_indentation": 0,
       "start_line": 23
     },
@@ -100,7 +100,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    public void testColor() {\n        Color color = Color.RED;\n        System.out.println(color.getName());\n    }",
       "end_line": 27,
       "language": "java",
-      "name": "method",
+      "name": "testColor",
       "original_indentation": 4,
       "start_line": 24
     }

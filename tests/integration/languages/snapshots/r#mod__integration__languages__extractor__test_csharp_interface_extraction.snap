@@ -20,17 +20,17 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "namespace MyApplication.Contracts",
       "end_line": 5,
       "language": "csharp",
-      "name": "name",
+      "name": "MyApplication",
       "original_indentation": 10,
       "start_line": 5
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Namespace",
       "comment_ranges": [],
       "content": "namespace MyApplication.Contracts\n{\n    public interface IUserRepository\n    {\n        Task<User> GetByIdAsync(int id);\n        Task<IEnumerable<User>> GetAllAsync();\n        Task<bool> ExistsAsync(int id);\n    }\n\n    public interface IEmailService\n    {\n        Task SendEmailAsync(string to, string subject, string body);\n        Task<bool> ValidateEmailAsync(string email);\n    }\n}",
       "end_line": 19,
       "language": "csharp",
-      "name": "namespace",
+      "name": "MyApplication.Contracts",
       "original_indentation": 0,
       "start_line": 5
     },
@@ -45,12 +45,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 7
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Interface",
       "comment_ranges": [],
       "content": "    public interface IUserRepository\n    {\n        Task<User> GetByIdAsync(int id);\n        Task<IEnumerable<User>> GetAllAsync();\n        Task<bool> ExistsAsync(int id);\n    }",
       "end_line": 12,
       "language": "csharp",
-      "name": "interface",
+      "name": "IUserRepository",
       "original_indentation": 4,
       "start_line": 7
     },
@@ -60,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        Task<User> GetByIdAsync(int id);",
       "end_line": 9,
       "language": "csharp",
-      "name": "method",
+      "name": "GetByIdAsync",
       "original_indentation": 8,
       "start_line": 9
     },
@@ -70,7 +70,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        Task<IEnumerable<User>> GetAllAsync();",
       "end_line": 10,
       "language": "csharp",
-      "name": "method",
+      "name": "GetAllAsync",
       "original_indentation": 8,
       "start_line": 10
     },
@@ -80,7 +80,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        Task<bool> ExistsAsync(int id);",
       "end_line": 11,
       "language": "csharp",
-      "name": "method",
+      "name": "ExistsAsync",
       "original_indentation": 8,
       "start_line": 11
     },
@@ -95,12 +95,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 14
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Interface",
       "comment_ranges": [],
       "content": "    public interface IEmailService\n    {\n        Task SendEmailAsync(string to, string subject, string body);\n        Task<bool> ValidateEmailAsync(string email);\n    }",
       "end_line": 18,
       "language": "csharp",
-      "name": "interface",
+      "name": "IEmailService",
       "original_indentation": 4,
       "start_line": 14
     },
@@ -110,7 +110,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        Task SendEmailAsync(string to, string subject, string body);",
       "end_line": 16,
       "language": "csharp",
-      "name": "method",
+      "name": "Task",
       "original_indentation": 8,
       "start_line": 16
     },
@@ -120,7 +120,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        Task<bool> ValidateEmailAsync(string email);",
       "end_line": 17,
       "language": "csharp",
-      "name": "method",
+      "name": "ValidateEmailAsync",
       "original_indentation": 8,
       "start_line": 17
     }

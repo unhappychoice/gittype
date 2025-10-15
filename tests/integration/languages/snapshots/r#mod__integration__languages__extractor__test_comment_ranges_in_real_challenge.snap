@@ -52,7 +52,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "fn calculate_sum(a: i32, b: i32) -> i32 {\n    let result = a + b; // Add the numbers\n    /*\n     * Return the result\n     */\n    result\n}",
       "end_line": 8,
       "language": "rust",
-      "name": "function",
+      "name": "calculate_sum",
       "original_indentation": 0,
       "start_line": 2
     }

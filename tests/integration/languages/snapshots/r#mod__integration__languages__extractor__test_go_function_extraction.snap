@@ -20,7 +20,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "func main() {\n    fmt.Println(\"Hello, world!\")\n}",
       "end_line": 7,
       "language": "go",
-      "name": "function",
+      "name": "main",
       "original_indentation": 0,
       "start_line": 5
     },
@@ -30,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "func add(a, b int) int {\n    return a + b\n}",
       "end_line": 11,
       "language": "go",
-      "name": "function",
+      "name": "add",
       "original_indentation": 0,
       "start_line": 9
     },
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "func multiply(x int, y int) int {\n    return x * y\n}",
       "end_line": 15,
       "language": "go",
-      "name": "function",
+      "name": "multiply",
       "original_indentation": 0,
       "start_line": 13
     }

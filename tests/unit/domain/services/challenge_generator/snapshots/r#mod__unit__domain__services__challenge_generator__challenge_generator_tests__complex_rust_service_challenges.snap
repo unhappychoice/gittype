@@ -4591,12 +4591,20 @@ expression: json_string
   ],
   "chunk_types": [
     [
+      "Class",
+      6
+    ],
+    [
       "CodeBlock",
-      96
+      74
     ],
     [
       "Conditional",
       41
+    ],
+    [
+      "Enum",
+      6
     ],
     [
       "File",
@@ -4613,6 +4621,10 @@ expression: json_string
     [
       "Loop",
       6
+    ],
+    [
+      "Struct",
+      10
     ]
   ],
   "difficulty_distribution": [

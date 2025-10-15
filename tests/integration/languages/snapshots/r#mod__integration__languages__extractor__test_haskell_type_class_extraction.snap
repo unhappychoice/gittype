@@ -15,12 +15,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "class Eq a where\n  (==) :: a -> a -> Bool\n  (/=) :: a -> a -> Bool",
       "end_line": 4,
       "language": "haskell",
-      "name": "declaration",
+      "name": "a",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -30,8 +30,8 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "  (==) :: a -> a -> Bool",
       "end_line": 3,
       "language": "haskell",
-      "name": "function",
-      "original_indentation": 10,
+      "name": "a",
+      "original_indentation": 2,
       "start_line": 3
     },
     {
@@ -40,17 +40,17 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "  (/=) :: a -> a -> Bool",
       "end_line": 4,
       "language": "haskell",
-      "name": "function",
-      "original_indentation": 10,
+      "name": "a",
+      "original_indentation": 2,
       "start_line": 4
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "class Show a where\n  show :: a -> String",
       "end_line": 7,
       "language": "haskell",
-      "name": "declaration",
+      "name": "a",
       "original_indentation": 0,
       "start_line": 6
     },
@@ -60,12 +60,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "  show :: a -> String",
       "end_line": 7,
       "language": "haskell",
-      "name": "function",
-      "original_indentation": 10,
+      "name": "show",
+      "original_indentation": 2,
       "start_line": 7
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "instance Eq Bool where\n  True == True = True\n  False == False = True\n  _ == _ = False",
       "end_line": 12,

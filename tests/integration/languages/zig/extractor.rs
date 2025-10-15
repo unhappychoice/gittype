@@ -38,7 +38,7 @@ pub const Config = struct {
     total_chunks: 3,
     chunk_counts: {
         File: 1,
-        Function: 0,
+        Struct: 2,
     }
 }
 
@@ -70,6 +70,7 @@ pub fn main() !void {
     total_chunks: 5,
     chunk_counts: {
         File: 1,
+        Struct: 1,
         Function: 3,
     }
 }

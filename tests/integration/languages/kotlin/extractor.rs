@@ -80,9 +80,10 @@ object Utils {
 "#,
     total_chunks: 7,
     chunk_counts: {
-        CodeBlock: 3,
-        File: 1,
+        Variable: 1,
+        Class: 2,
         Function: 3,
+        File: 1,
     }
 }
 
@@ -149,10 +150,10 @@ var globalVar: String = "global var"
 "#,
     total_chunks: 19,
     chunk_counts: {
-        CodeBlock: 6,
+        Class: 8,
+        Variable: 4,
         File: 1,
         Function: 6,
-        Class: 5,
     }
 }
 
@@ -278,9 +279,11 @@ class DataProcessor(private val threshold: Int) {
 "#,
     total_chunks: 34,
     chunk_counts: {
-        CodeBlock: 15,
-        File: 1,
         Class: 2,
         Function: 2,
+        Variable: 17,
+        FunctionCall: 9,
+        File: 1,
+        Conditional: 3,
     }
 }

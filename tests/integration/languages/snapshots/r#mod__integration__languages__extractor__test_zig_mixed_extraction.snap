@@ -15,12 +15,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Struct",
       "comment_ranges": [],
       "content": "pub const Vector = struct {\n    x: f32,\n    y: f32,\n\n    pub fn init(x: f32, y: f32) Vector {\n        return Vector{ .x = x, .y = y };\n    }\n\n    pub fn length(self: Vector) f32 {\n        return @sqrt(self.x * self.x + self.y * self.y);\n    }\n};",
       "end_line": 15,
       "language": "zig",
-      "name": "struct",
+      "name": "Vector",
       "original_indentation": 0,
       "start_line": 4
     },
@@ -30,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    pub fn init(x: f32, y: f32) Vector {\n        return Vector{ .x = x, .y = y };\n    }",
       "end_line": 10,
       "language": "zig",
-      "name": "function",
+      "name": "init",
       "original_indentation": 4,
       "start_line": 8
     },
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    pub fn length(self: Vector) f32 {\n        return @sqrt(self.x * self.x + self.y * self.y);\n    }",
       "end_line": 14,
       "language": "zig",
-      "name": "function",
+      "name": "length",
       "original_indentation": 4,
       "start_line": 12
     },
@@ -50,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "pub fn main() !void {\n    const stdout = std.io.getStdOut().writer();\n    try stdout.print(\"Hello, Zig!\\n\", .{});\n}",
       "end_line": 20,
       "language": "zig",
-      "name": "function",
+      "name": "main",
       "original_indentation": 0,
       "start_line": 17
     }

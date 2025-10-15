@@ -30,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class UserManager {\n    constructor(apiKey) {\n        this.apiKey = apiKey;\n        this.users = [];\n    }\n\n    async loadUsers() {\n        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }\n    }\n\n    findUser = (id) => {\n        return this.users.find(user => user.id === id);\n    };\n}",
       "end_line": 26,
       "language": "javascript",
-      "name": "class",
+      "name": "UserManager",
       "original_indentation": 0,
       "start_line": 4
     },
@@ -50,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    constructor(apiKey) {\n        this.apiKey = apiKey;\n        this.users = [];\n    }",
       "end_line": 8,
       "language": "javascript",
-      "name": "method",
+      "name": "constructor",
       "original_indentation": 4,
       "start_line": 5
     },
@@ -60,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    async loadUsers() {\n        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }\n    }",
       "end_line": 21,
       "language": "javascript",
-      "name": "method",
+      "name": "loadUsers",
       "original_indentation": 4,
       "start_line": 10
     },
@@ -90,7 +90,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            })",
       "end_line": 14,
       "language": "javascript",
-      "name": "function_call",
+      "name": "fetchData",
       "original_indentation": 35,
       "start_line": 12
     },
@@ -130,7 +130,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "function processUsers(users) {\n    return users.map(user => ({\n        ...user,\n        displayName: `${user.firstName} ${user.lastName}`\n    }));\n}",
       "end_line": 33,
       "language": "javascript",
-      "name": "function",
+      "name": "processUsers",
       "original_indentation": 0,
       "start_line": 28
     },
@@ -145,13 +145,13 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 29
     },
     {
-      "chunk_type": "Lambda",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "const filterActiveUsers = (users) => {\n    return users.filter(user => user.isActive);\n}",
       "end_line": 37,
       "language": "javascript",
-      "name": "arrow_lambda",
-      "original_indentation": 26,
+      "name": "filterActiveUsers",
+      "original_indentation": 6,
       "start_line": 35
     },
     {
@@ -170,7 +170,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    async createUser(userData) {\n        const response = await fetch('/api/users', {\n            method: 'POST',\n            headers: { 'Content-Type': 'application/json' },\n            body: JSON.stringify(userData)\n        });\n        return response.json();\n    }",
       "end_line": 47,
       "language": "javascript",
-      "name": "method",
+      "name": "createUser",
       "original_indentation": 4,
       "start_line": 40
     },
@@ -180,7 +180,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        const response = await fetch('/api/users', {\n            method: 'POST',\n            headers: { 'Content-Type': 'application/json' },\n            body: JSON.stringify(userData)\n        })",
       "end_line": 45,
       "language": "javascript",
-      "name": "function_call",
+      "name": "fetch",
       "original_indentation": 31,
       "start_line": 41
     }

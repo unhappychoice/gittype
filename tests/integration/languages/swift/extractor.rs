@@ -43,8 +43,10 @@ class Person {
 "#,
     total_chunks: 12,
     chunk_counts: {
-        File: 1,
         Function: 3,
+        CodeBlock: 6,
+        File: 1,
+        Class: 2
     }
 }
 
@@ -69,8 +71,10 @@ func processData(items: [String]) {
 "#,
     total_chunks: 8,
     chunk_counts: {
-        CodeBlock: 3,
         File: 1,
+        Function: 3,
+        Loop: 1,
+        CodeBlock: 3,
     }
 }
 
@@ -90,7 +94,8 @@ protocol Comparable {
 "#,
     total_chunks: 4,
     chunk_counts: {
-        CodeBlock: 3,
+        Interface: 2,
+        CodeBlock: 1,
         File: 1,
     }
 }
@@ -122,6 +127,8 @@ struct Rectangle {
     chunk_counts: {
         File: 1,
         Function: 2,
+        CodeBlock: 1,
+        Class: 2,
     }
 }
 
@@ -154,6 +161,8 @@ enum Status {
         File: 1,
         Function: 1,
         CodeBlock: 1,
+        Class: 2,
+        Conditional: 1,
     }
 }
 
@@ -348,7 +357,13 @@ extension DataProcessor: BatchProcessable {
 "#,
     total_chunks: 57,
     chunk_counts: {
-        CodeBlock: 31,
         File: 1,
+        CodeBlock: 30,
+        Function: 5,
+        Conditional: 8,
+        Interface: 1,
+        Loop: 3,
+        FunctionCall: 7,
+        Class: 2,
     }
 }

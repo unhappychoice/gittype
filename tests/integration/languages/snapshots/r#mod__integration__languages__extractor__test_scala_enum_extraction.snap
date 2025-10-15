@@ -15,12 +15,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Const",
       "comment_ranges": [],
       "content": "enum Color {\n    case Red, Green, Blue\n    case RGB(r: Int, g: Int, b: Int)\n\n    def toHex(): String = this match {\n        case Red => \"#FF0000\"\n        case Green => \"#00FF00\"\n        case Blue => \"#0000FF\"\n        case RGB(r, g, b) => f\"#$r%02X$g%02X$b%02X\"\n    }\n}",
       "end_line": 12,
       "language": "scala",
-      "name": "enum",
+      "name": "Color",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -30,17 +30,17 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def toHex(): String = this match {\n        case Red => \"#FF0000\"\n        case Green => \"#00FF00\"\n        case Blue => \"#0000FF\"\n        case RGB(r, g, b) => f\"#$r%02X$g%02X$b%02X\"\n    }",
       "end_line": 11,
       "language": "scala",
-      "name": "function",
+      "name": "toHex",
       "original_indentation": 4,
       "start_line": 6
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Const",
       "comment_ranges": [],
       "content": "enum Direction {\n    case North, South, East, West\n}",
       "end_line": 16,
       "language": "scala",
-      "name": "enum",
+      "name": "Direction",
       "original_indentation": 0,
       "start_line": 14
     }

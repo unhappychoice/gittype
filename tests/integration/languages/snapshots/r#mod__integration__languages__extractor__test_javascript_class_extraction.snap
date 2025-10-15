@@ -30,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class UserManager {\n    constructor(apiKey) {\n        this.apiKey = apiKey;\n        this.users = [];\n    }\n\n    async loadUsers() {\n        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }\n    }\n\n    findUser = (id) => {\n        return this.users.find(user => user.id === id);\n    };\n}",
       "end_line": 24,
       "language": "javascript",
-      "name": "class",
+      "name": "UserManager",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -50,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    constructor(apiKey) {\n        this.apiKey = apiKey;\n        this.users = [];\n    }",
       "end_line": 6,
       "language": "javascript",
-      "name": "method",
+      "name": "constructor",
       "original_indentation": 4,
       "start_line": 3
     },
@@ -60,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    async loadUsers() {\n        try {\n            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            });\n            this.users = response.data;\n            return this.users;\n        } catch (error) {\n            console.error('Failed to load users:', error);\n            throw error;\n        }\n    }",
       "end_line": 19,
       "language": "javascript",
-      "name": "method",
+      "name": "loadUsers",
       "original_indentation": 4,
       "start_line": 8
     },
@@ -90,7 +90,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "            const response = await fetchData('/users', {\n                headers: { 'Authorization': `Bearer ${this.apiKey}` }\n            })",
       "end_line": 12,
       "language": "javascript",
-      "name": "function_call",
+      "name": "fetchData",
       "original_indentation": 35,
       "start_line": 10
     },
@@ -130,7 +130,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class EventEmitter {\n    constructor() {\n        this.events = {};\n    }\n\n    on(eventName, callback) {\n        if (!this.events[eventName]) {\n            this.events[eventName] = [];\n        }\n        this.events[eventName].push(callback);\n    }\n\n    emit(eventName, data) {\n        if (this.events[eventName]) {\n            this.events[eventName].forEach(callback => callback(data));\n        }\n    }\n}",
       "end_line": 43,
       "language": "javascript",
-      "name": "class",
+      "name": "EventEmitter",
       "original_indentation": 0,
       "start_line": 26
     },
@@ -150,7 +150,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    constructor() {\n        this.events = {};\n    }",
       "end_line": 29,
       "language": "javascript",
-      "name": "method",
+      "name": "constructor",
       "original_indentation": 4,
       "start_line": 27
     },
@@ -160,7 +160,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    on(eventName, callback) {\n        if (!this.events[eventName]) {\n            this.events[eventName] = [];\n        }\n        this.events[eventName].push(callback);\n    }",
       "end_line": 36,
       "language": "javascript",
-      "name": "method",
+      "name": "on",
       "original_indentation": 4,
       "start_line": 31
     },
@@ -180,7 +180,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    emit(eventName, data) {\n        if (this.events[eventName]) {\n            this.events[eventName].forEach(callback => callback(data));\n        }\n    }",
       "end_line": 42,
       "language": "javascript",
-      "name": "method",
+      "name": "emit",
       "original_indentation": 4,
       "start_line": 38
     },

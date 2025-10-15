@@ -34,12 +34,11 @@ namespace MyApplication.Services
 "#,
     total_chunks: 14,
     chunk_counts: {
-        CodeBlock: 9,
+        Namespace: 1,
+        Class: 1,
+        Method: 3,
+        CodeBlock: 8,
         File: 1,
-        CodeBlock: 9,
-        CodeBlock: 9,
-        File: 1,
-        Namespace: 0,
     }
 }
 
@@ -69,9 +68,11 @@ namespace MyApplication.Contracts
 "#,
     total_chunks: 12,
     chunk_counts: {
-        CodeBlock: 6,
-        File: 1,
+        Namespace: 1,
+        Interface: 2,
         Method: 5,
+        CodeBlock: 3,
+        File: 1,
     }
 }
 
@@ -117,9 +118,13 @@ namespace MyApplication.Models
 "#,
     total_chunks: 13,
     chunk_counts: {
-        CodeBlock: 10,
-        File: 1,
+        Namespace: 1,
+        Struct: 1,
+        Enum: 2,
         Method: 2,
+        Variable: 2,
+        CodeBlock: 4,
+        File: 1,
     }
 }
 
@@ -154,10 +159,12 @@ namespace MyApplication.Models
 "#,
     total_chunks: 11,
     chunk_counts: {
-        CodeBlock: 8,
-        File: 1,
-        Method: 1,
+        Namespace: 1,
         Class: 1,
+        Method: 1,
+        Variable: 5,
+        CodeBlock: 2,
+        File: 1,
     }
 }
 
@@ -190,10 +197,12 @@ namespace MyApplication.Core.Models
 "#,
     total_chunks: 12,
     chunk_counts: {
-        CodeBlock: 8,
-        File: 1,
+        Namespace: 2,
         Class: 2,
         Method: 1,
+        Variable: 2,
+        CodeBlock: 4,
+        File: 1,
     }
 }
 
@@ -348,9 +357,13 @@ namespace DataProcessing
 "#,
     total_chunks: 42,
     chunk_counts: {
-        CodeBlock: 26,
-        File: 1,
+        Namespace: 1,
         Class: 2,
         Method: 3,
+        Variable: 6,
+        Loop: 3,
+        Conditional: 7,
+        CodeBlock: 19,
+        File: 1,
     }
 }

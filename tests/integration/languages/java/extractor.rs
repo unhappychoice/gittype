@@ -27,9 +27,10 @@ test_language_extractor! {
     total_chunks: 11,
     chunk_counts: {
         Class: 1,
-        CodeBlock: 5,
-        File: 1,
         Method: 4,
+        Variable: 1,
+        CodeBlock: 4,
+        File: 1,
     }
 }
 
@@ -85,9 +86,12 @@ public class Circle implements Drawable, Resizable {
 }"#,
     total_chunks: 24,
     chunk_counts: {
-        CodeBlock: 10,
-        File: 1,
+        Interface: 2,
+        Class: 1,
         Method: 12,
+        Variable: 2,
+        CodeBlock: 6,
+        File: 1,
     }
 }
 
@@ -125,10 +129,12 @@ public class ColorTest {
 }"##,
     total_chunks: 10,
     chunk_counts: {
-        File: 1,
-        Method: 4,
-        CodeBlock: 4,
+        Enum: 1,
         Class: 1,
+        Method: 4,
+        Variable: 2,
+        CodeBlock: 1,
+        File: 1,
     }
 }
 
@@ -158,10 +164,10 @@ test_language_extractor! {
 }"#,
     total_chunks: 9,
     chunk_counts: {
-        File: 1,
         Class: 1,
         Method: 3,
-        CodeBlock: 4,
+        Variable: 4,
+        File: 1,
     }
 }
 
@@ -305,7 +311,13 @@ class ProcessedItem {
 "#,
     total_chunks: 46,
     chunk_counts: {
-        CodeBlock: 20,
+        Class: 3,
+        Method: 12,
+        Variable: 9,
+        Loop: 2,
+        Conditional: 4,
+        FunctionCall: 4,
+        CodeBlock: 11,
         File: 1,
     }
 }

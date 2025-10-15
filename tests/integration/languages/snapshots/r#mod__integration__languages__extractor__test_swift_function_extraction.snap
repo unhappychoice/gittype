@@ -20,7 +20,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "func greet(name: String) -> String {\n    return \"Hello, \\(name)!\"\n}",
       "end_line": 4,
       "language": "swift",
-      "name": "function",
+      "name": "greet",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "func calculateSum(a: Int, b: Int) -> Int {\n    return a + b\n}",
       "end_line": 8,
       "language": "swift",
-      "name": "function",
+      "name": "calculateSum",
       "original_indentation": 0,
       "start_line": 6
     },
@@ -60,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "func processData(items: [String]) {\n    for item in items {\n        print(item)\n    }\n}",
       "end_line": 14,
       "language": "swift",
-      "name": "function",
+      "name": "processData",
       "original_indentation": 0,
       "start_line": 10
     },
@@ -70,7 +70,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    for item in items {\n        print(item)\n    }",
       "end_line": 13,
       "language": "swift",
-      "name": "for_loop",
+      "name": "items",
       "original_indentation": 4,
       "start_line": 11
     },

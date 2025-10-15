@@ -54,9 +54,10 @@ func (a *Address) GetFullAddress() string {
 "#,
     total_chunks: 6,
     chunk_counts: {
-        CodeBlock: 3,
-        File: 1,
+        Struct: 2,
         Method: 2,
+        CodeBlock: 1,
+        File: 1,
     }
 }
 
@@ -85,9 +86,10 @@ func process(rw ReadWriter) {
 "#,
     total_chunks: 6,
     chunk_counts: {
-        CodeBlock: 4,
-        File: 1,
+        Interface: 3,
         Function: 1,
+        CodeBlock: 1,
+        File: 1,
     }
 }
 
@@ -129,9 +131,12 @@ func main() {}
 "#,
     total_chunks: 9,
     chunk_counts: {
-        CodeBlock: 7,
-        File: 1,
+        Struct: 1,
         Function: 1,
+        Const: 2,
+        Variable: 2,
+        TypeAlias: 2,
+        File: 1,
     }
 }
 
@@ -298,9 +303,13 @@ func (dp *DataProcessor) AnalyzePatterns(items []ProcessedItem) map[string]inter
 "#,
     total_chunks: 31,
     chunk_counts: {
-        CodeBlock: 17,
-        File: 1,
+        Struct: 3,
         Function: 1,
         Method: 2,
+        Variable: 2,
+        Loop: 2,
+        Conditional: 8,
+        CodeBlock: 12,
+        File: 1,
     }
 }

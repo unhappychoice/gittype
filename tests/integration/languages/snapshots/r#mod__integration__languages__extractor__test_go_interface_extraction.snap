@@ -20,22 +20,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Interface",
       "comment_ranges": [],
       "content": "type Writer interface {\n    Write([]byte) (int, error)\n}",
       "end_line": 5,
       "language": "go",
-      "name": "interface",
+      "name": "Writer",
       "original_indentation": 5,
       "start_line": 3
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Interface",
       "comment_ranges": [],
       "content": "type Reader interface {\n    Read([]byte) (int, error)\n}",
       "end_line": 9,
       "language": "go",
-      "name": "interface",
+      "name": "Reader",
       "original_indentation": 5,
       "start_line": 7
     },
@@ -50,12 +50,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 11
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Interface",
       "comment_ranges": [],
       "content": "type ReadWriter interface {\n    Reader\n    Writer\n}",
       "end_line": 14,
       "language": "go",
-      "name": "interface",
+      "name": "ReadWriter",
       "original_indentation": 5,
       "start_line": 11
     },
@@ -70,7 +70,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "func process(rw ReadWriter) {\n    // Implementation here\n}",
       "end_line": 18,
       "language": "go",
-      "name": "function",
+      "name": "process",
       "original_indentation": 0,
       "start_line": 16
     }

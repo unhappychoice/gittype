@@ -20,7 +20,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "function hello_world",
       "end_line": 3,
       "language": "php",
-      "name": "name",
+      "name": "hello_world",
       "original_indentation": 9,
       "start_line": 3
     },
@@ -30,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "function hello_world() {\n    echo \"Hello, world!\";\n}",
       "end_line": 5,
       "language": "php",
-      "name": "function",
+      "name": "hello_world",
       "original_indentation": 0,
       "start_line": 3
     },
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "function calculate_sum",
       "end_line": 7,
       "language": "php",
-      "name": "name",
+      "name": "calculate_sum",
       "original_indentation": 9,
       "start_line": 7
     },
@@ -50,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "function calculate_sum($a, $b) {\n    return $a + $b;\n}",
       "end_line": 9,
       "language": "php",
-      "name": "function",
+      "name": "calculate_sum",
       "original_indentation": 0,
       "start_line": 7
     },
@@ -60,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "function fibonacci($n) {\n    if ($n <= 1) {\n        return $n;\n    }\n    return fibonacci($n - 1) + fibonacci($n - 2);\n}",
       "end_line": 16,
       "language": "php",
-      "name": "function",
+      "name": "fibonacci",
       "original_indentation": 0,
       "start_line": 11
     }

@@ -20,7 +20,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "String greet(String name) {\n  return 'Hello, $name!';\n}",
       "end_line": 4,
       "language": "dart",
-      "name": "function",
+      "name": "greet",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "int calculateSum(int a, int b) {\n  return a + b;\n}",
       "end_line": 8,
       "language": "dart",
-      "name": "function",
+      "name": "calculateSum",
       "original_indentation": 0,
       "start_line": 6
     },
@@ -60,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "void processData(List<String> data) {\n  data.forEach(print);\n}",
       "end_line": 12,
       "language": "dart",
-      "name": "function",
+      "name": "processData",
       "original_indentation": 0,
       "start_line": 10
     }

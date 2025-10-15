@@ -36,32 +36,32 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Enum",
       "comment_ranges": [],
       "content": "pub enum Result<T, E> {\n    Ok(T),\n    Err(E),\n}",
       "end_line": 6,
       "language": "rust",
-      "name": "enum",
+      "name": "Result",
       "original_indentation": 0,
       "start_line": 3
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Trait",
       "comment_ranges": [],
       "content": "pub trait Display {\n    fn fmt(&self) -> String;\n}",
       "end_line": 11,
       "language": "rust",
-      "name": "trait",
+      "name": "Display",
       "original_indentation": 0,
       "start_line": 9
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Module",
       "comment_ranges": [],
       "content": "pub mod utils {\n    pub fn helper() -> i32 {\n        42\n    }\n}",
       "end_line": 18,
       "language": "rust",
-      "name": "module",
+      "name": "utils",
       "original_indentation": 0,
       "start_line": 14
     },
@@ -71,37 +71,37 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    pub fn helper() -> i32 {\n        42\n    }",
       "end_line": 17,
       "language": "rust",
-      "name": "function",
+      "name": "helper",
       "original_indentation": 4,
       "start_line": 15
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "TypeAlias",
       "comment_ranges": [],
       "content": "pub type UserId = u64;",
       "end_line": 21,
       "language": "rust",
-      "name": "type_alias",
+      "name": "UserId",
       "original_indentation": 0,
       "start_line": 21
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Struct",
       "comment_ranges": [],
       "content": "pub struct User {\n    id: UserId,\n    name: String,\n}",
       "end_line": 27,
       "language": "rust",
-      "name": "struct",
+      "name": "User",
       "original_indentation": 0,
       "start_line": 24
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "impl Display for User {\n    fn fmt(&self) -> String {\n        format!(\"User({})\", self.name)\n    }\n}",
       "end_line": 33,
       "language": "rust",
-      "name": "impl",
+      "name": "Display",
       "original_indentation": 0,
       "start_line": 29
     },
@@ -111,7 +111,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    fn fmt(&self) -> String {\n        format!(\"User({})\", self.name)\n    }",
       "end_line": 32,
       "language": "rust",
-      "name": "function",
+      "name": "fmt",
       "original_indentation": 4,
       "start_line": 30
     },
@@ -131,7 +131,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "pub fn create_user(name: String) -> User {\n    User {\n        id: 0,\n        name,\n    }\n}",
       "end_line": 40,
       "language": "rust",
-      "name": "function",
+      "name": "create_user",
       "original_indentation": 0,
       "start_line": 35
     }

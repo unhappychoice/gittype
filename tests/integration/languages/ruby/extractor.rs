@@ -15,8 +15,9 @@ end
 "#,
     total_chunks: 5,
     chunk_counts: {
-        CodeBlock: 2,
         File: 1,
+        Method: 2,
+        CodeBlock: 2,
     }
 }
 
@@ -40,8 +41,10 @@ end
 "#,
     total_chunks: 6,
     chunk_counts: {
-        CodeBlock: 2,
         File: 1,
+        Class: 1,
+        Method: 3,
+        CodeBlock: 1,        
     }
 }
 
@@ -63,8 +66,10 @@ end
 "#,
     total_chunks: 5,
     chunk_counts: {
-        CodeBlock: 2,
         File: 1,
+        Method: 2,
+        Module: 1,
+        CodeBlock: 1,
     }
 }
 
@@ -86,7 +91,9 @@ end
     total_chunks: 6,
     chunk_counts: {
         File: 1,
-        CodeBlock: 3,
+        Class: 1,
+        CodeBlock: 2,
+        Method: 2,
     }
 }
 
@@ -103,8 +110,9 @@ end
 "#,
     total_chunks: 5,
     chunk_counts: {
-        CodeBlock: 3,
         File: 1,
+        Method: 3,
+        Class: 1,
     }
 }
 
@@ -235,7 +243,11 @@ end
 "#,
     total_chunks: 23,
     chunk_counts: {
-        CodeBlock: 7,
         File: 1,
+        Method: 5,
+        FunctionCall: 5,
+        Conditional: 4,
+        Class: 2,
+        CodeBlock: 6,
     }
 }

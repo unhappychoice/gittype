@@ -8047,12 +8047,20 @@ expression: json_string
   "challenges_with_comments": 166,
   "chunk_types": [
     [
+      "Class",
+      4
+    ],
+    [
       "CodeBlock",
-      40
+      29
     ],
     [
       "Conditional",
       8
+    ],
+    [
+      "Enum",
+      1
     ],
     [
       "File",
@@ -8069,6 +8077,14 @@ expression: json_string
     [
       "Loop",
       10
+    ],
+    [
+      "Module",
+      2
+    ],
+    [
+      "Struct",
+      4
     ]
   ],
   "difficulty_distribution": [

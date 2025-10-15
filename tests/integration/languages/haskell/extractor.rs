@@ -35,7 +35,7 @@ data Tree a = Leaf a | Node (Tree a) (Tree a)
 "#,
     total_chunks: 4,
     chunk_counts: {
-        CodeBlock: 3,
+        Class: 3,
         File: 1,
     }
 }
@@ -59,9 +59,8 @@ instance Eq Bool where
 "#,
     total_chunks: 10,
     chunk_counts: {
-        CodeBlock: 3,
         File: 1,
-        Function: 6,
+        Function: 9,
     }
 }
 
@@ -87,9 +86,8 @@ square x = x * x
 "#,
     total_chunks: 8,
     chunk_counts: {
-        CodeBlock: 2,
-        File: 1,
-        Function: 5,
+        Module: 1,
+        Function: 6,
         File: 1,
     }
 }
@@ -114,8 +112,7 @@ map' f (x:xs) = f x : map' f xs
     total_chunks: 10,
     chunk_counts: {
         File: 1,
-        Function: 8,
-        CodeBlock: 1,
+        Function: 9,
     }
 }
 
@@ -156,9 +153,10 @@ fibonacci n = fibonacci (n-1) + fibonacci (n-2)
 "#,
     total_chunks: 18,
     chunk_counts: {
-        CodeBlock: 7,
+        Module: 3,
+        Class: 2,
+        Function: 12,
         File: 1,
-        Function: 10,
     }
 }
 
@@ -182,9 +180,9 @@ instance Functor Maybe' where
 "#,
     total_chunks: 10,
     chunk_counts: {
+        Class: 2,
+        Function: 7,
         File: 1,
-        Function: 6,
-        CodeBlock: 3,
     }
 }
 
@@ -288,6 +286,10 @@ batchProcess batches threshold = map (\batch -> processComplexData batch thresho
     total_chunks: 53,
     chunk_counts: {
         File: 1,
-        Function: 14,
+        Function: 38,
+        Class: 1,
+        Variable: 7,
+        Module: 3,
+        Conditional: 3
     }
 }

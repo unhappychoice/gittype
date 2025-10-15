@@ -18,7 +18,7 @@ interface Admin extends User {
     total_chunks: 3,
     chunk_counts: {
         File: 1,
-        Function: 0,
+        Interface: 2,
     }
 }
 
@@ -37,7 +37,8 @@ type ApiResponse<T> = {
     total_chunks: 5,
     chunk_counts: {
         File: 1,
-        Function: 0,
+        CodeBlock: 1,
+        TypeAlias: 3,
     }
 }
 
@@ -61,7 +62,7 @@ enum Status {
     total_chunks: 3,
     chunk_counts: {
         File: 1,
-        Function: 0,
+        Enum: 2,
     }
 }
 
@@ -91,8 +92,10 @@ namespace Api {
     total_chunks: 8,
     chunk_counts: {
         File: 1,
+        CodeBlock: 2,
         Function: 2,
-        CodeBlock: 5,
+        Module: 2,
+        Interface: 1,
     }
 }
 
@@ -149,8 +152,14 @@ const calculateTotal = (items: number[]): number => {
     total_chunks: 15,
     chunk_counts: {
         File: 1,
-        Function: 2,
-        CodeBlock: 8,
+        Enum: 1,
+        Function: 3,
+        Method: 2,
+        Interface: 1,
+        Module: 1,
+        Class: 1,
+        TypeAlias: 1,
+        CodeBlock: 4,
     }
 }
 
@@ -340,7 +349,15 @@ function createDataValidator<T>(schema: Record<keyof T, (value: unknown) => bool
     total_chunks: 32,
     chunk_counts: {
         File: 1,
+        Method: 3,
+        ErrorHandling: 1,
+        Loop: 2,
         Function: 1,
-        CodeBlock: 11,
+        Lambda: 1,
+        Conditional: 8,
+        FunctionCall: 3,
+        Interface: 2,
+        Class: 1,
+        CodeBlock: 9,
     }
 }

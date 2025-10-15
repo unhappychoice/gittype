@@ -64,7 +64,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "typealias StringList = List<String>",
       "end_line": 8,
@@ -154,7 +154,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 32
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "object SingletonObject {\n    const val CONSTANT = \"constant_value\"\n\n    fun objectMethod(): String = \"object method\"\n}",
       "end_line": 43,
@@ -164,7 +164,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 39
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "    const val CONSTANT = \"constant_value\"",
       "end_line": 40,
@@ -194,17 +194,17 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 46
     },
     {
-      "chunk_type": "Lambda",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "    companion object {\n        const val COMPANION_CONSTANT = \"companion_constant\"\n\n        fun companionMethod(): String = \"companion method\"\n    }",
       "end_line": 51,
       "language": "kotlin",
-      "name": "lambda",
-      "original_indentation": 21,
+      "name": "companion object",
+      "original_indentation": 4,
       "start_line": 47
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "        const val COMPANION_CONSTANT = \"companion_constant\"",
       "end_line": 48,
@@ -224,7 +224,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 50
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "val globalVal: String = \"global val\"",
       "end_line": 55,
@@ -234,7 +234,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 55
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "var globalVar: String = \"global var\"",
       "end_line": 56,

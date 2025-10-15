@@ -20,17 +20,17 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "namespace MyApplication.Services",
       "end_line": 5,
       "language": "csharp",
-      "name": "name",
+      "name": "MyApplication",
       "original_indentation": 10,
       "start_line": 5
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Namespace",
       "comment_ranges": [],
       "content": "namespace MyApplication.Services\n{\n    public class UserService\n    {\n        private readonly IUserRepository _repository;\n\n        public UserService(IUserRepository repository)\n        {\n            _repository = repository ?? throw new ArgumentNullException(nameof(repository));\n        }\n\n        public async Task<User> GetUserAsync(int id)\n        {\n            var user = await _repository.GetByIdAsync(id);\n            return user;\n        }\n\n        public IEnumerable<User> GetActiveUsers()\n        {\n            return _repository.GetAll().Where(u => u.IsActive);\n        }\n    }\n}",
       "end_line": 27,
       "language": "csharp",
-      "name": "namespace",
+      "name": "MyApplication.Services",
       "original_indentation": 0,
       "start_line": 5
     },
@@ -50,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    public class UserService\n    {\n        private readonly IUserRepository _repository;\n\n        public UserService(IUserRepository repository)\n        {\n            _repository = repository ?? throw new ArgumentNullException(nameof(repository));\n        }\n\n        public async Task<User> GetUserAsync(int id)\n        {\n            var user = await _repository.GetByIdAsync(id);\n            return user;\n        }\n\n        public IEnumerable<User> GetActiveUsers()\n        {\n            return _repository.GetAll().Where(u => u.IsActive);\n        }\n    }",
       "end_line": 26,
       "language": "csharp",
-      "name": "class",
+      "name": "UserService",
       "original_indentation": 4,
       "start_line": 7
     },
@@ -70,7 +70,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        public UserService(IUserRepository repository)\n        {\n            _repository = repository ?? throw new ArgumentNullException(nameof(repository));\n        }",
       "end_line": 14,
       "language": "csharp",
-      "name": "method",
+      "name": "UserService",
       "original_indentation": 8,
       "start_line": 11
     },
@@ -100,7 +100,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        public async Task<User> GetUserAsync(int id)\n        {\n            var user = await _repository.GetByIdAsync(id);\n            return user;\n        }",
       "end_line": 20,
       "language": "csharp",
-      "name": "method",
+      "name": "GetUserAsync",
       "original_indentation": 8,
       "start_line": 16
     },
@@ -130,7 +130,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        public IEnumerable<User> GetActiveUsers()\n        {\n            return _repository.GetAll().Where(u => u.IsActive);\n        }",
       "end_line": 25,
       "language": "csharp",
-      "name": "method",
+      "name": "GetActiveUsers",
       "original_indentation": 8,
       "start_line": 22
     },

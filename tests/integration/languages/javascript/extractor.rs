@@ -20,8 +20,9 @@ async function fetchUserData(userId) {
 "#,
     total_chunks: 6,
     chunk_counts: {
-        File: 1,
         Function: 3,
+        CodeBlock: 2,
+        File: 1,
     }
 }
 
@@ -43,9 +44,8 @@ const processData = async (data) => {
 "#,
     total_chunks: 4,
     chunk_counts: {
+        Function: 3,
         File: 1,
-        CodeBlock: 1,
-        Lambda: 2,
     }
 }
 
@@ -99,11 +99,14 @@ class EventEmitter {
 "#,
     total_chunks: 19,
     chunk_counts: {
+        Class: 2,
+        Method: 5,
+        Conditional: 2,
+        ErrorHandling: 1,
+        FunctionCall: 1,
+        Lambda: 1,
         CodeBlock: 6,
         File: 1,
-        Method: 5,
-        Class: 2,
-        Struct: 0,
     }
 }
 
@@ -145,9 +148,11 @@ export default class UserService {
 "#,
     total_chunks: 12,
     chunk_counts: {
-        File: 1,
+        Class: 2,
         Function: 1,
+        Method: 4,
         CodeBlock: 4,
+        File: 1,
     }
 }
 
@@ -188,9 +193,6 @@ const eventHandlers = {
     total_chunks: 1,
     chunk_counts: {
         File: 1,
-        CodeBlock: 0,
-        ErrorHandling: 0,
-        Lambda: 0,
     }
 }
 
@@ -251,14 +253,14 @@ export default UserManager;
 "#,
     total_chunks: 18,
     chunk_counts: {
-        File: 1,
-        CodeBlock: 6,
         Class: 1,
         Method: 3,
-        Function: 1,
-        FunctionCall: 3,
-        Lambda: 2,
+        Function: 2,
+        Lambda: 1,
         ErrorHandling: 1,
+        FunctionCall: 3,
+        CodeBlock: 6,
+        File: 1,
     }
 }
 
@@ -393,8 +395,12 @@ const dataAnalyzer = {
 "#,
     total_chunks: 21,
     chunk_counts: {
-        File: 1,
         Function: 1,
+        Method: 1,
+        Loop: 1,
+        Conditional: 8,
+        FunctionCall: 3,
         CodeBlock: 6,
+        File: 1,
     }
 }

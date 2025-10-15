@@ -56,7 +56,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "def process_json_data(file_path: str) -> Dict:\n    \"\"\"Function with error handling and complex logic\"\"\"\n    try:\n        with open(file_path, 'r') as file:\n            data = json.load(file)\n    except FileNotFoundError:\n        return {'error': 'File not found', 'data': None}\n    except json.JSONDecodeError:\n        return {'error': 'Invalid JSON', 'data': None}\n\n    # Data validation and transformation - extractable middle chunk\n    if not isinstance(data, dict):\n        return {'error': 'Expected dictionary format', 'data': None}\n\n    processed_items = []\n    for key, value in data.items():\n        if isinstance(value, list):\n            # Process list items\n            processed_list = []\n            for item in value:\n                if isinstance(item, dict) and 'id' in item:\n                    processed_item = {\n                        'id': item['id'],\n                        'processed': True,\n                        'original_keys': list(item.keys())\n                    }\n                    processed_list.append(processed_item)\n\n            processed_items.append({\n                'key': key,\n                'type': 'list',\n                'items': processed_list,\n                'count': len(processed_list)\n            })\n        elif isinstance(value, dict):\n            processed_items.append({\n                'key': key,\n                'type': 'dict',\n                'keys': list(value.keys()),\n                'count': len(value)\n            })\n\n    return {\n        'error': None,\n        'data': processed_items,\n        'total_processed': len(processed_items)\n    }",
       "end_line": 51,
       "language": "python",
-      "name": "function",
+      "name": "process_json_data",
       "original_indentation": 0,
       "start_line": 5
     },
@@ -126,7 +126,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "            for item in value:\n                if isinstance(item, dict) and 'id' in item:\n                    processed_item = {\n                        'id': item['id'],\n                        'processed': True,\n                        'original_keys': list(item.keys())\n                    }\n                    processed_list.append(processed_item)",
       "end_line": 31,
       "language": "python",
-      "name": "for_loop",
+      "name": "item",
       "original_indentation": 12,
       "start_line": 24
     },
@@ -185,7 +185,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class ConfigManager:\n    def __init__(self, config_path: str):\n        self.config_path = config_path\n        self.config = {}\n        self.load_config()\n\n    def load_config(self) -> bool:\n        \"\"\"Load configuration with fallback logic\"\"\"\n        try:\n            with open(self.config_path, 'r') as file:\n                self.config = json.load(file)\n            return True\n        except Exception:\n            # Default configuration - extractable middle chunk\n            self.config = {\n                'debug': False,\n                'log_level': 'INFO',\n                'database': {\n                    'host': 'localhost',\n                    'port': 0,\n                    'name': 'default_db'\n                },\n                'cache': {\n                    'enabled': True,\n                    'ttl': 0,\n                    'max_size': 1000\n                },\n                'features': {\n                    'analytics': True,\n                    'notifications': False,\n                    'beta_features': False\n                }\n            }\n            return False\n\n    def get_setting(self, key: str, default=None):\n        \"\"\"Get setting with dot notation support\"\"\"\n        keys = key.split('.')\n        value = self.config\n\n        # Navigate through nested keys - extractable middle chunk\n        for k in keys:\n            if isinstance(value, dict) and k in value:\n                value = value[k]\n            else:\n                return default\n\n        return value",
       "end_line": 100,
       "language": "python",
-      "name": "class",
+      "name": "ConfigManager",
       "original_indentation": 0,
       "start_line": 53
     },
@@ -195,7 +195,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def __init__(self, config_path: str):\n        self.config_path = config_path\n        self.config = {}\n        self.load_config()",
       "end_line": 57,
       "language": "python",
-      "name": "function",
+      "name": "__init__",
       "original_indentation": 4,
       "start_line": 54
     },
@@ -220,7 +220,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def load_config(self) -> bool:\n        \"\"\"Load configuration with fallback logic\"\"\"\n        try:\n            with open(self.config_path, 'r') as file:\n                self.config = json.load(file)\n            return True\n        except Exception:\n            # Default configuration - extractable middle chunk\n            self.config = {\n                'debug': False,\n                'log_level': 'INFO',\n                'database': {\n                    'host': 'localhost',\n                    'port': 0,\n                    'name': 'default_db'\n                },\n                'cache': {\n                    'enabled': True,\n                    'ttl': 0,\n                    'max_size': 1000\n                },\n                'features': {\n                    'analytics': True,\n                    'notifications': False,\n                    'beta_features': False\n                }\n            }\n            return False",
       "end_line": 86,
       "language": "python",
-      "name": "function",
+      "name": "load_config",
       "original_indentation": 4,
       "start_line": 59
     },
@@ -270,7 +270,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def get_setting(self, key: str, default=None):\n        \"\"\"Get setting with dot notation support\"\"\"\n        keys = key.split('.')\n        value = self.config\n\n        # Navigate through nested keys - extractable middle chunk\n        for k in keys:\n            if isinstance(value, dict) and k in value:\n                value = value[k]\n            else:\n                return default\n\n        return value",
       "end_line": 100,
       "language": "python",
-      "name": "function",
+      "name": "get_setting",
       "original_indentation": 4,
       "start_line": 88
     },
@@ -280,7 +280,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        for k in keys:\n            if isinstance(value, dict) and k in value:\n                value = value[k]\n            else:\n                return default",
       "end_line": 98,
       "language": "python",
-      "name": "for_loop",
+      "name": "k",
       "original_indentation": 8,
       "start_line": 94
     },
