@@ -1,9 +1,10 @@
 use gittype::domain::repositories::trending_repository::{
     TrendingRepository, TrendingRepositoryInfo,
 };
+use std::path::PathBuf;
 
 fn create_test_trending_repository() -> TrendingRepository {
-    TrendingRepository::new_test()
+    TrendingRepository::with_cache_dir(PathBuf::from("/mock/trending_cache"))
 }
 
 fn create_test_trending_info(repo_name: &str, language: Option<&str>) -> TrendingRepositoryInfo {

@@ -1,6 +1,7 @@
 use super::migrations::{get_all_migrations, get_latest_version};
 use crate::{domain::error::GitTypeError, Result};
 use rusqlite::Connection;
+#[cfg(not(feature = "test-mocks"))]
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, MutexGuard};
 
@@ -9,6 +10,7 @@ pub struct Database {
 }
 
 impl Database {
+    #[cfg(not(feature = "test-mocks"))]
     pub fn new() -> Result<Self> {
         let db_path = Self::get_database_path()?;
 
@@ -23,7 +25,8 @@ impl Database {
         Ok(db)
     }
 
-    pub fn new_test() -> Result<Self> {
+    #[cfg(feature = "test-mocks")]
+    pub fn new() -> Result<Self> {
         // Use in-memory database for tests
         let connection = Connection::open(":memory:")?;
         // Enable foreign key constraints
@@ -36,6 +39,7 @@ impl Database {
         self.init_tables()
     }
 
+    #[cfg(not(feature = "test-mocks"))]
     fn get_database_path() -> Result<PathBuf> {
         if cfg!(test) {
             // Test: use in-memory database (shouldn't be called in tests)

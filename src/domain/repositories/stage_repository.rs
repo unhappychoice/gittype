@@ -14,15 +14,7 @@ pub struct StageRepository {
 impl StageRepository {
     pub fn new() -> Result<Self> {
         let database = Database::new()?;
-        Ok(Self {
-            database: Arc::new(Mutex::new(database)),
-        })
-    }
-
-    /// Create a new repository with an in-memory database for testing
-    #[doc(hidden)]
-    pub fn new_test() -> Result<Self> {
-        let database = Database::new_test()?;
+        #[cfg(feature = "test-mocks")]
         database.init()?;
         Ok(Self {
             database: Arc::new(Mutex::new(database)),

@@ -20,15 +20,6 @@ impl VersionRepository {
         })
     }
 
-    /// Create a new repository for testing that doesn't make HTTP requests
-    #[doc(hidden)]
-    pub fn new_test() -> Result<Self> {
-        Ok(Self {
-            github_client: GitHubApiClient::new()?,
-            file_storage: FileStorage::new(),
-        })
-    }
-
     /// Fetch the latest version from cache or API
     pub async fn fetch_latest_version(&self) -> Result<String> {
         const CHECK_FREQUENCY_HOURS: u64 = 24;

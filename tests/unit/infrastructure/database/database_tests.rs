@@ -3,7 +3,7 @@ use gittype::infrastructure::database::migrations::get_latest_version;
 
 #[test]
 fn test_database_creation() {
-    let result = Database::new_test();
+    let result = Database::new();
     assert!(result.is_ok());
 
     let db = result.unwrap();
@@ -13,7 +13,7 @@ fn test_database_creation() {
 
 #[test]
 fn test_tables_creation() {
-    let db = Database::new_test().unwrap();
+    let db = Database::new().unwrap();
     db.init().expect("Failed to initialize test database");
     let conn = db.get_connection();
 
@@ -52,7 +52,7 @@ fn test_tables_creation() {
 
 #[test]
 fn test_schema_versioning() {
-    let db = Database::new_test().unwrap();
+    let db = Database::new().unwrap();
     db.init().expect("Failed to initialize test database");
 
     // Check that schema version is set correctly
@@ -72,11 +72,11 @@ fn test_schema_versioning() {
 #[test]
 fn test_migration_idempotency() {
     // Create database twice
-    let db1 = Database::new_test().unwrap();
+    let db1 = Database::new().unwrap();
     db1.init()
         .expect("Failed to initialize first test database");
 
-    let db2 = Database::new_test().unwrap();
+    let db2 = Database::new().unwrap();
     db2.init()
         .expect("Failed to initialize second test database");
 
@@ -96,7 +96,7 @@ fn test_migration_idempotency() {
 
 #[test]
 fn test_normalized_tables_structure() {
-    let db = Database::new_test().unwrap();
+    let db = Database::new().unwrap();
     db.init().expect("Failed to initialize test database");
     let conn = db.get_connection();
 
@@ -172,7 +172,7 @@ fn test_normalized_tables_structure() {
 
 #[test]
 fn test_foreign_key_constraints() {
-    let db = Database::new_test().unwrap();
+    let db = Database::new().unwrap();
     db.init().expect("Failed to initialize test database");
     let conn = db.get_connection();
 
@@ -195,7 +195,7 @@ fn test_foreign_key_constraints() {
 
 #[test]
 fn test_indexes_created() {
-    let db = Database::new_test().unwrap();
+    let db = Database::new().unwrap();
     db.init().expect("Failed to initialize test database");
     let conn = db.get_connection();
 

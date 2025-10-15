@@ -14,7 +14,7 @@ fn create_test_repository() -> GitRepository {
 }
 
 fn create_test_repo_repository() -> GitRepositoryRepository {
-    GitRepositoryRepository::new_test().expect("Failed to create test repository")
+    GitRepositoryRepository::new().expect("Failed to create test repository")
 }
 
 #[test]

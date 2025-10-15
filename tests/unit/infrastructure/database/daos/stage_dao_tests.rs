@@ -4,6 +4,7 @@ use gittype::infrastructure::database::database::Database;
 #[test]
 fn stage_dao_new_creates_dao() {
     let db = Database::new().expect("Failed to create database");
+    db.init().expect("Failed to initialize database");
     let _dao = StageDao::new(&db);
     // Test passes if construction succeeds
 }

@@ -50,12 +50,6 @@ impl ChallengeRepository {
         }
     }
 
-    /// Create a new repository for testing
-    #[doc(hidden)]
-    pub fn new_test() -> Self {
-        Self::with_cache_dir(PathBuf::from("/mock/cache"))
-    }
-
     pub fn save_challenges(
         &self,
         repo: &GitRepository,
