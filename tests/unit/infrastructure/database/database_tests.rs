@@ -7,14 +7,12 @@ fn test_database_creation() {
     assert!(result.is_ok());
 
     let db = result.unwrap();
-    db.init().expect("Failed to initialize test database");
     assert!(db.get_connection().prepare("SELECT 1").is_ok());
 }
 
 #[test]
 fn test_tables_creation() {
     let db = Database::new().unwrap();
-    db.init().expect("Failed to initialize test database");
     let conn = db.get_connection();
 
     // Check schema_version table
@@ -53,7 +51,6 @@ fn test_tables_creation() {
 #[test]
 fn test_schema_versioning() {
     let db = Database::new().unwrap();
-    db.init().expect("Failed to initialize test database");
 
     // Check that schema version is set correctly
     let version = db.get_current_schema_version().unwrap();
@@ -72,13 +69,9 @@ fn test_schema_versioning() {
 #[test]
 fn test_migration_idempotency() {
     // Create database twice
-    let db1 = Database::new().unwrap();
-    db1.init()
-        .expect("Failed to initialize first test database");
+    let _db1 = Database::new().unwrap();
 
     let db2 = Database::new().unwrap();
-    db2.init()
-        .expect("Failed to initialize second test database");
 
     // Schema version should still be correct
     let version = db2.get_current_schema_version().unwrap();
@@ -97,7 +90,6 @@ fn test_migration_idempotency() {
 #[test]
 fn test_normalized_tables_structure() {
     let db = Database::new().unwrap();
-    db.init().expect("Failed to initialize test database");
     let conn = db.get_connection();
 
     // Check all tables exist
@@ -173,7 +165,6 @@ fn test_normalized_tables_structure() {
 #[test]
 fn test_foreign_key_constraints() {
     let db = Database::new().unwrap();
-    db.init().expect("Failed to initialize test database");
     let conn = db.get_connection();
 
     // Check foreign keys are enabled
@@ -196,7 +187,6 @@ fn test_foreign_key_constraints() {
 #[test]
 fn test_indexes_created() {
     let db = Database::new().unwrap();
-    db.init().expect("Failed to initialize test database");
     let conn = db.get_connection();
 
     // Check that indexes were created

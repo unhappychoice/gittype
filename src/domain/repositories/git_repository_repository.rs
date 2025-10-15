@@ -13,8 +13,6 @@ pub struct GitRepositoryRepository {
 impl GitRepositoryRepository {
     pub fn new() -> Result<Self> {
         let database = Database::new()?;
-        #[cfg(feature = "test-mocks")]
-        database.init()?;
         Ok(Self {
             database: Arc::new(Mutex::new(database)),
         })

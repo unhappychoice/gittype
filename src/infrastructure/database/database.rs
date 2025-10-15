@@ -32,6 +32,8 @@ impl Database {
         // Enable foreign key constraints
         connection.execute("PRAGMA foreign_keys = ON", [])?;
         let db = Self { connection };
+        // Automatically initialize schema for tests
+        db.init()?;
         Ok(db)
     }
 
