@@ -44,6 +44,9 @@ impl ScreenDataProvider for MockRepoListDataProvider {
             ),
         ];
 
-        Ok(Box::new(RepoListScreenData { repositories }))
+        Ok(Box::new(RepoListScreenData {
+            repositories,
+            cache_dir: "/home/user/.gittype/repos".to_string(),
+        }))
     }
 }

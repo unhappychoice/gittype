@@ -17,10 +17,12 @@ use ratatui::{
 
 pub struct RepoListScreenData {
     pub repositories: Vec<(StoredRepositoryWithLanguages, bool)>,
+    pub cache_dir: String,
 }
 
 pub struct RepoListScreen {
     repositories: Vec<(StoredRepositoryWithLanguages, bool)>,
+    cache_dir: String,
     event_bus: EventBus,
 }
 
@@ -28,6 +30,7 @@ impl RepoListScreen {
     pub fn new(event_bus: EventBus) -> Self {
         Self {
             repositories: Vec::new(),
+            cache_dir: String::new(),
             event_bus,
         }
     }
@@ -50,8 +53,13 @@ impl ScreenDataProvider for RepoListScreenDataProvider {
             })
             .collect();
 
+        // Get cache directory path
+        let home_dir = dirs::home_dir().unwrap_or_else(|| std::path::PathBuf::from("."));
+        let cache_dir = home_dir.join(".gittype").join("repos");
+
         Ok(Box::new(RepoListScreenData {
             repositories: repositories_with_cache,
+            cache_dir: cache_dir.to_string_lossy().to_string(),
         }))
     }
 }
@@ -71,6 +79,7 @@ impl Screen for RepoListScreen {
     fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
         if let Ok(screen_data) = data.downcast::<RepoListScreenData>() {
             self.repositories = screen_data.repositories;
+            self.cache_dir = screen_data.cache_dir;
         }
         Ok(())
     }
@@ -112,7 +121,7 @@ impl Screen for RepoListScreen {
             .split(frame.area());
 
         HeaderView::render(frame, chunks[0]);
-        CacheInfoView::render(frame, chunks[2]);
+        CacheInfoView::render(frame, chunks[2], &self.cache_dir);
         RepositoryListView::render(frame, chunks[4], &self.repositories);
         LegendView::render(frame, chunks[5]);
         ControlsView::render(frame, chunks[6]);

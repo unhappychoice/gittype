@@ -10,18 +10,13 @@ use ratatui::{
 pub struct CacheInfoView;
 
 impl CacheInfoView {
-    pub fn render(frame: &mut Frame, area: Rect) {
-        let home_dir = dirs::home_dir().unwrap_or_else(|| std::path::PathBuf::from("."));
-        let cache_dir = home_dir.join(".gittype").join("repos");
+    pub fn render(frame: &mut Frame, area: Rect, cache_dir: &str) {
         let cache_line = Line::from(vec![
             Span::styled(
                 "Cache Directory: ",
                 Style::default().fg(Colors::text_secondary()),
             ),
-            Span::styled(
-                cache_dir.to_string_lossy().to_string(),
-                Style::default().fg(Colors::text()),
-            ),
+            Span::styled(cache_dir, Style::default().fg(Colors::text())),
         ]);
         let cache_info = Paragraph::new(cache_line).block(
             Block::default()
