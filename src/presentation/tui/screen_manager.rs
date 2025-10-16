@@ -16,8 +16,8 @@
 //!
 //! ```rust,no_run
 //! use gittype::domain::events::EventBus;
-//! use gittype::presentation::game::ScreenManager;
-//! use gittype::presentation::game::screens::title_screen::TitleScreen;
+//! use gittype::presentation::tui::ScreenManager;
+//! use gittype::presentation::tui::screens::TitleScreen;
 //!
 //! fn example() -> gittype::Result<()> {
 //!     let event_bus = EventBus::new();
@@ -32,16 +32,18 @@
 //!
 use crate::domain::events::EventBus;
 use crate::presentation::game::events::{ExitRequested, NavigateTo};
-use crate::presentation::game::screen_transition_manager::ScreenTransitionManager;
-use crate::presentation::game::screens::{
+use crate::presentation::game::{GameData, SessionManager, StageRepository};
+use crate::presentation::tui::screen_transition_manager::ScreenTransitionManager;
+use crate::presentation::tui::screens::{
     AnalyticsScreen, AnimationScreen, HelpScreen, InfoDialogScreen, LoadingScreen, PanicScreen,
-    RecordsScreen, SessionDetailScreen, SessionDetailsDialog, SessionFailureScreen,
-    SessionSummaryScreen, SessionSummaryShareScreen, SettingsScreen, StageSummaryScreen,
-    TitleAction, TitleScreen, TotalSummaryScreen, TotalSummaryShareScreen, VersionCheckScreen,
+    RecordsScreen, RepoListScreen, RepoPlayScreen, SessionDetailScreen, SessionDetailsDialog,
+    SessionFailureScreen, SessionSummaryScreen, SessionSummaryShareScreen, SettingsScreen,
+    StageSummaryScreen, TitleAction, TitleScreen, TotalSummaryScreen, TotalSummaryShareScreen,
+    TrendingLanguageSelectionScreen, TrendingRepositorySelectionScreen, TypingScreen,
+    VersionCheckScreen,
 };
-use crate::presentation::game::{
-    GameData, Screen, ScreenDataProvider, ScreenTransition, ScreenType, SessionManager,
-    StageRepository, TypingScreen, UpdateStrategy,
+use crate::presentation::tui::{
+    Screen, ScreenDataProvider, ScreenTransition, ScreenType, UpdateStrategy,
 };
 use crate::{GitTypeError, Result};
 use crossterm::cursor::{Hide, Show};
@@ -300,6 +302,15 @@ impl ScreenManager {
             ScreenType::DetailsDialog => SessionDetailsDialog::default_provider(),
             ScreenType::Settings => SettingsScreen::default_provider(),
             ScreenType::Panic => PanicScreen::default_provider(),
+            // CLI screens
+            ScreenType::RepoPlay => RepoPlayScreen::default_provider(),
+            ScreenType::RepoList => RepoListScreen::default_provider(),
+            ScreenType::TrendingLanguageSelection => {
+                TrendingLanguageSelectionScreen::default_provider()
+            }
+            ScreenType::TrendingRepositorySelection => {
+                TrendingRepositorySelectionScreen::default_provider()
+            }
         };
 
         provider.provide()
@@ -389,7 +400,15 @@ impl ScreenManager {
                 self.render_current_screen()
             }
             ScreenTransition::Exit => {
-                if self.current_screen_type == ScreenType::TotalSummary {
+                // Check if current screen can exit directly
+                let can_exit_directly = self.current_screen_type == ScreenType::TotalSummary
+                    || self
+                        .screens
+                        .get(&self.current_screen_type)
+                        .map(|screen| screen.is_exitable())
+                        .unwrap_or(false);
+
+                if can_exit_directly {
                     self.exit_requested = true;
                 } else {
                     let _ =

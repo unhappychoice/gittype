@@ -1,4 +1,5 @@
-use crate::presentation::game::{ScreenType, SessionManager};
+use crate::presentation::game::SessionManager;
+use crate::presentation::tui::ScreenType;
 use crate::Result;
 
 pub struct ScreenTransitionManager;

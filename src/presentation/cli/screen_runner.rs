@@ -1,0 +1,67 @@
+use crate::domain::events::EventBus;
+use crate::presentation::tui::{Screen, ScreenManager, ScreenType};
+use crate::Result;
+use std::sync::{Arc, Mutex};
+
+/// Runs a single screen with optional data initialization and result extraction
+pub fn run_screen<S, D, R, F>(
+    screen_type: ScreenType,
+    screen_factory: impl FnOnce(EventBus) -> S,
+    data: Option<D>,
+    extract_result: Option<F>,
+) -> Result<Option<R>>
+where
+    S: Screen + 'static,
+    D: 'static,
+    F: FnOnce(&S) -> Option<R>,
+{
+    // Create EventBus and ScreenManager
+    let event_bus = EventBus::new();
+    let mut screen_manager = ScreenManager::new(event_bus.clone());
+
+    // Create and register screen
+    let screen = screen_factory(event_bus.clone());
+    screen_manager.register_screen(screen);
+
+    // Setup event subscriptions
+    let manager_ref = Arc::new(Mutex::new(screen_manager));
+    ScreenManager::setup_event_subscriptions(&manager_ref);
+
+    // Initialize terminal and set current screen
+    {
+        let mut manager = manager_ref.lock().unwrap();
+        manager.initialize_terminal()?;
+        manager.set_current_screen(screen_type.clone())?;
+
+        // Initialize screen with data
+        if let Some(screen_box) = manager.get_screen_mut(&screen_type) {
+            let init_data = if let Some(user_data) = data {
+                // Use provided data
+                Box::new(user_data) as Box<dyn std::any::Any>
+            } else {
+                // Use default provider to fetch data
+                S::default_provider().provide()?
+            };
+            screen_box.init_with_data(init_data)?;
+        }
+    }
+
+    // Run the screen manager loop
+    {
+        let mut manager = manager_ref.lock().unwrap();
+        manager.run()?;
+    }
+
+    // Extract result if extractor function provided
+    let result = if let Some(extractor) = extract_result {
+        let manager = manager_ref.lock().unwrap();
+        manager
+            .get_screen(&screen_type)
+            .and_then(|screen| screen.as_any().downcast_ref::<S>())
+            .and_then(extractor)
+    } else {
+        None
+    };
+
+    Ok(result)
+}

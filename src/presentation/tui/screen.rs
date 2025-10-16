@@ -11,6 +11,7 @@ pub trait ScreenDataProvider: Send {
 /// Screen type identifiers for different application screens
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ScreenType {
+    // Game screens
     Title,
     Loading,
     Typing,
@@ -30,6 +31,11 @@ pub enum ScreenType {
     DetailsDialog,
     Settings,
     Panic,
+    // CLI screens
+    RepoList,
+    RepoPlay,
+    TrendingLanguageSelection,
+    TrendingRepositorySelection,
 }
 
 /// Update strategy defines how and when a screen should be updated and re-rendered
@@ -111,6 +117,12 @@ pub trait Screen: Send {
     /// Update screen state and return whether a re-render is needed
     fn update(&mut self) -> Result<bool> {
         Ok(false)
+    }
+
+    /// Returns true if this screen can exit directly without showing summary
+    /// Default is false (game screens show summary), CLI screens override to true
+    fn is_exitable(&self) -> bool {
+        false
     }
 
     /// Downcast to Any for type-specific access (read-only)
