@@ -1,5 +1,5 @@
+use crate::application::service::analytics_service::AnalyticsData;
 use crate::domain::models::Languages;
-use crate::presentation::tui::screens::analytics_screen::AnalyticsData;
 use crate::presentation::ui::Colors;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},

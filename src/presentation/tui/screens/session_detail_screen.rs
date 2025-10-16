@@ -1,7 +1,5 @@
+use crate::application::service::session_service::SessionDisplayData;
 use crate::domain::events::EventBus;
-
-// Re-export SessionDisplayData for backward compatibility
-pub use crate::application::service::session_service::SessionDisplayData;
 use crate::domain::models::storage::{SessionStageResult, StoredSession};
 use crate::domain::repositories::session_repository::{SessionRepository, SessionRepositoryTrait};
 use crate::presentation::game::events::NavigateTo;

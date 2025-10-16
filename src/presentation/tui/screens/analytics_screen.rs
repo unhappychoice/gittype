@@ -1,4 +1,4 @@
-use crate::application::service::analytics_service::AnalyticsService;
+use crate::application::service::analytics_service::{AnalyticsData, AnalyticsService};
 use crate::domain::events::EventBus;
 use crate::domain::repositories::SessionRepository;
 use crate::infrastructure::database::database::Database;
@@ -55,9 +55,6 @@ impl ViewMode {
         }
     }
 }
-
-// Re-export types from application layer for backward compatibility
-pub use crate::application::service::analytics_service::{AnalyticsData, RepoStats, LangStats};
 
 #[derive(Clone)]
 pub enum AnalyticsAction {
