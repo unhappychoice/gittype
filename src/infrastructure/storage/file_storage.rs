@@ -16,6 +16,7 @@ pub struct FileEntry {
 mod real_impl {
     use super::*;
 
+    #[derive(Debug)]
     pub struct FileStorage;
 
     impl AppDataProvider for FileStorage {}
@@ -122,6 +123,7 @@ mod mock_impl {
     use super::*;
     use crate::GitTypeError;
 
+    #[derive(Debug)]
     pub struct FileStorage {
         pub files: Vec<FileEntry>,
     }

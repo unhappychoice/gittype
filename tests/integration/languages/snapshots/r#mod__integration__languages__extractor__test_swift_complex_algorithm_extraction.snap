@@ -71,7 +71,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "struct ProcessedItem {\n    let id: Int\n    let originalValue: Int\n    let transformedValue: Int\n    let category: String\n    let timestamp: Date\n    var metadata: [String: Any]\n\n    init(id: Int, originalValue: Int, transformedValue: Int, category: String, metadata: [String: Any] = [:]) {\n        self.id = id\n        self.originalValue = originalValue\n        self.transformedValue = transformedValue\n        self.category = category\n        self.timestamp = Date()\n        self.metadata = metadata\n    }\n}",
       "end_line": 20,
       "language": "swift",
-      "name": "class",
+      "name": "ProcessedItem",
       "original_indentation": 0,
       "start_line": 4
     },
@@ -134,7 +134,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class DataProcessor {\n    private var cache: [String: ProcessedItem] = [:]\n    private var processingLog: [ProcessedItem] = []\n    private let threshold: Int\n\n    init(threshold: Int) {\n        self.threshold = threshold\n    }\n\n    func processComplexData(_ input: [Int]) -> [ProcessedItem] {\n        var results: [ProcessedItem] = []\n        var processedCount = 0\n\n        // Main processing algorithm - extractable middle chunk\n        for (index, value) in input.enumerated() {\n            let cacheKey = \"item_\\(index)_\\(value)\"\n\n            if let cachedItem = cache[cacheKey] {\n                results.append(cachedItem)\n                continue\n            }\n\n            let processedItem: ProcessedItem?\n            if value > threshold {\n                let transformedValue = value * 2\n                let category = transformedValue > threshold * 3 ? \"HIGH\" : \"MEDIUM\"\n                let bonusValue = transformedValue > 100 ? transformedValue + 10 : transformedValue\n\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: bonusValue,\n                    category: category,\n                    metadata: [\n                        \"processed\": true,\n                        \"multiplier\": 0,\n                        \"processor\": \"enhanced\"\n                    ]\n                )\n                processedCount += 1\n            } else if value > 0 {\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: value + threshold,\n                    category: \"LOW\",\n                    metadata: [\n                        \"processed\": true,\n                        \"adjusted\": true,\n                        \"processor\": \"basic\"\n                    ]\n                )\n            } else {\n                continue // skip negative values\n            }\n\n            if let item = processedItem {\n                cache[cacheKey] = item\n                processingLog.append(item)\n                results.append(item)\n            }\n        }\n\n        // Finalization logic\n        if processedCount > 0 {\n            let average = Double(results.map { $0.transformedValue }.reduce(0, +)) / Double(results.count)\n            print(\"Processing complete. Average: \\(String(format: \"%.2f\", average))\")\n\n            // Add processing statistics\n            for i in 0..<results.count {\n                results[i].metadata[\"processing_average\"] = average\n            }\n        }\n\n        return results\n    }\n\n    func analyzePatterns(_ items: [ProcessedItem]) -> [String: [String: Any]] {\n        var analysis: [String: [String: Any]] = [:]\n        let categoryGroups = Dictionary(grouping: items) { $0.category }\n\n        // Pattern analysis logic - extractable middle chunk\n        for (category, categoryItems) in categoryGroups {\n            let values = categoryItems.map { $0.transformedValue }\n            var categoryAnalysis: [String: Any] = [\n                \"count\": categoryItems.count,\n                \"percentage\": Double(categoryItems.count) / Double(items.count) * 100,\n                \"avg_value\": Double(values.reduce(0, +)) / Double(values.count),\n                \"min_value\": values.min() ?? 0,\n                \"max_value\": values.max() ?? 0\n            ]\n\n            // Time-based analysis\n            let currentTime = Date()\n            let recentItems = categoryItems.filter { currentTime.timeIntervalSince($0.timestamp) < 60 } // last minute\n            if !recentItems.isEmpty {\n                let recentValues = recentItems.map { $0.transformedValue }\n                categoryAnalysis[\"recent_count\"] = recentItems.count\n                categoryAnalysis[\"recent_avg\"] = Double(recentValues.reduce(0, +)) / Double(recentValues.count)\n            }\n\n            // High-value analysis\n            let highValueItems = categoryItems.filter { $0.transformedValue > 1000 }\n            if !highValueItems.isEmpty {\n                categoryAnalysis[\"high_value_count\"] = highValueItems.count\n            }\n\n            analysis[category] = categoryAnalysis\n        }\n\n        analysis[\"total_items\"] = items.count\n        analysis[\"processing_time\"] = Date().timeIntervalSince1970\n\n        return analysis\n    }\n}",
       "end_line": 137,
       "language": "swift",
-      "name": "class",
+      "name": "DataProcessor",
       "original_indentation": 0,
       "start_line": 22
     },
@@ -181,7 +181,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    func processComplexData(_ input: [Int]) -> [ProcessedItem] {\n        var results: [ProcessedItem] = []\n        var processedCount = 0\n\n        // Main processing algorithm - extractable middle chunk\n        for (index, value) in input.enumerated() {\n            let cacheKey = \"item_\\(index)_\\(value)\"\n\n            if let cachedItem = cache[cacheKey] {\n                results.append(cachedItem)\n                continue\n            }\n\n            let processedItem: ProcessedItem?\n            if value > threshold {\n                let transformedValue = value * 2\n                let category = transformedValue > threshold * 3 ? \"HIGH\" : \"MEDIUM\"\n                let bonusValue = transformedValue > 100 ? transformedValue + 10 : transformedValue\n\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: bonusValue,\n                    category: category,\n                    metadata: [\n                        \"processed\": true,\n                        \"multiplier\": 0,\n                        \"processor\": \"enhanced\"\n                    ]\n                )\n                processedCount += 1\n            } else if value > 0 {\n                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: value + threshold,\n                    category: \"LOW\",\n                    metadata: [\n                        \"processed\": true,\n                        \"adjusted\": true,\n                        \"processor\": \"basic\"\n                    ]\n                )\n            } else {\n                continue // skip negative values\n            }\n\n            if let item = processedItem {\n                cache[cacheKey] = item\n                processingLog.append(item)\n                results.append(item)\n            }\n        }\n\n        // Finalization logic\n        if processedCount > 0 {\n            let average = Double(results.map { $0.transformedValue }.reduce(0, +)) / Double(results.count)\n            print(\"Processing complete. Average: \\(String(format: \"%.2f\", average))\")\n\n            // Add processing statistics\n            for i in 0..<results.count {\n                results[i].metadata[\"processing_average\"] = average\n            }\n        }\n\n        return results\n    }",
       "end_line": 97,
       "language": "swift",
-      "name": "function",
+      "name": "processComplexData",
       "original_indentation": 4,
       "start_line": 31
     },
@@ -221,7 +221,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "            if let cachedItem = cache[cacheKey] {\n                results.append(cachedItem)\n                continue\n            }",
       "end_line": 42,
       "language": "swift",
-      "name": "if_block",
+      "name": "cachedItem",
       "original_indentation": 12,
       "start_line": 39
     },
@@ -266,7 +266,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: bonusValue,\n                    category: category,\n                    metadata: [\n                        \"processed\": true,\n                        \"multiplier\": 0,\n                        \"processor\": \"enhanced\"\n                    ]\n                )",
       "end_line": 60,
       "language": "swift",
-      "name": "function_call",
+      "name": "ProcessedItem",
       "original_indentation": 32,
       "start_line": 50
     },
@@ -291,7 +291,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "                processedItem = ProcessedItem(\n                    id: index,\n                    originalValue: value,\n                    transformedValue: value + threshold,\n                    category: \"LOW\",\n                    metadata: [\n                        \"processed\": true,\n                        \"adjusted\": true,\n                        \"processor\": \"basic\"\n                    ]\n                )",
       "end_line": 73,
       "language": "swift",
-      "name": "function_call",
+      "name": "ProcessedItem",
       "original_indentation": 32,
       "start_line": 63
     },
@@ -326,7 +326,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "            if let item = processedItem {\n                cache[cacheKey] = item\n                processingLog.append(item)\n                results.append(item)\n            }",
       "end_line": 82,
       "language": "swift",
-      "name": "if_block",
+      "name": "item",
       "original_indentation": 12,
       "start_line": 78
     },
@@ -423,7 +423,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    func analyzePatterns(_ items: [ProcessedItem]) -> [String: [String: Any]] {\n        var analysis: [String: [String: Any]] = [:]\n        let categoryGroups = Dictionary(grouping: items) { $0.category }\n\n        // Pattern analysis logic - extractable middle chunk\n        for (category, categoryItems) in categoryGroups {\n            let values = categoryItems.map { $0.transformedValue }\n            var categoryAnalysis: [String: Any] = [\n                \"count\": categoryItems.count,\n                \"percentage\": Double(categoryItems.count) / Double(items.count) * 100,\n                \"avg_value\": Double(values.reduce(0, +)) / Double(values.count),\n                \"min_value\": values.min() ?? 0,\n                \"max_value\": values.max() ?? 0\n            ]\n\n            // Time-based analysis\n            let currentTime = Date()\n            let recentItems = categoryItems.filter { currentTime.timeIntervalSince($0.timestamp) < 60 } // last minute\n            if !recentItems.isEmpty {\n                let recentValues = recentItems.map { $0.transformedValue }\n                categoryAnalysis[\"recent_count\"] = recentItems.count\n                categoryAnalysis[\"recent_avg\"] = Double(recentValues.reduce(0, +)) / Double(recentValues.count)\n            }\n\n            // High-value analysis\n            let highValueItems = categoryItems.filter { $0.transformedValue > 1000 }\n            if !highValueItems.isEmpty {\n                categoryAnalysis[\"high_value_count\"] = highValueItems.count\n            }\n\n            analysis[category] = categoryAnalysis\n        }\n\n        analysis[\"total_items\"] = items.count\n        analysis[\"processing_time\"] = Date().timeIntervalSince1970\n\n        return analysis\n    }",
       "end_line": 136,
       "language": "swift",
-      "name": "function",
+      "name": "analyzePatterns",
       "original_indentation": 4,
       "start_line": 99
     },
@@ -473,7 +473,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        for (category, categoryItems) in categoryGroups {\n            let values = categoryItems.map { $0.transformedValue }\n            var categoryAnalysis: [String: Any] = [\n                \"count\": categoryItems.count,\n                \"percentage\": Double(categoryItems.count) / Double(items.count) * 100,\n                \"avg_value\": Double(values.reduce(0, +)) / Double(values.count),\n                \"min_value\": values.min() ?? 0,\n                \"max_value\": values.max() ?? 0\n            ]\n\n            // Time-based analysis\n            let currentTime = Date()\n            let recentItems = categoryItems.filter { currentTime.timeIntervalSince($0.timestamp) < 60 } // last minute\n            if !recentItems.isEmpty {\n                let recentValues = recentItems.map { $0.transformedValue }\n                categoryAnalysis[\"recent_count\"] = recentItems.count\n                categoryAnalysis[\"recent_avg\"] = Double(recentValues.reduce(0, +)) / Double(recentValues.count)\n            }\n\n            // High-value analysis\n            let highValueItems = categoryItems.filter { $0.transformedValue > 1000 }\n            if !highValueItems.isEmpty {\n                categoryAnalysis[\"high_value_count\"] = highValueItems.count\n            }\n\n            analysis[category] = categoryAnalysis\n        }",
       "end_line": 130,
       "language": "swift",
-      "name": "for_loop",
+      "name": "categoryGroups",
       "original_indentation": 8,
       "start_line": 104
     },
@@ -556,7 +556,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    func complexTransform(_ item: ProcessedItem) -> ProcessedItem {\n        let newValue: Int\n        switch item.category {\n        case \"HIGH\":\n            newValue = item.transformedValue * 2\n        case \"MEDIUM\":\n            newValue = item.transformedValue + 50\n        case \"LOW\":\n            newValue = item.transformedValue + 10\n        default:\n            newValue = item.transformedValue\n        }\n\n        return ProcessedItem(\n            id: item.id,\n            originalValue: item.originalValue,\n            transformedValue: newValue,\n            category: item.category,\n            metadata: item.metadata\n        )\n    }",
       "end_line": 161,
       "language": "swift",
-      "name": "function",
+      "name": "complexTransform",
       "original_indentation": 4,
       "start_line": 141
     },
@@ -616,7 +616,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        return ProcessedItem(\n            id: item.id,\n            originalValue: item.originalValue,\n            transformedValue: newValue,\n            category: item.category,\n            metadata: item.metadata\n        )",
       "end_line": 160,
       "language": "swift",
-      "name": "function_call",
+      "name": "ProcessedItem",
       "original_indentation": 15,
       "start_line": 154
     },
@@ -636,7 +636,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    func filterAndSort(_ items: [ProcessedItem], targetCategory: String) -> [ProcessedItem] {\n        return items\n            .filter { $0.category == targetCategory }\n            .sorted { $0.transformedValue > $1.transformedValue }\n    }",
       "end_line": 167,
       "language": "swift",
-      "name": "function",
+      "name": "filterAndSort",
       "original_indentation": 4,
       "start_line": 163
     },
@@ -681,12 +681,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 171
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Interface",
       "comment_ranges": [],
       "content": "protocol BatchProcessable {\n    func batchProcess(_ batches: [[Int]], threshold: Int) -> [Result<[ProcessedItem], Error>]\n}",
       "end_line": 173,
       "language": "swift",
-      "name": "protocol",
+      "name": "BatchProcessable",
       "original_indentation": 0,
       "start_line": 171
     },
@@ -706,7 +706,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    func batchProcess(_ batches: [[Int]], threshold: Int) -> [Result<[ProcessedItem], Error>] {\n        return batches.map { batch in\n            Result {\n                let processor = DataProcessor(threshold: threshold)\n                return processor.processComplexData(batch)\n            }\n        }\n    }",
       "end_line": 183,
       "language": "swift",
-      "name": "function",
+      "name": "batchProcess",
       "original_indentation": 4,
       "start_line": 176
     },
@@ -736,7 +736,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "            Result {\n                let processor = DataProcessor(threshold: threshold)\n                return processor.processComplexData(batch)\n            }",
       "end_line": 181,
       "language": "swift",
-      "name": "function_call",
+      "name": "Result",
       "original_indentation": 12,
       "start_line": 178
     },

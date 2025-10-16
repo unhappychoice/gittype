@@ -15,12 +15,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "object Calculator {\n    def add(a: Int, b: Int): Int = {\n        val result = a + b\n        result\n    }\n\n    def processValue(value: Any): String = {\n        value match {\n            case s: String => s\"String: $s\"\n            case i: Int => s\"Int: $i\"\n            case _ => \"Unknown\"\n        }\n    }\n\n    val numbers = List(1, 2, 3)\n    val doubled = for {\n        n <- numbers\n        if n > 1\n        result = n * 2\n    } yield result\n\n    val filtered = numbers.filter(x => x > 2).map(y => y * y)\n\n    val attempt = Try {\n        \"123\".toInt\n    }\n}",
       "end_line": 30,
       "language": "scala",
-      "name": "object",
+      "name": "Calculator",
       "original_indentation": 0,
       "start_line": 4
     },
@@ -30,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def add(a: Int, b: Int): Int = {\n        val result = a + b\n        result\n    }",
       "end_line": 8,
       "language": "scala",
-      "name": "function",
+      "name": "add",
       "original_indentation": 4,
       "start_line": 5
     },
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def processValue(value: Any): String = {\n        value match {\n            case s: String => s\"String: $s\"\n            case i: Int => s\"Int: $i\"\n            case _ => \"Unknown\"\n        }\n    }",
       "end_line": 16,
       "language": "scala",
-      "name": "function",
+      "name": "processValue",
       "original_indentation": 4,
       "start_line": 10
     },
@@ -50,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        value match {\n            case s: String => s\"String: $s\"\n            case i: Int => s\"Int: $i\"\n            case _ => \"Unknown\"\n        }",
       "end_line": 15,
       "language": "scala",
-      "name": "match_block",
+      "name": "value",
       "original_indentation": 8,
       "start_line": 11
     },
@@ -60,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    val doubled = for {\n        n <- numbers\n        if n > 1\n        result = n * 2\n    } yield result",
       "end_line": 23,
       "language": "scala",
-      "name": "for_loop",
+      "name": "result",
       "original_indentation": 18,
       "start_line": 19
     },
@@ -70,7 +70,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    val attempt = Try {\n        \"123\".toInt\n    }",
       "end_line": 29,
       "language": "scala",
-      "name": "function_call",
+      "name": "Try",
       "original_indentation": 18,
       "start_line": 27
     },
@@ -80,7 +80,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class Person(val name: String) {\n    def greet(): String = s\"Hello, $name\"\n\n    def isLongName(): Boolean = {\n        if (name.length > 5) true else false\n    }\n}",
       "end_line": 38,
       "language": "scala",
-      "name": "class",
+      "name": "Person",
       "original_indentation": 0,
       "start_line": 32
     },
@@ -90,7 +90,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def greet(): String = s\"Hello, $name\"",
       "end_line": 33,
       "language": "scala",
-      "name": "function",
+      "name": "greet",
       "original_indentation": 4,
       "start_line": 33
     },
@@ -100,17 +100,17 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def isLongName(): Boolean = {\n        if (name.length > 5) true else false\n    }",
       "end_line": 37,
       "language": "scala",
-      "name": "function",
+      "name": "isLongName",
       "original_indentation": 4,
       "start_line": 35
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "trait Animal {\n    def speak(): String\n\n    def move(): Unit = {\n        println(\"Moving...\")\n    }\n}",
       "end_line": 46,
       "language": "scala",
-      "name": "trait",
+      "name": "Animal",
       "original_indentation": 0,
       "start_line": 40
     },
@@ -120,12 +120,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def move(): Unit = {\n        println(\"Moving...\")\n    }",
       "end_line": 45,
       "language": "scala",
-      "name": "function",
+      "name": "move",
       "original_indentation": 4,
       "start_line": 43
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "extension (s: String) {\n    def isPalindrome: Boolean = s == s.reverse\n}",
       "end_line": 50,
@@ -140,7 +140,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def isPalindrome: Boolean = s == s.reverse",
       "end_line": 49,
       "language": "scala",
-      "name": "function",
+      "name": "isPalindrome",
       "original_indentation": 4,
       "start_line": 49
     },
@@ -150,7 +150,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "@deprecated\ndef oldFunction(): Unit = {}",
       "end_line": 53,
       "language": "scala",
-      "name": "function",
+      "name": "oldFunction",
       "original_indentation": 0,
       "start_line": 52
     }

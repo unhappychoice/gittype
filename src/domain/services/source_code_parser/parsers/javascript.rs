@@ -13,10 +13,14 @@ impl LanguageExtractor for JavaScriptExtractor {
     fn query_patterns(&self) -> &str {
         "
             (function_declaration name: (identifier) @name) @function
+            (generator_function_declaration name: (identifier) @name) @generator_function
             (method_definition name: (property_identifier) @name) @method
+            (assignment_expression left: (member_expression) right: (function_expression)) @method
+            (assignment_expression left: (member_expression) right: (arrow_function)) @method
             (class_declaration name: (identifier) @name) @class
             (variable_declarator name: (identifier) value: (arrow_function)) @arrow_function
             (variable_declarator name: (identifier) value: (function_expression)) @function_expression
+            (variable_declarator name: (identifier) value: (generator_function)) @generator_function_expression
             (jsx_element open_tag: (jsx_opening_element name: (identifier) @name)) @jsx_element
             (jsx_self_closing_element name: (identifier) @name) @jsx_self_closing_element
         "
@@ -29,6 +33,8 @@ impl LanguageExtractor for JavaScriptExtractor {
     fn capture_name_to_chunk_type(&self, capture_name: &str) -> Option<ChunkType> {
         match capture_name {
             "function" => Some(ChunkType::Function),
+            "generator_function" => Some(ChunkType::Function),
+            "generator_function_expression" => Some(ChunkType::Function),
             "method" => Some(ChunkType::Method),
             "class" => Some(ChunkType::Class),
             "arrow_function" => Some(ChunkType::Function),
@@ -36,13 +42,14 @@ impl LanguageExtractor for JavaScriptExtractor {
             "jsx_element" => Some(ChunkType::Component),
             "jsx_self_closing_element" => Some(ChunkType::Component),
             "variable" => Some(ChunkType::Variable),
+            "name" => Some(ChunkType::CodeBlock),
             _ => None,
         }
     }
 
     fn extract_name(&self, node: Node, source_code: &str, capture_name: &str) -> Option<String> {
         match capture_name {
-            "arrow_function" | "function_expression" => {
+            "arrow_function" | "function_expression" | "generator_function_expression" => {
                 if node.kind() == "variable_declarator" {
                     let mut cursor = node.walk();
                     if cursor.goto_first_child() {

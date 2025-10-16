@@ -30,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "def hello_world():\n    print(\"Hello, world!\")",
       "end_line": 3,
       "language": "python",
-      "name": "function",
+      "name": "hello_world",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -50,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "def calculate_sum(a, b):\n    return a + b",
       "end_line": 6,
       "language": "python",
-      "name": "function",
+      "name": "calculate_sum",
       "original_indentation": 0,
       "start_line": 5
     },
@@ -60,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "def fibonacci(n):\n    if n <= 1:\n        return n\n    return fibonacci(n-1) + fibonacci(n-2)",
       "end_line": 11,
       "language": "python",
-      "name": "function",
+      "name": "fibonacci",
       "original_indentation": 0,
       "start_line": 8
     }

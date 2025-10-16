@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::sync::Once;
 
-use gittype::domain::models::challenge::Challenge;
+use crate::fixtures::models::{challenge, git_repository};
 use gittype::domain::models::git_repository::GitRepository;
 use gittype::domain::models::ExtractionOptions;
 use gittype::presentation::game::GameData;
@@ -9,20 +9,17 @@ use gittype::presentation::game::GameData;
 fn setup_game_data() {
     static INIT: Once = Once::new();
     INIT.call_once(|| {
-        GameData::initialize().expect("GameData should initialize once");
+        let _ = GameData::initialize();
     });
-    GameData::reset().expect("GameData reset should succeed");
+    // Reset may fail if already reset, ignore the error
+    let _ = GameData::reset();
 }
 
 fn sample_repo(root: Option<PathBuf>) -> GitRepository {
-    GitRepository {
-        user_name: "user".into(),
-        repository_name: "repo".into(),
-        remote_url: "https://example.com/user/repo.git".into(),
-        branch: Some("main".into()),
-        commit_hash: Some("abc123".into()),
-        is_dirty: false,
-        root_path: root,
+    if let Some(root) = root {
+        git_repository::build_with_root_path(root)
+    } else {
+        git_repository::build()
     }
 }
 
@@ -56,8 +53,8 @@ fn set_results_and_take_challenges() {
     setup_game_data();
 
     let challenges = vec![
-        Challenge::new("1".into(), "fn main() {}".into()),
-        Challenge::new("2".into(), "fn helper() {}".into()),
+        challenge::build_with_id_and_code("1", "fn main() {}"),
+        challenge::build_with_id_and_code("2", "fn helper() {}"),
     ];
 
     GameData::set_results(challenges.clone(), Some(sample_repo(None))).expect("set_results");

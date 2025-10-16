@@ -25,6 +25,7 @@ impl LanguageExtractor for PythonExtractor {
         match capture_name {
             "function" => Some(ChunkType::Function),
             "class" => Some(ChunkType::Class),
+            "name" => Some(ChunkType::CodeBlock),
             _ => None,
         }
     }

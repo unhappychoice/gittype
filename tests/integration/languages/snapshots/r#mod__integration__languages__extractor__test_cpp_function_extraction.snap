@@ -15,22 +15,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "int main() {\n    std::cout << \"Hello, world!\" << std::endl;\n    return 0;\n}",
       "end_line": 7,
       "language": "cpp",
-      "name": "function.definition",
+      "name": "main",
       "original_indentation": 0,
       "start_line": 4
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "int add(int a, int b) {\n    return a + b;\n}",
       "end_line": 11,
       "language": "cpp",
-      "name": "function.definition",
+      "name": "add",
       "original_indentation": 0,
       "start_line": 9
     },
@@ -45,12 +45,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 13
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "void print_number(int num) {\n    std::cout << num << std::endl;\n}",
       "end_line": 15,
       "language": "cpp",
-      "name": "function.definition",
+      "name": "print_number",
       "original_indentation": 0,
       "start_line": 13
     },
@@ -65,12 +65,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 17
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "double calculate_area(double radius) {\n    return 3.14159 * radius * radius;\n}",
       "end_line": 19,
       "language": "cpp",
-      "name": "function.definition",
+      "name": "calculate_area",
       "original_indentation": 0,
       "start_line": 17
     }

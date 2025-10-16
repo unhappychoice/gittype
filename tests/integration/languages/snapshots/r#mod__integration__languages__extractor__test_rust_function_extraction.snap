@@ -30,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "fn hello_world() {\n    println!(\"Hello, world!\");\n}",
       "end_line": 4,
       "language": "rust",
-      "name": "function",
+      "name": "hello_world",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "pub fn add(a: i32, b: i32) -> i32 {\n    a + b\n}",
       "end_line": 8,
       "language": "rust",
-      "name": "function",
+      "name": "add",
       "original_indentation": 0,
       "start_line": 6
     }

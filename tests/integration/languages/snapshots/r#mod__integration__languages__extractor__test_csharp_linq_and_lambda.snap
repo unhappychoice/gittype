@@ -1,0 +1,231 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nusing System;\nusing System.Collections.Generic;\nusing System.Linq;\n\nnamespace DataAnalysis\n{\n    public class DataAnalyzer\n    {\n        public List<int> ProcessNumbers(List<int> numbers)\n        {\n            var filtered = numbers.Where(n => n > 10).ToList();\n            var mapped = filtered.Select(n => n * 2).ToList();\n            var sorted = mapped.OrderBy(n => n).ToList();\n            return sorted;\n        }\n\n        public Dictionary<string, int> GroupAndCount<T>(List<T> items, Func<T, string> keySelector)\n        {\n            return items\n                .GroupBy(keySelector)\n                .ToDictionary(g => g.Key, g => g.Count());\n        }\n\n        public IEnumerable<string> GetFormattedResults(List<int> numbers)\n        {\n            return from n in numbers\n                   where n % 2 == 0\n                   orderby n descending\n                   select $\"Number: {n}\";\n        }\n\n        public bool AnyMatchesCondition(List<int> numbers, Func<int, bool> predicate)\n        {\n            return numbers.Any(predicate);\n        }\n\n        public int AggregateSum(List<int> numbers)\n        {\n            return numbers.Aggregate(0, (sum, n) => sum + n);\n        }\n    }\n}\n",
+      "end_line": 43,
+      "language": "csharp",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "namespace DataAnalysis",
+      "end_line": 6,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 10,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Namespace",
+      "comment_ranges": [],
+      "content": "namespace DataAnalysis\n{\n    public class DataAnalyzer\n    {\n        public List<int> ProcessNumbers(List<int> numbers)\n        {\n            var filtered = numbers.Where(n => n > 10).ToList();\n            var mapped = filtered.Select(n => n * 2).ToList();\n            var sorted = mapped.OrderBy(n => n).ToList();\n            return sorted;\n        }\n\n        public Dictionary<string, int> GroupAndCount<T>(List<T> items, Func<T, string> keySelector)\n        {\n            return items\n                .GroupBy(keySelector)\n                .ToDictionary(g => g.Key, g => g.Count());\n        }\n\n        public IEnumerable<string> GetFormattedResults(List<int> numbers)\n        {\n            return from n in numbers\n                   where n % 2 == 0\n                   orderby n descending\n                   select $\"Number: {n}\";\n        }\n\n        public bool AnyMatchesCondition(List<int> numbers, Func<int, bool> predicate)\n        {\n            return numbers.Any(predicate);\n        }\n\n        public int AggregateSum(List<int> numbers)\n        {\n            return numbers.Aggregate(0, (sum, n) => sum + n);\n        }\n    }\n}",
+      "end_line": 43,
+      "language": "csharp",
+      "name": "DataAnalysis",
+      "original_indentation": 0,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    public class DataAnalyzer",
+      "end_line": 8,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 17,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "    public class DataAnalyzer\n    {\n        public List<int> ProcessNumbers(List<int> numbers)\n        {\n            var filtered = numbers.Where(n => n > 10).ToList();\n            var mapped = filtered.Select(n => n * 2).ToList();\n            var sorted = mapped.OrderBy(n => n).ToList();\n            return sorted;\n        }\n\n        public Dictionary<string, int> GroupAndCount<T>(List<T> items, Func<T, string> keySelector)\n        {\n            return items\n                .GroupBy(keySelector)\n                .ToDictionary(g => g.Key, g => g.Count());\n        }\n\n        public IEnumerable<string> GetFormattedResults(List<int> numbers)\n        {\n            return from n in numbers\n                   where n % 2 == 0\n                   orderby n descending\n                   select $\"Number: {n}\";\n        }\n\n        public bool AnyMatchesCondition(List<int> numbers, Func<int, bool> predicate)\n        {\n            return numbers.Any(predicate);\n        }\n\n        public int AggregateSum(List<int> numbers)\n        {\n            return numbers.Aggregate(0, (sum, n) => sum + n);\n        }\n    }",
+      "end_line": 42,
+      "language": "csharp",
+      "name": "DataAnalyzer",
+      "original_indentation": 4,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        public List<int> ProcessNumbers",
+      "end_line": 10,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 25,
+      "start_line": 10
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "        public List<int> ProcessNumbers(List<int> numbers)\n        {\n            var filtered = numbers.Where(n => n > 10).ToList();\n            var mapped = filtered.Select(n => n * 2).ToList();\n            var sorted = mapped.OrderBy(n => n).ToList();\n            return sorted;\n        }",
+      "end_line": 16,
+      "language": "csharp",
+      "name": "ProcessNumbers",
+      "original_indentation": 8,
+      "start_line": 10
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        {\n            var filtered = numbers.Where(n => n > 10).ToList();\n            var mapped = filtered.Select(n => n * 2).ToList();\n            var sorted = mapped.OrderBy(n => n).ToList();\n            return sorted;\n        }",
+      "end_line": 16,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        public Dictionary<string, int> GroupAndCount",
+      "end_line": 18,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 39,
+      "start_line": 18
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "        public Dictionary<string, int> GroupAndCount<T>(List<T> items, Func<T, string> keySelector)\n        {\n            return items\n                .GroupBy(keySelector)\n                .ToDictionary(g => g.Key, g => g.Count());\n        }",
+      "end_line": 23,
+      "language": "csharp",
+      "name": "GroupAndCount",
+      "original_indentation": 8,
+      "start_line": 18
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        {\n            return items\n                .GroupBy(keySelector)\n                .ToDictionary(g => g.Key, g => g.Count());\n        }",
+      "end_line": 23,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 19
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "            return items\n                .GroupBy(keySelector)",
+      "end_line": 21,
+      "language": "csharp",
+      "name": "method_call",
+      "original_indentation": 19,
+      "start_line": 20
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "            return items\n                .GroupBy(keySelector)\n                .ToDictionary(g => g.Key, g => g.Count())",
+      "end_line": 22,
+      "language": "csharp",
+      "name": "method_call",
+      "original_indentation": 19,
+      "start_line": 20
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        public IEnumerable<string> GetFormattedResults",
+      "end_line": 25,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 35,
+      "start_line": 25
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "        public IEnumerable<string> GetFormattedResults(List<int> numbers)\n        {\n            return from n in numbers\n                   where n % 2 == 0\n                   orderby n descending\n                   select $\"Number: {n}\";\n        }",
+      "end_line": 31,
+      "language": "csharp",
+      "name": "GetFormattedResults",
+      "original_indentation": 8,
+      "start_line": 25
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        {\n            return from n in numbers\n                   where n % 2 == 0\n                   orderby n descending\n                   select $\"Number: {n}\";\n        }",
+      "end_line": 31,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 26
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        public bool AnyMatchesCondition",
+      "end_line": 33,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 20,
+      "start_line": 33
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "        public bool AnyMatchesCondition(List<int> numbers, Func<int, bool> predicate)\n        {\n            return numbers.Any(predicate);\n        }",
+      "end_line": 36,
+      "language": "csharp",
+      "name": "AnyMatchesCondition",
+      "original_indentation": 8,
+      "start_line": 33
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        {\n            return numbers.Any(predicate);\n        }",
+      "end_line": 36,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 34
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        public int AggregateSum",
+      "end_line": 38,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 19,
+      "start_line": 38
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "        public int AggregateSum(List<int> numbers)\n        {\n            return numbers.Aggregate(0, (sum, n) => sum + n);\n        }",
+      "end_line": 41,
+      "language": "csharp",
+      "name": "AggregateSum",
+      "original_indentation": 8,
+      "start_line": 38
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        {\n            return numbers.Aggregate(0, (sum, n) => sum + n);\n        }",
+      "end_line": 41,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 39
+    }
+  ],
+  "source_code": "\nusing System;\nusing System.Collections.Generic;\nusing System.Linq;\n\nnamespace DataAnalysis\n{\n    public class DataAnalyzer\n    {\n        public List<int> ProcessNumbers(List<int> numbers)\n        {\n            var filtered = numbers.Where(n => n > 10).ToList();\n            var mapped = filtered.Select(n => n * 2).ToList();\n            var sorted = mapped.OrderBy(n => n).ToList();\n            return sorted;\n        }\n\n        public Dictionary<string, int> GroupAndCount<T>(List<T> items, Func<T, string> keySelector)\n        {\n            return items\n                .GroupBy(keySelector)\n                .ToDictionary(g => g.Key, g => g.Count());\n        }\n\n        public IEnumerable<string> GetFormattedResults(List<int> numbers)\n        {\n            return from n in numbers\n                   where n % 2 == 0\n                   orderby n descending\n                   select $\"Number: {n}\";\n        }\n\n        public bool AnyMatchesCondition(List<int> numbers, Func<int, bool> predicate)\n        {\n            return numbers.Any(predicate);\n        }\n\n        public int AggregateSum(List<int> numbers)\n        {\n            return numbers.Aggregate(0, (sum, n) => sum + n);\n        }\n    }\n}\n",
+  "test_name": "test_csharp_linq_and_lambda",
+  "total_chunks": 22
+}

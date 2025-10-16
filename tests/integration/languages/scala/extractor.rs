@@ -45,7 +45,7 @@ abstract class Animal {
     chunk_counts: {
         File: 1,
         Function: 2,
-        CodeBlock: 0,
+        Class: 3,
     }
 }
 
@@ -76,7 +76,7 @@ case object Singleton {
     chunk_counts: {
         File: 1,
         Function: 3,
-        CodeBlock: 3,
+        Class: 3,
     }
 }
 
@@ -102,7 +102,7 @@ trait Drawable {
     chunk_counts: {
         File: 1,
         Function: 1,
-        CodeBlock: 3,
+        Class: 3,
     }
 }
 
@@ -131,7 +131,7 @@ enum Direction {
     chunk_counts: {
         File: 1,
         Function: 1,
-        CodeBlock: 2,
+        Const: 2
     }
 }
 
@@ -177,7 +177,8 @@ type UserId = Long
     chunk_counts: {
         File: 1,
         Function: 4,
-        CodeBlock: 4,
+        Const: 1,
+        Class: 5,
     }
 }
 
@@ -262,8 +263,11 @@ def oldFunction(): Unit = {}
     total_chunks: 15,
     chunk_counts: {
         File: 1,
-        Function: 7,
-        CodeBlock: 3,
+        Function: 8,
+        FunctionCall: 1,
+        Class: 3,
+        Conditional: 1,
+        Loop: 1,
     }
 }
 
@@ -439,6 +443,9 @@ object DataProcessor {
     chunk_counts: {
         File: 1,
         Function: 6,
-        CodeBlock: 3,
+        FunctionCall: 14,
+        Conditional: 7,
+        CodeBlock: 2,
+        Class: 3
     }
 }

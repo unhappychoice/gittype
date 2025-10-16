@@ -44,6 +44,7 @@ impl LanguageExtractor for TypeScriptExtractor {
             "namespace" => Some(ChunkType::Module),
             "jsx_element" => Some(ChunkType::Component),
             "jsx_self_closing_element" => Some(ChunkType::Component),
+            "name" => Some(ChunkType::CodeBlock),
             _ => None,
         }
     }

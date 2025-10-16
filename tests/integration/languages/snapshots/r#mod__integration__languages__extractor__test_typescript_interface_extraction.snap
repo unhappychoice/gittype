@@ -15,22 +15,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Interface",
       "comment_ranges": [],
       "content": "interface User {\n    id: number;\n    name: string;\n    email?: string;\n}",
       "end_line": 6,
       "language": "typescript",
-      "name": "interface",
+      "name": "User",
       "original_indentation": 0,
       "start_line": 2
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Interface",
       "comment_ranges": [],
       "content": "interface Admin extends User {\n    permissions: string[];\n}",
       "end_line": 10,
       "language": "typescript",
-      "name": "interface",
+      "name": "Admin",
       "original_indentation": 0,
       "start_line": 8
     }

@@ -15,12 +15,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Module",
       "comment_ranges": [],
       "content": "pub mod utils {\n    pub fn helper() -> i32 {\n        42\n    }\n\n    pub struct Config {\n        value: String,\n    }\n}",
       "end_line": 10,
       "language": "rust",
-      "name": "module",
+      "name": "utils",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -30,17 +30,17 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    pub fn helper() -> i32 {\n        42\n    }",
       "end_line": 5,
       "language": "rust",
-      "name": "function",
+      "name": "helper",
       "original_indentation": 4,
       "start_line": 3
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Struct",
       "comment_ranges": [],
       "content": "    pub struct Config {\n        value: String,\n    }",
       "end_line": 9,
       "language": "rust",
-      "name": "struct",
+      "name": "Config",
       "original_indentation": 4,
       "start_line": 7
     },
@@ -55,12 +55,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 12
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Module",
       "comment_ranges": [],
       "content": "mod private_utils {\n    fn internal_function() {}\n}",
       "end_line": 14,
       "language": "rust",
-      "name": "module",
+      "name": "private_utils",
       "original_indentation": 0,
       "start_line": 12
     },
@@ -70,7 +70,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    fn internal_function() {}",
       "end_line": 13,
       "language": "rust",
-      "name": "function",
+      "name": "internal_function",
       "original_indentation": 4,
       "start_line": 13
     }

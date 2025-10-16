@@ -436,7 +436,11 @@ impl TypingContentView {
         hasher.finish()
     }
 
-    fn calculate_scroll_offset(view_height: u16, total_lines: u16, current_line_index: u16) -> u16 {
+    pub fn calculate_scroll_offset(
+        view_height: u16,
+        total_lines: u16,
+        current_line_index: u16,
+    ) -> u16 {
         let desired_center = view_height / 2;
 
         if current_line_index > desired_center {
@@ -510,20 +514,5 @@ impl TypingContentView {
         }
 
         hasher.finish()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::TypingContentView;
-
-    #[test]
-    fn test_calculate_scroll_offset() {
-        assert_eq!(TypingContentView::calculate_scroll_offset(20, 100, 10), 0);
-        assert_eq!(TypingContentView::calculate_scroll_offset(20, 100, 15), 5);
-        assert_eq!(TypingContentView::calculate_scroll_offset(20, 100, 30), 20);
-        assert_eq!(TypingContentView::calculate_scroll_offset(20, 25, 50), 5);
-        assert_eq!(TypingContentView::calculate_scroll_offset(20, 30, 15), 5);
-        assert_eq!(TypingContentView::calculate_scroll_offset(20, 100, 5), 0);
     }
 }

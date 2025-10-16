@@ -15,22 +15,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "int main(void) {\n    printf(\"Hello, world!\");\n    return 0;\n}",
       "end_line": 5,
       "language": "c",
-      "name": "function.definition",
+      "name": "main",
       "original_indentation": 0,
       "start_line": 2
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "int add(int a, int b) {\n    return a + b;\n}",
       "end_line": 9,
       "language": "c",
-      "name": "function.definition",
+      "name": "add",
       "original_indentation": 0,
       "start_line": 7
     },
@@ -45,12 +45,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 11
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "void print_number(int num) {\n    printf(\"%d\\n\", num);\n}",
       "end_line": 13,
       "language": "c",
-      "name": "function.definition",
+      "name": "print_number",
       "original_indentation": 0,
       "start_line": 11
     }

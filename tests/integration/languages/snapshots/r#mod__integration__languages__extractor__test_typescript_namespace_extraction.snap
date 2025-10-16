@@ -15,12 +15,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Module",
       "comment_ranges": [],
       "content": "namespace Utils {\n    export function formatDate(date: Date): string {\n        return date.toISOString();\n    }\n\n    export function calculateAge(birthDate: Date): number {\n        const today = new Date();\n        return today.getFullYear() - birthDate.getFullYear();\n    }\n}",
       "end_line": 11,
       "language": "typescript",
-      "name": "namespace",
+      "name": "Utils",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    export function formatDate(date: Date): string {\n        return date.toISOString();\n    }",
       "end_line": 5,
       "language": "typescript",
-      "name": "function",
+      "name": "formatDate",
       "original_indentation": 11,
       "start_line": 3
     },
@@ -60,27 +60,27 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    export function calculateAge(birthDate: Date): number {\n        const today = new Date();\n        return today.getFullYear() - birthDate.getFullYear();\n    }",
       "end_line": 10,
       "language": "typescript",
-      "name": "function",
+      "name": "calculateAge",
       "original_indentation": 11,
       "start_line": 7
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Module",
       "comment_ranges": [],
       "content": "namespace Api {\n    export interface Response<T> {\n        data: T;\n        status: number;\n    }\n}",
       "end_line": 18,
       "language": "typescript",
-      "name": "namespace",
+      "name": "Api",
       "original_indentation": 0,
       "start_line": 13
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Interface",
       "comment_ranges": [],
       "content": "    export interface Response<T> {\n        data: T;\n        status: number;\n    }",
       "end_line": 17,
       "language": "typescript",
-      "name": "interface",
+      "name": "Response",
       "original_indentation": 11,
       "start_line": 14
     }

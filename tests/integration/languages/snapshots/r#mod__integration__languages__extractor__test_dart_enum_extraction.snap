@@ -15,22 +15,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Enum",
       "comment_ranges": [],
       "content": "enum Color {\n  red,\n  green,\n  blue;\n\n  String",
       "end_line": 7,
       "language": "dart",
-      "name": "enum",
+      "name": "Color",
       "original_indentation": 0,
       "start_line": 2
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Enum",
       "comment_ranges": [],
       "content": "enum Status { pending, completed, failed }",
       "end_line": 19,
       "language": "dart",
-      "name": "enum",
+      "name": "Status",
       "original_indentation": 0,
       "start_line": 19
     }

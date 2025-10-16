@@ -20,7 +20,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class User\n  def self.find_by_email(email)\n    puts \"Finding user by email: #{email}\"\n  end\n\n  def instance_method\n    \"instance\"\n  end\nend",
       "end_line": 10,
       "language": "ruby",
-      "name": "class",
+      "name": "User",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -35,12 +35,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 3
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Method",
       "comment_ranges": [],
       "content": "  def self.find_by_email(email)\n    puts \"Finding user by email: #{email}\"\n  end",
       "end_line": 5,
       "language": "ruby",
-      "name": "class_method",
+      "name": "find_by_email",
       "original_indentation": 2,
       "start_line": 3
     },
@@ -60,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "  def instance_method\n    \"instance\"\n  end",
       "end_line": 9,
       "language": "ruby",
-      "name": "method",
+      "name": "instance_method",
       "original_indentation": 2,
       "start_line": 7
     }

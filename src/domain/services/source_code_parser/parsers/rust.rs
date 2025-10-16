@@ -35,6 +35,7 @@ impl LanguageExtractor for RustExtractor {
             "trait" => Some(ChunkType::Trait),
             "type_alias" => Some(ChunkType::TypeAlias),
             "module" => Some(ChunkType::Module),
+            "name" => Some(ChunkType::CodeBlock),
             _ => None,
         }
     }

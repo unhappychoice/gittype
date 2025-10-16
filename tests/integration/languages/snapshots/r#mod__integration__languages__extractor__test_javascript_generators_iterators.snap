@@ -1,0 +1,281 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nfunction* simpleGenerator() {\n    yield 1;\n    yield 2;\n    yield 3;\n}\n\nfunction* infiniteSequence() {\n    let i = 0;\n    while (true) {\n        yield i++;\n    }\n}\n\nfunction* fibonacci() {\n    let [prev, curr] = [0, 1];\n    while (true) {\n        yield curr;\n        [prev, curr] = [curr, prev + curr];\n    }\n}\n\nfunction* rangeGenerator(start, end, step = 1) {\n    for (let i = start; i < end; i += step) {\n        yield i;\n    }\n}\n\nasync function* asyncGenerator() {\n    for (let i = 0; i < 5; i++) {\n        await new Promise(resolve => setTimeout(resolve, 100));\n        yield i;\n    }\n}\n\nclass CustomIterable {\n    constructor(data) {\n        this.data = data;\n    }\n\n    *[Symbol.iterator]() {\n        for (const item of this.data) {\n            yield item * 2;\n        }\n    }\n\n    async *asyncIterator() {\n        for (const item of this.data) {\n            await new Promise(resolve => setTimeout(resolve, 10));\n            yield item;\n        }\n    }\n}\n\nfunction* delegatingGenerator() {\n    yield* [1, 2, 3];\n    yield* simpleGenerator();\n}\n\nconst iterator = {\n    data: [1, 2, 3],\n    index: 0,\n    next() {\n        if (this.index < this.data.length) {\n            return { value: this.data[this.index++], done: false };\n        }\n        return { done: true };\n    }\n};\n",
+      "end_line": 69,
+      "language": "javascript",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "function* simpleGenerator",
+      "end_line": 2,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 10,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "function* simpleGenerator() {\n    yield 1;\n    yield 2;\n    yield 3;\n}",
+      "end_line": 6,
+      "language": "javascript",
+      "name": "simpleGenerator",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "function* infiniteSequence",
+      "end_line": 8,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 10,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "function* infiniteSequence() {\n    let i = 0;\n    while (true) {\n        yield i++;\n    }\n}",
+      "end_line": 13,
+      "language": "javascript",
+      "name": "infiniteSequence",
+      "original_indentation": 0,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [],
+      "content": "    while (true) {\n        yield i++;\n    }",
+      "end_line": 12,
+      "language": "javascript",
+      "name": "while_loop",
+      "original_indentation": 4,
+      "start_line": 10
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "function* fibonacci() {\n    let [prev, curr] = [0, 1];\n    while (true) {\n        yield curr;\n        [prev, curr] = [curr, prev + curr];\n    }\n}",
+      "end_line": 21,
+      "language": "javascript",
+      "name": "fibonacci",
+      "original_indentation": 0,
+      "start_line": 15
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [],
+      "content": "    while (true) {\n        yield curr;\n        [prev, curr] = [curr, prev + curr];\n    }",
+      "end_line": 20,
+      "language": "javascript",
+      "name": "while_loop",
+      "original_indentation": 4,
+      "start_line": 17
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "function* rangeGenerator",
+      "end_line": 23,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 10,
+      "start_line": 23
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "function* rangeGenerator(start, end, step = 1) {\n    for (let i = start; i < end; i += step) {\n        yield i;\n    }\n}",
+      "end_line": 27,
+      "language": "javascript",
+      "name": "rangeGenerator",
+      "original_indentation": 0,
+      "start_line": 23
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [],
+      "content": "    for (let i = start; i < end; i += step) {\n        yield i;\n    }",
+      "end_line": 26,
+      "language": "javascript",
+      "name": "for_loop",
+      "original_indentation": 4,
+      "start_line": 24
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "async function* asyncGenerator",
+      "end_line": 29,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 16,
+      "start_line": 29
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "async function* asyncGenerator() {\n    for (let i = 0; i < 5; i++) {\n        await new Promise(resolve => setTimeout(resolve, 100));\n        yield i;\n    }\n}",
+      "end_line": 34,
+      "language": "javascript",
+      "name": "asyncGenerator",
+      "original_indentation": 0,
+      "start_line": 29
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [],
+      "content": "    for (let i = 0; i < 5; i++) {\n        await new Promise(resolve => setTimeout(resolve, 100));\n        yield i;\n    }",
+      "end_line": 33,
+      "language": "javascript",
+      "name": "for_loop",
+      "original_indentation": 4,
+      "start_line": 30
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "class CustomIterable",
+      "end_line": 36,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 6,
+      "start_line": 36
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "class CustomIterable {\n    constructor(data) {\n        this.data = data;\n    }\n\n    *[Symbol.iterator]() {\n        for (const item of this.data) {\n            yield item * 2;\n        }\n    }\n\n    async *asyncIterator() {\n        for (const item of this.data) {\n            await new Promise(resolve => setTimeout(resolve, 10));\n            yield item;\n        }\n    }\n}",
+      "end_line": 53,
+      "language": "javascript",
+      "name": "CustomIterable",
+      "original_indentation": 0,
+      "start_line": 36
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    constructor",
+      "end_line": 37,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 4,
+      "start_line": 37
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    constructor(data) {\n        this.data = data;\n    }",
+      "end_line": 39,
+      "language": "javascript",
+      "name": "constructor",
+      "original_indentation": 4,
+      "start_line": 37
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    *[Symbol.iterator]() {\n        for (const item of this.data) {\n            yield item * 2;\n        }\n    }",
+      "end_line": 45,
+      "language": "javascript",
+      "name": "code_block",
+      "original_indentation": 25,
+      "start_line": 41
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [],
+      "content": "        for (const item of this.data) {\n            yield item * 2;\n        }",
+      "end_line": 44,
+      "language": "javascript",
+      "name": "item",
+      "original_indentation": 8,
+      "start_line": 42
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    async *asyncIterator",
+      "end_line": 47,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 11,
+      "start_line": 47
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    async *asyncIterator() {\n        for (const item of this.data) {\n            await new Promise(resolve => setTimeout(resolve, 10));\n            yield item;\n        }\n    }",
+      "end_line": 52,
+      "language": "javascript",
+      "name": "asyncIterator",
+      "original_indentation": 4,
+      "start_line": 47
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [],
+      "content": "        for (const item of this.data) {\n            await new Promise(resolve => setTimeout(resolve, 10));\n            yield item;\n        }",
+      "end_line": 51,
+      "language": "javascript",
+      "name": "item",
+      "original_indentation": 8,
+      "start_line": 48
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "function* delegatingGenerator",
+      "end_line": 55,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 10,
+      "start_line": 55
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "function* delegatingGenerator() {\n    yield* [1, 2, 3];\n    yield* simpleGenerator();\n}",
+      "end_line": 58,
+      "language": "javascript",
+      "name": "delegatingGenerator",
+      "original_indentation": 0,
+      "start_line": 55
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    next() {\n        if (this.index < this.data.length) {\n            return { value: this.data[this.index++], done: false };\n        }\n        return { done: true };\n    }",
+      "end_line": 68,
+      "language": "javascript",
+      "name": "next",
+      "original_indentation": 4,
+      "start_line": 63
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "        if (this.index < this.data.length) {\n            return { value: this.data[this.index++], done: false };\n        }",
+      "end_line": 66,
+      "language": "javascript",
+      "name": "if_block",
+      "original_indentation": 8,
+      "start_line": 64
+    }
+  ],
+  "source_code": "\nfunction* simpleGenerator() {\n    yield 1;\n    yield 2;\n    yield 3;\n}\n\nfunction* infiniteSequence() {\n    let i = 0;\n    while (true) {\n        yield i++;\n    }\n}\n\nfunction* fibonacci() {\n    let [prev, curr] = [0, 1];\n    while (true) {\n        yield curr;\n        [prev, curr] = [curr, prev + curr];\n    }\n}\n\nfunction* rangeGenerator(start, end, step = 1) {\n    for (let i = start; i < end; i += step) {\n        yield i;\n    }\n}\n\nasync function* asyncGenerator() {\n    for (let i = 0; i < 5; i++) {\n        await new Promise(resolve => setTimeout(resolve, 100));\n        yield i;\n    }\n}\n\nclass CustomIterable {\n    constructor(data) {\n        this.data = data;\n    }\n\n    *[Symbol.iterator]() {\n        for (const item of this.data) {\n            yield item * 2;\n        }\n    }\n\n    async *asyncIterator() {\n        for (const item of this.data) {\n            await new Promise(resolve => setTimeout(resolve, 10));\n            yield item;\n        }\n    }\n}\n\nfunction* delegatingGenerator() {\n    yield* [1, 2, 3];\n    yield* simpleGenerator();\n}\n\nconst iterator = {\n    data: [1, 2, 3],\n    index: 0,\n    next() {\n        if (this.index < this.data.length) {\n            return { value: this.data[this.index++], done: false };\n        }\n        return { done: true };\n    }\n};\n",
+  "test_name": "test_javascript_generators_iterators",
+  "total_chunks": 27
+}

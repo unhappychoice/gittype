@@ -36,27 +36,27 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Const",
       "comment_ranges": [],
       "content": "const (\n    StatusOK = 200\n    StatusNotFound = 404\n    StatusError = 500\n)",
       "end_line": 10,
       "language": "go",
-      "name": "const_block",
+      "name": "StatusOK, StatusNotFound, StatusError (3)",
       "original_indentation": 0,
       "start_line": 6
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Const",
       "comment_ranges": [],
       "content": "const MaxRetries = 3",
       "end_line": 13,
       "language": "go",
-      "name": "const_block",
+      "name": "MaxRetries",
       "original_indentation": 0,
       "start_line": 13
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "var (\n    ErrNotFound = errors.New(\"not found\")\n    ErrTimeout = errors.New(\"timeout\")\n)",
       "end_line": 19,
@@ -66,42 +66,42 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 16
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "var GlobalCounter int",
       "end_line": 22,
       "language": "go",
-      "name": "var_block",
+      "name": "GlobalCounter",
       "original_indentation": 0,
       "start_line": 22
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "TypeAlias",
       "comment_ranges": [],
       "content": "type UserID int64",
       "end_line": 25,
       "language": "go",
-      "name": "type_alias",
+      "name": "UserID",
       "original_indentation": 5,
       "start_line": 25
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "TypeAlias",
       "comment_ranges": [],
       "content": "type Handler func(string, string)",
       "end_line": 26,
       "language": "go",
-      "name": "type_alias",
+      "name": "Handler",
       "original_indentation": 5,
       "start_line": 26
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Struct",
       "comment_ranges": [],
       "content": "type Point struct {\n    X, Y int\n}",
       "end_line": 29,
       "language": "go",
-      "name": "struct",
+      "name": "Point",
       "original_indentation": 5,
       "start_line": 27
     },
@@ -111,7 +111,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "func main() {}",
       "end_line": 31,
       "language": "go",
-      "name": "function",
+      "name": "main",
       "original_indentation": 0,
       "start_line": 31
     }

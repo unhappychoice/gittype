@@ -30,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "def hello_world\n  puts \"Hello, world!\"\nend",
       "end_line": 4,
       "language": "ruby",
-      "name": "method",
+      "name": "hello_world",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -50,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "def calculate_sum(a, b)\n  a + b\nend",
       "end_line": 8,
       "language": "ruby",
-      "name": "method",
+      "name": "calculate_sum",
       "original_indentation": 0,
       "start_line": 6
     }

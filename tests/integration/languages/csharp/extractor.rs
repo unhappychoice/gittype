@@ -32,14 +32,14 @@ namespace MyApplication.Services
     }
 }
 "#,
-    total_chunks: 14,
+    total_chunks: 15,
     chunk_counts: {
-        CodeBlock: 9,
+        Namespace: 1,
+        Class: 1,
+        Method: 3,
+        Variable: 1,
+        CodeBlock: 8,
         File: 1,
-        CodeBlock: 9,
-        CodeBlock: 9,
-        File: 1,
-        Namespace: 0,
     }
 }
 
@@ -69,9 +69,11 @@ namespace MyApplication.Contracts
 "#,
     total_chunks: 12,
     chunk_counts: {
-        CodeBlock: 6,
-        File: 1,
+        Namespace: 1,
+        Interface: 2,
         Method: 5,
+        CodeBlock: 3,
+        File: 1,
     }
 }
 
@@ -117,9 +119,13 @@ namespace MyApplication.Models
 "#,
     total_chunks: 13,
     chunk_counts: {
-        CodeBlock: 10,
-        File: 1,
+        Namespace: 1,
+        Struct: 1,
+        Enum: 2,
         Method: 2,
+        Variable: 2,
+        CodeBlock: 4,
+        File: 1,
     }
 }
 
@@ -152,12 +158,14 @@ namespace MyApplication.Models
     }
 }
 "#,
-    total_chunks: 11,
+    total_chunks: 13,
     chunk_counts: {
-        CodeBlock: 8,
-        File: 1,
-        Method: 1,
+        Namespace: 1,
         Class: 1,
+        Method: 1,
+        Variable: 7,
+        CodeBlock: 2,
+        File: 1,
     }
 }
 
@@ -190,10 +198,12 @@ namespace MyApplication.Core.Models
 "#,
     total_chunks: 12,
     chunk_counts: {
-        CodeBlock: 8,
-        File: 1,
+        Namespace: 2,
         Class: 2,
         Method: 1,
+        Variable: 2,
+        CodeBlock: 4,
+        File: 1,
     }
 }
 
@@ -346,11 +356,241 @@ namespace DataProcessing
     }
 }
 "#,
-    total_chunks: 42,
+    total_chunks: 45,
     chunk_counts: {
-        CodeBlock: 26,
-        File: 1,
+        Namespace: 1,
         Class: 2,
         Method: 3,
+        Variable: 9,
+        Loop: 3,
+        Conditional: 7,
+        CodeBlock: 19,
+        File: 1,
+    }
+}
+
+test_language_extractor! {
+    name: test_csharp_linq_and_lambda,
+    language: "csharp",
+    extension: "cs",
+    source: r#"
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace DataAnalysis
+{
+    public class DataAnalyzer
+    {
+        public List<int> ProcessNumbers(List<int> numbers)
+        {
+            var filtered = numbers.Where(n => n > 10).ToList();
+            var mapped = filtered.Select(n => n * 2).ToList();
+            var sorted = mapped.OrderBy(n => n).ToList();
+            return sorted;
+        }
+
+        public Dictionary<string, int> GroupAndCount<T>(List<T> items, Func<T, string> keySelector)
+        {
+            return items
+                .GroupBy(keySelector)
+                .ToDictionary(g => g.Key, g => g.Count());
+        }
+
+        public IEnumerable<string> GetFormattedResults(List<int> numbers)
+        {
+            return from n in numbers
+                   where n % 2 == 0
+                   orderby n descending
+                   select $"Number: {n}";
+        }
+
+        public bool AnyMatchesCondition(List<int> numbers, Func<int, bool> predicate)
+        {
+            return numbers.Any(predicate);
+        }
+
+        public int AggregateSum(List<int> numbers)
+        {
+            return numbers.Aggregate(0, (sum, n) => sum + n);
+        }
+    }
+}
+"#,
+    total_chunks: 22,
+    chunk_counts: {
+        Method: 5,
+        File: 1,
+        FunctionCall: 2,
+        Namespace: 1,
+        CodeBlock: 12,
+        Class: 1,
+    }
+}
+
+test_language_extractor! {
+    name: test_csharp_async_await,
+    language: "csharp",
+    extension: "cs",
+    source: r#"
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace AsyncOperations
+{
+    public class AsyncDataFetcher
+    {
+        private readonly HttpClient _httpClient;
+
+        public AsyncDataFetcher(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
+
+        public async Task<string> FetchDataAsync(string url)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadAsStringAsync();
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"Request failed: {ex.Message}");
+                return null;
+            }
+        }
+
+        public async Task<List<string>> FetchMultipleAsync(List<string> urls)
+        {
+            var tasks = urls.Select(url => FetchDataAsync(url)).ToList();
+            var results = await Task.WhenAll(tasks);
+            return results.Where(r => r != null).ToList();
+        }
+
+        public async Task<T> RetryAsync<T>(Func<Task<T>> operation, int maxRetries)
+        {
+            for (int i = 0; i < maxRetries; i++)
+            {
+                try
+                {
+                    return await operation();
+                }
+                catch (Exception)
+                {
+                    if (i == maxRetries - 1)
+                        throw;
+                    await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, i)));
+                }
+            }
+            throw new InvalidOperationException("Should not reach here");
+        }
+
+        public async Task ProcessWithCancellationAsync(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                await Task.Delay(1000, cancellationToken);
+                Console.WriteLine("Processing...");
+            }
+        }
+    }
+}
+"#,
+    total_chunks: 32,
+    chunk_counts: {
+        File: 1,
+        Namespace: 1,
+        Method: 5,
+        Loop: 2,
+        Class: 1,
+        Variable: 1,
+        Conditional: 1,
+        CodeBlock: 18,
+        ErrorHandling: 2,
+    }
+}
+
+test_language_extractor! {
+    name: test_csharp_records_and_pattern_matching,
+    language: "csharp",
+    extension: "cs",
+    source: r#"
+using System;
+
+namespace ModernCSharp
+{
+    public record Person(string FirstName, string LastName, int Age);
+
+    public record Employee(string FirstName, string LastName, int Age, string Department)
+        : Person(FirstName, LastName, Age);
+
+    public abstract record Shape;
+    public record Circle(double Radius) : Shape;
+    public record Rectangle(double Width, double Height) : Shape;
+    public record Triangle(double Base, double Height) : Shape;
+
+    public class ShapeAnalyzer
+    {
+        public double CalculateArea(Shape shape)
+        {
+            return shape switch
+            {
+                Circle c => Math.PI * c.Radius * c.Radius,
+                Rectangle r => r.Width * r.Height,
+                Triangle t => 0.5 * t.Base * t.Height,
+                _ => throw new ArgumentException("Unknown shape")
+            };
+        }
+
+        public string DescribePerson(Person person)
+        {
+            return person switch
+            {
+                Employee { Department: "Engineering" } emp => $"{emp.FirstName} is an engineer",
+                Employee emp => $"{emp.FirstName} works in {emp.Department}",
+                Person { Age: >= 65 } p => $"{p.FirstName} is a senior",
+                Person { Age: < 18 } p => $"{p.FirstName} is a minor",
+                Person p => $"{p.FirstName} is {p.Age} years old"
+            };
+        }
+
+        public bool IsValidShape(Shape shape)
+        {
+            return shape is Circle { Radius: > 0 } or
+                   Rectangle { Width: > 0, Height: > 0 } or
+                   Triangle { Base: > 0, Height: > 0 };
+        }
+
+        public string GetShapeType(Shape shape)
+        {
+            if (shape is Circle circle)
+            {
+                return $"Circle with radius {circle.Radius}";
+            }
+            else if (shape is Rectangle rect)
+            {
+                return $"Rectangle {rect.Width}x{rect.Height}";
+            }
+            else if (shape is Triangle triangle)
+            {
+                return $"Triangle with base {triangle.Base}";
+            }
+            return "Unknown";
+        }
+    }
+}
+"#,
+    total_chunks: 29,
+    chunk_counts: {
+        Conditional: 3,
+        Class: 7,
+        Method: 4,
+        Namespace: 1,
+        File: 1,
+        CodeBlock: 13,
     }
 }

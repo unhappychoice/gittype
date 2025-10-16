@@ -17,6 +17,7 @@ pub fn add(a: i32, b: i32) -> i32 {
     chunk_counts: {
         File: 1,
         Function: 2,
+        CodeBlock: 1,
     }
 }
 
@@ -37,7 +38,7 @@ pub struct Config {
     total_chunks: 3,
     chunk_counts: {
         File: 1,
-        Function: 0,
+        Struct: 2,
     }
 }
 
@@ -60,7 +61,7 @@ enum Color {
     total_chunks: 3,
     chunk_counts: {
         File: 1,
-        Function: 0,
+        Enum: 2,
     }
 }
 
@@ -85,7 +86,7 @@ trait Clone {
     chunk_counts: {
         File: 1,
         Function: 1,
-        Trait: 0,
+        Trait: 2,
     }
 }
 
@@ -112,7 +113,9 @@ mod private_utils {
     chunk_counts: {
         File: 1,
         Function: 2,
-        CodeBlock: 4,
+        CodeBlock: 1,
+        Module: 2,
+        Struct: 1
     }
 }
 
@@ -128,7 +131,7 @@ type Point = (f64, f64);
     total_chunks: 4,
     chunk_counts: {
         File: 1,
-        Function: 0,
+        TypeAlias: 3,
     }
 }
 
@@ -181,7 +184,13 @@ pub fn create_user(name: String) -> User {
     chunk_counts: {
         File: 1,
         Function: 3,
-        CodeBlock: 7,
+        TypeAlias: 1,
+        CodeBlock :1,
+        Struct: 1,
+        Trait: 1,
+        Enum: 1,
+        Module: 1,
+        Class: 1,
     }
 }
 
@@ -221,7 +230,10 @@ test_language_extractor! {
     chunk_counts: {
         File: 1,
         Function: 4,
-        CodeBlock: 12,
+        CodeBlock: 6,
+        Module: 2,
+        Struct: 1,
+        Class: 3
     }
 }
 
@@ -242,6 +254,7 @@ fn calculate_sum(a: i32, b: i32) -> i32 {
     chunk_counts: {
         File: 1,
         Function: 1,
+        CodeBlock: 1,
     }
 }
 
@@ -318,7 +331,11 @@ pub fn advanced_string_matcher(patterns: &[&str], text: &str) -> Vec<(usize, Str
     total_chunks: 15,
     chunk_counts: {
         File: 1,
+        CodeBlock: 3,
+        FunctionCall: 1,
         Function: 2,
+        Loop: 3,
+        Conditional: 5,
     }
 }
 
@@ -393,8 +410,11 @@ impl<T: Clone> DataCache<T> {
     total_chunks: 21,
     chunk_counts: {
         File: 1,
+        Struct: 1,
+        FunctionCall: 7,
         Function: 4,
-        CodeBlock: 5,
-        File: 1,
+        Loop: 1,
+        Conditional: 3,
+        CodeBlock: 4,
     }
 }

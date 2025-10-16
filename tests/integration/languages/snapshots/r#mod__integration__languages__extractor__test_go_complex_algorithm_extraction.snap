@@ -54,12 +54,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 10
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Struct",
       "comment_ranges": [],
       "content": "type DataProcessor struct {\n    cache      map[string]interface{}\n    mutex      sync.RWMutex\n    stats      ProcessingStats\n    threshold  int\n}",
       "end_line": 15,
       "language": "go",
-      "name": "struct",
+      "name": "DataProcessor",
       "original_indentation": 5,
       "start_line": 10
     },
@@ -74,12 +74,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 17
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Struct",
       "comment_ranges": [],
       "content": "type ProcessingStats struct {\n    Processed   int\n    CacheHits   int\n    Errors      int\n    StartTime   time.Time\n}",
       "end_line": 22,
       "language": "go",
-      "name": "struct",
+      "name": "ProcessingStats",
       "original_indentation": 5,
       "start_line": 17
     },
@@ -94,12 +94,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 24
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Struct",
       "comment_ranges": [],
       "content": "type ProcessedItem struct {\n    ID             string\n    OriginalValue  int\n    TransformedValue int\n    Category       string\n    Timestamp      time.Time\n    Metadata       map[string]interface{}\n}",
       "end_line": 31,
       "language": "go",
-      "name": "struct",
+      "name": "ProcessedItem",
       "original_indentation": 5,
       "start_line": 24
     },
@@ -119,7 +119,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "func NewDataProcessor(threshold int) *DataProcessor {\n    return &DataProcessor{\n        cache:     make(map[string]interface{}),\n        stats:     ProcessingStats{StartTime: time.Now()},\n        threshold: threshold,\n    }\n}",
       "end_line": 39,
       "language": "go",
-      "name": "function",
+      "name": "NewDataProcessor",
       "original_indentation": 0,
       "start_line": 33
     },
@@ -152,17 +152,17 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "func (dp *DataProcessor) ProcessComplexData(items []int) ([]ProcessedItem, error) {\n    var results []ProcessedItem\n\n    // Main processing algorithm - extractable middle chunk\n    for i, value := range items {\n        cacheKey := fmt.Sprintf(\"item_%d_%d\", i, value)\n\n        dp.mutex.RLock()\n        if cached, exists := dp.cache[cacheKey]; exists {\n            dp.mutex.RUnlock()\n\n            if processedItem, ok := cached.(ProcessedItem); ok {\n                results = append(results, processedItem)\n                dp.stats.CacheHits++\n                continue\n            }\n        } else {\n            dp.mutex.RUnlock()\n        }\n\n        // Complex transformation logic\n        var processedItem ProcessedItem\n\n        if value > dp.threshold {\n            transformedValue := value * 2\n            category := \"MEDIUM\"\n            if transformedValue > dp.threshold*3 {\n                category = \"HIGH\"\n            }\n\n            processedItem = ProcessedItem{\n                ID:              fmt.Sprintf(\"item_%d\", i),\n                OriginalValue:   value,\n                TransformedValue: transformedValue,\n                Category:        category,\n                Timestamp:       time.Now(),\n                Metadata: map[string]interface{}{\n                    \"processed\":    true,\n                    \"multiplier\":   2,\n                    \"threshold\":    dp.threshold,\n                    \"processor\":    \"complex\",\n                },\n            }\n        } else {\n            adjustedValue := value + dp.threshold\n            processedItem = ProcessedItem{\n                ID:              fmt.Sprintf(\"item_%d\", i),\n                OriginalValue:   value,\n                TransformedValue: adjustedValue,\n                Category:        \"LOW\",\n                Timestamp:       time.Now(),\n                Metadata: map[string]interface{}{\n                    \"processed\":  true,\n                    \"adjusted\":   true,\n                    \"threshold\":  dp.threshold,\n                    \"processor\":  \"simple\",\n                },\n            }\n        }\n\n        // Cache the result\n        dp.mutex.Lock()\n        dp.cache[cacheKey] = processedItem\n        dp.mutex.Unlock()\n\n        results = append(results, processedItem)\n        dp.stats.Processed++\n    }\n\n    return results, nil\n}",
       "end_line": 111,
       "language": "go",
-      "name": "method",
+      "name": "ProcessComplexData",
       "original_indentation": 0,
       "start_line": 41
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "    var results []ProcessedItem",
       "end_line": 42,
       "language": "go",
-      "name": "var_block",
+      "name": "results",
       "original_indentation": 4,
       "start_line": 42
     },
@@ -182,7 +182,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        if cached, exists := dp.cache[cacheKey]; exists {\n            dp.mutex.RUnlock()\n\n            if processedItem, ok := cached.(ProcessedItem); ok {\n                results = append(results, processedItem)\n                dp.stats.CacheHits++\n                continue\n            }\n        } else {\n            dp.mutex.RUnlock()\n        }",
       "end_line": 59,
       "language": "go",
-      "name": "if_block",
+      "name": "exists",
       "original_indentation": 8,
       "start_line": 49
     },
@@ -192,7 +192,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "            if processedItem, ok := cached.(ProcessedItem); ok {\n                results = append(results, processedItem)\n                dp.stats.CacheHits++\n                continue\n            }",
       "end_line": 56,
       "language": "go",
-      "name": "if_block",
+      "name": "ok",
       "original_indentation": 12,
       "start_line": 52
     },
@@ -207,12 +207,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 57
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "        var processedItem ProcessedItem",
       "end_line": 62,
       "language": "go",
-      "name": "var_block",
+      "name": "processedItem",
       "original_indentation": 8,
       "start_line": 62
     },
@@ -289,7 +289,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "func (dp *DataProcessor) AnalyzePatterns(items []ProcessedItem) map[string]interface{} {\n    analysis := make(map[string]interface{})\n    categoryCount := make(map[string]int)\n    valueSum := make(map[string]int)\n\n    // Pattern analysis logic - extractable middle chunk\n    for _, item := range items {\n        category := item.Category\n        categoryCount[category]++\n        valueSum[category] += item.TransformedValue\n\n        // Time-based analysis\n        timeDiff := time.Since(item.Timestamp)\n        if timeDiff < time.Minute {\n            recentKey := fmt.Sprintf(\"%s_recent\", category)\n            if count, exists := categoryCount[recentKey]; exists {\n                categoryCount[recentKey] = count + 1\n            } else {\n                categoryCount[recentKey] = 1\n            }\n        }\n\n        // Value distribution analysis\n        if item.TransformedValue > 1000 {\n            highValueKey := fmt.Sprintf(\"%s_high_value\", category)\n            categoryCount[highValueKey]++\n        }\n    }\n\n    // Calculate averages\n    averages := make(map[string]float64)\n    for category, sum := range valueSum {\n        if count := categoryCount[category]; count > 0 {\n            averages[category] = float64(sum) / float64(count)\n        }\n    }\n\n    analysis[\"category_counts\"] = categoryCount\n    analysis[\"averages\"] = averages\n    analysis[\"total_items\"] = len(items)\n    analysis[\"processing_time\"] = time.Since(dp.stats.StartTime)\n\n    return analysis\n}",
       "end_line": 156,
       "language": "go",
-      "name": "method",
+      "name": "AnalyzePatterns",
       "original_indentation": 0,
       "start_line": 113
     },
@@ -338,7 +338,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "            if count, exists := categoryCount[recentKey]; exists {\n                categoryCount[recentKey] = count + 1\n            } else {\n                categoryCount[recentKey] = 1\n            }",
       "end_line": 132,
       "language": "go",
-      "name": "if_block",
+      "name": "exists",
       "original_indentation": 12,
       "start_line": 128
     },

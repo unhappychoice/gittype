@@ -15,33 +15,33 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "const add = (a, b) => a + b",
       "end_line": 2,
       "language": "javascript",
-      "name": "arrow_function",
+      "name": "add",
       "original_indentation": 6,
       "start_line": 2
     },
     {
-      "chunk_type": "Lambda",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "const multiply = (x, y) => {\n    return x * y;\n}",
       "end_line": 6,
       "language": "javascript",
-      "name": "arrow_lambda",
-      "original_indentation": 17,
+      "name": "multiply",
+      "original_indentation": 6,
       "start_line": 4
     },
     {
-      "chunk_type": "Lambda",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "const processData = async (data) => {\n    const processed = data.map(item => item.value);\n    return processed;\n}",
       "end_line": 11,
       "language": "javascript",
-      "name": "arrow_lambda",
-      "original_indentation": 20,
+      "name": "processData",
+      "original_indentation": 6,
       "start_line": 8
     }
   ],

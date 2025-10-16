@@ -20,17 +20,17 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "namespace MyApplication.Core.Services",
       "end_line": 4,
       "language": "csharp",
-      "name": "name",
+      "name": "Services",
       "original_indentation": 10,
       "start_line": 4
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Namespace",
       "comment_ranges": [],
       "content": "namespace MyApplication.Core.Services\n{\n    public class EmailService\n    {\n        public void SendEmail(string to, string subject, string body)\n        {\n            Console.WriteLine($\"Sending email to {to}\");\n        }\n    }\n}",
       "end_line": 13,
       "language": "csharp",
-      "name": "namespace",
+      "name": "MyApplication.Core.Services",
       "original_indentation": 0,
       "start_line": 4
     },
@@ -50,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    public class EmailService\n    {\n        public void SendEmail(string to, string subject, string body)\n        {\n            Console.WriteLine($\"Sending email to {to}\");\n        }\n    }",
       "end_line": 12,
       "language": "csharp",
-      "name": "class",
+      "name": "EmailService",
       "original_indentation": 4,
       "start_line": 6
     },
@@ -60,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        public void SendEmail(string to, string subject, string body)\n        {\n            Console.WriteLine($\"Sending email to {to}\");\n        }",
       "end_line": 11,
       "language": "csharp",
-      "name": "method",
+      "name": "SendEmail",
       "original_indentation": 8,
       "start_line": 8
     },
@@ -80,17 +80,17 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "namespace MyApplication.Core.Models",
       "end_line": 15,
       "language": "csharp",
-      "name": "name",
+      "name": "Models",
       "original_indentation": 10,
       "start_line": 15
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Namespace",
       "comment_ranges": [],
       "content": "namespace MyApplication.Core.Models\n{\n    public class Message\n    {\n        public string Content { get; set; }\n        public DateTime Timestamp { get; set; }\n    }\n}",
       "end_line": 22,
       "language": "csharp",
-      "name": "namespace",
+      "name": "MyApplication.Core.Models",
       "original_indentation": 0,
       "start_line": 15
     },
@@ -100,27 +100,27 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    public class Message\n    {\n        public string Content { get; set; }\n        public DateTime Timestamp { get; set; }\n    }",
       "end_line": 21,
       "language": "csharp",
-      "name": "class",
+      "name": "Message",
       "original_indentation": 4,
       "start_line": 17
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "        public string Content { get; set; }",
       "end_line": 19,
       "language": "csharp",
-      "name": "property",
+      "name": "Content",
       "original_indentation": 8,
       "start_line": 19
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "        public DateTime Timestamp { get; set; }",
       "end_line": 20,
       "language": "csharp",
-      "name": "property",
+      "name": "DateTime",
       "original_indentation": 8,
       "start_line": 20
     }

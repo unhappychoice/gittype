@@ -30,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "export function validateEmail(email) {\n    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n    return emailRegex.test(email);\n}",
       "end_line": 5,
       "language": "javascript",
-      "name": "function",
+      "name": "validateEmail",
       "original_indentation": 7,
       "start_line": 2
     },
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "export class ApiClient {\n    constructor(baseUrl) {\n        this.baseUrl = baseUrl;\n    }\n\n    async get(endpoint) {\n        const response = await fetch(`${this.baseUrl}${endpoint}`);\n        return response.json();\n    }\n}",
       "end_line": 16,
       "language": "javascript",
-      "name": "class",
+      "name": "ApiClient",
       "original_indentation": 7,
       "start_line": 7
     },
@@ -60,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    constructor(baseUrl) {\n        this.baseUrl = baseUrl;\n    }",
       "end_line": 10,
       "language": "javascript",
-      "name": "method",
+      "name": "constructor",
       "original_indentation": 4,
       "start_line": 8
     },
@@ -70,7 +70,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    async get(endpoint) {\n        const response = await fetch(`${this.baseUrl}${endpoint}`);\n        return response.json();\n    }",
       "end_line": 15,
       "language": "javascript",
-      "name": "method",
+      "name": "get",
       "original_indentation": 4,
       "start_line": 12
     },
@@ -90,7 +90,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "export default class UserService {\n    constructor(apiClient) {\n        this.apiClient = apiClient;\n    }\n\n    async getUser(id) {\n        return this.apiClient.get(`/users/${id}`);\n    }\n}",
       "end_line": 31,
       "language": "javascript",
-      "name": "class",
+      "name": "UserService",
       "original_indentation": 15,
       "start_line": 23
     },
@@ -110,7 +110,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    constructor(apiClient) {\n        this.apiClient = apiClient;\n    }",
       "end_line": 26,
       "language": "javascript",
-      "name": "method",
+      "name": "constructor",
       "original_indentation": 4,
       "start_line": 24
     },
@@ -120,7 +120,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    async getUser(id) {\n        return this.apiClient.get(`/users/${id}`);\n    }",
       "end_line": 30,
       "language": "javascript",
-      "name": "method",
+      "name": "getUser",
       "original_indentation": 4,
       "start_line": 28
     }

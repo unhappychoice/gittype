@@ -15,22 +15,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "    const double PI = 3.14159;",
       "end_line": 3,
       "language": "cpp",
-      "name": "variable.definition",
+      "name": "PI",
       "original_indentation": 4,
       "start_line": 3
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "    double square(double x) {\n        return x * x;\n    }",
       "end_line": 7,
       "language": "cpp",
-      "name": "function.definition",
+      "name": "square",
       "original_indentation": 4,
       "start_line": 5
     },
@@ -45,12 +45,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 10
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "        double circle_area(double radius) {\n            return PI * square(radius);\n        }",
       "end_line": 12,
       "language": "cpp",
-      "name": "function.definition",
+      "name": "circle_area",
       "original_indentation": 8,
       "start_line": 10
     },
@@ -65,32 +65,32 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 17
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "    void print_message(const std::string& msg) {\n        std::cout << msg << std::endl;\n    }",
       "end_line": 19,
       "language": "cpp",
-      "name": "function.definition",
+      "name": "print_message",
       "original_indentation": 4,
       "start_line": 17
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "int main() {\n    double area = math::geometry::circle_area(5.0);\n    utils::print_message(\"Hello from namespace!\");\n    return 0;\n}",
       "end_line": 26,
       "language": "cpp",
-      "name": "function.definition",
+      "name": "main",
       "original_indentation": 0,
       "start_line": 22
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "    double area = math::geometry::circle_area(5.0);",
       "end_line": 23,
       "language": "cpp",
-      "name": "variable.definition",
+      "name": "area",
       "original_indentation": 4,
       "start_line": 23
     }

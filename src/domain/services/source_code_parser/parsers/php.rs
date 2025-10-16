@@ -35,7 +35,7 @@ impl LanguageExtractor for PhpExtractor {
             "interface" => Some(ChunkType::Class),
             "trait" => Some(ChunkType::Class),
             "namespace" => Some(ChunkType::Function),
-            "name" => None, // name captures are not chunks themselves
+            "name" => Some(ChunkType::CodeBlock),
             _ => None,
         }
     }

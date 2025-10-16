@@ -15,42 +15,42 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "int global_counter = 0;",
       "end_line": 2,
       "language": "c",
-      "name": "variable.definition",
+      "name": "global_counter",
       "original_indentation": 0,
       "start_line": 2
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "static int static_var = 42;",
       "end_line": 4,
       "language": "c",
-      "name": "variable.definition",
+      "name": "static_var",
       "original_indentation": 0,
       "start_line": 4
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "int main() {\n    int local_var = 10;\n    char arr[100];\n    float *ptr = malloc(sizeof(float));\n    return 0;\n}",
       "end_line": 11,
       "language": "c",
-      "name": "function.definition",
+      "name": "main",
       "original_indentation": 0,
       "start_line": 6
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "    int local_var = 10;",
       "end_line": 7,
       "language": "c",
-      "name": "variable.definition",
+      "name": "local_var",
       "original_indentation": 4,
       "start_line": 7
     }

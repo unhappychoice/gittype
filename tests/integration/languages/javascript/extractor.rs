@@ -20,8 +20,9 @@ async function fetchUserData(userId) {
 "#,
     total_chunks: 6,
     chunk_counts: {
-        File: 1,
         Function: 3,
+        CodeBlock: 2,
+        File: 1,
     }
 }
 
@@ -43,9 +44,8 @@ const processData = async (data) => {
 "#,
     total_chunks: 4,
     chunk_counts: {
+        Function: 3,
         File: 1,
-        CodeBlock: 1,
-        Lambda: 2,
     }
 }
 
@@ -99,11 +99,14 @@ class EventEmitter {
 "#,
     total_chunks: 19,
     chunk_counts: {
+        Class: 2,
+        Method: 5,
+        Conditional: 2,
+        ErrorHandling: 1,
+        FunctionCall: 1,
+        Lambda: 1,
         CodeBlock: 6,
         File: 1,
-        Method: 5,
-        Class: 2,
-        Struct: 0,
     }
 }
 
@@ -145,52 +148,11 @@ export default class UserService {
 "#,
     total_chunks: 12,
     chunk_counts: {
-        File: 1,
+        Class: 2,
         Function: 1,
+        Method: 4,
         CodeBlock: 4,
-    }
-}
-
-test_language_extractor! {
-    name: test_javascript_object_method_extraction,
-    language: "javascript",
-    extension: "js",
-    source: r#"
-const utils = {
-    formatDate: (date) => {
-        return date.toLocaleDateString();
-    },
-
-    calculateAge: function(birthDate) {
-        const today = new Date();
-        return today.getFullYear() - birthDate.getFullYear();
-    }
-};
-
-const eventHandlers = {
-    handleClick: (event) => {
-        console.log('Button clicked:', event.target);
-    },
-
-    handleSubmit: async function(formData) {
-        try {
-            const response = await fetch('/api/submit', {
-                method: 'POST',
-                body: formData
-            });
-            return response.json();
-        } catch (error) {
-            console.error('Submit failed:', error);
-        }
-    }
-};
-"#,
-    total_chunks: 1,
-    chunk_counts: {
         File: 1,
-        CodeBlock: 0,
-        ErrorHandling: 0,
-        Lambda: 0,
     }
 }
 
@@ -251,14 +213,14 @@ export default UserManager;
 "#,
     total_chunks: 18,
     chunk_counts: {
-        File: 1,
-        CodeBlock: 6,
         Class: 1,
         Method: 3,
-        Function: 1,
-        FunctionCall: 3,
-        Lambda: 2,
+        Function: 2,
+        Lambda: 1,
         ErrorHandling: 1,
+        FunctionCall: 3,
+        CodeBlock: 6,
+        File: 1,
     }
 }
 
@@ -393,8 +355,275 @@ const dataAnalyzer = {
 "#,
     total_chunks: 21,
     chunk_counts: {
-        File: 1,
         Function: 1,
+        Method: 1,
+        Loop: 1,
+        Conditional: 8,
+        FunctionCall: 3,
         CodeBlock: 6,
+        File: 1,
+    }
+}
+
+test_language_extractor! {
+    name: test_javascript_promises_callbacks,
+    language: "javascript",
+    extension: "js",
+    source: r#"
+function fetchWithCallback(url, callback) {
+    setTimeout(() => {
+        const data = { status: 'success', url: url };
+        callback(null, data);
+    }, 1000);
+}
+
+function promiseExample() {
+    return new Promise((resolve, reject) => {
+        const success = Math.random() > 0.5;
+        if (success) {
+            resolve({ message: 'Success!' });
+        } else {
+            reject(new Error('Failed'));
+        }
+    });
+}
+
+async function chainedPromises() {
+    try {
+        const result1 = await promiseExample();
+        const result2 = await promiseExample();
+        return [result1, result2];
+    } catch (error) {
+        console.error('Promise chain failed:', error);
+        throw error;
+    }
+}
+
+const promiseAllExample = async (urls) => {
+    const promises = urls.map(url => fetch(url));
+    const results = await Promise.all(promises);
+    return results.map(r => r.json());
+};
+
+Promise.race([
+    new Promise((resolve) => setTimeout(() => resolve('fast'), 100)),
+    new Promise((resolve) => setTimeout(() => resolve('slow'), 500))
+]).then(result => {
+    console.log('Winner:', result);
+});
+"#,
+    total_chunks: 16,
+    chunk_counts: {
+        CodeBlock: 7,
+        Function: 4,
+        File: 1,
+        Conditional: 1,
+        ErrorHandling: 1,
+        Lambda: 1,
+        FunctionCall: 1,
+    }
+}
+
+test_language_extractor! {
+    name: test_javascript_destructuring_spread,
+    language: "javascript",
+    extension: "js",
+    source: r#"
+const user = {
+    name: 'John Doe',
+    age: 30,
+    email: 'john@example.com',
+    address: {
+        city: 'New York',
+        country: 'USA'
+    }
+};
+
+const { name, age, address: { city } } = user;
+
+function processUser({ name, email, ...rest }) {
+    return {
+        displayName: name,
+        contact: email,
+        metadata: rest
+    };
+}
+
+const numbers = [1, 2, 3, 4, 5];
+const [first, second, ...remaining] = numbers;
+
+function mergeArrays(arr1, arr2) {
+    return [...arr1, ...arr2];
+}
+
+const defaults = { theme: 'dark', language: 'en' };
+const userPrefs = { language: 'ja', fontSize: 14 };
+const config = { ...defaults, ...userPrefs };
+
+function sumAll(...numbers) {
+    return numbers.reduce((sum, n) => sum + n, 0);
+}
+
+const createUser = ({ name = 'Anonymous', age = 0 } = {}) => {
+    return { name, age, createdAt: Date.now() };
+};
+
+const [, , third] = [1, 2, 3, 4];
+const { a: renamed, b = 10 } = { a: 5 };
+"#,
+    total_chunks: 7,
+    chunk_counts: {
+        CodeBlock: 2,
+        Function: 4,
+        File: 1,
+    }
+}
+
+test_language_extractor! {
+    name: test_javascript_assignment_methods,
+    language: "javascript",
+    extension: "js",
+    source: r#"
+const calculator = {};
+
+calculator.add = function(a, b) {
+    return a + b;
+};
+
+calculator.multiply = (x, y) => {
+    return x * y;
+};
+
+const utils = {};
+utils.formatDate = function(date) {
+    return date.toISOString();
+};
+"#,
+    total_chunks: 4,
+    chunk_counts: {
+        File: 1,
+        Method: 3,
+    }
+}
+
+test_language_extractor! {
+    name: test_javascript_switch_and_expressions,
+    language: "javascript",
+    extension: "js",
+    source: r#"
+function processStatus(status) {
+    switch (status) {
+        case 'pending':
+            return 'Processing...';
+        case 'success':
+            return 'Completed!';
+        case 'error':
+            return 'Failed!';
+        default:
+            return 'Unknown';
+    }
+}
+
+const genFunc = function*() {
+    yield 1;
+    yield 2;
+};
+
+const normalFunc = function(x) {
+    return x * 2;
+};
+"#,
+    total_chunks: 6,
+    chunk_counts: {
+        File: 1,
+        Function: 3,
+        Conditional: 1,
+        CodeBlock: 1,
+    }
+}
+
+test_language_extractor! {
+    name: test_javascript_generators_iterators,
+    language: "javascript",
+    extension: "js",
+    source: r#"
+function* simpleGenerator() {
+    yield 1;
+    yield 2;
+    yield 3;
+}
+
+function* infiniteSequence() {
+    let i = 0;
+    while (true) {
+        yield i++;
+    }
+}
+
+function* fibonacci() {
+    let [prev, curr] = [0, 1];
+    while (true) {
+        yield curr;
+        [prev, curr] = [curr, prev + curr];
+    }
+}
+
+function* rangeGenerator(start, end, step = 1) {
+    for (let i = start; i < end; i += step) {
+        yield i;
+    }
+}
+
+async function* asyncGenerator() {
+    for (let i = 0; i < 5; i++) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        yield i;
+    }
+}
+
+class CustomIterable {
+    constructor(data) {
+        this.data = data;
+    }
+
+    *[Symbol.iterator]() {
+        for (const item of this.data) {
+            yield item * 2;
+        }
+    }
+
+    async *asyncIterator() {
+        for (const item of this.data) {
+            await new Promise(resolve => setTimeout(resolve, 10));
+            yield item;
+        }
+    }
+}
+
+function* delegatingGenerator() {
+    yield* [1, 2, 3];
+    yield* simpleGenerator();
+}
+
+const iterator = {
+    data: [1, 2, 3],
+    index: 0,
+    next() {
+        if (this.index < this.data.length) {
+            return { value: this.data[this.index++], done: false };
+        }
+        return { done: true };
+    }
+};
+"#,
+    total_chunks: 27,
+    chunk_counts: {
+        Conditional: 1,
+        CodeBlock: 9,
+        File: 1,
+        Method: 3,
+        Loop: 6,
+        Class: 1,
+        Function: 6,
     }
 }

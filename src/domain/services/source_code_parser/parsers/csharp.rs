@@ -22,6 +22,7 @@ impl LanguageExtractor for CSharpExtractor {
             (destructor_declaration name: (identifier) @name) @method
             (property_declaration name: (identifier) @name) @property
             (event_declaration name: (identifier) @name) @event
+            (field_declaration) @field
             (delegate_declaration name: (identifier) @name) @delegate
             (namespace_declaration name: (_) @name) @namespace
         "
@@ -45,6 +46,7 @@ impl LanguageExtractor for CSharpExtractor {
             "field" => Some(ChunkType::Variable),
             "delegate" => Some(ChunkType::Method),
             "namespace" => Some(ChunkType::Namespace),
+            "name" => Some(ChunkType::CodeBlock),
             _ => None,
         }
     }

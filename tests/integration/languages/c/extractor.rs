@@ -20,7 +20,8 @@ void print_number(int num) {
 "#,
     total_chunks: 5,
     chunk_counts: {
-        CodeBlock: 4,
+        Function: 3,
+        CodeBlock: 1,
         File: 1,
     }
 }
@@ -48,7 +49,9 @@ int main() {
 "#,
     total_chunks: 5,
     chunk_counts: {
-        CodeBlock: 4,
+        Struct: 2,
+        Function: 1,
+        Variable: 1,
         File: 1,
     }
 }
@@ -71,9 +74,8 @@ int main() {
 "#,
     total_chunks: 5,
     chunk_counts: {
-        CodeBlock: 4,
-        File: 1,
-        CodeBlock: 4,
+        Variable: 3,
+        Function: 1,
         File: 1,
     }
 }
@@ -100,7 +102,7 @@ static inline int max(int a, int b) {
 "#,
     total_chunks: 3,
     chunk_counts: {
-        CodeBlock: 2,
+        Function: 2,
         File: 1,
     }
 }
@@ -135,7 +137,8 @@ int process_user(User *user, enum Status *status) {
 "#,
     total_chunks: 6,
     chunk_counts: {
-        CodeBlock: 5,
+        Struct: 4,
+        Function: 1,
         File: 1,
     }
 }
@@ -260,7 +263,13 @@ void analyze_patterns(ProcessedItem *items, size_t count) {
 "#,
     total_chunks: 43,
     chunk_counts: {
-        CodeBlock: 26,
+        Struct: 2,
+        Function: 2,
+        CodeBlock: 11,
+        Conditional: 11,
+        Loop: 4,
+        Variable: 11,
+        FunctionCall: 1,
         File: 1,
     }
 }

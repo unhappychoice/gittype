@@ -5,12 +5,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 {
   "chunks": [
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Interface",
       "comment_ranges": [],
       "content": "public interface Drawable {\n    void draw();\n    void setColor(String color);\n    String getColor();\n}",
       "end_line": 5,
       "language": "java",
-      "name": "interface",
+      "name": "Drawable",
       "original_indentation": 0,
       "start_line": 1
     },
@@ -30,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    void draw();",
       "end_line": 2,
       "language": "java",
-      "name": "method",
+      "name": "draw",
       "original_indentation": 4,
       "start_line": 2
     },
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    void setColor(String color);",
       "end_line": 3,
       "language": "java",
-      "name": "method",
+      "name": "setColor",
       "original_indentation": 4,
       "start_line": 3
     },
@@ -50,17 +50,17 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    String getColor();",
       "end_line": 4,
       "language": "java",
-      "name": "method",
+      "name": "getColor",
       "original_indentation": 4,
       "start_line": 4
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Interface",
       "comment_ranges": [],
       "content": "public interface Resizable {\n    void resize(int width, int height);\n    int getWidth();\n    int getHeight();\n}",
       "end_line": 11,
       "language": "java",
-      "name": "interface",
+      "name": "Resizable",
       "original_indentation": 0,
       "start_line": 7
     },
@@ -70,7 +70,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    void resize(int width, int height);",
       "end_line": 8,
       "language": "java",
-      "name": "method",
+      "name": "resize",
       "original_indentation": 4,
       "start_line": 8
     },
@@ -80,7 +80,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    int getWidth();",
       "end_line": 9,
       "language": "java",
-      "name": "method",
+      "name": "getWidth",
       "original_indentation": 4,
       "start_line": 9
     },
@@ -90,7 +90,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    int getHeight();",
       "end_line": 10,
       "language": "java",
-      "name": "method",
+      "name": "getHeight",
       "original_indentation": 4,
       "start_line": 10
     },
@@ -100,27 +100,27 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "public class Circle implements Drawable, Resizable {\n    private String color;\n    private int radius;\n\n    @Override\n    public void draw() {\n        System.out.println(\"Drawing a \" + color + \" circle\");\n    }\n\n    @Override\n    public void setColor(String color) {\n        this.color = color;\n    }\n\n    @Override\n    public String getColor() {\n        return this.color;\n    }\n\n    @Override\n    public void resize(int width, int height) {\n        this.radius = Math.min(width, height) / 2;\n    }\n\n    @Override\n    public int getWidth() {\n        return radius * 2;\n    }\n\n    @Override\n    public int getHeight() {\n        return radius * 2;\n    }\n}",
       "end_line": 46,
       "language": "java",
-      "name": "class",
+      "name": "Circle",
       "original_indentation": 0,
       "start_line": 13
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "    private String color;",
       "end_line": 14,
       "language": "java",
-      "name": "field",
+      "name": "color",
       "original_indentation": 4,
       "start_line": 14
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "    private int radius;",
       "end_line": 15,
       "language": "java",
-      "name": "field",
+      "name": "radius",
       "original_indentation": 4,
       "start_line": 15
     },
@@ -130,7 +130,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    @Override\n    public void draw() {\n        System.out.println(\"Drawing a \" + color + \" circle\");\n    }",
       "end_line": 20,
       "language": "java",
-      "name": "method",
+      "name": "draw",
       "original_indentation": 4,
       "start_line": 17
     },
@@ -150,7 +150,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    @Override\n    public void setColor(String color) {\n        this.color = color;\n    }",
       "end_line": 25,
       "language": "java",
-      "name": "method",
+      "name": "setColor",
       "original_indentation": 4,
       "start_line": 22
     },
@@ -170,7 +170,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    @Override\n    public String getColor() {\n        return this.color;\n    }",
       "end_line": 30,
       "language": "java",
-      "name": "method",
+      "name": "getColor",
       "original_indentation": 4,
       "start_line": 27
     },
@@ -190,7 +190,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    @Override\n    public void resize(int width, int height) {\n        this.radius = Math.min(width, height) / 2;\n    }",
       "end_line": 35,
       "language": "java",
-      "name": "method",
+      "name": "resize",
       "original_indentation": 4,
       "start_line": 32
     },
@@ -210,7 +210,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    @Override\n    public int getWidth() {\n        return radius * 2;\n    }",
       "end_line": 40,
       "language": "java",
-      "name": "method",
+      "name": "getWidth",
       "original_indentation": 4,
       "start_line": 37
     },
@@ -230,7 +230,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    @Override\n    public int getHeight() {\n        return radius * 2;\n    }",
       "end_line": 45,
       "language": "java",
-      "name": "method",
+      "name": "getHeight",
       "original_indentation": 4,
       "start_line": 42
     },

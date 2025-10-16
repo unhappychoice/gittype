@@ -1,5 +1,6 @@
 use crate::domain::events::EventBus;
 use crate::domain::models::rank::{Rank, RankTier};
+use crate::infrastructure::browser;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
@@ -1031,7 +1032,7 @@ impl HelpScreen {
 
     fn try_open_github() -> Result<bool> {
         let url = "https://github.com/unhappychoice/gittype";
-        Ok(open::that(url).is_ok())
+        Ok(browser::open_url(url).is_ok())
     }
 }
 

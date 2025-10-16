@@ -49,9 +49,10 @@ class Calculator:
 "#,
     total_chunks: 9,
     chunk_counts: {
+        CodeBlock: 1,
+        Function: 5,
         Class: 2,
         File: 1,
-        Method: 0,
     }
 }
 
@@ -91,6 +92,8 @@ def process_data(data):
     total_chunks: 14,
     chunk_counts: {
         CodeBlock: 4,
+        Function: 7,
+        Class: 2,
         File: 1,
     }
 }
@@ -168,10 +171,12 @@ def data_processor(input_data):
 "#,
     total_chunks: 16,
     chunk_counts: {
+        FunctionCall: 2,
         File: 1,
-        Function: 2,
         CodeBlock: 2,
-        Lambda: 0,
+        Conditional: 6,
+        Function: 2,
+        Loop: 3,
     }
 }
 
@@ -248,10 +253,13 @@ class DataAnalyzer:
 "#,
     total_chunks: 16,
     chunk_counts: {
-        Class: 1,
-        CodeBlock: 3,
-        File: 1,
+        Conditional: 6,
         Function: 3,
+        Class: 1,
+        ErrorHandling: 1,
+        File: 1,
+        CodeBlock: 3,
+        Loop: 1,
     }
 }
 
@@ -362,9 +370,14 @@ class ConfigManager:
 "#,
     total_chunks: 23,
     chunk_counts: {
-        CodeBlock: 4,
+        Function: 4,
+        SpecialBlock: 2,
+        Conditional: 4,
+        Class: 1,
+        Loop: 3,
+        ErrorHandling: 2,
+        FunctionCall: 2,
         File: 1,
         CodeBlock: 4,
-        File: 1,
     }
 }

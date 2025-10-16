@@ -37,6 +37,7 @@ impl LanguageExtractor for JavaExtractor {
             "method" => Some(ChunkType::Method),
             "enum" => Some(ChunkType::Enum),
             "field" => Some(ChunkType::Variable),
+            "name" => Some(ChunkType::CodeBlock),
             _ => None,
         }
     }

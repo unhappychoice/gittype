@@ -15,7 +15,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Module",
       "comment_ranges": [],
       "content": "module TestModule",
       "end_line": 2,
@@ -25,7 +25,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 2
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Module",
       "comment_ranges": [],
       "content": "import Data.List (sort)",
       "end_line": 8,
@@ -35,7 +35,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 8
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Module",
       "comment_ranges": [],
       "content": "import qualified Data.Map as M",
       "end_line": 9,
@@ -45,7 +45,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 9
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "data Person = Person String Int deriving (Show, Eq)",
       "end_line": 11,
@@ -55,7 +55,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 11
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "data Tree a = Leaf a | Node (Tree a) (Tree a) deriving Show",
       "end_line": 13,
@@ -65,12 +65,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 13
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "class Drawable a where\n    draw :: a -> String",
       "end_line": 16,
       "language": "haskell",
-      "name": "declaration",
+      "name": "a",
       "original_indentation": 0,
       "start_line": 15
     },
@@ -80,17 +80,17 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    draw :: a -> String",
       "end_line": 16,
       "language": "haskell",
-      "name": "function",
-      "original_indentation": 12,
+      "name": "draw",
+      "original_indentation": 4,
       "start_line": 16
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "instance Drawable Person where\n    draw (Person name age) = name ++ \" (\" ++ show age ++ \")\"",
       "end_line": 19,
       "language": "haskell",
-      "name": "declaration",
+      "name": "draw",
       "original_indentation": 0,
       "start_line": 18
     },
@@ -100,7 +100,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    draw (Person name age) = name ++ \" (\" ++ show age ++ \")\"",
       "end_line": 19,
       "language": "haskell",
-      "name": "function",
+      "name": "draw",
       "original_indentation": 4,
       "start_line": 19
     },
@@ -110,8 +110,8 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "greet :: Person -> String",
       "end_line": 21,
       "language": "haskell",
-      "name": "function",
-      "original_indentation": 9,
+      "name": "greet",
+      "original_indentation": 0,
       "start_line": 21
     },
     {
@@ -120,7 +120,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "greet (Person name _) = \"Hello, \" ++ name",
       "end_line": 22,
       "language": "haskell",
-      "name": "function",
+      "name": "greet",
       "original_indentation": 0,
       "start_line": 22
     },
@@ -130,8 +130,8 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "calculate :: [Int] -> Int",
       "end_line": 24,
       "language": "haskell",
-      "name": "function",
-      "original_indentation": 13,
+      "name": "calculate",
+      "original_indentation": 0,
       "start_line": 24
     },
     {
@@ -140,7 +140,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "calculate xs = sum (map (*2) xs)",
       "end_line": 25,
       "language": "haskell",
-      "name": "function",
+      "name": "calculate",
       "original_indentation": 0,
       "start_line": 25
     },
@@ -150,8 +150,8 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "fibonacci :: Int -> Int",
       "end_line": 27,
       "language": "haskell",
-      "name": "function",
-      "original_indentation": 13,
+      "name": "fibonacci",
+      "original_indentation": 0,
       "start_line": 27
     },
     {
@@ -160,7 +160,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "fibonacci 0 = 0",
       "end_line": 28,
       "language": "haskell",
-      "name": "function",
+      "name": "fibonacci",
       "original_indentation": 0,
       "start_line": 28
     },
@@ -170,7 +170,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "fibonacci 1 = 1",
       "end_line": 29,
       "language": "haskell",
-      "name": "function",
+      "name": "fibonacci",
       "original_indentation": 0,
       "start_line": 29
     },
@@ -180,7 +180,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "fibonacci n = fibonacci (n-1) + fibonacci (n-2)",
       "end_line": 30,
       "language": "haskell",
-      "name": "function",
+      "name": "fibonacci",
       "original_indentation": 0,
       "start_line": 30
     }

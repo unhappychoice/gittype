@@ -15,7 +15,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Module",
       "comment_ranges": [],
       "content": "module Math.Utils",
       "end_line": 2,
@@ -30,8 +30,8 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "add :: Num a => a -> a -> a",
       "end_line": 8,
       "language": "haskell",
-      "name": "function",
-      "original_indentation": 16,
+      "name": "add",
+      "original_indentation": 0,
       "start_line": 8
     },
     {
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "add x y = x + y",
       "end_line": 9,
       "language": "haskell",
-      "name": "function",
+      "name": "add",
       "original_indentation": 0,
       "start_line": 9
     },
@@ -50,8 +50,8 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "multiply :: Num a => a -> a -> a",
       "end_line": 11,
       "language": "haskell",
-      "name": "function",
-      "original_indentation": 21,
+      "name": "multiply",
+      "original_indentation": 0,
       "start_line": 11
     },
     {
@@ -60,17 +60,17 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "multiply x y = x * y",
       "end_line": 12,
       "language": "haskell",
-      "name": "function",
+      "name": "multiply",
       "original_indentation": 0,
       "start_line": 12
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "square :: Num a => a -> a",
       "end_line": 14,
       "language": "haskell",
-      "name": "signature",
+      "name": "square",
       "original_indentation": 0,
       "start_line": 14
     },
@@ -80,7 +80,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "square x = x * x",
       "end_line": 15,
       "language": "haskell",
-      "name": "function",
+      "name": "square",
       "original_indentation": 0,
       "start_line": 15
     }

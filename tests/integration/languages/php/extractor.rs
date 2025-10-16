@@ -24,9 +24,9 @@ function fibonacci($n) {
 ?>"#,
     total_chunks: 6,
     chunk_counts: {
+        Function: 3,
         CodeBlock: 2,
         File: 1,
-        Function: 3,
     }
 }
 
@@ -67,6 +67,8 @@ class Calculator {
 ?>"#,
     total_chunks: 10,
     chunk_counts: {
+        Class: 2,
+        Function: 5,
         CodeBlock: 2,
         File: 1,
     }
@@ -116,9 +118,10 @@ class UserService {
 ?>"#,
     total_chunks: 10,
     chunk_counts: {
+        Class: 1,
+        Function: 4,
+        CodeBlock: 4,
         File: 1,
-        CodeBlock: 5,
-        ErrorHandling: 0,
     }
 }
 
@@ -160,7 +163,9 @@ class Shape implements Drawable {
 ?>"#,
     total_chunks: 10,
     chunk_counts: {
-        CodeBlock: 4,
+        Class: 3,
+        Function: 4,
+        CodeBlock: 2,
         File: 1,
     }
 }
@@ -329,7 +334,9 @@ class DataProcessor {
 "#,
     total_chunks: 13,
     chunk_counts: {
-        CodeBlock: 6,
+        Class: 2,
+        Function: 4,
         File: 1,
+        CodeBlock: 6,
     }
 }

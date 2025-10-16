@@ -20,7 +20,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class Person:\n    def __init__(self, name, age):\n        self.name = name\n        self.age = age\n\n    def greet(self):\n        return f\"Hello, I'm {self.name}!\"\n\n    def get_age(self):\n        return self.age",
       "end_line": 11,
       "language": "python",
-      "name": "class",
+      "name": "Person",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -30,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def __init__(self, name, age):\n        self.name = name\n        self.age = age",
       "end_line": 5,
       "language": "python",
-      "name": "function",
+      "name": "__init__",
       "original_indentation": 4,
       "start_line": 3
     },
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def greet(self):\n        return f\"Hello, I'm {self.name}!\"",
       "end_line": 8,
       "language": "python",
-      "name": "function",
+      "name": "greet",
       "original_indentation": 4,
       "start_line": 7
     },
@@ -50,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def get_age(self):\n        return self.age",
       "end_line": 11,
       "language": "python",
-      "name": "function",
+      "name": "get_age",
       "original_indentation": 4,
       "start_line": 10
     },
@@ -70,7 +70,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class Calculator:\n    def add(self, a, b):\n        return a + b\n\n    def multiply(self, a, b):\n        return a * b",
       "end_line": 18,
       "language": "python",
-      "name": "class",
+      "name": "Calculator",
       "original_indentation": 0,
       "start_line": 13
     },
@@ -80,7 +80,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def add(self, a, b):\n        return a + b",
       "end_line": 15,
       "language": "python",
-      "name": "function",
+      "name": "add",
       "original_indentation": 4,
       "start_line": 14
     },
@@ -90,7 +90,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def multiply(self, a, b):\n        return a * b",
       "end_line": 18,
       "language": "python",
-      "name": "function",
+      "name": "multiply",
       "original_indentation": 4,
       "start_line": 17
     }

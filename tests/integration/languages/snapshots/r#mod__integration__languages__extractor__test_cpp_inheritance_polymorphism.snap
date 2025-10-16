@@ -1,0 +1,181 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\n#include <string>\n#include <vector>\n\nclass Shape {\nprotected:\n    std::string name;\n\npublic:\n    Shape(const std::string& n) : name(n) {}\n    virtual ~Shape() {}\n\n    virtual double area() const = 0;\n    virtual double perimeter() const = 0;\n\n    std::string getName() const { return name; }\n};\n\nclass Circle : public Shape {\nprivate:\n    double radius;\n\npublic:\n    Circle(double r) : Shape(\"Circle\"), radius(r) {}\n\n    double area() const override {\n        return 3.14159 * radius * radius;\n    }\n\n    double perimeter() const override {\n        return 2 * 3.14159 * radius;\n    }\n};\n\nclass Rectangle : public Shape {\nprivate:\n    double width, height;\n\npublic:\n    Rectangle(double w, double h) : Shape(\"Rectangle\"), width(w), height(h) {}\n\n    double area() const override {\n        return width * height;\n    }\n\n    double perimeter() const override {\n        return 2 * (width + height);\n    }\n};\n\nint main() {\n    std::vector<Shape*> shapes;\n    shapes.push_back(new Circle(5.0));\n    shapes.push_back(new Rectangle(4.0, 6.0));\n\n    for (const auto& shape : shapes) {\n        double a = shape->area();\n        double p = shape->perimeter();\n    }\n\n    return 0;\n}\n",
+      "end_line": 62,
+      "language": "cpp",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "class Shape {\nprotected:\n    std::string name;\n\npublic:\n    Shape(const std::string& n) : name(n) {}\n    virtual ~Shape() {}\n\n    virtual double area() const = 0;\n    virtual double perimeter() const = 0;\n\n    std::string getName() const { return name; }\n}",
+      "end_line": 17,
+      "language": "cpp",
+      "name": "Shape",
+      "original_indentation": 0,
+      "start_line": 5
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    Shape(const std::string& n) : name(n) {}",
+      "end_line": 10,
+      "language": "cpp",
+      "name": "Shape",
+      "original_indentation": 4,
+      "start_line": 10
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    virtual ~Shape() {}",
+      "end_line": 11,
+      "language": "cpp",
+      "name": "destructor.definition",
+      "original_indentation": 4,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    std::string getName() const { return name; }",
+      "end_line": 16,
+      "language": "cpp",
+      "name": "getName",
+      "original_indentation": 4,
+      "start_line": 16
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "class Circle : public Shape {\nprivate:\n    double radius;\n\npublic:\n    Circle(double r) : Shape(\"Circle\"), radius(r) {}\n\n    double area() const override {\n        return 3.14159 * radius * radius;\n    }\n\n    double perimeter() const override {\n        return 2 * 3.14159 * radius;\n    }\n}",
+      "end_line": 33,
+      "language": "cpp",
+      "name": "Circle",
+      "original_indentation": 0,
+      "start_line": 19
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    Circle(double r) : Shape(\"Circle\"), radius(r) {}",
+      "end_line": 24,
+      "language": "cpp",
+      "name": "Circle",
+      "original_indentation": 4,
+      "start_line": 24
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    double area() const override {\n        return 3.14159 * radius * radius;\n    }",
+      "end_line": 28,
+      "language": "cpp",
+      "name": "area",
+      "original_indentation": 4,
+      "start_line": 26
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    double perimeter() const override {\n        return 2 * 3.14159 * radius;\n    }",
+      "end_line": 32,
+      "language": "cpp",
+      "name": "perimeter",
+      "original_indentation": 4,
+      "start_line": 30
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "class Rectangle : public Shape {\nprivate:\n    double width, height;\n\npublic:\n    Rectangle(double w, double h) : Shape(\"Rectangle\"), width(w), height(h) {}\n\n    double area() const override {\n        return width * height;\n    }\n\n    double perimeter() const override {\n        return 2 * (width + height);\n    }\n}",
+      "end_line": 49,
+      "language": "cpp",
+      "name": "Rectangle",
+      "original_indentation": 0,
+      "start_line": 35
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    Rectangle(double w, double h) : Shape(\"Rectangle\"), width(w), height(h) {}",
+      "end_line": 40,
+      "language": "cpp",
+      "name": "Rectangle",
+      "original_indentation": 4,
+      "start_line": 40
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    double area() const override {\n        return width * height;\n    }",
+      "end_line": 44,
+      "language": "cpp",
+      "name": "area",
+      "original_indentation": 4,
+      "start_line": 42
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    double perimeter() const override {\n        return 2 * (width + height);\n    }",
+      "end_line": 48,
+      "language": "cpp",
+      "name": "perimeter",
+      "original_indentation": 4,
+      "start_line": 46
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "int main() {\n    std::vector<Shape*> shapes;\n    shapes.push_back(new Circle(5.0));\n    shapes.push_back(new Rectangle(4.0, 6.0));\n\n    for (const auto& shape : shapes) {\n        double a = shape->area();\n        double p = shape->perimeter();\n    }\n\n    return 0;\n}",
+      "end_line": 62,
+      "language": "cpp",
+      "name": "main",
+      "original_indentation": 0,
+      "start_line": 51
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    for (const auto& shape : shapes) {\n        double a = shape->area();\n        double p = shape->perimeter();\n    }",
+      "end_line": 59,
+      "language": "cpp",
+      "name": "code_block",
+      "original_indentation": 37,
+      "start_line": 56
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "        double a = shape->area();",
+      "end_line": 57,
+      "language": "cpp",
+      "name": "a",
+      "original_indentation": 8,
+      "start_line": 57
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "        double p = shape->perimeter();",
+      "end_line": 58,
+      "language": "cpp",
+      "name": "p",
+      "original_indentation": 8,
+      "start_line": 58
+    }
+  ],
+  "source_code": "\n#include <string>\n#include <vector>\n\nclass Shape {\nprotected:\n    std::string name;\n\npublic:\n    Shape(const std::string& n) : name(n) {}\n    virtual ~Shape() {}\n\n    virtual double area() const = 0;\n    virtual double perimeter() const = 0;\n\n    std::string getName() const { return name; }\n};\n\nclass Circle : public Shape {\nprivate:\n    double radius;\n\npublic:\n    Circle(double r) : Shape(\"Circle\"), radius(r) {}\n\n    double area() const override {\n        return 3.14159 * radius * radius;\n    }\n\n    double perimeter() const override {\n        return 2 * 3.14159 * radius;\n    }\n};\n\nclass Rectangle : public Shape {\nprivate:\n    double width, height;\n\npublic:\n    Rectangle(double w, double h) : Shape(\"Rectangle\"), width(w), height(h) {}\n\n    double area() const override {\n        return width * height;\n    }\n\n    double perimeter() const override {\n        return 2 * (width + height);\n    }\n};\n\nint main() {\n    std::vector<Shape*> shapes;\n    shapes.push_back(new Circle(5.0));\n    shapes.push_back(new Rectangle(4.0, 6.0));\n\n    for (const auto& shape : shapes) {\n        double a = shape->area();\n        double p = shape->perimeter();\n    }\n\n    return 0;\n}\n",
+  "test_name": "test_cpp_inheritance_polymorphism",
+  "total_chunks": 17
+}

@@ -101,3 +101,85 @@ fn test_cache_key_different_hosts() {
     assert_eq!(gitlab_repo.cache_key(), "gitlab_com_owner_repo");
     assert_ne!(github_repo.cache_key(), gitlab_repo.cache_key());
 }
+
+#[test]
+fn test_git_repository_clone() {
+    let repo = GitRepository {
+        user_name: "user".to_string(),
+        repository_name: "repo".to_string(),
+        remote_url: "https://github.com/owner/repo".to_string(),
+        branch: Some("main".to_string()),
+        commit_hash: Some("abc123".to_string()),
+        is_dirty: false,
+        root_path: None,
+    };
+
+    let cloned = repo.clone();
+    assert_eq!(repo, cloned);
+}
+
+#[test]
+fn test_git_repository_serialize_deserialize() {
+    let repo = GitRepository {
+        user_name: "user".to_string(),
+        repository_name: "repo".to_string(),
+        remote_url: "https://github.com/owner/repo".to_string(),
+        branch: Some("main".to_string()),
+        commit_hash: Some("abc123".to_string()),
+        is_dirty: false,
+        root_path: None,
+    };
+
+    let serialized = serde_json::to_string(&repo).unwrap();
+    let deserialized: GitRepository = serde_json::from_str(&serialized).unwrap();
+    assert_eq!(repo, deserialized);
+}
+
+#[test]
+fn test_cache_key_malformed_url() {
+    let repo = GitRepository {
+        user_name: "user".to_string(),
+        repository_name: "repo".to_string(),
+        remote_url: "invalid_url".to_string(),
+        branch: None,
+        commit_hash: None,
+        is_dirty: false,
+        root_path: None,
+    };
+
+    // Should return fallback format
+    assert_eq!(repo.cache_key(), "invalid_url");
+}
+
+#[test]
+fn test_git_repository_with_dirty_state() {
+    let dirty_repo = GitRepository {
+        user_name: "user".to_string(),
+        repository_name: "repo".to_string(),
+        remote_url: "https://github.com/owner/repo".to_string(),
+        branch: Some("main".to_string()),
+        commit_hash: Some("abc123".to_string()),
+        is_dirty: true,
+        root_path: None,
+    };
+
+    assert!(dirty_repo.is_dirty);
+}
+
+#[test]
+fn test_git_repository_with_root_path() {
+    use std::path::PathBuf;
+
+    let repo = GitRepository {
+        user_name: "user".to_string(),
+        repository_name: "repo".to_string(),
+        remote_url: "https://github.com/owner/repo".to_string(),
+        branch: Some("main".to_string()),
+        commit_hash: Some("abc123".to_string()),
+        is_dirty: false,
+        root_path: Some(PathBuf::from("/path/to/repo")),
+    };
+
+    assert!(repo.root_path.is_some());
+    assert_eq!(repo.root_path.unwrap(), PathBuf::from("/path/to/repo"));
+}

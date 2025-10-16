@@ -36,7 +36,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Struct",
       "comment_ranges": [
         [
           71,
@@ -62,47 +62,47 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class Resource {\nprivate:\n    int* data;\n    size_t size;\n\npublic:\n    // Default constructor\n    Resource() : data(nullptr), size(0) {}\n\n    // Parameterized constructor\n    Resource(size_t s) : size(s) {\n        data = new int[size];\n    }\n\n    // Copy constructor\n    Resource(const Resource& other) : size(other.size) {\n        data = new int[size];\n        for (size_t i = 0; i < size; ++i) {\n            data[i] = other.data[i];\n        }\n    }\n\n    // Destructor\n    ~Resource() {\n        delete[] data;\n    }\n\n    // Assignment operator\n    Resource& operator=(const Resource& other) {\n        if (this != &other) {\n            delete[] data;\n            size = other.size;\n            data = new int[size];\n            for (size_t i = 0; i < size; ++i) {\n                data[i] = other.data[i];\n            }\n        }\n        return *this;\n    }\n\n    int& operator[](size_t index) {\n        return data[index];\n    }\n}",
       "end_line": 45,
       "language": "cpp",
-      "name": "class.definition",
+      "name": "Resource",
       "original_indentation": 0,
       "start_line": 2
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "    Resource() : data(nullptr), size(0) {}",
       "end_line": 9,
       "language": "cpp",
-      "name": "function.definition",
+      "name": "Resource",
       "original_indentation": 4,
       "start_line": 9
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "    Resource(size_t s) : size(s) {\n        data = new int[size];\n    }",
       "end_line": 14,
       "language": "cpp",
-      "name": "function.definition",
+      "name": "Resource",
       "original_indentation": 4,
       "start_line": 12
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "    Resource(const Resource& other) : size(other.size) {\n        data = new int[size];\n        for (size_t i = 0; i < size; ++i) {\n            data[i] = other.data[i];\n        }\n    }",
       "end_line": 22,
       "language": "cpp",
-      "name": "function.definition",
+      "name": "Resource",
       "original_indentation": 4,
       "start_line": 17
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "        for (size_t i = 0;",
       "end_line": 19,
       "language": "cpp",
-      "name": "variable.definition",
+      "name": "i",
       "original_indentation": 13,
       "start_line": 19
     },
@@ -117,13 +117,13 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 19
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "    ~Resource() {\n        delete[] data;\n    }",
       "end_line": 27,
       "language": "cpp",
-      "name": "code_block",
-      "original_indentation": 16,
+      "name": "destructor.definition",
+      "original_indentation": 4,
       "start_line": 25
     },
     {
@@ -147,12 +147,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 31
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "            for (size_t i = 0;",
       "end_line": 35,
       "language": "cpp",
-      "name": "variable.definition",
+      "name": "i",
       "original_indentation": 17,
       "start_line": 35
     },
@@ -177,32 +177,32 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 42
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "int main() {\n    Resource r1(10);\n    Resource r2 = r1;\n    Resource r3;\n    r3 = r2;\n    return 0;\n}",
       "end_line": 53,
       "language": "cpp",
-      "name": "function.definition",
+      "name": "main",
       "original_indentation": 0,
       "start_line": 47
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "    Resource r1(10);",
       "end_line": 48,
       "language": "cpp",
-      "name": "variable.definition",
+      "name": "r1",
       "original_indentation": 4,
       "start_line": 48
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "    Resource r2 = r1;",
       "end_line": 49,
       "language": "cpp",
-      "name": "variable.definition",
+      "name": "r2",
       "original_indentation": 4,
       "start_line": 49
     }

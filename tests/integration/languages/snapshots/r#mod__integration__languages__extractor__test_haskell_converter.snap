@@ -15,7 +15,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "data Color = Red | Green | Blue",
       "end_line": 2,
@@ -30,8 +30,8 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "showColor :: Color -> String",
       "end_line": 4,
       "language": "haskell",
-      "name": "function",
-      "original_indentation": 13,
+      "name": "showColor",
+      "original_indentation": 0,
       "start_line": 4
     },
     {
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "showColor Red = \"red\"",
       "end_line": 5,
       "language": "haskell",
-      "name": "function",
+      "name": "showColor",
       "original_indentation": 0,
       "start_line": 5
     },
@@ -50,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "showColor Green = \"green\"",
       "end_line": 6,
       "language": "haskell",
-      "name": "function",
+      "name": "showColor",
       "original_indentation": 0,
       "start_line": 6
     },
@@ -60,12 +60,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "showColor Blue = \"blue\"",
       "end_line": 7,
       "language": "haskell",
-      "name": "function",
+      "name": "showColor",
       "original_indentation": 0,
       "start_line": 7
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "data Maybe' a = Nothing' | Just' a",
       "end_line": 9,
@@ -75,12 +75,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 9
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "instance Functor Maybe' where\n    fmap _ Nothing' = Nothing'\n    fmap f (Just' x) = Just' (f x)",
       "end_line": 13,
       "language": "haskell",
-      "name": "declaration",
+      "name": "fmap",
       "original_indentation": 0,
       "start_line": 11
     },
@@ -90,7 +90,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    fmap _ Nothing' = Nothing'",
       "end_line": 12,
       "language": "haskell",
-      "name": "function",
+      "name": "fmap",
       "original_indentation": 4,
       "start_line": 12
     },
@@ -100,7 +100,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    fmap f (Just' x) = Just' (f x)",
       "end_line": 13,
       "language": "haskell",
-      "name": "function",
+      "name": "fmap",
       "original_indentation": 4,
       "start_line": 13
     }

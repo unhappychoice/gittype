@@ -44,12 +44,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "object Calculator {\n    def add(a: Int, b: Int): Int = a + b\n}",
       "end_line": 5,
       "language": "scala",
-      "name": "object",
+      "name": "Calculator",
       "original_indentation": 0,
       "start_line": 3
     },
@@ -59,7 +59,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def add(a: Int, b: Int): Int = a + b",
       "end_line": 4,
       "language": "scala",
-      "name": "function",
+      "name": "add",
       "original_indentation": 4,
       "start_line": 4
     },
@@ -69,7 +69,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class Person(val name: String) {\n    def greet(): String = s\"Hello, $name\"\n}",
       "end_line": 10,
       "language": "scala",
-      "name": "class",
+      "name": "Person",
       "original_indentation": 0,
       "start_line": 8
     },
@@ -79,7 +79,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def greet(): String = s\"Hello, $name\"",
       "end_line": 9,
       "language": "scala",
-      "name": "function",
+      "name": "greet",
       "original_indentation": 4,
       "start_line": 9
     },
@@ -89,7 +89,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "case class Point(x: Int, y: Int) {\n    def move(dx: Int, dy: Int): Point = Point(x + dx, y + dy)\n}",
       "end_line": 15,
       "language": "scala",
-      "name": "class",
+      "name": "Point",
       "original_indentation": 0,
       "start_line": 13
     },
@@ -99,27 +99,27 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    def move(dx: Int, dy: Int): Point = Point(x + dx, y + dy)",
       "end_line": 14,
       "language": "scala",
-      "name": "function",
+      "name": "move",
       "original_indentation": 4,
       "start_line": 14
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "trait Drawable {\n    def draw(): Unit\n}",
       "end_line": 20,
       "language": "scala",
-      "name": "trait",
+      "name": "Drawable",
       "original_indentation": 0,
       "start_line": 18
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Const",
       "comment_ranges": [],
       "content": "enum Status {\n    case Active, Inactive\n}",
       "end_line": 25,
       "language": "scala",
-      "name": "enum",
+      "name": "Status",
       "original_indentation": 0,
       "start_line": 23
     },
@@ -129,17 +129,17 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "def factorial(n: Int): Int = {\n    if (n <= 1) 1 else n * factorial(n - 1)\n}",
       "end_line": 30,
       "language": "scala",
-      "name": "function",
+      "name": "factorial",
       "original_indentation": 0,
       "start_line": 28
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "type UserId = Long",
       "end_line": 33,
       "language": "scala",
-      "name": "type",
+      "name": "UserId",
       "original_indentation": 0,
       "start_line": 33
     }

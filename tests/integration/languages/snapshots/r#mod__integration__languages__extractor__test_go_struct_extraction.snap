@@ -15,22 +15,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Struct",
       "comment_ranges": [],
       "content": "type Person struct {\n    Name string\n    Age  int\n}",
       "end_line": 6,
       "language": "go",
-      "name": "struct",
+      "name": "Person",
       "original_indentation": 5,
       "start_line": 3
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Struct",
       "comment_ranges": [],
       "content": "type Address struct {\n    Street string\n    City   string\n    Zip    string\n}",
       "end_line": 12,
       "language": "go",
-      "name": "struct",
+      "name": "Address",
       "original_indentation": 5,
       "start_line": 8
     },
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "func (p Person) GetName() string {\n    return p.Name\n}",
       "end_line": 16,
       "language": "go",
-      "name": "method",
+      "name": "GetName",
       "original_indentation": 0,
       "start_line": 14
     },
@@ -60,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "func (a *Address) GetFullAddress() string {\n    return a.Street + \", \" + a.City + \" \" + a.Zip\n}",
       "end_line": 20,
       "language": "go",
-      "name": "method",
+      "name": "GetFullAddress",
       "original_indentation": 0,
       "start_line": 18
     }

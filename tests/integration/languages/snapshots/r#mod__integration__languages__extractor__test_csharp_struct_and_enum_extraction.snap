@@ -20,47 +20,47 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "namespace MyApplication.Models",
       "end_line": 2,
       "language": "csharp",
-      "name": "name",
+      "name": "MyApplication",
       "original_indentation": 10,
       "start_line": 2
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Namespace",
       "comment_ranges": [],
       "content": "namespace MyApplication.Models\n{\n    public struct Point\n    {\n        public int X { get; set; }\n        public int Y { get; set; }\n\n        public Point(int x, int y)\n        {\n            X = x;\n            Y = y;\n        }\n\n        public double DistanceToOrigin()\n        {\n            return Math.Sqrt(X * X + Y * Y);\n        }\n    }\n\n    public enum UserRole\n    {\n        Guest,\n        User,\n        Moderator,\n        Administrator\n    }\n\n    public enum Status\n    {\n        Active = 1,\n        Inactive = 0,\n        Pending = 2\n    }\n}",
       "end_line": 35,
       "language": "csharp",
-      "name": "namespace",
+      "name": "MyApplication.Models",
       "original_indentation": 0,
       "start_line": 2
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Struct",
       "comment_ranges": [],
       "content": "    public struct Point\n    {\n        public int X { get; set; }\n        public int Y { get; set; }\n\n        public Point(int x, int y)\n        {\n            X = x;\n            Y = y;\n        }\n\n        public double DistanceToOrigin()\n        {\n            return Math.Sqrt(X * X + Y * Y);\n        }\n    }",
       "end_line": 19,
       "language": "csharp",
-      "name": "struct",
+      "name": "Point",
       "original_indentation": 4,
       "start_line": 4
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "        public int X { get; set; }",
       "end_line": 6,
       "language": "csharp",
-      "name": "property",
+      "name": "X",
       "original_indentation": 8,
       "start_line": 6
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "        public int Y { get; set; }",
       "end_line": 7,
       "language": "csharp",
-      "name": "property",
+      "name": "Y",
       "original_indentation": 8,
       "start_line": 7
     },
@@ -70,7 +70,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        public Point(int x, int y)\n        {\n            X = x;\n            Y = y;\n        }",
       "end_line": 13,
       "language": "csharp",
-      "name": "method",
+      "name": "Point",
       "original_indentation": 8,
       "start_line": 9
     },
@@ -100,7 +100,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        public double DistanceToOrigin()\n        {\n            return Math.Sqrt(X * X + Y * Y);\n        }",
       "end_line": 18,
       "language": "csharp",
-      "name": "method",
+      "name": "DistanceToOrigin",
       "original_indentation": 8,
       "start_line": 15
     },
@@ -115,22 +115,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 16
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Enum",
       "comment_ranges": [],
       "content": "    public enum UserRole\n    {\n        Guest,\n        User,\n        Moderator,\n        Administrator\n    }",
       "end_line": 27,
       "language": "csharp",
-      "name": "enum",
+      "name": "UserRole",
       "original_indentation": 4,
       "start_line": 21
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Enum",
       "comment_ranges": [],
       "content": "    public enum Status\n    {\n        Active = 1,\n        Inactive = 0,\n        Pending = 2\n    }",
       "end_line": 34,
       "language": "csharp",
-      "name": "enum",
+      "name": "Status",
       "original_indentation": 4,
       "start_line": 29
     }

@@ -15,7 +15,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "object DatabaseHelper {\n    const val DB_NAME = \"app.db\"\n\n    fun connect(): String {\n        return \"Connected to $DB_NAME\"\n    }\n\n    fun disconnect() {\n        println(\"Disconnected from database\")\n    }\n}",
       "end_line": 12,
@@ -25,7 +25,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 2
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Variable",
       "comment_ranges": [],
       "content": "    const val DB_NAME = \"app.db\"",
       "end_line": 3,
@@ -55,7 +55,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 9
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "object Utils {\n    fun formatName(name: String): String {\n        return name.trim().lowercase()\n    }\n}",
       "end_line": 18,

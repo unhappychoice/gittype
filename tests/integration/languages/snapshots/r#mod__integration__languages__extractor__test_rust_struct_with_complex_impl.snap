@@ -28,12 +28,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Struct",
       "comment_ranges": [],
       "content": "pub struct DataCache<T> {\n    cache: HashMap<String, T>,\n    max_size: usize,\n    access_count: HashMap<String, usize>,\n}",
       "end_line": 7,
       "language": "rust",
-      "name": "struct",
+      "name": "DataCache",
       "original_indentation": 0,
       "start_line": 3
     },
@@ -43,7 +43,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    pub fn new(max_size: usize) -> Self {\n        Self {\n            cache: HashMap::new(),\n            max_size,\n            access_count: HashMap::new(),\n        }\n    }",
       "end_line": 16,
       "language": "rust",
-      "name": "function",
+      "name": "new",
       "original_indentation": 4,
       "start_line": 10
     },
@@ -72,7 +72,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    pub fn get_or_insert<F>(&mut self, key: &str, compute: F) -> T\n    where\n        F: FnOnce() -> T,\n    {\n        // Cache management logic - extractable middle chunk\n        if let Some(value) = self.cache.get(key) {\n            *self.access_count.entry(key.to_string()).or_insert(0) += 1;\n            return value.clone();\n        }\n\n        // Check if cache is full and evict least used item\n        if self.cache.len() >= self.max_size {\n            if let Some(lru_key) = self.find_least_used_key() {\n                self.cache.remove(&lru_key);\n                self.access_count.remove(&lru_key);\n            }\n        }\n\n        let computed_value = compute();\n        self.cache.insert(key.to_string(), computed_value.clone());\n        self.access_count.insert(key.to_string(), 1);\n        computed_value\n    }",
       "end_line": 40,
       "language": "rust",
-      "name": "function",
+      "name": "get_or_insert",
       "original_indentation": 4,
       "start_line": 18
     },
@@ -91,7 +91,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    {\n        // Cache management logic - extractable middle chunk\n        if let Some(value) = self.cache.get(key) {\n            *self.access_count.entry(key.to_string()).or_insert(0) += 1;\n            return value.clone();\n        }\n\n        // Check if cache is full and evict least used item\n        if self.cache.len() >= self.max_size {\n            if let Some(lru_key) = self.find_least_used_key() {\n                self.cache.remove(&lru_key);\n                self.access_count.remove(&lru_key);\n            }\n        }\n\n        let computed_value = compute();\n        self.cache.insert(key.to_string(), computed_value.clone());\n        self.access_count.insert(key.to_string(), 1);\n        computed_value\n    }",
       "end_line": 40,
       "language": "rust",
-      "name": "code_block",
+      "name": "computed_value",
       "original_indentation": 4,
       "start_line": 21
     },
@@ -141,7 +141,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    fn find_least_used_key(&self) -> Option<String> {\n        self.access_count\n            .iter()\n            .min_by_key(|(_, &count)| count)\n            .map(|(key, _)| key.clone())\n    }",
       "end_line": 47,
       "language": "rust",
-      "name": "function",
+      "name": "find_least_used_key",
       "original_indentation": 4,
       "start_line": 42
     },
@@ -196,7 +196,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    pub fn clear_stale_entries(&mut self, max_access_count: usize) {\n        // Cleanup logic - extractable middle chunk\n        let stale_keys: Vec<String> = self\n            .access_count\n            .iter()\n            .filter(|(_, &count)| count > max_access_count)\n            .map(|(key, _)| key.clone())\n            .collect();\n\n        for key in stale_keys {\n            self.cache.remove(&key);\n            self.access_count.remove(&key);\n        }\n    }",
       "end_line": 62,
       "language": "rust",
-      "name": "function",
+      "name": "clear_stale_entries",
       "original_indentation": 4,
       "start_line": 49
     },
@@ -246,7 +246,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "        for key in stale_keys {\n            self.cache.remove(&key);\n            self.access_count.remove(&key);\n        }",
       "end_line": 61,
       "language": "rust",
-      "name": "for_loop",
+      "name": "key",
       "original_indentation": 8,
       "start_line": 58
     }

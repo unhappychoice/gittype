@@ -24,22 +24,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "#define TEST_H\n",
       "end_line": 4,
       "language": "c",
-      "name": "macro.definition",
+      "name": "TEST_H",
       "original_indentation": 0,
       "start_line": 3
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "static inline int max(int a, int b) {\n    return (a > b) ? a : b;\n}",
       "end_line": 13,
       "language": "c",
-      "name": "function.definition",
+      "name": "max",
       "original_indentation": 0,
       "start_line": 11
     }

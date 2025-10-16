@@ -30,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "function calculateSum(a, b) {\n    return a + b;\n}",
       "end_line": 4,
       "language": "javascript",
-      "name": "function",
+      "name": "calculateSum",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "function greetUser(name) {\n    return `Hello, ${name}!`;\n}",
       "end_line": 8,
       "language": "javascript",
-      "name": "function",
+      "name": "greetUser",
       "original_indentation": 0,
       "start_line": 6
     },
@@ -60,7 +60,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "async function fetchUserData(userId) {\n    const response = await fetch(`/api/users/${userId}`);\n    return response.json();\n}",
       "end_line": 13,
       "language": "javascript",
-      "name": "function",
+      "name": "fetchUserData",
       "original_indentation": 0,
       "start_line": 10
     }

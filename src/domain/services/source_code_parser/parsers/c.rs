@@ -65,6 +65,8 @@ impl LanguageExtractor for CExtractor {
             "type.definition" => Some(ChunkType::Struct),
             "enum.definition" => Some(ChunkType::Struct),
             "macro.definition" => Some(ChunkType::Function),
+            "function.name" | "struct.name" | "type.name" | "enum.name" | "variable.name"
+            | "macro.name" => Some(ChunkType::CodeBlock),
             _ => None,
         }
     }

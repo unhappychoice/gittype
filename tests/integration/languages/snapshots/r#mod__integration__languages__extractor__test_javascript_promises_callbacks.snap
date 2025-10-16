@@ -1,0 +1,171 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nfunction fetchWithCallback(url, callback) {\n    setTimeout(() => {\n        const data = { status: 'success', url: url };\n        callback(null, data);\n    }, 1000);\n}\n\nfunction promiseExample() {\n    return new Promise((resolve, reject) => {\n        const success = Math.random() > 0.5;\n        if (success) {\n            resolve({ message: 'Success!' });\n        } else {\n            reject(new Error('Failed'));\n        }\n    });\n}\n\nasync function chainedPromises() {\n    try {\n        const result1 = await promiseExample();\n        const result2 = await promiseExample();\n        return [result1, result2];\n    } catch (error) {\n        console.error('Promise chain failed:', error);\n        throw error;\n    }\n}\n\nconst promiseAllExample = async (urls) => {\n    const promises = urls.map(url => fetch(url));\n    const results = await Promise.all(promises);\n    return results.map(r => r.json());\n};\n\nPromise.race([\n    new Promise((resolve) => setTimeout(() => resolve('fast'), 100)),\n    new Promise((resolve) => setTimeout(() => resolve('slow'), 500))\n]).then(result => {\n    console.log('Winner:', result);\n});\n",
+      "end_line": 42,
+      "language": "javascript",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "function fetchWithCallback",
+      "end_line": 2,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 9,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "function fetchWithCallback(url, callback) {\n    setTimeout(() => {\n        const data = { status: 'success', url: url };\n        callback(null, data);\n    }, 1000);\n}",
+      "end_line": 7,
+      "language": "javascript",
+      "name": "fetchWithCallback",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "    setTimeout(() => {\n        const data = { status: 'success', url: url };\n        callback(null, data);\n    }, 1000)",
+      "end_line": 6,
+      "language": "javascript",
+      "name": "setTimeout",
+      "original_indentation": 4,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "function promiseExample",
+      "end_line": 9,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 9,
+      "start_line": 9
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "function promiseExample() {\n    return new Promise((resolve, reject) => {\n        const success = Math.random() > 0.5;\n        if (success) {\n            resolve({ message: 'Success!' });\n        } else {\n            reject(new Error('Failed'));\n        }\n    });\n}",
+      "end_line": 18,
+      "language": "javascript",
+      "name": "promiseExample",
+      "original_indentation": 0,
+      "start_line": 9
+    },
+    {
+      "chunk_type": "Lambda",
+      "comment_ranges": [],
+      "content": "    return new Promise((resolve, reject) => {\n        const success = Math.random() > 0.5;\n        if (success) {\n            resolve({ message: 'Success!' });\n        } else {\n            reject(new Error('Failed'));\n        }\n    }",
+      "end_line": 17,
+      "language": "javascript",
+      "name": "arrow_lambda",
+      "original_indentation": 23,
+      "start_line": 10
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        if (success) {\n            resolve({ message: 'Success!' });\n        }",
+      "end_line": 14,
+      "language": "javascript",
+      "name": "code_block",
+      "original_indentation": 21,
+      "start_line": 12
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "        if (success) {\n            resolve({ message: 'Success!' });\n        } else {\n            reject(new Error('Failed'));\n        }",
+      "end_line": 16,
+      "language": "javascript",
+      "name": "if_block",
+      "original_indentation": 8,
+      "start_line": 12
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        } else {\n            reject(new Error('Failed'));\n        }",
+      "end_line": 16,
+      "language": "javascript",
+      "name": "code_block",
+      "original_indentation": 15,
+      "start_line": 14
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "async function chainedPromises",
+      "end_line": 20,
+      "language": "javascript",
+      "name": "name",
+      "original_indentation": 15,
+      "start_line": 20
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "async function chainedPromises() {\n    try {\n        const result1 = await promiseExample();\n        const result2 = await promiseExample();\n        return [result1, result2];\n    } catch (error) {\n        console.error('Promise chain failed:', error);\n        throw error;\n    }\n}",
+      "end_line": 29,
+      "language": "javascript",
+      "name": "chainedPromises",
+      "original_indentation": 0,
+      "start_line": 20
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    try {\n        const result1 = await promiseExample();\n        const result2 = await promiseExample();\n        return [result1, result2];\n    }",
+      "end_line": 25,
+      "language": "javascript",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 21
+    },
+    {
+      "chunk_type": "ErrorHandling",
+      "comment_ranges": [],
+      "content": "    try {\n        const result1 = await promiseExample();\n        const result2 = await promiseExample();\n        return [result1, result2];\n    } catch (error) {\n        console.error('Promise chain failed:', error);\n        throw error;\n    }",
+      "end_line": 28,
+      "language": "javascript",
+      "name": "try_block",
+      "original_indentation": 4,
+      "start_line": 21
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    } catch (error) {\n        console.error('Promise chain failed:', error);\n        throw error;\n    }",
+      "end_line": 28,
+      "language": "javascript",
+      "name": "code_block",
+      "original_indentation": 20,
+      "start_line": 25
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "const promiseAllExample = async (urls) => {\n    const promises = urls.map(url => fetch(url));\n    const results = await Promise.all(promises);\n    return results.map(r => r.json());\n}",
+      "end_line": 35,
+      "language": "javascript",
+      "name": "promiseAllExample",
+      "original_indentation": 6,
+      "start_line": 31
+    }
+  ],
+  "source_code": "\nfunction fetchWithCallback(url, callback) {\n    setTimeout(() => {\n        const data = { status: 'success', url: url };\n        callback(null, data);\n    }, 1000);\n}\n\nfunction promiseExample() {\n    return new Promise((resolve, reject) => {\n        const success = Math.random() > 0.5;\n        if (success) {\n            resolve({ message: 'Success!' });\n        } else {\n            reject(new Error('Failed'));\n        }\n    });\n}\n\nasync function chainedPromises() {\n    try {\n        const result1 = await promiseExample();\n        const result2 = await promiseExample();\n        return [result1, result2];\n    } catch (error) {\n        console.error('Promise chain failed:', error);\n        throw error;\n    }\n}\n\nconst promiseAllExample = async (urls) => {\n    const promises = urls.map(url => fetch(url));\n    const results = await Promise.all(promises);\n    return results.map(r => r.json());\n};\n\nPromise.race([\n    new Promise((resolve) => setTimeout(() => resolve('fast'), 100)),\n    new Promise((resolve) => setTimeout(() => resolve('slow'), 500))\n]).then(result => {\n    console.log('Winner:', result);\n});\n",
+  "test_name": "test_javascript_promises_callbacks",
+  "total_chunks": 16
+}

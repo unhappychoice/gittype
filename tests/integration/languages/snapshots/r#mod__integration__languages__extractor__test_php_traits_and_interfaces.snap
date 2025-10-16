@@ -15,22 +15,22 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "interface Drawable {\n    public function draw();\n}",
       "end_line": 5,
       "language": "php",
-      "name": "interface",
+      "name": "Drawable",
       "original_indentation": 0,
       "start_line": 3
     },
     {
-      "chunk_type": "Method",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "    public function draw();",
       "end_line": 4,
       "language": "php",
-      "name": "method",
+      "name": "draw",
       "original_indentation": 4,
       "start_line": 4
     },
@@ -40,27 +40,27 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "trait Timestampable",
       "end_line": 7,
       "language": "php",
-      "name": "name",
+      "name": "Timestampable",
       "original_indentation": 6,
       "start_line": 7
     },
     {
-      "chunk_type": "CodeBlock",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "trait Timestampable {\n    private $created_at;\n    private $updated_at;\n\n    public function touch() {\n        $this->updated_at = time();\n    }\n}",
       "end_line": 14,
       "language": "php",
-      "name": "trait",
+      "name": "Timestampable",
       "original_indentation": 0,
       "start_line": 7
     },
     {
-      "chunk_type": "Method",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "    public function touch() {\n        $this->updated_at = time();\n    }",
       "end_line": 13,
       "language": "php",
-      "name": "method",
+      "name": "touch",
       "original_indentation": 4,
       "start_line": 11
     },
@@ -70,7 +70,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "class Shape implements Drawable {\n    use Timestampable;\n\n    protected $color;\n\n    public function __construct($color) {\n        $this->color = $color;\n        $this->created_at = time();\n        $this->updated_at = time();\n    }\n\n    public function draw() {\n        return \"Drawing a shape in \" . $this->color;\n    }\n}",
       "end_line": 30,
       "language": "php",
-      "name": "class",
+      "name": "Shape",
       "original_indentation": 0,
       "start_line": 16
     },
@@ -80,27 +80,27 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "    public function __construct",
       "end_line": 21,
       "language": "php",
-      "name": "name",
+      "name": "__construct",
       "original_indentation": 20,
       "start_line": 21
     },
     {
-      "chunk_type": "Method",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "    public function __construct($color) {\n        $this->color = $color;\n        $this->created_at = time();\n        $this->updated_at = time();\n    }",
       "end_line": 25,
       "language": "php",
-      "name": "method",
+      "name": "__construct",
       "original_indentation": 4,
       "start_line": 21
     },
     {
-      "chunk_type": "Method",
+      "chunk_type": "Function",
       "comment_ranges": [],
       "content": "    public function draw() {\n        return \"Drawing a shape in \" . $this->color;\n    }",
       "end_line": 29,
       "language": "php",
-      "name": "method",
+      "name": "draw",
       "original_indentation": 4,
       "start_line": 27
     }

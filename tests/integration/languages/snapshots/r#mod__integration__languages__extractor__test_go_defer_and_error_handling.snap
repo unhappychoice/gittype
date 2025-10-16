@@ -1,0 +1,151 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "package main\n\nimport (\n    \"errors\"\n    \"fmt\"\n    \"io\"\n    \"os\"\n)\n\nvar (\n    ErrInvalidInput = errors.New(\"invalid input\")\n    ErrNotFound     = errors.New(\"not found\")\n)\n\ntype FileProcessor struct {\n    filename string\n}\n\nfunc NewFileProcessor(filename string) *FileProcessor {\n    return &FileProcessor{filename: filename}\n}\n\nfunc (fp *FileProcessor) Process() error {\n    file, err := os.Open(fp.filename)\n    if err != nil {\n        return fmt.Errorf(\"failed to open file: %w\", err)\n    }\n    defer file.Close()\n\n    data := make([]byte, 1024)\n    n, err := file.Read(data)\n    if err != nil && err != io.EOF {\n        return fmt.Errorf(\"failed to read file: %w\", err)\n    }\n\n    defer func() {\n        fmt.Println(\"Processing completed\")\n    }()\n\n    if n == 0 {\n        return ErrInvalidInput\n    }\n\n    return nil\n}\n\nfunc cleanup() {\n    defer func() {\n        if r := recover(); r != nil {\n            fmt.Printf(\"Recovered from panic: %v\\n\", r)\n        }\n    }()\n\n    panic(\"something went wrong\")\n}\n",
+      "end_line": 55,
+      "language": "go",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "var (\n    ErrInvalidInput = errors.New(\"invalid input\")\n    ErrNotFound     = errors.New(\"not found\")\n)",
+      "end_line": 13,
+      "language": "go",
+      "name": "var_block",
+      "original_indentation": 0,
+      "start_line": 10
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "type FileProcessor",
+      "end_line": 15,
+      "language": "go",
+      "name": "name",
+      "original_indentation": 5,
+      "start_line": 15
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "type FileProcessor struct {\n    filename string\n}",
+      "end_line": 17,
+      "language": "go",
+      "name": "FileProcessor",
+      "original_indentation": 5,
+      "start_line": 15
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "func NewFileProcessor",
+      "end_line": 19,
+      "language": "go",
+      "name": "name",
+      "original_indentation": 5,
+      "start_line": 19
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "func NewFileProcessor(filename string) *FileProcessor {\n    return &FileProcessor{filename: filename}\n}",
+      "end_line": 21,
+      "language": "go",
+      "name": "NewFileProcessor",
+      "original_indentation": 0,
+      "start_line": 19
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "func (fp *FileProcessor) Process() error {\n    file, err := os.Open(fp.filename)\n    if err != nil {\n        return fmt.Errorf(\"failed to open file: %w\", err)\n    }\n    defer file.Close()\n\n    data := make([]byte, 1024)\n    n, err := file.Read(data)\n    if err != nil && err != io.EOF {\n        return fmt.Errorf(\"failed to read file: %w\", err)\n    }\n\n    defer func() {\n        fmt.Println(\"Processing completed\")\n    }()\n\n    if n == 0 {\n        return ErrInvalidInput\n    }\n\n    return nil\n}",
+      "end_line": 45,
+      "language": "go",
+      "name": "Process",
+      "original_indentation": 0,
+      "start_line": 23
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "    if err != nil {\n        return fmt.Errorf(\"failed to open file: %w\", err)\n    }",
+      "end_line": 27,
+      "language": "go",
+      "name": "if_block",
+      "original_indentation": 4,
+      "start_line": 25
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "    if err != nil && err != io.EOF {\n        return fmt.Errorf(\"failed to read file: %w\", err)\n    }",
+      "end_line": 34,
+      "language": "go",
+      "name": "if_block",
+      "original_indentation": 4,
+      "start_line": 32
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "    defer func() {\n        fmt.Println(\"Processing completed\")\n    }()",
+      "end_line": 38,
+      "language": "go",
+      "name": "function_call",
+      "original_indentation": 10,
+      "start_line": 36
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "    if n == 0 {\n        return ErrInvalidInput\n    }",
+      "end_line": 42,
+      "language": "go",
+      "name": "if_block",
+      "original_indentation": 4,
+      "start_line": 40
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "func cleanup() {\n    defer func() {\n        if r := recover(); r != nil {\n            fmt.Printf(\"Recovered from panic: %v\\n\", r)\n        }\n    }()\n\n    panic(\"something went wrong\")\n}",
+      "end_line": 55,
+      "language": "go",
+      "name": "cleanup",
+      "original_indentation": 0,
+      "start_line": 47
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "    defer func() {\n        if r := recover(); r != nil {\n            fmt.Printf(\"Recovered from panic: %v\\n\", r)\n        }\n    }()",
+      "end_line": 52,
+      "language": "go",
+      "name": "function_call",
+      "original_indentation": 10,
+      "start_line": 48
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "        if r := recover(); r != nil {\n            fmt.Printf(\"Recovered from panic: %v\\n\", r)\n        }",
+      "end_line": 51,
+      "language": "go",
+      "name": "if_block",
+      "original_indentation": 8,
+      "start_line": 49
+    }
+  ],
+  "source_code": "package main\n\nimport (\n    \"errors\"\n    \"fmt\"\n    \"io\"\n    \"os\"\n)\n\nvar (\n    ErrInvalidInput = errors.New(\"invalid input\")\n    ErrNotFound     = errors.New(\"not found\")\n)\n\ntype FileProcessor struct {\n    filename string\n}\n\nfunc NewFileProcessor(filename string) *FileProcessor {\n    return &FileProcessor{filename: filename}\n}\n\nfunc (fp *FileProcessor) Process() error {\n    file, err := os.Open(fp.filename)\n    if err != nil {\n        return fmt.Errorf(\"failed to open file: %w\", err)\n    }\n    defer file.Close()\n\n    data := make([]byte, 1024)\n    n, err := file.Read(data)\n    if err != nil && err != io.EOF {\n        return fmt.Errorf(\"failed to read file: %w\", err)\n    }\n\n    defer func() {\n        fmt.Println(\"Processing completed\")\n    }()\n\n    if n == 0 {\n        return ErrInvalidInput\n    }\n\n    return nil\n}\n\nfunc cleanup() {\n    defer func() {\n        if r := recover(); r != nil {\n            fmt.Printf(\"Recovered from panic: %v\\n\", r)\n        }\n    }()\n\n    panic(\"something went wrong\")\n}\n",
+  "test_name": "test_go_defer_and_error_handling",
+  "total_chunks": 14
+}

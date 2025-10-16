@@ -80,9 +80,10 @@ object Utils {
 "#,
     total_chunks: 7,
     chunk_counts: {
-        CodeBlock: 3,
-        File: 1,
+        Variable: 1,
+        Class: 2,
         Function: 3,
+        File: 1,
     }
 }
 
@@ -149,10 +150,10 @@ var globalVar: String = "global var"
 "#,
     total_chunks: 19,
     chunk_counts: {
-        CodeBlock: 6,
+        Class: 8,
+        Variable: 4,
         File: 1,
         Function: 6,
-        Class: 5,
     }
 }
 
@@ -278,9 +279,130 @@ class DataProcessor(private val threshold: Int) {
 "#,
     total_chunks: 34,
     chunk_counts: {
-        CodeBlock: 15,
-        File: 1,
         Class: 2,
         Function: 2,
+        Variable: 17,
+        FunctionCall: 9,
+        File: 1,
+        Conditional: 3,
+    }
+}
+
+test_language_extractor! {
+    name: test_kotlin_extension_functions,
+    language: "kotlin",
+    extension: "kt",
+    source: r#"
+fun String.removeWhitespace(): String {
+    return this.replace("\\s".toRegex(), "")
+}
+
+fun <T> List<T>.second(): T? {
+    return if (this.size >= 2) this[1] else null
+}
+
+fun Int.isEven(): Boolean = this % 2 == 0
+
+class StringUtils {
+    fun String.capitalize(): String {
+        return this.replaceFirstChar { it.uppercase() }
+    }
+}
+
+infix fun Int.times(str: String): String {
+    return str.repeat(this)
+}
+"#,
+    total_chunks: 7,
+    chunk_counts: {
+        Function: 5,
+        Class: 1,
+        File: 1,
+    }
+}
+
+test_language_extractor! {
+    name: test_kotlin_sealed_classes,
+    language: "kotlin",
+    extension: "kt",
+    source: r#"
+sealed class Result<out T> {
+    data class Success<T>(val data: T) : Result<T>()
+    data class Error(val message: String) : Result<Nothing>()
+    object Loading : Result<Nothing>()
+}
+
+sealed interface UiState {
+    object Idle : UiState
+    data class Loading(val progress: Int) : UiState
+    data class Success(val data: String) : UiState
+    data class Error(val error: Throwable) : UiState
+}
+
+fun <T> handleResult(result: Result<T>): String {
+    return when (result) {
+        is Result.Success -> "Success: ${result.data}"
+        is Result.Error -> "Error: ${result.message}"
+        is Result.Loading -> "Loading..."
+    }
+}
+"#,
+    total_chunks: 12,
+    chunk_counts: {
+        Function: 1,
+        File: 1,
+        Class: 9,
+        Conditional: 1,
+    }
+}
+
+test_language_extractor! {
+    name: test_kotlin_delegation_patterns,
+    language: "kotlin",
+    extension: "kt",
+    source: r#"
+interface Logger {
+    fun log(message: String)
+}
+
+class ConsoleLogger : Logger {
+    override fun log(message: String) {
+        println("LOG: $message")
+    }
+}
+
+class FileLogger(private val filename: String) : Logger {
+    override fun log(message: String) {
+        println("Writing to $filename: $message")
+    }
+}
+
+class Application(logger: Logger) : Logger by logger {
+    fun start() {
+        log("Application started")
+    }
+
+    fun stop() {
+        log("Application stopped")
+    }
+}
+
+class LazyValue {
+    val expensiveValue: String by lazy {
+        println("Computing expensive value...")
+        "Expensive Result"
+    }
+}
+
+var observableProperty: String by Delegates.observable("initial") { _, old, new ->
+    println("Value changed from $old to $new")
+}
+"#,
+    total_chunks: 13,
+    chunk_counts: {
+        Class: 5,
+        Variable: 2,
+        Function: 5,
+        File: 1,
     }
 }

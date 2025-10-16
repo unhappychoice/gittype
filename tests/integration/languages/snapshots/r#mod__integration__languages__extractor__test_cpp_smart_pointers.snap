@@ -1,0 +1,171 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\n#include <memory>\n#include <vector>\n\nclass Node {\npublic:\n    int value;\n    std::shared_ptr<Node> next;\n    std::weak_ptr<Node> prev;\n\n    Node(int val) : value(val) {}\n};\n\nclass LinkedList {\nprivate:\n    std::shared_ptr<Node> head;\n    std::shared_ptr<Node> tail;\n\npublic:\n    void append(int value) {\n        auto new_node = std::make_shared<Node>(value);\n\n        if (!head) {\n            head = new_node;\n            tail = new_node;\n        } else {\n            tail->next = new_node;\n            new_node->prev = tail;\n            tail = new_node;\n        }\n    }\n\n    std::unique_ptr<std::vector<int>> toVector() const {\n        auto result = std::make_unique<std::vector<int>>();\n        auto current = head;\n\n        while (current) {\n            result->push_back(current->value);\n            current = current->next;\n        }\n\n        return result;\n    }\n};\n\nint main() {\n    LinkedList list;\n    list.append(1);\n    list.append(2);\n    list.append(3);\n\n    auto vec = list.toVector();\n\n    return 0;\n}\n",
+      "end_line": 55,
+      "language": "cpp",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "class Node {\npublic:\n    int value;\n    std::shared_ptr<Node> next;\n    std::weak_ptr<Node> prev;\n\n    Node(int val) : value(val) {}\n}",
+      "end_line": 12,
+      "language": "cpp",
+      "name": "Node",
+      "original_indentation": 0,
+      "start_line": 5
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    Node(int val) : value(val) {}",
+      "end_line": 11,
+      "language": "cpp",
+      "name": "Node",
+      "original_indentation": 4,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "class LinkedList",
+      "end_line": 14,
+      "language": "cpp",
+      "name": "class.name",
+      "original_indentation": 6,
+      "start_line": 14
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "class LinkedList {\nprivate:\n    std::shared_ptr<Node> head;\n    std::shared_ptr<Node> tail;\n\npublic:\n    void append(int value) {\n        auto new_node = std::make_shared<Node>(value);\n\n        if (!head) {\n            head = new_node;\n            tail = new_node;\n        } else {\n            tail->next = new_node;\n            new_node->prev = tail;\n            tail = new_node;\n        }\n    }\n\n    std::unique_ptr<std::vector<int>> toVector() const {\n        auto result = std::make_unique<std::vector<int>>();\n        auto current = head;\n\n        while (current) {\n            result->push_back(current->value);\n            current = current->next;\n        }\n\n        return result;\n    }\n}",
+      "end_line": 44,
+      "language": "cpp",
+      "name": "LinkedList",
+      "original_indentation": 0,
+      "start_line": 14
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    void append(int value) {\n        auto new_node = std::make_shared<Node>(value);\n\n        if (!head) {\n            head = new_node;\n            tail = new_node;\n        } else {\n            tail->next = new_node;\n            new_node->prev = tail;\n            tail = new_node;\n        }\n    }",
+      "end_line": 31,
+      "language": "cpp",
+      "name": "append",
+      "original_indentation": 4,
+      "start_line": 20
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "        auto new_node = std::make_shared<Node>(value);",
+      "end_line": 21,
+      "language": "cpp",
+      "name": "new_node",
+      "original_indentation": 8,
+      "start_line": 21
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        if (!head) {\n            head = new_node;\n            tail = new_node;\n        }",
+      "end_line": 26,
+      "language": "cpp",
+      "name": "code_block",
+      "original_indentation": 19,
+      "start_line": 23
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "        if (!head) {\n            head = new_node;\n            tail = new_node;\n        } else {\n            tail->next = new_node;\n            new_node->prev = tail;\n            tail = new_node;\n        }",
+      "end_line": 30,
+      "language": "cpp",
+      "name": "if_block",
+      "original_indentation": 8,
+      "start_line": 23
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        } else {\n            tail->next = new_node;\n            new_node->prev = tail;\n            tail = new_node;\n        }",
+      "end_line": 30,
+      "language": "cpp",
+      "name": "code_block",
+      "original_indentation": 15,
+      "start_line": 26
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "    std::unique_ptr<std::vector<int>> toVector() const {\n        auto result = std::make_unique<std::vector<int>>();\n        auto current = head;\n\n        while (current) {\n            result->push_back(current->value);\n            current = current->next;\n        }\n\n        return result;\n    }",
+      "end_line": 43,
+      "language": "cpp",
+      "name": "toVector",
+      "original_indentation": 4,
+      "start_line": 33
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "        auto result = std::make_unique<std::vector<int>>();",
+      "end_line": 34,
+      "language": "cpp",
+      "name": "result",
+      "original_indentation": 8,
+      "start_line": 34
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "        auto current = head;",
+      "end_line": 35,
+      "language": "cpp",
+      "name": "current",
+      "original_indentation": 8,
+      "start_line": 35
+    },
+    {
+      "chunk_type": "Loop",
+      "comment_ranges": [],
+      "content": "        while (current) {\n            result->push_back(current->value);\n            current = current->next;\n        }",
+      "end_line": 40,
+      "language": "cpp",
+      "name": "while_loop",
+      "original_indentation": 8,
+      "start_line": 37
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "int main() {\n    LinkedList list;\n    list.append(1);\n    list.append(2);\n    list.append(3);\n\n    auto vec = list.toVector();\n\n    return 0;\n}",
+      "end_line": 55,
+      "language": "cpp",
+      "name": "main",
+      "original_indentation": 0,
+      "start_line": 46
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "    auto vec = list.toVector();",
+      "end_line": 52,
+      "language": "cpp",
+      "name": "vec",
+      "original_indentation": 4,
+      "start_line": 52
+    }
+  ],
+  "source_code": "\n#include <memory>\n#include <vector>\n\nclass Node {\npublic:\n    int value;\n    std::shared_ptr<Node> next;\n    std::weak_ptr<Node> prev;\n\n    Node(int val) : value(val) {}\n};\n\nclass LinkedList {\nprivate:\n    std::shared_ptr<Node> head;\n    std::shared_ptr<Node> tail;\n\npublic:\n    void append(int value) {\n        auto new_node = std::make_shared<Node>(value);\n\n        if (!head) {\n            head = new_node;\n            tail = new_node;\n        } else {\n            tail->next = new_node;\n            new_node->prev = tail;\n            tail = new_node;\n        }\n    }\n\n    std::unique_ptr<std::vector<int>> toVector() const {\n        auto result = std::make_unique<std::vector<int>>();\n        auto current = head;\n\n        while (current) {\n            result->push_back(current->value);\n            current = current->next;\n        }\n\n        return result;\n    }\n};\n\nint main() {\n    LinkedList list;\n    list.append(1);\n    list.append(2);\n    list.append(3);\n\n    auto vec = list.toVector();\n\n    return 0;\n}\n",
+  "test_name": "test_cpp_smart_pointers",
+  "total_chunks": 16
+}
