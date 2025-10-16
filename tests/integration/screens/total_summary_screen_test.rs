@@ -47,3 +47,13 @@ screen_key_event_test!(
     KeyModifiers::CONTROL,
     MockTotalSummaryDataProvider
 );
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_total_summary_screen_basic_methods,
+    TotalSummaryScreen,
+    TotalSummaryScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::TotalSummary,
+    false,
+    MockTotalSummaryDataProvider
+);

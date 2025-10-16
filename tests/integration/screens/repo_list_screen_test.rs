@@ -29,3 +29,13 @@ screen_key_event_test!(
     KeyModifiers::CONTROL,
     MockRepoListDataProvider
 );
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_repo_list_screen_basic_methods,
+    RepoListScreen,
+    RepoListScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::RepoList,
+    true,
+    MockRepoListDataProvider
+);

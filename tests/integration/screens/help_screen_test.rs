@@ -122,3 +122,12 @@ screen_key_tests!(
         ),
     ]
 );
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_help_screen_basic_methods,
+    HelpScreen,
+    HelpScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::Help,
+    false
+);

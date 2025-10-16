@@ -262,3 +262,45 @@ macro_rules! screen_snapshot_test {
         }
     };
 }
+
+/// Macro to test basic screen methods (get_update_strategy, update, is_exitable, get_type)
+#[macro_export]
+macro_rules! screen_basic_methods_test {
+    ($test_name:ident, $screen_type:ty, $screen_init:expr, $expected_screen_type:expr, $expected_is_exitable:expr, $provider:expr) => {
+        #[test]
+        fn $test_name() {
+            use gittype::presentation::tui::Screen;
+            use gittype::presentation::tui::ScreenDataProvider;
+
+            let mut screen: $screen_type = $screen_init;
+
+            // Initialize with provider data if provided
+            let data = $provider.provide().unwrap();
+            let _ = screen.init_with_data(data);
+
+            // Test get_type
+            assert_eq!(screen.get_type(), $expected_screen_type);
+
+            // Test is_exitable
+            assert_eq!(screen.is_exitable(), $expected_is_exitable);
+
+            // Test get_update_strategy (just ensure it doesn't panic)
+            let _ = screen.get_update_strategy();
+
+            // Test update (ensure it returns Ok)
+            assert!(screen.update().is_ok());
+        }
+    };
+
+    // Version without provider (uses EmptyMockProvider)
+    ($test_name:ident, $screen_type:ty, $screen_init:expr, $expected_screen_type:expr, $expected_is_exitable:expr) => {
+        screen_basic_methods_test!(
+            $test_name,
+            $screen_type,
+            $screen_init,
+            $expected_screen_type,
+            $expected_is_exitable,
+            $crate::integration::screens::helpers::EmptyMockProvider
+        );
+    };
+}

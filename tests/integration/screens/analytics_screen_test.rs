@@ -113,3 +113,13 @@ screen_key_tests!(
         ),
     ]
 );
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_analytics_screen_basic_methods,
+    AnalyticsScreen,
+    AnalyticsScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::Analytics,
+    false,
+    MockAnalyticsDataProvider
+);

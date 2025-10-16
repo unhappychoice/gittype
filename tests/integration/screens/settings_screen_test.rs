@@ -94,3 +94,13 @@ screen_key_tests!(
         ),
     ]
 );
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_settings_screen_basic_methods,
+    SettingsScreen,
+    SettingsScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::Settings,
+    false,
+    MockSettingsScreenDataProvider
+);

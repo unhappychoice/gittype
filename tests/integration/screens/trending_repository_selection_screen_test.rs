@@ -66,3 +66,13 @@ screen_key_tests!(
         ),
     ]
 );
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_trending_repository_selection_screen_basic_methods,
+    TrendingRepositorySelectionScreen,
+    TrendingRepositorySelectionScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::TrendingRepositorySelection,
+    true,
+    MockTrendingRepositorySelectionDataProvider
+);

@@ -65,3 +65,12 @@ fn test_panic_screen_other_keys_ignored() {
     let captured_events = events.lock().unwrap();
     assert_eq!(captured_events.len(), 0);
 }
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_panic_screen_basic_methods,
+    PanicScreen,
+    PanicScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::Panic,
+    false
+);

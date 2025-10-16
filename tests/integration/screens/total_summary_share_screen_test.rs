@@ -57,3 +57,13 @@ screen_key_tests!(
         ),
     ]
 );
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_total_summary_share_screen_basic_methods,
+    TotalSummaryShareScreen,
+    TotalSummaryShareScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::TotalSummaryShare,
+    false,
+    MockTotalSummaryShareDataProvider
+);

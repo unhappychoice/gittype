@@ -138,3 +138,13 @@ screen_key_tests!(
         ),
     ]
 );
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_title_screen_basic_methods,
+    TitleScreen,
+    TitleScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::Title,
+    false,
+    MockTitleScreenDataProvider
+);

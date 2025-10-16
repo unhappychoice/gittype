@@ -90,3 +90,13 @@ screen_key_tests!(
         ),
     ]
 );
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_records_screen_basic_methods,
+    RecordsScreen,
+    RecordsScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::Records,
+    false,
+    MockRecordsDataProvider
+);

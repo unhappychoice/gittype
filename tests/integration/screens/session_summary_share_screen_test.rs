@@ -65,3 +65,13 @@ screen_key_event_test!(
     KeyModifiers::CONTROL,
     MockSessionSummaryShareDataProvider
 );
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_session_summary_share_screen_basic_methods,
+    SessionSummaryShareScreen,
+    SessionSummaryShareScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::SessionSharing,
+    false,
+    MockSessionSummaryShareDataProvider
+);

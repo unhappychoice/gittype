@@ -29,3 +29,13 @@ screen_key_event_test!(
     KeyModifiers::CONTROL,
     MockSessionDetailsDialogDataProvider
 );
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_session_details_dialog_basic_methods,
+    SessionDetailsDialog,
+    SessionDetailsDialog::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::DetailsDialog,
+    false,
+    MockSessionDetailsDialogDataProvider
+);

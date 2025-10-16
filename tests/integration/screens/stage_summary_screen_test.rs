@@ -38,3 +38,13 @@ screen_key_event_test!(
     KeyModifiers::empty(),
     MockStageSummaryDataProvider
 );
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_stage_summary_screen_basic_methods,
+    StageSummaryScreen,
+    StageSummaryScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::StageSummary,
+    false,
+    MockStageSummaryDataProvider
+);

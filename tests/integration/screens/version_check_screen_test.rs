@@ -1,5 +1,6 @@
 use crate::integration::screens::helpers::EmptyMockProvider;
 use crossterm::event::{KeyCode, KeyModifiers};
+use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
 use gittype::presentation::tui::screens::version_check_screen::VersionCheckScreen;
 
@@ -20,4 +21,13 @@ screen_key_event_test!(
     KeyCode::Char('c'),
     KeyModifiers::CONTROL,
     EmptyMockProvider
+);
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_version_check_screen_basic_methods,
+    VersionCheckScreen,
+    VersionCheckScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::VersionCheck,
+    false
 );

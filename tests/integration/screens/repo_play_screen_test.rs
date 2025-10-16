@@ -66,3 +66,13 @@ screen_key_tests!(
         ),
     ]
 );
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_repo_play_screen_basic_methods,
+    RepoPlayScreen,
+    RepoPlayScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::RepoPlay,
+    true,
+    MockRepoPlayDataProvider
+);

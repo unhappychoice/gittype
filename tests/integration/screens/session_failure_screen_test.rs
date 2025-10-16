@@ -65,3 +65,13 @@ screen_key_event_test!(
     KeyModifiers::CONTROL,
     MockSessionFailureDataProvider
 );
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_session_failure_screen_basic_methods,
+    SessionFailureScreen,
+    SessionFailureScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::SessionFailure,
+    false,
+    MockSessionFailureDataProvider
+);

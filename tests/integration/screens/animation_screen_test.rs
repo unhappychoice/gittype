@@ -38,3 +38,13 @@ screen_key_event_test!(
     KeyModifiers::CONTROL,
     MockAnimationDataProvider
 );
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_animation_screen_basic_methods,
+    AnimationScreen,
+    AnimationScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::Animation,
+    false,
+    MockAnimationDataProvider
+);

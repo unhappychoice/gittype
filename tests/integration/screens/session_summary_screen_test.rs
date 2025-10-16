@@ -117,3 +117,13 @@ screen_key_event_test!(
     KeyModifiers::CONTROL,
     MockSessionSummaryDataProvider
 );
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_session_summary_screen_basic_methods,
+    SessionSummaryScreen,
+    SessionSummaryScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::SessionSummary,
+    false,
+    MockSessionSummaryDataProvider
+);

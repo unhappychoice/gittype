@@ -65,3 +65,12 @@ screen_key_tests!(
         ),
     ]
 );
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_trending_language_selection_screen_basic_methods,
+    TrendingLanguageSelectionScreen,
+    TrendingLanguageSelectionScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::TrendingLanguageSelection,
+    true
+);

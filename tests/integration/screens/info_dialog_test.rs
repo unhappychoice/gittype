@@ -61,3 +61,12 @@ screen_key_tests!(
         ),
     ]
 );
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_info_dialog_basic_methods,
+    InfoDialogScreen,
+    InfoDialogScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::InfoDialog,
+    false
+);
