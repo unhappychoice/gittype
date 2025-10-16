@@ -2,6 +2,7 @@ use crate::domain::events::EventBus;
 use crate::domain::models::storage::StoredRepositoryWithLanguages;
 use crate::infrastructure::database::daos::RepositoryDao;
 use crate::infrastructure::database::database::Database;
+use crate::infrastructure::git::RemoteGitRepositoryClient;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::views::repo_list::{
     CacheInfoView, ControlsView, HeaderView, LegendView, RepositoryListView,
@@ -11,8 +12,12 @@ use crate::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{layout::{Constraint, Direction, Layout}, Frame};
 
+pub struct RepoListScreenData {
+    pub repositories: Vec<(StoredRepositoryWithLanguages, bool)>,
+}
+
 pub struct RepoListScreen {
-    repositories: Vec<StoredRepositoryWithLanguages>,
+    repositories: Vec<(StoredRepositoryWithLanguages, bool)>,
     event_bus: EventBus,
 }
 
@@ -32,7 +37,19 @@ impl ScreenDataProvider for RepoListScreenDataProvider {
         let db = Database::new()?;
         let repo_dao = RepositoryDao::new(&db);
         let repositories = repo_dao.get_all_repositories_with_languages()?;
-        Ok(Box::new(repositories))
+
+        // Add cache status for each repository
+        let repositories_with_cache: Vec<(StoredRepositoryWithLanguages, bool)> = repositories
+            .into_iter()
+            .map(|repo| {
+                let is_cached = RemoteGitRepositoryClient::is_repository_cached(&repo.remote_url);
+                (repo, is_cached)
+            })
+            .collect();
+
+        Ok(Box::new(RepoListScreenData {
+            repositories: repositories_with_cache,
+        }))
     }
 }
 
@@ -49,8 +66,8 @@ impl Screen for RepoListScreen {
     }
 
     fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
-        if let Ok(repositories) = data.downcast::<Vec<StoredRepositoryWithLanguages>>() {
-            self.repositories = *repositories;
+        if let Ok(screen_data) = data.downcast::<RepoListScreenData>() {
+            self.repositories = screen_data.repositories;
         }
         Ok(())
     }

@@ -2,6 +2,7 @@ use crate::domain::events::EventBus;
 use crate::domain::models::storage::StoredRepositoryWithLanguages;
 use crate::infrastructure::database::daos::RepositoryDao;
 use crate::infrastructure::database::database::Database;
+use crate::infrastructure::git::RemoteGitRepositoryClient;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::views::repo_play::{ControlsView, HeaderView, RepositoryListView};
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
@@ -13,8 +14,12 @@ use ratatui::{
     Frame,
 };
 
+pub struct RepoPlayScreenData {
+    pub repositories: Vec<(StoredRepositoryWithLanguages, bool)>,
+}
+
 pub struct RepoPlayScreen {
-    repositories: Vec<StoredRepositoryWithLanguages>,
+    repositories: Vec<(StoredRepositoryWithLanguages, bool)>,
     list_state: ListState,
     selected_index: Option<usize>,
     event_bus: EventBus,
@@ -37,7 +42,7 @@ impl RepoPlayScreen {
         self.selected_index
     }
 
-    pub fn get_selected_repository(&self) -> Option<&StoredRepositoryWithLanguages> {
+    pub fn get_selected_repository(&self) -> Option<&(StoredRepositoryWithLanguages, bool)> {
         self.selected_index
             .and_then(|index| self.repositories.get(index))
     }
@@ -50,7 +55,19 @@ impl ScreenDataProvider for RepoPlayScreenDataProvider {
         let db = Database::new()?;
         let repo_dao = RepositoryDao::new(&db);
         let repositories = repo_dao.get_all_repositories_with_languages()?;
-        Ok(Box::new(repositories))
+
+        // Add cache status for each repository
+        let repositories_with_cache: Vec<(StoredRepositoryWithLanguages, bool)> = repositories
+            .into_iter()
+            .map(|repo| {
+                let is_cached = RemoteGitRepositoryClient::is_repository_cached(&repo.remote_url);
+                (repo, is_cached)
+            })
+            .collect();
+
+        Ok(Box::new(RepoPlayScreenData {
+            repositories: repositories_with_cache,
+        }))
     }
 }
 
@@ -67,8 +84,8 @@ impl Screen for RepoPlayScreen {
     }
 
     fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
-        if let Ok(repositories) = data.downcast::<Vec<StoredRepositoryWithLanguages>>() {
-            self.repositories = *repositories;
+        if let Ok(screen_data) = data.downcast::<RepoPlayScreenData>() {
+            self.repositories = screen_data.repositories;
             self.list_state = ListState::default();
             self.list_state.select(Some(0));
             self.selected_index = None;

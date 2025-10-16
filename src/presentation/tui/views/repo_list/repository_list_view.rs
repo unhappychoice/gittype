@@ -1,6 +1,5 @@
 use crate::domain::models::storage::StoredRepositoryWithLanguages;
 use crate::domain::models::Languages;
-use crate::infrastructure::git::RemoteGitRepositoryClient;
 use crate::presentation::ui::Colors;
 use ratatui::{
     layout::Rect,
@@ -13,21 +12,20 @@ use ratatui::{
 pub struct RepositoryListView;
 
 impl RepositoryListView {
-    pub fn render(frame: &mut Frame, area: Rect, repositories: &[StoredRepositoryWithLanguages]) {
+    pub fn render(frame: &mut Frame, area: Rect, repositories: &[(StoredRepositoryWithLanguages, bool)]) {
         let repo_width = 35;
         let lang_width = 25;
 
         let items: Vec<ListItem> = repositories
             .iter()
-            .map(|repo| {
+            .map(|(repo, is_cached)| {
                 let repo_name = format!("{}/{}", repo.user_name, repo.repository_name);
-                let is_cached = RemoteGitRepositoryClient::is_repository_cached(&repo.remote_url);
-                let cache_indicator = if is_cached { "●" } else { "○" };
+                let cache_indicator = if *is_cached { "●" } else { "○" };
 
                 let mut line_spans = vec![
                     Span::styled(
                         format!("{} ", cache_indicator),
-                        Style::default().fg(if is_cached {
+                        Style::default().fg(if *is_cached {
                             Colors::success()
                         } else {
                             Colors::text_secondary()

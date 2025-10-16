@@ -102,7 +102,7 @@ pub fn run_repo_play() -> Result<()> {
         Some(|screen: &RepoPlayScreen| {
             screen
                 .get_selected_repository()
-                .map(|repo| (repo.user_name.clone(), repo.repository_name.clone()))
+                .map(|(repo, _)| (repo.user_name.clone(), repo.repository_name.clone()))
         }),
     )?;
 
