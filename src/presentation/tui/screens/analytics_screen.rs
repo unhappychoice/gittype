@@ -1,4 +1,4 @@
-use crate::application::service::analytics_service::{AnalyticsData, AnalyticsService};
+use crate::domain::services::analytics_service::{AnalyticsData, AnalyticsService};
 use crate::domain::events::EventBus;
 use crate::domain::repositories::SessionRepository;
 use crate::infrastructure::database::database::Database;

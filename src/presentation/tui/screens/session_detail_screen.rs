@@ -1,4 +1,4 @@
-use crate::application::service::session_service::SessionDisplayData;
+use crate::domain::services::session_service::SessionDisplayData;
 use crate::domain::events::EventBus;
 use crate::domain::models::storage::{SessionStageResult, StoredSession};
 use crate::domain::repositories::session_repository::{SessionRepository, SessionRepositoryTrait};

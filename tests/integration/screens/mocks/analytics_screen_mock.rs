@@ -1,4 +1,4 @@
-use gittype::application::service::analytics_service::{AnalyticsData, LangStats, RepoStats};
+use gittype::domain::services::analytics_service::{AnalyticsData, LangStats, RepoStats};
 use gittype::presentation::tui::ScreenDataProvider;
 use gittype::Result;
 use std::collections::HashMap;

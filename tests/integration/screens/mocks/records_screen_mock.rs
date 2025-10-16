@@ -1,5 +1,5 @@
 use chrono::{TimeZone, Utc};
-use gittype::application::service::session_service::SessionDisplayData;
+use gittype::domain::services::session_service::SessionDisplayData;
 use gittype::domain::models::storage::{SessionResultData, StoredRepository, StoredSession};
 use gittype::presentation::tui::screens::records_screen::RecordsScreenData;
 use gittype::presentation::tui::ScreenDataProvider;

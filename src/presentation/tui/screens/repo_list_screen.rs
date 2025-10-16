@@ -1,4 +1,4 @@
-use crate::application::service::repository_service::RepositoryService;
+use crate::domain::services::repository_service::RepositoryService;
 use crate::domain::events::EventBus;
 use crate::domain::models::storage::StoredRepositoryWithLanguages;
 use crate::infrastructure::database::database::Database;
