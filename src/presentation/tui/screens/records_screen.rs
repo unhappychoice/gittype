@@ -1,7 +1,7 @@
-use crate::domain::services::session_service::{SessionDisplayData, SessionService};
 use crate::domain::events::EventBus;
 use crate::domain::models::storage::StoredRepository;
 use crate::domain::repositories::SessionRepository;
+use crate::domain::services::session_service::{SessionDisplayData, SessionService};
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
@@ -102,7 +102,7 @@ pub struct RecordsScreenDataProvider;
 
 impl ScreenDataProvider for RecordsScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let repository = std::sync::Arc::new(SessionRepository::new()?);
+        let repository = SessionRepository::new()?;
         let service = SessionService::new(repository);
 
         let session_display_data = service.get_sessions_with_display_data(
@@ -304,7 +304,7 @@ impl RecordsScreen {
 
     fn refresh_sessions(&mut self) -> Result<()> {
         let session_repo = SessionRepository::new()?;
-        let service = SessionService::new(std::sync::Arc::new(session_repo));
+        let service = SessionService::new(session_repo);
 
         // Refresh repository list to include any newly created repositories
         self.repositories = service.get_all_repositories()?;
@@ -432,7 +432,6 @@ fn format_session_line_ratatui_static<'a>(session_data: &'a SessionDisplayData) 
         ),
     ])
 }
-
 
 impl Screen for RecordsScreen {
     fn get_type(&self) -> ScreenType {

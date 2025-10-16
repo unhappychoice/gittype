@@ -1,10 +1,9 @@
 use crate::domain::error::Result;
 use crate::domain::models::storage::{SessionResultData, StoredRepository, StoredSession};
 use crate::domain::repositories::SessionRepository;
-use crate::infrastructure::database::database::{Database, HasDatabase};
 use crate::infrastructure::database::daos::SessionDao;
+use crate::infrastructure::database::database::{Database, HasDatabase};
 use std::collections::HashMap;
-use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct SessionDisplayData {
@@ -14,11 +13,11 @@ pub struct SessionDisplayData {
 }
 
 pub struct SessionService {
-    repository: Arc<SessionRepository>,
+    repository: SessionRepository,
 }
 
 impl SessionService {
-    pub fn new(repository: Arc<SessionRepository>) -> Self {
+    pub fn new(repository: SessionRepository) -> Self {
         Self { repository }
     }
 

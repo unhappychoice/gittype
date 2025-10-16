@@ -1,6 +1,6 @@
-use crate::domain::services::analytics_service::{AnalyticsData, AnalyticsService};
 use crate::domain::events::EventBus;
 use crate::domain::repositories::SessionRepository;
+use crate::domain::services::analytics_service::{AnalyticsData, AnalyticsService};
 use crate::infrastructure::database::database::Database;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::views::analytics::{
@@ -17,7 +17,6 @@ use ratatui::{
     widgets::{Block, Borders, ListState, Paragraph, ScrollbarState},
     Frame,
 };
-use std::sync::Arc;
 
 #[derive(Debug, Clone, PartialEq, Copy)]
 pub enum ViewMode {
@@ -76,8 +75,8 @@ pub struct AnalyticsScreenDataProvider {}
 
 impl ScreenDataProvider for AnalyticsScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let session_repository = Arc::new(SessionRepository::new()?);
-        let db = Arc::new(Database::new()?);
+        let session_repository = SessionRepository::new()?;
+        let db = Database::new()?;
         let service = AnalyticsService::new(session_repository, db);
 
         service
@@ -85,7 +84,6 @@ impl ScreenDataProvider for AnalyticsScreenDataProvider {
             .map(|data| Box::new(data) as Box<dyn std::any::Any>)
     }
 }
-
 
 impl AnalyticsScreen {
     pub fn new(event_bus: EventBus) -> Self {

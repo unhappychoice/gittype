@@ -3,7 +3,6 @@ use crate::domain::repositories::SessionRepository;
 use crate::infrastructure::database::daos::RepositoryDao;
 use crate::infrastructure::database::database::Database;
 use std::collections::HashMap;
-use std::sync::Arc;
 
 #[derive(Debug, Clone)]
 pub struct AnalyticsData {
@@ -59,12 +58,12 @@ pub struct LangStats {
 }
 
 pub struct AnalyticsService {
-    session_repository: Arc<SessionRepository>,
-    db: Arc<Database>,
+    session_repository: SessionRepository,
+    db: Database,
 }
 
 impl AnalyticsService {
-    pub fn new(session_repository: Arc<SessionRepository>, db: Arc<Database>) -> Self {
+    pub fn new(session_repository: SessionRepository, db: Database) -> Self {
         Self {
             session_repository,
             db,

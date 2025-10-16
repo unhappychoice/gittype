@@ -1,7 +1,7 @@
-use crate::domain::services::session_service::SessionDisplayData;
 use crate::domain::events::EventBus;
 use crate::domain::models::storage::{SessionStageResult, StoredSession};
 use crate::domain::repositories::session_repository::{SessionRepository, SessionRepositoryTrait};
+use crate::domain::services::session_service::SessionDisplayData;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::screens::RecordsScreen;
 use crate::presentation::tui::views::{PerformanceMetricsView, SessionInfoView, StageDetailsView};

@@ -3,22 +3,19 @@ use gittype::domain::repositories::SessionRepository;
 use gittype::domain::services::analytics_service::AnalyticsService;
 use gittype::domain::services::scoring::{StageInput, StageTracker};
 use gittype::infrastructure::database::database::Database;
-use std::sync::Arc;
 
 #[test]
 fn test_analytics_service_new() {
-    let session_repository = Arc::new(SessionRepository::new().unwrap());
-    let db = Arc::new(Database::new().unwrap());
+    let session_repository = SessionRepository::new().unwrap();
+    let db = Database::new().unwrap();
     let _service = AnalyticsService::new(session_repository, db);
-
-    // Service creation should succeed
-    assert!(true);
+    // Service creation should succeed without error
 }
 
 #[test]
 fn test_load_analytics_data_empty() {
-    let session_repository = Arc::new(SessionRepository::new().unwrap());
-    let db = Arc::new(Database::new().unwrap());
+    let session_repository = SessionRepository::new().unwrap();
+    let db = Database::new().unwrap();
     let service = AnalyticsService::new(session_repository, db);
 
     let result = service.load_analytics_data();
@@ -36,8 +33,8 @@ fn test_load_analytics_data_empty() {
 
 #[test]
 fn test_load_analytics_data_with_session() {
-    let session_repository = Arc::new(SessionRepository::new().unwrap());
-    let db = Arc::new(Database::new().unwrap());
+    let session_repository = SessionRepository::new().unwrap();
+    let db = Database::new().unwrap();
 
     // Record a test session
     let mut session_result = SessionResult::new();
@@ -91,8 +88,8 @@ fn test_load_analytics_data_with_session() {
 
 #[test]
 fn test_load_analytics_data_repository_stats() {
-    let session_repository = Arc::new(SessionRepository::new().unwrap());
-    let db = Arc::new(Database::new().unwrap());
+    let session_repository = SessionRepository::new().unwrap();
+    let db = Database::new().unwrap();
 
     // Record sessions for the same repository
     for i in 0..3 {
@@ -151,8 +148,8 @@ fn test_load_analytics_data_repository_stats() {
 
 #[test]
 fn test_load_analytics_data_language_stats() {
-    let session_repository = Arc::new(SessionRepository::new().unwrap());
-    let db = Arc::new(Database::new().unwrap());
+    let session_repository = SessionRepository::new().unwrap();
+    let db = Database::new().unwrap();
 
     // Record a session with language
     let mut session_result = SessionResult::new();
@@ -210,8 +207,8 @@ fn test_load_analytics_data_language_stats() {
 
 #[test]
 fn test_load_analytics_data_daily_sessions() {
-    let session_repository = Arc::new(SessionRepository::new().unwrap());
-    let db = Arc::new(Database::new().unwrap());
+    let session_repository = SessionRepository::new().unwrap();
+    let db = Database::new().unwrap();
 
     // Record a session
     let mut session_result = SessionResult::new();
@@ -249,5 +246,8 @@ fn test_load_analytics_data_daily_sessions() {
     assert!(result.is_ok());
 
     let data = result.unwrap();
-    assert!(!data.daily_sessions.is_empty(), "Should have daily session counts");
+    assert!(
+        !data.daily_sessions.is_empty(),
+        "Should have daily session counts"
+    );
 }

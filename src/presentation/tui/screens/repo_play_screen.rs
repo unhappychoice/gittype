@@ -1,6 +1,6 @@
-use crate::domain::services::repository_service::RepositoryService;
 use crate::domain::events::EventBus;
 use crate::domain::models::storage::StoredRepositoryWithLanguages;
+use crate::domain::services::repository_service::RepositoryService;
 use crate::infrastructure::database::database::Database;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::views::repo_play::{ControlsView, HeaderView, RepositoryListView};
@@ -51,7 +51,7 @@ pub struct RepoPlayScreenDataProvider;
 
 impl ScreenDataProvider for RepoPlayScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let db = std::sync::Arc::new(Database::new()?);
+        let db = Database::new()?;
         let service = RepositoryService::new(db);
 
         let repositories_with_cache = service.get_all_repositories_with_cache_status()?;

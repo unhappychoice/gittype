@@ -1,17 +1,16 @@
 use crate::domain::error::Result;
 use crate::domain::models::storage::repository::{StoredRepository, StoredRepositoryWithLanguages};
-use crate::infrastructure::git::remote::remote_git_repository_client::RemoteGitRepositoryClient;
 use crate::infrastructure::database::daos::RepositoryDao;
 use crate::infrastructure::database::database::Database;
+use crate::infrastructure::git::remote::remote_git_repository_client::RemoteGitRepositoryClient;
 use std::path::PathBuf;
-use std::sync::Arc;
 
 pub struct RepositoryService {
-    db: Arc<Database>,
+    db: Database,
 }
 
 impl RepositoryService {
-    pub fn new(db: Arc<Database>) -> Self {
+    pub fn new(db: Database) -> Self {
         Self { db }
     }
 
@@ -20,7 +19,9 @@ impl RepositoryService {
         repo_dao.get_all_repositories()
     }
 
-    pub fn get_all_repositories_with_languages(&self) -> Result<Vec<StoredRepositoryWithLanguages>> {
+    pub fn get_all_repositories_with_languages(
+        &self,
+    ) -> Result<Vec<StoredRepositoryWithLanguages>> {
         let repo_dao = RepositoryDao::new(&self.db);
         repo_dao.get_all_repositories_with_languages()
     }

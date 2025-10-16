@@ -1,21 +1,18 @@
 use gittype::domain::models::{Challenge, GitRepository, SessionResult};
 use gittype::domain::repositories::SessionRepository;
-use gittype::domain::services::session_service::SessionService;
 use gittype::domain::services::scoring::{StageInput, StageTracker};
-use std::sync::Arc;
+use gittype::domain::services::session_service::SessionService;
 
 #[test]
 fn test_session_service_new() {
-    let repository = Arc::new(SessionRepository::new().unwrap());
+    let repository = SessionRepository::new().unwrap();
     let _service = SessionService::new(repository);
-
-    // Service creation should succeed
-    assert!(true);
+    // Service creation should succeed without error
 }
 
 #[test]
 fn test_get_sessions_with_display_data_empty() {
-    let repository = Arc::new(SessionRepository::new().unwrap());
+    let repository = SessionRepository::new().unwrap();
     let service = SessionService::new(repository);
 
     let result = service.get_sessions_with_display_data(None, None, "date", true);
@@ -27,7 +24,7 @@ fn test_get_sessions_with_display_data_empty() {
 
 #[test]
 fn test_get_sessions_with_display_data_with_session() {
-    let repository = Arc::new(SessionRepository::new().unwrap());
+    let repository = SessionRepository::new().unwrap();
 
     // Record a test session
     let mut session_result = SessionResult::new();
@@ -83,7 +80,7 @@ fn test_get_sessions_with_display_data_with_session() {
 
 #[test]
 fn test_get_sessions_with_display_data_with_repository_filter() {
-    let repository = Arc::new(SessionRepository::new().unwrap());
+    let repository = SessionRepository::new().unwrap();
 
     // Record a session with repository
     let mut session_result = SessionResult::new();
@@ -123,7 +120,7 @@ fn test_get_sessions_with_display_data_with_repository_filter() {
         .unwrap();
 
     // Get sessions filtered by repository
-    let service = SessionService::new(Arc::clone(&repository));
+    let service = SessionService::new(repository);
     let result = service.get_sessions_with_display_data(Some(test_repo.id), None, "date", true);
     assert!(result.is_ok());
 
@@ -140,7 +137,7 @@ fn test_get_sessions_with_display_data_with_repository_filter() {
 
 #[test]
 fn test_get_sessions_with_display_data_with_date_filter() {
-    let repository = Arc::new(SessionRepository::new().unwrap());
+    let repository = SessionRepository::new().unwrap();
 
     // Record a recent session
     let mut session_result = SessionResult::new();
@@ -183,7 +180,7 @@ fn test_get_sessions_with_display_data_with_date_filter() {
 
 #[test]
 fn test_get_sessions_with_display_data_sort_by_score() {
-    let repository = Arc::new(SessionRepository::new().unwrap());
+    let repository = SessionRepository::new().unwrap();
 
     // Record sessions with different scores
     for i in 0..3 {
@@ -228,7 +225,7 @@ fn test_get_sessions_with_display_data_sort_by_score() {
 
 #[test]
 fn test_get_all_repositories() {
-    let repository = Arc::new(SessionRepository::new().unwrap());
+    let repository = SessionRepository::new().unwrap();
 
     // Record a session with repository
     let mut session_result = SessionResult::new();
@@ -271,7 +268,7 @@ fn test_get_all_repositories() {
 
 #[test]
 fn test_session_display_data_has_session_result() {
-    let repository = Arc::new(SessionRepository::new().unwrap());
+    let repository = SessionRepository::new().unwrap();
 
     // Record a session
     let mut session_result = SessionResult::new();
