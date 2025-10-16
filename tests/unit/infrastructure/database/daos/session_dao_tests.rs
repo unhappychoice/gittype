@@ -1,5 +1,5 @@
 use gittype::domain::models::{
-    Challenge, DifficultyLevel, GitRepository, SessionResult, StageResult,
+    Challenge, DifficultyLevel, GitRepository, SessionResult,
 };
 use gittype::infrastructure::database::daos::{ChallengeDao, RepositoryDao, SessionDao};
 use gittype::infrastructure::database::database::Database;
@@ -228,7 +228,7 @@ fn test_save_stage_result_in_transaction() {
             false,
             false,
             &completed_at,
-            challenge.language.as_ref().map(|s| s.as_str()),
+            challenge.language.as_deref(),
             challenge
                 .difficulty_level
                 .as_ref()
@@ -875,7 +875,7 @@ fn test_get_session_stage_results() {
                 false,
                 false,
                 &completed_at,
-                challenge.language.as_ref().map(|s| s.as_str()),
+                challenge.language.as_deref(),
                 challenge
                     .difficulty_level
                     .as_ref()

@@ -12,6 +12,7 @@ impl DatabaseSeeder {
         Self { database }
     }
 
+    #[allow(dead_code)]
     pub fn seed(&self) -> Result<()> {
         let seed_data = SeedData::default_seed_data();
         self.seed_data(&seed_data)

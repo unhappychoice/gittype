@@ -66,7 +66,7 @@ fn test_ensure_challenge_with_different_difficulties() {
     db.init().unwrap();
     let dao = ChallengeDao::new(&db);
 
-    let difficulties = vec![
+    let difficulties = [
         DifficultyLevel::Easy,
         DifficultyLevel::Normal,
         DifficultyLevel::Hard,
@@ -78,7 +78,7 @@ fn test_ensure_challenge_with_different_difficulties() {
             format!("test-challenge-diff-{}", i),
             format!("fn test_{}() {{}}", i),
         )
-        .with_difficulty_level(difficulty.clone());
+        .with_difficulty_level(*difficulty);
 
         let tx = conn.unchecked_transaction().unwrap();
         let rowid = dao

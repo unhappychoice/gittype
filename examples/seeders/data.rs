@@ -83,6 +83,7 @@ pub struct SeedStage {
 }
 
 impl SeedData {
+    #[allow(dead_code)]
     pub fn default_seed_data() -> Self {
         Self::generate_seed_data(10, 1000, 3000)
     }
@@ -593,6 +594,7 @@ class DataProcessor:
     }
 
     // Keep the old small dataset method for testing
+    #[allow(dead_code)]
     pub fn small_seed_data() -> Self {
         let now = Utc::now();
         let hour_ago = now - chrono::Duration::hours(1);

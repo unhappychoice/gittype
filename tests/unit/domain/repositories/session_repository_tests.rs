@@ -253,7 +253,7 @@ fn test_get_all_repositories_with_data() {
 
     // Get all repositories
     let repositories = repo.get_all_repositories().unwrap();
-    assert!(repositories.len() > 0);
+    assert!(!repositories.is_empty());
 
     // Verify our repository is in the list
     let found = repositories
@@ -569,7 +569,7 @@ fn test_record_session_with_repository() {
 
     // Verify repository was created
     let repositories = repo.get_all_repositories().unwrap();
-    assert!(repositories.len() > 0);
+    assert!(!repositories.is_empty());
     assert!(repositories.iter().any(|r| r.repository_name == "testrepo"));
 
     // Verify session was recorded
@@ -622,7 +622,7 @@ fn test_get_repository_history_with_data() {
 
     // Get history for this repository
     let history = repo.get_repository_history(test_repo.id).unwrap();
-    assert!(history.len() > 0);
+    assert!(!history.is_empty());
 }
 
 #[test]
@@ -712,11 +712,11 @@ fn test_get_sessions_filtered_with_data() {
     let sessions = repo
         .get_sessions_filtered(None, None, "completed_at", true)
         .unwrap();
-    assert!(sessions.len() > 0);
+    assert!(!sessions.is_empty());
 
     // Verify sorting by score
     let sessions_by_score = repo
         .get_sessions_filtered(None, None, "score", false)
         .unwrap();
-    assert!(sessions_by_score.len() > 0);
+    assert!(!sessions_by_score.is_empty());
 }
