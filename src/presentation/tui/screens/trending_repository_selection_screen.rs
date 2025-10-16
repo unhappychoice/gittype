@@ -120,7 +120,11 @@ impl Screen for TrendingRepositorySelectionScreen {
             KeyCode::Esc => {
                 self.event_bus.publish(NavigateTo::Exit);
             }
-            KeyCode::Char('c') if key_event.modifiers.contains(crossterm::event::KeyModifiers::CONTROL) => {
+            KeyCode::Char('c')
+                if key_event
+                    .modifiers
+                    .contains(crossterm::event::KeyModifiers::CONTROL) =>
+            {
                 self.event_bus.publish(NavigateTo::Exit);
             }
             KeyCode::Char('j') | KeyCode::Down => {

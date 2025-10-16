@@ -1,9 +1,9 @@
 use super::{TypingContentView, TypingDialogView, TypingFooterView, TypingHeaderView};
 use crate::domain::models::{Challenge, GitRepository};
-use crate::presentation::tui::views::CountdownView;
 use crate::presentation::game::{
     context_loader::CodeContext, typing_core::TypingCore, SessionManager,
 };
+use crate::presentation::tui::views::CountdownView;
 use crate::presentation::ui::Colors;
 use ratatui::{
     layout::{Constraint, Direction, Layout},

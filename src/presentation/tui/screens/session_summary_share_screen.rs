@@ -2,11 +2,11 @@ use crate::domain::events::EventBus;
 use crate::domain::models::SessionResult;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::{GameData, SessionManager};
-use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::sharing::{SharingPlatform, SharingService};
 use crate::presentation::tui::views::{
     ShareBackOptionView, SharePlatformOptionsView, SharePreviewView, ShareTitleView,
 };
-use crate::presentation::sharing::{SharingPlatform, SharingService};
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::{domain::models::GitRepository, GitTypeError, Result};
 use ratatui::{
     layout::{Constraint, Direction, Layout},

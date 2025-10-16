@@ -6,9 +6,9 @@ use crate::domain::services::version_service::VersionService;
 use crate::infrastructure::logging;
 use crate::presentation::cli::args::Cli;
 use crate::presentation::game::{GameData, SessionManager};
-use crate::presentation::tui::{ScreenManager, ScreenType};
-use crate::presentation::tui::screens::{VersionCheckResult, VersionCheckScreen};
 use crate::presentation::signal_handler::setup_signal_handlers;
+use crate::presentation::tui::screens::{VersionCheckResult, VersionCheckScreen};
+use crate::presentation::tui::{ScreenManager, ScreenType};
 use crate::{GitTypeError, Result};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -21,8 +21,9 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
 
     // Check for updates before starting the game session
     let should_exit = {
-        let rt = tokio::runtime::Runtime::new()
-            .map_err(|e| GitTypeError::TerminalError(format!("Failed to create tokio runtime: {}", e)))?;
+        let rt = tokio::runtime::Runtime::new().map_err(|e| {
+            GitTypeError::TerminalError(format!("Failed to create tokio runtime: {}", e))
+        })?;
         rt.block_on(async {
             let version_service = VersionService::new()?;
             if let Ok((has_update, current_version, latest_version)) = version_service.check().await

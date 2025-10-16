@@ -17,8 +17,8 @@ macro_rules! screen_key_event_test {
         #[test]
         fn $test_name() {
             use gittype::domain::events::EventBus;
-            use gittype::presentation::tui::ScreenDataProvider;
             use gittype::presentation::tui::Screen;
+            use gittype::presentation::tui::ScreenDataProvider;
             use std::sync::{Arc, Mutex};
 
             // Enable test mode to prevent browser opening
@@ -65,8 +65,8 @@ macro_rules! screen_key_test {
         #[test]
         fn $test_name() {
             use gittype::domain::events::EventBus;
-            use gittype::presentation::tui::ScreenDataProvider;
             use gittype::presentation::tui::Screen;
+            use gittype::presentation::tui::ScreenDataProvider;
 
             // Enable test mode to prevent browser opening
             gittype::infrastructure::browser::enable_test_mode();

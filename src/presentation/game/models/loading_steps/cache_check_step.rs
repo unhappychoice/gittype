@@ -1,7 +1,7 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
 use crate::domain::repositories::challenge_repository::CHALLENGE_REPOSITORY;
-use crate::presentation::tui::screens::loading_screen::ProgressReporter;
 use crate::presentation::game::GameData;
+use crate::presentation::tui::screens::loading_screen::ProgressReporter;
 use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::style::Color;

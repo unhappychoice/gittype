@@ -24,7 +24,11 @@ impl ScreenDataProvider for MockRepoListDataProvider {
                     user_name: "rails".to_string(),
                     repository_name: "rails".to_string(),
                     remote_url: "https://github.com/rails/rails".to_string(),
-                    languages: vec!["Ruby".to_string(), "HTML".to_string(), "JavaScript".to_string()],
+                    languages: vec![
+                        "Ruby".to_string(),
+                        "HTML".to_string(),
+                        "JavaScript".to_string(),
+                    ],
                 },
                 true, // cached
             ),

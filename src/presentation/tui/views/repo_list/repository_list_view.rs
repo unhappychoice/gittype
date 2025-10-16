@@ -12,7 +12,11 @@ use ratatui::{
 pub struct RepositoryListView;
 
 impl RepositoryListView {
-    pub fn render(frame: &mut Frame, area: Rect, repositories: &[(StoredRepositoryWithLanguages, bool)]) {
+    pub fn render(
+        frame: &mut Frame,
+        area: Rect,
+        repositories: &[(StoredRepositoryWithLanguages, bool)],
+    ) {
         let repo_width = 35;
         let lang_width = 25;
 

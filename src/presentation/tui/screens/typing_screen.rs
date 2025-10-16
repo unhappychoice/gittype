@@ -1,14 +1,14 @@
-use crate::presentation::game::{
-    context_loader::{self, CodeContext},
-    typing_core::{InputResult, ProcessingOptions, TypingCore},
-};
 use crate::domain::events::domain_events::DomainEvent;
 use crate::domain::events::EventBus;
 use crate::domain::models::{Challenge, Countdown};
 use crate::presentation::game::events::NavigateTo;
+use crate::presentation::game::{
+    context_loader::{self, CodeContext},
+    typing_core::{InputResult, ProcessingOptions, TypingCore},
+};
 use crate::presentation::game::{GameData, SessionManager};
-use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::tui::views::TypingView;
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::{domain::models::GitRepository, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use std::sync::{Arc, Mutex};

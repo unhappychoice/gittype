@@ -10,7 +10,10 @@ use crate::presentation::tui::views::repo_list::{
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind};
-use ratatui::{layout::{Constraint, Direction, Layout}, Frame};
+use ratatui::{
+    layout::{Constraint, Direction, Layout},
+    Frame,
+};
 
 pub struct RepoListScreenData {
     pub repositories: Vec<(StoredRepositoryWithLanguages, bool)>,
@@ -81,7 +84,11 @@ impl Screen for RepoListScreen {
             KeyCode::Esc => {
                 self.event_bus.publish(NavigateTo::Exit);
             }
-            KeyCode::Char('c') if key_event.modifiers.contains(crossterm::event::KeyModifiers::CONTROL) => {
+            KeyCode::Char('c')
+                if key_event
+                    .modifiers
+                    .contains(crossterm::event::KeyModifiers::CONTROL) =>
+            {
                 self.event_bus.publish(NavigateTo::Exit);
             }
             _ => {}

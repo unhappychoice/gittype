@@ -1,6 +1,6 @@
 use gittype::domain::models::SessionResult;
-use gittype::presentation::tui::ScreenDataProvider;
 use gittype::presentation::tui::screens::animation_screen::AnimationData;
+use gittype::presentation::tui::ScreenDataProvider;
 use gittype::Result;
 use std::time::{Duration, Instant};
 
