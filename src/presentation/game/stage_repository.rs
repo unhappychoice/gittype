@@ -1,5 +1,5 @@
 use crate::domain::models::{Challenge, DifficultyLevel, GitRepository};
-use crate::presentation::game::screens::TitleScreen;
+use crate::presentation::tui::screens::TitleScreen;
 use crate::presentation::game::{GameData, ScreenManager, ScreenType};
 use crate::{GitTypeError, Result};
 use once_cell::sync::Lazy;

@@ -1,6 +1,6 @@
 use crate::domain::models::ExtractionOptions;
 use crate::domain::models::{Challenge, CodeChunk, GitRepository};
-use crate::presentation::game::screens::LoadingScreen;
+use crate::presentation::tui::screens::LoadingScreen;
 use crate::Result;
 use ratatui::style::Color;
 use std::path::PathBuf;

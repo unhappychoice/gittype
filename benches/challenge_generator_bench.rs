@@ -3,7 +3,7 @@ use gittype::domain::models::{CodeChunk, ExtractionOptions, Languages};
 use gittype::domain::services::challenge_generator::ChallengeGenerator;
 use gittype::domain::services::source_code_parser::SourceCodeParser;
 use gittype::presentation::game::models::StepType;
-use gittype::presentation::game::screens::loading_screen::ProgressReporter;
+use gittype::presentation::tui::screens::loading_screen::ProgressReporter;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 

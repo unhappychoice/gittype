@@ -1,5 +1,5 @@
 use crate::presentation::game::models::StepType;
-use crate::presentation::game::screens::loading_screen::ProgressReporter;
+use crate::presentation::tui::screens::loading_screen::ProgressReporter;
 use std::sync::{
     atomic::{AtomicUsize, Ordering},
     Arc,

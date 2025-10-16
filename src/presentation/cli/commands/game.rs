@@ -6,8 +6,8 @@ use crate::domain::services::version_service::VersionService;
 use crate::infrastructure::logging;
 use crate::presentation::cli::args::Cli;
 use crate::presentation::game::models::ScreenType;
-use crate::presentation::game::screen_manager::ScreenManager;
-use crate::presentation::game::screens::{VersionCheckResult, VersionCheckScreen};
+use crate::presentation::tui::screen_manager::ScreenManager;
+use crate::presentation::tui::screens::{VersionCheckResult, VersionCheckScreen};
 use crate::presentation::game::{GameData, SessionManager};
 use crate::presentation::signal_handler::setup_signal_handlers;
 use crate::{GitTypeError, Result};
@@ -21,8 +21,10 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
     let event_bus = EventBus::new();
 
     // Check for updates before starting the game session
-    let should_exit = tokio::task::block_in_place(|| {
-        tokio::runtime::Handle::current().block_on(async {
+    let should_exit = {
+        let rt = tokio::runtime::Runtime::new()
+            .map_err(|e| GitTypeError::TerminalError(format!("Failed to create tokio runtime: {}", e)))?;
+        rt.block_on(async {
             let version_service = VersionService::new()?;
             if let Ok((has_update, current_version, latest_version)) = version_service.check().await
             {
@@ -35,7 +37,7 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
             }
             Ok(false)
         })
-    })?;
+    }?;
 
     if should_exit {
         log::info!("User exited after update notification");

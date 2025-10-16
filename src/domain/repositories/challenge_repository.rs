@@ -1,7 +1,7 @@
 use crate::domain::models::{Challenge, DifficultyLevel, GitRepository};
 use crate::infrastructure::storage::compressed_file_storage::CompressedFileStorage;
 use crate::presentation::game::models::StepType;
-use crate::presentation::game::screens::loading_screen::ProgressReporter;
+use crate::presentation::tui::screens::loading_screen::ProgressReporter;
 use rayon::prelude::*;
 use std::fs;
 use std::path::PathBuf;

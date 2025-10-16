@@ -4,7 +4,7 @@ use crate::domain::services::source_code_parser::parsers::parse_with_thread_loca
 use crate::domain::services::source_code_parser::ChunkExtractor;
 use crate::infrastructure::git::LocalGitRepositoryClient;
 use crate::presentation::game::models::StepType;
-use crate::presentation::game::screens::loading_screen::ProgressReporter;
+use crate::presentation::tui::screens::loading_screen::ProgressReporter;
 use crate::{GitTypeError, Result};
 use rayon::prelude::*;
 use std::fs;
