@@ -1,6 +1,6 @@
 use gittype::domain::models::SessionResult;
 use gittype::presentation::game::models::ScreenDataProvider;
-use gittype::presentation::game::screens::session_failure_screen::SessionFailureScreenData;
+use gittype::presentation::tui::screens::session_failure_screen::SessionFailureScreenData;
 use gittype::Result;
 use std::time::{Duration, Instant};
 

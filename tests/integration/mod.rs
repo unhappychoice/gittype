@@ -12,7 +12,7 @@ use gittype::domain::services::source_code_parser::parsers::parse_with_thread_lo
 use gittype::domain::services::source_code_parser::ChunkExtractor;
 use gittype::domain::services::source_code_parser::SourceCodeParser;
 use gittype::domain::services::source_file_extractor::SourceFileExtractor;
-use gittype::presentation::game::screens::loading_screen::NoOpProgressReporter;
+use gittype::presentation::tui::screens::loading_screen::NoOpProgressReporter;
 use gittype::GitTypeError;
 use gittype::Result;
 use ignore::WalkBuilder;

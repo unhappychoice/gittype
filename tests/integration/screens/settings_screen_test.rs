@@ -2,7 +2,7 @@ use crate::integration::screens::mocks::settings_screen_mock::MockSettingsScreen
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
-use gittype::presentation::game::screens::settings_screen::SettingsScreen;
+use gittype::presentation::tui::screens::settings_screen::SettingsScreen;
 
 screen_snapshot_test!(
     test_settings_screen_snapshot_color_mode,

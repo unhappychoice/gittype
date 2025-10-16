@@ -1,5 +1,5 @@
 use gittype::presentation::game::models::ScreenDataProvider;
-use gittype::presentation::game::screens::analytics_screen::{AnalyticsData, LangStats, RepoStats};
+use gittype::presentation::tui::screens::analytics_screen::{AnalyticsData, LangStats, RepoStats};
 use gittype::Result;
 use std::collections::HashMap;
 

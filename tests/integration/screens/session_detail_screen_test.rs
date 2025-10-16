@@ -4,7 +4,7 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
 use gittype::presentation::game::models::ScreenDataProvider;
-use gittype::presentation::game::screens::{RecordsScreen, SessionDetailScreen};
+use gittype::presentation::tui::screens::{RecordsScreen, SessionDetailScreen};
 use gittype::presentation::game::Screen;
 use std::sync::{Arc, Mutex};
 

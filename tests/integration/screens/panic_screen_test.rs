@@ -2,7 +2,7 @@ use crate::integration::screens::helpers::EmptyMockProvider;
 use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
-use gittype::presentation::game::screens::panic_screen::PanicScreen;
+use gittype::presentation::tui::screens::panic_screen::PanicScreen;
 
 screen_snapshot_test!(
     test_panic_screen_snapshot_with_fixed_timestamp,

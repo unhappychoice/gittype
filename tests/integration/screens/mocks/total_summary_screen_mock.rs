@@ -1,5 +1,5 @@
 use gittype::domain::models::TotalResult;
-use gittype::presentation::game::screens::total_summary_screen::TotalSummaryScreenData;
+use gittype::presentation::tui::screens::total_summary_screen::TotalSummaryScreenData;
 use gittype::presentation::game::ScreenDataProvider;
 use gittype::Result;
 use std::time::{Duration, Instant};

@@ -2,7 +2,7 @@ use crate::integration::screens::mocks::session_summary_share_screen_mock::MockS
 use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
-use gittype::presentation::game::screens::session_summary_share_screen::SessionSummaryShareScreen;
+use gittype::presentation::tui::screens::session_summary_share_screen::SessionSummaryShareScreen;
 
 screen_snapshot_test!(
     test_session_summary_share_screen_snapshot,

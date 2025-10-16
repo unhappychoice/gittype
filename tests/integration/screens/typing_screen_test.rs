@@ -1,7 +1,7 @@
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
 use gittype::presentation::game::models::ScreenDataProvider;
-use gittype::presentation::game::screens::typing_screen::TypingScreen;
+use gittype::presentation::tui::screens::typing_screen::TypingScreen;
 use gittype::presentation::game::Screen;
 use std::sync::{Arc, Mutex};
 

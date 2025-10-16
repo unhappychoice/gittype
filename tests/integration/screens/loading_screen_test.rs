@@ -3,7 +3,7 @@ use gittype::domain::events::EventBus;
 use gittype::infrastructure::browser;
 use gittype::presentation::game::events::ExitRequested;
 use gittype::presentation::game::game_data::GameData;
-use gittype::presentation::game::screens::loading_screen::LoadingScreen;
+use gittype::presentation::tui::screens::loading_screen::LoadingScreen;
 use gittype::presentation::game::{Screen, ScreenType};
 use std::sync::{Arc, Mutex};
 

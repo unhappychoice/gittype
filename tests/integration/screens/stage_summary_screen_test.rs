@@ -2,7 +2,7 @@ use crate::integration::screens::mocks::stage_summary_screen_mock::MockStageSumm
 use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
-use gittype::presentation::game::screens::stage_summary_screen::StageSummaryScreen;
+use gittype::presentation::tui::screens::stage_summary_screen::StageSummaryScreen;
 
 screen_snapshot_test!(
     test_stage_summary_screen_snapshot,

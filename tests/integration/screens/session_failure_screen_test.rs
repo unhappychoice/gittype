@@ -2,7 +2,7 @@ use crate::integration::screens::mocks::session_failure_screen_mock::MockSession
 use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
-use gittype::presentation::game::screens::session_failure_screen::SessionFailureScreen;
+use gittype::presentation::tui::screens::session_failure_screen::SessionFailureScreen;
 
 screen_snapshot_test!(
     test_session_failure_screen_snapshot,

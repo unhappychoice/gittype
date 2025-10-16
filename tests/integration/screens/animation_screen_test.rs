@@ -2,7 +2,7 @@ use crate::integration::screens::mocks::animation_screen_mock::MockAnimationData
 use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
-use gittype::presentation::game::screens::animation_screen::AnimationScreen;
+use gittype::presentation::tui::screens::animation_screen::AnimationScreen;
 
 screen_snapshot_test!(
     test_animation_screen_snapshot_with_session_result,

@@ -2,7 +2,7 @@ use crate::integration::screens::mocks::analytics_screen_mock::MockAnalyticsData
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
-use gittype::presentation::game::screens::analytics_screen::AnalyticsScreen;
+use gittype::presentation::tui::screens::analytics_screen::AnalyticsScreen;
 
 screen_snapshot_test!(
     test_analytics_screen_snapshot_overview,

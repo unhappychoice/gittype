@@ -1,7 +1,7 @@
 use crate::integration::screens::helpers::EmptyMockProvider;
 use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::presentation::game::events::NavigateTo;
-use gittype::presentation::game::screens::version_check_screen::VersionCheckScreen;
+use gittype::presentation::tui::screens::version_check_screen::VersionCheckScreen;
 
 // Event-producing key tests
 screen_key_event_test!(

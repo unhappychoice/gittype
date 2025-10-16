@@ -2,7 +2,7 @@ use gittype::domain::models::storage::SessionResultData;
 use gittype::domain::models::{GitRepository, SessionResult, StageResult};
 use gittype::domain::repositories::session_repository::{BestRecords, BestStatus};
 use gittype::presentation::game::models::ScreenDataProvider;
-use gittype::presentation::game::screens::session_details_dialog::SessionDetailsDialogData;
+use gittype::presentation::tui::screens::session_details_dialog::SessionDetailsDialogData;
 use gittype::Result;
 use std::time::{Duration, Instant};
 
