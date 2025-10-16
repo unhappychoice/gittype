@@ -1,8 +1,7 @@
 use crate::domain::events::EventBus;
 use crate::domain::models::storage::StoredRepositoryWithLanguages;
-use crate::infrastructure::database::daos::RepositoryDao;
+use crate::domain::services::repository_service::RepositoryService;
 use crate::infrastructure::database::database::Database;
-use crate::infrastructure::git::RemoteGitRepositoryClient;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::views::repo_list::{
     CacheInfoView, ControlsView, HeaderView, LegendView, RepositoryListView,
@@ -41,21 +40,10 @@ pub struct RepoListScreenDataProvider;
 impl ScreenDataProvider for RepoListScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
         let db = Database::new()?;
-        let repo_dao = RepositoryDao::new(&db);
-        let repositories = repo_dao.get_all_repositories_with_languages()?;
+        let service = RepositoryService::new(db);
 
-        // Add cache status for each repository
-        let repositories_with_cache: Vec<(StoredRepositoryWithLanguages, bool)> = repositories
-            .into_iter()
-            .map(|repo| {
-                let is_cached = RemoteGitRepositoryClient::is_repository_cached(&repo.remote_url);
-                (repo, is_cached)
-            })
-            .collect();
-
-        // Get cache directory path
-        let home_dir = dirs::home_dir().unwrap_or_else(|| std::path::PathBuf::from("."));
-        let cache_dir = home_dir.join(".gittype").join("repos");
+        let repositories_with_cache = service.get_all_repositories_with_cache_status()?;
+        let cache_dir = RepositoryService::get_cache_directory();
 
         Ok(Box::new(RepoListScreenData {
             repositories: repositories_with_cache,

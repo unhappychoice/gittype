@@ -1,9 +1,7 @@
-use super::session_detail_screen::SessionDisplayData;
 use crate::domain::events::EventBus;
-use crate::domain::models::storage::{SessionResultData, StoredRepository};
+use crate::domain::models::storage::StoredRepository;
 use crate::domain::repositories::SessionRepository;
-use crate::infrastructure::database::daos::SessionDao;
-use crate::infrastructure::database::database::{Database, HasDatabase};
+use crate::domain::services::session_service::{SessionDisplayData, SessionService};
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
@@ -100,43 +98,21 @@ pub struct RecordsScreenData {
     pub repositories: Vec<StoredRepository>,
 }
 
-pub struct RecordsScreenDataProvider {
-    repository: SessionRepository,
-}
+pub struct RecordsScreenDataProvider;
 
 impl ScreenDataProvider for RecordsScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let repositories = self.repository.get_all_repositories()?;
+        let repository = SessionRepository::new()?;
+        let service = SessionService::new(repository);
 
-        // Get sessions with default filter (Last 30 days, sorted by date descending)
-        let sessions = self.repository.get_sessions_filtered(
+        let session_display_data = service.get_sessions_with_display_data(
             None,     // repository_filter
             Some(30), // date_filter: Last 30 days
             "date",   // sort_by
             true,     // sort_descending
         )?;
 
-        // Convert to SessionDisplayData with session results and repository info
-        let mut session_display_data = Vec::new();
-        let repository_map: std::collections::HashMap<i64, StoredRepository> = repositories
-            .iter()
-            .map(|repo| (repo.id, repo.clone()))
-            .collect();
-
-        for session in sessions {
-            let session_result = {
-                let db = self.repository.db_with_lock()?;
-                db.get_session_result(session.id).unwrap_or(None)
-            };
-            let repository = session
-                .repository_id
-                .and_then(|id| repository_map.get(&id).cloned());
-            session_display_data.push(SessionDisplayData {
-                session,
-                repository,
-                session_result,
-            });
-        }
+        let repositories = service.get_all_repositories()?;
 
         Ok(Box::new(RecordsScreenData {
             sessions: session_display_data,
@@ -328,42 +304,18 @@ impl RecordsScreen {
 
     fn refresh_sessions(&mut self) -> Result<()> {
         let session_repo = SessionRepository::new()?;
+        let service = SessionService::new(session_repo);
 
         // Refresh repository list to include any newly created repositories
-        self.repositories = session_repo.get_all_repositories()?;
+        self.repositories = service.get_all_repositories()?;
 
         // Use the improved database filtering method
-        let sessions = session_repo.get_sessions_filtered(
+        let session_display_data = service.get_sessions_with_display_data(
             self.filter_state.repository_filter,
             self.filter_state.date_filter.to_days(),
             self.filter_state.sort_by.to_string(),
             self.filter_state.sort_descending,
         )?;
-
-        // Convert to SessionDisplayData with session results and repository info
-        let mut session_display_data = Vec::new();
-        let repository_map: std::collections::HashMap<i64, StoredRepository> = self
-            .repositories
-            .iter()
-            .map(|repo| (repo.id, repo.clone()))
-            .collect();
-
-        for session in sessions {
-            let session_result = {
-                let db = session_repo.db_with_lock()?;
-                db.get_session_result(session.id).unwrap_or(None)
-            };
-
-            let repository = session
-                .repository_id
-                .and_then(|id| repository_map.get(&id).cloned());
-
-            session_display_data.push(SessionDisplayData {
-                session,
-                repository,
-                session_result,
-            });
-        }
 
         self.sessions = session_display_data;
 
@@ -481,18 +433,6 @@ fn format_session_line_ratatui_static<'a>(session_data: &'a SessionDisplayData) 
     ])
 }
 
-// Extension trait for getting session result data
-trait SessionResultExt {
-    fn get_session_result(&self, session_id: i64) -> Result<Option<SessionResultData>>;
-}
-
-impl SessionResultExt for Database {
-    fn get_session_result(&self, session_id: i64) -> Result<Option<SessionResultData>> {
-        let dao = SessionDao::new(self);
-        dao.get_session_result(session_id)
-    }
-}
-
 impl Screen for RecordsScreen {
     fn get_type(&self) -> ScreenType {
         ScreenType::Records
@@ -502,9 +442,7 @@ impl Screen for RecordsScreen {
     where
         Self: Sized,
     {
-        Box::new(RecordsScreenDataProvider {
-            repository: SessionRepository::new().expect("Failed to create SessionRepository"),
-        })
+        Box::new(RecordsScreenDataProvider)
     }
 
     fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {

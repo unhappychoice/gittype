@@ -1,8 +1,7 @@
 use crate::domain::events::EventBus;
-use crate::domain::models::storage::{
-    SessionResultData, SessionStageResult, StoredRepository, StoredSession,
-};
+use crate::domain::models::storage::{SessionStageResult, StoredSession};
 use crate::domain::repositories::session_repository::{SessionRepository, SessionRepositoryTrait};
+use crate::domain::services::session_service::SessionDisplayData;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::screens::RecordsScreen;
 use crate::presentation::tui::views::{PerformanceMetricsView, SessionInfoView, StageDetailsView};
@@ -16,13 +15,6 @@ use ratatui::{
     text::{Line, Span},
     widgets::Paragraph,
 };
-
-#[derive(Debug, Clone)]
-pub struct SessionDisplayData {
-    pub session: StoredSession,
-    pub repository: Option<StoredRepository>,
-    pub session_result: Option<SessionResultData>,
-}
 
 pub enum SessionDetailAction {
     Return,

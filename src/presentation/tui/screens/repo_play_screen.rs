@@ -1,8 +1,7 @@
 use crate::domain::events::EventBus;
 use crate::domain::models::storage::StoredRepositoryWithLanguages;
-use crate::infrastructure::database::daos::RepositoryDao;
+use crate::domain::services::repository_service::RepositoryService;
 use crate::infrastructure::database::database::Database;
-use crate::infrastructure::git::RemoteGitRepositoryClient;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::views::repo_play::{ControlsView, HeaderView, RepositoryListView};
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
@@ -53,17 +52,9 @@ pub struct RepoPlayScreenDataProvider;
 impl ScreenDataProvider for RepoPlayScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
         let db = Database::new()?;
-        let repo_dao = RepositoryDao::new(&db);
-        let repositories = repo_dao.get_all_repositories_with_languages()?;
+        let service = RepositoryService::new(db);
 
-        // Add cache status for each repository
-        let repositories_with_cache: Vec<(StoredRepositoryWithLanguages, bool)> = repositories
-            .into_iter()
-            .map(|repo| {
-                let is_cached = RemoteGitRepositoryClient::is_repository_cached(&repo.remote_url);
-                (repo, is_cached)
-            })
-            .collect();
+        let repositories_with_cache = service.get_all_repositories_with_cache_status()?;
 
         Ok(Box::new(RepoPlayScreenData {
             repositories: repositories_with_cache,
