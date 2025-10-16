@@ -26,8 +26,8 @@ screen_key_event_test!(
 
 #[test]
 fn test_panic_screen_other_keys_ignored() {
-    use gittype::presentation::game::models::ScreenDataProvider;
-    use gittype::presentation::game::Screen;
+    use gittype::presentation::tui::ScreenDataProvider;
+    use gittype::presentation::tui::Screen;
     use std::sync::{Arc, Mutex};
 
     let event_bus = EventBus::new();

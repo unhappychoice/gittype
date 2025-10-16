@@ -1,6 +1,6 @@
 use gittype::domain::models::StageResult;
 use gittype::presentation::tui::screens::stage_summary_screen::StageSummaryData;
-use gittype::presentation::game::ScreenDataProvider;
+use gittype::presentation::tui::ScreenDataProvider;
 use gittype::Result;
 use std::time::Duration;
 

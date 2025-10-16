@@ -1,10 +1,9 @@
 use crate::domain::events::EventBus;
 use crate::domain::models::{GitRepository, SessionResult};
 use crate::presentation::game::events::NavigateTo;
+use crate::presentation::game::{GameData, SessionManager};
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::tui::views::session_failure::{ContentView, FooterView, HeaderView};
-use crate::presentation::game::{
-    GameData, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
-};
 use crate::Result;
 use ratatui::{
     layout::{Constraint, Direction, Layout},

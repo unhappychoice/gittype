@@ -1,8 +1,8 @@
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
-use gittype::presentation::game::models::ScreenDataProvider;
+use gittype::presentation::tui::ScreenDataProvider;
 use gittype::presentation::tui::screens::typing_screen::TypingScreen;
-use gittype::presentation::game::Screen;
+use gittype::presentation::tui::Screen;
 use std::sync::{Arc, Mutex};
 
 // Note: TypingScreen has complex state management (waiting_to_start, countdown, dialog_shown)

@@ -1,11 +1,10 @@
 use crate::domain::events::EventBus;
 use crate::domain::models::SessionResult;
 use crate::presentation::game::events::NavigateTo;
+use crate::presentation::game::{GameData, SessionManager};
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::tui::views::{
     ShareBackOptionView, SharePlatformOptionsView, SharePreviewView, ShareTitleView,
-};
-use crate::presentation::game::{
-    GameData, Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
 };
 use crate::presentation::sharing::{SharingPlatform, SharingService};
 use crate::{domain::models::GitRepository, GitTypeError, Result};
@@ -71,7 +70,7 @@ impl Screen for SessionSummaryShareScreen {
         ScreenType::SessionSharing
     }
 
-    fn default_provider() -> Box<dyn crate::presentation::game::ScreenDataProvider>
+    fn default_provider() -> Box<dyn crate::presentation::tui::ScreenDataProvider>
     where
         Self: Sized,
     {

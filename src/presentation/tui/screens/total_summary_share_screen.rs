@@ -4,7 +4,7 @@ use crate::domain::services::scoring::{TotalCalculator, TotalTracker, GLOBAL_TOT
 use crate::infrastructure::browser;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::views::SharingView;
-use crate::presentation::game::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::sharing::SharingPlatform;
 use crate::{GitTypeError, Result};
 use crossterm::event::{self};
@@ -129,7 +129,7 @@ impl Screen for TotalSummaryShareScreen {
         ScreenType::TotalSummaryShare
     }
 
-    fn default_provider() -> Box<dyn crate::presentation::game::ScreenDataProvider>
+    fn default_provider() -> Box<dyn crate::presentation::tui::ScreenDataProvider>
     where
         Self: Sized,
     {

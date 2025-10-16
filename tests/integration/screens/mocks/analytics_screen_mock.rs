@@ -1,4 +1,4 @@
-use gittype::presentation::game::models::ScreenDataProvider;
+use gittype::presentation::tui::ScreenDataProvider;
 use gittype::presentation::tui::screens::analytics_screen::{AnalyticsData, LangStats, RepoStats};
 use gittype::Result;
 use std::collections::HashMap;

@@ -1,7 +1,7 @@
 use crate::domain::events::EventBus;
 use crate::infrastructure::logging::get_current_log_file_path;
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use ratatui::{

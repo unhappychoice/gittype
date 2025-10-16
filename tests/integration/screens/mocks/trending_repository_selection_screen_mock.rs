@@ -1,4 +1,4 @@
-use gittype::presentation::game::models::ScreenDataProvider;
+use gittype::presentation::tui::ScreenDataProvider;
 use gittype::Result;
 
 pub struct MockTrendingRepositorySelectionDataProvider;

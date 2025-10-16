@@ -4,7 +4,7 @@ use gittype::infrastructure::browser;
 use gittype::presentation::game::events::ExitRequested;
 use gittype::presentation::game::game_data::GameData;
 use gittype::presentation::tui::screens::loading_screen::LoadingScreen;
-use gittype::presentation::game::{Screen, ScreenType};
+use gittype::presentation::tui::{Screen, ScreenType};
 use std::sync::{Arc, Mutex};
 
 // Note: LoadingScreen requires GameData initialization, so we use manual tests

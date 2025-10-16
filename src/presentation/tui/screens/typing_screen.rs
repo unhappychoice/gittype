@@ -6,10 +6,9 @@ use crate::domain::events::domain_events::DomainEvent;
 use crate::domain::events::EventBus;
 use crate::domain::models::{Challenge, Countdown};
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::{
-    game_data::GameData, views::TypingView, Screen, ScreenDataProvider, UpdateStrategy,
-};
-use crate::presentation::game::{ScreenType, SessionManager};
+use crate::presentation::game::{GameData, SessionManager};
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::tui::views::TypingView;
 use crate::{domain::models::GitRepository, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use std::sync::{Arc, Mutex};

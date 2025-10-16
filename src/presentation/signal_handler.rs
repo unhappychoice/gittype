@@ -1,7 +1,6 @@
 use crate::infrastructure::logging::{log_error_to_file, log_panic_to_file};
 use crate::presentation::game::events::ExitRequested;
-use crate::presentation::game::models::Screen;
-use crate::presentation::tui::screen_manager::ScreenManager;
+use crate::presentation::tui::{Screen, ScreenManager};
 use crate::presentation::tui::screens::PanicScreen;
 use crate::GitTypeError;
 use crossterm::cursor::{Hide, Show};

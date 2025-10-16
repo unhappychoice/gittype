@@ -1,7 +1,7 @@
 use crate::domain::events::EventBus;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::views::VersionCheckView;
-use crate::presentation::game::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::Result;
 use crossterm::{
     event::{self, Event, KeyCode},

@@ -1,11 +1,10 @@
 use crate::domain::events::EventBus;
 use crate::domain::services::scoring::{SessionTracker, StageResult, GLOBAL_SESSION_TRACKER};
 use crate::presentation::game::events::NavigateTo;
+use crate::presentation::game::SessionManager;
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::tui::screens::ResultAction;
 use crate::presentation::tui::views::StageCompletionView;
-use crate::presentation::game::{
-    Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
-};
 use crate::{GitTypeError, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::Frame;

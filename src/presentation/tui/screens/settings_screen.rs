@@ -4,7 +4,7 @@ use crate::domain::models::theme::Theme;
 use crate::domain::services::config_manager::ConfigService;
 use crate::domain::services::theme_manager::THEME_MANAGER;
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::{Screen, ScreenDataProvider, ScreenType};
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};

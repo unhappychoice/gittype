@@ -6,7 +6,7 @@ use crate::domain::repositories::session_repository::{SessionRepository, Session
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::screens::RecordsScreen;
 use crate::presentation::tui::views::{PerformanceMetricsView, SessionInfoView, StageDetailsView};
-use crate::presentation::game::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::{GitTypeError, Result};
 use crossterm::event::{KeyCode, KeyModifiers};

@@ -1,4 +1,4 @@
-use gittype::presentation::game::models::ScreenDataProvider;
+use gittype::presentation::tui::ScreenDataProvider;
 use gittype::Result;
 
 /// Empty mock provider for screens that don't need data
@@ -17,8 +17,8 @@ macro_rules! screen_key_event_test {
         #[test]
         fn $test_name() {
             use gittype::domain::events::EventBus;
-            use gittype::presentation::game::models::ScreenDataProvider;
-            use gittype::presentation::game::Screen;
+            use gittype::presentation::tui::ScreenDataProvider;
+            use gittype::presentation::tui::Screen;
             use std::sync::{Arc, Mutex};
 
             // Enable test mode to prevent browser opening
@@ -65,8 +65,8 @@ macro_rules! screen_key_test {
         #[test]
         fn $test_name() {
             use gittype::domain::events::EventBus;
-            use gittype::presentation::game::models::ScreenDataProvider;
-            use gittype::presentation::game::Screen;
+            use gittype::presentation::tui::ScreenDataProvider;
+            use gittype::presentation::tui::Screen;
 
             // Enable test mode to prevent browser opening
             gittype::infrastructure::browser::enable_test_mode();
@@ -130,8 +130,8 @@ macro_rules! screen_snapshot_test {
     ($test_name:ident, $screen_type:ty, $screen_init:expr, provider = $provider:expr) => {
         #[test]
         fn $test_name() {
-            use gittype::presentation::game::Screen;
-            use gittype::presentation::game::models::ScreenDataProvider;
+            use gittype::presentation::tui::Screen;
+            use gittype::presentation::tui::ScreenDataProvider;
             use ratatui::backend::TestBackend;
             use ratatui::Terminal;
 
@@ -177,8 +177,8 @@ macro_rules! screen_snapshot_test {
     ($test_name:ident, $screen_type:ty, $screen_init:expr, provider = $provider:expr, keys = [$($key:expr),*]) => {
         #[test]
         fn $test_name() {
-            use gittype::presentation::game::Screen;
-            use gittype::presentation::game::models::ScreenDataProvider;
+            use gittype::presentation::tui::Screen;
+            use gittype::presentation::tui::ScreenDataProvider;
             use ratatui::backend::TestBackend;
             use ratatui::Terminal;
 
@@ -229,7 +229,7 @@ macro_rules! screen_snapshot_test {
     ($test_name:ident, $screen_type:ty, $screen_init:expr, pushed_from = $source_screen:expr) => {
         #[test]
         fn $test_name() {
-            use gittype::presentation::game::Screen;
+            use gittype::presentation::tui::Screen;
             use ratatui::backend::TestBackend;
             use ratatui::Terminal;
 

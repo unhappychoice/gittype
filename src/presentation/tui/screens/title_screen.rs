@@ -1,9 +1,10 @@
 use crate::domain::events::EventBus;
 use crate::domain::models::{DifficultyLevel, GitRepository};
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::models::ScreenDataProvider;
+use crate::presentation::tui::ScreenDataProvider;
 use crate::presentation::tui::views::title::{DifficultySelectionView, StaticElementsView};
-use crate::presentation::game::{GameData, Screen, ScreenType, StageRepository, UpdateStrategy};
+use crate::presentation::game::{GameData, StageRepository};
+use crate::presentation::tui::{Screen, ScreenType, UpdateStrategy};
 use crate::{GitTypeError, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{

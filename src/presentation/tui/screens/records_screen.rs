@@ -5,7 +5,7 @@ use crate::domain::repositories::SessionRepository;
 use crate::infrastructure::database::daos::SessionDao;
 use crate::infrastructure::database::database::{Database, HasDatabase};
 use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
 use chrono::{DateTime, Local};

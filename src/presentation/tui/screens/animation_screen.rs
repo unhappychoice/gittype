@@ -2,11 +2,10 @@ use crate::domain::events::EventBus;
 use crate::domain::models::{RankTier, SessionResult};
 use crate::domain::services::scoring::Rank;
 use crate::presentation::game::events::NavigateTo;
+use crate::presentation::game::SessionManager;
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::tui::views::typing::typing_animation_view::AnimationPhase;
 use crate::presentation::tui::views::TypingAnimationView;
-use crate::presentation::game::{
-    Screen, ScreenDataProvider, ScreenType, SessionManager, UpdateStrategy,
-};
 use crate::presentation::ui::Colors;
 use crate::{GitTypeError, Result};
 use crossterm::event::{KeyCode, KeyModifiers};

@@ -1,6 +1,7 @@
 use gittype::domain::models::{GitRepository, SessionResult};
 use gittype::presentation::tui::screens::session_summary_screen::SessionSummaryScreenData;
-use gittype::presentation::game::{ScreenDataProvider, SessionManager};
+use gittype::presentation::game::SessionManager;
+use gittype::presentation::tui::ScreenDataProvider;
 use gittype::Result;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
