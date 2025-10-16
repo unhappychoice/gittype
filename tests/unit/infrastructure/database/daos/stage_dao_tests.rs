@@ -1,6 +1,4 @@
-use gittype::domain::models::{
-    Challenge, DifficultyLevel, GitRepository, SessionResult,
-};
+use gittype::domain::models::{Challenge, DifficultyLevel, GitRepository, SessionResult};
 use gittype::infrastructure::database::daos::{ChallengeDao, RepositoryDao, SessionDao, StageDao};
 use gittype::infrastructure::database::database::Database;
 
