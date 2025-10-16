@@ -1,24 +1,20 @@
-use crate::infrastructure::database::daos::RepositoryDao;
-use crate::infrastructure::database::database::Database;
 use crate::presentation::cli::commands::run_game_session;
-use crate::presentation::cli::views::{repo_list_view, repo_play_view};
+use crate::presentation::cli::screen_runner::run_screen;
 use crate::presentation::cli::Cli;
+use crate::presentation::tui::screens::{RepoListScreen, RepoPlayScreen};
+use crate::presentation::tui::ScreenType;
 use crate::{GitTypeError, Result};
 use std::io::{self, Write};
 
 pub fn run_repo_list() -> Result<()> {
-    let db = Database::new()?;
-    let repo_dao = RepositoryDao::new(&db);
+    run_screen(
+        ScreenType::RepoList,
+        RepoListScreen::new,
+        None::<()>,
+        None::<fn(&RepoListScreen) -> Option<()>>,
+    )?;
 
-    let repositories = repo_dao.get_all_repositories_with_languages()?;
-
-    if repositories.is_empty() {
-        println!("No played repositories found.");
-        println!("Try running `gittype --repo owner/repo` to cache a repository first.");
-        return Ok(());
-    }
-
-    repo_list_view::render_repo_list(repositories)
+    Ok(())
 }
 
 pub fn run_repo_clear(force: bool) -> Result<()> {
@@ -98,41 +94,36 @@ pub fn run_repo_clear(force: bool) -> Result<()> {
 }
 
 pub fn run_repo_play() -> Result<()> {
-    let db = Database::new()?;
-    let repo_dao = RepositoryDao::new(&db);
+    // Run screen and get selected repository
+    let selected_repo = run_screen(
+        ScreenType::RepoPlay,
+        RepoPlayScreen::new,
+        None::<()>,
+        Some(|screen: &RepoPlayScreen| {
+            screen
+                .get_selected_repository()
+                .map(|repo| (repo.user_name.clone(), repo.repository_name.clone()))
+        }),
+    )?;
 
-    let repositories = repo_dao.get_all_repositories_with_languages()?;
+    // If a repository was selected, start the game
+    if let Some((user_name, repo_name)) = selected_repo {
+        let repo_spec = format!("{}/{}", user_name, repo_name);
 
-    if repositories.is_empty() {
-        println!("No repositories found in cache.");
-        println!("Try running `gittype --repo owner/repo` to cache a repository first.");
-        return Ok(());
-    }
+        println!("Starting gittype with repository: {}", repo_spec);
 
-    match repo_play_view::render_repo_play_ui(repositories.clone())? {
-        Some(selection) => {
-            let selected_repo = &repositories[selection];
-            let repo_spec = format!(
-                "{}/{}",
-                selected_repo.user_name, selected_repo.repository_name
-            );
+        // Create a Cli struct to pass to run_game_session
+        let cli = Cli {
+            repo_path: None,
+            repo: Some(repo_spec),
+            langs: None,
+            command: None,
+        };
 
-            println!("Starting gittype with repository: {}", repo_spec);
-
-            // Create a Cli struct to pass to run_game_session
-            let cli = Cli {
-                repo_path: None,
-                repo: Some(repo_spec),
-                langs: None,
-                command: None,
-            };
-
-            // Start the game session
-            run_game_session(cli)
-        }
-        None => {
-            println!("Repository selection cancelled.");
-            Ok(())
-        }
+        // Start the game session
+        run_game_session(cli)
+    } else {
+        println!("Repository selection cancelled.");
+        Ok(())
     }
 }

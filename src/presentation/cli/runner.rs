@@ -8,7 +8,7 @@ use crate::presentation::cli::commands::{
 use crate::presentation::cli::{Cli, Commands};
 use crate::{GitTypeError, Result};
 
-pub async fn run_cli(cli: Cli) -> Result<()> {
+pub fn run_cli(cli: Cli) -> Result<()> {
     // Initialize logging first for all commands
     if let Err(e) = setup_logging() {
         setup_console_logging();
@@ -26,7 +26,7 @@ pub async fn run_cli(cli: Cli) -> Result<()> {
             language,
             repo_name,
             period,
-        }) => run_trending(language.clone(), repo_name.clone(), period.clone()).await,
+        }) => run_trending(language.clone(), repo_name.clone(), period.clone()),
         None => run_game_session(cli),
     }
 }
