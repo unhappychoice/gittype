@@ -2,7 +2,7 @@ use crate::integration::screens::mocks::title_screen_mock::MockTitleScreenDataPr
 use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
-use gittype::presentation::game::screens::title_screen::TitleScreen;
+use gittype::presentation::tui::screens::title_screen::TitleScreen;
 
 screen_snapshot_test!(
     test_title_screen_snapshot,
@@ -137,4 +137,14 @@ screen_key_tests!(
             KeyModifiers::empty()
         ),
     ]
+);
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_title_screen_basic_methods,
+    TitleScreen,
+    TitleScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::Title,
+    false,
+    MockTitleScreenDataProvider
 );

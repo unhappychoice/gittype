@@ -2,7 +2,7 @@ use crate::integration::screens::mocks::total_summary_share_screen_mock::MockTot
 use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
-use gittype::presentation::game::screens::total_summary_share_screen::TotalSummaryShareScreen;
+use gittype::presentation::tui::screens::total_summary_share_screen::TotalSummaryShareScreen;
 
 screen_snapshot_test!(
     test_total_summary_share_screen_snapshot,
@@ -56,4 +56,14 @@ screen_key_tests!(
             KeyModifiers::empty()
         ),
     ]
+);
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_total_summary_share_screen_basic_methods,
+    TotalSummaryShareScreen,
+    TotalSummaryShareScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::TotalSummaryShare,
+    false,
+    MockTotalSummaryShareDataProvider
 );

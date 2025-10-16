@@ -1,7 +1,7 @@
 use crate::domain::models::{ExtractionOptions, Languages};
 use crate::infrastructure::storage::file_storage::FileStorage;
 use crate::presentation::game::models::StepType;
-use crate::presentation::game::screens::loading_screen::ProgressReporter;
+use crate::presentation::tui::screens::loading_screen::ProgressReporter;
 use crate::Result;
 use std::path::{Path, PathBuf};
 

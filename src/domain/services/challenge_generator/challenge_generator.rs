@@ -3,7 +3,7 @@ use super::{
     progress_tracker::ProgressTracker,
 };
 use crate::domain::models::{Challenge, CodeChunk, DifficultyLevel};
-use crate::presentation::game::screens::loading_screen::ProgressReporter;
+use crate::presentation::tui::screens::loading_screen::ProgressReporter;
 use rayon::prelude::*;
 
 /// Main orchestrator for converting CodeChunks into Challenges

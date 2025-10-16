@@ -1,7 +1,7 @@
 use gittype::domain::models::color_mode::ColorMode;
 use gittype::domain::models::theme::Theme;
-use gittype::presentation::game::screens::settings_screen::SettingsScreenData;
-use gittype::presentation::game::ScreenDataProvider;
+use gittype::presentation::tui::screens::settings_screen::SettingsScreenData;
+use gittype::presentation::tui::ScreenDataProvider;
 use gittype::Result;
 
 pub struct MockSettingsScreenDataProvider;

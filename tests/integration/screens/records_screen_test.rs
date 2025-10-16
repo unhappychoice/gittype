@@ -2,7 +2,7 @@ use crate::integration::screens::mocks::records_screen_mock::MockRecordsDataProv
 use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
-use gittype::presentation::game::screens::records_screen::RecordsScreen;
+use gittype::presentation::tui::screens::records_screen::RecordsScreen;
 
 screen_snapshot_test!(
     test_records_screen_snapshot_with_mock_data,
@@ -89,4 +89,14 @@ screen_key_tests!(
             KeyModifiers::empty()
         ),
     ]
+);
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_records_screen_basic_methods,
+    RecordsScreen,
+    RecordsScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::Records,
+    false,
+    MockRecordsDataProvider
 );

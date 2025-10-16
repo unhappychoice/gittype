@@ -1,7 +1,7 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
-use gittype::presentation::game::screens::help_screen::HelpScreen;
+use gittype::presentation::tui::screens::help_screen::HelpScreen;
 
 screen_snapshot_test!(
     test_help_screen_snapshot_cli,
@@ -121,4 +121,13 @@ screen_key_tests!(
             KeyModifiers::empty()
         ),
     ]
+);
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_help_screen_basic_methods,
+    HelpScreen,
+    HelpScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::Help,
+    false
 );

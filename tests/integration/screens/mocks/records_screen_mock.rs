@@ -1,8 +1,8 @@
 use chrono::{TimeZone, Utc};
 use gittype::domain::models::storage::{SessionResultData, StoredRepository, StoredSession};
-use gittype::presentation::game::models::ScreenDataProvider;
-use gittype::presentation::game::screens::records_screen::RecordsScreenData;
-use gittype::presentation::game::screens::session_detail_screen::SessionDisplayData;
+use gittype::presentation::tui::screens::records_screen::RecordsScreenData;
+use gittype::presentation::tui::screens::session_detail_screen::SessionDisplayData;
+use gittype::presentation::tui::ScreenDataProvider;
 use gittype::Result;
 
 pub struct MockRecordsDataProvider;

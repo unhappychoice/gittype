@@ -90,6 +90,17 @@ impl TrendingRepository {
         }
     }
 
+    /// Synchronous version of get_trending_repositories for use in non-async contexts
+    pub fn get_trending_repositories_sync(
+        &self,
+        key: &str,
+        language: Option<&str>,
+        period: &str,
+    ) -> Result<Vec<TrendingRepositoryInfo>> {
+        let rt = tokio::runtime::Runtime::new()?;
+        rt.block_on(self.get_trending_repositories(key, language, period))
+    }
+
     /// Get data from cache if valid
     fn get_from_cache(&self, key: &str) -> Option<Vec<TrendingRepositoryInfo>> {
         let cache_file = self.get_cache_file(key);

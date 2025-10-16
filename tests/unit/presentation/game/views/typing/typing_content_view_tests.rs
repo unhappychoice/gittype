@@ -1,4 +1,4 @@
-use gittype::presentation::game::views::typing::typing_content_view::TypingContentView;
+use gittype::presentation::tui::views::typing::typing_content_view::TypingContentView;
 
 #[test]
 fn test_calculate_scroll_offset() {

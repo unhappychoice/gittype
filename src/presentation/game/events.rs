@@ -1,7 +1,7 @@
 use std::any::Any;
 
 // Re-export ScreenTransition as NavigateTo event
-pub use super::models::screen::ScreenTransition as NavigateTo;
+pub use crate::presentation::tui::ScreenTransition as NavigateTo;
 
 /// Event emitted when user requests to exit the application (Ctrl+C)
 #[derive(Clone, Debug)]

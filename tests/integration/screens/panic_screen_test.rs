@@ -2,7 +2,7 @@ use crate::integration::screens::helpers::EmptyMockProvider;
 use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
-use gittype::presentation::game::screens::panic_screen::PanicScreen;
+use gittype::presentation::tui::screens::panic_screen::PanicScreen;
 
 screen_snapshot_test!(
     test_panic_screen_snapshot_with_fixed_timestamp,
@@ -26,8 +26,8 @@ screen_key_event_test!(
 
 #[test]
 fn test_panic_screen_other_keys_ignored() {
-    use gittype::presentation::game::models::ScreenDataProvider;
-    use gittype::presentation::game::Screen;
+    use gittype::presentation::tui::Screen;
+    use gittype::presentation::tui::ScreenDataProvider;
     use std::sync::{Arc, Mutex};
 
     let event_bus = EventBus::new();
@@ -65,3 +65,12 @@ fn test_panic_screen_other_keys_ignored() {
     let captured_events = events.lock().unwrap();
     assert_eq!(captured_events.len(), 0);
 }
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_panic_screen_basic_methods,
+    PanicScreen,
+    PanicScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::Panic,
+    false
+);

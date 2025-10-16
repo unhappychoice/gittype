@@ -3,7 +3,7 @@ use super::{
     FinalizingStep, GeneratingStep, ScanningStep, Step, StepResult,
 };
 use crate::presentation::game::models::StepType;
-use crate::presentation::game::screens::loading_screen::ProgressReporter;
+use crate::presentation::tui::screens::loading_screen::ProgressReporter;
 use crate::Result;
 
 pub struct StepManager {

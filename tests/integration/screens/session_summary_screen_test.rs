@@ -4,7 +4,7 @@ use crate::integration::screens::mocks::session_summary_screen_mock::{
 use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
-use gittype::presentation::game::screens::session_summary_screen::SessionSummaryScreen;
+use gittype::presentation::tui::screens::session_summary_screen::SessionSummaryScreen;
 
 screen_snapshot_test!(
     test_session_summary_screen_snapshot,
@@ -115,5 +115,15 @@ screen_key_event_test!(
     NavigateTo,
     KeyCode::Char('c'),
     KeyModifiers::CONTROL,
+    MockSessionSummaryDataProvider
+);
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_session_summary_screen_basic_methods,
+    SessionSummaryScreen,
+    SessionSummaryScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::SessionSummary,
+    false,
     MockSessionSummaryDataProvider
 );

@@ -1,6 +1,8 @@
 pub mod analytics_screen_mock;
 pub mod animation_screen_mock;
 pub mod records_screen_mock;
+pub mod repo_list_screen_mock;
+pub mod repo_play_screen_mock;
 pub mod session_details_dialog_mock;
 pub mod session_failure_screen_mock;
 pub mod session_repository_mock;
@@ -11,3 +13,4 @@ pub mod stage_summary_screen_mock;
 pub mod title_screen_mock;
 pub mod total_summary_screen_mock;
 pub mod total_summary_share_screen_mock;
+pub mod trending_repository_selection_screen_mock;

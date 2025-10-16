@@ -1,6 +1,6 @@
 use gittype::domain::models::GitRepository;
-use gittype::presentation::game::screens::title_screen::TitleScreenData;
-use gittype::presentation::game::ScreenDataProvider;
+use gittype::presentation::tui::screens::title_screen::TitleScreenData;
+use gittype::presentation::tui::ScreenDataProvider;
 use gittype::Result;
 
 pub struct MockTitleScreenDataProvider;

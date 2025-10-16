@@ -2,7 +2,7 @@ use crate::integration::screens::mocks::animation_screen_mock::MockAnimationData
 use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
-use gittype::presentation::game::screens::animation_screen::AnimationScreen;
+use gittype::presentation::tui::screens::animation_screen::AnimationScreen;
 
 screen_snapshot_test!(
     test_animation_screen_snapshot_with_session_result,
@@ -36,5 +36,15 @@ screen_key_event_test!(
     NavigateTo,
     KeyCode::Char('c'),
     KeyModifiers::CONTROL,
+    MockAnimationDataProvider
+);
+
+// Basic methods test
+screen_basic_methods_test!(
+    test_animation_screen_basic_methods,
+    AnimationScreen,
+    AnimationScreen::new(EventBus::new()),
+    gittype::presentation::tui::ScreenType::Animation,
+    false,
     MockAnimationDataProvider
 );
