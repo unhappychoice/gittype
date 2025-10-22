@@ -38,6 +38,15 @@ screen_snapshot_test!(
     keys = [KeyEvent::new(KeyCode::Right, KeyModifiers::empty())]
 );
 
+// Test trends view with empty data
+screen_snapshot_test!(
+    test_analytics_screen_snapshot_trends_empty,
+    AnalyticsScreen,
+    AnalyticsScreen::new(EventBus::new()),
+    provider = MockAnalyticsDataProviderEmpty,
+    keys = [KeyEvent::new(KeyCode::Right, KeyModifiers::empty())]
+);
+
 screen_snapshot_test!(
     test_analytics_screen_snapshot_repositories,
     AnalyticsScreen,
@@ -49,11 +58,61 @@ screen_snapshot_test!(
     ]
 );
 
+// Test repositories view with activity (includes long names)
+screen_snapshot_test!(
+    test_analytics_screen_snapshot_repositories_with_activity,
+    AnalyticsScreen,
+    AnalyticsScreen::new(EventBus::new()),
+    provider = MockAnalyticsDataProviderWithActivity,
+    keys = [
+        KeyEvent::new(KeyCode::Right, KeyModifiers::empty()),
+        KeyEvent::new(KeyCode::Right, KeyModifiers::empty())
+    ]
+);
+
+// Test repositories view with empty data
+screen_snapshot_test!(
+    test_analytics_screen_snapshot_repositories_empty,
+    AnalyticsScreen,
+    AnalyticsScreen::new(EventBus::new()),
+    provider = MockAnalyticsDataProviderEmpty,
+    keys = [
+        KeyEvent::new(KeyCode::Right, KeyModifiers::empty()),
+        KeyEvent::new(KeyCode::Right, KeyModifiers::empty())
+    ]
+);
+
 screen_snapshot_test!(
     test_analytics_screen_snapshot_languages,
     AnalyticsScreen,
     AnalyticsScreen::new(EventBus::new()),
     provider = MockAnalyticsDataProvider,
+    keys = [
+        KeyEvent::new(KeyCode::Right, KeyModifiers::empty()),
+        KeyEvent::new(KeyCode::Right, KeyModifiers::empty()),
+        KeyEvent::new(KeyCode::Right, KeyModifiers::empty())
+    ]
+);
+
+// Test languages view with activity (includes long names)
+screen_snapshot_test!(
+    test_analytics_screen_snapshot_languages_with_activity,
+    AnalyticsScreen,
+    AnalyticsScreen::new(EventBus::new()),
+    provider = MockAnalyticsDataProviderWithActivity,
+    keys = [
+        KeyEvent::new(KeyCode::Right, KeyModifiers::empty()),
+        KeyEvent::new(KeyCode::Right, KeyModifiers::empty()),
+        KeyEvent::new(KeyCode::Right, KeyModifiers::empty())
+    ]
+);
+
+// Test languages view with empty data
+screen_snapshot_test!(
+    test_analytics_screen_snapshot_languages_empty,
+    AnalyticsScreen,
+    AnalyticsScreen::new(EventBus::new()),
+    provider = MockAnalyticsDataProviderEmpty,
     keys = [
         KeyEvent::new(KeyCode::Right, KeyModifiers::empty()),
         KeyEvent::new(KeyCode::Right, KeyModifiers::empty()),
