@@ -13,6 +13,19 @@ impl ScreenDataProvider for EmptyMockProvider {
 /// Macro to test key event handling with event verification
 #[macro_export]
 macro_rules! screen_key_event_test {
+    // Version without provider (5 params)
+    ($test_name:ident, $screen_type:ty, $event_type:ty, $key_code:expr, $modifiers:expr) => {
+        screen_key_event_test!(
+            $test_name,
+            $screen_type,
+            $event_type,
+            $key_code,
+            $modifiers,
+            $crate::integration::screens::helpers::EmptyMockProvider
+        );
+    };
+
+    // Version with default new(event_bus) initialization (6 params)
     ($test_name:ident, $screen_type:ty, $event_type:ty, $key_code:expr, $modifiers:expr, $provider:expr) => {
         #[test]
         fn $test_name() {
@@ -45,16 +58,37 @@ macro_rules! screen_key_event_test {
         }
     };
 
-    // Version without provider
-    ($test_name:ident, $screen_type:ty, $event_type:ty, $key_code:expr, $modifiers:expr) => {
-        screen_key_event_test!(
-            $test_name,
-            $screen_type,
-            $event_type,
-            $key_code,
-            $modifiers,
-            $crate::integration::screens::helpers::EmptyMockProvider
-        );
+    // Version with custom screen initialization using closure (7 params)
+    ($test_name:ident, $screen_type:ty, $screen_init_fn:expr, $event_type:ty, $key_code:expr, $modifiers:expr, $provider:expr) => {
+        #[test]
+        fn $test_name() {
+            use gittype::domain::events::EventBus;
+            use gittype::presentation::tui::Screen;
+            use gittype::presentation::tui::ScreenDataProvider;
+            use std::sync::{Arc, Mutex};
+
+            // Enable test mode to prevent browser opening
+            gittype::infrastructure::browser::enable_test_mode();
+
+            let event_bus = EventBus::new();
+            let events = Arc::new(Mutex::new(Vec::new()));
+            let events_clone = Arc::clone(&events);
+
+            event_bus.subscribe(move |event: &$event_type| {
+                events_clone.lock().unwrap().push(event.clone());
+            });
+
+            let mut screen: $screen_type = ($screen_init_fn)(event_bus);
+            let data = $provider.provide().unwrap();
+            let _ = screen.init_with_data(data);
+
+            screen
+                .handle_key_event(crossterm::event::KeyEvent::new($key_code, $modifiers))
+                .unwrap();
+
+            let captured_events = events.lock().unwrap();
+            assert_eq!(captured_events.len(), 1);
+        }
     };
 }
 

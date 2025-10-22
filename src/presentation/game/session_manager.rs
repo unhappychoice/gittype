@@ -78,6 +78,8 @@ pub struct SessionManager {
     best_records_at_start: Option<BestRecords>,
     // Event bus for decoupled communication
     event_bus: EventBus,
+    // Stage repository for challenge retrieval
+    stage_repository: Arc<Mutex<StageRepository>>,
 }
 
 static GLOBAL_SESSION_MANAGER: Lazy<Arc<Mutex<SessionManager>>> =
@@ -85,6 +87,10 @@ static GLOBAL_SESSION_MANAGER: Lazy<Arc<Mutex<SessionManager>>> =
 
 impl SessionManager {
     pub fn new() -> Self {
+        Self::with_stage_repository(StageRepository::instance())
+    }
+
+    pub fn with_stage_repository(stage_repository: Arc<Mutex<StageRepository>>) -> Self {
         let event_bus = EventBus::new();
         Self {
             state: SessionState::NotStarted,
@@ -96,6 +102,7 @@ impl SessionManager {
             session_challenges: Vec::new(),
             best_records_at_start: None,
             event_bus: event_bus.clone(),
+            stage_repository,
         }
     }
 
@@ -118,6 +125,14 @@ impl SessionManager {
 
     pub fn get_event_bus(&self) -> EventBus {
         self.event_bus.clone()
+    }
+
+    pub fn set_state(&mut self, state: SessionState) {
+        self.state = state;
+    }
+
+    pub fn set_current_stage_tracker(&mut self, tracker: StageTracker) {
+        self.current_stage_tracker = Some(tracker);
     }
 
     fn setup_event_subscriptions_internal(
@@ -338,7 +353,18 @@ impl SessionManager {
         Ok(())
     }
 
-    /// Add stage data (tracker and challenge) for the current stage
+    /// Add stage data (tracker and challenge) for the current stage (instance method)
+    pub fn add_stage_data_instance(
+        &mut self,
+        stage_name: String,
+        stage_tracker: StageTracker,
+        challenge: Challenge,
+    ) {
+        self.stage_trackers.push((stage_name, stage_tracker));
+        self.session_challenges.push(challenge);
+    }
+
+    /// Add stage data (static method using global instance)
     /// StageResult will be calculated by StageCalculator when needed
     pub fn add_stage_data(
         stage_name: String,
@@ -350,9 +376,7 @@ impl SessionManager {
             GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
         })?;
 
-        manager.stage_trackers.push((stage_name, stage_tracker));
-        manager.session_challenges.push(challenge);
-
+        manager.add_stage_data_instance(stage_name, stage_tracker, challenge);
         Ok(())
     }
 
@@ -394,8 +418,17 @@ impl SessionManager {
 
     /// Get current challenge for the session
     pub fn get_current_challenge(&self) -> Result<Option<Challenge>> {
+        // First check session_challenges (for testing and tracking)
+        if !self.session_challenges.is_empty() {
+            return Ok(self.session_challenges.last().cloned());
+        }
+
+        // Otherwise, query StageRepository if session is in progress
         if matches!(self.state, SessionState::InProgress { .. }) {
-            StageRepository::get_global_challenge_for_difficulty(self.config.difficulty)
+            let mut repo = self.stage_repository.lock().map_err(|e| {
+                GitTypeError::TerminalError(format!("Failed to lock StageRepository: {}", e))
+            })?;
+            Ok(repo.get_challenge_for_difficulty(self.config.difficulty))
         } else {
             Ok(None)
         }

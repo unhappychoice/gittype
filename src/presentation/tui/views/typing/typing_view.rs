@@ -42,6 +42,7 @@ impl TypingView {
         countdown_number: Option<u8>,
         skips_remaining: usize,
         dialog_shown: bool,
+        session_manager: Option<&std::sync::Arc<std::sync::Mutex<SessionManager>>>,
     ) {
         let countdown_active = countdown_number.is_some();
 
@@ -75,7 +76,9 @@ impl TypingView {
         );
 
         // Metrics
-        if let Ok(instance) = SessionManager::instance().lock() {
+        let default_manager = SessionManager::instance();
+        let manager = session_manager.unwrap_or(&default_manager);
+        if let Ok(instance) = manager.lock() {
             if let Some(stage_tracker) = instance.get_current_stage_tracker() {
                 TypingFooterView::render_metrics(
                     frame,

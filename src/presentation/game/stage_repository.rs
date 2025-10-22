@@ -314,6 +314,13 @@ impl Default for StageRepository {
 }
 
 impl StageRepository {
+    /// Set cached challenges (for testing)
+    pub fn set_cached_challenges(&mut self, challenges: Vec<Challenge>) {
+        self.built_stages = challenges.clone();
+        self.cached_challenges = Some(challenges);
+        self.indices_cached = false;
+    }
+
     /// Get the global StageRepository instance
     pub fn instance() -> Arc<Mutex<StageRepository>> {
         GLOBAL_STAGE_REPOSITORY.clone()

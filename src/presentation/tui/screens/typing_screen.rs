@@ -24,6 +24,7 @@ pub struct TypingScreen {
     dialog_shown: bool,
     typing_view: TypingView,
     event_bus: EventBus,
+    game_data: Arc<Mutex<GameData>>,
     session_manager: Arc<Mutex<SessionManager>>,
 }
 
@@ -39,13 +40,19 @@ pub enum SessionState {
 }
 
 impl TypingScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(
+        event_bus: EventBus,
+        game_data: Arc<Mutex<GameData>>,
+        session_manager: Arc<Mutex<SessionManager>>,
+    ) -> Self {
+        let git_repository = game_data
+            .lock()
+            .ok()
+            .and_then(|data| data.git_repository.clone());
+
         Self {
             countdown: Countdown::new(),
-            git_repository: GameData::instance()
-                .lock()
-                .ok()
-                .and_then(|game_data| game_data.git_repository.clone()),
+            git_repository,
             typing_core: TypingCore::default(),
             challenge: None,
             code_context: CodeContext::empty(),
@@ -53,7 +60,20 @@ impl TypingScreen {
             dialog_shown: false,
             typing_view: TypingView::new(),
             event_bus,
-            session_manager: SessionManager::instance(),
+            game_data,
+            session_manager,
+        }
+    }
+
+    pub fn set_waiting_to_start(&mut self, waiting: bool) {
+        self.waiting_to_start = waiting;
+    }
+
+    pub fn skip_countdown_for_test(&mut self) {
+        while self.countdown.is_active() {
+            self.countdown
+                .fast_forward_for_test(Duration::from_secs(10));
+            self.countdown.update_state();
         }
     }
 
@@ -77,8 +97,8 @@ impl TypingScreen {
 
             self.countdown = Countdown::new();
             self.challenge = Some(challenge.clone());
-            // Update git_repository from GameData
-            self.git_repository = if let Ok(game_data) = GameData::instance().lock() {
+            // Update git_repository from injected GameData
+            self.git_repository = if let Ok(game_data) = self.game_data.lock() {
                 game_data.repository()
             } else {
                 None
@@ -435,6 +455,7 @@ impl Screen for TypingScreen {
             self.countdown.get_current_count(),
             skips_remaining,
             self.dialog_shown,
+            Some(&self.session_manager),
         );
 
         Ok(())

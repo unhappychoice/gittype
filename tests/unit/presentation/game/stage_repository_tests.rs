@@ -265,7 +265,7 @@ fn test_instance_returns_arc_mutex() {
 
 #[test]
 fn test_difficulty_level_enum_usage() {
-    let levels = vec![
+    let levels = [
         DifficultyLevel::Easy,
         DifficultyLevel::Normal,
         DifficultyLevel::Hard,
@@ -426,7 +426,7 @@ fn test_all_difficulty_levels_in_custom_mode() {
         let repo = StageRepository::empty().with_mode(GameMode::Custom {
             max_stages: Some(5),
             time_limit: None,
-            difficulty: diff.clone(),
+            difficulty: diff,
         });
 
         let desc = repo.get_mode_description();

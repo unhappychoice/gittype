@@ -162,7 +162,11 @@ impl<B: Backend + Send + 'static> ScreenManager<B> {
         self.register_screen(StageSummaryScreen::new(self.event_bus.clone()));
         self.register_screen(SessionSummaryScreen::new(self.event_bus.clone()));
         self.register_screen(TotalSummaryScreen::new(self.event_bus.clone()));
-        self.register_screen(TypingScreen::new(self.event_bus.clone()));
+        self.register_screen(TypingScreen::new(
+            self.event_bus.clone(),
+            self.game_data.clone(),
+            SessionManager::instance(),
+        ));
         self.register_screen(SessionDetailScreen::new(self.event_bus.clone()));
         self.register_screen(AnimationScreen::new(self.event_bus.clone()));
         self.register_screen(VersionCheckScreen::new(self.event_bus.clone()));
