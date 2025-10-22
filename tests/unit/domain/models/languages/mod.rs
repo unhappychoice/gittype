@@ -1,0 +1,17 @@
+mod c_tests;
+mod cpp_tests;
+mod csharp_tests;
+mod dart_tests;
+mod go_tests;
+mod haskell_tests;
+mod java_tests;
+mod javascript_tests;
+mod kotlin_tests;
+mod php_tests;
+mod python_tests;
+mod ruby_tests;
+mod rust_tests;
+mod scala_tests;
+mod swift_tests;
+mod typescript_tests;
+mod zig_tests;

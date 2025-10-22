@@ -5,6 +5,7 @@ pub mod difficulty_level_tests;
 pub mod extraction_options_tests;
 pub mod git_repository_ref_tests;
 pub mod git_repository_tests;
+pub mod languages;
 pub mod rank_tests;
 pub mod session_tests;
 pub mod stage_tests;
