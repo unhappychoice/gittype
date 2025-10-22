@@ -97,7 +97,14 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
     SessionManager::setup_event_subscriptions_after_init();
 
     // Create and initialize ScreenManager
-    let screen_manager = Arc::new(Mutex::new(ScreenManager::new(event_bus.clone())));
+    let backend = ratatui::backend::CrosstermBackend::new(std::io::stdout());
+    let terminal = ratatui::Terminal::new(backend)
+        .map_err(|e| GitTypeError::TerminalError(format!("Failed to create terminal: {}", e)))?;
+    let screen_manager = Arc::new(Mutex::new(ScreenManager::new(
+        event_bus.clone(),
+        GameData::instance(),
+        terminal,
+    )));
 
     // Set up signal handlers with ScreenManager reference
     setup_signal_handlers(screen_manager.clone());

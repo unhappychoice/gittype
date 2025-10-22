@@ -7,6 +7,7 @@ use once_cell::sync::Lazy;
 use rand::rngs::StdRng;
 use rand::seq::SliceRandom;
 use rand::{Rng, SeedableRng};
+use ratatui::backend::Backend;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
@@ -234,7 +235,10 @@ impl StageRepository {
         }
     }
 
-    pub fn update_title_screen_data(&self, manager: &mut ScreenManager) -> Result<()> {
+    pub fn update_title_screen_data<B>(&self, manager: &mut ScreenManager<B>) -> Result<()>
+    where
+        B: Backend + Send + 'static,
+    {
         // Only update if indices are cached to avoid GameData access during screen transitions
         if !self.indices_cached {
             return Ok(());

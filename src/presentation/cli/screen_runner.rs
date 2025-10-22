@@ -1,4 +1,5 @@
 use crate::domain::events::EventBus;
+use crate::presentation::game::GameData;
 use crate::presentation::tui::{Screen, ScreenManager, ScreenType};
 use crate::Result;
 use std::sync::{Arc, Mutex};
@@ -17,7 +18,11 @@ where
 {
     // Create EventBus and ScreenManager
     let event_bus = EventBus::new();
-    let mut screen_manager = ScreenManager::new(event_bus.clone());
+    let backend = ratatui::backend::CrosstermBackend::new(std::io::stdout());
+    let terminal = ratatui::Terminal::new(backend).map_err(|e| {
+        crate::GitTypeError::TerminalError(format!("Failed to create terminal: {}", e))
+    })?;
+    let mut screen_manager = ScreenManager::new(event_bus.clone(), GameData::instance(), terminal);
 
     // Create and register screen
     let screen = screen_factory(event_bus.clone());

@@ -53,7 +53,7 @@ pub fn setup_signal_handlers(screen_manager: Arc<Mutex<ScreenManager>>) {
         // Try to show panic screen - if this fails, fall back to standard panic behavior
         if show_panic_screen(&full_message, &manager_for_panic).is_err() {
             // Clean up terminal using the existing static cleanup
-            ScreenManager::cleanup_terminal_static();
+            ScreenManager::<ratatui::backend::CrosstermBackend<std::io::Stdout>>::cleanup_terminal_static();
 
             // Fallback to standard panic message
             eprintln!("\\n💥 GitType encountered an unexpected error:");
@@ -72,7 +72,7 @@ pub fn setup_signal_handlers(screen_manager: Arc<Mutex<ScreenManager>>) {
             .map(|manager| manager.get_event_bus().publish(ExitRequested))
             .unwrap_or_else(|| {
                 // Fallback: just cleanup and exit
-                ScreenManager::cleanup_terminal_static();
+                ScreenManager::<ratatui::backend::CrosstermBackend<std::io::Stdout>>::cleanup_terminal_static();
                 std::process::exit(0);
             });
     })
