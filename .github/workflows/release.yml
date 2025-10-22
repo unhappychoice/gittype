@@ -224,14 +224,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ needs.release.outputs.new_version }}
+          ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - uses: cachix/install-nix-action@v27
 
       - name: Calculate and update hashes
         run: |
           VERSION=${{ needs.release.outputs.new_version }}
+
+          # Ensure we have the latest main
+          git pull origin main
 
           # Calculate source hash
           SRC_HASH=$(nix flake prefetch --json github:unhappychoice/gittype/$VERSION 2>/dev/null | jq -r .hash)
@@ -256,7 +260,7 @@ jobs:
           git config --local user.name "GitHub Action"
           git add flake.nix
           git commit -m "chore: update flake.nix hashes for $VERSION" || echo "No changes to commit"
-          git push origin HEAD:main
+          git push origin main
 
   update-homebrew:
     name: Update Homebrew Formula
