@@ -1,4 +1,7 @@
-use crate::integration::screens::mocks::analytics_screen_mock::MockAnalyticsDataProvider;
+use crate::integration::screens::mocks::analytics_screen_mock::{
+    MockAnalyticsDataProvider, MockAnalyticsDataProviderEmpty,
+    MockAnalyticsDataProviderWithActivity,
+};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
@@ -9,6 +12,22 @@ screen_snapshot_test!(
     AnalyticsScreen,
     AnalyticsScreen::new(EventBus::new()),
     provider = MockAnalyticsDataProvider
+);
+
+// Test with daily session data to render the chart
+screen_snapshot_test!(
+    test_analytics_screen_snapshot_overview_with_activity,
+    AnalyticsScreen,
+    AnalyticsScreen::new(EventBus::new()),
+    provider = MockAnalyticsDataProviderWithActivity
+);
+
+// Test with empty data
+screen_snapshot_test!(
+    test_analytics_screen_snapshot_overview_empty,
+    AnalyticsScreen,
+    AnalyticsScreen::new(EventBus::new()),
+    provider = MockAnalyticsDataProviderEmpty
 );
 
 screen_snapshot_test!(
