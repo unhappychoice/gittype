@@ -23,12 +23,27 @@
       description = cargoToml.package.description;
       packages = forAllSystems ({ pkgs }: {
         default = pkgs.rustPlatform.buildRustPackage rec {
+          pname = "gittype";
+          version = "0.8.0";
+          src = pkgs.fetchFromGitHub {
+            owner = "unhappychoice";
+            repo = "gittype";
+            rev = "v${version}";
+            hash = "sha256-Yvbtnf+rBLsLIKfzhZR9L7t2SbX5I8Jk9st3FUvD5Wo=";
+          };
+          cargoHash = "sha256-70lLK+I98iCssfsQovixPCvffaeaHuj43ALBJI6vnw0=";
+          nativeBuildInputs = [ pkgs.perl pkgs.pkg-config pkgs.git ];
+          buildInputs = [ pkgs.openssl ];
+          doCheck = false;
+        };
+
+        unstable = pkgs.rustPlatform.buildRustPackage rec {
           inherit pname version;
           src = ./.;
           cargoLock.lockFile = ./Cargo.lock;
           nativeBuildInputs = [ pkgs.perl pkgs.pkg-config pkgs.git ];
           buildInputs = [ pkgs.openssl ];
-          doCheck = true;
+          doCheck = false;
         };
       });
 
@@ -51,6 +66,10 @@
         default = {
           type = "app";
           program = "${self.packages.${pkgs.system}.default}/bin/gittype";
+        };
+        unstable = {
+          type = "app";
+          program = "${self.packages.${pkgs.system}.unstable}/bin/gittype";
         };
       });
     };

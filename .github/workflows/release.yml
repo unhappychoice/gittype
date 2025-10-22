@@ -53,12 +53,31 @@ jobs:
       - name: Run tests
         run: cargo test
 
+      # Install Nix for flake.nix updates
+      - name: Install Nix
+        uses: cachix/install-nix-action@v27
+
+      # Update flake.nix with new version and hashes
+      - name: Update flake.nix
+        run: |
+          NEW_VERSION=$(echo "${{ steps.version.outputs.new_version }}" | sed 's/^v//')
+
+          # Update version in flake.nix
+          sed -i "s/version = \"[0-9.]\+\"/version = \"$NEW_VERSION\"/" flake.nix
+
+          # Calculate hash for source
+          nix flake prefetch --json github:unhappychoice/gittype/${{ steps.version.outputs.new_version }} > /tmp/prefetch.json || true
+
+          # Note: Hashes will be calculated after tag is pushed, so we'll use a placeholder for now
+          # The actual hash update will happen in a separate job after the tag is created
+          echo "Version updated in flake.nix to $NEW_VERSION"
+
       # Create temporary tag for changelog generation
       - name: Create temporary tag
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add Cargo.toml Cargo.lock
+          git add Cargo.toml Cargo.lock flake.nix
           git commit -m "chore: bump version to ${{ steps.version.outputs.new_version }}"
           git tag ${{ steps.version.outputs.new_version }}
 
@@ -197,6 +216,47 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Publish to crates.io
         run: cargo publish --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+  update-flake-hashes:
+    name: Update flake.nix Hashes
+    runs-on: ubuntu-latest
+    needs: release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.new_version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: cachix/install-nix-action@v27
+
+      - name: Calculate and update hashes
+        run: |
+          VERSION=${{ needs.release.outputs.new_version }}
+
+          # Calculate source hash
+          SRC_HASH=$(nix flake prefetch --json github:unhappychoice/gittype/$VERSION 2>/dev/null | jq -r .hash)
+          echo "Source hash: $SRC_HASH"
+
+          # Update source hash in flake.nix
+          sed -i "s|hash = \"sha256-[A-Za-z0-9+/=]\+\"|hash = \"$SRC_HASH\"|" flake.nix
+
+          # Try to build to get cargoHash (it will fail but show the correct hash)
+          nix build .#default 2>&1 | tee /tmp/build.log || true
+          CARGO_HASH=$(grep -oP "got:\s+\Ksha256-[A-Za-z0-9+/=]+" /tmp/build.log | head -1 || echo "")
+
+          if [ -n "$CARGO_HASH" ]; then
+            echo "Cargo hash: $CARGO_HASH"
+            sed -i "s|cargoHash = \"sha256-[A-Za-z0-9+/=]\+\"|cargoHash = \"$CARGO_HASH\"|" flake.nix
+          else
+            echo "Warning: Could not determine cargo hash"
+          fi
+
+          # Commit and push the updated flake.nix
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add flake.nix
+          git commit -m "chore: update flake.nix hashes for $VERSION" || echo "No changes to commit"
+          git push origin HEAD:main
 
   update-homebrew:
     name: Update Homebrew Formula
