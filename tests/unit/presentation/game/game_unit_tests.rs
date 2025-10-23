@@ -1,5 +1,6 @@
 use gittype::domain::models::{Challenge, DifficultyLevel};
-use gittype::presentation::game::{GameMode, StageRepository};
+use gittype::presentation::game::{GameData, GameMode, StageRepository};
+use std::sync::{Arc, Mutex};
 
 fn create_test_challenges(count: usize) -> Vec<Challenge> {
     (0..count)
@@ -28,7 +29,8 @@ fn create_test_challenges(count: usize) -> Vec<Challenge> {
 #[ignore] // TODO: Fix test after StageRepository API changes
 fn test_normal_mode_limits_stages() {
     let _challenges = create_test_challenges(10);
-    let _repository = StageRepository::empty()
+    let game_data = Arc::new(Mutex::new(GameData::default()));
+    let _repository = StageRepository::new(None, game_data)
         .with_mode(GameMode::Normal)
         .with_max_stages(3);
 
@@ -40,7 +42,8 @@ fn test_normal_mode_limits_stages() {
 #[ignore] // TODO: Fix test after StageRepository API changes
 fn test_time_attack_mode_uses_all() {
     let _challenges = create_test_challenges(5);
-    let _repository = StageRepository::empty().with_mode(GameMode::TimeAttack);
+    let game_data = Arc::new(Mutex::new(GameData::default()));
+    let _repository = StageRepository::new(None, game_data).with_mode(GameMode::TimeAttack);
 
     // let stages = repository.build_stages();
     // assert_eq!(stages.len(), 5);
@@ -50,11 +53,13 @@ fn test_time_attack_mode_uses_all() {
 #[ignore] // TODO: Fix test after StageRepository API changes
 fn test_seeded_randomness_is_reproducible() {
     let _challenges = create_test_challenges(10);
-    let _repository1 = StageRepository::empty()
+    let game_data1 = Arc::new(Mutex::new(GameData::default()));
+    let _repository1 = StageRepository::new(None, game_data1)
         .with_mode(GameMode::Normal)
         .with_max_stages(3)
         .with_seed(42);
-    let _repository2 = StageRepository::empty()
+    let game_data2 = Arc::new(Mutex::new(GameData::default()));
+    let _repository2 = StageRepository::new(None, game_data2)
         .with_mode(GameMode::Normal)
         .with_max_stages(3)
         .with_seed(42);
@@ -74,7 +79,8 @@ fn test_seeded_randomness_is_reproducible() {
 fn test_custom_mode_easy_prefers_short() {
     // Ensure at least 3 EASY challenges exist (0,3,6,...) => use 9
     let _challenges = create_test_challenges(9);
-    let _repository = StageRepository::empty().with_mode(GameMode::Custom {
+    let game_data = Arc::new(Mutex::new(GameData::default()));
+    let _repository = StageRepository::new(None, game_data).with_mode(GameMode::Custom {
         max_stages: Some(3),
         time_limit: None,
         difficulty: DifficultyLevel::Easy,

@@ -1,9 +1,10 @@
-use super::{TypingContentView, TypingDialogView, TypingFooterView, TypingHeaderView};
+use super::{
+    TypingContentView, TypingCountdownView, TypingDialogView, TypingFooterView, TypingHeaderView,
+};
 use crate::domain::models::{Challenge, GitRepository};
 use crate::presentation::game::{
     context_loader::CodeContext, typing_core::TypingCore, SessionManager,
 };
-use crate::presentation::tui::views::CountdownView;
 use crate::presentation::ui::Colors;
 use ratatui::{
     layout::{Constraint, Direction, Layout},
@@ -42,6 +43,7 @@ impl TypingView {
         countdown_number: Option<u8>,
         skips_remaining: usize,
         dialog_shown: bool,
+        session_manager: &std::sync::Arc<std::sync::Mutex<SessionManager>>,
     ) {
         let countdown_active = countdown_number.is_some();
 
@@ -75,7 +77,7 @@ impl TypingView {
         );
 
         // Metrics
-        if let Ok(instance) = SessionManager::instance().lock() {
+        if let Ok(instance) = session_manager.lock() {
             if let Some(stage_tracker) = instance.get_current_stage_tracker() {
                 TypingFooterView::render_metrics(
                     frame,
@@ -138,7 +140,7 @@ impl TypingView {
             let start_text = Paragraph::new(vec![Line::from(start_line)]);
             frame.render_widget(start_text, start_area);
         } else if let Some(count) = countdown_number {
-            CountdownView::render(frame, count);
+            TypingCountdownView::render(frame, count);
         }
 
         // Dialog

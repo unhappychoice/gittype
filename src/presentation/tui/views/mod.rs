@@ -1,6 +1,4 @@
 pub mod analytics;
-pub mod countdown_view;
-pub mod dialog_view;
 pub mod loading;
 pub mod repo_list;
 pub mod repo_play;
@@ -18,8 +16,6 @@ pub mod trending_repository_selection;
 pub mod typing;
 pub mod version_check;
 
-pub use countdown_view::CountdownView;
-pub use dialog_view::DialogView;
 pub use loading::LoadingMainView;
 pub use session_detail::{PerformanceMetricsView, SessionInfoView, StageDetailsView};
 pub use session_detail_dialog::{BestRecordsView, ControlsView, HeaderView, StageResultsView};
@@ -35,6 +31,7 @@ pub use total_summary::{AsciiScoreView, StatisticsView};
 pub use total_summary_share::SharingView;
 pub use typing::typing_animation_view::TypingAnimationView;
 pub use typing::typing_content_view::TypingContentView;
+pub use typing::typing_countdown_view::TypingCountdownView;
 pub use typing::typing_dialog_view::TypingDialogView;
 pub use typing::typing_footer_view::TypingFooterView;
 pub use typing::typing_header_view::TypingHeaderView;

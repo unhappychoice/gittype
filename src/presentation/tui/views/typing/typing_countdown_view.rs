@@ -8,9 +8,9 @@ use ratatui::{
     Frame,
 };
 
-pub struct CountdownView;
+pub struct TypingCountdownView;
 
-impl CountdownView {
+impl TypingCountdownView {
     pub fn render(frame: &mut Frame, count: u8) {
         let area = frame.area();
         let center_x = area.width / 2;

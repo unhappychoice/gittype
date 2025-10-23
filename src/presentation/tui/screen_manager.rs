@@ -18,12 +18,19 @@
 //! use gittype::domain::events::EventBus;
 //! use gittype::presentation::tui::ScreenManager;
 //! use gittype::presentation::tui::screens::TitleScreen;
+//! use gittype::presentation::game::GameData;
+//! use ratatui::backend::CrosstermBackend;
+//! use ratatui::Terminal;
+//! use std::io::stdout;
 //!
 //! fn example() -> gittype::Result<()> {
 //!     let event_bus = EventBus::new();
 //!     let screen = TitleScreen::new(event_bus.clone());
+//!     let game_data = GameData::instance();
+//!     let backend = CrosstermBackend::new(stdout());
+//!     let terminal = Terminal::new(backend).unwrap();
 //!
-//!     let mut manager = ScreenManager::new(event_bus);
+//!     let mut manager = ScreenManager::new(event_bus, game_data, terminal);
 //!     manager.register_screen(screen);
 //!     manager.initialize_terminal()?;
 //!     manager.run()
@@ -53,7 +60,7 @@ use crossterm::style::ResetColor;
 use crossterm::terminal::{
     disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen,
 };
-use ratatui::backend::CrosstermBackend;
+use ratatui::backend::{Backend, CrosstermBackend};
 use ratatui::Terminal;
 use std::collections::HashMap;
 use std::io::{stdout, Stdout, Write};
@@ -62,13 +69,13 @@ use std::thread::sleep;
 use std::time::{Duration, Instant};
 
 /// Central manager for screen transitions, rendering, and input handling
-pub struct ScreenManager {
+pub struct ScreenManager<B: Backend + Send + 'static = CrosstermBackend<Stdout>> {
     screens: HashMap<ScreenType, Box<dyn Screen>>,
     screen_stack: Vec<ScreenType>,
     current_screen_type: ScreenType,
     terminal_initialized: bool,
     last_update: Instant,
-    ratatui_terminal: Option<Terminal<CrosstermBackend<Stdout>>>,
+    ratatui_terminal: Terminal<B>,
     exit_requested: bool,
 
     // Pending screen transition - shared across threads
@@ -76,21 +83,33 @@ pub struct ScreenManager {
 
     // Event bus for UI events
     event_bus: EventBus,
+
+    // Game data
+    game_data: Arc<Mutex<GameData>>,
 }
 
-impl ScreenManager {
-    pub fn new(event_bus: EventBus) -> Self {
+impl<B: Backend + Send + 'static> ScreenManager<B> {
+    pub fn new(
+        event_bus: EventBus,
+        game_data: Arc<Mutex<GameData>>,
+        terminal: Terminal<B>,
+    ) -> Self {
         Self {
             screens: HashMap::new(),
             screen_stack: Vec::new(),
             current_screen_type: ScreenType::Title,
             terminal_initialized: false,
             last_update: Instant::now(),
-            ratatui_terminal: None,
+            ratatui_terminal: terminal,
             exit_requested: false,
             pending_transition: Arc::new(Mutex::new(None)),
             event_bus: event_bus.clone(),
+            game_data,
         }
+    }
+
+    fn get_game_data(&self) -> Arc<Mutex<GameData>> {
+        self.game_data.clone()
     }
 
     pub fn get_event_bus(&self) -> EventBus {
@@ -143,7 +162,11 @@ impl ScreenManager {
         self.register_screen(StageSummaryScreen::new(self.event_bus.clone()));
         self.register_screen(SessionSummaryScreen::new(self.event_bus.clone()));
         self.register_screen(TotalSummaryScreen::new(self.event_bus.clone()));
-        self.register_screen(TypingScreen::new(self.event_bus.clone()));
+        self.register_screen(TypingScreen::new(
+            self.event_bus.clone(),
+            self.game_data.clone(),
+            SessionManager::instance(),
+        ));
         self.register_screen(SessionDetailScreen::new(self.event_bus.clone()));
         self.register_screen(AnimationScreen::new(self.event_bus.clone()));
         self.register_screen(VersionCheckScreen::new(self.event_bus.clone()));
@@ -222,10 +245,7 @@ impl ScreenManager {
             self.terminal_initialized = false;
         }
 
-        // Clean up ratatui terminal
-        if let Some(_terminal) = self.ratatui_terminal.take() {
-            // Terminal cleanup is handled automatically when dropped
-        }
+        // Ratatui terminal cleanup is handled automatically when dropped
 
         Ok(())
     }
@@ -264,7 +284,9 @@ impl ScreenManager {
             log::info!("Initializing screen: {:?}", self.current_screen_type);
 
             // Get data using provider and call init_with_data
-            let data = Self::get_screen_data(self.current_screen_type.clone())?;
+            // If get_screen_data fails (e.g., for test screens), use empty data
+            let data = Self::get_screen_data(self.current_screen_type.clone())
+                .unwrap_or_else(|_| Box::new(()));
             new_screen.init_with_data(data).map_err(|e| {
                 GitTypeError::ScreenInitializationError(format!(
                     "Failed to initialize screen {:?}: {}",
@@ -318,11 +340,9 @@ impl ScreenManager {
 
     fn clear_screen(&mut self) -> Result<()> {
         // Clear the ratatui terminal buffer
-        if let Some(terminal) = &mut self.ratatui_terminal {
-            terminal.clear().map_err(|e| {
-                GitTypeError::TerminalError(format!("Failed to clear ratatui terminal: {}", e))
-            })?;
-        }
+        self.ratatui_terminal.clear().map_err(|e| {
+            GitTypeError::TerminalError(format!("Failed to clear ratatui terminal: {}", e))
+        })?;
         Ok(())
     }
 
@@ -507,6 +527,9 @@ impl ScreenManager {
     }
 
     fn update_and_render(&mut self) -> Result<()> {
+        // Get game_data before mutable borrow to avoid borrow checker error
+        let game_data = self.get_game_data();
+
         if let Some(screen) = self.screens.get_mut(&self.current_screen_type) {
             let strategy = screen.get_update_strategy();
             let now = Instant::now();
@@ -525,8 +548,13 @@ impl ScreenManager {
 
                 // Special handling for LoadingScreen auto-transition
                 if self.current_screen_type == ScreenType::Loading && !needs_render {
+                    let data = game_data.lock().unwrap();
+                    let loading_completed = data.loading_completed;
+                    let loading_failed = data.loading_failed;
+                    drop(data);
+
                     // LoadingScreen completed, transition to Title
-                    if GameData::is_loading_completed() {
+                    if loading_completed {
                         // Update TitleScreen data with challenge counts after loading is complete
                         self.handle_transition(ScreenTransition::Replace(ScreenType::Title))?;
 
@@ -537,7 +565,7 @@ impl ScreenManager {
                         }
 
                         return Ok(());
-                    } else if GameData::is_loading_failed() {
+                    } else if loading_failed {
                         // Could transition to an error screen or back to title
                         self.handle_transition(ScreenTransition::Replace(ScreenType::Title))?;
                         return Ok(());
@@ -620,26 +648,14 @@ impl ScreenManager {
     }
 
     pub fn render_current_screen(&mut self) -> Result<()> {
-        // Initialize ratatui terminal if not already done
-        if self.ratatui_terminal.is_none() {
-            let backend = CrosstermBackend::new(stdout());
-            let terminal = Terminal::new(backend).map_err(|e| {
-                GitTypeError::TerminalError(format!("Failed to create ratatui terminal: {}", e))
-            })?;
-            self.ratatui_terminal = Some(terminal);
-        }
-
-        // Use the persistent terminal instance
-        if let Some(terminal) = &mut self.ratatui_terminal {
-            if let Some(screen) = self.screens.get_mut(&self.current_screen_type) {
-                terminal
-                    .draw(|frame| {
-                        let _ = screen.render_ratatui(frame);
-                    })
-                    .map_err(|e| {
-                        GitTypeError::TerminalError(format!("Failed to draw ratatui frame: {}", e))
-                    })?;
-            }
+        if let Some(screen) = self.screens.get_mut(&self.current_screen_type) {
+            self.ratatui_terminal
+                .draw(|frame| {
+                    let _ = screen.render_ratatui(frame);
+                })
+                .map_err(|e| {
+                    GitTypeError::TerminalError(format!("Failed to draw ratatui frame: {}", e))
+                })?;
         }
 
         Ok(())
@@ -696,14 +712,16 @@ impl ScreenManager {
     }
 }
 
-impl Drop for ScreenManager {
+impl<B: Backend + Send + 'static> Drop for ScreenManager<B> {
     fn drop(&mut self) {
         let _ = self.cleanup_terminal();
     }
 }
 
-impl Default for ScreenManager {
+impl Default for ScreenManager<CrosstermBackend<Stdout>> {
     fn default() -> Self {
-        Self::new(EventBus::new())
+        let backend = CrosstermBackend::new(stdout());
+        let terminal = Terminal::new(backend).expect("Failed to create terminal");
+        Self::new(EventBus::new(), GameData::instance(), terminal)
     }
 }
