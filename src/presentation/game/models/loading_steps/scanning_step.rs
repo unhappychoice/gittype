@@ -1,5 +1,6 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
 use crate::domain::services::source_file_extractor::SourceFileExtractor;
+use crate::infrastructure::git::LocalGitRepositoryClient;
 use crate::presentation::ui::Colors;
 use crate::{GitTypeError, Result};
 use ratatui::style::Color;
@@ -67,7 +68,7 @@ impl Step for ScanningStep {
         if context.git_repository.is_none() {
             if let Some(repo_path) = context.repo_path {
                 context.git_repository =
-                    crate::domain::models::GitRepository::new_local(repo_path).ok();
+                    LocalGitRepositoryClient::create_from_local_path(repo_path).ok();
             }
         }
 
