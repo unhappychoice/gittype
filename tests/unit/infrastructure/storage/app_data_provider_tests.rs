@@ -33,7 +33,8 @@ mod mock_tests {
 
 #[test]
 fn file_storage_implements_app_data_provider() {
-    let result = FileStorage::get_app_data_dir();
+    let file_storage = FileStorage::new();
+    let result = file_storage.get_app_data_dir();
     assert!(result.is_ok());
 }
 

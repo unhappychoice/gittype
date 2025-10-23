@@ -1,10 +1,11 @@
+use crate::infrastructure::console::{Console, ConsoleImpl};
+use crate::infrastructure::storage::file_storage::FileStorage;
 use crate::presentation::cli::commands::run_game_session;
 use crate::presentation::cli::screen_runner::run_screen;
 use crate::presentation::cli::Cli;
 use crate::presentation::tui::screens::{RepoListScreen, RepoPlayScreen};
 use crate::presentation::tui::ScreenType;
 use crate::{GitTypeError, Result};
-use std::io::{self, Write};
 
 pub fn run_repo_list() -> Result<()> {
     run_screen(
@@ -18,69 +19,79 @@ pub fn run_repo_list() -> Result<()> {
 }
 
 pub fn run_repo_clear(force: bool) -> Result<()> {
-    use std::fs;
+    let file_storage = FileStorage::new();
+    let console = ConsoleImpl::new();
 
     // Get the repos directory path
-    let home_dir = dirs::home_dir().ok_or_else(|| {
-        GitTypeError::InvalidRepositoryFormat("Could not determine home directory".to_string())
-    })?;
-    let repos_dir = home_dir.join(".gittype").join("repos");
+    let repos_dir = file_storage
+        .get_app_data_dir()
+        .map_err(|_| {
+            GitTypeError::InvalidRepositoryFormat(
+                "Could not determine app data directory".to_string(),
+            )
+        })?
+        .join("repos");
 
-    if !repos_dir.exists() {
-        println!("No cached repositories directory found.");
+    if !file_storage.file_exists(&repos_dir) {
+        console.println("No cached repositories directory found.")?;
         return Ok(());
     }
 
     // Count actual repositories (look for directories with .git subdirectories)
-    fn count_git_repositories(path: &std::path::Path) -> usize {
+    fn count_git_repositories(file_storage: &FileStorage, path: &std::path::Path) -> Result<usize> {
         let mut count = 0;
-        if let Ok(entries) = fs::read_dir(path) {
-            for entry in entries.flatten() {
-                let entry_path = entry.path();
-                if entry_path.is_dir() {
-                    // Check if this directory contains a .git subdirectory (actual repo)
-                    if entry_path.join(".git").exists() {
-                        count += 1;
-                    } else {
-                        // Recursively check subdirectories
-                        count += count_git_repositories(&entry_path);
-                    }
+        let entries = file_storage.read_dir(path)?;
+        for entry in entries.flatten() {
+            let entry_path = entry.path();
+            if entry_path.is_dir() {
+                // Check if this directory contains a .git subdirectory (actual repo)
+                if file_storage.file_exists(&entry_path.join(".git")) {
+                    count += 1;
+                } else {
+                    // Recursively check subdirectories
+                    count += count_git_repositories(file_storage, &entry_path)?;
                 }
             }
         }
-        count
+        Ok(count)
     }
 
-    let cached_count = count_git_repositories(&repos_dir);
+    let cached_count = count_git_repositories(&file_storage, &repos_dir)?;
 
     if cached_count == 0 {
-        println!("No cached repositories found.");
+        console.println("No cached repositories found.")?;
         return Ok(());
     }
 
     if !force {
-        println!("This will delete all locally cached repositories in:");
-        println!("  {}", repos_dir.display());
-        println!("({} cached repositories will be removed)", cached_count);
+        console.println("This will delete all locally cached repositories in:")?;
+        console.println(&format!("  {}", repos_dir.display()))?;
+        console.println(&format!(
+            "({} cached repositories will be removed)",
+            cached_count
+        ))?;
 
-        print!("Are you sure you want to continue? [y/N]: ");
-        io::stdout().flush()?;
+        console.print("Are you sure you want to continue? [y/N]: ")?;
+        console.flush()?;
 
         let mut input = String::new();
-        io::stdin().read_line(&mut input)?;
+        console.read_line(&mut input)?;
 
         let input = input.trim().to_lowercase();
         if input != "y" && input != "yes" {
-            println!("Operation cancelled.");
+            console.println("Operation cancelled.")?;
             return Ok(());
         }
     }
 
     // Delete the entire repos directory
-    match fs::remove_dir_all(&repos_dir) {
+    match file_storage.remove_dir_all(&repos_dir) {
         Ok(_) => {
-            println!("Successfully deleted all cached repositories.");
-            println!("Cache directory {} has been removed.", repos_dir.display());
+            console.println("Successfully deleted all cached repositories.")?;
+            console.println(&format!(
+                "Cache directory {} has been removed.",
+                repos_dir.display()
+            ))?;
         }
         Err(e) => {
             return Err(GitTypeError::InvalidRepositoryFormat(format!(
@@ -94,6 +105,8 @@ pub fn run_repo_clear(force: bool) -> Result<()> {
 }
 
 pub fn run_repo_play() -> Result<()> {
+    let console = ConsoleImpl::new();
+
     // Run screen and get selected repository
     let selected_repo = run_screen(
         ScreenType::RepoPlay,
@@ -110,7 +123,7 @@ pub fn run_repo_play() -> Result<()> {
     if let Some((user_name, repo_name)) = selected_repo {
         let repo_spec = format!("{}/{}", user_name, repo_name);
 
-        println!("Starting gittype with repository: {}", repo_spec);
+        console.println(&format!("Starting gittype with repository: {}", repo_spec))?;
 
         // Create a Cli struct to pass to run_game_session
         let cli = Cli {
@@ -123,7 +136,7 @@ pub fn run_repo_play() -> Result<()> {
         // Start the game session
         run_game_session(cli)
     } else {
-        println!("Repository selection cancelled.");
+        console.println("Repository selection cancelled.")?;
         Ok(())
     }
 }

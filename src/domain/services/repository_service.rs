@@ -3,6 +3,7 @@ use crate::domain::models::storage::repository::{StoredRepository, StoredReposit
 use crate::infrastructure::database::daos::RepositoryDao;
 use crate::infrastructure::database::database::Database;
 use crate::infrastructure::git::remote::remote_git_repository_client::RemoteGitRepositoryClient;
+use crate::infrastructure::storage::file_storage::FileStorage;
 use std::path::PathBuf;
 
 pub struct RepositoryService {
@@ -43,7 +44,10 @@ impl RepositoryService {
     }
 
     pub fn get_cache_directory() -> PathBuf {
-        let home_dir = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
-        home_dir.join(".gittype").join("repos")
+        let file_storage = FileStorage::new();
+        file_storage
+            .get_app_data_dir()
+            .unwrap_or_else(|_| PathBuf::from("."))
+            .join("repos")
     }
 }
