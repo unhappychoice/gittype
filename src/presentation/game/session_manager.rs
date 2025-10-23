@@ -135,6 +135,10 @@ impl SessionManager {
         self.current_stage_tracker = Some(tracker);
     }
 
+    pub fn set_config(&mut self, config: SessionConfig) {
+        self.config = config;
+    }
+
     fn setup_event_subscriptions_internal(
         bus: &EventBus,
         instance: &std::sync::Weak<Mutex<SessionManager>>,
@@ -418,12 +422,6 @@ impl SessionManager {
 
     /// Get current challenge for the session
     pub fn get_current_challenge(&self) -> Result<Option<Challenge>> {
-        // First check session_challenges (for testing and tracking)
-        if !self.session_challenges.is_empty() {
-            return Ok(self.session_challenges.last().cloned());
-        }
-
-        // Otherwise, query StageRepository if session is in progress
         if matches!(self.state, SessionState::InProgress { .. }) {
             let mut repo = self.stage_repository.lock().map_err(|e| {
                 GitTypeError::TerminalError(format!("Failed to lock StageRepository: {}", e))

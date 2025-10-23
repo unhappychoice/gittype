@@ -83,8 +83,6 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
         Some(&default_repo_path)
     };
 
-    // Initialize GameData and set processing parameters
-    GameData::initialize()?;
     GameData::set_processing_parameters(repo_spec, initial_repo_path, &options)?;
 
     log::info!(

@@ -77,6 +77,7 @@ impl ScreenDataProvider for MockAnalyticsDataProvider {
             current_streak: 3,
             repository_stats,
             language_stats,
+            reference_date: None,
         };
 
         Ok(Box::new(data))
@@ -138,6 +139,9 @@ impl ScreenDataProvider for MockAnalyticsDataProviderWithActivity {
         daily_sessions.insert("01-20".to_string(), 6);
         daily_sessions.insert("01-21".to_string(), 8);
 
+        use chrono::NaiveDate;
+        let reference_date = NaiveDate::from_ymd_opt(2025, 1, 22);
+
         let data = AnalyticsData {
             total_sessions: 35,
             avg_cpm: 350.0,
@@ -175,6 +179,7 @@ impl ScreenDataProvider for MockAnalyticsDataProviderWithActivity {
             current_streak: 7,
             repository_stats,
             language_stats,
+            reference_date,
         };
 
         Ok(Box::new(data))
@@ -202,6 +207,7 @@ impl ScreenDataProvider for MockAnalyticsDataProviderEmpty {
             current_streak: 0,
             repository_stats: HashMap::new(),
             language_stats: HashMap::new(),
+            reference_date: None,
         };
 
         Ok(Box::new(data))

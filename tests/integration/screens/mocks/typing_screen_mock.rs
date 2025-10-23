@@ -23,10 +23,7 @@ pub fn create_typing_screen_with_challenge(
     event_bus: EventBus,
     code: Option<&str>,
 ) -> TypingScreen {
-    let game_data = Arc::new(Mutex::new(GameData::default()));
-
-    // Create a mock StageRepository with challenge if provided
-    let stage_repository = if let Some(code_content) = code {
+    let (game_data, stage_repository) = if let Some(code_content) = code {
         let challenge = Challenge {
             id: "test_1".to_string(),
             source_file_path: Some("test.rs".to_string()),
@@ -38,11 +35,30 @@ pub fn create_typing_screen_with_challenge(
             difficulty_level: Some(gittype::domain::models::DifficultyLevel::Easy),
         };
 
-        let mut repo = StageRepository::empty();
-        repo.set_cached_challenges(vec![challenge]);
-        Arc::new(Mutex::new(repo))
+        let mock_game_data = GameData {
+            challenges: Some(vec![challenge.clone()]),
+            ..Default::default()
+        };
+        let mock_game_data_arc = Arc::new(Mutex::new(mock_game_data));
+
+        let stage_repo_arc = Arc::new(Mutex::new(StageRepository::new(
+            None,
+            mock_game_data_arc.clone(),
+        )));
+
+        // Build difficulty indices for challenge lookup
+        if let Ok(mut repo) = stage_repo_arc.lock() {
+            repo.build_difficulty_indices();
+        }
+
+        (mock_game_data_arc, stage_repo_arc)
     } else {
-        Arc::new(Mutex::new(StageRepository::empty()))
+        let game_data_arc = Arc::new(Mutex::new(GameData::default()));
+        let stage_repo = Arc::new(Mutex::new(StageRepository::new(
+            None,
+            game_data_arc.clone(),
+        )));
+        (game_data_arc, stage_repo)
     };
 
     let session_manager = Arc::new(Mutex::new(SessionManager::with_stage_repository(
@@ -65,8 +81,16 @@ pub fn create_typing_screen_with_challenge(
         let stage_tracker = StageTracker::new(code_content.to_string());
 
         if let Ok(mut manager) = session_manager.lock() {
-            use gittype::presentation::game::session_manager::SessionState;
+            use gittype::domain::models::DifficultyLevel;
+            use gittype::presentation::game::session_manager::{SessionConfig, SessionState};
             use std::time::Instant;
+
+            // Set difficulty to Easy to match the test challenge
+            let config = SessionConfig {
+                difficulty: DifficultyLevel::Easy,
+                ..Default::default()
+            };
+            manager.set_config(config);
 
             // Manually set state to InProgress
             manager.set_state(SessionState::InProgress {
@@ -86,12 +110,7 @@ pub fn create_typing_screen_with_challenge(
 
     // Load challenge if provided
     if code.is_some() {
-        let result = screen.load_current_challenge();
-        if let Ok(false) = result {
-            eprintln!("WARNING: load_current_challenge() returned false - no challenge loaded");
-        } else if let Err(e) = result {
-            eprintln!("ERROR: load_current_challenge() failed: {:?}", e);
-        }
+        let _ = screen.load_current_challenge();
     }
 
     screen

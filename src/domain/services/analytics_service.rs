@@ -2,6 +2,7 @@ use crate::domain::error::Result;
 use crate::domain::repositories::SessionRepository;
 use crate::infrastructure::database::daos::RepositoryDao;
 use crate::infrastructure::database::database::Database;
+use chrono::NaiveDate;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
@@ -21,6 +22,7 @@ pub struct AnalyticsData {
     pub current_streak: usize,
     pub repository_stats: HashMap<String, RepoStats>,
     pub language_stats: HashMap<String, LangStats>,
+    pub reference_date: Option<NaiveDate>,
 }
 
 #[derive(Debug, Clone)]
@@ -92,6 +94,7 @@ impl AnalyticsService {
                 current_streak: 0,
                 repository_stats: HashMap::new(),
                 language_stats: HashMap::new(),
+                reference_date: None,
             });
         }
 
@@ -337,6 +340,7 @@ impl AnalyticsService {
             current_streak: 0,
             repository_stats,
             language_stats,
+            reference_date: None,
         })
     }
 }

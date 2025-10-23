@@ -455,7 +455,7 @@ impl Screen for TypingScreen {
             self.countdown.get_current_count(),
             skips_remaining,
             self.dialog_shown,
-            Some(&self.session_manager),
+            &self.session_manager,
         );
 
         Ok(())

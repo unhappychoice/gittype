@@ -46,20 +46,18 @@ pub struct StageRepository {
     config: StageConfig,
     built_stages: Vec<Challenge>,
     current_index: usize,
-    // Performance optimization: difficulty-based challenge indices
     difficulty_indices: HashMap<DifficultyLevel, Vec<usize>>,
     indices_cached: bool,
-    // Cache challenges for direct access (eliminates GameData dependency)
     cached_challenges: Option<Vec<Challenge>>,
+    game_data: Arc<Mutex<GameData>>,
 }
 
 /// Global StageRepository instance
 static GLOBAL_STAGE_REPOSITORY: Lazy<Arc<Mutex<StageRepository>>> =
-    Lazy::new(|| Arc::new(Mutex::new(StageRepository::empty())));
+    Lazy::new(|| Arc::new(Mutex::new(StageRepository::new(None, GameData::instance()))));
 
 impl StageRepository {
-    /// Create a new StageRepository with the provided git_repository
-    pub fn new(git_repository: Option<GitRepository>) -> Self {
+    pub fn new(git_repository: Option<GitRepository>, game_data: Arc<Mutex<GameData>>) -> Self {
         Self {
             git_repository,
             config: StageConfig::default(),
@@ -68,23 +66,15 @@ impl StageRepository {
             difficulty_indices: HashMap::new(),
             indices_cached: false,
             cached_challenges: None,
+            game_data,
         }
     }
 
-    /// Create an empty StageRepository
-    pub fn empty() -> Self {
-        Self {
-            git_repository: None,
-            config: StageConfig::default(),
-            built_stages: Vec::new(),
-            current_index: 0,
-            difficulty_indices: std::collections::HashMap::new(),
-            indices_cached: false,
-            cached_challenges: None,
-        }
-    }
-
-    pub fn with_config(git_repository: Option<GitRepository>, config: StageConfig) -> Self {
+    pub fn with_config(
+        git_repository: Option<GitRepository>,
+        config: StageConfig,
+        game_data: Arc<Mutex<GameData>>,
+    ) -> Self {
         Self {
             git_repository,
             config,
@@ -93,6 +83,7 @@ impl StageRepository {
             difficulty_indices: std::collections::HashMap::new(),
             indices_cached: false,
             cached_challenges: None,
+            game_data,
         }
     }
 
@@ -111,12 +102,19 @@ impl StageRepository {
         self
     }
 
-    /// Execute callback with challenges from GameData
+    pub fn with_game_data(mut self, game_data: Arc<Mutex<GameData>>) -> Self {
+        self.game_data = game_data;
+        self
+    }
+
     pub fn with_challenges<F, R>(&self, f: F) -> Option<R>
     where
         F: FnOnce(&Vec<Challenge>) -> R,
     {
-        GameData::with_challenges(f)
+        self.game_data
+            .lock()
+            .ok()
+            .and_then(|data| data.challenges.as_ref().map(f))
     }
 
     /// Build stages based on configuration
@@ -309,7 +307,7 @@ impl StageRepository {
 
 impl Default for StageRepository {
     fn default() -> Self {
-        Self::new(None)
+        Self::new(None, GameData::instance())
     }
 }
 
@@ -332,18 +330,16 @@ impl StageRepository {
             GitTypeError::TerminalError(format!("Failed to lock global StageRepository: {}", e))
         })?;
 
-        *repo = Self::new(git_repository);
-        // Don't build stages immediately - defer until needed
+        *repo = Self::new(git_repository, GameData::instance());
         Ok(())
     }
 
-    /// Initialize the global StageRepository and build stages
     pub fn initialize_global_with_stages(git_repository: Option<GitRepository>) -> Result<()> {
         let mut repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
             GitTypeError::TerminalError(format!("Failed to lock global StageRepository: {}", e))
         })?;
 
-        *repo = Self::new(git_repository);
+        *repo = Self::new(git_repository, GameData::instance());
         repo.build_and_store_stages();
         Ok(())
     }
@@ -477,7 +473,7 @@ impl StageRepository {
     }
 
     /// Build difficulty indices for O(1) challenge lookup
-    fn build_difficulty_indices(&mut self) {
+    pub fn build_difficulty_indices(&mut self) {
         if self.indices_cached {
             return;
         }

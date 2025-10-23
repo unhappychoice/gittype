@@ -123,7 +123,9 @@ impl OverviewView {
 
         // Generate continuous day range with 0 for missing days
         use chrono::{Datelike, Duration, Local};
-        let today = Local::now().date_naive();
+        let today = data
+            .reference_date
+            .unwrap_or_else(|| Local::now().date_naive());
         let mut continuous_data = Vec::new();
 
         for i in (0..max_days).rev() {
