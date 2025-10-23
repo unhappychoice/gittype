@@ -16,7 +16,7 @@ pub struct FileEntry {
 mod real_impl {
     use super::*;
 
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     pub struct FileStorage;
 
     impl AppDataProvider for FileStorage {}
@@ -115,6 +115,45 @@ mod real_impl {
                 })
                 .collect()
         }
+
+        /// Read file contents as a string
+        pub fn read_to_string(&self, file_path: &Path) -> Result<String> {
+            std::fs::read_to_string(file_path).map_err(|e| e.into())
+        }
+
+        /// Create directory and all parent directories
+        pub fn create_dir_all(&self, path: &Path) -> Result<()> {
+            std::fs::create_dir_all(path).map_err(|e| e.into())
+        }
+
+        /// Write string contents to a file
+        pub fn write(&self, file_path: &Path, contents: impl AsRef<[u8]>) -> Result<()> {
+            // Ensure parent directory exists
+            if let Some(parent) = file_path.parent() {
+                std::fs::create_dir_all(parent)?;
+            }
+            std::fs::write(file_path, contents).map_err(|e| e.into())
+        }
+
+        /// Get file metadata
+        pub fn metadata(&self, file_path: &Path) -> Result<std::fs::Metadata> {
+            std::fs::metadata(file_path).map_err(|e| e.into())
+        }
+
+        /// Read directory entries
+        pub fn read_dir(&self, path: &Path) -> Result<std::fs::ReadDir> {
+            std::fs::read_dir(path).map_err(|e| e.into())
+        }
+
+        /// Remove a directory and all its contents
+        pub fn remove_dir_all(&self, path: &Path) -> Result<()> {
+            std::fs::remove_dir_all(path).map_err(|e| e.into())
+        }
+
+        /// Get the application data directory (.gittype directory)
+        pub fn get_app_data_dir(&self) -> Result<PathBuf> {
+            <Self as AppDataProvider>::get_app_data_dir()
+        }
     }
 }
 
@@ -123,9 +162,12 @@ mod mock_impl {
     use super::*;
     use crate::GitTypeError;
 
-    #[derive(Debug)]
+    use std::collections::HashMap;
+
+    #[derive(Debug, Clone)]
     pub struct FileStorage {
         pub files: Vec<FileEntry>,
+        file_contents: HashMap<PathBuf, String>,
     }
 
     impl AppDataProvider for FileStorage {}
@@ -138,7 +180,10 @@ mod mock_impl {
 
     impl FileStorage {
         pub fn new() -> Self {
-            Self { files: Vec::new() }
+            Self {
+                files: Vec::new(),
+                file_contents: HashMap::new(),
+            }
         }
 
         pub fn add_file<P: Into<PathBuf>>(&mut self, path: P) {
@@ -153,6 +198,10 @@ mod mock_impl {
                 path: path.into(),
                 is_file: false,
             });
+        }
+
+        pub fn set_file_content<P: Into<PathBuf>>(&mut self, path: P, content: String) {
+            self.file_contents.insert(path.into(), content);
         }
 
         pub fn read_json<T>(&self, _file_path: &Path) -> Result<Option<T>>
@@ -175,8 +224,8 @@ mod mock_impl {
             Ok(())
         }
 
-        pub fn file_exists(&self, _file_path: &Path) -> bool {
-            false
+        pub fn file_exists(&self, file_path: &Path) -> bool {
+            self.file_contents.contains_key(file_path)
         }
 
         pub fn walk_directory(&self, path: &Path) -> Result<Vec<FileEntry>> {
@@ -188,6 +237,54 @@ mod mock_impl {
                 )));
             }
             Ok(self.files.clone())
+        }
+
+        pub fn read_to_string(&self, file_path: &Path) -> Result<String> {
+            self.file_contents.get(file_path).cloned().ok_or_else(|| {
+                GitTypeError::ExtractionFailed(format!(
+                    "Mock file not found: {}",
+                    file_path.display()
+                ))
+            })
+        }
+
+        pub fn create_dir_all(&self, _path: &Path) -> Result<()> {
+            Ok(())
+        }
+
+        pub fn write(&self, _file_path: &Path, _contents: impl AsRef<[u8]>) -> Result<()> {
+            Ok(())
+        }
+
+        pub fn metadata(&self, file_path: &Path) -> Result<std::fs::Metadata> {
+            self.file_contents
+                .get(file_path)
+                .map(|_| {
+                    // Return a fake metadata (this is a hack, but better than real filesystem access)
+                    Err(GitTypeError::ExtractionFailed(
+                        "Mock metadata not available".to_string(),
+                    ))
+                })
+                .unwrap_or_else(|| {
+                    Err(GitTypeError::ExtractionFailed(format!(
+                        "Mock file not found: {}",
+                        file_path.display()
+                    )))
+                })
+        }
+
+        pub fn read_dir(&self, _path: &Path) -> Result<std::fs::ReadDir> {
+            Err(GitTypeError::ExtractionFailed(
+                "Mock read_dir not implemented".to_string(),
+            ))
+        }
+
+        pub fn remove_dir_all(&self, _path: &Path) -> Result<()> {
+            Ok(())
+        }
+
+        pub fn get_app_data_dir(&self) -> Result<PathBuf> {
+            <Self as AppDataProvider>::get_app_data_dir()
         }
     }
 }

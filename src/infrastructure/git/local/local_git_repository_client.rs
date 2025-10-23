@@ -103,4 +103,89 @@ impl LocalGitRepositoryClient {
             })
             .map(|statuses| !statuses.is_empty())
     }
+
+    /// Create a GitRepository from a local path
+    pub fn create_from_local_path(path: &Path) -> Result<GitRepository> {
+        let repo = Repository::open(path).map_err(|e| {
+            GitTypeError::ExtractionFailed(format!("Failed to open git repository: {}", e))
+        })?;
+
+        // Get remote URL (origin)
+        let remote_url = repo
+            .find_remote("origin")
+            .ok()
+            .and_then(|remote| remote.url().map(|s| s.to_string()))
+            .unwrap_or_else(|| format!("file://{}", path.display()));
+
+        // Extract user_name and repository_name from path or URL
+        let (user_name, repository_name) = if remote_url.starts_with("file://") {
+            // Use directory name as repository name
+            let repo_name = path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or("unknown")
+                .to_string();
+            ("local".to_string(), repo_name)
+        } else {
+            Self::parse_repo_info(&remote_url)
+        };
+
+        // Get current branch
+        let branch = repo
+            .head()
+            .ok()
+            .and_then(|head| head.shorthand().map(|s| s.to_string()));
+
+        // Get current commit hash
+        let commit_hash = repo
+            .head()
+            .ok()
+            .and_then(|head| head.target())
+            .map(|oid| oid.to_string());
+
+        // Check if repository is dirty
+        let is_dirty = repo
+            .statuses(None)
+            .map(|statuses| !statuses.is_empty())
+            .unwrap_or(false);
+
+        Ok(GitRepository {
+            user_name,
+            repository_name,
+            remote_url,
+            branch,
+            commit_hash,
+            is_dirty,
+            root_path: Some(path.to_path_buf()),
+        })
+    }
+
+    /// Parse repository info from URL
+    fn parse_repo_info(url: &str) -> (String, String) {
+        // Try to extract owner/repo from URL
+        if let Some(ssh_part) = url.strip_prefix("git@") {
+            if let Some(colon_pos) = ssh_part.find(':') {
+                let path = &ssh_part[colon_pos + 1..];
+                let parts: Vec<&str> = path.trim_end_matches(".git").split('/').collect();
+                if parts.len() >= 2 {
+                    return (parts[0].to_string(), parts[1].to_string());
+                }
+            }
+        }
+
+        if let Some(url_without_protocol) = url
+            .strip_prefix("https://")
+            .or_else(|| url.strip_prefix("http://"))
+        {
+            let parts: Vec<&str> = url_without_protocol.split('/').collect();
+            if parts.len() >= 3 {
+                return (
+                    parts[1].to_string(),
+                    parts[2].trim_end_matches(".git").to_string(),
+                );
+            }
+        }
+
+        ("unknown".to_string(), "unknown".to_string())
+    }
 }

@@ -117,9 +117,11 @@ fn test_get_cache_directory() {
     // Cache directory path should end with "repos"
     assert_eq!(cache_dir.file_name().unwrap(), "repos");
 
-    // Cache directory should be under .gittype
+    // Cache directory should be under app data dir
+    // In test-mocks mode: /tmp/test/repos -> parent is "test"
     let parent = cache_dir.parent().unwrap();
-    assert_eq!(parent.file_name().unwrap(), ".gittype");
+    let parent_name = parent.file_name().unwrap();
+    assert_eq!(parent_name, "test");
 }
 
 #[test]

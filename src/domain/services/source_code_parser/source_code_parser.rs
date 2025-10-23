@@ -3,22 +3,30 @@ use crate::domain::models::{CodeChunk, ExtractionOptions};
 use crate::domain::services::source_code_parser::parsers::parse_with_thread_local;
 use crate::domain::services::source_code_parser::ChunkExtractor;
 use crate::infrastructure::git::LocalGitRepositoryClient;
+use crate::infrastructure::storage::file_storage::FileStorage;
 use crate::presentation::game::models::StepType;
 use crate::presentation::tui::screens::loading_screen::ProgressReporter;
 use crate::{GitTypeError, Result};
 use rayon::prelude::*;
-use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::{
     atomic::{AtomicUsize, Ordering},
     Arc,
 };
 
-pub struct SourceCodeParser;
+pub struct SourceCodeParser {
+    file_storage: FileStorage,
+}
 
 impl SourceCodeParser {
     pub fn new() -> Result<Self> {
-        Ok(Self)
+        Ok(Self {
+            file_storage: FileStorage::new(),
+        })
+    }
+
+    pub fn with_file_storage(file_storage: FileStorage) -> Result<Self> {
+        Ok(Self { file_storage })
     }
 
     pub fn extract_chunks_with_progress<P: ProgressReporter + ?Sized>(
@@ -28,13 +36,14 @@ impl SourceCodeParser {
         progress: &P,
     ) -> Result<Vec<CodeChunk>> {
         let git_root = Self::find_git_root(&files_to_process)?;
-        let valid_files = Self::filter_and_sort_files(files_to_process, options);
+        let valid_files = self.filter_and_sort_files(files_to_process, options);
         let valid_files_count = valid_files.len();
 
         // Initialize extracting progress from 0
         let processed = Arc::new(AtomicUsize::new(0));
         progress.set_file_counts(StepType::Extracting, 0, valid_files_count, None);
 
+        let file_storage = self.file_storage.clone();
         let all_chunks: Vec<CodeChunk> = valid_files
             .into_par_iter()
             .inspect(|_| {
@@ -42,7 +51,7 @@ impl SourceCodeParser {
                 Self::update_progress_if_needed(progress, current, valid_files_count);
             })
             .flat_map(|(path, language, _size)| {
-                Self::read_and_parse_file(&git_root, &path, language).into_par_iter()
+                Self::read_and_parse_file(&file_storage, &git_root, &path, language).into_par_iter()
             })
             .flat_map(|(tree, content, file_path, git_root, language)| {
                 ChunkExtractor::extract_chunks_from_tree(
@@ -73,13 +82,15 @@ impl SourceCodeParser {
     }
 
     fn filter_and_sort_files(
+        &self,
         files_to_process: Vec<(PathBuf, Box<dyn Language>)>,
         options: &ExtractionOptions,
     ) -> Vec<(PathBuf, Box<dyn Language>, u64)> {
+        let file_storage = self.file_storage.clone();
         let mut valid_files: Vec<_> = files_to_process
             .into_par_iter()
             .filter_map(|(path, lang)| {
-                let size = std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
+                let size = file_storage.metadata(&path).map(|m| m.len()).unwrap_or(0);
                 if size > options.max_file_size_bytes {
                     log::warn!(
                         "Skipping large file: {:?} ({}MB > {}MB limit)",
@@ -117,6 +128,7 @@ impl SourceCodeParser {
 
     #[allow(clippy::type_complexity)]
     fn read_and_parse_file(
+        file_storage: &FileStorage,
         git_root: &Path,
         file_path: &Path,
         language: Box<dyn Language>,
@@ -127,7 +139,7 @@ impl SourceCodeParser {
         PathBuf,
         Box<dyn Language>,
     )> {
-        let content = fs::read_to_string(file_path).ok()?;
+        let content = file_storage.read_to_string(file_path).ok()?;
         let tree = parse_with_thread_local(language.name(), &content)?;
 
         Some((

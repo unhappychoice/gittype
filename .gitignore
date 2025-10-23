@@ -21,6 +21,7 @@ Thumbs.db
 # Development files (debug builds only)
 /logs/
 gittype-dev.db
+.config/
 
 # Logs
 *.log

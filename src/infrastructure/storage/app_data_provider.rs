@@ -7,12 +7,14 @@ pub trait AppDataProvider {
         {
             use crate::GitTypeError;
             let data_dir = if cfg!(debug_assertions) {
-                std::env::current_dir().map_err(|e| {
-                    GitTypeError::ExtractionFailed(format!(
-                        "Could not get current directory: {}",
-                        e
-                    ))
-                })?
+                std::env::current_dir()
+                    .map_err(|e| {
+                        GitTypeError::ExtractionFailed(format!(
+                            "Could not get current directory: {}",
+                            e
+                        ))
+                    })?
+                    .join(".config")
             } else {
                 let home_dir = dirs::home_dir().ok_or_else(|| {
                     GitTypeError::ExtractionFailed("Could not determine home directory".to_string())

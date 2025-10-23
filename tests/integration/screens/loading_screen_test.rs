@@ -1,6 +1,5 @@
 use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
-use gittype::infrastructure::browser;
 use gittype::presentation::game::events::ExitRequested;
 use gittype::presentation::game::game_data::GameData;
 use gittype::presentation::tui::screens::loading_screen::LoadingScreen;
@@ -12,7 +11,6 @@ use std::sync::{Arc, Mutex};
 
 #[test]
 fn test_loading_screen_ctrl_c_requests_exit() {
-    browser::enable_test_mode();
     let _ = GameData::initialize();
 
     let event_bus = EventBus::new();
@@ -38,7 +36,6 @@ fn test_loading_screen_ctrl_c_requests_exit() {
 
 #[test]
 fn test_loading_screen_char_a_ignored() {
-    browser::enable_test_mode();
     let _ = GameData::initialize();
 
     let event_bus = EventBus::new();
@@ -55,7 +52,6 @@ fn test_loading_screen_char_a_ignored() {
 
 #[test]
 fn test_loading_screen_enter_ignored() {
-    browser::enable_test_mode();
     let _ = GameData::initialize();
 
     let event_bus = EventBus::new();
@@ -72,7 +68,6 @@ fn test_loading_screen_enter_ignored() {
 
 #[test]
 fn test_loading_screen_esc_ignored() {
-    browser::enable_test_mode();
     let _ = GameData::initialize();
 
     let event_bus = EventBus::new();
@@ -89,7 +84,6 @@ fn test_loading_screen_esc_ignored() {
 
 #[test]
 fn test_loading_screen_initialization() {
-    browser::enable_test_mode();
     let _ = GameData::initialize();
 
     let event_bus = EventBus::new();

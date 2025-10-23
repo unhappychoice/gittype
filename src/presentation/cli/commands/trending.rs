@@ -1,3 +1,4 @@
+use crate::infrastructure::console::{Console, ConsoleImpl};
 use crate::presentation::cli::commands::run_game_session;
 use crate::presentation::cli::screen_runner::run_screen;
 use crate::presentation::cli::Cli;
@@ -38,13 +39,18 @@ pub fn run_trending(
     repo_name: Option<String>,
     period: String,
 ) -> Result<()> {
+    let console = ConsoleImpl::new();
+
     // Validate language if provided
     if let Some(ref lang) = language {
         if !validate_language(lang) {
             let supported_langs: Vec<&str> =
                 SUPPORTED_LANGUAGES.iter().map(|(name, _)| *name).collect();
-            eprintln!("❌ Unsupported language: '{}'", lang);
-            eprintln!("📚 Supported languages: {}", supported_langs.join(", "));
+            console.eprintln(&format!("❌ Unsupported language: '{}'", lang))?;
+            console.eprintln(&format!(
+                "📚 Supported languages: {}",
+                supported_langs.join(", ")
+            ))?;
             return Err(GitTypeError::ValidationError(format!(
                 "Unsupported language: {}",
                 lang
@@ -59,7 +65,7 @@ pub fn run_trending(
             format!("https://github.com/{}", name)
         } else {
             // If no slash, might need to search trending, but for now treat as error
-            eprintln!("⚠️ Repository name must be in format 'owner/repo'");
+            console.eprintln("⚠️ Repository name must be in format 'owner/repo'")?;
             return Ok(());
         };
 

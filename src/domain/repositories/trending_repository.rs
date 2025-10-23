@@ -38,9 +38,11 @@ impl Default for TrendingRepository {
 
 impl TrendingRepository {
     pub fn new() -> Self {
-        let mut cache_dir = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
-        cache_dir.push(".gittype");
-        cache_dir.push("trending_cache");
+        let file_storage = FileStorage::new();
+        let cache_dir = file_storage
+            .get_app_data_dir()
+            .unwrap_or_else(|_| PathBuf::from("."))
+            .join("trending_cache");
 
         let ttl_seconds = 300; // 5 minutes
 
@@ -48,7 +50,7 @@ impl TrendingRepository {
             cache_dir,
             ttl_seconds,
             oss_insight_client: OssInsightClient::new(),
-            file_storage: FileStorage::new(),
+            file_storage,
         }
     }
 

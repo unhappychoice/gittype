@@ -34,9 +34,6 @@ macro_rules! screen_key_event_test {
             use gittype::presentation::tui::ScreenDataProvider;
             use std::sync::{Arc, Mutex};
 
-            // Enable test mode to prevent browser opening
-            gittype::infrastructure::browser::enable_test_mode();
-
             let event_bus = EventBus::new();
             let events = Arc::new(Mutex::new(Vec::new()));
             let events_clone = Arc::clone(&events);
@@ -66,9 +63,6 @@ macro_rules! screen_key_event_test {
             use gittype::presentation::tui::Screen;
             use gittype::presentation::tui::ScreenDataProvider;
             use std::sync::{Arc, Mutex};
-
-            // Enable test mode to prevent browser opening
-            gittype::infrastructure::browser::enable_test_mode();
 
             let event_bus = EventBus::new();
             let events = Arc::new(Mutex::new(Vec::new()));
@@ -101,9 +95,6 @@ macro_rules! screen_key_test {
             use gittype::domain::events::EventBus;
             use gittype::presentation::tui::Screen;
             use gittype::presentation::tui::ScreenDataProvider;
-
-            // Enable test mode to prevent browser opening
-            gittype::infrastructure::browser::enable_test_mode();
 
             let event_bus = EventBus::new();
             let mut screen: $screen_type = <$screen_type>::new(event_bus);
