@@ -1,7 +1,7 @@
 use crate::domain::models::Challenge;
+use crate::infrastructure::storage::file_storage::FileStorage;
 use crate::presentation::game::GameData;
 use crate::Result;
-use std::fs;
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone)]
@@ -23,6 +23,7 @@ pub fn load_context_for_challenge(
     challenge: &Challenge,
     context_lines: usize,
 ) -> Result<CodeContext> {
+    let file_storage = FileStorage::new();
     let Some(source_path) = &challenge.source_file_path else {
         return Ok(CodeContext::empty());
     };
@@ -53,20 +54,27 @@ pub fn load_context_for_challenge(
         }
     };
 
-    load_context_lines(&file_path, start_line, end_line, context_lines)
+    load_context_lines(
+        &file_storage,
+        &file_path,
+        start_line,
+        end_line,
+        context_lines,
+    )
 }
 
 pub fn load_context_lines(
+    file_storage: &FileStorage,
     file_path: &Path,
     start_line: usize,
     end_line: usize,
     context_lines: usize,
 ) -> Result<CodeContext> {
-    if !file_path.exists() {
+    if !file_storage.file_exists(file_path) {
         return Ok(CodeContext::empty());
     }
 
-    let content = fs::read_to_string(file_path)?;
+    let content = file_storage.read_to_string(file_path)?;
     let lines: Vec<&str> = content.lines().collect();
 
     // Calculate context ranges (1-indexed to 0-indexed)

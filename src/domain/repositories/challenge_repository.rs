@@ -1,9 +1,9 @@
 use crate::domain::models::{Challenge, DifficultyLevel, GitRepository};
 use crate::infrastructure::storage::compressed_file_storage::CompressedFileStorage;
+use crate::infrastructure::storage::file_storage::FileStorage;
 use crate::presentation::game::models::StepType;
 use crate::presentation::tui::screens::loading_screen::ProgressReporter;
 use rayon::prelude::*;
-use std::fs;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
@@ -29,17 +29,21 @@ struct CacheData {
 pub struct ChallengeRepository {
     cache_dir: PathBuf,
     storage: CompressedFileStorage,
+    file_storage: FileStorage,
 }
 
 impl ChallengeRepository {
     pub fn new() -> Self {
-        let mut cache_dir = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
-        cache_dir.push(".gittype");
-        cache_dir.push("cache");
+        let file_storage = FileStorage::new();
+        let cache_dir = file_storage
+            .get_app_data_dir()
+            .unwrap_or_else(|_| PathBuf::from("."))
+            .join("cache");
 
         Self {
             cache_dir,
             storage: CompressedFileStorage::new(),
+            file_storage,
         }
     }
 
@@ -47,6 +51,7 @@ impl ChallengeRepository {
         Self {
             cache_dir,
             storage: CompressedFileStorage::new(),
+            file_storage: FileStorage::new(),
         }
     }
 
@@ -218,7 +223,9 @@ impl ChallengeRepository {
             return None;
         }
 
-        let file_content = fs::read_to_string(&absolute_path)
+        let file_content = self
+            .file_storage
+            .read_to_string(&absolute_path)
             .map_err(|e| {
                 log::debug!("Failed to read file {}: {}", file_path, e);
                 e
@@ -258,7 +265,7 @@ impl ChallengeRepository {
     }
 
     fn get_cache_file(&self, repo: &GitRepository) -> PathBuf {
-        let _ = fs::create_dir_all(&self.cache_dir);
+        let _ = self.file_storage.create_dir_all(&self.cache_dir);
         let commit = repo.commit_hash.as_deref().unwrap_or("nohash");
         let dirty = if repo.is_dirty { "dirty" } else { "clean" };
         let raw = format!("{}:{}:{}", repo.cache_key(), commit, dirty);

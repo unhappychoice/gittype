@@ -1,3 +1,4 @@
+use gittype::infrastructure::storage::file_storage::FileStorage;
 use gittype::presentation::game::context_loader::load_context_lines;
 use std::fs;
 use tempfile::NamedTempFile;
@@ -9,7 +10,10 @@ fn test_load_context_lines() {
     let temp_file = NamedTempFile::new().unwrap();
     fs::write(&temp_file, content).unwrap();
 
-    let result = load_context_lines(temp_file.path(), 4, 6, 2).unwrap();
+    let mut file_storage = FileStorage::new();
+    file_storage.set_file_content(temp_file.path().to_path_buf(), content.to_string());
+
+    let result = load_context_lines(&file_storage, temp_file.path(), 4, 6, 2).unwrap();
 
     assert_eq!(result.pre_context, vec!["line2", "line3"]);
     assert_eq!(result.post_context, vec!["line7", "line8"]);
@@ -21,7 +25,10 @@ fn test_load_context_at_file_boundaries() {
     let temp_file = NamedTempFile::new().unwrap();
     fs::write(&temp_file, content).unwrap();
 
-    let result = load_context_lines(temp_file.path(), 2, 2, 5).unwrap();
+    let mut file_storage = FileStorage::new();
+    file_storage.set_file_content(temp_file.path().to_path_buf(), content.to_string());
+
+    let result = load_context_lines(&file_storage, temp_file.path(), 2, 2, 5).unwrap();
 
     assert_eq!(result.pre_context, vec!["line1"]);
     assert_eq!(result.post_context, vec!["line3"]);

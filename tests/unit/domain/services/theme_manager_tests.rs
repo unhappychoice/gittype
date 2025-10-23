@@ -4,10 +4,7 @@ use gittype::domain::services::theme_manager::ThemeManager;
 
 #[test]
 fn get_available_themes_includes_default_themes() {
-    let manager = ThemeManager {
-        current_theme: Theme::default(),
-        current_color_mode: ColorMode::Dark,
-    };
+    let manager = ThemeManager::new_for_test(Theme::default(), ColorMode::Dark);
     let themes = manager.get_available_themes();
     assert!(!themes.is_empty());
     // Should have at least the built-in themes
@@ -22,10 +19,7 @@ fn init_returns_ok() {
 
 #[test]
 fn all_themes_have_unique_ids() {
-    let manager = ThemeManager {
-        current_theme: Theme::default(),
-        current_color_mode: ColorMode::Dark,
-    };
+    let manager = ThemeManager::new_for_test(Theme::default(), ColorMode::Dark);
     let themes = manager.get_available_themes();
 
     let mut ids: Vec<String> = themes.iter().map(|t| t.id.clone()).collect();
@@ -38,10 +32,7 @@ fn all_themes_have_unique_ids() {
 
 #[test]
 fn all_themes_have_non_empty_names() {
-    let manager = ThemeManager {
-        current_theme: Theme::default(),
-        current_color_mode: ColorMode::Dark,
-    };
+    let manager = ThemeManager::new_for_test(Theme::default(), ColorMode::Dark);
     let themes = manager.get_available_themes();
 
     for theme in themes {
@@ -59,19 +50,13 @@ fn default_theme_exists() {
 
 #[test]
 fn theme_manager_has_default_values() {
-    let manager = ThemeManager {
-        current_theme: Theme::default(),
-        current_color_mode: ColorMode::Dark,
-    };
+    let manager = ThemeManager::new_for_test(Theme::default(), ColorMode::Dark);
     assert_eq!(manager.current_theme.id, "default");
 }
 
 #[test]
 fn get_available_themes_returns_consistent_count() {
-    let manager = ThemeManager {
-        current_theme: Theme::default(),
-        current_color_mode: ColorMode::Dark,
-    };
+    let manager = ThemeManager::new_for_test(Theme::default(), ColorMode::Dark);
     let themes1 = manager.get_available_themes();
     let themes2 = manager.get_available_themes();
 

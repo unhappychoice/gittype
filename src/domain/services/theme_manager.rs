@@ -2,12 +2,14 @@ use super::super::models::color_mode::ColorMode;
 use super::super::models::color_scheme::{ColorScheme, CustomThemeFile, ThemeFile};
 use super::super::models::theme::Theme;
 use crate::domain::services::config_manager::ConfigService;
+use crate::infrastructure::storage::file_storage::FileStorage;
 use once_cell::sync::Lazy;
 
 pub static THEME_MANAGER: Lazy<std::sync::RwLock<ThemeManager>> = Lazy::new(|| {
     std::sync::RwLock::new(ThemeManager {
         current_theme: Theme::default(),
         current_color_mode: ColorMode::Dark,
+        file_storage: FileStorage::new(),
     })
 });
 
@@ -15,9 +17,19 @@ pub static THEME_MANAGER: Lazy<std::sync::RwLock<ThemeManager>> = Lazy::new(|| {
 pub struct ThemeManager {
     pub current_theme: Theme,
     pub current_color_mode: ColorMode,
+    file_storage: FileStorage,
 }
 
 impl ThemeManager {
+    #[cfg(feature = "test-mocks")]
+    pub fn new_for_test(current_theme: Theme, current_color_mode: ColorMode) -> Self {
+        Self {
+            current_theme,
+            current_color_mode,
+            file_storage: FileStorage::new(),
+        }
+    }
+
     /// Initialize the theme manager
     pub fn init() -> anyhow::Result<()> {
         let config_manager = ConfigService::new()?;
@@ -62,9 +74,13 @@ impl ThemeManager {
         Theme::all_themes()
             .into_iter()
             .chain(
-                Self::get_custom_theme_path()
-                    .exists()
-                    .then(|| std::fs::read_to_string(Self::get_custom_theme_path()).ok())
+                self.file_storage
+                    .file_exists(&Self::get_custom_theme_path())
+                    .then(|| {
+                        self.file_storage
+                            .read_to_string(&Self::get_custom_theme_path())
+                            .ok()
+                    })
                     .flatten()
                     .and_then(|json| serde_json::from_str::<CustomThemeFile>(&json).ok())
                     .map(|custom_theme_file| {
@@ -86,23 +102,25 @@ impl ThemeManager {
 
     /// Get the custom theme file path
     fn get_custom_theme_path() -> std::path::PathBuf {
-        let home_dir = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
-        std::path::PathBuf::from(home_dir)
-            .join(".gittype")
+        let file_storage = FileStorage::new();
+        file_storage
+            .get_app_data_dir()
+            .unwrap_or_else(|_| std::path::PathBuf::from("."))
             .join("custom-theme.json")
     }
 
     /// Create default custom theme file if it doesn't exist
     fn create_default_custom_theme_file() -> anyhow::Result<()> {
+        let file_storage = FileStorage::new();
         let custom_theme_path = Self::get_custom_theme_path();
 
-        if custom_theme_path.exists() {
+        if file_storage.file_exists(&custom_theme_path) {
             return Ok(());
         }
 
         // Create directory if it doesn't exist
         if let Some(parent) = custom_theme_path.parent() {
-            std::fs::create_dir_all(parent)?;
+            file_storage.create_dir_all(parent)?;
         }
 
         // Create default custom theme based on the default theme
@@ -115,7 +133,7 @@ impl ThemeManager {
         };
 
         let custom_theme_json = serde_json::to_string_pretty(&custom_theme)?;
-        std::fs::write(&custom_theme_path, custom_theme_json)?;
+        file_storage.write(&custom_theme_path, custom_theme_json)?;
 
         Ok(())
     }

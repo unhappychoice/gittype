@@ -62,10 +62,20 @@ impl ProgressReporter for MockProgressReporter {
 }
 
 fn create_real_code_chunks_from_fixture(fixture_filename: &str) -> Vec<CodeChunk> {
+    use gittype::infrastructure::storage::file_storage::FileStorage;
+    use std::fs;
+
     let fixture_path = PathBuf::from("tests/fixtures").join(fixture_filename);
 
-    // Create a temporary parser
-    let mut parser = SourceCodeParser::new().expect("Failed to create parser");
+    // Read the fixture file content
+    let content = fs::read_to_string(&fixture_path).expect("Failed to read fixture file");
+
+    // Create a parser with mock FileStorage that has the fixture content
+    let mut file_storage = FileStorage::new();
+    file_storage.set_file_content(fixture_path.clone(), content);
+
+    let mut parser =
+        SourceCodeParser::with_file_storage(file_storage).expect("Failed to create parser");
 
     // Get rust language
     let rust_lang = Languages::from_extension("rs").expect("Failed to get Rust language");
