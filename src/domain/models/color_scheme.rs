@@ -147,6 +147,7 @@ pub struct ColorScheme {
     pub lang_haskell: SerializableColor,
     pub lang_dart: SerializableColor,
     pub lang_zig: SerializableColor,
+    pub lang_clojure: SerializableColor,
     pub lang_default: SerializableColor,
 }
 
@@ -325,6 +326,10 @@ impl ColorScheme {
                 .get("lang_zig")
                 .cloned()
                 .unwrap_or(SerializableColor::Name("yellow".to_string())),
+            lang_clojure: lang_colors
+                .get("lang_clojure")
+                .cloned()
+                .unwrap_or(SerializableColor::Name("green".to_string())),
             lang_default: lang_colors
                 .get("lang_default")
                 .cloned()

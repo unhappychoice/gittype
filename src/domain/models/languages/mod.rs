@@ -1,4 +1,5 @@
 pub mod c;
+pub mod clojure;
 pub mod cpp;
 pub mod csharp;
 pub mod dart;
@@ -17,6 +18,7 @@ pub mod typescript;
 pub mod zig;
 
 pub use c::C;
+pub use clojure::Clojure;
 pub use cpp::Cpp;
 pub use csharp::CSharp;
 pub use dart::Dart;
