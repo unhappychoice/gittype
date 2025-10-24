@@ -52,6 +52,7 @@ fn collect_files_with_languages(repo_path: &Path) -> Vec<(PathBuf, Box<dyn Langu
 fn string_to_language_obj(language: &str) -> &'static dyn Language {
     match language {
         "c" => &C,
+        "clojure" => &Clojure,
         "cpp" => &Cpp,
         "csharp" => &CSharp,
         "dart" => &Dart,

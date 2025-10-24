@@ -1,4 +1,5 @@
 mod c_tests;
+mod clojure_tests;
 mod cpp_tests;
 mod csharp_tests;
 mod dart_tests;

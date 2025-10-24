@@ -1,4 +1,5 @@
 pub mod c;
+pub mod clojure;
 pub mod cpp;
 pub mod csharp;
 pub mod dart;

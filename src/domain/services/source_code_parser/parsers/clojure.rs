@@ -16,12 +16,7 @@ impl LanguageExtractor for ClojureExtractor {
                 (sym_lit) @keyword
                 (sym_lit) @name
             ) @definition
-            (#eq? @keyword \"defn\")
-            (#eq? @keyword \"defmacro\")
-            (#eq? @keyword \"defn-\")
-            (#eq? @keyword \"deftype\")
-            (#eq? @keyword \"defprotocol\")
-            (#eq? @keyword \"defrecord\")
+            (#match? @keyword \"^(defn|defmacro|defn-|deftype|defprotocol|defrecord)$\")
         "
     }
 
