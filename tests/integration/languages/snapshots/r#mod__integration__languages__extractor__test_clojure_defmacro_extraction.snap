@@ -1,0 +1,42 @@
+---
+source: tests/integration/languages/extractor.rs
+assertion_line: 116
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\n(defmacro unless [pred a b]\n  `(if (not ~pred) ~a ~b))\n\n(defmacro my-macro [x]\n  x)\n",
+      "end_line": 6,
+      "language": "clojure",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "(defmacro unless [pred a b]\n  `(if (not ~pred) ~a ~b))",
+      "end_line": 3,
+      "language": "clojure",
+      "name": "defmacro",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "(defmacro my-macro [x]\n  x)",
+      "end_line": 6,
+      "language": "clojure",
+      "name": "defmacro",
+      "original_indentation": 0,
+      "start_line": 5
+    }
+  ],
+  "source_code": "\n(defmacro unless [pred a b]\n  `(if (not ~pred) ~a ~b))\n\n(defmacro my-macro [x]\n  x)\n",
+  "test_name": "test_clojure_defmacro_extraction",
+  "total_chunks": 3
+}

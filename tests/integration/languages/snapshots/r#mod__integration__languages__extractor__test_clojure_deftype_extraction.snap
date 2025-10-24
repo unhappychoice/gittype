@@ -1,0 +1,62 @@
+---
+source: tests/integration/languages/extractor.rs
+assertion_line: 116
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\n(deftype Point [x y]\n   Object\n   (toString [this]\n     \"Point\"))\n\n(deftype Counter [^:volatile-mutable count]\n   Incrementable\n   (increment [_]\n     nil))\n",
+      "end_line": 10,
+      "language": "clojure",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "(deftype Point [x y]\n   Object\n   (toString [this]\n     \"Point\"))",
+      "end_line": 5,
+      "language": "clojure",
+      "name": "deftype",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "   (toString [this]\n     \"Point\")",
+      "end_line": 5,
+      "language": "clojure",
+      "name": "toString",
+      "original_indentation": 3,
+      "start_line": 4
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "(deftype Counter [^:volatile-mutable count]\n   Incrementable\n   (increment [_]\n     nil))",
+      "end_line": 10,
+      "language": "clojure",
+      "name": "deftype",
+      "original_indentation": 0,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "   Incrementable",
+      "end_line": 8,
+      "language": "clojure",
+      "name": "name",
+      "original_indentation": 3,
+      "start_line": 8
+    }
+  ],
+  "source_code": "\n(deftype Point [x y]\n   Object\n   (toString [this]\n     \"Point\"))\n\n(deftype Counter [^:volatile-mutable count]\n   Incrementable\n   (increment [_]\n     nil))\n",
+  "test_name": "test_clojure_deftype_extraction",
+  "total_chunks": 5
+}

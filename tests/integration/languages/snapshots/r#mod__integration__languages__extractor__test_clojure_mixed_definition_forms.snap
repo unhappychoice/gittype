@@ -1,0 +1,132 @@
+---
+source: tests/integration/languages/extractor.rs
+assertion_line: 116
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\n(defn public-function []\n  1)\n\n(defmacro my-macro [x]\n  x)\n\n(defn- private-function []\n  2)\n\n(defprotocol MyProtocol\n  (my-method [this]))\n\n(deftype MyType [value]\n  Object\n  (toString [_] \"T\"))\n\n(defrecord MyRecord [field1 field2]\n  Comparable\n  (compareTo [this other]\n    0))\n",
+      "end_line": 21,
+      "language": "clojure",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "(defn public-function",
+      "end_line": 2,
+      "language": "clojure",
+      "name": "name",
+      "original_indentation": 6,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "(defn public-function []\n  1)",
+      "end_line": 3,
+      "language": "clojure",
+      "name": "defn",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "(defmacro my-macro [x]\n  x)",
+      "end_line": 6,
+      "language": "clojure",
+      "name": "defmacro",
+      "original_indentation": 0,
+      "start_line": 5
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "(defn- private-function",
+      "end_line": 8,
+      "language": "clojure",
+      "name": "name",
+      "original_indentation": 7,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "(defn- private-function []\n  2)",
+      "end_line": 9,
+      "language": "clojure",
+      "name": "defn-",
+      "original_indentation": 0,
+      "start_line": 8
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "(defprotocol MyProtocol",
+      "end_line": 11,
+      "language": "clojure",
+      "name": "name",
+      "original_indentation": 13,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "(defprotocol MyProtocol\n  (my-method [this]))",
+      "end_line": 12,
+      "language": "clojure",
+      "name": "defprotocol",
+      "original_indentation": 0,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "(deftype MyType [value]\n  Object\n  (toString [_] \"T\"))",
+      "end_line": 16,
+      "language": "clojure",
+      "name": "deftype",
+      "original_indentation": 0,
+      "start_line": 14
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "(defrecord MyRecord [field1 field2]\n  Comparable\n  (compareTo [this other]\n    0))",
+      "end_line": 21,
+      "language": "clojure",
+      "name": "defrecord",
+      "original_indentation": 0,
+      "start_line": 18
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "  Comparable",
+      "end_line": 19,
+      "language": "clojure",
+      "name": "name",
+      "original_indentation": 2,
+      "start_line": 19
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "  (compareTo [this other]\n    0)",
+      "end_line": 21,
+      "language": "clojure",
+      "name": "compareTo",
+      "original_indentation": 2,
+      "start_line": 20
+    }
+  ],
+  "source_code": "\n(defn public-function []\n  1)\n\n(defmacro my-macro [x]\n  x)\n\n(defn- private-function []\n  2)\n\n(defprotocol MyProtocol\n  (my-method [this]))\n\n(deftype MyType [value]\n  Object\n  (toString [_] \"T\"))\n\n(defrecord MyRecord [field1 field2]\n  Comparable\n  (compareTo [this other]\n    0))\n",
+  "test_name": "test_clojure_mixed_definition_forms",
+  "total_chunks": 12
+}
