@@ -1,6 +1,5 @@
 ---
 source: tests/integration/languages/extractor.rs
-assertion_line: 116
 expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 ---
 {
@@ -31,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "(defn- private-helper []\n  42)",
       "end_line": 3,
       "language": "clojure",
-      "name": "defn-",
+      "name": "private-helper",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -51,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "(defn- calculate-internal [x]\n  (* x 2))",
       "end_line": 6,
       "language": "clojure",
-      "name": "defn-",
+      "name": "calculate-internal",
       "original_indentation": 0,
       "start_line": 5
     }

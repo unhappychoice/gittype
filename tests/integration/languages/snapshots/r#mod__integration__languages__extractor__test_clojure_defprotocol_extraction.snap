@@ -1,6 +1,5 @@
 ---
 source: tests/integration/languages/extractor.rs
-assertion_line: 116
 expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 ---
 {
@@ -21,7 +20,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "(defprotocol Animal\n  (speak [this]))",
       "end_line": 3,
       "language": "clojure",
-      "name": "defprotocol",
+      "name": "Animal",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -31,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "(defprotocol Drawable\n  (draw [this x y])\n  (clear [this]))",
       "end_line": 7,
       "language": "clojure",
-      "name": "defprotocol",
+      "name": "Drawable",
       "original_indentation": 0,
       "start_line": 5
     }

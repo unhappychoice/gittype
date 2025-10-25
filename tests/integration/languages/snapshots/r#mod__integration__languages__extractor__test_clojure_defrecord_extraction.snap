@@ -1,6 +1,5 @@
 ---
 source: tests/integration/languages/extractor.rs
-assertion_line: 116
 expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 ---
 {
@@ -21,7 +20,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "(defrecord Person [name age]\n   Object\n   (toString [_]\n     \"Person\"))",
       "end_line": 5,
       "language": "clojure",
-      "name": "defrecord",
+      "name": "Person",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -31,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "(defrecord Address [street city zip]\n   Validateable\n   (validate [_]\n     true))",
       "end_line": 10,
       "language": "clojure",
-      "name": "defrecord",
+      "name": "Address",
       "original_indentation": 0,
       "start_line": 7
     },

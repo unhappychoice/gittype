@@ -1,6 +1,5 @@
 ---
 source: tests/integration/languages/extractor.rs
-assertion_line: 116
 expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 ---
 {
@@ -21,7 +20,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "(defmacro unless [pred a b]\n  `(if (not ~pred) ~a ~b))",
       "end_line": 3,
       "language": "clojure",
-      "name": "defmacro",
+      "name": "unless",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -31,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "(defmacro my-macro [x]\n  x)",
       "end_line": 6,
       "language": "clojure",
-      "name": "defmacro",
+      "name": "my-macro",
       "original_indentation": 0,
       "start_line": 5
     }

@@ -1,6 +1,5 @@
 ---
 source: tests/integration/languages/extractor.rs
-assertion_line: 116
 expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 ---
 {
@@ -21,7 +20,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "(deftype Point [x y]\n   Object\n   (toString [this]\n     \"Point\"))",
       "end_line": 5,
       "language": "clojure",
-      "name": "deftype",
+      "name": "Point",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -31,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "   (toString [this]\n     \"Point\")",
       "end_line": 5,
       "language": "clojure",
-      "name": "toString",
+      "name": "expr",
       "original_indentation": 3,
       "start_line": 4
     },
@@ -41,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "(deftype Counter [^:volatile-mutable count]\n   Incrementable\n   (increment [_]\n     nil))",
       "end_line": 10,
       "language": "clojure",
-      "name": "deftype",
+      "name": "Counter",
       "original_indentation": 0,
       "start_line": 7
     },

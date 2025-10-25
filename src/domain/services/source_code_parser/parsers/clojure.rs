@@ -59,17 +59,21 @@ impl LanguageExtractor for ClojureExtractor {
 impl ClojureExtractor {
     fn extract_clojure_name(&self, node: Node, source_code: &str) -> Option<String> {
         let mut cursor = node.walk();
-        let mut child_count = 0;
+        let mut sym_lit_count = 0;
 
         if cursor.goto_first_child() {
             loop {
                 let child = cursor.node();
-                child_count += 1;
 
-                if child_count == 2 && child.kind() == "sym_lit" {
-                    let start = child.start_byte();
-                    let end = child.end_byte();
-                    return Some(source_code[start..end].to_string());
+                if child.kind() == "sym_lit" {
+                    sym_lit_count += 1;
+
+                    // The second sym_lit is the function/macro/type name
+                    if sym_lit_count == 2 {
+                        let start = child.start_byte();
+                        let end = child.end_byte();
+                        return Some(source_code[start..end].to_string());
+                    }
                 }
 
                 if !cursor.goto_next_sibling() {

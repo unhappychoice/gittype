@@ -1,6 +1,5 @@
 ---
 source: tests/integration/languages/extractor.rs
-assertion_line: 116
 expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
 ---
 {
@@ -31,7 +30,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "(defn hello-world []\n  42)",
       "end_line": 3,
       "language": "clojure",
-      "name": "defn",
+      "name": "hello-world",
       "original_indentation": 0,
       "start_line": 2
     },
@@ -41,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "(defn add [a b]\n  (+ a b))",
       "end_line": 6,
       "language": "clojure",
-      "name": "defn",
+      "name": "add",
       "original_indentation": 0,
       "start_line": 5
     }
