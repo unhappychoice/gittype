@@ -55,12 +55,11 @@
 - **Namespaces** (`namespace_definition`) - Namespace definitions
 
 ### Clojure
-- **Functions** (`defn`) - Function definitions
-- **Macros** (`defmacro`) - Macro definitions
-- **Private Functions** (`defn-`) - Private function definitions
-- **Types** (`deftype`) - Type definitions
-- **Protocols** (`defprotocol`) - Protocol definitions
-- **Records** (`defrecord`) - Record definitions
+- **Functions** (`defn`, `defmacro`, `defn-`) - Function and macro definitions
+- **Variables** (`def`) - Variable definitions
+- **Namespaces** (`ns`) - Namespace declarations
+- **Classes** (`deftype`, `defrecord`) - Type and record definitions
+- **Interfaces** (`defprotocol`) - Protocol definitions
 
 ### Dart
 - **Functions** (`function_signature`) - Function definitions
