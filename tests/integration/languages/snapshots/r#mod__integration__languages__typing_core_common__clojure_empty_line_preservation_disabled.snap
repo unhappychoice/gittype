@@ -1,0 +1,26 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+assertion_line: 103
+expression: snapshot
+---
+# text_original
+(defn process [x]
+  (let [y 1]
+
+    (+ x y)))
+
+  (println "done")
+
+# text_to_type
+(defn process [x]
+(let [y 1]
+(+ x y)))
+(println "done")
+
+# text_to_display
+(defn process [x]↵
+  (let [y 1]↵
+
+    (+ x y)))↵
+
+  (println "done")↵

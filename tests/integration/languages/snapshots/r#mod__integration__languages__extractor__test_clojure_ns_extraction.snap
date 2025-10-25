@@ -1,0 +1,51 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\n(ns myapp.core\n  (:require [clojure.string :as str]))\n\n(ns myapp.utils)\n",
+      "end_line": 5,
+      "language": "clojure",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "(ns myapp.core",
+      "end_line": 2,
+      "language": "clojure",
+      "name": "ns_name",
+      "original_indentation": 4,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Namespace",
+      "comment_ranges": [],
+      "content": "(ns myapp.core\n  (:require [clojure.string :as str]))",
+      "end_line": 3,
+      "language": "clojure",
+      "name": "myapp.core",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Namespace",
+      "comment_ranges": [],
+      "content": "(ns myapp.utils)",
+      "end_line": 5,
+      "language": "clojure",
+      "name": "myapp.utils",
+      "original_indentation": 0,
+      "start_line": 5
+    }
+  ],
+  "source_code": "\n(ns myapp.core\n  (:require [clojure.string :as str]))\n\n(ns myapp.utils)\n",
+  "test_name": "test_clojure_ns_extraction",
+  "total_chunks": 4
+}

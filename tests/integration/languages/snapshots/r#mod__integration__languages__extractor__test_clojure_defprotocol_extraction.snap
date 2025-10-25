@@ -1,0 +1,41 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\n(defprotocol Animal\n  (speak [this]))\n\n(defprotocol Drawable\n  (draw [this x y])\n  (clear [this]))\n",
+      "end_line": 7,
+      "language": "clojure",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Interface",
+      "comment_ranges": [],
+      "content": "(defprotocol Animal\n  (speak [this]))",
+      "end_line": 3,
+      "language": "clojure",
+      "name": "Animal",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Interface",
+      "comment_ranges": [],
+      "content": "(defprotocol Drawable\n  (draw [this x y])\n  (clear [this]))",
+      "end_line": 7,
+      "language": "clojure",
+      "name": "Drawable",
+      "original_indentation": 0,
+      "start_line": 5
+    }
+  ],
+  "source_code": "\n(defprotocol Animal\n  (speak [this]))\n\n(defprotocol Drawable\n  (draw [this x y])\n  (clear [this]))\n",
+  "test_name": "test_clojure_defprotocol_extraction",
+  "total_chunks": 3
+}

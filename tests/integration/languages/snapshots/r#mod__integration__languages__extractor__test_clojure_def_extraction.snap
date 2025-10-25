@@ -1,0 +1,51 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\n(def my-config\n  {:host \"localhost\"\n   :port 3000})\n\n(def max-retries 5)\n\n(def api-key \"secret-key\")\n",
+      "end_line": 8,
+      "language": "clojure",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "(def my-config\n  {:host \"localhost\"\n   :port 3000})",
+      "end_line": 4,
+      "language": "clojure",
+      "name": "my-config",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "(def max-retries 5)",
+      "end_line": 6,
+      "language": "clojure",
+      "name": "max-retries",
+      "original_indentation": 0,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "(def api-key \"secret-key\")",
+      "end_line": 8,
+      "language": "clojure",
+      "name": "api-key",
+      "original_indentation": 0,
+      "start_line": 8
+    }
+  ],
+  "source_code": "\n(def my-config\n  {:host \"localhost\"\n   :port 3000})\n\n(def max-retries 5)\n\n(def api-key \"secret-key\")\n",
+  "test_name": "test_clojure_def_extraction",
+  "total_chunks": 4
+}

@@ -1,6 +1,6 @@
 use crate::domain::models::languages::{
-    CSharp, Cpp, Dart, Go, Haskell, Java, JavaScript, Kotlin, Php, Python, Ruby, Rust, Scala,
-    Swift, TypeScript, Zig, C,
+    CSharp, Clojure, Cpp, Dart, Go, Haskell, Java, JavaScript, Kotlin, Php, Python, Ruby, Rust,
+    Scala, Swift, TypeScript, Zig, C,
 };
 use crate::domain::models::ChunkType;
 use crate::domain::models::Language;
@@ -11,6 +11,7 @@ use std::collections::HashMap;
 use tree_sitter::{Node, Parser, Query, Tree};
 
 pub mod c;
+pub mod clojure;
 pub mod cpp;
 pub mod csharp;
 pub mod dart;
@@ -68,6 +69,7 @@ impl ParserRegistry {
         }
 
         register_language!(C, c, CExtractor);
+        register_language!(Clojure, clojure, ClojureExtractor);
         register_language!(Cpp, cpp, CppExtractor);
         register_language!(CSharp, csharp, CSharpExtractor);
         register_language!(Dart, dart, DartExtractor);

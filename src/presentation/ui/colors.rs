@@ -129,6 +129,9 @@ impl Colors {
     pub fn lang_cpp() -> Color {
         Self::get_color_scheme().lang_cpp.into()
     }
+    pub fn lang_clojure() -> Color {
+        Self::get_color_scheme().lang_clojure.into()
+    }
     pub fn lang_csharp() -> Color {
         Self::get_color_scheme().lang_csharp.into()
     }

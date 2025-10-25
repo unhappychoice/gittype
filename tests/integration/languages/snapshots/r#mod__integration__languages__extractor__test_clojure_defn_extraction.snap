@@ -1,0 +1,51 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\n(defn hello-world []\n  42)\n\n(defn add [a b]\n  (+ a b))\n",
+      "end_line": 6,
+      "language": "clojure",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "(defn hello-world",
+      "end_line": 2,
+      "language": "clojure",
+      "name": "func_name",
+      "original_indentation": 6,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "(defn hello-world []\n  42)",
+      "end_line": 3,
+      "language": "clojure",
+      "name": "hello-world",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "(defn add [a b]\n  (+ a b))",
+      "end_line": 6,
+      "language": "clojure",
+      "name": "add",
+      "original_indentation": 0,
+      "start_line": 5
+    }
+  ],
+  "source_code": "\n(defn hello-world []\n  42)\n\n(defn add [a b]\n  (+ a b))\n",
+  "test_name": "test_clojure_defn_extraction",
+  "total_chunks": 4
+}

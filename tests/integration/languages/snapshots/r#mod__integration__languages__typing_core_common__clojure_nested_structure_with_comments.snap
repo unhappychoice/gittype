@@ -1,0 +1,43 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+assertion_line: 103
+expression: snapshot
+---
+# text_original
+(defn complex-function []
+  ; Main function
+  (let [result
+        ; Initialize with value
+        (map
+          ; Transform function
+          #(* % 2)
+          ; Input data
+          [1 2 3])]
+    ; Return result
+    result))
+
+# text_to_type
+(defn complex-function []
+; Main function
+(let [result
+; Initialize with value
+(map
+; Transform function
+#(* % 2)
+; Input data
+[1 2 3])]
+; Return result
+result))
+
+# text_to_display
+(defn complex-function []↵
+  ; Main function↵
+  (let [result↵
+        ; Initialize with value↵
+        (map↵
+          ; Transform function↵
+          #(* % 2)↵
+          ; Input data↵
+          [1 2 3])]↵
+    ; Return result↵
+    result))↵

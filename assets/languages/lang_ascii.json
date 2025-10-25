@@ -16,5 +16,6 @@
   "lang_haskell": "magenta",
   "lang_dart": "cyan",
   "lang_zig": "yellow",
+  "lang_clojure": "green",
   "lang_default": "white"
 }

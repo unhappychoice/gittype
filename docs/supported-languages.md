@@ -7,6 +7,7 @@
 | C | `.c`, `.h` | - | `tree_sitter_c` |
 | C# | `.cs`, `.csx` | `cs`, `c#` | `tree_sitter_c_sharp` |
 | C++ | `.cpp`, `.cc`, `.cxx`, `.hpp` | `c++` | `tree_sitter_cpp` |
+| Clojure | `.clj`, `.cljs`, `.cljc` | - | `tree_sitter_clojure` |
 | Dart | `.dart` | - | `tree_sitter_dart` |
 | Go | `.go` | - | `tree_sitter_go` |
 | Haskell | `.hs`, `.lhs` | `hs` | `tree_sitter_haskell` |
@@ -53,11 +54,18 @@
 - **Templates** (`template_declaration`) - Template definitions
 - **Namespaces** (`namespace_definition`) - Namespace definitions
 
+### Clojure
+- **Functions** (`defn`, `defmacro`, `defn-`) - Function and macro definitions
+- **Variables** (`def`) - Variable definitions
+- **Namespaces** (`ns`) - Namespace declarations
+- **Classes** (`deftype`, `defrecord`) - Type and record definitions
+- **Interfaces** (`defprotocol`) - Protocol definitions
+
 ### Dart
 - **Functions** (`function_signature`) - Function definitions
 - **Methods** (`method_signature`) - Method definitions
 - **Classes** (`class_definition`) - Class definitions
-- **Enums** (`enum_declaration`) - Enum definitions
+- **Enums** (`enum_declaration`) - Enum declarations
 - **Extensions** (`extension_declaration`) - Extension definitions
 - **Mixins** (`mixin_declaration`) - Mixin definitions
 

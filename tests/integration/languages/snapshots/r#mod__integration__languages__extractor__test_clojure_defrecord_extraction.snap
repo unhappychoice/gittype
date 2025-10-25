@@ -1,0 +1,51 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\n(defrecord Person [name age]\n   Object\n   (toString [_]\n     \"Person\"))\n\n(defrecord Address [street city zip]\n   Validateable\n   (validate [_]\n     true))\n",
+      "end_line": 10,
+      "language": "clojure",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "(defrecord Person [name age]\n   Object\n   (toString [_]\n     \"Person\"))",
+      "end_line": 5,
+      "language": "clojure",
+      "name": "Person",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "(defrecord Address [street city zip]\n   Validateable\n   (validate [_]\n     true))",
+      "end_line": 10,
+      "language": "clojure",
+      "name": "Address",
+      "original_indentation": 0,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "   Validateable",
+      "end_line": 8,
+      "language": "clojure",
+      "name": "class_name",
+      "original_indentation": 3,
+      "start_line": 8
+    }
+  ],
+  "source_code": "\n(defrecord Person [name age]\n   Object\n   (toString [_]\n     \"Person\"))\n\n(defrecord Address [street city zip]\n   Validateable\n   (validate [_]\n     true))\n",
+  "test_name": "test_clojure_defrecord_extraction",
+  "total_chunks": 4
+}

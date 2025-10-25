@@ -1,0 +1,22 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+assertion_line: 103
+expression: snapshot
+---
+# text_original
+(defn calculate [x]
+  #_{ This is a block comment
+      spanning multiple lines }
+  (+ x (* x 2)))
+
+# text_to_type
+(defn calculate [x]
+#_{ This is a block comment
+spanning multiple lines }
+(+ x (* x 2)))
+
+# text_to_display
+(defn calculate [x]↵
+  #_{ This is a block comment↵
+      spanning multiple lines }↵
+  (+ x (* x 2)))↵
