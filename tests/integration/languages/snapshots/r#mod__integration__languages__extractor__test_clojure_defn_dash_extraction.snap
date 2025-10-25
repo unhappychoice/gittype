@@ -20,7 +20,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "(defn- private-helper",
       "end_line": 2,
       "language": "clojure",
-      "name": "name",
+      "name": "func_name",
       "original_indentation": 7,
       "start_line": 2
     },
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "(defn- calculate-internal",
       "end_line": 5,
       "language": "clojure",
-      "name": "name",
+      "name": "func_name",
       "original_indentation": 7,
       "start_line": 5
     },

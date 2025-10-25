@@ -77,11 +77,31 @@ fn query_patterns_matches_defrecord() {
 }
 
 #[test]
-fn query_uses_single_match_predicate() {
+fn query_patterns_matches_def() {
+    let extractor = ClojureExtractor;
+    let patterns = extractor.query_patterns();
+    assert!(patterns.contains("def"));
+}
+
+#[test]
+fn query_patterns_matches_ns() {
+    let extractor = ClojureExtractor;
+    let patterns = extractor.query_patterns();
+    assert!(patterns.contains("ns"));
+}
+
+#[test]
+fn query_uses_match_predicates() {
     let extractor = ClojureExtractor;
     let patterns = extractor.query_patterns();
     let match_count = patterns.matches("#match?").count();
-    assert_eq!(match_count, 1, "Should use exactly one #match? predicate");
+    // Clojure uses multiple #match? predicates to distinguish different definition types
+    // (defn/defmacro/defn- for Functions, def for Variables, ns for Namespaces,
+    //  deftype/defrecord for Classes, defprotocol for Interfaces)
+    assert_eq!(
+        match_count, 5,
+        "Should use five #match? predicates for different definition types"
+    );
 }
 
 #[test]

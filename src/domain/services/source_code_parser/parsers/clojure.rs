@@ -13,10 +13,29 @@ impl LanguageExtractor for ClojureExtractor {
     fn query_patterns(&self) -> &str {
         "
             (list_lit
-                (sym_lit) @keyword
-                (sym_lit) @name
-            ) @definition
-            (#match? @keyword \"^(defn|defmacro|defn-|deftype|defprotocol|defrecord)$\")
+                (sym_lit) @var_keyword (#match? @var_keyword \"^def$\")
+                (sym_lit) @var_name
+            ) @variable_def
+
+            (list_lit
+                (sym_lit) @ns_keyword (#match? @ns_keyword \"^ns$\")
+                (sym_lit) @ns_name
+            ) @namespace_def
+
+            (list_lit
+                (sym_lit) @func_keyword (#match? @func_keyword \"^(defn|defmacro|defn-)$\")
+                (sym_lit) @func_name
+            ) @function_def
+
+            (list_lit
+                (sym_lit) @class_keyword (#match? @class_keyword \"^(deftype|defrecord)$\")
+                (sym_lit) @class_name
+            ) @class_def
+
+            (list_lit
+                (sym_lit) @interface_keyword (#match? @interface_keyword \"^defprotocol$\")
+                (sym_lit) @interface_name
+            ) @interface_def
         "
     }
 
@@ -26,8 +45,14 @@ impl LanguageExtractor for ClojureExtractor {
 
     fn capture_name_to_chunk_type(&self, capture_name: &str) -> Option<ChunkType> {
         match capture_name {
-            "definition" => Some(ChunkType::Function),
-            "name" => Some(ChunkType::CodeBlock),
+            "function_def" => Some(ChunkType::Function),
+            "variable_def" => Some(ChunkType::Variable),
+            "namespace_def" => Some(ChunkType::Namespace),
+            "class_def" => Some(ChunkType::Class),
+            "interface_def" => Some(ChunkType::Interface),
+            "func_name" | "var_name" | "ns_name" | "class_name" | "interface_name" => {
+                Some(ChunkType::CodeBlock)
+            }
             _ => None,
         }
     }

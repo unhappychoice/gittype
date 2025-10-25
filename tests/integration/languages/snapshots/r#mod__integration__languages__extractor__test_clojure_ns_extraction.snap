@@ -7,8 +7,8 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     {
       "chunk_type": "File",
       "comment_ranges": [],
-      "content": "\n(defn hello-world []\n  42)\n\n(defn add [a b]\n  (+ a b))\n",
-      "end_line": 6,
+      "content": "\n(ns myapp.core\n  (:require [clojure.string :as str]))\n\n(ns myapp.utils)\n",
+      "end_line": 5,
       "language": "clojure",
       "name": "entire_file",
       "original_indentation": 0,
@@ -17,35 +17,35 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
     {
       "chunk_type": "CodeBlock",
       "comment_ranges": [],
-      "content": "(defn hello-world",
+      "content": "(ns myapp.core",
       "end_line": 2,
       "language": "clojure",
-      "name": "func_name",
-      "original_indentation": 6,
+      "name": "ns_name",
+      "original_indentation": 4,
       "start_line": 2
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "Namespace",
       "comment_ranges": [],
-      "content": "(defn hello-world []\n  42)",
+      "content": "(ns myapp.core\n  (:require [clojure.string :as str]))",
       "end_line": 3,
       "language": "clojure",
-      "name": "hello-world",
+      "name": "myapp.core",
       "original_indentation": 0,
       "start_line": 2
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "Namespace",
       "comment_ranges": [],
-      "content": "(defn add [a b]\n  (+ a b))",
-      "end_line": 6,
+      "content": "(ns myapp.utils)",
+      "end_line": 5,
       "language": "clojure",
-      "name": "add",
+      "name": "myapp.utils",
       "original_indentation": 0,
       "start_line": 5
     }
   ],
-  "source_code": "\n(defn hello-world []\n  42)\n\n(defn add [a b]\n  (+ a b))\n",
-  "test_name": "test_clojure_defn_extraction",
+  "source_code": "\n(ns myapp.core\n  (:require [clojure.string :as str]))\n\n(ns myapp.utils)\n",
+  "test_name": "test_clojure_ns_extraction",
   "total_chunks": 4
 }

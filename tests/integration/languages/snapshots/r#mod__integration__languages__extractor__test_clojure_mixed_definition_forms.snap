@@ -20,7 +20,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "(defn public-function",
       "end_line": 2,
       "language": "clojure",
-      "name": "name",
+      "name": "func_name",
       "original_indentation": 6,
       "start_line": 2
     },
@@ -50,7 +50,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "(defn- private-function",
       "end_line": 8,
       "language": "clojure",
-      "name": "name",
+      "name": "func_name",
       "original_indentation": 7,
       "start_line": 8
     },
@@ -70,12 +70,12 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "(defprotocol MyProtocol",
       "end_line": 11,
       "language": "clojure",
-      "name": "name",
+      "name": "interface_name",
       "original_indentation": 13,
       "start_line": 11
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "Interface",
       "comment_ranges": [],
       "content": "(defprotocol MyProtocol\n  (my-method [this]))",
       "end_line": 12,
@@ -85,7 +85,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 11
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "(deftype MyType [value]\n  Object\n  (toString [_] \"T\"))",
       "end_line": 16,
@@ -95,7 +95,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 14
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "(defrecord MyRecord [field1 field2]\n  Comparable\n  (compareTo [this other]\n    0))",
       "end_line": 21,
@@ -110,7 +110,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "  Comparable",
       "end_line": 19,
       "language": "clojure",
-      "name": "name",
+      "name": "class_name",
       "original_indentation": 2,
       "start_line": 19
     },

@@ -1,0 +1,71 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\n(ns myapp.core)\n\n(def config {:port 3000})\n\n(defn start-server []\n  (println \"Starting...\"))\n\n(def version \"1.0.0\")\n",
+      "end_line": 9,
+      "language": "clojure",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Namespace",
+      "comment_ranges": [],
+      "content": "(ns myapp.core)",
+      "end_line": 2,
+      "language": "clojure",
+      "name": "myapp.core",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "(def config {:port 3000})",
+      "end_line": 4,
+      "language": "clojure",
+      "name": "config",
+      "original_indentation": 0,
+      "start_line": 4
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "(defn start-server",
+      "end_line": 6,
+      "language": "clojure",
+      "name": "func_name",
+      "original_indentation": 6,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "(defn start-server []\n  (println \"Starting...\"))",
+      "end_line": 7,
+      "language": "clojure",
+      "name": "start-server",
+      "original_indentation": 0,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Variable",
+      "comment_ranges": [],
+      "content": "(def version \"1.0.0\")",
+      "end_line": 9,
+      "language": "clojure",
+      "name": "version",
+      "original_indentation": 0,
+      "start_line": 9
+    }
+  ],
+  "source_code": "\n(ns myapp.core)\n\n(def config {:port 3000})\n\n(defn start-server []\n  (println \"Starting...\"))\n\n(def version \"1.0.0\")\n",
+  "test_name": "test_clojure_def_and_ns_mixed",
+  "total_chunks": 6
+}

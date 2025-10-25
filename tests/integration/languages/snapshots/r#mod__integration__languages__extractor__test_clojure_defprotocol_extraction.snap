@@ -15,7 +15,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "Interface",
       "comment_ranges": [],
       "content": "(defprotocol Animal\n  (speak [this]))",
       "end_line": 3,
@@ -25,7 +25,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 2
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "Interface",
       "comment_ranges": [],
       "content": "(defprotocol Drawable\n  (draw [this x y])\n  (clear [this]))",
       "end_line": 7,

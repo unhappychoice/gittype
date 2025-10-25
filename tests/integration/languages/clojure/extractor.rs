@@ -74,7 +74,7 @@ test_language_extractor! {
     total_chunks: 5,
     chunk_counts: {
         File: 1,
-        Function: 2,
+        Class: 2,
         CodeBlock: 1,
         Conditional: 1,
     }
@@ -95,7 +95,7 @@ test_language_extractor! {
     total_chunks: 3,
     chunk_counts: {
         File: 1,
-        Function: 2,
+        Interface: 2,
     }
 }
 
@@ -117,7 +117,7 @@ test_language_extractor! {
     total_chunks: 4,
     chunk_counts: {
         File: 1,
-        Function: 2,
+        Class: 2,
         CodeBlock: 1,
     }
 }
@@ -151,8 +151,72 @@ test_language_extractor! {
     total_chunks: 12,
     chunk_counts: {
         File: 1,
-        Function: 6,
+        Function: 3,
+        Interface: 1,
+        Class: 2,
         CodeBlock: 4,
         Conditional: 1,
+    }
+}
+
+test_language_extractor! {
+    name: test_clojure_def_extraction,
+    language: "clojure",
+    extension: "clj",
+    source: r#"
+(def my-config
+  {:host "localhost"
+   :port 3000})
+
+(def max-retries 5)
+
+(def api-key "secret-key")
+"#,
+    total_chunks: 4,
+    chunk_counts: {
+        File: 1,
+        Variable: 3,
+    }
+}
+
+test_language_extractor! {
+    name: test_clojure_ns_extraction,
+    language: "clojure",
+    extension: "clj",
+    source: r#"
+(ns myapp.core
+  (:require [clojure.string :as str]))
+
+(ns myapp.utils)
+"#,
+    total_chunks: 4,
+    chunk_counts: {
+        File: 1,
+        Namespace: 2,
+        CodeBlock: 1,
+    }
+}
+
+test_language_extractor! {
+    name: test_clojure_def_and_ns_mixed,
+    language: "clojure",
+    extension: "clj",
+    source: r#"
+(ns myapp.core)
+
+(def config {:port 3000})
+
+(defn start-server []
+  (println "Starting..."))
+
+(def version "1.0.0")
+"#,
+    total_chunks: 6,
+    chunk_counts: {
+        File: 1,
+        Namespace: 1,
+        Variable: 2,
+        Function: 1,
+        CodeBlock: 1,
     }
 }

@@ -15,7 +15,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 1
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "(defrecord Person [name age]\n   Object\n   (toString [_]\n     \"Person\"))",
       "end_line": 5,
@@ -25,7 +25,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "start_line": 2
     },
     {
-      "chunk_type": "Function",
+      "chunk_type": "Class",
       "comment_ranges": [],
       "content": "(defrecord Address [street city zip]\n   Validateable\n   (validate [_]\n     true))",
       "end_line": 10,
@@ -40,7 +40,7 @@ expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
       "content": "   Validateable",
       "end_line": 8,
       "language": "clojure",
-      "name": "name",
+      "name": "class_name",
       "original_indentation": 3,
       "start_line": 8
     }
