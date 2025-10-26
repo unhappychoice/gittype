@@ -1,6 +1,7 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
 use crate::domain::models::DifficultyLevel;
 use crate::domain::services::scoring::{SessionTracker, TotalTracker};
+use crate::infrastructure::git::LocalGitRepositoryClient;
 use crate::presentation::game::GameData;
 use crate::presentation::game::{SessionConfig, SessionManager, StageRepository};
 use crate::presentation::ui::Colors;
@@ -56,7 +57,14 @@ impl Step for FinalizingStep {
             .git_repository
             .as_ref()
             .cloned()
-            .or_else(GameData::get_git_repository);
+            .or_else(GameData::get_git_repository)
+            .or_else(|| {
+                context
+                    .current_repo_path
+                    .as_ref()
+                    .or(context.repo_path)
+                    .and_then(|path| LocalGitRepositoryClient::create_from_local_path(path).ok())
+            });
 
         // Verify challenges are available in GameData
         let challenge_count = GameData::with_challenges(|c| c.len()).unwrap_or(0);
