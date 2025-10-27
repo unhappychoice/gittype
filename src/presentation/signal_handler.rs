@@ -14,7 +14,9 @@ use ratatui::Terminal;
 use std::io::{stdout, Write};
 use std::sync::{Arc, Mutex};
 
-pub fn setup_signal_handlers(screen_manager: Arc<Mutex<ScreenManagerImpl>>) {
+pub fn setup_signal_handlers(
+    screen_manager: Arc<Mutex<ScreenManagerImpl<CrosstermBackend<std::io::Stdout>>>>,
+) {
     let manager_for_panic = screen_manager.clone();
 
     std::panic::set_hook(Box::new(move |panic_info| {
@@ -54,7 +56,7 @@ pub fn setup_signal_handlers(screen_manager: Arc<Mutex<ScreenManagerImpl>>) {
         // Try to show panic screen - if this fails, fall back to standard panic behavior
         if show_panic_screen(&full_message, &manager_for_panic).is_err() {
             // Clean up terminal using the existing static cleanup
-            ScreenManagerImpl::cleanup_terminal_static();
+            ScreenManagerImpl::<CrosstermBackend<std::io::Stdout>>::cleanup_terminal_static();
 
             // Fallback to standard panic message
             eprintln!("\\n💥 GitType encountered an unexpected error:");
@@ -78,7 +80,7 @@ pub fn setup_signal_handlers(screen_manager: Arc<Mutex<ScreenManagerImpl>>) {
             })
             .unwrap_or_else(|| {
                 // Fallback: just cleanup and exit
-                ScreenManagerImpl::cleanup_terminal_static();
+                ScreenManagerImpl::<CrosstermBackend<std::io::Stdout>>::cleanup_terminal_static();
                 std::process::exit(0);
             });
     })
@@ -88,7 +90,7 @@ pub fn setup_signal_handlers(screen_manager: Arc<Mutex<ScreenManagerImpl>>) {
 /// Show panic screen using the PanicScreen component with ratatui
 fn show_panic_screen(
     error_message: &str,
-    screen_manager: &Arc<Mutex<ScreenManagerImpl>>,
+    screen_manager: &Arc<Mutex<ScreenManagerImpl<CrosstermBackend<std::io::Stdout>>>>,
 ) -> anyhow::Result<()> {
     // Initialize terminal for panic screen
     let mut raw_mode_enabled = false;

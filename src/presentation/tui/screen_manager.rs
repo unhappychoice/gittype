@@ -131,17 +131,19 @@ pub trait ScreenManagerFactory: Interface {
         &self,
         game_data: Arc<Mutex<GameData>>,
         module: &crate::presentation::di::AppModule,
-    ) -> ScreenManagerImpl;
+    ) -> ScreenManagerImpl<CrosstermBackend<Stdout>>;
 }
 
 /// Central manager for screen transitions, rendering, and input handling
-pub struct ScreenManagerImpl {
+pub struct ScreenManagerImpl<
+    B: ratatui::backend::Backend + Send + 'static = CrosstermBackend<Stdout>,
+> {
     screens: HashMap<ScreenType, Box<dyn Screen>>,
     screen_stack: Vec<ScreenType>,
     current_screen_type: ScreenType,
     terminal_initialized: bool,
     last_update: Instant,
-    ratatui_terminal: Terminal<CrosstermBackend<Stdout>>,
+    ratatui_terminal: Terminal<B>,
     exit_requested: bool,
 
     // Pending screen transition - shared across threads
@@ -154,11 +156,11 @@ pub struct ScreenManagerImpl {
     game_data: Arc<Mutex<GameData>>,
 }
 
-impl ScreenManagerImpl {
+impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
         game_data: Arc<Mutex<GameData>>,
-        terminal: Terminal<CrosstermBackend<Stdout>>,
+        terminal: Terminal<B>,
     ) -> Self {
         Self {
             screens: HashMap::new(),
@@ -768,13 +770,13 @@ impl ScreenManagerImpl {
     }
 }
 
-impl Drop for ScreenManagerImpl {
+impl<B: ratatui::backend::Backend + Send + 'static> Drop for ScreenManagerImpl<B> {
     fn drop(&mut self) {
         let _ = self.cleanup_terminal();
     }
 }
 
-impl Default for ScreenManagerImpl {
+impl Default for ScreenManagerImpl<CrosstermBackend<Stdout>> {
     fn default() -> Self {
         let backend = CrosstermBackend::new(stdout());
         let terminal = Terminal::new(backend).expect("Failed to create terminal");
@@ -834,7 +836,7 @@ impl ScreenManagerFactory for ScreenManagerFactoryImpl {
         &self,
         game_data: Arc<Mutex<GameData>>,
         _module: &crate::presentation::di::AppModule,
-    ) -> ScreenManagerImpl {
+    ) -> ScreenManagerImpl<CrosstermBackend<Stdout>> {
         let event_bus_ref = self.event_bus.as_event_bus();
         let event_bus = Arc::new(event_bus_ref.clone());
         let terminal = self.terminal.get();
