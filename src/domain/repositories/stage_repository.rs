@@ -6,9 +6,26 @@ use crate::infrastructure::database::database::{Database, HasDatabase};
 use crate::Result;
 use std::sync::{Arc, Mutex};
 
+pub trait StageRepositoryTrait: shaku::Interface {
+    fn get_completed_stages(&self, repository_id: Option<i64>) -> Result<Vec<StoredStageResult>>;
+    fn get_stage_statistics(&self, repository_id: Option<i64>) -> Result<StageStatistics>;
+}
+
 /// Repository for stage-based business logic
+#[derive(shaku::Component)]
+#[shaku(interface = StageRepositoryTrait)]
 pub struct StageRepository {
     database: Arc<Mutex<Database>>,
+}
+
+impl StageRepositoryTrait for StageRepository {
+    fn get_completed_stages(&self, repository_id: Option<i64>) -> Result<Vec<StoredStageResult>> {
+        StageRepository::get_completed_stages(self, repository_id)
+    }
+
+    fn get_stage_statistics(&self, repository_id: Option<i64>) -> Result<StageStatistics> {
+        StageRepository::get_stage_statistics(self, repository_id)
+    }
 }
 
 impl StageRepository {

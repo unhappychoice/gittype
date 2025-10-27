@@ -83,10 +83,12 @@ pub fn run_trending(
             TrendingRepositorySelectionScreen::new,
             Some((language.clone(), period.clone())),
             Some(|screen: &TrendingRepositorySelectionScreen| {
-                screen
-                    .get_selected_index()
-                    .and_then(|idx| screen.get_repositories().get(idx))
-                    .map(|repo| repo.repo_name.clone())
+                screen.get_selected_index().and_then(|idx| {
+                    screen
+                        .get_repositories()
+                        .get(idx)
+                        .map(|repo| repo.repo_name.clone())
+                })
             }),
         )?;
 
@@ -120,10 +122,12 @@ pub fn run_trending(
                 TrendingRepositorySelectionScreen::new,
                 Some((Some(lang), period.clone())),
                 Some(|screen: &TrendingRepositorySelectionScreen| {
-                    screen
-                        .get_selected_index()
-                        .and_then(|idx| screen.get_repositories().get(idx))
-                        .map(|repo| repo.repo_name.clone())
+                    screen.get_selected_index().and_then(|idx| {
+                        screen
+                            .get_repositories()
+                            .get(idx)
+                            .map(|repo| repo.repo_name.clone())
+                    })
                 }),
             )?;
 

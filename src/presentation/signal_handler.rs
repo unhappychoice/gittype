@@ -1,7 +1,8 @@
+use crate::domain::events::EventBus;
 use crate::infrastructure::logging::{log_error_to_file, log_panic_to_file};
 use crate::presentation::game::events::ExitRequested;
 use crate::presentation::tui::screens::PanicScreen;
-use crate::presentation::tui::{Screen, ScreenManager};
+use crate::presentation::tui::{Screen, ScreenManagerImpl};
 use crate::GitTypeError;
 use crossterm::cursor::{Hide, Show};
 use crossterm::execute;
@@ -13,7 +14,7 @@ use ratatui::Terminal;
 use std::io::{stdout, Write};
 use std::sync::{Arc, Mutex};
 
-pub fn setup_signal_handlers(screen_manager: Arc<Mutex<ScreenManager>>) {
+pub fn setup_signal_handlers(screen_manager: Arc<Mutex<ScreenManagerImpl>>) {
     let manager_for_panic = screen_manager.clone();
 
     std::panic::set_hook(Box::new(move |panic_info| {
@@ -53,7 +54,7 @@ pub fn setup_signal_handlers(screen_manager: Arc<Mutex<ScreenManager>>) {
         // Try to show panic screen - if this fails, fall back to standard panic behavior
         if show_panic_screen(&full_message, &manager_for_panic).is_err() {
             // Clean up terminal using the existing static cleanup
-            ScreenManager::<ratatui::backend::CrosstermBackend<std::io::Stdout>>::cleanup_terminal_static();
+            ScreenManagerImpl::cleanup_terminal_static();
 
             // Fallback to standard panic message
             eprintln!("\\n💥 GitType encountered an unexpected error:");
@@ -69,10 +70,15 @@ pub fn setup_signal_handlers(screen_manager: Arc<Mutex<ScreenManager>>) {
         screen_manager
             .lock()
             .ok()
-            .map(|manager| manager.get_event_bus().publish(ExitRequested))
+            .map(|manager| {
+                manager
+                    .get_event_bus()
+                    .as_event_bus()
+                    .publish(ExitRequested)
+            })
             .unwrap_or_else(|| {
                 // Fallback: just cleanup and exit
-                ScreenManager::<ratatui::backend::CrosstermBackend<std::io::Stdout>>::cleanup_terminal_static();
+                ScreenManagerImpl::cleanup_terminal_static();
                 std::process::exit(0);
             });
     })
@@ -82,7 +88,7 @@ pub fn setup_signal_handlers(screen_manager: Arc<Mutex<ScreenManager>>) {
 /// Show panic screen using the PanicScreen component with ratatui
 fn show_panic_screen(
     error_message: &str,
-    screen_manager: &Arc<Mutex<ScreenManager>>,
+    screen_manager: &Arc<Mutex<ScreenManagerImpl>>,
 ) -> anyhow::Result<()> {
     // Initialize terminal for panic screen
     let mut raw_mode_enabled = false;
@@ -105,7 +111,7 @@ fn show_panic_screen(
         .lock()
         .ok()
         .map(|mgr| mgr.get_event_bus())
-        .unwrap_or_default();
+        .unwrap_or_else(|| Arc::new(EventBus::default()));
     let mut panic_screen =
         PanicScreen::with_error_message(error_message.to_string(), event_bus, None);
 

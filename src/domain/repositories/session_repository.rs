@@ -10,11 +10,22 @@ use std::sync::{Arc, Mutex};
 
 type StageResultTuple = (String, StageResult, usize, Option<Challenge>);
 
-pub trait SessionRepositoryTrait: Send {
+pub trait SessionRepositoryTrait: shaku::Interface {
     fn get_session_stage_results(&self, session_id: i64) -> Result<Vec<SessionStageResult>>;
+    fn get_all_repositories(&self) -> Result<Vec<StoredRepository>>;
+    fn get_sessions_filtered(
+        &self,
+        repository_filter: Option<i64>,
+        date_filter_days: Option<i64>,
+        sort_by: &str,
+        sort_descending: bool,
+    ) -> Result<Vec<StoredSession>>;
+    fn get_session_result(&self, session_id: i64) -> Result<Option<SessionResultData>>;
 }
 
 /// Repository for session business logic
+#[derive(shaku::Component)]
+#[shaku(interface = SessionRepositoryTrait)]
 pub struct SessionRepository {
     database: Arc<Mutex<Database>>,
 }
@@ -481,6 +492,30 @@ impl BestStatus {
 impl SessionRepositoryTrait for SessionRepository {
     fn get_session_stage_results(&self, session_id: i64) -> Result<Vec<SessionStageResult>> {
         SessionRepository::get_session_stage_results(self, session_id)
+    }
+
+    fn get_all_repositories(&self) -> Result<Vec<StoredRepository>> {
+        SessionRepository::get_all_repositories(self)
+    }
+
+    fn get_sessions_filtered(
+        &self,
+        repository_filter: Option<i64>,
+        date_filter_days: Option<i64>,
+        sort_by: &str,
+        sort_descending: bool,
+    ) -> Result<Vec<StoredSession>> {
+        SessionRepository::get_sessions_filtered(
+            self,
+            repository_filter,
+            date_filter_days,
+            sort_by,
+            sort_descending,
+        )
+    }
+
+    fn get_session_result(&self, session_id: i64) -> Result<Option<SessionResultData>> {
+        SessionRepository::get_session_result_for_analytics(self, session_id)
     }
 }
 

@@ -81,6 +81,7 @@ atty = "0.2"
 bincode = { version = "2.0", features = ["serde"] }
 flate2 = "1.1"
 sha2 = "0.10"
+shaku = "0.6"
 
 [dev-dependencies]
 paste = "1.0"

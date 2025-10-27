@@ -1,4 +1,4 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::EventBusInterface;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::views::VersionCheckView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
@@ -10,24 +10,31 @@ use crossterm::{
 };
 use ratatui::{backend::CrosstermBackend, Terminal};
 use std::io::{stdout, Stdout};
+use std::sync::Arc;
+use std::sync::RwLock;
 
 pub enum VersionCheckResult {
     Continue,
     Exit,
 }
 
+pub trait VersionCheckScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = VersionCheckScreenInterface)]
 pub struct VersionCheckScreen {
-    event_bus: EventBus,
-    current_version: String,
-    latest_version: String,
+    current_version: RwLock<String>,
+    latest_version: RwLock<String>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
 }
 
 impl VersionCheckScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
         Self {
             event_bus,
-            current_version: String::new(),
-            latest_version: String::new(),
+            current_version: RwLock::new(String::new()),
+            latest_version: RwLock::new(String::new()),
         }
     }
 
@@ -93,19 +100,19 @@ impl Screen for VersionCheckScreen {
         Box::new(VersionCheckScreenDataProvider)
     }
 
-    fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
+    fn init_with_data(&self, _data: Box<dyn std::any::Any>) -> Result<()> {
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: event::KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
         match key_event.code {
             KeyCode::Esc => {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             _ => Ok(()),
@@ -116,20 +123,20 @@ impl Screen for VersionCheckScreen {
         UpdateStrategy::InputOnly
     }
 
-    fn update(&mut self) -> crate::Result<bool> {
+    fn update(&self) -> crate::Result<bool> {
         Ok(false)
     }
 
-    fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()> {
-        VersionCheckView::draw_ui(frame, &self.current_version, &self.latest_version);
+    fn render_ratatui(&self, frame: &mut ratatui::Frame) -> Result<()> {
+        let current = self.current_version.read().unwrap();
+        let latest = self.latest_version.read().unwrap();
+        VersionCheckView::draw_ui(frame, &current, &latest);
         Ok(())
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl VersionCheckScreenInterface for VersionCheckScreen {}

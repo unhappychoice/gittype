@@ -13,7 +13,7 @@ use std::sync::{Arc, Mutex};
 fn test_loading_screen_ctrl_c_requests_exit() {
     let _ = GameData::initialize();
 
-    let event_bus = EventBus::new();
+    let event_bus = Arc::new(EventBus::new());
     let events = Arc::new(Mutex::new(Vec::new()));
     let events_clone = Arc::clone(&events);
 
@@ -21,7 +21,7 @@ fn test_loading_screen_ctrl_c_requests_exit() {
         events_clone.lock().unwrap().push(event.clone());
     });
 
-    let mut screen = LoadingScreen::new(event_bus);
+    let screen = LoadingScreen::new(event_bus);
 
     screen
         .handle_key_event(crossterm::event::KeyEvent::new(
@@ -38,8 +38,8 @@ fn test_loading_screen_ctrl_c_requests_exit() {
 fn test_loading_screen_char_a_ignored() {
     let _ = GameData::initialize();
 
-    let event_bus = EventBus::new();
-    let mut screen = LoadingScreen::new(event_bus);
+    let event_bus = Arc::new(EventBus::new());
+    let screen = LoadingScreen::new(event_bus);
 
     // Should not panic
     screen
@@ -54,8 +54,8 @@ fn test_loading_screen_char_a_ignored() {
 fn test_loading_screen_enter_ignored() {
     let _ = GameData::initialize();
 
-    let event_bus = EventBus::new();
-    let mut screen = LoadingScreen::new(event_bus);
+    let event_bus = Arc::new(EventBus::new());
+    let screen = LoadingScreen::new(event_bus);
 
     // Should not panic
     screen
@@ -70,8 +70,8 @@ fn test_loading_screen_enter_ignored() {
 fn test_loading_screen_esc_ignored() {
     let _ = GameData::initialize();
 
-    let event_bus = EventBus::new();
-    let mut screen = LoadingScreen::new(event_bus);
+    let event_bus = Arc::new(EventBus::new());
+    let screen = LoadingScreen::new(event_bus);
 
     // Should not panic
     screen
@@ -86,7 +86,7 @@ fn test_loading_screen_esc_ignored() {
 fn test_loading_screen_initialization() {
     let _ = GameData::initialize();
 
-    let event_bus = EventBus::new();
+    let event_bus = Arc::new(EventBus::new());
     let screen = LoadingScreen::new(event_bus);
 
     assert_eq!(screen.get_type(), ScreenType::Loading);

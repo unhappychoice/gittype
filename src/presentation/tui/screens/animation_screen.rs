@@ -1,4 +1,4 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::EventBusInterface;
 use crate::domain::models::{RankTier, SessionResult};
 use crate::domain::services::scoring::Rank;
 use crate::presentation::game::events::NavigateTo;
@@ -16,6 +16,7 @@ use ratatui::{
     widgets::Paragraph,
     Frame,
 };
+use std::sync::RwLock;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -42,40 +43,48 @@ impl ScreenDataProvider for AnimationDataProvider {
     }
 }
 
+pub trait AnimationScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = AnimationScreenInterface)]
 pub struct AnimationScreen {
-    animation: Option<TypingAnimationView>,
-    session_result: Option<SessionResult>,
-    animation_initialized: bool,
-    event_bus: EventBus,
+    animation: RwLock<Option<TypingAnimationView>>,
+
+    session_result: RwLock<Option<SessionResult>>,
+
+    animation_initialized: RwLock<bool>,
+
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
 }
 
 impl AnimationScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
         Self {
-            animation: None,
-            session_result: None,
-            animation_initialized: false,
+            animation: RwLock::new(None),
+            session_result: RwLock::new(None),
+            animation_initialized: RwLock::new(false),
             event_bus,
         }
     }
 
     /// Pre-inject session result from ScreenManager (avoids RefCell conflicts)
-    pub fn set_session_result(&mut self, session_result: SessionResult) {
-        self.session_result = Some(session_result);
+    pub fn set_session_result(&self, session_result: SessionResult) {
+        *self.session_result.write().unwrap() = Some(session_result.clone());
 
-        if let Some(ref session_result) = self.session_result {
+        if let Some(ref session_result) = *self.session_result.read().unwrap() {
             let best_rank = Rank::for_score(session_result.session_score);
             let tier = Self::get_tier_from_rank_name(best_rank.name());
             let mut typing_animation = TypingAnimationView::new(tier, 80, 24);
             typing_animation.set_rank_messages(best_rank.name());
-            self.animation = Some(typing_animation);
-            self.animation_initialized = true;
+            *self.animation.write().unwrap() = Some(typing_animation);
+            *self.animation_initialized.write().unwrap() = true;
         }
     }
 
     /// Check if the animation is complete (for ScreenManager auto-transition)
     pub fn is_animation_complete(&self) -> bool {
-        if let Some(ref animation) = self.animation {
+        if let Some(ref animation) = *self.animation.read().unwrap() {
             animation.is_complete()
         } else {
             false
@@ -204,11 +213,11 @@ impl Screen for AnimationScreen {
         })
     }
 
-    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
+    fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
         // Initialize state
-        if self.animation.is_none() {
-            self.animation_initialized = false;
-            self.session_result = None;
+        if self.animation.read().unwrap().is_none() {
+            *self.animation_initialized.write().unwrap() = false;
+            *self.session_result.write().unwrap() = None;
         }
 
         let data = data.downcast::<AnimationData>()?;
@@ -217,24 +226,27 @@ impl Screen for AnimationScreen {
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         match key_event.code {
             KeyCode::Char('s') | KeyCode::Char('S') => {
                 self.event_bus
+                    .as_event_bus()
                     .publish(NavigateTo::Replace(ScreenType::SessionSummary));
                 Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             _ => Ok(()),
         }
     }
 
-    fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()> {
-        if let Some(ref animation) = self.animation {
-            if let Some(ref session_result) = self.session_result {
+    fn render_ratatui(&self, frame: &mut ratatui::Frame) -> Result<()> {
+        let animation_guard = self.animation.read().unwrap();
+        if let Some(ref animation) = *animation_guard {
+            let session_result_guard = self.session_result.read().unwrap();
+            if let Some(ref session_result) = *session_result_guard {
                 let best_rank = Rank::for_score(session_result.session_score);
                 let rank_name = best_rank.name();
 
@@ -248,8 +260,9 @@ impl Screen for AnimationScreen {
         UpdateStrategy::TimeBased(Duration::from_millis(16)) // ~60 FPS for smooth animation
     }
 
-    fn update(&mut self) -> Result<bool> {
-        if let Some(ref mut animation) = self.animation {
+    fn update(&self) -> Result<bool> {
+        let mut animation_guard = self.animation.write().unwrap();
+        if let Some(ref mut animation) = *animation_guard {
             let updated = animation.update();
 
             if animation.is_complete() {
@@ -264,8 +277,6 @@ impl Screen for AnimationScreen {
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl AnimationScreenInterface for AnimationScreen {}

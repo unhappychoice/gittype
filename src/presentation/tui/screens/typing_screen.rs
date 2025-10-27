@@ -1,5 +1,5 @@
 use crate::domain::events::domain_events::DomainEvent;
-use crate::domain::events::EventBus;
+use crate::domain::events::EventBusInterface;
 use crate::domain::models::{Challenge, Countdown};
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::{
@@ -11,19 +11,25 @@ use crate::presentation::tui::views::TypingView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::{domain::models::GitRepository, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
+use std::sync::RwLock;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+pub trait TypingScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = TypingScreenInterface)]
 pub struct TypingScreen {
-    countdown: Countdown,
-    git_repository: Option<GitRepository>,
-    typing_core: TypingCore,
-    challenge: Option<Challenge>,
-    code_context: CodeContext,
-    waiting_to_start: bool,
-    dialog_shown: bool,
-    typing_view: TypingView,
-    event_bus: EventBus,
+    countdown: RwLock<Countdown>,
+    git_repository: RwLock<Option<GitRepository>>,
+    typing_core: RwLock<TypingCore>,
+    challenge: RwLock<Option<Challenge>>,
+    code_context: RwLock<CodeContext>,
+    waiting_to_start: RwLock<bool>,
+    dialog_shown: RwLock<bool>,
+    typing_view: RwLock<TypingView>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
     game_data: Arc<Mutex<GameData>>,
     session_manager: Arc<Mutex<SessionManager>>,
 }
@@ -41,7 +47,7 @@ pub enum SessionState {
 
 impl TypingScreen {
     pub fn new(
-        event_bus: EventBus,
+        event_bus: Arc<dyn EventBusInterface>,
         game_data: Arc<Mutex<GameData>>,
         session_manager: Arc<Mutex<SessionManager>>,
     ) -> Self {
@@ -51,34 +57,36 @@ impl TypingScreen {
             .and_then(|data| data.git_repository.clone());
 
         Self {
-            countdown: Countdown::new(),
-            git_repository,
-            typing_core: TypingCore::default(),
-            challenge: None,
-            code_context: CodeContext::empty(),
-            waiting_to_start: true,
-            dialog_shown: false,
-            typing_view: TypingView::new(),
+            countdown: RwLock::new(Countdown::new()),
+            git_repository: RwLock::new(git_repository),
+            typing_core: RwLock::new(TypingCore::default()),
+            challenge: RwLock::new(None),
+            code_context: RwLock::new(CodeContext::empty()),
+            waiting_to_start: RwLock::new(true),
+            dialog_shown: RwLock::new(false),
+            typing_view: RwLock::new(TypingView::new()),
             event_bus,
             game_data,
             session_manager,
         }
     }
 
-    pub fn set_waiting_to_start(&mut self, waiting: bool) {
-        self.waiting_to_start = waiting;
+    pub fn set_waiting_to_start(&self, waiting: bool) {
+        *self.waiting_to_start.write().unwrap() = waiting;
     }
 
-    pub fn skip_countdown_for_test(&mut self) {
-        while self.countdown.is_active() {
+    pub fn skip_countdown_for_test(&self) {
+        while self.countdown.read().unwrap().is_active() {
             self.countdown
+                .write()
+                .unwrap()
                 .fast_forward_for_test(Duration::from_secs(10));
-            self.countdown.update_state();
+            self.countdown.write().unwrap().update_state();
         }
     }
 
     /// Load the current challenge from global SessionManager
-    pub fn load_current_challenge(&mut self) -> Result<bool> {
+    pub fn load_current_challenge(&self) -> Result<bool> {
         let challenge = if let Ok(session_manager) = self.session_manager.lock() {
             session_manager.get_current_challenge()?
         } else {
@@ -92,25 +100,29 @@ impl TypingScreen {
                 ..Default::default()
             };
 
-            self.typing_core = TypingCore::new(&challenge.code_content, comment_ranges, options);
-            self.code_context = context_loader::load_context_for_challenge(&challenge, 4)?;
+            *self.typing_core.write().unwrap() =
+                TypingCore::new(&challenge.code_content, comment_ranges, options);
+            *self.code_context.write().unwrap() =
+                context_loader::load_context_for_challenge(&challenge, 4)?;
 
-            self.countdown = Countdown::new();
-            self.challenge = Some(challenge.clone());
+            *self.countdown.write().unwrap() = Countdown::new();
+            *self.challenge.write().unwrap() = Some(challenge.clone());
             // Update git_repository from injected GameData
-            self.git_repository = if let Ok(game_data) = self.game_data.lock() {
+            *self.git_repository.write().unwrap() = if let Ok(game_data) = self.game_data.lock() {
                 game_data.repository()
             } else {
                 None
             };
-            self.waiting_to_start = true;
-            self.dialog_shown = false;
+            *self.waiting_to_start.write().unwrap() = true;
+            *self.dialog_shown.write().unwrap() = false;
 
             // Publish ChallengeLoaded event
-            self.event_bus.publish(DomainEvent::ChallengeLoaded {
-                text: self.typing_core.text_to_type().to_string(),
-                source_path: challenge.source_file_path.clone().unwrap_or_default(),
-            });
+            self.event_bus
+                .as_event_bus()
+                .publish(DomainEvent::ChallengeLoaded {
+                    text: self.typing_core.read().unwrap().text_to_type().to_string(),
+                    source_path: challenge.source_file_path.clone().unwrap_or_default(),
+                });
 
             Ok(true)
         } else {
@@ -118,20 +130,24 @@ impl TypingScreen {
         }
     }
 
-    fn handle_key(&mut self, key_event: KeyEvent) -> Result<SessionState> {
+    fn handle_key(&self, key_event: KeyEvent) -> Result<SessionState> {
         if !matches!(key_event.kind, KeyEventKind::Press) {
             return Ok(SessionState::Continue);
         }
 
-        match (self.waiting_to_start, self.countdown.is_active()) {
+        let waiting_to_start = *self.waiting_to_start.read().unwrap();
+        let countdown_active = self.countdown.read().unwrap().is_active();
+        let dialog_shown = *self.dialog_shown.read().unwrap();
+
+        match (waiting_to_start, countdown_active) {
             (true, _) => match key_event.code {
                 KeyCode::Char(' ') => {
-                    self.waiting_to_start = false;
-                    self.countdown.start_countdown();
+                    *self.waiting_to_start.write().unwrap() = false;
+                    self.countdown.write().unwrap().start_countdown();
                     Ok(SessionState::Countdown)
                 }
                 KeyCode::Esc => {
-                    if self.dialog_shown {
+                    if dialog_shown {
                         self.close_dialog();
                         Ok(SessionState::WaitingToStart)
                     } else {
@@ -140,7 +156,7 @@ impl TypingScreen {
                     }
                 }
                 KeyCode::Char('s' | 'S') => {
-                    if self.dialog_shown {
+                    if dialog_shown {
                         let result = self.handle_skip_action()?;
                         match result {
                             SessionState::Skip => Ok(SessionState::Skip),
@@ -151,7 +167,7 @@ impl TypingScreen {
                     }
                 }
                 KeyCode::Char('q' | 'Q') => {
-                    if self.dialog_shown {
+                    if dialog_shown {
                         self.close_dialog();
                         Ok(SessionState::Failed)
                     } else {
@@ -162,7 +178,7 @@ impl TypingScreen {
                     Ok(SessionState::Exit)
                 }
                 _ => {
-                    if self.dialog_shown {
+                    if dialog_shown {
                         self.close_dialog();
                     }
                     Ok(SessionState::WaitingToStart)
@@ -170,7 +186,7 @@ impl TypingScreen {
             },
             (false, true) => match key_event.code {
                 KeyCode::Esc => {
-                    if self.dialog_shown {
+                    if dialog_shown {
                         self.close_dialog();
                         Ok(SessionState::Countdown)
                     } else {
@@ -179,7 +195,7 @@ impl TypingScreen {
                     }
                 }
                 KeyCode::Char('s' | 'S') => {
-                    if self.dialog_shown {
+                    if dialog_shown {
                         let result = self.handle_skip_action()?;
                         match result {
                             SessionState::Skip => Ok(SessionState::Skip),
@@ -190,7 +206,7 @@ impl TypingScreen {
                     }
                 }
                 KeyCode::Char('q' | 'Q') => {
-                    if self.dialog_shown {
+                    if dialog_shown {
                         self.close_dialog();
                         Ok(SessionState::Failed)
                     } else {
@@ -201,7 +217,7 @@ impl TypingScreen {
                     Ok(SessionState::Exit)
                 }
                 _ => {
-                    if self.dialog_shown {
+                    if dialog_shown {
                         self.close_dialog();
                     }
                     Ok(SessionState::Countdown)
@@ -209,7 +225,7 @@ impl TypingScreen {
             },
             (false, false) => match key_event.code {
                 KeyCode::Esc => {
-                    if self.dialog_shown {
+                    if dialog_shown {
                         self.close_dialog();
                         Ok(SessionState::Continue)
                     } else {
@@ -218,7 +234,7 @@ impl TypingScreen {
                     }
                 }
                 KeyCode::Char('s' | 'S') => {
-                    if self.dialog_shown {
+                    if dialog_shown {
                         self.handle_skip_action()
                     } else {
                         let ch = if key_event.code == KeyCode::Char('S') {
@@ -230,7 +246,7 @@ impl TypingScreen {
                     }
                 }
                 KeyCode::Char('q' | 'Q') => {
-                    if self.dialog_shown {
+                    if dialog_shown {
                         self.close_dialog();
                         Ok(SessionState::Failed)
                     } else {
@@ -246,7 +262,7 @@ impl TypingScreen {
                     Ok(SessionState::Exit)
                 }
                 KeyCode::Char(ch) => {
-                    if self.dialog_shown {
+                    if dialog_shown {
                         self.close_dialog();
                         Ok(SessionState::Continue)
                     } else {
@@ -254,7 +270,7 @@ impl TypingScreen {
                     }
                 }
                 KeyCode::Tab => {
-                    if self.dialog_shown {
+                    if dialog_shown {
                         self.close_dialog();
                         Ok(SessionState::Continue)
                     } else {
@@ -262,7 +278,7 @@ impl TypingScreen {
                     }
                 }
                 KeyCode::Enter => {
-                    if self.dialog_shown {
+                    if dialog_shown {
                         self.close_dialog();
                         Ok(SessionState::Continue)
                     } else {
@@ -270,7 +286,7 @@ impl TypingScreen {
                     }
                 }
                 _ => {
-                    if self.dialog_shown {
+                    if dialog_shown {
                         self.close_dialog();
                     }
                     Ok(SessionState::Continue)
@@ -279,7 +295,7 @@ impl TypingScreen {
         }
     }
 
-    fn handle_skip_action(&mut self) -> Result<SessionState> {
+    fn handle_skip_action(&self) -> Result<SessionState> {
         self.close_dialog();
         let skips_remaining = if let Ok(session_manager) = self.session_manager.lock() {
             session_manager.get_skips_remaining().unwrap_or(0)
@@ -293,40 +309,50 @@ impl TypingScreen {
         }
     }
 
-    fn handle_tab_key(&mut self) -> Result<SessionState> {
+    fn handle_tab_key(&self) -> Result<SessionState> {
         // Publish KeyPressed event
-        self.event_bus.publish(DomainEvent::KeyPressed {
-            key: '\t',
-            position: self.typing_core.current_position_to_type(),
-        });
+        self.event_bus
+            .as_event_bus()
+            .publish(DomainEvent::KeyPressed {
+                key: '\t',
+                position: self.typing_core.read().unwrap().current_position_to_type(),
+            });
 
-        let result = self.typing_core.process_tab_input();
+        let result = self.typing_core.write().unwrap().process_tab_input();
         self.handle_input_result(result)
     }
 
-    fn handle_enter_key(&mut self) -> Result<SessionState> {
+    fn handle_enter_key(&self) -> Result<SessionState> {
         // Publish KeyPressed event
-        self.event_bus.publish(DomainEvent::KeyPressed {
-            key: '\n',
-            position: self.typing_core.current_position_to_type(),
-        });
+        self.event_bus
+            .as_event_bus()
+            .publish(DomainEvent::KeyPressed {
+                key: '\n',
+                position: self.typing_core.read().unwrap().current_position_to_type(),
+            });
 
-        let result = self.typing_core.process_enter_input();
+        let result = self.typing_core.write().unwrap().process_enter_input();
         self.handle_input_result(result)
     }
 
-    fn handle_character_input(&mut self, ch: char) -> Result<SessionState> {
+    fn handle_character_input(&self, ch: char) -> Result<SessionState> {
         // Publish KeyPressed event
-        self.event_bus.publish(DomainEvent::KeyPressed {
-            key: ch,
-            position: self.typing_core.current_position_to_type(),
-        });
+        self.event_bus
+            .as_event_bus()
+            .publish(DomainEvent::KeyPressed {
+                key: ch,
+                position: self.typing_core.read().unwrap().current_position_to_type(),
+            });
 
-        let result = self.typing_core.process_character_input(ch);
+        let result = self
+            .typing_core
+            .write()
+            .unwrap()
+            .process_character_input(ch);
         self.handle_input_result(result)
     }
 
-    fn handle_input_result(&mut self, result: InputResult) -> Result<SessionState> {
+    fn handle_input_result(&self, result: InputResult) -> Result<SessionState> {
         match result {
             InputResult::Correct => Ok(SessionState::Continue),
             InputResult::Incorrect => Ok(SessionState::Continue),
@@ -335,39 +361,45 @@ impl TypingScreen {
         }
     }
 
-    fn open_dialog(&mut self) {
-        self.dialog_shown = true;
+    fn open_dialog(&self) {
+        *self.dialog_shown.write().unwrap() = true;
 
         // Publish StagePaused event
-        self.event_bus.publish(DomainEvent::StagePaused);
+        self.event_bus
+            .as_event_bus()
+            .publish(DomainEvent::StagePaused);
 
-        self.countdown.pause();
+        self.countdown.write().unwrap().pause();
     }
 
-    fn close_dialog(&mut self) {
-        self.dialog_shown = false;
+    fn close_dialog(&self) {
+        *self.dialog_shown.write().unwrap() = false;
 
         // Publish StageResumed event
-        self.event_bus.publish(DomainEvent::StageResumed);
+        self.event_bus
+            .as_event_bus()
+            .publish(DomainEvent::StageResumed);
 
-        self.countdown.resume();
+        self.countdown.write().unwrap().resume();
     }
 
-    fn handle_countdown_logic(&mut self) {
-        if !self.countdown.is_active() {
+    fn handle_countdown_logic(&self) {
+        if !self.countdown.read().unwrap().is_active() {
             return;
         }
 
-        if self.dialog_shown {
+        if *self.dialog_shown.read().unwrap() {
             return;
         }
 
         // Update countdown and check if typing should start
-        if let Some(typing_start_time) = self.countdown.update_state() {
+        if let Some(typing_start_time) = self.countdown.write().unwrap().update_state() {
             // Publish StageStarted event with start time
-            self.event_bus.publish(DomainEvent::StageStarted {
-                start_time: typing_start_time,
-            });
+            self.event_bus
+                .as_event_bus()
+                .publish(DomainEvent::StageStarted {
+                    start_time: typing_start_time,
+                });
         }
     }
 }
@@ -377,6 +409,27 @@ pub struct TypingScreenDataProvider;
 impl ScreenDataProvider for TypingScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
         Ok(Box::new(()))
+    }
+}
+
+pub struct TypingScreenProvider;
+
+impl shaku::Provider<crate::presentation::di::AppModule> for TypingScreenProvider {
+    type Interface = TypingScreen;
+
+    fn provide(
+        module: &crate::presentation::di::AppModule,
+    ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
+        use shaku::HasComponent;
+        let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
+            module.resolve();
+        let game_data = crate::presentation::game::GameData::instance();
+        let session_manager = crate::presentation::game::SessionManager::instance();
+        Ok(Box::new(TypingScreen::new(
+            event_bus,
+            game_data,
+            session_manager,
+        )))
     }
 }
 
@@ -392,11 +445,11 @@ impl Screen for TypingScreen {
         Box::new(TypingScreenDataProvider)
     }
 
-    fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
+    fn init_with_data(&self, _data: Box<dyn std::any::Any>) -> Result<()> {
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: KeyEvent) -> Result<()> {
         self.handle_countdown_logic();
 
         let session_state = self.handle_key(key_event)?;
@@ -404,28 +457,37 @@ impl Screen for TypingScreen {
         match session_state {
             SessionState::Complete => {
                 // Publish StageFinalized event
-                self.event_bus.publish(DomainEvent::StageFinalized);
+                self.event_bus
+                    .as_event_bus()
+                    .publish(DomainEvent::StageFinalized);
                 // Publish NavigateTo event
                 self.event_bus
+                    .as_event_bus()
                     .publish(NavigateTo::Replace(ScreenType::StageSummary));
                 Ok(())
             }
             SessionState::Exit => {
                 // Publish NavigateTo event
-                self.event_bus.publish(NavigateTo::PopTo(ScreenType::Title));
+                self.event_bus
+                    .as_event_bus()
+                    .publish(NavigateTo::PopTo(ScreenType::Title));
                 Ok(())
             }
             SessionState::Skip => {
                 // Publish StageSkipped event
-                self.event_bus.publish(DomainEvent::StageSkipped);
+                self.event_bus
+                    .as_event_bus()
+                    .publish(DomainEvent::StageSkipped);
                 // Publish NavigateTo event
                 self.event_bus
+                    .as_event_bus()
                     .publish(NavigateTo::Replace(ScreenType::StageSummary));
                 Ok(())
             }
             SessionState::Failed => {
                 // Publish NavigateTo event
                 self.event_bus
+                    .as_event_bus()
                     .publish(NavigateTo::Replace(ScreenType::SessionFailure));
                 Ok(())
             }
@@ -434,27 +496,33 @@ impl Screen for TypingScreen {
         }
     }
 
-    fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()> {
+    fn render_ratatui(&self, frame: &mut ratatui::Frame) -> Result<()> {
         self.handle_countdown_logic();
 
-        let chars: Vec<char> = self.typing_core.text_to_display().chars().collect();
+        let chars: Vec<char> = self
+            .typing_core
+            .read()
+            .unwrap()
+            .text_to_display()
+            .chars()
+            .collect();
         let skips_remaining = if let Ok(session_manager) = self.session_manager.lock() {
             session_manager.get_skips_remaining().unwrap_or(0)
         } else {
             0
         };
 
-        self.typing_view.render(
+        self.typing_view.write().unwrap().render(
             frame,
-            self.challenge.as_ref(),
-            self.git_repository.as_ref(),
-            &self.typing_core,
+            self.challenge.read().unwrap().as_ref(),
+            self.git_repository.read().unwrap().as_ref(),
+            &self.typing_core.read().unwrap(),
             &chars,
-            &self.code_context,
-            self.waiting_to_start,
-            self.countdown.get_current_count(),
+            &self.code_context.read().unwrap(),
+            *self.waiting_to_start.read().unwrap(),
+            self.countdown.read().unwrap().get_current_count(),
             skips_remaining,
-            self.dialog_shown,
+            *self.dialog_shown.read().unwrap(),
             &self.session_manager,
         );
 
@@ -462,12 +530,12 @@ impl Screen for TypingScreen {
     }
 
     fn get_update_strategy(&self) -> UpdateStrategy {
-        if self.countdown.is_active() {
+        if self.countdown.read().unwrap().is_active() {
             UpdateStrategy::Hybrid {
                 interval: Duration::from_millis(50),
                 input_priority: true,
             }
-        } else if self.waiting_to_start {
+        } else if *self.waiting_to_start.read().unwrap() {
             UpdateStrategy::InputOnly
         } else {
             UpdateStrategy::Hybrid {
@@ -477,19 +545,17 @@ impl Screen for TypingScreen {
         }
     }
 
-    fn update(&mut self) -> Result<bool> {
+    fn update(&self) -> Result<bool> {
         Ok(true)
     }
 
-    fn cleanup(&mut self) -> Result<()> {
+    fn cleanup(&self) -> Result<()> {
         Ok(())
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl TypingScreenInterface for TypingScreen {}

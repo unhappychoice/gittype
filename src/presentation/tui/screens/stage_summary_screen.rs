@@ -1,4 +1,4 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::EventBusInterface;
 use crate::domain::services::scoring::{SessionTracker, StageResult, GLOBAL_SESSION_TRACKER};
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::SessionManager;
@@ -8,7 +8,7 @@ use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStr
 use crate::{GitTypeError, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::Frame;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 
 pub struct StageSummaryData {
     pub stage_result: StageResult,
@@ -57,40 +57,60 @@ impl ScreenDataProvider for StageSummaryDataProvider {
     }
 }
 
+pub trait StageSummaryScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = StageSummaryScreenInterface)]
 pub struct StageSummaryScreen {
-    pub stage_result: Option<StageResult>,
-    action_result: Option<ResultAction>,
-    session_current_stage: usize,
-    total_stages: usize,
-    is_completed: bool,
-    event_bus: EventBus,
+    pub stage_result: RwLock<Option<StageResult>>,
+    action_result: RwLock<Option<ResultAction>>,
+    session_current_stage: RwLock<usize>,
+    total_stages: RwLock<usize>,
+    is_completed: RwLock<bool>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
     session_manager: Arc<Mutex<SessionManager>>,
 }
 
 impl StageSummaryScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
         Self {
-            stage_result: None,
-            action_result: None,
-            session_current_stage: 1,
-            total_stages: 3,
-            is_completed: false,
+            stage_result: RwLock::new(None),
+            action_result: RwLock::new(None),
+            session_current_stage: RwLock::new(1),
+            total_stages: RwLock::new(3),
+            is_completed: RwLock::new(false),
             event_bus,
             session_manager: SessionManager::instance(),
         }
     }
 
-    pub fn with_result(mut self, result: StageResult) -> Self {
-        self.stage_result = Some(result);
+    pub fn with_result(self, result: StageResult) -> Self {
+        *self.stage_result.write().unwrap() = Some(result);
         self
     }
 
-    pub fn set_stage_result(&mut self, result: StageResult) {
-        self.stage_result = Some(result);
+    pub fn set_stage_result(&self, result: StageResult) {
+        *self.stage_result.write().unwrap() = Some(result);
     }
 
     pub fn get_action_result(&self) -> Option<ResultAction> {
-        self.action_result.clone()
+        self.action_result.read().unwrap().clone()
+    }
+}
+
+pub struct StageSummaryScreenProvider;
+
+impl shaku::Provider<crate::presentation::di::AppModule> for StageSummaryScreenProvider {
+    type Interface = StageSummaryScreen;
+
+    fn provide(
+        module: &crate::presentation::di::AppModule,
+    ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
+        use shaku::HasComponent;
+        let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
+            module.resolve();
+        Ok(Box::new(StageSummaryScreen::new(event_bus)))
     }
 }
 
@@ -109,30 +129,32 @@ impl Screen for StageSummaryScreen {
         })
     }
 
-    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
-        self.action_result = None;
+    fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
+        *self.action_result.write().unwrap() = None;
 
         let data = data.downcast::<StageSummaryData>()?;
 
-        self.stage_result = Some(data.stage_result);
-        self.session_current_stage = data.current_stage;
-        self.total_stages = data.total_stages;
-        self.is_completed = data.is_completed;
+        *self.stage_result.write().unwrap() = Some(data.stage_result);
+        *self.session_current_stage.write().unwrap() = data.current_stage;
+        *self.total_stages.write().unwrap() = data.total_stages;
+        *self.is_completed.write().unwrap() = data.is_completed;
 
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: KeyEvent) -> Result<()> {
         match key_event.code {
             KeyCode::Esc => {
-                self.action_result = Some(ResultAction::BackToTitle);
+                *self.action_result.write().unwrap() = Some(ResultAction::BackToTitle);
                 self.event_bus
+                    .as_event_bus()
                     .publish(NavigateTo::Replace(ScreenType::SessionFailure));
                 Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.action_result = Some(ResultAction::Quit);
+                *self.action_result.write().unwrap() = Some(ResultAction::Quit);
                 self.event_bus
+                    .as_event_bus()
                     .publish(NavigateTo::Replace(ScreenType::SessionFailure));
                 Ok(())
             }
@@ -146,9 +168,11 @@ impl Screen for StageSummaryScreen {
 
                 if !is_session_completed {
                     self.event_bus
+                        .as_event_bus()
                         .publish(NavigateTo::Replace(ScreenType::Typing));
                 } else {
                     self.event_bus
+                        .as_event_bus()
                         .publish(NavigateTo::Replace(ScreenType::Animation));
                 }
                 Ok(())
@@ -157,25 +181,30 @@ impl Screen for StageSummaryScreen {
         }
     }
 
-    fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {
-        if let Some(ref stage_result) = self.stage_result {
+    fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
+        let stage_result = self.stage_result.read().unwrap();
+        if let Some(ref stage_result) = *stage_result {
+            let is_completed = *self.is_completed.read().unwrap();
+            let session_current_stage = *self.session_current_stage.read().unwrap();
+            let total_stages = *self.total_stages.read().unwrap();
+
             // Calculate the stage number that was just completed
-            let completed_stage = if self.is_completed {
+            let completed_stage = if is_completed {
                 // If session is completed, show the total number of stages completed
-                self.session_current_stage
+                session_current_stage
             } else {
                 // If session is in progress, the current stage has been incremented
                 // so we need to show the previous stage number
-                self.session_current_stage.saturating_sub(1).max(1)
+                session_current_stage.saturating_sub(1).max(1)
             };
 
-            let has_next = !self.is_completed;
+            let has_next = !is_completed;
 
             StageCompletionView::render(
                 frame,
                 stage_result,
                 completed_stage,
-                self.total_stages,
+                total_stages,
                 has_next,
                 stage_result.keystrokes,
             );
@@ -188,15 +217,13 @@ impl Screen for StageSummaryScreen {
         UpdateStrategy::InputOnly
     }
 
-    fn update(&mut self) -> Result<bool> {
+    fn update(&self) -> Result<bool> {
         Ok(false)
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl StageSummaryScreenInterface for StageSummaryScreen {}

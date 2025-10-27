@@ -6,6 +6,7 @@ pub mod repo_play_screen_mock;
 pub mod session_details_dialog_mock;
 pub mod session_failure_screen_mock;
 pub mod session_repository_mock;
+pub mod session_service_mock;
 pub mod session_summary_screen_mock;
 pub mod session_summary_share_screen_mock;
 pub mod settings_screen_mock;

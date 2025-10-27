@@ -1,4 +1,4 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::EventBusInterface;
 use crate::domain::models::storage::StoredRepositoryWithLanguages;
 use crate::domain::services::repository_service::RepositoryService;
 use crate::infrastructure::database::database::Database;
@@ -12,38 +12,46 @@ use ratatui::{
     widgets::ListState,
     Frame,
 };
+use std::sync::Arc;
+use std::sync::RwLock;
 
 pub struct RepoPlayScreenData {
     pub repositories: Vec<(StoredRepositoryWithLanguages, bool)>,
 }
 
+pub trait RepoPlayScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = RepoPlayScreenInterface)]
 pub struct RepoPlayScreen {
-    repositories: Vec<(StoredRepositoryWithLanguages, bool)>,
-    list_state: ListState,
-    selected_index: Option<usize>,
-    event_bus: EventBus,
+    repositories: RwLock<Vec<(StoredRepositoryWithLanguages, bool)>>,
+    list_state: RwLock<ListState>,
+    selected_index: RwLock<Option<usize>>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
 }
 
 impl RepoPlayScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
         let mut list_state = ListState::default();
         list_state.select(Some(0));
 
         Self {
-            repositories: Vec::new(),
-            list_state,
-            selected_index: None,
+            repositories: RwLock::new(Vec::new()),
+            list_state: RwLock::new(list_state),
+            selected_index: RwLock::new(None),
             event_bus,
         }
     }
 
     pub fn get_selected_index(&self) -> Option<usize> {
-        self.selected_index
+        *self.selected_index.read().unwrap()
     }
 
-    pub fn get_selected_repository(&self) -> Option<&(StoredRepositoryWithLanguages, bool)> {
-        self.selected_index
-            .and_then(|index| self.repositories.get(index))
+    pub fn get_selected_repository(&self) -> Option<(StoredRepositoryWithLanguages, bool)> {
+        let selected_index = *self.selected_index.read().unwrap();
+        let repositories = self.repositories.read().unwrap();
+        selected_index.and_then(|index| repositories.get(index).cloned())
     }
 }
 
@@ -74,50 +82,55 @@ impl Screen for RepoPlayScreen {
         Box::new(RepoPlayScreenDataProvider)
     }
 
-    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
+    fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
         if let Ok(screen_data) = data.downcast::<RepoPlayScreenData>() {
-            self.repositories = screen_data.repositories;
-            self.list_state = ListState::default();
-            self.list_state.select(Some(0));
-            self.selected_index = None;
+            *self.repositories.write().unwrap() = screen_data.repositories;
+            let mut list_state = ListState::default();
+            list_state.select(Some(0));
+            *self.list_state.write().unwrap() = list_state;
+            *self.selected_index.write().unwrap() = None;
         }
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: KeyEvent) -> Result<()> {
         if key_event.kind != KeyEventKind::Press {
             return Ok(());
         }
 
         match key_event.code {
             KeyCode::Esc => {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
             }
             KeyCode::Char('c')
                 if key_event
                     .modifiers
                     .contains(crossterm::event::KeyModifiers::CONTROL) =>
             {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
             }
             KeyCode::Char('j') | KeyCode::Down => {
-                if let Some(selected) = self.list_state.selected() {
-                    if !self.repositories.is_empty() && selected < self.repositories.len() - 1 {
-                        self.list_state.select(Some(selected + 1));
+                let mut list_state = self.list_state.write().unwrap();
+                if let Some(selected) = list_state.selected() {
+                    let repositories = self.repositories.read().unwrap();
+                    if !repositories.is_empty() && selected < repositories.len() - 1 {
+                        list_state.select(Some(selected + 1));
                     }
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
-                if let Some(selected) = self.list_state.selected() {
+                let mut list_state = self.list_state.write().unwrap();
+                if let Some(selected) = list_state.selected() {
                     if selected > 0 {
-                        self.list_state.select(Some(selected - 1));
+                        list_state.select(Some(selected - 1));
                     }
                 }
             }
             KeyCode::Char(' ') => {
-                if let Some(selected) = self.list_state.selected() {
-                    self.selected_index = Some(selected);
-                    self.event_bus.publish(NavigateTo::Exit);
+                let list_state = self.list_state.read().unwrap();
+                if let Some(selected) = list_state.selected() {
+                    *self.selected_index.write().unwrap() = Some(selected);
+                    self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 }
             }
             _ => {}
@@ -126,7 +139,7 @@ impl Screen for RepoPlayScreen {
         Ok(())
     }
 
-    fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {
+    fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
         // Add horizontal padding
         let outer_chunks = Layout::default()
             .direction(Direction::Horizontal)
@@ -147,7 +160,9 @@ impl Screen for RepoPlayScreen {
             .split(outer_chunks[1]);
 
         HeaderView::render(frame, chunks[0]);
-        RepositoryListView::render(frame, chunks[1], &self.repositories, &mut self.list_state);
+        let repositories = self.repositories.read().unwrap();
+        let mut list_state = self.list_state.write().unwrap();
+        RepositoryListView::render(frame, chunks[1], &repositories, &mut list_state);
         ControlsView::render(frame, chunks[2]);
 
         Ok(())
@@ -157,11 +172,11 @@ impl Screen for RepoPlayScreen {
         UpdateStrategy::InputOnly
     }
 
-    fn update(&mut self) -> Result<bool> {
+    fn update(&self) -> Result<bool> {
         Ok(false)
     }
 
-    fn cleanup(&mut self) -> Result<()> {
+    fn cleanup(&self) -> Result<()> {
         Ok(())
     }
 
@@ -172,8 +187,6 @@ impl Screen for RepoPlayScreen {
     fn is_exitable(&self) -> bool {
         true
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl RepoPlayScreenInterface for RepoPlayScreen {}

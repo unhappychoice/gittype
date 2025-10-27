@@ -1,5 +1,5 @@
 use crate::domain::events::domain_events::DomainEvent;
-use crate::domain::events::EventBus;
+use crate::domain::events::{EventBus, EventBusInterface};
 use crate::domain::models::GitRepository;
 use crate::domain::repositories::session_repository::{BestRecords, BestStatus};
 use crate::domain::repositories::SessionRepository;
@@ -77,7 +77,7 @@ pub struct SessionManager {
     // Best records at session start (for accurate comparison)
     best_records_at_start: Option<BestRecords>,
     // Event bus for decoupled communication
-    event_bus: EventBus,
+    event_bus: Arc<dyn EventBusInterface>,
     // Stage repository for challenge retrieval
     stage_repository: Arc<Mutex<StageRepository>>,
 }
@@ -91,7 +91,7 @@ impl SessionManager {
     }
 
     pub fn with_stage_repository(stage_repository: Arc<Mutex<StageRepository>>) -> Self {
-        let event_bus = EventBus::new();
+        let event_bus: Arc<dyn EventBusInterface> = Arc::new(EventBus::new());
         Self {
             state: SessionState::NotStarted,
             config: SessionConfig::default(),
@@ -106,7 +106,7 @@ impl SessionManager {
         }
     }
 
-    pub fn set_event_bus(&mut self, event_bus: EventBus) {
+    pub fn set_event_bus(&mut self, event_bus: Arc<dyn EventBusInterface>) {
         self.event_bus = event_bus;
     }
 
@@ -120,10 +120,10 @@ impl SessionManager {
             .map(|mgr| mgr.event_bus.clone())
             .expect("Failed to get EventBus from SessionManager");
 
-        Self::setup_event_subscriptions_internal(&event_bus, &instance_weak);
+        Self::setup_event_subscriptions_internal(event_bus.as_ref(), &instance_weak);
     }
 
-    pub fn get_event_bus(&self) -> EventBus {
+    pub fn get_event_bus(&self) -> Arc<dyn EventBusInterface> {
         self.event_bus.clone()
     }
 
@@ -140,13 +140,13 @@ impl SessionManager {
     }
 
     fn setup_event_subscriptions_internal(
-        bus: &EventBus,
+        bus: &dyn EventBusInterface,
         instance: &std::sync::Weak<Mutex<SessionManager>>,
     ) {
         let instance = instance.clone();
 
         // Subscribe to unified DomainEvent with pattern matching
-        bus.subscribe(move |event: &DomainEvent| {
+        bus.as_event_bus().subscribe(move |event: &DomainEvent| {
             if let Some(arc) = instance.upgrade() {
                 if let Ok(mut manager) = arc.lock() {
                     match event {
@@ -307,7 +307,7 @@ impl SessionManager {
         GLOBAL_SESSION_MANAGER.clone()
     }
 
-    pub fn set_global_event_bus(event_bus: EventBus) -> Result<()> {
+    pub fn set_global_event_bus(event_bus: Arc<dyn EventBusInterface>) -> Result<()> {
         let instance = Self::instance();
         let mut manager = instance.lock().map_err(|e| {
             GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))

@@ -3,11 +3,12 @@ use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
 use gittype::presentation::tui::screens::session_failure_screen::SessionFailureScreen;
+use std::sync::Arc;
 
 screen_snapshot_test!(
     test_session_failure_screen_snapshot,
     SessionFailureScreen,
-    SessionFailureScreen::new(EventBus::new()),
+    SessionFailureScreen::new(Arc::new(EventBus::new())),
     provider = MockSessionFailureDataProvider
 );
 
@@ -70,7 +71,7 @@ screen_key_event_test!(
 screen_basic_methods_test!(
     test_session_failure_screen_basic_methods,
     SessionFailureScreen,
-    SessionFailureScreen::new(EventBus::new()),
+    SessionFailureScreen::new(Arc::new(EventBus::new())),
     gittype::presentation::tui::ScreenType::SessionFailure,
     false,
     MockSessionFailureDataProvider

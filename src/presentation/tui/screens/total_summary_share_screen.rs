@@ -1,4 +1,4 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::EventBusInterface;
 use crate::domain::models::TotalResult;
 use crate::domain::services::scoring::{TotalCalculator, TotalTracker, GLOBAL_TOTAL_TRACKER};
 use crate::infrastructure::browser;
@@ -9,6 +9,7 @@ use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStr
 use crate::{GitTypeError, Result};
 use crossterm::event::{self};
 use ratatui::Frame;
+use std::sync::RwLock;
 use std::sync::{Arc, Mutex};
 
 pub struct TotalSummaryShareData {
@@ -39,34 +40,40 @@ pub enum ShareAction {
     Exit,
 }
 
+pub trait TotalSummaryShareScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = TotalSummaryShareScreenInterface)]
 pub struct TotalSummaryShareScreen {
-    total_result: TotalResult,
-    fallback_url: Option<(String, SharingPlatform)>,
-    last_fallback_state: bool,
-    event_bus: EventBus,
+    total_result: RwLock<TotalResult>,
+    fallback_url: RwLock<Option<(String, SharingPlatform)>>,
+    last_fallback_state: RwLock<bool>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
 }
 
 impl TotalSummaryShareScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
         Self {
-            total_result: TotalResult::new(),
-            fallback_url: None,
-            last_fallback_state: false,
+            total_result: RwLock::new(TotalResult::new()),
+            fallback_url: RwLock::new(None),
+            last_fallback_state: RwLock::new(false),
             event_bus,
         }
     }
 
-    pub fn set_total_result(&mut self, total_result: TotalResult) {
-        self.total_result = total_result;
+    pub fn set_total_result(&self, total_result: TotalResult) {
+        *self.total_result.write().unwrap() = total_result;
     }
 
-    fn handle_share_platform(&mut self, platform: SharingPlatform) -> Result<()> {
-        let text = self.total_result.create_share_text();
+    fn handle_share_platform(&self, platform: SharingPlatform) -> Result<()> {
+        let total_result = self.total_result.read().unwrap();
+        let text = total_result.create_share_text();
         let url = self.generate_share_url(&text, &platform);
 
         match self.open_browser(&url) {
             Ok(()) => {
-                self.event_bus.publish(NavigateTo::Pop);
+                self.event_bus.as_event_bus().publish(NavigateTo::Pop);
                 Ok(())
             }
             Err(_) => {
@@ -75,7 +82,7 @@ impl TotalSummaryShareScreen {
                     platform.name(),
                     url
                 );
-                self.fallback_url = Some((url.clone(), platform));
+                *self.fallback_url.write().unwrap() = Some((url.clone(), platform));
                 Ok(())
             }
         }
@@ -90,11 +97,12 @@ impl TotalSummaryShareScreen {
                 )
             }
             SharingPlatform::Reddit => {
+                let total_result = self.total_result.read().unwrap();
                 let title = format!(
                     "Just demolished {} keystrokes total in gittype! Score: {:.0}, CPM: {:.0}",
-                    self.total_result.total_keystrokes,
-                    self.total_result.total_score,
-                    self.total_result.overall_cpm
+                    total_result.total_keystrokes,
+                    total_result.total_score,
+                    total_result.overall_cpm
                 );
                 format!(
                     "https://www.reddit.com/submit?title={}&selftext=true&text={}",
@@ -124,6 +132,21 @@ impl TotalSummaryShareScreen {
     }
 }
 
+pub struct TotalSummaryShareScreenProvider;
+
+impl shaku::Provider<crate::presentation::di::AppModule> for TotalSummaryShareScreenProvider {
+    type Interface = TotalSummaryShareScreen;
+
+    fn provide(
+        module: &crate::presentation::di::AppModule,
+    ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
+        use shaku::HasComponent;
+        let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
+            module.resolve();
+        Ok(Box::new(TotalSummaryShareScreen::new(event_bus)))
+    }
+}
+
 impl Screen for TotalSummaryShareScreen {
     fn get_type(&self) -> ScreenType {
         ScreenType::TotalSummaryShare
@@ -138,16 +161,16 @@ impl Screen for TotalSummaryShareScreen {
         })
     }
 
-    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
-        self.last_fallback_state = false;
+    fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
+        *self.last_fallback_state.write().unwrap() = false;
 
         let data = data.downcast::<TotalSummaryShareData>()?;
-        self.total_result = data.total_result;
+        *self.total_result.write().unwrap() = data.total_result;
 
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: event::KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
         match key_event.code {
             KeyCode::Char('1') => self.handle_share_platform(SharingPlatform::X),
@@ -155,27 +178,31 @@ impl Screen for TotalSummaryShareScreen {
             KeyCode::Char('3') => self.handle_share_platform(SharingPlatform::LinkedIn),
             KeyCode::Char('4') => self.handle_share_platform(SharingPlatform::Facebook),
             KeyCode::Esc => {
-                if self.fallback_url.is_some() {
-                    self.fallback_url = None;
+                let fallback_url = self.fallback_url.read().unwrap();
+                if fallback_url.is_some() {
+                    drop(fallback_url);
+                    *self.fallback_url.write().unwrap() = None;
                     Ok(())
                 } else {
-                    self.event_bus.publish(NavigateTo::Pop);
+                    self.event_bus.as_event_bus().publish(NavigateTo::Pop);
                     Ok(())
                 }
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             _ => Ok(()),
         }
     }
 
-    fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {
-        if let Some((url, platform)) = &self.fallback_url {
+    fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
+        let fallback_url = self.fallback_url.read().unwrap();
+        if let Some((url, platform)) = &*fallback_url {
             SharingView::render_fallback_url(frame, url, platform);
         } else {
-            SharingView::render_menu(frame, &self.total_result);
+            let total_result = self.total_result.read().unwrap();
+            SharingView::render_menu(frame, &total_result);
         }
         Ok(())
     }
@@ -184,15 +211,13 @@ impl Screen for TotalSummaryShareScreen {
         UpdateStrategy::TimeBased(std::time::Duration::from_millis(200))
     }
 
-    fn update(&mut self) -> Result<bool> {
+    fn update(&self) -> Result<bool> {
         Ok(true)
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl TotalSummaryShareScreenInterface for TotalSummaryShareScreen {}

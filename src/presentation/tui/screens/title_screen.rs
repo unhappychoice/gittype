@@ -1,4 +1,4 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::EventBusInterface;
 use crate::domain::models::{DifficultyLevel, GitRepository};
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::{GameData, StageRepository};
@@ -11,7 +11,7 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
 };
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 
 const DIFFICULTIES: [(&str, DifficultyLevel); 5] = [
     ("Easy", DifficultyLevel::Easy),
@@ -63,57 +63,62 @@ pub enum TitleAction {
     Quit,
 }
 
+pub trait TitleScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = TitleScreenInterface)]
 pub struct TitleScreen {
-    selected_difficulty: usize,
-    challenge_counts: [usize; 5],
-    git_repository: Option<GitRepository>,
-    action_result: Option<TitleAction>,
-    needs_render: bool,
-    error_message: Option<String>,
-    event_bus: EventBus,
+    selected_difficulty: RwLock<usize>,
+    challenge_counts: RwLock<[usize; 5]>,
+    git_repository: RwLock<Option<GitRepository>>,
+    action_result: RwLock<Option<TitleAction>>,
+    needs_render: RwLock<bool>,
+    error_message: RwLock<Option<String>>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
 }
 
 impl TitleScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
         Self {
-            selected_difficulty: 1,
-            challenge_counts: [0, 0, 0, 0, 0],
-            git_repository: None,
-            action_result: None,
-            needs_render: true,
-            error_message: None,
+            selected_difficulty: RwLock::new(1),
+            challenge_counts: RwLock::new([0, 0, 0, 0, 0]),
+            git_repository: RwLock::new(None),
+            action_result: RwLock::new(None),
+            needs_render: RwLock::new(true),
+            error_message: RwLock::new(None),
             event_bus,
         }
     }
 
-    pub fn with_challenge_counts(mut self, counts: [usize; 5]) -> Self {
-        self.challenge_counts = counts;
+    pub fn with_challenge_counts(self, counts: [usize; 5]) -> Self {
+        *self.challenge_counts.write().unwrap() = counts;
         self
     }
 
-    pub fn with_git_repository(mut self, repo: Option<GitRepository>) -> Self {
-        self.git_repository = repo;
+    pub fn with_git_repository(self, repo: Option<GitRepository>) -> Self {
+        *self.git_repository.write().unwrap() = repo;
         self
     }
 
-    pub fn get_action_result(&self) -> Option<&TitleAction> {
-        self.action_result.as_ref()
+    pub fn get_action_result(&self) -> Option<TitleAction> {
+        self.action_result.read().unwrap().clone()
     }
 
     pub fn get_selected_difficulty(&self) -> DifficultyLevel {
-        DIFFICULTIES[self.selected_difficulty].1
+        DIFFICULTIES[*self.selected_difficulty.read().unwrap()].1
     }
 
-    pub fn set_challenge_counts(&mut self, counts: [usize; 5]) {
-        self.challenge_counts = counts;
+    pub fn set_challenge_counts(&self, counts: [usize; 5]) {
+        *self.challenge_counts.write().unwrap() = counts;
     }
 
-    pub fn set_git_repository(&mut self, repo: Option<GitRepository>) {
-        self.git_repository = repo;
+    pub fn set_git_repository(&self, repo: Option<GitRepository>) {
+        *self.git_repository.write().unwrap() = repo;
     }
 
-    pub fn get_error_message(&self) -> Option<&String> {
-        self.error_message.as_ref()
+    pub fn get_error_message(&self) -> Option<String> {
+        self.error_message.read().unwrap().clone()
     }
 }
 
@@ -132,81 +137,90 @@ impl Screen for TitleScreen {
         })
     }
 
-    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
-        self.action_result = None;
-        self.needs_render = true;
+    fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
+        *self.action_result.write().unwrap() = None;
+        *self.needs_render.write().unwrap() = true;
 
         let screen_data = data.downcast::<TitleScreenData>()?;
-        self.challenge_counts = screen_data.challenge_counts;
-        self.git_repository = screen_data.git_repository;
+        *self.challenge_counts.write().unwrap() = screen_data.challenge_counts;
+        *self.git_repository.write().unwrap() = screen_data.git_repository;
 
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: KeyEvent) -> Result<()> {
         match key_event.code {
             KeyCode::Char(' ') => {
                 // Check if challenges are available for the selected difficulty
-                if self.challenge_counts[self.selected_difficulty] == 0 {
-                    self.error_message = Some(
+                let selected_difficulty = *self.selected_difficulty.read().unwrap();
+                if self.challenge_counts.read().unwrap()[selected_difficulty] == 0 {
+                    *self.error_message.write().unwrap() = Some(
                         "No challenges available for this difficulty. Please try a different difficulty or repository.".to_string()
                     );
-                    self.needs_render = true;
+                    *self.needs_render.write().unwrap() = true;
                     Ok(())
                 } else {
-                    self.error_message = None;
-                    self.action_result =
-                        Some(TitleAction::Start(DIFFICULTIES[self.selected_difficulty].1));
+                    *self.error_message.write().unwrap() = None;
+                    *self.action_result.write().unwrap() =
+                        Some(TitleAction::Start(DIFFICULTIES[selected_difficulty].1));
                     self.event_bus
+                        .as_event_bus()
                         .publish(NavigateTo::Replace(ScreenType::Typing));
                     Ok(())
                 }
             }
             KeyCode::Left | KeyCode::Char('h') => {
-                self.selected_difficulty = if self.selected_difficulty == 0 {
+                let current = *self.selected_difficulty.read().unwrap();
+                *self.selected_difficulty.write().unwrap() = if current == 0 {
                     DIFFICULTIES.len() - 1
                 } else {
-                    self.selected_difficulty - 1
+                    current - 1
                 };
-                self.error_message = None;
-                self.needs_render = true;
+                *self.error_message.write().unwrap() = None;
+                *self.needs_render.write().unwrap() = true;
                 Ok(())
             }
             KeyCode::Right | KeyCode::Char('l') => {
-                self.selected_difficulty = (self.selected_difficulty + 1) % DIFFICULTIES.len();
-                self.error_message = None;
-                self.needs_render = true;
+                let current = *self.selected_difficulty.read().unwrap();
+                *self.selected_difficulty.write().unwrap() = (current + 1) % DIFFICULTIES.len();
+                *self.error_message.write().unwrap() = None;
+                *self.needs_render.write().unwrap() = true;
                 Ok(())
             }
             KeyCode::Esc => {
-                self.action_result = Some(TitleAction::Quit);
-                self.event_bus.publish(NavigateTo::Exit);
+                *self.action_result.write().unwrap() = Some(TitleAction::Quit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.action_result = Some(TitleAction::Quit);
-                self.event_bus.publish(NavigateTo::Exit);
+                *self.action_result.write().unwrap() = Some(TitleAction::Quit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             KeyCode::Char('i') | KeyCode::Char('?') => {
-                self.event_bus.publish(NavigateTo::Push(ScreenType::Help));
+                self.event_bus
+                    .as_event_bus()
+                    .publish(NavigateTo::Push(ScreenType::Help));
                 Ok(())
             }
             KeyCode::Char('r') | KeyCode::Char('R') => {
-                self.action_result = Some(TitleAction::Records);
+                *self.action_result.write().unwrap() = Some(TitleAction::Records);
                 self.event_bus
+                    .as_event_bus()
                     .publish(NavigateTo::Replace(ScreenType::Records));
                 Ok(())
             }
             KeyCode::Char('a') | KeyCode::Char('A') => {
-                self.action_result = Some(TitleAction::Analytics);
+                *self.action_result.write().unwrap() = Some(TitleAction::Analytics);
                 self.event_bus
+                    .as_event_bus()
                     .publish(NavigateTo::Replace(ScreenType::Analytics));
                 Ok(())
             }
             KeyCode::Char('s') | KeyCode::Char('S') => {
-                self.action_result = Some(TitleAction::Settings);
+                *self.action_result.write().unwrap() = Some(TitleAction::Settings);
                 self.event_bus
+                    .as_event_bus()
                     .publish(NavigateTo::Push(ScreenType::Settings));
                 Ok(())
             }
@@ -214,7 +228,7 @@ impl Screen for TitleScreen {
         }
     }
 
-    fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {
+    fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
         let area = frame.area();
 
         // Calculate content layout
@@ -258,7 +272,7 @@ impl Screen for TitleScreen {
             chunks[1], // logo
             chunks[3], // subtitle
             chunks[7], // instructions
-            self.git_repository.as_ref(),
+            self.git_repository.read().unwrap().as_ref(),
         );
 
         // Render difficulty selection
@@ -266,9 +280,9 @@ impl Screen for TitleScreen {
             frame,
             chunks[5],
             &DIFFICULTIES,
-            self.selected_difficulty,
-            &self.challenge_counts,
-            self.error_message.as_ref(),
+            *self.selected_difficulty.read().unwrap(),
+            &self.challenge_counts.read().unwrap(),
+            self.error_message.read().unwrap().as_ref(),
         );
 
         Ok(())
@@ -278,10 +292,10 @@ impl Screen for TitleScreen {
         UpdateStrategy::InputOnly
     }
 
-    fn update(&mut self) -> Result<bool> {
-        let should_render = self.needs_render;
-        if self.needs_render {
-            self.needs_render = false;
+    fn update(&self) -> Result<bool> {
+        let should_render = *self.needs_render.read().unwrap();
+        if should_render {
+            *self.needs_render.write().unwrap() = false;
         }
         Ok(should_render)
     }
@@ -289,8 +303,6 @@ impl Screen for TitleScreen {
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl TitleScreenInterface for TitleScreen {}

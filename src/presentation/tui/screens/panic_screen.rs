@@ -1,4 +1,4 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::EventBusInterface;
 use crate::infrastructure::logging::get_current_log_file_path;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
@@ -11,30 +11,37 @@ use ratatui::{
     widgets::{Block, Borders, Padding, Paragraph, Wrap},
     Frame,
 };
+use std::sync::Arc;
+use std::sync::RwLock;
 
+pub trait PanicScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = PanicScreenInterface)]
 pub struct PanicScreen {
-    error_message: String,
-    timestamp: String,
-    event_bus: EventBus,
+    error_message: RwLock<String>,
+    timestamp: RwLock<String>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
 }
 
 impl PanicScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
         Self {
-            error_message: "An unexpected error occurred".to_string(),
-            timestamp: Self::get_current_timestamp(),
+            error_message: RwLock::new("An unexpected error occurred".to_string()),
+            timestamp: RwLock::new(Self::get_current_timestamp()),
             event_bus,
         }
     }
 
     pub fn with_error_message(
         error_message: String,
-        event_bus: EventBus,
+        event_bus: Arc<dyn EventBusInterface>,
         timestamp: Option<String>,
     ) -> Self {
         Self {
-            error_message,
-            timestamp: timestamp.unwrap_or_else(Self::get_current_timestamp),
+            error_message: RwLock::new(error_message),
+            timestamp: RwLock::new(timestamp.unwrap_or_else(Self::get_current_timestamp)),
             event_bus,
         }
     }
@@ -109,9 +116,12 @@ impl PanicScreen {
         frame.render_widget(help_widget, chunks[2]);
 
         // Render detailed error info
+        let timestamp = self.timestamp.read().unwrap();
+        let error_message = self.error_message.read().unwrap();
+
         let mut error_lines = vec![
             Line::from(Span::styled("Time:", Style::default().fg(Colors::info()))),
-            Line::from(Span::raw(&self.timestamp)),
+            Line::from(Span::raw(timestamp.as_str())),
             Line::from(""),
             Line::from(Span::styled(
                 "Panic Message:",
@@ -120,7 +130,7 @@ impl PanicScreen {
         ];
 
         // Add error message lines (split for better readability)
-        for line in self.error_message.lines() {
+        for line in error_message.lines() {
             // Check if this line contains Location info and format it properly
             if line.trim().starts_with("Location:") {
                 error_lines.push(Line::from(""));
@@ -164,6 +174,20 @@ impl ScreenDataProvider for PanicScreenDataProvider {
     }
 }
 
+pub struct PanicScreenProvider;
+
+impl shaku::Provider<crate::presentation::di::AppModule> for PanicScreenProvider {
+    type Interface = PanicScreen;
+
+    fn provide(
+        module: &crate::presentation::di::AppModule,
+    ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
+        use shaku::HasComponent;
+        let event_bus: Arc<dyn EventBusInterface> = module.resolve();
+        Ok(Box::new(PanicScreen::new(event_bus)))
+    }
+}
+
 impl Screen for PanicScreen {
     fn get_type(&self) -> ScreenType {
         ScreenType::Panic
@@ -176,22 +200,22 @@ impl Screen for PanicScreen {
         Box::new(PanicScreenDataProvider)
     }
 
-    fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
+    fn init_with_data(&self, _data: Box<dyn std::any::Any>) -> Result<()> {
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         use crossterm::event::KeyCode;
         match key_event.code {
             KeyCode::Esc => {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             _ => Ok(()),
         }
     }
 
-    fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {
+    fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
         self.render_panic_content(frame);
         Ok(())
     }
@@ -200,15 +224,13 @@ impl Screen for PanicScreen {
         UpdateStrategy::InputOnly
     }
 
-    fn update(&mut self) -> Result<bool> {
+    fn update(&self) -> Result<bool> {
         Ok(false)
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl PanicScreenInterface for PanicScreen {}

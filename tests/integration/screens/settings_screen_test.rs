@@ -3,18 +3,19 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
 use gittype::presentation::tui::screens::settings_screen::SettingsScreen;
+use std::sync::Arc;
 
 screen_snapshot_test!(
     test_settings_screen_snapshot_color_mode,
     SettingsScreen,
-    SettingsScreen::new(EventBus::new()),
+    SettingsScreen::new(Arc::new(EventBus::new())),
     provider = MockSettingsScreenDataProvider
 );
 
 screen_snapshot_test!(
     test_settings_screen_snapshot_theme,
     SettingsScreen,
-    SettingsScreen::new(EventBus::new()),
+    SettingsScreen::new(Arc::new(EventBus::new())),
     provider = MockSettingsScreenDataProvider,
     keys = [KeyEvent::new(KeyCode::Right, KeyModifiers::empty())]
 );
@@ -99,7 +100,7 @@ screen_key_tests!(
 screen_basic_methods_test!(
     test_settings_screen_basic_methods,
     SettingsScreen,
-    SettingsScreen::new(EventBus::new()),
+    SettingsScreen::new(Arc::new(EventBus::new())),
     gittype::presentation::tui::ScreenType::Settings,
     false,
     MockSettingsScreenDataProvider

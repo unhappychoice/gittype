@@ -2,21 +2,22 @@ use crossterm::event::KeyEvent;
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::GameData;
 use gittype::presentation::tui::{
-    Screen, ScreenDataProvider, ScreenManager, ScreenTransition, ScreenType, UpdateStrategy,
+    Screen, ScreenDataProvider, ScreenManagerImpl, ScreenTransition, ScreenType, UpdateStrategy,
 };
-use ratatui::backend::TestBackend;
+use ratatui::backend::CrosstermBackend;
 use ratatui::Frame;
 use ratatui::Terminal;
 use std::any::Any;
+use std::io::stdout;
 use std::sync::{Arc, Mutex};
 
-// Helper function to create a ScreenManager with TestBackend for testing
-fn create_test_screen_manager() -> ScreenManager<TestBackend> {
-    let event_bus = EventBus::new();
+// Helper function to create a ScreenManager for testing
+fn create_test_screen_manager() -> ScreenManagerImpl {
+    let event_bus = Arc::new(EventBus::new());
     let game_data = Arc::new(Mutex::new(GameData::default()));
-    let backend = TestBackend::new(80, 24);
-    let terminal = Terminal::new(backend).expect("Failed to create test terminal");
-    ScreenManager::new(event_bus, game_data, terminal)
+    let backend = CrosstermBackend::new(stdout());
+    let terminal = Terminal::new(backend).expect("Failed to create terminal");
+    ScreenManagerImpl::new(event_bus, game_data, terminal)
 }
 
 // Mock screen for testing
@@ -51,23 +52,23 @@ impl Screen for MockScreen {
         Box::new(MockDataProvider)
     }
 
-    fn init_with_data(&mut self, _data: Box<dyn Any>) -> gittype::Result<()> {
+    fn init_with_data(&self, _data: Box<dyn Any>) -> gittype::Result<()> {
         Ok(())
     }
 
-    fn update(&mut self) -> gittype::Result<bool> {
+    fn update(&self) -> gittype::Result<bool> {
         Ok(false)
     }
 
-    fn render_ratatui(&mut self, _frame: &mut Frame) -> gittype::Result<()> {
+    fn render_ratatui(&self, _frame: &mut Frame) -> gittype::Result<()> {
         Ok(())
     }
 
-    fn handle_key_event(&mut self, _key_event: KeyEvent) -> gittype::Result<()> {
+    fn handle_key_event(&self, _key_event: KeyEvent) -> gittype::Result<()> {
         Ok(())
     }
 
-    fn cleanup(&mut self) -> gittype::Result<()> {
+    fn cleanup(&self) -> gittype::Result<()> {
         Ok(())
     }
 
@@ -76,10 +77,6 @@ impl Screen for MockScreen {
     }
 
     fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn as_any_mut(&mut self) -> &mut dyn Any {
         self
     }
 }
@@ -199,7 +196,7 @@ fn test_update_strategy_variants() {
 #[test]
 fn test_cleanup_terminal_static() {
     // This test verifies the function can be called
-    ScreenManager::<TestBackend>::cleanup_terminal_static();
+    ScreenManagerImpl::cleanup_terminal_static();
 }
 
 #[test]

@@ -1,4 +1,4 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::EventBusInterface;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::views::trending_language_selection::{
     ControlsView, HeaderView, LanguageListView,
@@ -11,30 +11,37 @@ use ratatui::{
     widgets::ListState,
     Frame,
 };
+use std::sync::Arc;
+use std::sync::RwLock;
 
+pub trait TrendingLanguageSelectionScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = TrendingLanguageSelectionScreenInterface)]
 pub struct TrendingLanguageSelectionScreen {
-    list_state: ListState,
-    selected_language: Option<String>,
-    event_bus: EventBus,
+    list_state: RwLock<ListState>,
+    selected_language: RwLock<Option<String>>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
 }
 
 impl TrendingLanguageSelectionScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
         let mut list_state = ListState::default();
         list_state.select(Some(0));
 
         Self {
-            list_state,
-            selected_language: None,
+            list_state: RwLock::new(list_state),
+            selected_language: RwLock::new(None),
             event_bus,
         }
     }
 
-    pub fn get_selected_language(&self) -> Option<&str> {
-        self.selected_language.as_deref()
+    pub fn get_selected_language(&self) -> Option<String> {
+        self.selected_language.read().unwrap().clone()
     }
 
-    fn render_ui(&mut self, frame: &mut Frame) {
+    fn render_ui(&self, frame: &mut Frame) {
         // Add horizontal padding
         let outer_chunks = Layout::default()
             .direction(Direction::Horizontal)
@@ -55,7 +62,8 @@ impl TrendingLanguageSelectionScreen {
             .split(outer_chunks[1]);
 
         HeaderView::render(frame, chunks[0]);
-        LanguageListView::render(frame, chunks[1], &mut self.list_state);
+        let mut list_state = self.list_state.write().unwrap();
+        LanguageListView::render(frame, chunks[1], &mut list_state);
         ControlsView::render(frame, chunks[2]);
     }
 }
@@ -80,48 +88,52 @@ impl Screen for TrendingLanguageSelectionScreen {
         Box::new(TrendingLanguageSelectionScreenDataProvider)
     }
 
-    fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
-        self.list_state = ListState::default();
-        self.list_state.select(Some(0));
-        self.selected_language = None;
+    fn init_with_data(&self, _data: Box<dyn std::any::Any>) -> Result<()> {
+        let mut list_state = ListState::default();
+        list_state.select(Some(0));
+        *self.list_state.write().unwrap() = list_state;
+        *self.selected_language.write().unwrap() = None;
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: KeyEvent) -> Result<()> {
         if key_event.kind != KeyEventKind::Press {
             return Ok(());
         }
 
         match key_event.code {
             KeyCode::Esc => {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
             }
             KeyCode::Char('c')
                 if key_event
                     .modifiers
                     .contains(crossterm::event::KeyModifiers::CONTROL) =>
             {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
             }
             KeyCode::Char('j') | KeyCode::Down => {
-                if let Some(selected) = self.list_state.selected() {
+                let mut list_state = self.list_state.write().unwrap();
+                if let Some(selected) = list_state.selected() {
                     if selected < LanguageListView::languages_count() - 1 {
-                        self.list_state.select(Some(selected + 1));
+                        list_state.select(Some(selected + 1));
                     }
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
-                if let Some(selected) = self.list_state.selected() {
+                let mut list_state = self.list_state.write().unwrap();
+                if let Some(selected) = list_state.selected() {
                     if selected > 0 {
-                        self.list_state.select(Some(selected - 1));
+                        list_state.select(Some(selected - 1));
                     }
                 }
             }
             KeyCode::Char(' ') => {
-                if let Some(selected) = self.list_state.selected() {
+                let list_state = self.list_state.read().unwrap();
+                if let Some(selected) = list_state.selected() {
                     if let Some(lang_code) = LanguageListView::get_language_code(selected) {
-                        self.selected_language = Some(lang_code.to_string());
-                        self.event_bus.publish(NavigateTo::Exit);
+                        *self.selected_language.write().unwrap() = Some(lang_code.to_string());
+                        self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                     }
                 }
             }
@@ -131,7 +143,7 @@ impl Screen for TrendingLanguageSelectionScreen {
         Ok(())
     }
 
-    fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {
+    fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
         self.render_ui(frame);
         Ok(())
     }
@@ -140,11 +152,11 @@ impl Screen for TrendingLanguageSelectionScreen {
         UpdateStrategy::InputOnly
     }
 
-    fn update(&mut self) -> Result<bool> {
+    fn update(&self) -> Result<bool> {
         Ok(false)
     }
 
-    fn cleanup(&mut self) -> Result<()> {
+    fn cleanup(&self) -> Result<()> {
         Ok(())
     }
 
@@ -155,8 +167,6 @@ impl Screen for TrendingLanguageSelectionScreen {
     fn is_exitable(&self) -> bool {
         true
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl TrendingLanguageSelectionScreenInterface for TrendingLanguageSelectionScreen {}

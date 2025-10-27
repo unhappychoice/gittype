@@ -3,11 +3,12 @@ use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
 use gittype::presentation::tui::screens::total_summary_share_screen::TotalSummaryShareScreen;
+use std::sync::Arc;
 
 screen_snapshot_test!(
     test_total_summary_share_screen_snapshot,
     TotalSummaryShareScreen,
-    TotalSummaryShareScreen::new(EventBus::new()),
+    TotalSummaryShareScreen::new(Arc::new(EventBus::new())),
     provider = MockTotalSummaryShareDataProvider
 );
 
@@ -62,7 +63,7 @@ screen_key_tests!(
 screen_basic_methods_test!(
     test_total_summary_share_screen_basic_methods,
     TotalSummaryShareScreen,
-    TotalSummaryShareScreen::new(EventBus::new()),
+    TotalSummaryShareScreen::new(Arc::new(EventBus::new())),
     gittype::presentation::tui::ScreenType::TotalSummaryShare,
     false,
     MockTotalSummaryShareDataProvider
