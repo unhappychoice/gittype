@@ -232,7 +232,10 @@ impl StageRepository {
         }
     }
 
-    pub fn update_title_screen_data(&self, manager: &mut ScreenManagerImpl) -> Result<()> {
+    pub fn update_title_screen_data<B: ratatui::backend::Backend + Send + 'static>(
+        &self,
+        manager: &mut ScreenManagerImpl<B>,
+    ) -> Result<()> {
         // Only update if indices are cached to avoid GameData access during screen transitions
         if !self.indices_cached {
             return Ok(());

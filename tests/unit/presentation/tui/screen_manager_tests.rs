@@ -1,22 +1,40 @@
 use crossterm::event::KeyEvent;
 use gittype::domain::events::EventBus;
+use gittype::infrastructure::terminal::TerminalInterface;
 use gittype::presentation::game::GameData;
 use gittype::presentation::tui::{
     Screen, ScreenDataProvider, ScreenManagerImpl, ScreenTransition, ScreenType, UpdateStrategy,
 };
 use ratatui::backend::CrosstermBackend;
+use ratatui::backend::TestBackend;
 use ratatui::Frame;
 use ratatui::Terminal;
 use std::any::Any;
-use std::io::stdout;
+use std::io::Stdout;
 use std::sync::{Arc, Mutex};
 
+// Mock TerminalInterface for testing
+#[allow(dead_code)]
+struct MockTerminalInterface;
+
+impl TerminalInterface for MockTerminalInterface {
+    fn get(&self) -> Terminal<CrosstermBackend<Stdout>> {
+        // This won't actually be called in these tests
+        // The tests directly construct ScreenManagerImpl with a terminal
+        panic!("MockTerminalInterface::get should not be called in tests")
+    }
+}
+
 // Helper function to create a ScreenManager for testing
-fn create_test_screen_manager() -> ScreenManagerImpl {
+// Note: These tests are designed to work without a real terminal
+// They test the ScreenManager logic, not terminal I/O
+#[cfg(test)]
+fn create_test_screen_manager() -> ScreenManagerImpl<TestBackend> {
     let event_bus = Arc::new(EventBus::new());
     let game_data = Arc::new(Mutex::new(GameData::default()));
-    let backend = CrosstermBackend::new(stdout());
-    let terminal = Terminal::new(backend).expect("Failed to create terminal");
+    let backend = TestBackend::new(80, 24);
+    let terminal = Terminal::new(backend).expect("Failed to create test terminal");
+
     ScreenManagerImpl::new(event_bus, game_data, terminal)
 }
 
@@ -196,7 +214,7 @@ fn test_update_strategy_variants() {
 #[test]
 fn test_cleanup_terminal_static() {
     // This test verifies the function can be called
-    ScreenManagerImpl::cleanup_terminal_static();
+    ScreenManagerImpl::<TestBackend>::cleanup_terminal_static();
 }
 
 #[test]
