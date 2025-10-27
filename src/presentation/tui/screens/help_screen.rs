@@ -21,8 +21,7 @@ use std::sync::RwLock;
 
 const THIRD_PARTY_LICENSES: &str = include_str!("../../../../LICENSE-THIRD-PARTY");
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-#[derive(Default)]
+#[derive(Clone, Copy, Debug, PartialEq, Default)]
 pub enum HelpSection {
     Scoring,
     Ranks,
@@ -33,7 +32,6 @@ pub enum HelpSection {
     ThirdPartyLicenses,
     Community,
 }
-
 
 impl HelpSection {
     pub fn title(&self) -> &'static str {

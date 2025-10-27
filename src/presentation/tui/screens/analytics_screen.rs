@@ -20,8 +20,7 @@ use ratatui::{
 use std::sync::Arc;
 use std::sync::RwLock;
 
-#[derive(Debug, Clone, PartialEq, Copy)]
-#[derive(Default)]
+#[derive(Debug, Clone, PartialEq, Copy, Default)]
 pub enum ViewMode {
     #[default]
     Overview,
@@ -29,7 +28,6 @@ pub enum ViewMode {
     Repositories,
     Languages,
 }
-
 
 impl ViewMode {
     pub fn display_name(&self) -> &str {

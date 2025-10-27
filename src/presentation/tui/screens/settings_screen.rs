@@ -18,14 +18,12 @@ use ratatui::{
 use std::sync::Arc;
 use std::sync::RwLock;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-#[derive(Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub enum SettingsSection {
     #[default]
     ColorMode,
     Theme,
 }
-
 
 impl SettingsSection {
     fn all() -> &'static [SettingsSection] {

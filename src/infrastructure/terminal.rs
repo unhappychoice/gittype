@@ -21,4 +21,3 @@ impl TerminalInterface for TerminalComponent {
         Terminal::new(backend).expect("Failed to create terminal")
     }
 }
-
