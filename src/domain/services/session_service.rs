@@ -1,8 +1,5 @@
 use crate::domain::error::Result;
 use crate::domain::models::storage::{SessionResultData, StoredRepository, StoredSession};
-use crate::domain::repositories::SessionRepository;
-use crate::infrastructure::database::daos::SessionDao;
-use crate::infrastructure::database::database::{Database, HasDatabase};
 use std::collections::HashMap;
 
 #[derive(Clone)]
@@ -12,15 +9,72 @@ pub struct SessionDisplayData {
     pub session_result: Option<SessionResultData>,
 }
 
+impl Default for SessionDisplayData {
+    fn default() -> Self {
+        Self {
+            session: StoredSession {
+                id: 0,
+                repository_id: None,
+                started_at: chrono::Utc::now(),
+                completed_at: Some(chrono::Utc::now()),
+                branch: None,
+                commit_hash: None,
+                is_dirty: false,
+                game_mode: "default".to_string(),
+                difficulty_level: None,
+                max_stages: None,
+                time_limit_seconds: None,
+            },
+            repository: None,
+            session_result: None,
+        }
+    }
+}
+
+use crate::domain::repositories::session_repository::SessionRepositoryTrait;
+use std::sync::Arc;
+
+pub trait SessionServiceInterface: shaku::Interface {
+    fn get_sessions_with_display_data(
+        &self,
+        repository_filter: Option<i64>,
+        date_filter_days: Option<i64>,
+        sort_by: &str,
+        sort_descending: bool,
+    ) -> Result<Vec<SessionDisplayData>>;
+    fn get_all_repositories(&self) -> Result<Vec<StoredRepository>>;
+}
+
+#[derive(shaku::Component)]
+#[shaku(interface = SessionServiceInterface)]
 pub struct SessionService {
-    repository: SessionRepository,
+    #[shaku(inject)]
+    repository: Arc<dyn SessionRepositoryTrait>,
+}
+
+impl SessionServiceInterface for SessionService {
+    fn get_sessions_with_display_data(
+        &self,
+        repository_filter: Option<i64>,
+        date_filter_days: Option<i64>,
+        sort_by: &str,
+        sort_descending: bool,
+    ) -> Result<Vec<SessionDisplayData>> {
+        SessionService::get_sessions_with_display_data(
+            self,
+            repository_filter,
+            date_filter_days,
+            sort_by,
+            sort_descending,
+        )
+    }
+
+    fn get_all_repositories(&self) -> Result<Vec<StoredRepository>> {
+        SessionService::get_all_repositories(self)
+    }
 }
 
 impl SessionService {
-    pub fn new(repository: SessionRepository) -> Self {
-        Self { repository }
-    }
-
     pub fn get_sessions_with_display_data(
         &self,
         repository_filter: Option<i64>,
@@ -44,10 +98,7 @@ impl SessionService {
         let mut session_display_data = Vec::new();
 
         for session in sessions {
-            let session_result = {
-                let db = self.repository.db_with_lock()?;
-                self.get_session_result(&db, session.id)?
-            };
+            let session_result = self.repository.get_session_result(session.id)?;
 
             let repository = session
                 .repository_id
@@ -63,16 +114,15 @@ impl SessionService {
         Ok(session_display_data)
     }
 
-    fn get_session_result(
-        &self,
-        db: &Database,
-        session_id: i64,
-    ) -> Result<Option<SessionResultData>> {
-        let dao = SessionDao::new(db);
-        dao.get_session_result(session_id)
-    }
-
     pub fn get_all_repositories(&self) -> Result<Vec<StoredRepository>> {
         self.repository.get_all_repositories()
+    }
+
+    /// Create a new SessionService instance. This method is primarily for testing.
+    /// In production code, use the DI container to resolve SessionService.
+    pub fn new(repository: crate::domain::repositories::SessionRepository) -> Self {
+        Self {
+            repository: Arc::new(repository),
+        }
     }
 }

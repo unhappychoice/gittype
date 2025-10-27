@@ -1,7 +1,6 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::EventBusInterface;
 use crate::domain::models::storage::StoredRepository;
-use crate::domain::repositories::SessionRepository;
-use crate::domain::services::session_service::{SessionDisplayData, SessionService};
+use crate::domain::services::session_service::{SessionDisplayData, SessionServiceInterface};
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
@@ -17,6 +16,8 @@ use ratatui::{
     },
     Frame,
 };
+use std::sync::Arc;
+use std::sync::RwLock;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum SortBy {
@@ -98,74 +99,63 @@ pub struct RecordsScreenData {
     pub repositories: Vec<StoredRepository>,
 }
 
-pub struct RecordsScreenDataProvider;
-
-impl ScreenDataProvider for RecordsScreenDataProvider {
-    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let repository = SessionRepository::new()?;
-        let service = SessionService::new(repository);
-
-        let session_display_data = service.get_sessions_with_display_data(
-            None,     // repository_filter
-            Some(30), // date_filter: Last 30 days
-            "date",   // sort_by
-            true,     // sort_descending
-        )?;
-
-        let repositories = service.get_all_repositories()?;
-
-        Ok(Box::new(RecordsScreenData {
-            sessions: session_display_data,
-            repositories,
-        }))
-    }
-}
-
 #[derive(Clone)]
 pub enum RecordsAction {
     Return,
     ViewDetails(i64),
 }
 
+pub trait RecordsScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = RecordsScreenInterface)]
 pub struct RecordsScreen {
-    sessions: Vec<SessionDisplayData>,
-    repositories: Vec<StoredRepository>,
-    filter_state: FilterState,
-    list_state: ListState,
-    scroll_state: ScrollbarState,
-    action_result: Option<RecordsAction>,
-    selected_session_for_detail: Option<SessionDisplayData>,
-    event_bus: EventBus,
+    sessions: RwLock<Vec<SessionDisplayData>>,
+    repositories: RwLock<Vec<StoredRepository>>,
+    filter_state: RwLock<FilterState>,
+    list_state: RwLock<ListState>,
+    scroll_state: RwLock<ScrollbarState>,
+    action_result: RwLock<Option<RecordsAction>>,
+    selected_session_for_detail: RwLock<Option<SessionDisplayData>>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    session_service: Arc<dyn SessionServiceInterface>,
 }
 
 impl RecordsScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        session_service: Arc<dyn SessionServiceInterface>,
+    ) -> Self {
         let mut list_state = ListState::default();
         list_state.select(Some(0));
 
         Self {
-            sessions: Vec::new(),
-            repositories: Vec::new(),
-            filter_state: FilterState::default(),
-            list_state,
-            scroll_state: ScrollbarState::default(),
-            action_result: None,
-            selected_session_for_detail: None,
+            sessions: RwLock::new(Vec::new()),
+            repositories: RwLock::new(Vec::new()),
+            filter_state: RwLock::new(FilterState::default()),
+            list_state: RwLock::new(list_state),
+            scroll_state: RwLock::new(ScrollbarState::default()),
+            action_result: RwLock::new(None),
+            selected_session_for_detail: RwLock::new(None),
             event_bus,
+            session_service,
         }
     }
 
-    pub fn get_selected_session_for_detail(&self) -> &Option<SessionDisplayData> {
-        &self.selected_session_for_detail
+    pub fn get_selected_session_for_detail(&self) -> Option<SessionDisplayData> {
+        self.selected_session_for_detail.read().unwrap().clone()
     }
 
-    pub fn set_selected_session_from_index(&mut self, index: usize) {
-        if let Some(session) = self.sessions.get(index) {
-            self.selected_session_for_detail = Some(session.clone());
+    pub fn set_selected_session_from_index(&self, index: usize) {
+        let sessions = self.sessions.read().unwrap();
+        if let Some(session) = sessions.get(index) {
+            *self.selected_session_for_detail.write().unwrap() = Some(session.clone());
         }
     }
 
-    fn render_session_list(&mut self, f: &mut Frame) {
+    fn render_session_list(&self, f: &mut Frame) {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -189,17 +179,21 @@ impl RecordsScreen {
             Line::from(vec![
                 Span::raw("  "), // Left padding
                 Span::styled(
-                    format!(
-                        "Filter: {} | Sort: {} {} | Sessions: {}",
-                        self.filter_state.date_filter.display_name(),
-                        self.filter_state.sort_by.display_name(),
-                        if self.filter_state.sort_descending {
-                            "↓"
-                        } else {
-                            "↑"
-                        },
-                        self.sessions.len()
-                    ),
+                    {
+                        let filter_state = self.filter_state.read().unwrap();
+                        let sessions = self.sessions.read().unwrap();
+                        format!(
+                            "Filter: {} | Sort: {} {} | Sessions: {}",
+                            filter_state.date_filter.display_name(),
+                            filter_state.sort_by.display_name(),
+                            if filter_state.sort_descending {
+                                "↓"
+                            } else {
+                                "↑"
+                            },
+                            sessions.len()
+                        )
+                    },
                     Style::default().fg(Colors::accuracy()),
                 ),
             ]),
@@ -214,7 +208,8 @@ impl RecordsScreen {
         f.render_widget(header, chunks[0]);
 
         // Session list
-        if self.sessions.is_empty() {
+        let sessions = self.sessions.read().unwrap();
+        if sessions.is_empty() {
             let empty_msg = vec![
                 Line::from("No typing sessions found for the selected time period."),
                 Line::from("Start typing to build your records!"),
@@ -230,12 +225,17 @@ impl RecordsScreen {
                 );
             f.render_widget(empty_paragraph, chunks[1]);
         } else {
-            // Update scroll state first
-            self.scroll_state = self.scroll_state.content_length(self.sessions.len());
+            // Update scroll state first - read and write separately to avoid deadlock
+            let sessions_len = sessions.len();
+            let new_scroll_state = self
+                .scroll_state
+                .read()
+                .unwrap()
+                .content_length(sessions_len);
+            *self.scroll_state.write().unwrap() = new_scroll_state;
 
             // Create list items
-            let items: Vec<ListItem> = self
-                .sessions
+            let items: Vec<ListItem> = sessions
                 .iter()
                 .map(|session_data| {
                     let line = format_session_line_ratatui_static(session_data);
@@ -263,7 +263,7 @@ impl RecordsScreen {
                 )
                 .highlight_symbol("▶ ");
 
-            f.render_stateful_widget(list, chunks[1], &mut self.list_state);
+            f.render_stateful_widget(list, chunks[1], &mut *self.list_state.write().unwrap());
 
             // Render scrollbar
             let scrollbar = Scrollbar::default()
@@ -276,9 +276,10 @@ impl RecordsScreen {
                     vertical: 1,
                     horizontal: 2,
                 }),
-                &mut self.scroll_state,
+                &mut *self.scroll_state.write().unwrap(),
             );
         }
+        drop(sessions);
 
         // Controls at the bottom row - matching title screen colors
         let controls_line = Line::from(vec![
@@ -302,61 +303,77 @@ impl RecordsScreen {
         f.render_widget(controls, chunks[2]);
     }
 
-    fn refresh_sessions(&mut self) -> Result<()> {
-        let session_repo = SessionRepository::new()?;
-        let service = SessionService::new(session_repo);
-
+    fn refresh_sessions(&self) -> Result<()> {
         // Refresh repository list to include any newly created repositories
-        self.repositories = service.get_all_repositories()?;
+        *self.repositories.write().unwrap() = self.session_service.get_all_repositories()?;
 
         // Use the improved database filtering method
-        let session_display_data = service.get_sessions_with_display_data(
-            self.filter_state.repository_filter,
-            self.filter_state.date_filter.to_days(),
-            self.filter_state.sort_by.to_string(),
-            self.filter_state.sort_descending,
+        let filter_state = self.filter_state.read().unwrap();
+        let session_display_data = self.session_service.get_sessions_with_display_data(
+            filter_state.repository_filter,
+            filter_state.date_filter.to_days(),
+            filter_state.sort_by.to_string(),
+            filter_state.sort_descending,
         )?;
+        drop(filter_state);
 
-        self.sessions = session_display_data;
+        *self.sessions.write().unwrap() = session_display_data;
 
         // Reset selection if needed
-        if self.sessions.is_empty() {
-            self.list_state.select(None);
-        } else {
-            self.list_state.select(Some(0));
-        }
+        let sessions_len = {
+            let sessions = self.sessions.read().unwrap();
+            let len = sessions.len();
 
-        self.scroll_state = self.scroll_state.content_length(self.sessions.len());
+            if sessions.is_empty() {
+                self.list_state.write().unwrap().select(None);
+            } else {
+                self.list_state.write().unwrap().select(Some(0));
+            }
+
+            len
+        };
+
+        // Update scroll state - read first, then write
+        let new_scroll_state = self
+            .scroll_state
+            .read()
+            .unwrap()
+            .content_length(sessions_len);
+        *self.scroll_state.write().unwrap() = new_scroll_state;
 
         Ok(())
     }
 
-    fn cycle_sort(&mut self) {
+    fn cycle_sort(&self) {
         use SortBy::*;
-        self.filter_state.sort_by = match self.filter_state.sort_by {
+        let mut filter_state = self.filter_state.write().unwrap();
+        filter_state.sort_by = match filter_state.sort_by {
             Date => Performance,
             Performance => Repository,
             Repository => Duration,
             Duration => Date,
         };
         // Toggle sort direction when cycling back to Date
-        if self.filter_state.sort_by == Date {
-            self.filter_state.sort_descending = !self.filter_state.sort_descending;
+        if filter_state.sort_by == Date {
+            filter_state.sort_descending = !filter_state.sort_descending;
         }
     }
 
-    fn cycle_date_filter(&mut self) {
+    fn cycle_date_filter(&self) {
         use DateFilter::*;
-        self.filter_state.date_filter = match self.filter_state.date_filter {
+        let mut filter_state = self.filter_state.write().unwrap();
+        filter_state.date_filter = match filter_state.date_filter {
             All => Last7Days,
             Last7Days => Last30Days,
             Last30Days => Last90Days,
             Last90Days => All,
         };
+        drop(filter_state);
 
         // Reset selection
-        if !self.sessions.is_empty() {
-            self.list_state.select(Some(0));
+        let sessions = self.sessions.read().unwrap();
+        if !sessions.is_empty() {
+            self.list_state.write().unwrap().select(Some(0));
         }
     }
 }
@@ -433,6 +450,21 @@ fn format_session_line_ratatui_static<'a>(session_data: &'a SessionDisplayData) 
     ])
 }
 
+pub struct RecordsScreenProvider;
+
+impl shaku::Provider<crate::presentation::di::AppModule> for RecordsScreenProvider {
+    type Interface = RecordsScreen;
+
+    fn provide(
+        module: &crate::presentation::di::AppModule,
+    ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
+        use shaku::HasComponent;
+        let event_bus: Arc<dyn crate::domain::events::EventBusInterface> = module.resolve();
+        let session_service: Arc<dyn SessionServiceInterface> = module.resolve();
+        Ok(Box::new(RecordsScreen::new(event_bus, session_service)))
+    }
+}
+
 impl Screen for RecordsScreen {
     fn get_type(&self) -> ScreenType {
         ScreenType::Records
@@ -442,33 +474,54 @@ impl Screen for RecordsScreen {
     where
         Self: Sized,
     {
-        Box::new(RecordsScreenDataProvider)
+        // Empty provider - RecordsScreen loads data in init_with_data
+        struct EmptyProvider;
+        impl ScreenDataProvider for EmptyProvider {
+            fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+                Ok(Box::new(()))
+            }
+        }
+        Box::new(EmptyProvider)
     }
 
-    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
-        self.action_result = None;
+    fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
+        *self.action_result.write().unwrap() = None;
 
-        let screen_data = data.downcast::<RecordsScreenData>()?;
+        // Try to downcast to RecordsScreenData, or load from service
+        if let Ok(screen_data) = data.downcast::<RecordsScreenData>() {
+            *self.sessions.write().unwrap() = screen_data.sessions;
+            *self.repositories.write().unwrap() = screen_data.repositories;
+        } else {
+            // Load data using injected service
+            let session_display_data = self.session_service.get_sessions_with_display_data(
+                None,     // repository_filter
+                Some(30), // date_filter: Last 30 days
+                "date",   // sort_by
+                true,     // sort_descending
+            )?;
+            let repositories = self.session_service.get_all_repositories()?;
 
-        self.sessions = screen_data.sessions;
-        self.repositories = screen_data.repositories;
+            *self.sessions.write().unwrap() = session_display_data;
+            *self.repositories.write().unwrap() = repositories;
+        }
 
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
 
         match key_event.code {
             KeyCode::Esc => {
-                self.action_result = Some(RecordsAction::Return);
+                *self.action_result.write().unwrap() = Some(RecordsAction::Return);
                 self.event_bus
+                    .as_event_bus()
                     .publish(NavigateTo::Replace(ScreenType::Title));
                 Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.action_result = Some(RecordsAction::Return);
-                self.event_bus.publish(NavigateTo::Exit);
+                *self.action_result.write().unwrap() = Some(RecordsAction::Return);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             KeyCode::Up | KeyCode::Char('k') => {
@@ -486,10 +539,13 @@ impl Screen for RecordsScreen {
                 Ok(())
             }
             KeyCode::Enter | KeyCode::Char(' ') => {
-                if let Some(selected_index) = self.list_state.selected() {
-                    if let Some(session) = self.sessions.get(selected_index) {
-                        self.selected_session_for_detail = Some(session.clone());
+                let list_state = self.list_state.read().unwrap();
+                if let Some(selected_index) = list_state.selected() {
+                    let sessions = self.sessions.read().unwrap();
+                    if let Some(session) = sessions.get(selected_index) {
+                        *self.selected_session_for_detail.write().unwrap() = Some(session.clone());
                         self.event_bus
+                            .as_event_bus()
                             .publish(NavigateTo::Push(ScreenType::SessionDetail));
                         return Ok(());
                     }
@@ -514,7 +570,7 @@ impl Screen for RecordsScreen {
         }
     }
 
-    fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()> {
+    fn render_ratatui(&self, frame: &mut ratatui::Frame) -> Result<()> {
         // Full implementation matching original render_session_list design
         self.render_session_list(frame);
         Ok(())
@@ -524,32 +580,32 @@ impl Screen for RecordsScreen {
         UpdateStrategy::InputOnly
     }
 
-    fn update(&mut self) -> Result<bool> {
+    fn update(&self) -> Result<bool> {
         Ok(false)
     }
 
-    fn cleanup(&mut self) -> Result<()> {
+    fn cleanup(&self) -> Result<()> {
         Ok(())
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl RecordsScreenInterface for RecordsScreen {}
 
 impl RecordsScreen {
     pub fn get_action_result(&self) -> Option<RecordsAction> {
-        self.action_result.clone()
+        self.action_result.read().unwrap().clone()
     }
 
-    fn next_item(&mut self) {
-        let i = match self.list_state.selected() {
+    fn next_item(&self) {
+        let sessions = self.sessions.read().unwrap();
+        let mut list_state = self.list_state.write().unwrap();
+        let i = match list_state.selected() {
             Some(i) => {
-                if i >= self.sessions.len().saturating_sub(1) {
+                if i >= sessions.len().saturating_sub(1) {
                     0
                 } else {
                     i + 1
@@ -557,22 +613,26 @@ impl RecordsScreen {
             }
             None => 0,
         };
-        self.list_state.select(Some(i));
-        self.scroll_state = self.scroll_state.position(i);
+        list_state.select(Some(i));
+        let new_scroll_state = self.scroll_state.read().unwrap().position(i);
+        *self.scroll_state.write().unwrap() = new_scroll_state;
     }
 
-    fn previous_item(&mut self) {
-        let i = match self.list_state.selected() {
+    fn previous_item(&self) {
+        let sessions = self.sessions.read().unwrap();
+        let mut list_state = self.list_state.write().unwrap();
+        let i = match list_state.selected() {
             Some(i) => {
                 if i == 0 {
-                    self.sessions.len().saturating_sub(1)
+                    sessions.len().saturating_sub(1)
                 } else {
                     i - 1
                 }
             }
             None => 0,
         };
-        self.list_state.select(Some(i));
-        self.scroll_state = self.scroll_state.position(i);
+        list_state.select(Some(i));
+        let new_scroll_state = self.scroll_state.read().unwrap().position(i);
+        *self.scroll_state.write().unwrap() = new_scroll_state;
     }
 }

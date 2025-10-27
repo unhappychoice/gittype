@@ -1,4 +1,4 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::EventBusInterface;
 use crate::domain::models::SessionResult;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::{GameData, SessionManager};
@@ -12,6 +12,7 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
 };
+use std::sync::RwLock;
 use std::sync::{Arc, Mutex};
 
 pub struct SessionSummaryShareData {
@@ -49,19 +50,39 @@ impl ScreenDataProvider for SessionSummaryShareDataProvider {
     }
 }
 
+pub trait SessionSummaryShareScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = SessionSummaryShareScreenInterface)]
 pub struct SessionSummaryShareScreen {
-    session_result: Option<SessionResult>,
-    git_repository: Option<GitRepository>,
-    event_bus: EventBus,
+    session_result: RwLock<Option<SessionResult>>,
+    git_repository: RwLock<Option<GitRepository>>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
 }
 
 impl SessionSummaryShareScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
         Self {
-            session_result: None,
-            git_repository: None,
+            session_result: RwLock::new(None),
+            git_repository: RwLock::new(None),
             event_bus,
         }
+    }
+}
+
+pub struct SessionSummaryShareScreenProvider;
+
+impl shaku::Provider<crate::presentation::di::AppModule> for SessionSummaryShareScreenProvider {
+    type Interface = SessionSummaryShareScreen;
+
+    fn provide(
+        module: &crate::presentation::di::AppModule,
+    ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
+        use shaku::HasComponent;
+        let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
+            module.resolve();
+        Ok(Box::new(SessionSummaryShareScreen::new(event_bus)))
     }
 }
 
@@ -80,76 +101,86 @@ impl Screen for SessionSummaryShareScreen {
         })
     }
 
-    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
+    fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
         let data = data.downcast::<SessionSummaryShareData>()?;
 
-        self.session_result = Some(data.session_result);
-        self.git_repository = data.git_repository;
+        *self.session_result.write().unwrap() = Some(data.session_result);
+        *self.git_repository.write().unwrap() = data.git_repository;
 
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
         match key_event.code {
             KeyCode::Char('1') => {
-                if let Some(ref session_result) = self.session_result {
+                let session_result = self.session_result.read().unwrap();
+                let git_repository = self.git_repository.read().unwrap();
+                if let Some(ref session_result) = *session_result {
                     let _ = SharingService::share_result(
                         session_result,
                         SharingPlatform::X,
-                        &self.git_repository,
+                        &git_repository,
                     );
                 }
-                self.event_bus.publish(NavigateTo::Pop);
+                self.event_bus.as_event_bus().publish(NavigateTo::Pop);
                 Ok(())
             }
             KeyCode::Char('2') => {
-                if let Some(ref session_result) = self.session_result {
+                let session_result = self.session_result.read().unwrap();
+                let git_repository = self.git_repository.read().unwrap();
+                if let Some(ref session_result) = *session_result {
                     let _ = SharingService::share_result(
                         session_result,
                         SharingPlatform::Reddit,
-                        &self.git_repository,
+                        &git_repository,
                     );
                 }
-                self.event_bus.publish(NavigateTo::Pop);
+                self.event_bus.as_event_bus().publish(NavigateTo::Pop);
                 Ok(())
             }
             KeyCode::Char('3') => {
-                if let Some(ref session_result) = self.session_result {
+                let session_result = self.session_result.read().unwrap();
+                let git_repository = self.git_repository.read().unwrap();
+                if let Some(ref session_result) = *session_result {
                     let _ = SharingService::share_result(
                         session_result,
                         SharingPlatform::LinkedIn,
-                        &self.git_repository,
+                        &git_repository,
                     );
                 }
-                self.event_bus.publish(NavigateTo::Pop);
+                self.event_bus.as_event_bus().publish(NavigateTo::Pop);
                 Ok(())
             }
             KeyCode::Char('4') => {
-                if let Some(ref session_result) = self.session_result {
+                let session_result = self.session_result.read().unwrap();
+                let git_repository = self.git_repository.read().unwrap();
+                if let Some(ref session_result) = *session_result {
                     let _ = SharingService::share_result(
                         session_result,
                         SharingPlatform::Facebook,
-                        &self.git_repository,
+                        &git_repository,
                     );
                 }
-                self.event_bus.publish(NavigateTo::Pop);
+                self.event_bus.as_event_bus().publish(NavigateTo::Pop);
                 Ok(())
             }
             KeyCode::Esc => {
-                self.event_bus.publish(NavigateTo::Pop);
+                self.event_bus.as_event_bus().publish(NavigateTo::Pop);
                 Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             _ => Ok(()),
         }
     }
 
-    fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {
-        if let Some(ref session_result) = self.session_result {
+    fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
+        let session_result = self.session_result.read().unwrap();
+        let git_repository = self.git_repository.read().unwrap();
+        if let Some(ref session_result) = *session_result {
             let area = frame.area();
 
             let content_height = 12;
@@ -171,7 +202,7 @@ impl Screen for SessionSummaryShareScreen {
                 .split(area);
 
             ShareTitleView::render(frame, chunks[1]);
-            SharePreviewView::render(frame, chunks[3], session_result, &self.git_repository);
+            SharePreviewView::render(frame, chunks[3], session_result, &git_repository);
             SharePlatformOptionsView::render(frame, chunks[5]);
             ShareBackOptionView::render(frame, chunks[7]);
         }
@@ -182,15 +213,13 @@ impl Screen for SessionSummaryShareScreen {
         UpdateStrategy::InputOnly
     }
 
-    fn update(&mut self) -> Result<bool> {
+    fn update(&self) -> Result<bool> {
         Ok(false)
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl SessionSummaryShareScreenInterface for SessionSummaryShareScreen {}

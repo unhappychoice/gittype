@@ -3,11 +3,12 @@ use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
 use gittype::presentation::tui::screens::info_dialog::InfoDialogScreen;
+use std::sync::Arc;
 
 screen_snapshot_test!(
     test_info_dialog_snapshot_default,
     InfoDialogScreen,
-    InfoDialogScreen::new(EventBus::new())
+    InfoDialogScreen::new(Arc::new(EventBus::new()))
 );
 
 // Event-producing key tests (Menu state)
@@ -66,7 +67,7 @@ screen_key_tests!(
 screen_basic_methods_test!(
     test_info_dialog_basic_methods,
     InfoDialogScreen,
-    InfoDialogScreen::new(EventBus::new()),
+    InfoDialogScreen::new(Arc::new(EventBus::new())),
     gittype::presentation::tui::ScreenType::InfoDialog,
     false
 );

@@ -1,4 +1,4 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::EventBusInterface;
 use crate::domain::models::rank::{Rank, RankTier};
 use crate::infrastructure::browser;
 use crate::presentation::game::events::NavigateTo;
@@ -16,14 +16,17 @@ use ratatui::{
     },
     Frame,
 };
+use std::sync::Arc;
+use std::sync::RwLock;
 
 const THIRD_PARTY_LICENSES: &str = include_str!("../../../../LICENSE-THIRD-PARTY");
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Default)]
 pub enum HelpSection {
     Scoring,
     Ranks,
     GameHelp,
+    #[default]
     CLI,
     About,
     ThirdPartyLicenses,
@@ -56,23 +59,33 @@ impl HelpSection {
     }
 }
 
+pub trait HelpScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = HelpScreenInterface)]
 pub struct HelpScreen {
-    current_section: HelpSection,
-    github_fallback: Option<String>,
-    scroll_position: u16,
-    content_height: u16,
-    viewport_height: u16,
-    event_bus: EventBus,
+    current_section: RwLock<HelpSection>,
+
+    github_fallback: RwLock<Option<String>>,
+
+    scroll_position: RwLock<u16>,
+
+    content_height: RwLock<u16>,
+
+    viewport_height: RwLock<u16>,
+
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
 }
 
 impl HelpScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
         Self {
-            current_section: HelpSection::CLI,
-            github_fallback: None,
-            scroll_position: 0,
-            content_height: 0,
-            viewport_height: 0,
+            current_section: RwLock::new(HelpSection::CLI),
+            github_fallback: RwLock::new(None),
+            scroll_position: RwLock::new(0),
+            content_height: RwLock::new(0),
+            viewport_height: RwLock::new(0),
             event_bus,
         }
     }
@@ -840,9 +853,10 @@ impl HelpScreen {
             .map(|section| Line::from(section.title()))
             .collect();
 
+        let current_section = *self.current_section.read().unwrap();
         let selected_index = sections
             .iter()
-            .position(|&s| s == self.current_section)
+            .position(|&s| s == current_section)
             .unwrap_or(0);
 
         let tabs = Tabs::new(titles)
@@ -858,8 +872,9 @@ impl HelpScreen {
         frame.render_widget(tabs, area);
     }
 
-    fn render_content(&mut self, frame: &mut Frame, area: Rect) {
-        let content = match self.current_section {
+    fn render_content(&self, frame: &mut Frame, area: Rect) {
+        let current_section = *self.current_section.read().unwrap();
+        let content = match current_section {
             HelpSection::Scoring => Self::get_scoring_content(),
             HelpSection::Ranks => Self::get_ranks_content(),
             HelpSection::GameHelp => Self::get_game_help_content(),
@@ -870,9 +885,12 @@ impl HelpScreen {
         };
 
         // Update viewport and content height for scrolling
-        self.viewport_height = area.height.saturating_sub(2); // Account for borders
-        self.content_height = content.lines.len() as u16;
+        let viewport_height = area.height.saturating_sub(2); // Account for borders
+        let content_height = content.lines.len() as u16;
+        *self.viewport_height.write().unwrap() = viewport_height;
+        *self.content_height.write().unwrap() = content_height;
 
+        let scroll_position = *self.scroll_position.read().unwrap();
         let paragraph = Paragraph::new(content)
             .block(
                 Block::default()
@@ -881,17 +899,16 @@ impl HelpScreen {
                     .padding(Padding::horizontal(2)),
             )
             .wrap(Wrap { trim: true })
-            .scroll((self.scroll_position, 0));
+            .scroll((scroll_position, 0));
 
         frame.render_widget(paragraph, area);
 
         // Render scrollbar if content is longer than viewport
-        if self.content_height > self.viewport_height {
+        if content_height > viewport_height {
             let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight);
-            let mut scrollbar_state = ScrollbarState::new(
-                self.content_height.saturating_sub(self.viewport_height) as usize,
-            )
-            .position(self.scroll_position as usize);
+            let mut scrollbar_state =
+                ScrollbarState::new(content_height.saturating_sub(viewport_height) as usize)
+                    .position(scroll_position as usize);
 
             frame.render_stateful_widget(
                 scrollbar,
@@ -1056,28 +1073,29 @@ impl Screen for HelpScreen {
         Box::new(HelpScreenDataProvider)
     }
 
-    fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> crate::Result<()> {
+    fn init_with_data(&self, _data: Box<dyn std::any::Any>) -> crate::Result<()> {
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> crate::Result<()> {
-        if self.github_fallback.is_some() {
+    fn handle_key_event(&self, key_event: crossterm::event::KeyEvent) -> crate::Result<()> {
+        if self.github_fallback.read().unwrap().is_some() {
             match key_event.code {
                 KeyCode::Esc => {
-                    self.github_fallback = None;
+                    *self.github_fallback.write().unwrap() = None;
                     Ok(())
                 }
                 KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                    self.event_bus.publish(NavigateTo::Exit);
+                    self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                     Ok(())
                 }
                 _ => Ok(()),
             }
         } else {
             let sections = HelpSection::all();
+            let current_section = *self.current_section.read().unwrap();
             let current_index = sections
                 .iter()
-                .position(|&s| s == self.current_section)
+                .position(|&s| s == current_section)
                 .unwrap_or(0);
 
             match key_event.code {
@@ -1087,30 +1105,35 @@ impl Screen for HelpScreen {
                     } else {
                         current_index - 1
                     };
-                    self.current_section = sections[new_index];
-                    self.scroll_position = 0; // Reset scroll when changing sections
+                    *self.current_section.write().unwrap() = sections[new_index];
+                    *self.scroll_position.write().unwrap() = 0; // Reset scroll when changing sections
                     Ok(())
                 }
                 KeyCode::Right | KeyCode::Char('l') => {
                     let new_index = (current_index + 1) % sections.len();
-                    self.current_section = sections[new_index];
-                    self.scroll_position = 0; // Reset scroll when changing sections
+                    *self.current_section.write().unwrap() = sections[new_index];
+                    *self.scroll_position.write().unwrap() = 0; // Reset scroll when changing sections
                     Ok(())
                 }
                 KeyCode::Up | KeyCode::Char('k') => {
-                    self.scroll_position = self.scroll_position.saturating_sub(1);
+                    let scroll_position = *self.scroll_position.read().unwrap();
+                    *self.scroll_position.write().unwrap() = scroll_position.saturating_sub(1);
                     Ok(())
                 }
                 KeyCode::Down | KeyCode::Char('j') => {
+                    let content_height = *self.content_height.read().unwrap();
+                    let viewport_height = *self.viewport_height.read().unwrap();
+                    let scroll_position = *self.scroll_position.read().unwrap();
+
                     // Calculate actual maximum scroll based on content and viewport
-                    let max_scroll = if self.content_height > self.viewport_height {
-                        self.content_height.saturating_sub(self.viewport_height)
+                    let max_scroll = if content_height > viewport_height {
+                        content_height.saturating_sub(viewport_height)
                     } else {
                         0
                     };
 
-                    if self.scroll_position < max_scroll {
-                        self.scroll_position = self.scroll_position.saturating_add(1);
+                    if scroll_position < max_scroll {
+                        *self.scroll_position.write().unwrap() = scroll_position.saturating_add(1);
                     }
                     Ok(())
                 }
@@ -1118,17 +1141,17 @@ impl Screen for HelpScreen {
                     if Self::try_open_github()? {
                         Ok(())
                     } else {
-                        self.github_fallback =
+                        *self.github_fallback.write().unwrap() =
                             Some("https://github.com/unhappychoice/gittype".to_string());
                         Ok(())
                     }
                 }
                 KeyCode::Esc => {
-                    self.event_bus.publish(NavigateTo::Pop);
+                    self.event_bus.as_event_bus().publish(NavigateTo::Pop);
                     Ok(())
                 }
                 KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                    self.event_bus.publish(NavigateTo::Exit);
+                    self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                     Ok(())
                 }
                 _ => Ok(()),
@@ -1136,8 +1159,9 @@ impl Screen for HelpScreen {
         }
     }
 
-    fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {
-        if let Some(url) = &self.github_fallback {
+    fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
+        let github_fallback = self.github_fallback.read().unwrap().clone();
+        if let Some(url) = &github_fallback {
             self.render_github_fallback(frame, url);
             return Ok(());
         }
@@ -1164,15 +1188,13 @@ impl Screen for HelpScreen {
         UpdateStrategy::InputOnly
     }
 
-    fn update(&mut self) -> crate::Result<bool> {
+    fn update(&self) -> crate::Result<bool> {
         Ok(false)
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl HelpScreenInterface for HelpScreen {}

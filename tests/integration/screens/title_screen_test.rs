@@ -3,11 +3,12 @@ use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
 use gittype::presentation::tui::screens::title_screen::TitleScreen;
+use std::sync::Arc;
 
 screen_snapshot_test!(
     test_title_screen_snapshot,
     TitleScreen,
-    TitleScreen::new(EventBus::new()),
+    TitleScreen::new(Arc::new(EventBus::new())),
     provider = MockTitleScreenDataProvider
 );
 
@@ -143,7 +144,7 @@ screen_key_tests!(
 screen_basic_methods_test!(
     test_title_screen_basic_methods,
     TitleScreen,
-    TitleScreen::new(EventBus::new()),
+    TitleScreen::new(Arc::new(EventBus::new())),
     gittype::presentation::tui::ScreenType::Title,
     false,
     MockTitleScreenDataProvider

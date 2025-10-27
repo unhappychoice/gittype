@@ -3,6 +3,7 @@ use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
 use gittype::presentation::tui::screens::version_check_screen::VersionCheckScreen;
+use std::sync::Arc;
 
 // Event-producing key tests
 screen_key_event_test!(
@@ -27,7 +28,7 @@ screen_key_event_test!(
 screen_basic_methods_test!(
     test_version_check_screen_basic_methods,
     VersionCheckScreen,
-    VersionCheckScreen::new(EventBus::new()),
+    VersionCheckScreen::new(Arc::new(EventBus::new())),
     gittype::presentation::tui::ScreenType::VersionCheck,
     false
 );

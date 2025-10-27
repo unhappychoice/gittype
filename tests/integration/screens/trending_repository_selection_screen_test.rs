@@ -3,11 +3,12 @@ use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
 use gittype::presentation::tui::screens::TrendingRepositorySelectionScreen;
+use std::sync::Arc;
 
 screen_snapshot_test!(
     test_trending_repository_selection_screen_snapshot,
     TrendingRepositorySelectionScreen,
-    TrendingRepositorySelectionScreen::new(EventBus::new()),
+    TrendingRepositorySelectionScreen::new(Arc::new(EventBus::new())),
     provider = MockTrendingRepositorySelectionDataProvider
 );
 
@@ -71,7 +72,7 @@ screen_key_tests!(
 screen_basic_methods_test!(
     test_trending_repository_selection_screen_basic_methods,
     TrendingRepositorySelectionScreen,
-    TrendingRepositorySelectionScreen::new(EventBus::new()),
+    TrendingRepositorySelectionScreen::new(Arc::new(EventBus::new())),
     gittype::presentation::tui::ScreenType::TrendingRepositorySelection,
     true,
     MockTrendingRepositorySelectionDataProvider

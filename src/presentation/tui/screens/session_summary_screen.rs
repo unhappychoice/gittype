@@ -1,4 +1,4 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::EventBusInterface;
 use crate::domain::models::{Rank, SessionResult};
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::{GameData, SessionManager};
@@ -11,6 +11,7 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
 };
+use std::sync::RwLock;
 use std::sync::{Arc, Mutex};
 
 pub struct SessionSummaryScreenData {
@@ -56,27 +57,47 @@ pub enum ResultAction {
     Share,
 }
 
+pub trait SessionSummaryScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = SessionSummaryScreenInterface)]
 pub struct SessionSummaryScreen {
-    action_result: Option<ResultAction>,
-    session_result: Option<SessionResult>,
-    git_repository: Option<GitRepository>,
-    session_manager: Option<Arc<Mutex<SessionManager>>>,
-    event_bus: EventBus,
+    action_result: RwLock<Option<ResultAction>>,
+    session_result: RwLock<Option<SessionResult>>,
+    git_repository: RwLock<Option<GitRepository>>,
+    session_manager: RwLock<Option<Arc<Mutex<SessionManager>>>>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
 }
 
 impl SessionSummaryScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
         Self {
-            action_result: None,
-            session_result: None,
-            git_repository: None,
-            session_manager: None,
+            action_result: RwLock::new(None),
+            session_result: RwLock::new(None),
+            git_repository: RwLock::new(None),
+            session_manager: RwLock::new(None),
             event_bus,
         }
     }
 
     pub fn get_action_result(&self) -> Option<ResultAction> {
-        self.action_result.clone()
+        self.action_result.read().unwrap().clone()
+    }
+}
+
+pub struct SessionSummaryScreenProvider;
+
+impl shaku::Provider<crate::presentation::di::AppModule> for SessionSummaryScreenProvider {
+    type Interface = SessionSummaryScreen;
+
+    fn provide(
+        module: &crate::presentation::di::AppModule,
+    ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
+        use shaku::HasComponent;
+        let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
+            module.resolve();
+        Ok(Box::new(SessionSummaryScreen::new(event_bus)))
     }
 }
 
@@ -95,67 +116,73 @@ impl Screen for SessionSummaryScreen {
         })
     }
 
-    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
-        self.action_result = None;
+    fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
+        *self.action_result.write().unwrap() = None;
 
         let screen_data = data.downcast::<SessionSummaryScreenData>()?;
 
-        self.session_result = screen_data.session_result.clone();
-        self.git_repository = screen_data.git_repository.clone();
-        self.session_manager = Some(Arc::clone(&screen_data.session_manager));
+        *self.session_result.write().unwrap() = screen_data.session_result.clone();
+        *self.git_repository.write().unwrap() = screen_data.git_repository.clone();
+        *self.session_manager.write().unwrap() = Some(Arc::clone(&screen_data.session_manager));
 
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
 
         match key_event.code {
             KeyCode::Char('d') | KeyCode::Char('D') => {
                 self.event_bus
+                    .as_event_bus()
                     .publish(NavigateTo::Push(ScreenType::DetailsDialog));
                 Ok(())
             }
             KeyCode::Char('r') | KeyCode::Char('R') => {
-                self.action_result = Some(ResultAction::Retry);
+                *self.action_result.write().unwrap() = Some(ResultAction::Retry);
                 self.event_bus
+                    .as_event_bus()
                     .publish(NavigateTo::Replace(ScreenType::Typing));
                 Ok(())
             }
             KeyCode::Char('s') | KeyCode::Char('S') => {
-                self.action_result = Some(ResultAction::Share);
+                *self.action_result.write().unwrap() = Some(ResultAction::Share);
                 self.event_bus
+                    .as_event_bus()
                     .publish(NavigateTo::Push(ScreenType::SessionSharing));
                 Ok(())
             }
             KeyCode::Char('t') | KeyCode::Char('T') => {
-                self.action_result = Some(ResultAction::BackToTitle);
-                self.event_bus.publish(NavigateTo::PopTo(ScreenType::Title));
+                *self.action_result.write().unwrap() = Some(ResultAction::BackToTitle);
+                self.event_bus
+                    .as_event_bus()
+                    .publish(NavigateTo::PopTo(ScreenType::Title));
                 Ok(())
             }
             KeyCode::Esc => {
-                self.action_result = Some(ResultAction::Quit);
-                self.event_bus.publish(NavigateTo::Exit);
+                *self.action_result.write().unwrap() = Some(ResultAction::Quit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.action_result = Some(ResultAction::Quit);
-                self.event_bus.publish(NavigateTo::Exit);
+                *self.action_result.write().unwrap() = Some(ResultAction::Quit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             _ => Ok(()),
         }
     }
 
-    fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {
-        if let Some(ref session_result) = self.session_result {
+    fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
+        let session_result = self.session_result.read().unwrap();
+        if let Some(ref session_result) = *session_result {
             let area = frame.area();
 
             let best_rank = Rank::for_score(session_result.session_score);
 
             // Get best status using session start records from SessionManager instance
-            let best_status = self
-                .session_manager
+            let session_manager = self.session_manager.read().unwrap();
+            let best_status = session_manager
                 .as_ref()
                 .and_then(|manager| manager.lock().ok())
                 .and_then(|manager| {
@@ -234,15 +261,13 @@ impl Screen for SessionSummaryScreen {
         UpdateStrategy::InputOnly
     }
 
-    fn update(&mut self) -> Result<bool> {
+    fn update(&self) -> Result<bool> {
         Ok(false)
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl SessionSummaryScreenInterface for SessionSummaryScreen {}

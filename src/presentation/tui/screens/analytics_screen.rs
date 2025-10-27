@@ -1,4 +1,4 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::EventBusInterface;
 use crate::domain::repositories::SessionRepository;
 use crate::domain::services::analytics_service::{AnalyticsData, AnalyticsService};
 use crate::infrastructure::database::database::Database;
@@ -17,9 +17,12 @@ use ratatui::{
     widgets::{Block, Borders, ListState, Paragraph, ScrollbarState},
     Frame,
 };
+use std::sync::Arc;
+use std::sync::RwLock;
 
-#[derive(Debug, Clone, PartialEq, Copy)]
+#[derive(Debug, Clone, PartialEq, Copy, Default)]
 pub enum ViewMode {
+    #[default]
     Overview,
     Trends,
     Repositories,
@@ -60,15 +63,20 @@ pub enum AnalyticsAction {
     Return,
 }
 
+pub trait AnalyticsScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = AnalyticsScreenInterface)]
 pub struct AnalyticsScreen {
-    view_mode: ViewMode,
-    data: Option<AnalyticsData>,
-    repository_list_state: ListState,
-    language_list_state: ListState,
-    repository_scroll_state: ScrollbarState,
-    language_scroll_state: ScrollbarState,
-    action_result: Option<AnalyticsAction>,
-    event_bus: EventBus,
+    view_mode: RwLock<ViewMode>,
+    data: RwLock<Option<AnalyticsData>>,
+    repository_list_state: RwLock<ListState>,
+    language_list_state: RwLock<ListState>,
+    repository_scroll_state: RwLock<ScrollbarState>,
+    language_scroll_state: RwLock<ScrollbarState>,
+    action_result: RwLock<Option<AnalyticsAction>>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
 }
 
 pub struct AnalyticsScreenDataProvider {}
@@ -86,27 +94,29 @@ impl ScreenDataProvider for AnalyticsScreenDataProvider {
 }
 
 impl AnalyticsScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
         let mut repository_list_state = ListState::default();
         repository_list_state.select(Some(0));
         let mut language_list_state = ListState::default();
         language_list_state.select(Some(0));
 
         Self {
-            view_mode: ViewMode::Overview,
-            data: None,
-            repository_list_state,
-            language_list_state,
-            repository_scroll_state: ScrollbarState::default(),
-            language_scroll_state: ScrollbarState::default(),
-            action_result: None,
+            view_mode: RwLock::new(ViewMode::Overview),
+            data: RwLock::new(None),
+            repository_list_state: RwLock::new(repository_list_state),
+            language_list_state: RwLock::new(language_list_state),
+            repository_scroll_state: RwLock::new(ScrollbarState::default()),
+            language_scroll_state: RwLock::new(ScrollbarState::default()),
+            action_result: RwLock::new(None),
             event_bus,
         }
     }
 
-    fn next_repository(&mut self) {
-        if let Some(data) = &self.data {
-            let i = match self.repository_list_state.selected() {
+    fn next_repository(&self) {
+        let data = self.data.read().unwrap();
+        if let Some(data) = &*data {
+            let mut list_state = self.repository_list_state.write().unwrap();
+            let i = match list_state.selected() {
                 Some(i) => {
                     if i >= data.top_repositories.len() - 1 {
                         0
@@ -116,14 +126,17 @@ impl AnalyticsScreen {
                 }
                 None => 0,
             };
-            self.repository_list_state.select(Some(i));
-            self.repository_scroll_state = self.repository_scroll_state.position(i);
+            list_state.select(Some(i));
+            let new_scroll_state = self.repository_scroll_state.read().unwrap().position(i);
+            *self.repository_scroll_state.write().unwrap() = new_scroll_state;
         }
     }
 
-    fn previous_repository(&mut self) {
-        if let Some(data) = &self.data {
-            let i = match self.repository_list_state.selected() {
+    fn previous_repository(&self) {
+        let data = self.data.read().unwrap();
+        if let Some(data) = &*data {
+            let mut list_state = self.repository_list_state.write().unwrap();
+            let i = match list_state.selected() {
                 Some(i) => {
                     if i == 0 {
                         data.top_repositories.len() - 1
@@ -133,14 +146,17 @@ impl AnalyticsScreen {
                 }
                 None => 0,
             };
-            self.repository_list_state.select(Some(i));
-            self.repository_scroll_state = self.repository_scroll_state.position(i);
+            list_state.select(Some(i));
+            let new_scroll_state = self.repository_scroll_state.read().unwrap().position(i);
+            *self.repository_scroll_state.write().unwrap() = new_scroll_state;
         }
     }
 
-    fn next_language(&mut self) {
-        if let Some(data) = &self.data {
-            let i = match self.language_list_state.selected() {
+    fn next_language(&self) {
+        let data = self.data.read().unwrap();
+        if let Some(data) = &*data {
+            let mut list_state = self.language_list_state.write().unwrap();
+            let i = match list_state.selected() {
                 Some(i) => {
                     if i >= data.top_languages.len() - 1 {
                         0
@@ -150,14 +166,17 @@ impl AnalyticsScreen {
                 }
                 None => 0,
             };
-            self.language_list_state.select(Some(i));
-            self.language_scroll_state = self.language_scroll_state.position(i);
+            list_state.select(Some(i));
+            let new_scroll_state = self.language_scroll_state.read().unwrap().position(i);
+            *self.language_scroll_state.write().unwrap() = new_scroll_state;
         }
     }
 
-    fn previous_language(&mut self) {
-        if let Some(data) = &self.data {
-            let i = match self.language_list_state.selected() {
+    fn previous_language(&self) {
+        let data = self.data.read().unwrap();
+        if let Some(data) = &*data {
+            let mut list_state = self.language_list_state.write().unwrap();
+            let i = match list_state.selected() {
                 Some(i) => {
                     if i == 0 {
                         data.top_languages.len() - 1
@@ -167,16 +186,17 @@ impl AnalyticsScreen {
                 }
                 None => 0,
             };
-            self.language_list_state.select(Some(i));
-            self.language_scroll_state = self.language_scroll_state.position(i);
+            list_state.select(Some(i));
+            let new_scroll_state = self.language_scroll_state.read().unwrap().position(i);
+            *self.language_scroll_state.write().unwrap() = new_scroll_state;
         }
     }
 
     pub fn get_action_result(&self) -> Option<AnalyticsAction> {
-        self.action_result.clone()
+        self.action_result.read().unwrap().clone()
     }
 
-    fn render_header(&mut self, f: &mut Frame, area: Rect) {
+    fn render_header(&self, f: &mut Frame, area: Rect) {
         let header = Paragraph::new(vec![Line::from(vec![
             Span::raw("  "),
             Span::styled(
@@ -196,7 +216,7 @@ impl AnalyticsScreen {
         f.render_widget(header, area);
     }
 
-    fn render_view_tabs(&mut self, f: &mut Frame, area: Rect) {
+    fn render_view_tabs(&self, f: &mut Frame, area: Rect) {
         let all_views = [
             ViewMode::Overview,
             ViewMode::Trends,
@@ -207,12 +227,13 @@ impl AnalyticsScreen {
         let mut tab_spans = Vec::new();
         tab_spans.push(Span::raw("  "));
 
+        let view_mode = *self.view_mode.read().unwrap();
         for (i, view) in all_views.iter().enumerate() {
             if i > 0 {
                 tab_spans.push(Span::styled(" | ", Style::default().fg(Colors::text())));
             }
 
-            let style = if *view == self.view_mode {
+            let style = if *view == view_mode {
                 Style::default()
                     .fg(Colors::text())
                     .add_modifier(Modifier::BOLD)
@@ -235,25 +256,35 @@ impl AnalyticsScreen {
         f.render_widget(tabs, area);
     }
 
-    fn render_content_with_state(&mut self, f: &mut Frame, area: Rect) {
-        if let Some(data) = &self.data.clone() {
-            match self.view_mode {
+    fn render_content_with_state(&self, f: &mut Frame, area: Rect) {
+        let data = self.data.read().unwrap();
+        if let Some(data) = &*data {
+            let view_mode = *self.view_mode.read().unwrap();
+            match view_mode {
                 ViewMode::Overview => OverviewView::render(f, area, data),
                 ViewMode::Trends => TrendsView::render(f, area, data),
-                ViewMode::Repositories => RepositoriesView::render_with_state(
-                    f,
-                    area,
-                    data,
-                    &mut self.repository_list_state,
-                    &mut self.repository_scroll_state,
-                ),
-                ViewMode::Languages => LanguagesView::render_with_state(
-                    f,
-                    area,
-                    data,
-                    &mut self.language_list_state,
-                    &mut self.language_scroll_state,
-                ),
+                ViewMode::Repositories => {
+                    let mut repo_list = self.repository_list_state.write().unwrap();
+                    let mut repo_scroll = self.repository_scroll_state.write().unwrap();
+                    RepositoriesView::render_with_state(
+                        f,
+                        area,
+                        data,
+                        &mut repo_list,
+                        &mut repo_scroll,
+                    )
+                }
+                ViewMode::Languages => {
+                    let mut lang_list = self.language_list_state.write().unwrap();
+                    let mut lang_scroll = self.language_scroll_state.write().unwrap();
+                    LanguagesView::render_with_state(
+                        f,
+                        area,
+                        data,
+                        &mut lang_list,
+                        &mut lang_scroll,
+                    )
+                }
             }
         } else {
             let loading = Paragraph::new("Loading analytics data...")
@@ -263,7 +294,7 @@ impl AnalyticsScreen {
         }
     }
 
-    fn render_controls(&mut self, f: &mut Frame, area: Rect) {
+    fn render_controls(&self, f: &mut Frame, area: Rect) {
         let controls_line = Line::from(vec![
             Span::styled("[←→/HL]", Style::default().fg(Colors::key_navigation())),
             Span::styled(" Switch View  ", Style::default().fg(Colors::text())),
@@ -280,6 +311,21 @@ impl AnalyticsScreen {
     }
 }
 
+pub struct AnalyticsScreenProvider;
+
+impl shaku::Provider<crate::presentation::di::AppModule> for AnalyticsScreenProvider {
+    type Interface = AnalyticsScreen;
+
+    fn provide(
+        module: &crate::presentation::di::AppModule,
+    ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
+        use shaku::HasComponent;
+        let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
+            module.resolve();
+        Ok(Box::new(AnalyticsScreen::new(event_bus)))
+    }
+}
+
 impl Screen for AnalyticsScreen {
     fn get_type(&self) -> ScreenType {
         ScreenType::Analytics
@@ -292,39 +338,43 @@ impl Screen for AnalyticsScreen {
         Box::new(AnalyticsScreenDataProvider {})
     }
 
-    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
-        self.action_result = None;
+    fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
+        *self.action_result.write().unwrap() = None;
 
         let analytics_data = data.downcast::<AnalyticsData>()?;
 
-        self.data = Some(*analytics_data);
+        *self.data.write().unwrap() = Some(*analytics_data);
 
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         match key_event.code {
             KeyCode::Esc => {
-                self.action_result = Some(AnalyticsAction::Return);
+                *self.action_result.write().unwrap() = Some(AnalyticsAction::Return);
                 self.event_bus
+                    .as_event_bus()
                     .publish(NavigateTo::Replace(ScreenType::Title));
                 Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.action_result = Some(AnalyticsAction::Return);
-                self.event_bus.publish(NavigateTo::Exit);
+                *self.action_result.write().unwrap() = Some(AnalyticsAction::Return);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             KeyCode::Left | KeyCode::Char('h') => {
-                self.view_mode = self.view_mode.previous();
+                let mut view_mode = self.view_mode.write().unwrap();
+                *view_mode = view_mode.previous();
                 Ok(())
             }
             KeyCode::Right | KeyCode::Char('l') => {
-                self.view_mode = self.view_mode.next();
+                let mut view_mode = self.view_mode.write().unwrap();
+                *view_mode = view_mode.next();
                 Ok(())
             }
             KeyCode::Up | KeyCode::Char('k') => {
-                match self.view_mode {
+                let view_mode = *self.view_mode.read().unwrap();
+                match view_mode {
                     ViewMode::Repositories => self.previous_repository(),
                     ViewMode::Languages => self.previous_language(),
                     _ => {}
@@ -332,7 +382,8 @@ impl Screen for AnalyticsScreen {
                 Ok(())
             }
             KeyCode::Down | KeyCode::Char('j') => {
-                match self.view_mode {
+                let view_mode = *self.view_mode.read().unwrap();
+                match view_mode {
                     ViewMode::Repositories => self.next_repository(),
                     ViewMode::Languages => self.next_language(),
                     _ => {}
@@ -343,7 +394,7 @@ impl Screen for AnalyticsScreen {
                 let provider = Self::default_provider();
                 if let Ok(data) = provider.provide() {
                     if let Ok(analytics_data) = data.downcast::<AnalyticsData>() {
-                        self.data = Some(*analytics_data);
+                        *self.data.write().unwrap() = Some(*analytics_data);
                     }
                 }
                 Ok(())
@@ -352,7 +403,7 @@ impl Screen for AnalyticsScreen {
         }
     }
 
-    fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()> {
+    fn render_ratatui(&self, frame: &mut ratatui::Frame) -> Result<()> {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -375,15 +426,13 @@ impl Screen for AnalyticsScreen {
         UpdateStrategy::InputOnly
     }
 
-    fn update(&mut self) -> Result<bool> {
+    fn update(&self) -> Result<bool> {
         Ok(false)
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl AnalyticsScreenInterface for AnalyticsScreen {}

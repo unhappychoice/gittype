@@ -1,4 +1,4 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::EventBusInterface;
 use crate::domain::models::SessionResult;
 use crate::domain::repositories::session_repository::{BestRecords, BestStatus, SessionRepository};
 use crate::presentation::game::events::NavigateTo;
@@ -12,6 +12,7 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
 };
+use std::sync::RwLock;
 use std::sync::{Arc, Mutex};
 
 pub struct SessionDetailsDialogData {
@@ -65,34 +66,39 @@ impl ScreenDataProvider for SessionDetailsDialogDataProvider {
     }
 }
 
+pub trait SessionDetailsDialogInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = SessionDetailsDialogInterface)]
 pub struct SessionDetailsDialog {
-    session_result: Option<SessionResult>,
-    repo_info: Option<GitRepository>,
-    best_status: Option<BestStatus>,
-    best_records: Option<BestRecords>,
-    event_bus: EventBus,
+    session_result: RwLock<Option<SessionResult>>,
+    repo_info: RwLock<Option<GitRepository>>,
+    best_status: RwLock<Option<BestStatus>>,
+    best_records: RwLock<Option<BestRecords>>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
 }
 
 impl SessionDetailsDialog {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
         Self {
-            session_result: None,
-            repo_info: None,
-            best_status: None,
-            best_records: None,
+            session_result: RwLock::new(None),
+            repo_info: RwLock::new(None),
+            best_status: RwLock::new(None),
+            best_records: RwLock::new(None),
             event_bus,
         }
     }
 
-    fn ui(&mut self, f: &mut Frame) {
-        let session_result = self
-            .session_result
+    fn ui(&self, f: &mut Frame) {
+        let session_result_ref = self.session_result.read().unwrap();
+        let session_result = session_result_ref
             .as_ref()
             .expect("SessionDetailsDialog requires session data");
 
         // Calculate required content height dynamically
         let stage_count = session_result.stage_results.len();
-        let best_records_lines = if self.best_records.is_some() {
+        let best_records_lines = if self.best_records.read().unwrap().is_some() {
             5 // Header + 3 records + padding
         } else {
             3 // Just header and no records message
@@ -151,11 +157,31 @@ impl SessionDetailsDialog {
             f,
             content_chunks[0],
             session_result,
-            self.best_status.as_ref(),
-            self.best_records.as_ref(),
+            self.best_status.read().unwrap().as_ref(),
+            self.best_records.read().unwrap().as_ref(),
         );
-        StageResultsView::render(f, content_chunks[1], session_result, &self.repo_info);
+        StageResultsView::render(
+            f,
+            content_chunks[1],
+            session_result,
+            &self.repo_info.read().unwrap(),
+        );
         ControlsView::render(f, main_chunks[4]);
+    }
+}
+
+pub struct SessionDetailsDialogProvider;
+
+impl shaku::Provider<crate::presentation::di::AppModule> for SessionDetailsDialogProvider {
+    type Interface = SessionDetailsDialog;
+
+    fn provide(
+        module: &crate::presentation::di::AppModule,
+    ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
+        use shaku::HasComponent;
+        let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
+            module.resolve();
+        Ok(Box::new(SessionDetailsDialog::new(event_bus)))
     }
 }
 
@@ -174,38 +200,38 @@ impl Screen for SessionDetailsDialog {
         })
     }
 
-    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
+    fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
         let dialog_data = data.downcast::<SessionDetailsDialogData>()?;
 
-        self.session_result = dialog_data.session_result;
-        self.repo_info = dialog_data.repo_info;
-        self.best_status = dialog_data.best_status;
-        self.best_records = dialog_data.best_records;
+        *self.session_result.write().unwrap() = dialog_data.session_result;
+        *self.repo_info.write().unwrap() = dialog_data.repo_info;
+        *self.best_status.write().unwrap() = dialog_data.best_status;
+        *self.best_records.write().unwrap() = dialog_data.best_records;
 
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
         match key_event.code {
             KeyCode::Esc => {
-                self.event_bus.publish(NavigateTo::Pop);
+                self.event_bus.as_event_bus().publish(NavigateTo::Pop);
                 Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             _ => Ok(()),
         }
     }
 
-    fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {
+    fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
         self.ui(frame);
         Ok(())
     }
 
-    fn cleanup(&mut self) -> Result<()> {
+    fn cleanup(&self) -> Result<()> {
         Ok(())
     }
 
@@ -213,15 +239,13 @@ impl Screen for SessionDetailsDialog {
         UpdateStrategy::InputOnly
     }
 
-    fn update(&mut self) -> Result<bool> {
+    fn update(&self) -> Result<bool> {
         Ok(false)
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl SessionDetailsDialogInterface for SessionDetailsDialog {}

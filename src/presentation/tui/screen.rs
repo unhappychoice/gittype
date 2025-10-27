@@ -79,7 +79,7 @@ impl crate::domain::events::Event for ScreenTransition {
 }
 
 /// The Screen trait defines the interface that all screens must implement
-pub trait Screen: Send {
+pub trait Screen: Send + Sync + shaku::Interface {
     /// Get the type of this screen
     fn get_type(&self) -> ScreenType;
 
@@ -89,23 +89,23 @@ pub trait Screen: Send {
         Self: Sized;
 
     /// Initialize the screen with data (for screens that need data injection)
-    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()>;
+    fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()>;
 
     /// Called when this screen is pushed from another screen
     /// Allows the screen to extract data from the source screen
-    fn on_pushed_from(&mut self, _source_screen: &dyn Screen) -> Result<()> {
+    fn on_pushed_from(&self, _source_screen: &dyn Screen) -> Result<()> {
         // Default implementation does nothing
         Ok(())
     }
 
     /// Handle keyboard input events
-    fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()>;
+    fn handle_key_event(&self, key_event: KeyEvent) -> Result<()>;
 
     /// Render the screen using ratatui
-    fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()>;
+    fn render_ratatui(&self, frame: &mut ratatui::Frame) -> Result<()>;
 
     /// Clean up screen resources - called when screen becomes inactive
-    fn cleanup(&mut self) -> Result<()> {
+    fn cleanup(&self) -> Result<()> {
         Ok(())
     }
 
@@ -115,7 +115,7 @@ pub trait Screen: Send {
     }
 
     /// Update screen state and return whether a re-render is needed
-    fn update(&mut self) -> Result<bool> {
+    fn update(&self) -> Result<bool> {
         Ok(false)
     }
 
@@ -127,7 +127,4 @@ pub trait Screen: Send {
 
     /// Downcast to Any for type-specific access (read-only)
     fn as_any(&self) -> &dyn std::any::Any;
-
-    /// Downcast to Any for type-specific access (mutable)
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any;
 }

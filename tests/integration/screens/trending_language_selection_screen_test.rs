@@ -3,11 +3,12 @@ use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
 use gittype::presentation::tui::screens::TrendingLanguageSelectionScreen;
+use std::sync::Arc;
 
 screen_snapshot_test!(
     test_trending_language_selection_screen_snapshot,
     TrendingLanguageSelectionScreen,
-    TrendingLanguageSelectionScreen::new(EventBus::new())
+    TrendingLanguageSelectionScreen::new(Arc::new(EventBus::new()))
 );
 
 // Event-producing key tests
@@ -70,7 +71,7 @@ screen_key_tests!(
 screen_basic_methods_test!(
     test_trending_language_selection_screen_basic_methods,
     TrendingLanguageSelectionScreen,
-    TrendingLanguageSelectionScreen::new(EventBus::new()),
+    TrendingLanguageSelectionScreen::new(Arc::new(EventBus::new())),
     gittype::presentation::tui::ScreenType::TrendingLanguageSelection,
     true
 );

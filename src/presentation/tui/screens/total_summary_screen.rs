@@ -1,4 +1,4 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::EventBusInterface;
 use crate::domain::models::TotalResult;
 use crate::domain::services::scoring::{TotalCalculator, TotalTracker, GLOBAL_TOTAL_TRACKER};
 use crate::presentation::game::events::NavigateTo;
@@ -15,6 +15,7 @@ use ratatui::{
     widgets::Paragraph,
     Frame,
 };
+use std::sync::RwLock;
 use std::sync::{Arc, Mutex};
 
 pub struct TotalSummaryScreenData {
@@ -51,19 +52,39 @@ pub enum ExitAction {
     Share,
 }
 
+pub trait TotalSummaryScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = TotalSummaryScreenInterface)]
 pub struct TotalSummaryScreen {
-    displayed: bool,
-    total_result: Option<TotalResult>,
-    event_bus: EventBus,
+    displayed: RwLock<bool>,
+    total_result: RwLock<Option<TotalResult>>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
 }
 
 impl TotalSummaryScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
         Self {
-            displayed: false,
-            total_result: None,
+            displayed: RwLock::new(false),
+            total_result: RwLock::new(None),
             event_bus,
         }
+    }
+}
+
+pub struct TotalSummaryScreenProvider;
+
+impl shaku::Provider<crate::presentation::di::AppModule> for TotalSummaryScreenProvider {
+    type Interface = TotalSummaryScreen;
+
+    fn provide(
+        module: &crate::presentation::di::AppModule,
+    ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
+        use shaku::HasComponent;
+        let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
+            module.resolve();
+        Ok(Box::new(TotalSummaryScreen::new(event_bus)))
     }
 }
 
@@ -81,34 +102,36 @@ impl Screen for TotalSummaryScreen {
         })
     }
 
-    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
+    fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
         let screen_data = data.downcast::<TotalSummaryScreenData>()?;
-        self.total_result = Some(screen_data.total_result);
-        self.displayed = false; // Reset displayed flag to allow re-rendering
+        *self.total_result.write().unwrap() = Some(screen_data.total_result);
+        *self.displayed.write().unwrap() = false; // Reset displayed flag to allow re-rendering
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: event::KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: event::KeyEvent) -> Result<()> {
         match key_event.code {
             KeyCode::Char('s') | KeyCode::Char('S') => {
                 self.event_bus
+                    .as_event_bus()
                     .publish(NavigateTo::Push(ScreenType::TotalSummaryShare));
                 Ok(())
             }
             KeyCode::Esc => {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             _ => Ok(()),
         }
     }
 
-    fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {
-        if let Some(ref total_result) = self.total_result {
+    fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
+        let total_result = self.total_result.read().unwrap();
+        if let Some(ref total_result) = *total_result {
             let area = frame.area();
 
             // Calculate content heights
@@ -169,15 +192,13 @@ impl Screen for TotalSummaryScreen {
         UpdateStrategy::InputOnly
     }
 
-    fn update(&mut self) -> Result<bool> {
+    fn update(&self) -> Result<bool> {
         Ok(false)
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl TotalSummaryScreenInterface for TotalSummaryScreen {}

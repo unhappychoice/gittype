@@ -1,13 +1,12 @@
 use crate::domain::models::{Challenge, DifficultyLevel, GitRepository};
 use crate::presentation::game::GameData;
 use crate::presentation::tui::screens::TitleScreen;
-use crate::presentation::tui::{ScreenManager, ScreenType};
+use crate::presentation::tui::{ScreenManagerImpl, ScreenType};
 use crate::{GitTypeError, Result};
 use once_cell::sync::Lazy;
 use rand::rngs::StdRng;
 use rand::seq::SliceRandom;
 use rand::{RngExt, SeedableRng};
-use ratatui::backend::Backend;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
@@ -233,10 +232,7 @@ impl StageRepository {
         }
     }
 
-    pub fn update_title_screen_data<B>(&self, manager: &mut ScreenManager<B>) -> Result<()>
-    where
-        B: Backend + Send + 'static,
-    {
+    pub fn update_title_screen_data(&self, manager: &mut ScreenManagerImpl) -> Result<()> {
         // Only update if indices are cached to avoid GameData access during screen transitions
         if !self.indices_cached {
             return Ok(());
@@ -246,7 +242,7 @@ impl StageRepository {
 
         // Get the title screen and update its data
         if let Some(screen) = manager.get_screen_mut(&ScreenType::Title) {
-            if let Some(title_screen) = screen.as_any_mut().downcast_mut::<TitleScreen>() {
+            if let Some(title_screen) = screen.as_any().downcast_ref::<TitleScreen>() {
                 title_screen.set_challenge_counts(challenge_counts);
                 title_screen.set_git_repository(self.git_repository.clone());
             }

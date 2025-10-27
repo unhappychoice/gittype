@@ -1,4 +1,4 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::EventBusInterface;
 use crate::domain::models::ExtractionOptions;
 use crate::domain::models::{Challenge, GitRepository};
 use crate::presentation::game::events::ExitRequested;
@@ -56,6 +56,31 @@ pub struct LoadingScreenState {
     pub all_steps: Arc<RwLock<Vec<StepInfo>>>,
 }
 
+impl Default for LoadingScreenState {
+    fn default() -> Self {
+        let step_manager = Arc::new(StepManager::new());
+        let steps_info: Vec<StepInfo> = step_manager
+            .get_all_steps()
+            .iter()
+            .map(|step| StepInfo {
+                step_type: step.step_type(),
+                step_number: step.step_number(),
+                step_name: step.step_name().to_string(),
+                description: step.description().to_string(),
+            })
+            .collect();
+
+        Self {
+            current_step: Arc::new(RwLock::new(StepType::Cloning)),
+            step_progress: Arc::new(RwLock::new(std::collections::HashMap::new())),
+            spinner_index: Arc::new(AtomicUsize::new(0)),
+            should_stop: Arc::new(AtomicBool::new(false)),
+            repo_info: Arc::new(RwLock::new(None)),
+            all_steps: Arc::new(RwLock::new(steps_info)),
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct StepProgress {
     pub processed: usize,
@@ -71,10 +96,15 @@ pub struct StepInfo {
     pub description: String,
 }
 
+pub trait LoadingScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = LoadingScreenInterface)]
 pub struct LoadingScreen {
-    state: LoadingScreenState,
-    render_handle: Option<thread::JoinHandle<Result<()>>>,
-    event_bus: EventBus,
+    state: RwLock<LoadingScreenState>,
+    render_handle: RwLock<Option<thread::JoinHandle<Result<()>>>>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
     game_data: Arc<Mutex<GameData>>,
 }
 
@@ -118,63 +148,45 @@ impl ScreenDataProvider for LoadingScreenDataProvider {
 }
 
 impl LoadingScreen {
-    pub fn new(event_bus: EventBus) -> Self {
-        let step_manager = Arc::new(StepManager::new());
-
-        let steps_info: Vec<StepInfo> = step_manager
-            .get_all_steps()
-            .iter()
-            .map(|step| StepInfo {
-                step_type: step.step_type(),
-                step_number: step.step_number(),
-                step_name: step.step_name().to_string(),
-                description: step.description().to_string(),
-            })
-            .collect();
-
-        let state = LoadingScreenState {
-            current_step: Arc::new(RwLock::new(StepType::Cloning)),
-            step_progress: Arc::new(RwLock::new(std::collections::HashMap::new())),
-            spinner_index: Arc::new(AtomicUsize::new(0)),
-            should_stop: Arc::new(AtomicBool::new(false)),
-            repo_info: Arc::new(RwLock::new(None)),
-            all_steps: Arc::new(RwLock::new(steps_info)),
-        };
-
+    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
         Self {
-            state,
-            render_handle: None,
+            state: RwLock::new(LoadingScreenState::default()),
+            render_handle: RwLock::new(None),
             event_bus,
             game_data: GameData::instance(),
         }
     }
 
-    pub fn show_initial(&mut self) -> Result<()> {
+    pub fn show_initial(&self) -> Result<()> {
         self.start_rendering()?;
         Ok(())
     }
 
-    fn start_rendering(&mut self) -> Result<()> {
+    fn start_rendering(&self) -> Result<()> {
         // NOTE: In ScreenManager mode, don't create separate terminal
         // Use the existing ratatui rendering through ScreenManager
         Ok(())
     }
 
     fn start_background_processing(
-        &mut self,
+        &self,
         repo_spec: Option<&str>,
         repo_path: Option<&PathBuf>,
         extraction_options: ExtractionOptions,
     ) -> Result<()> {
-        let state = self.state.clone();
+        let state = self.state.read().unwrap().clone();
         let repo_spec_owned = repo_spec.map(|s| s.to_string());
         let repo_path_owned = repo_path.cloned();
         let event_bus = self.event_bus.clone();
+        let game_data = self.game_data.clone();
 
         thread::spawn(move || {
-            let mut loading_screen = LoadingScreen::new(event_bus);
-
-            loading_screen.state = state;
+            let loading_screen = LoadingScreen {
+                state: RwLock::new(state),
+                render_handle: RwLock::new(None),
+                event_bus: event_bus.clone(),
+                game_data: game_data.clone(),
+            };
 
             match loading_screen.process_repository(
                 repo_spec_owned.as_deref(),
@@ -204,7 +216,7 @@ impl LoadingScreen {
     }
 
     pub fn set_repo_info(&self, repo_info: String) -> Result<()> {
-        if let Ok(mut info) = self.state.repo_info.write() {
+        if let Ok(mut info) = self.state.read().unwrap().repo_info.write() {
             *info = Some(repo_info);
         }
         Ok(())
@@ -233,14 +245,14 @@ impl LoadingScreen {
 
         let git_text = parts.join(" • ");
 
-        if let Ok(mut info) = self.state.repo_info.write() {
+        if let Ok(mut info) = self.state.read().unwrap().repo_info.write() {
             *info = Some(git_text);
         }
         Ok(())
     }
 
-    pub fn show_completion(&mut self) -> Result<()> {
-        if let Ok(mut current_step) = self.state.current_step.write() {
+    pub fn show_completion(&self) -> Result<()> {
+        if let Ok(mut current_step) = self.state.read().unwrap().current_step.write() {
             *current_step = StepType::Completed;
         }
 
@@ -252,7 +264,7 @@ impl LoadingScreen {
     }
 
     pub fn show_completion_without_cleanup(&self) -> Result<()> {
-        if let Ok(mut current_step) = self.state.current_step.write() {
+        if let Ok(mut current_step) = self.state.read().unwrap().current_step.write() {
             *current_step = StepType::Completed;
         }
 
@@ -262,7 +274,7 @@ impl LoadingScreen {
     }
 
     pub fn process_repository(
-        &mut self,
+        &self,
         repo_spec: Option<&str>,
         repo_path: Option<&PathBuf>,
         options: &ExtractionOptions,
@@ -305,10 +317,14 @@ impl LoadingScreen {
         LoadingMainView::render(frame, state);
     }
 
-    pub fn cleanup(&mut self) -> Result<()> {
-        self.state.should_stop.store(true, Ordering::Relaxed);
+    pub fn cleanup(&self) -> Result<()> {
+        self.state
+            .read()
+            .unwrap()
+            .should_stop
+            .store(true, Ordering::Relaxed);
 
-        if let Some(handle) = self.render_handle.take() {
+        if let Some(handle) = self.render_handle.write().unwrap().take() {
             let _ = handle.join();
         }
 
@@ -324,7 +340,7 @@ impl Drop for LoadingScreen {
 
 impl ProgressReporter for LoadingScreen {
     fn set_step(&self, step_type: StepType) {
-        if let Ok(mut current_step) = self.state.current_step.write() {
+        if let Ok(mut current_step) = self.state.read().unwrap().current_step.write() {
             *current_step = step_type;
         }
     }
@@ -346,7 +362,7 @@ impl ProgressReporter for LoadingScreen {
             0.0
         };
 
-        if let Ok(mut step_progress) = self.state.step_progress.write() {
+        if let Ok(mut step_progress) = self.state.read().unwrap().step_progress.write() {
             let should_update = if let Some(existing) = step_progress.get(&step_type) {
                 new_progress > existing.progress
             } else {
@@ -381,7 +397,7 @@ impl Screen for LoadingScreen {
         })
     }
 
-    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
+    fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
         let loading_data = data.downcast::<LoadingScreenData>()?;
 
         let params = loading_data.processing_params.ok_or_else(|| {
@@ -399,27 +415,32 @@ impl Screen for LoadingScreen {
         self.show_initial()
     }
 
-    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
 
         if key_event.code == KeyCode::Char('c')
             && key_event.modifiers.contains(KeyModifiers::CONTROL)
         {
-            self.event_bus.publish(ExitRequested);
+            self.event_bus.as_event_bus().publish(ExitRequested);
         }
 
         Ok(())
     }
 
-    fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()> {
-        Self::draw_ui_static(frame, &self.state);
+    fn render_ratatui(&self, frame: &mut ratatui::Frame) -> Result<()> {
+        let state = self.state.read().unwrap();
+        Self::draw_ui_static(frame, &state);
         Ok(())
     }
 
-    fn cleanup(&mut self) -> Result<()> {
-        self.state.should_stop.store(true, Ordering::Relaxed);
+    fn cleanup(&self) -> Result<()> {
+        self.state
+            .read()
+            .unwrap()
+            .should_stop
+            .store(true, Ordering::Relaxed);
 
-        if let Some(handle) = self.render_handle.take() {
+        if let Some(handle) = self.render_handle.write().unwrap().take() {
             let _ = handle.join();
         }
 
@@ -431,14 +452,14 @@ impl Screen for LoadingScreen {
         UpdateStrategy::TimeBased(Duration::from_millis(16))
     }
 
-    fn update(&mut self) -> Result<bool> {
+    fn update(&self) -> Result<bool> {
         if self
             .game_data
             .lock()
             .map_err(|e| GitTypeError::TerminalError(format!("Failed to lock game data: {}", e)))?
             .completed()
         {
-            if let Ok(mut current_step) = self.state.current_step.write() {
+            if let Ok(mut current_step) = self.state.read().unwrap().current_step.write() {
                 *current_step = StepType::Completed;
             }
 
@@ -454,9 +475,16 @@ impl Screen for LoadingScreen {
             return Ok(false);
         }
 
-        let current_index = self.state.spinner_index.load(Ordering::Relaxed);
+        let current_index = self
+            .state
+            .read()
+            .unwrap()
+            .spinner_index
+            .load(Ordering::Relaxed);
 
         self.state
+            .read()
+            .unwrap()
             .spinner_index
             .store((current_index + 1) % 10, Ordering::Relaxed);
         Ok(true)
@@ -465,8 +493,6 @@ impl Screen for LoadingScreen {
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl LoadingScreenInterface for LoadingScreen {}

@@ -15,39 +15,46 @@
 //! ## Usage Example
 //!
 //! ```rust,no_run
-//! use gittype::domain::events::EventBus;
-//! use gittype::presentation::tui::ScreenManager;
+//! use gittype::domain::events::{EventBus, EventBusInterface};
+//! use gittype::presentation::tui::screen_manager::ScreenManagerImpl;
 //! use gittype::presentation::tui::screens::TitleScreen;
 //! use gittype::presentation::game::GameData;
 //! use ratatui::backend::CrosstermBackend;
 //! use ratatui::Terminal;
 //! use std::io::stdout;
+//! use std::sync::Arc;
 //!
 //! fn example() -> gittype::Result<()> {
-//!     let event_bus = EventBus::new();
+//!     let event_bus = Arc::new(EventBus::new()) as Arc<dyn EventBusInterface>;
 //!     let screen = TitleScreen::new(event_bus.clone());
 //!     let game_data = GameData::instance();
 //!     let backend = CrosstermBackend::new(stdout());
 //!     let terminal = Terminal::new(backend).unwrap();
 //!
-//!     let mut manager = ScreenManager::new(event_bus, game_data, terminal);
-//!     manager.register_screen(screen);
-//!     manager.initialize_terminal()?;
-//!     manager.run()
+//!     let mut manager = ScreenManagerImpl::default();
+//!     // Manager usage example
+//!     Ok(())
 //! }
 //! ```
 //!
-use crate::domain::events::EventBus;
+use crate::domain::events::{EventBus, EventBusInterface};
+use crate::infrastructure::terminal::TerminalInterface;
 use crate::presentation::game::events::{ExitRequested, NavigateTo};
 use crate::presentation::game::{GameData, SessionManager, StageRepository};
 use crate::presentation::tui::screen_transition_manager::ScreenTransitionManager;
 use crate::presentation::tui::screens::{
-    AnalyticsScreen, AnimationScreen, HelpScreen, InfoDialogScreen, LoadingScreen, PanicScreen,
-    RecordsScreen, RepoListScreen, RepoPlayScreen, SessionDetailScreen, SessionDetailsDialog,
-    SessionFailureScreen, SessionSummaryScreen, SessionSummaryShareScreen, SettingsScreen,
-    StageSummaryScreen, TitleAction, TitleScreen, TotalSummaryScreen, TotalSummaryShareScreen,
+    AnalyticsScreen, AnalyticsScreenInterface, AnimationScreen, AnimationScreenInterface,
+    HelpScreen, HelpScreenInterface, InfoDialogScreen, InfoDialogScreenInterface, LoadingScreen,
+    LoadingScreenInterface, PanicScreen, PanicScreenInterface, RecordsScreen,
+    RecordsScreenInterface, RepoListScreen, RepoPlayScreen, SessionDetailScreen,
+    SessionDetailScreenInterface, SessionDetailsDialog, SessionDetailsDialogInterface,
+    SessionFailureScreen, SessionFailureScreenInterface, SessionSummaryScreen,
+    SessionSummaryScreenInterface, SessionSummaryShareScreen, SessionSummaryShareScreenInterface,
+    SettingsScreen, SettingsScreenInterface, StageSummaryScreen, StageSummaryScreenInterface,
+    TitleAction, TitleScreen, TitleScreenInterface, TotalSummaryScreen,
+    TotalSummaryScreenInterface, TotalSummaryShareScreen, TotalSummaryShareScreenInterface,
     TrendingLanguageSelectionScreen, TrendingRepositorySelectionScreen, TypingScreen,
-    VersionCheckScreen,
+    TypingScreenInterface, VersionCheckScreen, VersionCheckScreenInterface,
 };
 use crate::presentation::tui::{
     Screen, ScreenDataProvider, ScreenTransition, ScreenType, UpdateStrategy,
@@ -60,39 +67,98 @@ use crossterm::style::ResetColor;
 use crossterm::terminal::{
     disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen,
 };
-use ratatui::backend::{Backend, CrosstermBackend};
+use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
+use shaku::{Component, Interface};
 use std::collections::HashMap;
 use std::io::{stdout, Stdout, Write};
 use std::sync::{Arc, Mutex};
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
+/// Wrapper to make Arc<T: Screen> implement Screen
+struct ArcScreenWrapper<T: Screen + ?Sized>(Arc<T>);
+
+impl<T: Screen + Send + Sync + ?Sized> Screen for ArcScreenWrapper<T> {
+    fn get_type(&self) -> ScreenType {
+        self.0.get_type()
+    }
+
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        // This method is only callable when T is Sized due to trait constraints
+        panic!("default_provider should not be called on ArcScreenWrapper with unsized types")
+    }
+
+    fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
+        self.0.init_with_data(data)
+    }
+
+    fn handle_key_event(&self, key_event: crossterm::event::KeyEvent) -> Result<()> {
+        self.0.handle_key_event(key_event)
+    }
+
+    fn render_ratatui(&self, frame: &mut ratatui::Frame) -> Result<()> {
+        self.0.render_ratatui(frame)
+    }
+
+    fn cleanup(&self) -> Result<()> {
+        self.0.cleanup()
+    }
+
+    fn get_update_strategy(&self) -> UpdateStrategy {
+        self.0.get_update_strategy()
+    }
+
+    fn update(&self) -> Result<bool> {
+        self.0.update()
+    }
+
+    fn is_exitable(&self) -> bool {
+        self.0.is_exitable()
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self.0.as_any()
+    }
+}
+
+/// Factory for creating ScreenManager instances
+pub trait ScreenManagerFactory: Interface {
+    fn create(
+        &self,
+        game_data: Arc<Mutex<GameData>>,
+        module: &crate::presentation::di::AppModule,
+    ) -> ScreenManagerImpl;
+}
+
 /// Central manager for screen transitions, rendering, and input handling
-pub struct ScreenManager<B: Backend + Send + 'static = CrosstermBackend<Stdout>> {
+pub struct ScreenManagerImpl {
     screens: HashMap<ScreenType, Box<dyn Screen>>,
     screen_stack: Vec<ScreenType>,
     current_screen_type: ScreenType,
     terminal_initialized: bool,
     last_update: Instant,
-    ratatui_terminal: Terminal<B>,
+    ratatui_terminal: Terminal<CrosstermBackend<Stdout>>,
     exit_requested: bool,
 
     // Pending screen transition - shared across threads
     pending_transition: Arc<Mutex<Option<ScreenTransition>>>,
 
     // Event bus for UI events
-    event_bus: EventBus,
+    event_bus: Arc<dyn EventBusInterface>,
 
     // Game data
     game_data: Arc<Mutex<GameData>>,
 }
 
-impl<B: Backend + Send + 'static> ScreenManager<B> {
+impl ScreenManagerImpl {
     pub fn new(
-        event_bus: EventBus,
+        event_bus: Arc<dyn EventBusInterface>,
         game_data: Arc<Mutex<GameData>>,
-        terminal: Terminal<B>,
+        terminal: Terminal<CrosstermBackend<Stdout>>,
     ) -> Self {
         Self {
             screens: HashMap::new(),
@@ -112,8 +178,8 @@ impl<B: Backend + Send + 'static> ScreenManager<B> {
         self.game_data.clone()
     }
 
-    pub fn get_event_bus(&self) -> EventBus {
-        self.event_bus.clone()
+    pub fn get_event_bus(&self) -> Arc<dyn EventBusInterface> {
+        Arc::clone(&self.event_bus)
     }
 
     /// Set up event subscriptions for navigation events
@@ -133,60 +199,50 @@ impl<B: Backend + Send + 'static> ScreenManager<B> {
         // Subscribe to NavigateTo events
         {
             let pending_transition_clone = pending_transition.clone();
-            event_bus.subscribe(move |event: &NavigateTo| {
-                if let Ok(mut pending) = pending_transition_clone.lock() {
-                    *pending = Some(event.clone());
-                }
-            });
+            event_bus
+                .as_event_bus()
+                .subscribe(move |event: &NavigateTo| {
+                    if let Ok(mut pending) = pending_transition_clone.lock() {
+                        *pending = Some(event.clone());
+                    }
+                });
         }
 
         // Subscribe to ExitRequested events
         {
             let manager_weak_clone = manager_weak.clone();
-            event_bus.subscribe(move |_event: &ExitRequested| {
-                if let Some(arc) = manager_weak_clone.upgrade() {
-                    if let Ok(mut manager) = arc.lock() {
-                        manager.show_session_summary_on_interrupt();
-                        std::process::exit(0);
+            event_bus
+                .as_event_bus()
+                .subscribe(move |_event: &ExitRequested| {
+                    if let Some(arc) = manager_weak_clone.upgrade() {
+                        if let Ok(mut manager) = arc.lock() {
+                            manager.show_session_summary_on_interrupt();
+                            std::process::exit(0);
+                        }
                     }
-                }
-            });
+                });
         }
-    }
-
-    /// Initialize ScreenManager with all screens
-    pub fn initialize_all_screens(&mut self) -> Result<()> {
-        self.register_screen(TitleScreen::new(self.event_bus.clone()));
-        self.register_screen(LoadingScreen::new(self.event_bus.clone()));
-        self.register_screen(SessionFailureScreen::new(self.event_bus.clone()));
-        self.register_screen(StageSummaryScreen::new(self.event_bus.clone()));
-        self.register_screen(SessionSummaryScreen::new(self.event_bus.clone()));
-        self.register_screen(TotalSummaryScreen::new(self.event_bus.clone()));
-        self.register_screen(TypingScreen::new(
-            self.event_bus.clone(),
-            self.game_data.clone(),
-            SessionManager::instance(),
-        ));
-        self.register_screen(SessionDetailScreen::new(self.event_bus.clone()));
-        self.register_screen(AnimationScreen::new(self.event_bus.clone()));
-        self.register_screen(VersionCheckScreen::new(self.event_bus.clone()));
-        self.register_screen(SessionSummaryShareScreen::new(self.event_bus.clone()));
-        self.register_screen(TotalSummaryShareScreen::new(self.event_bus.clone()));
-        self.register_screen(InfoDialogScreen::new(self.event_bus.clone()));
-        self.register_screen(HelpScreen::new(self.event_bus.clone()));
-        self.register_screen(SessionDetailsDialog::new(self.event_bus.clone()));
-        self.register_screen(PanicScreen::new(self.event_bus.clone()));
-        self.register_screen(RecordsScreen::new(self.event_bus.clone()));
-        self.register_screen(AnalyticsScreen::new(self.event_bus.clone()));
-        self.register_screen(SettingsScreen::new(self.event_bus.clone()));
-
-        Ok(())
     }
 
     /// Register a screen with the manager
     pub fn register_screen(&mut self, screen: impl Screen + 'static) {
         let screen_type = screen.get_type();
         self.screens.insert(screen_type, Box::new(screen));
+    }
+
+    /// Register a screen from Arc
+    pub fn register_screen_arc<T: Screen + Send + Sync + 'static>(&mut self, screen: Arc<T>) {
+        let screen_type = screen.get_type();
+        // Clone the Arc and convert to Box by implementing Screen on Arc<T>
+        self.screens
+            .insert(screen_type, Box::new(ArcScreenWrapper(screen)));
+    }
+
+    /// Register a screen from Arc implementing Screen trait
+    pub fn register_screen_interface(&mut self, screen: Arc<dyn Screen>) {
+        let screen_type = screen.get_type();
+        self.screens
+            .insert(screen_type, Box::new(ArcScreenWrapper(screen)));
     }
 
     /// Initialize terminal for raw mode and alternate screen
@@ -449,7 +505,7 @@ impl<B: Backend + Send + 'static> ScreenManager<B> {
                     .and_then(|title_screen| title_screen.as_any().downcast_ref::<TitleScreen>())
                     .and_then(|title| title.get_action_result())
                     .and_then(|action| match action {
-                        TitleAction::Start(difficulty) => Some(*difficulty),
+                        TitleAction::Start(difficulty) => Some(difficulty),
                         _ => None,
                     });
 
@@ -470,7 +526,7 @@ impl<B: Backend + Send + 'static> ScreenManager<B> {
                 // Load next challenge in TypingScreen
                 self.screens
                     .get_mut(&ScreenType::Typing)
-                    .and_then(|screen| screen.as_any_mut().downcast_mut::<TypingScreen>())
+                    .and_then(|screen| screen.as_any().downcast_ref::<TypingScreen>())
                     .map(|screen| screen.load_current_challenge())
                     .transpose()?
                     .map(|loaded| {
@@ -575,7 +631,7 @@ impl<B: Backend + Send + 'static> ScreenManager<B> {
                 // Special handling for AnimationScreen auto-transition
                 if self.current_screen_type == ScreenType::Animation {
                     if let Some(animation_screen) =
-                        screen.as_any_mut().downcast_mut::<AnimationScreen>()
+                        screen.as_any().downcast_ref::<AnimationScreen>()
                     {
                         if animation_screen.is_animation_complete() {
                             // Animation is complete, transition to SessionSummary
@@ -712,16 +768,120 @@ impl<B: Backend + Send + 'static> ScreenManager<B> {
     }
 }
 
-impl<B: Backend + Send + 'static> Drop for ScreenManager<B> {
+impl Drop for ScreenManagerImpl {
     fn drop(&mut self) {
         let _ = self.cleanup_terminal();
     }
 }
 
-impl Default for ScreenManager<CrosstermBackend<Stdout>> {
+impl Default for ScreenManagerImpl {
     fn default() -> Self {
         let backend = CrosstermBackend::new(stdout());
         let terminal = Terminal::new(backend).expect("Failed to create terminal");
-        Self::new(EventBus::new(), GameData::instance(), terminal)
+        Self::new(Arc::new(EventBus::new()), GameData::instance(), terminal)
+    }
+}
+
+#[derive(Component)]
+#[shaku(interface = ScreenManagerFactory)]
+pub struct ScreenManagerFactoryImpl {
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    terminal: Arc<dyn TerminalInterface>,
+    #[shaku(inject)]
+    title_screen: Arc<dyn TitleScreenInterface>,
+    #[shaku(inject)]
+    typing_screen: Arc<dyn TypingScreenInterface>,
+    #[shaku(inject)]
+    animation_screen: Arc<dyn AnimationScreenInterface>,
+    #[shaku(inject)]
+    help_screen: Arc<dyn HelpScreenInterface>,
+    #[shaku(inject)]
+    loading_screen: Arc<dyn LoadingScreenInterface>,
+    #[shaku(inject)]
+    panic_screen: Arc<dyn PanicScreenInterface>,
+    #[shaku(inject)]
+    session_failure_screen: Arc<dyn SessionFailureScreenInterface>,
+    #[shaku(inject)]
+    info_dialog_screen: Arc<dyn InfoDialogScreenInterface>,
+    #[shaku(inject)]
+    session_details_dialog: Arc<dyn SessionDetailsDialogInterface>,
+    #[shaku(inject)]
+    stage_summary_screen: Arc<dyn StageSummaryScreenInterface>,
+    #[shaku(inject)]
+    analytics_screen: Arc<dyn AnalyticsScreenInterface>,
+    #[shaku(inject)]
+    records_screen: Arc<dyn RecordsScreenInterface>,
+    #[shaku(inject)]
+    session_detail_screen: Arc<dyn SessionDetailScreenInterface>,
+    #[shaku(inject)]
+    session_summary_screen: Arc<dyn SessionSummaryScreenInterface>,
+    #[shaku(inject)]
+    session_summary_share_screen: Arc<dyn SessionSummaryShareScreenInterface>,
+    #[shaku(inject)]
+    settings_screen: Arc<dyn SettingsScreenInterface>,
+    #[shaku(inject)]
+    total_summary_screen: Arc<dyn TotalSummaryScreenInterface>,
+    #[shaku(inject)]
+    total_summary_share_screen: Arc<dyn TotalSummaryShareScreenInterface>,
+    #[shaku(inject)]
+    version_check_screen: Arc<dyn VersionCheckScreenInterface>,
+}
+
+impl ScreenManagerFactory for ScreenManagerFactoryImpl {
+    fn create(
+        &self,
+        game_data: Arc<Mutex<GameData>>,
+        _module: &crate::presentation::di::AppModule,
+    ) -> ScreenManagerImpl {
+        let event_bus_ref = self.event_bus.as_event_bus();
+        let event_bus = Arc::new(event_bus_ref.clone());
+        let terminal = self.terminal.get();
+        let mut manager = ScreenManagerImpl::new(event_bus.clone(), game_data.clone(), terminal);
+
+        // Register screens from DI (Components)
+        // Explicit type coercion from Arc<dyn Interface> to Arc<dyn Screen>
+        let title_screen: Arc<dyn Screen> = self.title_screen.clone();
+        manager.register_screen_interface(title_screen);
+        let typing_screen: Arc<dyn Screen> = self.typing_screen.clone();
+        manager.register_screen_interface(typing_screen);
+        let animation_screen: Arc<dyn Screen> = self.animation_screen.clone();
+        manager.register_screen_interface(animation_screen);
+        let help_screen: Arc<dyn Screen> = self.help_screen.clone();
+        manager.register_screen_interface(help_screen);
+        let loading_screen: Arc<dyn Screen> = self.loading_screen.clone();
+        manager.register_screen_interface(loading_screen);
+        let panic_screen: Arc<dyn Screen> = self.panic_screen.clone();
+        manager.register_screen_interface(panic_screen);
+        let session_failure_screen: Arc<dyn Screen> = self.session_failure_screen.clone();
+        manager.register_screen_interface(session_failure_screen);
+        let info_dialog_screen: Arc<dyn Screen> = self.info_dialog_screen.clone();
+        manager.register_screen_interface(info_dialog_screen);
+        let session_details_dialog: Arc<dyn Screen> = self.session_details_dialog.clone();
+        manager.register_screen_interface(session_details_dialog);
+        let stage_summary_screen: Arc<dyn Screen> = self.stage_summary_screen.clone();
+        manager.register_screen_interface(stage_summary_screen);
+        let analytics_screen: Arc<dyn Screen> = self.analytics_screen.clone();
+        manager.register_screen_interface(analytics_screen);
+        let records_screen: Arc<dyn Screen> = self.records_screen.clone();
+        manager.register_screen_interface(records_screen);
+        let session_detail_screen: Arc<dyn Screen> = self.session_detail_screen.clone();
+        manager.register_screen_interface(session_detail_screen);
+        let session_summary_screen: Arc<dyn Screen> = self.session_summary_screen.clone();
+        manager.register_screen_interface(session_summary_screen);
+        let session_summary_share_screen: Arc<dyn Screen> =
+            self.session_summary_share_screen.clone();
+        manager.register_screen_interface(session_summary_share_screen);
+        let settings_screen: Arc<dyn Screen> = self.settings_screen.clone();
+        manager.register_screen_interface(settings_screen);
+        let total_summary_screen: Arc<dyn Screen> = self.total_summary_screen.clone();
+        manager.register_screen_interface(total_summary_screen);
+        let total_summary_share_screen: Arc<dyn Screen> = self.total_summary_share_screen.clone();
+        manager.register_screen_interface(total_summary_share_screen);
+        let version_check_screen: Arc<dyn Screen> = self.version_check_screen.clone();
+        manager.register_screen_interface(version_check_screen);
+
+        manager
     }
 }

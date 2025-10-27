@@ -1,4 +1,4 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::EventBusInterface;
 use crate::domain::models::{GitRepository, SessionResult};
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::game::{GameData, SessionManager};
@@ -9,6 +9,7 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
 };
+use std::sync::RwLock;
 use std::sync::{Arc, Mutex};
 
 pub struct SessionFailureScreenData {
@@ -51,19 +52,24 @@ impl ScreenDataProvider for SessionFailureScreenDataProvider {
     }
 }
 
+pub trait SessionFailureScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = SessionFailureScreenInterface)]
 pub struct SessionFailureScreen {
-    session_result: SessionResult,
-    total_stages: usize,
-    repo_info: Option<GitRepository>,
-    event_bus: EventBus,
+    session_result: RwLock<SessionResult>,
+    total_stages: RwLock<usize>,
+    repo_info: RwLock<Option<GitRepository>>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
 }
 
 impl SessionFailureScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
         Self {
-            session_result: SessionResult::default(),
-            total_stages: 1,
-            repo_info: None,
+            session_result: RwLock::new(SessionResult::default()),
+            total_stages: RwLock::new(1),
+            repo_info: RwLock::new(None),
             event_bus,
         }
     }
@@ -84,42 +90,44 @@ impl Screen for SessionFailureScreen {
         })
     }
 
-    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
+    fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
         let screen_data = data.downcast::<SessionFailureScreenData>()?;
 
-        self.session_result = screen_data.session_result;
-        self.total_stages = screen_data.total_stages;
-        self.repo_info = screen_data.repo_info;
+        *self.session_result.write().unwrap() = screen_data.session_result;
+        *self.total_stages.write().unwrap() = screen_data.total_stages;
+        *self.repo_info.write().unwrap() = screen_data.repo_info;
 
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         use crossterm::event::{KeyCode, KeyModifiers};
         match key_event.code {
             KeyCode::Char('r') | KeyCode::Char('R') => {
                 self.event_bus
+                    .as_event_bus()
                     .publish(NavigateTo::Replace(ScreenType::Typing));
                 Ok(())
             }
             KeyCode::Char('t') | KeyCode::Char('T') => {
                 self.event_bus
+                    .as_event_bus()
                     .publish(NavigateTo::Replace(ScreenType::Title));
                 Ok(())
             }
             KeyCode::Esc => {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             _ => Ok(()),
         }
     }
 
-    fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {
+    fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
         let area = frame.area();
 
         // Calculate vertical centering
@@ -140,8 +148,11 @@ impl Screen for SessionFailureScreen {
             ])
             .split(area);
 
+        let session_result = self.session_result.read().unwrap();
+        let total_stages = *self.total_stages.read().unwrap();
+
         HeaderView::render(frame, chunks[1]);
-        ContentView::render(frame, chunks[3], &self.session_result, self.total_stages);
+        ContentView::render(frame, chunks[3], &session_result, total_stages);
         FooterView::render(frame, chunks[5]);
 
         Ok(())
@@ -151,15 +162,13 @@ impl Screen for SessionFailureScreen {
         UpdateStrategy::InputOnly
     }
 
-    fn update(&mut self) -> crate::Result<bool> {
+    fn update(&self) -> crate::Result<bool> {
         Ok(false)
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl SessionFailureScreenInterface for SessionFailureScreen {}

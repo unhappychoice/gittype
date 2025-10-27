@@ -1,4 +1,4 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::EventBusInterface;
 use crate::domain::models::storage::{SessionStageResult, StoredSession};
 use crate::domain::repositories::session_repository::{SessionRepository, SessionRepositoryTrait};
 use crate::domain::services::session_service::SessionDisplayData;
@@ -15,23 +15,30 @@ use ratatui::{
     text::{Line, Span},
     widgets::Paragraph,
 };
+use std::sync::Arc;
+use std::sync::RwLock;
 
 pub enum SessionDetailAction {
     Return,
 }
 
+pub trait SessionDetailScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = SessionDetailScreenInterface)]
 pub struct SessionDetailScreen {
-    session_data: SessionDisplayData,
-    stage_results: Vec<SessionStageResult>,
-    stage_scroll_offset: usize,
-    event_bus: EventBus,
-    session_repository: Option<Box<dyn SessionRepositoryTrait>>,
+    session_data: RwLock<SessionDisplayData>,
+    stage_results: RwLock<Vec<SessionStageResult>>,
+    stage_scroll_offset: RwLock<usize>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
+    session_repository: RwLock<Option<Box<dyn SessionRepositoryTrait>>>,
 }
 
 impl SessionDetailScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
         Self {
-            session_data: SessionDisplayData {
+            session_data: RwLock::new(SessionDisplayData {
                 session: StoredSession {
                     id: 0,
                     repository_id: None,
@@ -47,19 +54,19 @@ impl SessionDetailScreen {
                 },
                 repository: None,
                 session_result: None,
-            },
-            stage_results: Vec::new(),
-            stage_scroll_offset: 0,
+            }),
+            stage_results: RwLock::new(Vec::new()),
+            stage_scroll_offset: RwLock::new(0),
             event_bus,
-            session_repository: None,
+            session_repository: RwLock::new(None),
         }
     }
 
     pub fn with_session_repository<T: SessionRepositoryTrait + 'static>(
-        mut self,
+        self,
         session_repository: T,
     ) -> Self {
-        self.session_repository = Some(Box::new(session_repository));
+        *self.session_repository.write().unwrap() = Some(Box::new(session_repository));
         self
     }
 }
@@ -69,6 +76,21 @@ pub struct SessionDetailScreenDataProvider;
 impl ScreenDataProvider for SessionDetailScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
         Ok(Box::new(()))
+    }
+}
+
+pub struct SessionDetailScreenProvider;
+
+impl shaku::Provider<crate::presentation::di::AppModule> for SessionDetailScreenProvider {
+    type Interface = SessionDetailScreen;
+
+    fn provide(
+        module: &crate::presentation::di::AppModule,
+    ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
+        use shaku::HasComponent;
+        let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
+            module.resolve();
+        Ok(Box::new(SessionDetailScreen::new(event_bus)))
     }
 }
 
@@ -84,12 +106,12 @@ impl Screen for SessionDetailScreen {
         Box::new(SessionDetailScreenDataProvider)
     }
 
-    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
+    fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
         let _ = data;
         Ok(())
     }
 
-    fn on_pushed_from(&mut self, source_screen: &dyn Screen) -> Result<()> {
+    fn on_pushed_from(&self, source_screen: &dyn Screen) -> Result<()> {
         let records = source_screen
             .as_any()
             .downcast_ref::<RecordsScreen>()
@@ -99,28 +121,25 @@ impl Screen for SessionDetailScreen {
                 )
             })?;
 
-        let session_data = records
-            .get_selected_session_for_detail()
-            .as_ref()
-            .cloned()
-            .ok_or_else(|| {
-                GitTypeError::ScreenInitializationError(
-                    "SessionDetail requires selected session data from Records screen".to_string(),
-                )
-            })?;
+        let session_data = records.get_selected_session_for_detail().ok_or_else(|| {
+            GitTypeError::ScreenInitializationError(
+                "SessionDetail requires selected session data from Records screen".to_string(),
+            )
+        })?;
 
-        let stage_results = if let Some(ref repo) = self.session_repository {
+        let session_repository = self.session_repository.read().unwrap();
+        let stage_results = if let Some(ref repo) = *session_repository {
             repo.get_session_stage_results(session_data.session.id)?
         } else {
             let repo = SessionRepository::new()?;
             repo.get_session_stage_results(session_data.session.id)?
         };
 
-        self.session_data = session_data;
-        self.stage_results = stage_results;
-        self.stage_scroll_offset = 0;
+        *self.session_data.write().unwrap() = session_data.clone();
+        *self.stage_results.write().unwrap() = stage_results;
+        *self.stage_scroll_offset.write().unwrap() = 0;
 
-        if self.session_data.session.id == 0 {
+        if session_data.session.id == 0 {
             return Err(GitTypeError::ScreenInitializationError(
                 "SessionDetail: session id cannot be 0".to_string(),
             ));
@@ -129,25 +148,28 @@ impl Screen for SessionDetailScreen {
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         match key_event.code {
             KeyCode::Esc => {
-                self.event_bus.publish(NavigateTo::Pop);
+                self.event_bus.as_event_bus().publish(NavigateTo::Pop);
                 Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             KeyCode::Up => {
-                if self.stage_scroll_offset > 0 {
-                    self.stage_scroll_offset -= 1;
+                let mut offset = self.stage_scroll_offset.write().unwrap();
+                if *offset > 0 {
+                    *offset -= 1;
                 }
                 Ok(())
             }
             KeyCode::Down => {
-                if self.stage_scroll_offset + 1 < self.stage_results.len() {
-                    self.stage_scroll_offset += 1;
+                let mut offset = self.stage_scroll_offset.write().unwrap();
+                let stage_results = self.stage_results.read().unwrap();
+                if *offset + 1 < stage_results.len() {
+                    *offset += 1;
                 }
                 Ok(())
             }
@@ -155,7 +177,11 @@ impl Screen for SessionDetailScreen {
         }
     }
 
-    fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()> {
+    fn render_ratatui(&self, frame: &mut ratatui::Frame) -> Result<()> {
+        let session_data = self.session_data.read().unwrap();
+        let stage_results = self.stage_results.read().unwrap();
+        let stage_scroll_offset = *self.stage_scroll_offset.read().unwrap();
+
         let main_chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -187,19 +213,15 @@ impl Screen for SessionDetailScreen {
         SessionInfoView::render(
             frame,
             top_chunks[0],
-            &self.session_data.session,
-            self.session_data.repository.as_ref(),
+            &session_data.session,
+            session_data.repository.as_ref(),
         );
-        PerformanceMetricsView::render(
-            frame,
-            top_chunks[1],
-            self.session_data.session_result.as_ref(),
-        );
+        PerformanceMetricsView::render(frame, top_chunks[1], session_data.session_result.as_ref());
         StageDetailsView::render(
             frame,
             content_chunks[1],
-            &self.stage_results,
-            self.stage_scroll_offset,
+            &stage_results,
+            stage_scroll_offset,
         );
 
         let controls_line = Line::from(vec![
@@ -215,7 +237,7 @@ impl Screen for SessionDetailScreen {
         Ok(())
     }
 
-    fn cleanup(&mut self) -> Result<()> {
+    fn cleanup(&self) -> Result<()> {
         Ok(())
     }
 
@@ -223,15 +245,13 @@ impl Screen for SessionDetailScreen {
         UpdateStrategy::InputOnly
     }
 
-    fn update(&mut self) -> Result<bool> {
+    fn update(&self) -> Result<bool> {
         Ok(false)
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl SessionDetailScreenInterface for SessionDetailScreen {}

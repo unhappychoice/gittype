@@ -1,3 +1,4 @@
+use shaku::{Component, Interface};
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -14,7 +15,14 @@ pub trait EventHandler<E: Event>: Send + Sync {
 
 type BoxedHandler = Arc<dyn Fn(&dyn Event) + Send + Sync>;
 
+pub trait EventBusInterface: Interface {
+    fn as_event_bus(&self) -> &EventBus;
+}
+
+#[derive(Clone, Component)]
+#[shaku(interface = EventBusInterface)]
 pub struct EventBus {
+    #[shaku(default)]
     subscribers: Arc<RwLock<HashMap<TypeId, Vec<BoxedHandler>>>>,
 }
 
@@ -28,14 +36,12 @@ impl EventBus {
     pub fn publish<E: Event>(&self, event: E) {
         let type_id = TypeId::of::<E>();
 
-        // Clone Arc<handlers> while holding the lock, then release it before calling them
         let handlers: Vec<BoxedHandler> = {
             let subscribers = self.subscribers.read().unwrap();
             let h = subscribers.get(&type_id).cloned().unwrap_or_default();
             h
-        }; // Lock is released here
+        };
 
-        // Call handlers without holding the lock
         for handler in handlers.iter() {
             handler(&event);
         }
@@ -58,16 +64,14 @@ impl EventBus {
     }
 }
 
-impl Default for EventBus {
-    fn default() -> Self {
-        Self::new()
+impl EventBusInterface for EventBus {
+    fn as_event_bus(&self) -> &EventBus {
+        self
     }
 }
 
-impl Clone for EventBus {
-    fn clone(&self) -> Self {
-        Self {
-            subscribers: Arc::clone(&self.subscribers),
-        }
+impl Default for EventBus {
+    fn default() -> Self {
+        Self::new()
     }
 }

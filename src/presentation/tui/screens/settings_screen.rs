@@ -1,4 +1,4 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::EventBusInterface;
 use crate::domain::models::color_mode::ColorMode;
 use crate::domain::models::theme::Theme;
 use crate::domain::services::config_manager::ConfigService;
@@ -15,9 +15,12 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, ListState, Padding, Paragraph, Tabs, Wrap},
     Frame,
 };
+use std::sync::Arc;
+use std::sync::RwLock;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-enum SettingsSection {
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub enum SettingsSection {
+    #[default]
     ColorMode,
     Theme,
 }
@@ -49,37 +52,42 @@ pub struct SettingsScreenData {
     pub current_color_mode: ColorMode,
 }
 
+pub trait SettingsScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = SettingsScreenInterface)]
 pub struct SettingsScreen {
-    current_section: SettingsSection,
-    color_mode_state: ListState,
-    theme_state: ListState,
-    color_modes: Vec<ColorMode>,
-    themes: Vec<Theme>,
-    original_theme: Theme,
-    original_color_mode: ColorMode,
-    is_preview_mode: bool,
-    event_bus: EventBus,
+    current_section: RwLock<SettingsSection>,
+    color_mode_state: RwLock<ListState>,
+    theme_state: RwLock<ListState>,
+    color_modes: RwLock<Vec<ColorMode>>,
+    themes: RwLock<Vec<Theme>>,
+    original_theme: RwLock<Theme>,
+    original_color_mode: RwLock<ColorMode>,
+    is_preview_mode: RwLock<bool>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
 }
 
 impl SettingsScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
         Self {
-            current_section: SettingsSection::ColorMode,
-            color_mode_state: ListState::default(),
-            theme_state: ListState::default(),
-            color_modes: vec![],
-            themes: vec![],
-            original_theme: Theme::default(),
-            original_color_mode: ColorMode::Dark,
-            is_preview_mode: false,
+            current_section: RwLock::new(SettingsSection::ColorMode),
+            color_mode_state: RwLock::new(ListState::default()),
+            theme_state: RwLock::new(ListState::default()),
+            color_modes: RwLock::new(vec![]),
+            themes: RwLock::new(vec![]),
+            original_theme: RwLock::new(Theme::default()),
+            original_color_mode: RwLock::new(ColorMode::Dark),
+            is_preview_mode: RwLock::new(false),
             event_bus,
         }
     }
 }
 
 impl SettingsScreen {
-    fn apply_current_selection(&mut self) {
-        self.is_preview_mode = true;
+    fn apply_current_selection(&self) {
+        *self.is_preview_mode.write().unwrap() = true;
 
         let selected_color_mode = self.get_selected_color_mode();
         let selected_theme = self.get_selected_theme();
@@ -91,17 +99,20 @@ impl SettingsScreen {
         }
     }
 
-    fn revert_to_original(&mut self) {
-        if self.is_preview_mode {
+    fn revert_to_original(&self) {
+        let is_preview_mode = *self.is_preview_mode.read().unwrap();
+        if is_preview_mode {
             let mut theme_manager = THEME_MANAGER.write().unwrap();
-            theme_manager.current_color_mode = self.original_color_mode.clone();
-            theme_manager.current_theme = self.original_theme.clone();
-            self.is_preview_mode = false;
+            let original_color_mode = self.original_color_mode.read().unwrap();
+            let original_theme = self.original_theme.read().unwrap();
+            theme_manager.current_color_mode = original_color_mode.clone();
+            theme_manager.current_theme = original_theme.clone();
+            *self.is_preview_mode.write().unwrap() = false;
         }
     }
 
-    fn save_settings(&mut self) {
-        self.is_preview_mode = false;
+    fn save_settings(&self) {
+        *self.is_preview_mode.write().unwrap() = false;
 
         // Save theme and color mode to config file
         if let Ok(mut config_manager) = ConfigService::new() {
@@ -116,19 +127,23 @@ impl SettingsScreen {
         }
     }
 
-    fn get_selected_color_mode(&self) -> Option<&ColorMode> {
-        self.color_mode_state
+    fn get_selected_color_mode(&self) -> Option<ColorMode> {
+        let color_mode_state = self.color_mode_state.read().unwrap();
+        let color_modes = self.color_modes.read().unwrap();
+        color_mode_state
             .selected()
-            .and_then(|i| self.color_modes.get(i))
+            .and_then(|i| color_modes.get(i).cloned())
     }
 
-    fn get_selected_theme(&self) -> Option<&Theme> {
-        self.theme_state.selected().and_then(|i| self.themes.get(i))
+    fn get_selected_theme(&self) -> Option<Theme> {
+        let theme_state = self.theme_state.read().unwrap();
+        let themes = self.themes.read().unwrap();
+        theme_state.selected().and_then(|i| themes.get(i).cloned())
     }
 
     fn render_color_mode_section(&self, f: &mut Frame, area: Rect) {
-        let items: Vec<ListItem> = self
-            .color_modes
+        let color_modes = self.color_modes.read().unwrap();
+        let items: Vec<ListItem> = color_modes
             .iter()
             .map(|mode| {
                 let text = match mode {
@@ -149,12 +164,13 @@ impl SettingsScreen {
             )
             .highlight_style(Style::default().bg(Colors::text()).fg(Colors::background()));
 
-        f.render_stateful_widget(list, area, &mut self.color_mode_state.clone());
+        let mut color_mode_state = self.color_mode_state.write().unwrap();
+        f.render_stateful_widget(list, area, &mut *color_mode_state);
     }
 
     fn render_theme_section(&self, f: &mut Frame, area: Rect) {
-        let items: Vec<ListItem> = self
-            .themes
+        let themes = self.themes.read().unwrap();
+        let items: Vec<ListItem> = themes
             .iter()
             .map(|theme| ListItem::new(theme.name.as_str()))
             .collect();
@@ -169,20 +185,22 @@ impl SettingsScreen {
             )
             .highlight_style(Style::default().bg(Colors::text()).fg(Colors::background()));
 
-        f.render_stateful_widget(list, area, &mut self.theme_state.clone());
+        let mut theme_state = self.theme_state.write().unwrap();
+        f.render_stateful_widget(list, area, &mut *theme_state);
     }
 
     fn render_description(&self, f: &mut Frame, area: Rect) {
-        let content = match self.current_section {
+        let current_section = *self.current_section.read().unwrap();
+        let content = match current_section {
             SettingsSection::ColorMode => {
-                vec![Line::from(self.current_section.description())]
+                vec![Line::from(current_section.description())]
             }
             SettingsSection::Theme => {
-                let mut lines = vec![Line::from(self.current_section.description())];
+                let mut lines = vec![Line::from(current_section.description())];
 
                 if let Some(theme) = self.get_selected_theme() {
                     lines.push(Line::from(""));
-                    lines.push(Line::from(theme.description.as_str()));
+                    lines.push(Line::from(theme.description.clone()));
                     lines.push(Line::from(""));
                     lines.push(Line::from("Color Preview:"));
 
@@ -242,9 +260,10 @@ impl SettingsScreen {
             .map(|section| Line::from(section.title()))
             .collect();
 
+        let current_section = *self.current_section.read().unwrap();
         let selected_index = sections
             .iter()
-            .position(|&s| s == self.current_section)
+            .position(|&s| s == current_section)
             .unwrap_or(0);
 
         let tabs = Tabs::new(titles)
@@ -260,13 +279,14 @@ impl SettingsScreen {
         f.render_widget(tabs, area);
     }
 
-    fn render_content(&mut self, f: &mut Frame, area: Rect) {
+    fn render_content(&self, f: &mut Frame, area: Rect) {
         let content_chunks = Layout::default()
             .direction(Direction::Horizontal)
             .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
             .split(area);
 
-        match self.current_section {
+        let current_section = *self.current_section.read().unwrap();
+        match current_section {
             SettingsSection::ColorMode => {
                 self.render_color_mode_section(f, content_chunks[0]);
                 self.render_description(f, content_chunks[1]);
@@ -311,6 +331,21 @@ impl ScreenDataProvider for SettingsScreenDataProvider {
     }
 }
 
+pub struct SettingsScreenProvider;
+
+impl shaku::Provider<crate::presentation::di::AppModule> for SettingsScreenProvider {
+    type Interface = SettingsScreen;
+
+    fn provide(
+        module: &crate::presentation::di::AppModule,
+    ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
+        use shaku::HasComponent;
+        let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
+            module.resolve();
+        Ok(Box::new(SettingsScreen::new(event_bus)))
+    }
+}
+
 impl Screen for SettingsScreen {
     fn get_type(&self) -> ScreenType {
         ScreenType::Settings
@@ -323,72 +358,77 @@ impl Screen for SettingsScreen {
         Box::new(SettingsScreenDataProvider)
     }
 
-    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
+    fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
         let data = data.downcast::<SettingsScreenData>()?;
 
-        self.color_modes = data.color_modes;
-        self.themes = data.themes;
-        self.original_theme = data.current_theme.clone();
-        self.original_color_mode = data.current_color_mode.clone();
+        *self.color_modes.write().unwrap() = data.color_modes;
+        *self.themes.write().unwrap() = data.themes;
+        *self.original_theme.write().unwrap() = data.current_theme.clone();
+        *self.original_color_mode.write().unwrap() = data.current_color_mode.clone();
 
         // Set initial selections
-        if let Some(pos) = self
-            .color_modes
+        let color_modes = self.color_modes.read().unwrap();
+        if let Some(pos) = color_modes
             .iter()
             .position(|m| m == &data.current_color_mode)
         {
-            self.color_mode_state.select(Some(pos));
+            self.color_mode_state.write().unwrap().select(Some(pos));
         }
-        if let Some(pos) = self
-            .themes
-            .iter()
-            .position(|t| t.id == data.current_theme.id)
-        {
-            self.theme_state.select(Some(pos));
+
+        let themes = self.themes.read().unwrap();
+        if let Some(pos) = themes.iter().position(|t| t.id == data.current_theme.id) {
+            self.theme_state.write().unwrap().select(Some(pos));
         }
 
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: KeyEvent) -> Result<()> {
         match key_event.code {
             KeyCode::Left | KeyCode::Char('h') => {
                 let sections = SettingsSection::all();
+                let current_section = *self.current_section.read().unwrap();
                 let current_index = sections
                     .iter()
-                    .position(|&s| s == self.current_section)
+                    .position(|&s| s == current_section)
                     .unwrap_or(0);
                 let new_index = if current_index == 0 {
                     sections.len() - 1
                 } else {
                     current_index - 1
                 };
-                self.current_section = sections[new_index];
+                *self.current_section.write().unwrap() = sections[new_index];
                 Ok(())
             }
             KeyCode::Right | KeyCode::Char('l') => {
                 let sections = SettingsSection::all();
+                let current_section = *self.current_section.read().unwrap();
                 let current_index = sections
                     .iter()
-                    .position(|&s| s == self.current_section)
+                    .position(|&s| s == current_section)
                     .unwrap_or(0);
                 let new_index = (current_index + 1) % sections.len();
-                self.current_section = sections[new_index];
+                *self.current_section.write().unwrap() = sections[new_index];
                 Ok(())
             }
             KeyCode::Up | KeyCode::Char('k') => {
-                match self.current_section {
+                let current_section = *self.current_section.read().unwrap();
+                match current_section {
                     SettingsSection::ColorMode => {
-                        let selected = self.color_mode_state.selected().unwrap_or(0);
+                        let mut color_mode_state = self.color_mode_state.write().unwrap();
+                        let selected = color_mode_state.selected().unwrap_or(0);
                         if selected > 0 {
-                            self.color_mode_state.select(Some(selected - 1));
+                            color_mode_state.select(Some(selected - 1));
+                            drop(color_mode_state);
                             self.apply_current_selection();
                         }
                     }
                     SettingsSection::Theme => {
-                        let selected = self.theme_state.selected().unwrap_or(0);
+                        let mut theme_state = self.theme_state.write().unwrap();
+                        let selected = theme_state.selected().unwrap_or(0);
                         if selected > 0 {
-                            self.theme_state.select(Some(selected - 1));
+                            theme_state.select(Some(selected - 1));
+                            drop(theme_state);
                             self.apply_current_selection();
                         }
                     }
@@ -396,18 +436,25 @@ impl Screen for SettingsScreen {
                 Ok(())
             }
             KeyCode::Down | KeyCode::Char('j') => {
-                match self.current_section {
+                let current_section = *self.current_section.read().unwrap();
+                match current_section {
                     SettingsSection::ColorMode => {
-                        let selected = self.color_mode_state.selected().unwrap_or(0);
-                        if selected < self.color_modes.len() - 1 {
-                            self.color_mode_state.select(Some(selected + 1));
+                        let mut color_mode_state = self.color_mode_state.write().unwrap();
+                        let selected = color_mode_state.selected().unwrap_or(0);
+                        let color_modes_len = self.color_modes.read().unwrap().len();
+                        if selected < color_modes_len - 1 {
+                            color_mode_state.select(Some(selected + 1));
+                            drop(color_mode_state);
                             self.apply_current_selection();
                         }
                     }
                     SettingsSection::Theme => {
-                        let selected = self.theme_state.selected().unwrap_or(0);
-                        if selected < self.themes.len() - 1 {
-                            self.theme_state.select(Some(selected + 1));
+                        let mut theme_state = self.theme_state.write().unwrap();
+                        let selected = theme_state.selected().unwrap_or(0);
+                        let themes_len = self.themes.read().unwrap().len();
+                        if selected < themes_len - 1 {
+                            theme_state.select(Some(selected + 1));
+                            drop(theme_state);
                             self.apply_current_selection();
                         }
                     }
@@ -416,23 +463,23 @@ impl Screen for SettingsScreen {
             }
             KeyCode::Char(' ') => {
                 self.save_settings();
-                self.event_bus.publish(NavigateTo::Pop);
+                self.event_bus.as_event_bus().publish(NavigateTo::Pop);
                 Ok(())
             }
             KeyCode::Esc => {
                 self.revert_to_original();
-                self.event_bus.publish(NavigateTo::Pop);
+                self.event_bus.as_event_bus().publish(NavigateTo::Pop);
                 Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             _ => Ok(()),
         }
     }
 
-    fn render_ratatui(&mut self, f: &mut Frame) -> Result<()> {
+    fn render_ratatui(&self, f: &mut Frame) -> Result<()> {
         let area = f.area();
 
         let chunks = Layout::default()
@@ -454,8 +501,6 @@ impl Screen for SettingsScreen {
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl SettingsScreenInterface for SettingsScreen {}

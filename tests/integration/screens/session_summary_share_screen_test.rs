@@ -3,11 +3,12 @@ use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
 use gittype::presentation::tui::screens::session_summary_share_screen::SessionSummaryShareScreen;
+use std::sync::Arc;
 
 screen_snapshot_test!(
     test_session_summary_share_screen_snapshot,
     SessionSummaryShareScreen,
-    SessionSummaryShareScreen::new(EventBus::new()),
+    SessionSummaryShareScreen::new(Arc::new(EventBus::new())),
     provider = MockSessionSummaryShareDataProvider
 );
 
@@ -70,7 +71,7 @@ screen_key_event_test!(
 screen_basic_methods_test!(
     test_session_summary_share_screen_basic_methods,
     SessionSummaryShareScreen,
-    SessionSummaryShareScreen::new(EventBus::new()),
+    SessionSummaryShareScreen::new(Arc::new(EventBus::new())),
     gittype::presentation::tui::ScreenType::SessionSharing,
     false,
     MockSessionSummaryShareDataProvider

@@ -1,4 +1,4 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::{EventBus, EventBusInterface};
 use crate::infrastructure::browser;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
@@ -12,6 +12,8 @@ use ratatui::{
     widgets::{Block, Borders, Clear, List, ListItem, Paragraph},
     Frame,
 };
+use std::sync::Arc;
+use std::sync::RwLock;
 
 pub enum InfoAction {
     OpenGithub,
@@ -19,27 +21,39 @@ pub enum InfoAction {
     Close,
 }
 
+#[derive(Clone)]
 pub enum InfoDialogState {
     Menu { selected_option: usize },
     Fallback { title: String, url: String },
 }
 
+impl Default for InfoDialogState {
+    fn default() -> Self {
+        InfoDialogState::Menu { selected_option: 0 }
+    }
+}
+
+pub trait InfoDialogScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = InfoDialogScreenInterface)]
 pub struct InfoDialogScreen {
-    state: InfoDialogState,
-    event_bus: EventBus,
+    state: RwLock<InfoDialogState>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
 }
 
 impl InfoDialogScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
         Self {
-            state: InfoDialogState::Menu { selected_option: 0 },
+            state: RwLock::new(InfoDialogState::Menu { selected_option: 0 }),
             event_bus,
         }
     }
 
-    pub fn new_fallback(title: String, url: String, event_bus: EventBus) -> Self {
+    pub fn new_fallback(title: String, url: String, event_bus: Arc<EventBus>) -> Self {
         Self {
-            state: InfoDialogState::Fallback { title, url },
+            state: RwLock::new(InfoDialogState::Fallback { title, url }),
             event_bus,
         }
     }
@@ -52,15 +66,15 @@ impl InfoDialogScreen {
         ]
     }
 
-    fn handle_option_select(&mut self) -> Result<()> {
-        if let InfoDialogState::Menu { selected_option } = &self.state {
+    fn handle_option_select(&self) -> Result<()> {
+        if let InfoDialogState::Menu { selected_option } = &*self.state.read().unwrap() {
             match selected_option {
                 0 => {
                     if Self::try_open_github()? {
-                        self.event_bus.publish(NavigateTo::Pop);
+                        self.event_bus.as_event_bus().publish(NavigateTo::Pop);
                         Ok(())
                     } else {
-                        self.state = InfoDialogState::Fallback {
+                        *self.state.write().unwrap() = InfoDialogState::Fallback {
                             title: "GitHub Repository".to_string(),
                             url: "https://github.com/unhappychoice/gittype".to_string(),
                         };
@@ -69,10 +83,10 @@ impl InfoDialogScreen {
                 }
                 1 => {
                     if Self::try_open_x()? {
-                        self.event_bus.publish(NavigateTo::Pop);
+                        self.event_bus.as_event_bus().publish(NavigateTo::Pop);
                         Ok(())
                     } else {
-                        self.state = InfoDialogState::Fallback {
+                        *self.state.write().unwrap() = InfoDialogState::Fallback {
                             title: "X Search".to_string(),
                             url: "https://x.com/search?q=%23gittype".to_string(),
                         };
@@ -80,12 +94,12 @@ impl InfoDialogScreen {
                     }
                 }
                 _ => {
-                    self.event_bus.publish(NavigateTo::Pop);
+                    self.event_bus.as_event_bus().publish(NavigateTo::Pop);
                     Ok(())
                 }
             }
         } else {
-            self.event_bus.publish(NavigateTo::Pop);
+            self.event_bus.as_event_bus().publish(NavigateTo::Pop);
             Ok(())
         }
     }
@@ -263,6 +277,20 @@ impl ScreenDataProvider for InfoDialogScreenDataProvider {
     }
 }
 
+pub struct InfoDialogScreenProvider;
+
+impl shaku::Provider<crate::presentation::di::AppModule> for InfoDialogScreenProvider {
+    type Interface = InfoDialogScreen;
+
+    fn provide(
+        module: &crate::presentation::di::AppModule,
+    ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
+        use shaku::HasComponent;
+        let event_bus: Arc<dyn EventBusInterface> = module.resolve();
+        Ok(Box::new(InfoDialogScreen::new(event_bus)))
+    }
+}
+
 impl Screen for InfoDialogScreen {
     fn get_type(&self) -> ScreenType {
         ScreenType::InfoDialog
@@ -275,34 +303,41 @@ impl Screen for InfoDialogScreen {
         Box::new(InfoDialogScreenDataProvider)
     }
 
-    fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
+    fn init_with_data(&self, _data: Box<dyn std::any::Any>) -> Result<()> {
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> crate::Result<()> {
-        match &mut self.state {
+    fn handle_key_event(&self, key_event: crossterm::event::KeyEvent) -> crate::Result<()> {
+        let current_state = self.state.read().unwrap().clone();
+        match current_state {
             InfoDialogState::Menu { selected_option } => {
                 let options = Self::get_options();
                 match key_event.code {
                     KeyCode::Char(' ') => self.handle_option_select(),
                     KeyCode::Up | KeyCode::Char('k') => {
-                        *selected_option = if *selected_option == 0 {
+                        let new_selected = if selected_option == 0 {
                             options.len() - 1
                         } else {
-                            *selected_option - 1
+                            selected_option - 1
+                        };
+                        *self.state.write().unwrap() = InfoDialogState::Menu {
+                            selected_option: new_selected,
                         };
                         Ok(())
                     }
                     KeyCode::Down | KeyCode::Char('j') => {
-                        *selected_option = (*selected_option + 1) % options.len();
+                        let new_selected = (selected_option + 1) % options.len();
+                        *self.state.write().unwrap() = InfoDialogState::Menu {
+                            selected_option: new_selected,
+                        };
                         Ok(())
                     }
                     KeyCode::Esc => {
-                        self.event_bus.publish(NavigateTo::Pop);
+                        self.event_bus.as_event_bus().publish(NavigateTo::Pop);
                         Ok(())
                     }
                     KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                        self.event_bus.publish(NavigateTo::Exit);
+                        self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                         Ok(())
                     }
                     _ => Ok(()),
@@ -310,11 +345,11 @@ impl Screen for InfoDialogScreen {
             }
             InfoDialogState::Fallback { .. } => match key_event.code {
                 KeyCode::Esc => {
-                    self.state = InfoDialogState::Menu { selected_option: 0 };
+                    *self.state.write().unwrap() = InfoDialogState::Menu { selected_option: 0 };
                     Ok(())
                 }
                 KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                    self.event_bus.publish(NavigateTo::Exit);
+                    self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                     Ok(())
                 }
                 _ => Ok(()),
@@ -322,8 +357,8 @@ impl Screen for InfoDialogScreen {
         }
     }
 
-    fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {
-        match &self.state {
+    fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
+        match &*self.state.read().unwrap() {
             InfoDialogState::Menu { selected_option } => {
                 self.render_menu_ratatui(frame, *selected_option);
             }
@@ -338,15 +373,13 @@ impl Screen for InfoDialogScreen {
         UpdateStrategy::InputOnly
     }
 
-    fn update(&mut self) -> crate::Result<bool> {
+    fn update(&self) -> crate::Result<bool> {
         Ok(false)
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl InfoDialogScreenInterface for InfoDialogScreen {}

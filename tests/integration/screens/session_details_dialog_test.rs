@@ -3,11 +3,12 @@ use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
 use gittype::presentation::tui::screens::session_details_dialog::SessionDetailsDialog;
+use std::sync::Arc;
 
 screen_snapshot_test!(
     test_session_details_dialog_snapshot,
     SessionDetailsDialog,
-    SessionDetailsDialog::new(EventBus::new()),
+    SessionDetailsDialog::new(Arc::new(EventBus::new())),
     provider = MockSessionDetailsDialogDataProvider
 );
 
@@ -34,7 +35,7 @@ screen_key_event_test!(
 screen_basic_methods_test!(
     test_session_details_dialog_basic_methods,
     SessionDetailsDialog,
-    SessionDetailsDialog::new(EventBus::new()),
+    SessionDetailsDialog::new(Arc::new(EventBus::new())),
     gittype::presentation::tui::ScreenType::DetailsDialog,
     false,
     MockSessionDetailsDialogDataProvider
