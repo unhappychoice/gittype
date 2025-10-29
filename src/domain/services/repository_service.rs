@@ -3,16 +3,20 @@ use crate::domain::models::storage::repository::{StoredRepository, StoredReposit
 use crate::infrastructure::database::daos::RepositoryDao;
 use crate::infrastructure::database::database::Database;
 use crate::infrastructure::git::remote::remote_git_repository_client::RemoteGitRepositoryClient;
-use crate::infrastructure::storage::file_storage::FileStorage;
+use crate::infrastructure::storage::file_storage::{FileStorage, FileStorageInterface};
 use std::path::PathBuf;
 
 pub struct RepositoryService {
     db: Database,
+    remote_git_client: RemoteGitRepositoryClient,
 }
 
 impl RepositoryService {
-    pub fn new(db: Database) -> Self {
-        Self { db }
+    pub fn new(db: Database, remote_git_client: RemoteGitRepositoryClient) -> Self {
+        Self {
+            db,
+            remote_git_client,
+        }
     }
 
     pub fn get_all_repositories(&self) -> Result<Vec<StoredRepository>> {
@@ -35,7 +39,9 @@ impl RepositoryService {
         let repositories_with_cache = repositories
             .into_iter()
             .map(|repo| {
-                let is_cached = RemoteGitRepositoryClient::is_repository_cached(&repo.remote_url);
+                let is_cached = self
+                    .remote_git_client
+                    .is_repository_cached(&repo.remote_url);
                 (repo, is_cached)
             })
             .collect();

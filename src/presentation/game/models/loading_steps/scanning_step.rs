@@ -67,8 +67,9 @@ impl Step for ScanningStep {
         // If git_repository is not set yet, try to create it from repo_path
         if context.git_repository.is_none() {
             if let Some(repo_path) = context.repo_path {
-                context.git_repository =
-                    LocalGitRepositoryClient::create_from_local_path(repo_path).ok();
+                context.git_repository = LocalGitRepositoryClient::new()
+                    .create_from_local_path(repo_path)
+                    .ok();
             }
         }
 

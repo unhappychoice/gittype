@@ -13,8 +13,7 @@ use std::sync::{Arc, Mutex};
 fn create_initialized_session_detail_screen(
     event_bus: Arc<dyn EventBusInterface>,
 ) -> SessionDetailScreen {
-    let screen =
-        SessionDetailScreen::new(event_bus).with_session_repository(MockSessionRepository::new());
+    let screen = SessionDetailScreen::new(event_bus, Arc::new(MockSessionRepository::new()));
 
     let records = RecordsScreen::new(
         Arc::new(EventBus::new()),
@@ -31,8 +30,10 @@ fn create_initialized_session_detail_screen(
 screen_snapshot_test!(
     test_session_detail_screen_snapshot,
     SessionDetailScreen,
-    SessionDetailScreen::new(Arc::new(EventBus::new()))
-        .with_session_repository(MockSessionRepository::new()),
+    SessionDetailScreen::new(
+        Arc::new(EventBus::new()),
+        Arc::new(MockSessionRepository::new())
+    ),
     pushed_from = {
         let records = RecordsScreen::new(
             Arc::new(EventBus::new()),

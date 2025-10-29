@@ -91,6 +91,8 @@ impl SessionManager {
     }
 
     pub fn with_stage_repository(stage_repository: Arc<Mutex<StageRepository>>) -> Self {
+        // EventBus will be set later via set_global_event_bus() before actual use
+        // Using a dummy EventBus here as placeholder - it gets replaced immediately
         let event_bus: Arc<dyn EventBusInterface> = Arc::new(EventBus::new());
         Self {
             state: SessionState::NotStarted,

@@ -1,6 +1,6 @@
 use crate::domain::events::EventBusInterface;
 use crate::domain::repositories::trending_repository::{
-    TrendingRepositoryInfo, TRENDING_REPOSITORY,
+    TrendingRepositoryInfo, TrendingRepositoryInterface,
 };
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::views::trending_repository_selection::{
@@ -22,15 +22,23 @@ pub trait TrendingRepositorySelectionScreenInterface: Screen {}
 #[derive(shaku::Component)]
 #[shaku(interface = TrendingRepositorySelectionScreenInterface)]
 pub struct TrendingRepositorySelectionScreen {
+    #[shaku(default)]
     repositories: RwLock<Vec<TrendingRepositoryInfo>>,
+    #[shaku(default)]
     list_state: RwLock<ListState>,
+    #[shaku(default)]
     selected_index: RwLock<Option<usize>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    trending_repository: Arc<dyn TrendingRepositoryInterface>,
 }
 
 impl TrendingRepositorySelectionScreen {
-    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        trending_repository: Arc<dyn TrendingRepositoryInterface>,
+    ) -> Self {
         let mut list_state = ListState::default();
         list_state.select(Some(0));
 
@@ -39,6 +47,7 @@ impl TrendingRepositorySelectionScreen {
             list_state: RwLock::new(list_state),
             selected_index: RwLock::new(None),
             event_bus,
+            trending_repository,
         }
     }
 
@@ -106,7 +115,7 @@ impl Screen for TrendingRepositorySelectionScreen {
             let cache_key = format!("{}:{}", language.as_deref().unwrap_or("all"), period);
 
             // Fetch repositories
-            let repositories = TRENDING_REPOSITORY.get_trending_repositories_sync(
+            let repositories = self.trending_repository.get_trending_repositories_sync(
                 &cache_key,
                 language.as_deref(),
                 &period,

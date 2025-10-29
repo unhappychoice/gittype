@@ -1,12 +1,37 @@
 use super::migrations::{get_all_migrations, get_latest_version};
 use crate::{domain::error::GitTypeError, Result};
 use rusqlite::Connection;
+use shaku::Interface;
 #[cfg(not(feature = "test-mocks"))]
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, MutexGuard};
 
+pub trait DatabaseInterface: Interface {
+    fn get_connection(&self) -> Result<MutexGuard<'_, Connection>>;
+    fn init_tables(&self) -> Result<()>;
+    fn get_current_schema_version(&self) -> Result<i32>;
+}
+
 pub struct Database {
-    connection: Connection,
+    connection: Mutex<Connection>,
+}
+
+impl shaku::Component<crate::presentation::di::AppModule> for Database {
+    type Interface = dyn DatabaseInterface;
+    type Parameters = ();
+
+    fn build(
+        _context: &mut shaku::ModuleBuildContext<crate::presentation::di::AppModule>,
+        _params: Self::Parameters,
+    ) -> Box<dyn DatabaseInterface> {
+        Box::new(Database::default())
+    }
+}
+
+impl Default for Database {
+    fn default() -> Self {
+        Self::new().expect("Failed to initialize database")
+    }
 }
 
 impl Database {
@@ -21,7 +46,9 @@ impl Database {
         let connection = Connection::open(&db_path)?;
         // Enable foreign key constraints
         connection.execute("PRAGMA foreign_keys = ON", [])?;
-        let db = Self { connection };
+        let db = Self {
+            connection: Mutex::new(connection),
+        };
         Ok(db)
     }
 
@@ -31,7 +58,9 @@ impl Database {
         let connection = Connection::open(":memory:")?;
         // Enable foreign key constraints
         connection.execute("PRAGMA foreign_keys = ON", [])?;
-        let db = Self { connection };
+        let db = Self {
+            connection: Mutex::new(connection),
+        };
         // Automatically initialize schema for tests
         db.init()?;
         Ok(db)
@@ -67,36 +96,53 @@ impl Database {
         Ok(())
     }
 
-    pub fn get_connection(&self) -> &Connection {
-        &self.connection
+    pub fn with_connection<F, R>(&self, f: F) -> Result<R>
+    where
+        F: FnOnce(&Connection) -> Result<R>,
+    {
+        let conn = self
+            .connection
+            .lock()
+            .map_err(|e| GitTypeError::database_error(format!("Failed to acquire lock: {}", e)))?;
+        f(&conn)
+    }
+
+    pub fn get_connection(&self) -> Result<MutexGuard<'_, Connection>> {
+        self.connection
+            .lock()
+            .map_err(|e| GitTypeError::database_error(format!("Failed to acquire lock: {}", e)))
     }
 
     fn create_schema_version_table(&self) -> Result<()> {
-        self.connection.execute(
-            "CREATE TABLE IF NOT EXISTS schema_version (
-                version INTEGER PRIMARY KEY,
-                applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )",
-            [],
-        )?;
-        Ok(())
+        self.with_connection(|conn| {
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS schema_version (
+                    version INTEGER PRIMARY KEY,
+                    applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )",
+                [],
+            )?;
+            Ok(())
+        })
     }
 
     pub fn get_current_schema_version(&self) -> Result<i32> {
-        let version = self
-            .connection
-            .prepare("SELECT MAX(version) FROM schema_version")?
-            .query_row([], |row| {
-                let version: Option<i32> = row.get(0)?;
-                Ok(version.unwrap_or(0))
-            })?;
-        Ok(version)
+        self.with_connection(|conn| {
+            let version = conn
+                .prepare("SELECT MAX(version) FROM schema_version")?
+                .query_row([], |row| {
+                    let version: Option<i32> = row.get(0)?;
+                    Ok(version.unwrap_or(0))
+                })?;
+            Ok(version)
+        })
     }
 
     fn set_schema_version(&self, version: i32) -> Result<()> {
-        self.connection
-            .execute("INSERT INTO schema_version (version) VALUES (?)", [version])?;
-        Ok(())
+        self.with_connection(|conn| {
+            conn.execute("INSERT INTO schema_version (version) VALUES (?)", [version])?;
+            Ok(())
+        })
     }
 
     fn run_migrations(&self) -> Result<()> {
@@ -109,13 +155,27 @@ impl Database {
             for migration in migrations {
                 let version = migration.version();
                 if version > current_version {
-                    migration.up(&self.connection)?;
+                    self.with_connection(|conn| migration.up(conn))?;
                     self.set_schema_version(version)?;
                 }
             }
         }
 
         Ok(())
+    }
+}
+
+impl DatabaseInterface for Database {
+    fn get_connection(&self) -> Result<MutexGuard<'_, Connection>> {
+        self.get_connection()
+    }
+
+    fn init_tables(&self) -> Result<()> {
+        self.init_tables()
+    }
+
+    fn get_current_schema_version(&self) -> Result<i32> {
+        self.get_current_schema_version()
     }
 }
 

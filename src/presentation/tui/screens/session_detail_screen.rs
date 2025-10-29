@@ -1,6 +1,6 @@
 use crate::domain::events::EventBusInterface;
-use crate::domain::models::storage::{SessionStageResult, StoredSession};
-use crate::domain::repositories::session_repository::{SessionRepository, SessionRepositoryTrait};
+use crate::domain::models::storage::SessionStageResult;
+use crate::domain::repositories::session_repository::SessionRepositoryTrait;
 use crate::domain::services::session_service::SessionDisplayData;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::screens::RecordsScreen;
@@ -27,47 +27,34 @@ pub trait SessionDetailScreenInterface: Screen {}
 #[derive(shaku::Component)]
 #[shaku(interface = SessionDetailScreenInterface)]
 pub struct SessionDetailScreen {
+    #[shaku(default)]
     session_data: RwLock<SessionDisplayData>,
+    #[shaku(default)]
     stage_results: RwLock<Vec<SessionStageResult>>,
+    #[shaku(default)]
     stage_scroll_offset: RwLock<usize>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
-    session_repository: RwLock<Option<Box<dyn SessionRepositoryTrait>>>,
+    #[shaku(inject)]
+    session_repository: Arc<dyn SessionRepositoryTrait>,
 }
 
 impl SessionDetailScreen {
-    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
+    pub fn new(
+        event_bus: Arc<dyn crate::domain::events::EventBusInterface>,
+        session_repository: Arc<
+            dyn crate::domain::repositories::session_repository::SessionRepositoryTrait,
+        >,
+    ) -> Self {
+        use std::sync::RwLock;
+
         Self {
-            session_data: RwLock::new(SessionDisplayData {
-                session: StoredSession {
-                    id: 0,
-                    repository_id: None,
-                    started_at: chrono::Utc::now(),
-                    completed_at: Some(chrono::Utc::now()),
-                    branch: None,
-                    commit_hash: None,
-                    is_dirty: false,
-                    game_mode: "default".to_string(),
-                    difficulty_level: None,
-                    max_stages: None,
-                    time_limit_seconds: None,
-                },
-                repository: None,
-                session_result: None,
-            }),
+            session_data: RwLock::new(SessionDisplayData::default()),
             stage_results: RwLock::new(Vec::new()),
             stage_scroll_offset: RwLock::new(0),
             event_bus,
-            session_repository: RwLock::new(None),
+            session_repository,
         }
-    }
-
-    pub fn with_session_repository<T: SessionRepositoryTrait + 'static>(
-        self,
-        session_repository: T,
-    ) -> Self {
-        *self.session_repository.write().unwrap() = Some(Box::new(session_repository));
-        self
     }
 }
 
@@ -76,21 +63,6 @@ pub struct SessionDetailScreenDataProvider;
 impl ScreenDataProvider for SessionDetailScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
         Ok(Box::new(()))
-    }
-}
-
-pub struct SessionDetailScreenProvider;
-
-impl shaku::Provider<crate::presentation::di::AppModule> for SessionDetailScreenProvider {
-    type Interface = SessionDetailScreen;
-
-    fn provide(
-        module: &crate::presentation::di::AppModule,
-    ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
-        use shaku::HasComponent;
-        let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
-            module.resolve();
-        Ok(Box::new(SessionDetailScreen::new(event_bus)))
     }
 }
 
@@ -112,39 +84,53 @@ impl Screen for SessionDetailScreen {
     }
 
     fn on_pushed_from(&self, source_screen: &dyn Screen) -> Result<()> {
+        log::debug!("SessionDetailScreen::on_pushed_from called");
+
         let records = source_screen
             .as_any()
             .downcast_ref::<RecordsScreen>()
             .ok_or_else(|| {
+                log::error!("Failed to downcast source_screen to RecordsScreen");
                 GitTypeError::ScreenInitializationError(
                     "SessionDetail must be pushed from Records screen".to_string(),
                 )
             })?;
 
         let session_data = records.get_selected_session_for_detail().ok_or_else(|| {
+            log::error!("No session data selected in RecordsScreen");
             GitTypeError::ScreenInitializationError(
                 "SessionDetail requires selected session data from Records screen".to_string(),
             )
         })?;
 
-        let session_repository = self.session_repository.read().unwrap();
-        let stage_results = if let Some(ref repo) = *session_repository {
-            repo.get_session_stage_results(session_data.session.id)?
-        } else {
-            let repo = SessionRepository::new()?;
-            repo.get_session_stage_results(session_data.session.id)?
-        };
-
-        *self.session_data.write().unwrap() = session_data.clone();
-        *self.stage_results.write().unwrap() = stage_results;
-        *self.stage_scroll_offset.write().unwrap() = 0;
+        log::debug!(
+            "Session data retrieved: id={}, repository={:?}",
+            session_data.session.id,
+            session_data.repository.as_ref().map(|r| &r.repository_name)
+        );
 
         if session_data.session.id == 0 {
+            log::error!("Session id is 0");
             return Err(GitTypeError::ScreenInitializationError(
                 "SessionDetail: session id cannot be 0".to_string(),
             ));
         }
 
+        let stage_results = self
+            .session_repository
+            .get_session_stage_results(session_data.session.id)?;
+
+        log::debug!(
+            "Retrieved {} stage results for session {}",
+            stage_results.len(),
+            session_data.session.id
+        );
+
+        *self.session_data.write().unwrap() = session_data.clone();
+        *self.stage_results.write().unwrap() = stage_results;
+        *self.stage_scroll_offset.write().unwrap() = 0;
+
+        log::debug!("SessionDetailScreen initialized successfully");
         Ok(())
     }
 

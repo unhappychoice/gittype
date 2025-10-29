@@ -57,7 +57,7 @@ fn main() -> Result<()> {
 
 fn clear_database(database: &Arc<Mutex<Database>>) -> Result<()> {
     let db = database.lock().unwrap();
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
 
     // Disable foreign key checks temporarily
     conn.execute("PRAGMA foreign_keys = OFF", [])?;

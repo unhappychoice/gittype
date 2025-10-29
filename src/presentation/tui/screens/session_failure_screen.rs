@@ -57,8 +57,11 @@ pub trait SessionFailureScreenInterface: Screen {}
 #[derive(shaku::Component)]
 #[shaku(interface = SessionFailureScreenInterface)]
 pub struct SessionFailureScreen {
+    #[shaku(default)]
     session_result: RwLock<SessionResult>,
+    #[shaku(default)]
     total_stages: RwLock<usize>,
+    #[shaku(default)]
     repo_info: RwLock<Option<GitRepository>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,

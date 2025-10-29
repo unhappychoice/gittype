@@ -57,7 +57,9 @@ pub trait TotalSummaryScreenInterface: Screen {}
 #[derive(shaku::Component)]
 #[shaku(interface = TotalSummaryScreenInterface)]
 pub struct TotalSummaryScreen {
+    #[shaku(default)]
     displayed: RwLock<bool>,
+    #[shaku(default)]
     total_result: RwLock<Option<TotalResult>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,

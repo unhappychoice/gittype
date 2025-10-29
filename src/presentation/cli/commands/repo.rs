@@ -1,5 +1,5 @@
 use crate::infrastructure::console::{Console, ConsoleImpl};
-use crate::infrastructure::storage::file_storage::FileStorage;
+use crate::infrastructure::storage::file_storage::{FileStorage, FileStorageInterface};
 use crate::presentation::cli::commands::run_game_session;
 use crate::presentation::cli::screen_runner::run_screen;
 use crate::presentation::cli::Cli;

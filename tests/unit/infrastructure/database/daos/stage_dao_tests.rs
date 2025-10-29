@@ -47,7 +47,7 @@ fn setup_test_data(
             .with_difficulty_level(DifficultyLevel::Easy),
     ];
 
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx = conn.unchecked_transaction().unwrap();
     for challenge in &challenges {
         challenge_dao
@@ -55,6 +55,7 @@ fn setup_test_data(
             .unwrap();
     }
     tx.commit().unwrap();
+    drop(conn);
 
     // Create sessions and stage results
     let mut session_challenges = Vec::new();
@@ -62,7 +63,7 @@ fn setup_test_data(
         let mut session_result = SessionResult::new();
         session_result.session_score = 100.0 + (i as f64 * 10.0);
 
-        let conn = db.get_connection();
+        let conn = db.get_connection().unwrap();
         let tx = conn.unchecked_transaction().unwrap();
         let session_id = session_dao
             .create_session_in_transaction(
@@ -142,6 +143,7 @@ fn setup_test_data(
         .unwrap();
 
         tx.commit().unwrap();
+        drop(conn);
 
         session_challenges.push((session_id, challenge.clone()));
     }

@@ -19,13 +19,14 @@ fn test_ensure_challenge_creates_new_challenge() {
         .with_source_info("src/test.rs".to_string(), 1, 10)
         .with_difficulty_level(DifficultyLevel::Easy);
 
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx = conn.unchecked_transaction().unwrap();
 
     let rowid = dao
         .ensure_challenge_in_transaction(&tx, &challenge)
         .unwrap();
     tx.commit().unwrap();
+    drop(conn);
 
     assert!(rowid > 0, "Should return positive rowid");
 }
@@ -40,7 +41,7 @@ fn test_ensure_challenge_returns_existing_challenge() {
         .with_language("rust".to_string());
 
     // Insert first time
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx1 = conn.unchecked_transaction().unwrap();
     let rowid1 = dao
         .ensure_challenge_in_transaction(&tx1, &challenge)
@@ -72,7 +73,7 @@ fn test_ensure_challenge_with_different_difficulties() {
         DifficultyLevel::Hard,
     ];
 
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     for (i, difficulty) in difficulties.iter().enumerate() {
         let challenge = Challenge::new(
             format!("test-challenge-diff-{}", i),
@@ -92,6 +93,7 @@ fn test_ensure_challenge_with_different_difficulties() {
             difficulty
         );
     }
+    drop(conn);
 }
 
 #[test]
@@ -106,12 +108,13 @@ fn test_ensure_challenge_with_comment_ranges() {
     )
     .with_comment_ranges(vec![(0, 10)]);
 
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx = conn.unchecked_transaction().unwrap();
     let rowid = dao
         .ensure_challenge_in_transaction(&tx, &challenge)
         .unwrap();
     tx.commit().unwrap();
+    drop(conn);
 
     assert!(rowid > 0, "Should create challenge with comment ranges");
 }
@@ -132,7 +135,7 @@ fn test_ensure_multiple_challenges_in_transaction() {
         })
         .collect();
 
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx = conn.unchecked_transaction().unwrap();
 
     let mut rowids = Vec::new();
@@ -142,6 +145,7 @@ fn test_ensure_multiple_challenges_in_transaction() {
     }
 
     tx.commit().unwrap();
+    drop(conn);
 
     // All rowids should be unique and positive
     assert_eq!(rowids.len(), 5, "Should insert 5 challenges");

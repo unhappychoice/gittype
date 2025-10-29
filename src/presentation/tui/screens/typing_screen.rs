@@ -17,21 +17,49 @@ use std::time::Duration;
 
 pub trait TypingScreenInterface: Screen {}
 
+#[derive(Clone)]
+pub struct GameDataRef(Arc<Mutex<GameData>>);
+
+impl Default for GameDataRef {
+    fn default() -> Self {
+        Self(GameData::instance())
+    }
+}
+
+#[derive(Clone)]
+pub struct SessionManagerRef(Arc<Mutex<SessionManager>>);
+
+impl Default for SessionManagerRef {
+    fn default() -> Self {
+        Self(SessionManager::instance())
+    }
+}
+
 #[derive(shaku::Component)]
 #[shaku(interface = TypingScreenInterface)]
 pub struct TypingScreen {
+    #[shaku(default)]
     countdown: RwLock<Countdown>,
+    #[shaku(default)]
     git_repository: RwLock<Option<GitRepository>>,
+    #[shaku(default)]
     typing_core: RwLock<TypingCore>,
+    #[shaku(default)]
     challenge: RwLock<Option<Challenge>>,
+    #[shaku(default)]
     code_context: RwLock<CodeContext>,
+    #[shaku(default)]
     waiting_to_start: RwLock<bool>,
+    #[shaku(default)]
     dialog_shown: RwLock<bool>,
+    #[shaku(default)]
     typing_view: RwLock<TypingView>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
-    game_data: Arc<Mutex<GameData>>,
-    session_manager: Arc<Mutex<SessionManager>>,
+    #[shaku(default)]
+    game_data: GameDataRef,
+    #[shaku(default)]
+    session_manager: SessionManagerRef,
 }
 
 pub enum SessionState {
@@ -66,8 +94,8 @@ impl TypingScreen {
             dialog_shown: RwLock::new(false),
             typing_view: RwLock::new(TypingView::new()),
             event_bus,
-            game_data,
-            session_manager,
+            game_data: GameDataRef(game_data),
+            session_manager: SessionManagerRef(session_manager),
         }
     }
 
@@ -87,7 +115,7 @@ impl TypingScreen {
 
     /// Load the current challenge from global SessionManager
     pub fn load_current_challenge(&self) -> Result<bool> {
-        let challenge = if let Ok(session_manager) = self.session_manager.lock() {
+        let challenge = if let Ok(session_manager) = self.session_manager.0.lock() {
             session_manager.get_current_challenge()?
         } else {
             None
@@ -107,8 +135,8 @@ impl TypingScreen {
 
             *self.countdown.write().unwrap() = Countdown::new();
             *self.challenge.write().unwrap() = Some(challenge.clone());
-            // Update git_repository from injected GameData
-            *self.git_repository.write().unwrap() = if let Ok(game_data) = self.game_data.lock() {
+            // Update git_repository from GameData
+            *self.git_repository.write().unwrap() = if let Ok(game_data) = self.game_data.0.lock() {
                 game_data.repository()
             } else {
                 None
@@ -297,7 +325,7 @@ impl TypingScreen {
 
     fn handle_skip_action(&self) -> Result<SessionState> {
         self.close_dialog();
-        let skips_remaining = if let Ok(session_manager) = self.session_manager.lock() {
+        let skips_remaining = if let Ok(session_manager) = self.session_manager.0.lock() {
             session_manager.get_skips_remaining().unwrap_or(0)
         } else {
             0
@@ -506,7 +534,7 @@ impl Screen for TypingScreen {
             .text_to_display()
             .chars()
             .collect();
-        let skips_remaining = if let Ok(session_manager) = self.session_manager.lock() {
+        let skips_remaining = if let Ok(session_manager) = self.session_manager.0.lock() {
             session_manager.get_skips_remaining().unwrap_or(0)
         } else {
             0
@@ -523,7 +551,7 @@ impl Screen for TypingScreen {
             self.countdown.read().unwrap().get_current_count(),
             skips_remaining,
             *self.dialog_shown.read().unwrap(),
-            &self.session_manager,
+            &self.session_manager.0,
         );
 
         Ok(())

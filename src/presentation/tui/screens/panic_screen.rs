@@ -19,7 +19,9 @@ pub trait PanicScreenInterface: Screen {}
 #[derive(shaku::Component)]
 #[shaku(interface = PanicScreenInterface)]
 pub struct PanicScreen {
+    #[shaku(default)]
     error_message: RwLock<String>,
+    #[shaku(default)]
     timestamp: RwLock<String>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,

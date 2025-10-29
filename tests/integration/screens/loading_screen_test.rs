@@ -1,3 +1,4 @@
+use crate::integration::screens::mocks::challenge_repository_mock::MockChallengeRepository;
 use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::ExitRequested;
@@ -21,7 +22,7 @@ fn test_loading_screen_ctrl_c_requests_exit() {
         events_clone.lock().unwrap().push(event.clone());
     });
 
-    let screen = LoadingScreen::new(event_bus);
+    let screen = LoadingScreen::new(event_bus, Arc::new(MockChallengeRepository::new()));
 
     screen
         .handle_key_event(crossterm::event::KeyEvent::new(
@@ -39,7 +40,7 @@ fn test_loading_screen_char_a_ignored() {
     let _ = GameData::initialize();
 
     let event_bus = Arc::new(EventBus::new());
-    let screen = LoadingScreen::new(event_bus);
+    let screen = LoadingScreen::new(event_bus, Arc::new(MockChallengeRepository::new()));
 
     // Should not panic
     screen
@@ -55,7 +56,7 @@ fn test_loading_screen_enter_ignored() {
     let _ = GameData::initialize();
 
     let event_bus = Arc::new(EventBus::new());
-    let screen = LoadingScreen::new(event_bus);
+    let screen = LoadingScreen::new(event_bus, Arc::new(MockChallengeRepository::new()));
 
     // Should not panic
     screen
@@ -71,7 +72,7 @@ fn test_loading_screen_esc_ignored() {
     let _ = GameData::initialize();
 
     let event_bus = Arc::new(EventBus::new());
-    let screen = LoadingScreen::new(event_bus);
+    let screen = LoadingScreen::new(event_bus, Arc::new(MockChallengeRepository::new()));
 
     // Should not panic
     screen
@@ -87,7 +88,7 @@ fn test_loading_screen_initialization() {
     let _ = GameData::initialize();
 
     let event_bus = Arc::new(EventBus::new());
-    let screen = LoadingScreen::new(event_bus);
+    let screen = LoadingScreen::new(event_bus, Arc::new(MockChallengeRepository::new()));
 
     assert_eq!(screen.get_type(), ScreenType::Loading);
 }

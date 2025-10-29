@@ -64,14 +64,19 @@ pub trait HelpScreenInterface: Screen {}
 #[derive(shaku::Component)]
 #[shaku(interface = HelpScreenInterface)]
 pub struct HelpScreen {
+    #[shaku(default)]
     current_section: RwLock<HelpSection>,
 
+    #[shaku(default)]
     github_fallback: RwLock<Option<String>>,
 
+    #[shaku(default)]
     scroll_position: RwLock<u16>,
 
+    #[shaku(default)]
     content_height: RwLock<u16>,
 
+    #[shaku(default)]
     viewport_height: RwLock<u16>,
 
     #[shaku(inject)]

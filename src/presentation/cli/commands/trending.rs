@@ -1,12 +1,16 @@
+use crate::domain::repositories::trending_repository::TrendingRepositoryInterface;
 use crate::infrastructure::console::{Console, ConsoleImpl};
 use crate::presentation::cli::commands::run_game_session;
 use crate::presentation::cli::screen_runner::run_screen;
 use crate::presentation::cli::Cli;
+use crate::presentation::di::AppModule;
 use crate::presentation::tui::screens::{
     TrendingLanguageSelectionScreen, TrendingRepositorySelectionScreen,
 };
 use crate::presentation::tui::ScreenType;
 use crate::{GitTypeError, Result};
+use shaku::HasComponent;
+use std::sync::Arc;
 
 const SUPPORTED_LANGUAGES: &[(&str, &str)] = &[
     ("C", "C"),
@@ -40,6 +44,10 @@ pub fn run_trending(
     period: String,
 ) -> Result<()> {
     let console = ConsoleImpl::new();
+
+    // Create DI container and resolve TrendingRepository
+    let container = AppModule::builder().build();
+    let trending_repository: Arc<dyn TrendingRepositoryInterface> = container.resolve();
 
     // Validate language if provided
     if let Some(ref lang) = language {
@@ -80,7 +88,9 @@ pub fn run_trending(
         // Language provided - show repositories directly
         let selected_repo = run_screen(
             ScreenType::TrendingRepositorySelection,
-            TrendingRepositorySelectionScreen::new,
+            |event_bus| {
+                TrendingRepositorySelectionScreen::new(event_bus, Arc::clone(&trending_repository))
+            },
             Some((language.clone(), period.clone())),
             Some(|screen: &TrendingRepositorySelectionScreen| {
                 screen.get_selected_index().and_then(|idx| {
@@ -119,7 +129,12 @@ pub fn run_trending(
             // Step 2: Repository selection with selected language
             let selected_repo = run_screen(
                 ScreenType::TrendingRepositorySelection,
-                TrendingRepositorySelectionScreen::new,
+                |event_bus| {
+                    TrendingRepositorySelectionScreen::new(
+                        event_bus,
+                        Arc::clone(&trending_repository),
+                    )
+                },
                 Some((Some(lang), period.clone())),
                 Some(|screen: &TrendingRepositorySelectionScreen| {
                     screen.get_selected_index().and_then(|idx| {

@@ -68,11 +68,17 @@ pub trait TitleScreenInterface: Screen {}
 #[derive(shaku::Component)]
 #[shaku(interface = TitleScreenInterface)]
 pub struct TitleScreen {
+    #[shaku(default)]
     selected_difficulty: RwLock<usize>,
+    #[shaku(default)]
     challenge_counts: RwLock<[usize; 5]>,
+    #[shaku(default)]
     git_repository: RwLock<Option<GitRepository>>,
+    #[shaku(default)]
     action_result: RwLock<Option<TitleAction>>,
+    #[shaku(default)]
     needs_render: RwLock<bool>,
+    #[shaku(default)]
     error_message: RwLock<Option<String>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
@@ -163,9 +169,16 @@ impl Screen for TitleScreen {
                     *self.error_message.write().unwrap() = None;
                     *self.action_result.write().unwrap() =
                         Some(TitleAction::Start(DIFFICULTIES[selected_difficulty].1));
-                    self.event_bus
-                        .as_event_bus()
-                        .publish(NavigateTo::Replace(ScreenType::Typing));
+                    let event_bus = self.event_bus.as_event_bus();
+                    log::info!(
+                        "TitleScreen: EventBus subscribers address: {:p}",
+                        event_bus.get_subscribers_ptr()
+                    );
+                    log::info!(
+                        "TitleScreen: Publishing NavigateTo::Replace(ScreenType::Typing) event"
+                    );
+                    event_bus.publish(NavigateTo::Replace(ScreenType::Typing));
+                    log::info!("TitleScreen: NavigateTo event published");
                     Ok(())
                 }
             }

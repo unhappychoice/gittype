@@ -1,8 +1,10 @@
-use crate::infrastructure::http::OssInsightClient;
+use crate::infrastructure::http::oss_insight_client::OssInsightClientInterface;
 use crate::infrastructure::storage::file_storage::FileStorage;
 use crate::Result;
 use serde::{Deserialize, Serialize};
+use shaku::Interface;
 use std::path::PathBuf;
+use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -22,49 +24,29 @@ struct TrendingCacheData {
     cache_key: String,
 }
 
-#[derive(Debug)]
-pub struct TrendingRepository {
-    cache_dir: PathBuf,
-    ttl_seconds: u64,
-    oss_insight_client: OssInsightClient,
-    file_storage: FileStorage,
+pub trait TrendingRepositoryInterface: Interface {
+    fn get_trending_repositories_sync(
+        &self,
+        key: &str,
+        language: Option<&str>,
+        period: &str,
+    ) -> Result<Vec<TrendingRepositoryInfo>>;
 }
 
-impl Default for TrendingRepository {
-    fn default() -> Self {
-        Self::new()
-    }
+#[derive(Debug, Clone, shaku::Component)]
+#[shaku(interface = TrendingRepositoryInterface)]
+pub struct TrendingRepository {
+    #[shaku(default)]
+    cache_dir: PathBuf,
+    #[shaku(default)]
+    ttl_seconds: u64,
+    #[shaku(inject)]
+    oss_insight_client: Arc<dyn OssInsightClientInterface>,
+    #[shaku(inject)]
+    file_storage: Arc<dyn crate::infrastructure::storage::file_storage::FileStorageInterface>,
 }
 
 impl TrendingRepository {
-    pub fn new() -> Self {
-        let file_storage = FileStorage::new();
-        let cache_dir = file_storage
-            .get_app_data_dir()
-            .unwrap_or_else(|_| PathBuf::from("."))
-            .join("trending_cache");
-
-        let ttl_seconds = 300; // 5 minutes
-
-        Self {
-            cache_dir,
-            ttl_seconds,
-            oss_insight_client: OssInsightClient::new(),
-            file_storage,
-        }
-    }
-
-    pub fn with_cache_dir(cache_dir: PathBuf) -> Self {
-        let ttl_seconds = 300; // 5 minutes
-
-        Self {
-            cache_dir,
-            ttl_seconds,
-            oss_insight_client: OssInsightClient::new(),
-            file_storage: FileStorage::new(),
-        }
-    }
-
     /// Get trending repositories with caching and fallback to fresh data
     pub async fn get_trending_repositories(
         &self,
@@ -110,7 +92,10 @@ impl TrendingRepository {
             return None;
         }
 
-        let cache_data: TrendingCacheData = self.file_storage.read_json(&cache_file).ok()??;
+        let file_storage =
+            (self.file_storage.as_ref() as &dyn std::any::Any).downcast_ref::<FileStorage>()?;
+
+        let cache_data: TrendingCacheData = file_storage.read_json(&cache_file).ok()??;
 
         let current_time = SystemTime::now()
             .duration_since(UNIX_EPOCH)
@@ -141,7 +126,12 @@ impl TrendingRepository {
         };
 
         let cache_file = self.get_cache_file(key);
-        let _ = self.file_storage.write_json(&cache_file, &cache_data);
+
+        if let Some(file_storage) =
+            (self.file_storage.as_ref() as &dyn std::any::Any).downcast_ref::<FileStorage>()
+        {
+            let _ = file_storage.write_json(&cache_file, &cache_data);
+        }
     }
 
     /// Fetch fresh data from API
@@ -183,5 +173,13 @@ impl TrendingRepository {
     }
 }
 
-pub static TRENDING_REPOSITORY: once_cell::sync::Lazy<TrendingRepository> =
-    once_cell::sync::Lazy::new(TrendingRepository::new);
+impl TrendingRepositoryInterface for TrendingRepository {
+    fn get_trending_repositories_sync(
+        &self,
+        key: &str,
+        language: Option<&str>,
+        period: &str,
+    ) -> Result<Vec<TrendingRepositoryInfo>> {
+        TrendingRepository::get_trending_repositories_sync(self, key, language, period)
+    }
+}

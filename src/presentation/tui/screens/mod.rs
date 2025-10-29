@@ -38,9 +38,7 @@ pub use panic_screen::{PanicScreen, PanicScreenInterface};
 pub use records_screen::{RecordsScreen, RecordsScreenInterface, RecordsScreenProvider};
 pub use repo_list_screen::{RepoListScreen, RepoListScreenDataProvider};
 pub use repo_play_screen::{RepoPlayScreen, RepoPlayScreenDataProvider};
-pub use session_detail_screen::{
-    SessionDetailScreen, SessionDetailScreenInterface, SessionDetailScreenProvider,
-};
+pub use session_detail_screen::{SessionDetailScreen, SessionDetailScreenInterface};
 pub use session_details_dialog::{
     SessionDetailsDialog, SessionDetailsDialogInterface, SessionDetailsDialogProvider,
 };

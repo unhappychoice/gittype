@@ -24,10 +24,20 @@ pub trait SessionRepositoryTrait: shaku::Interface {
 }
 
 /// Repository for session business logic
-#[derive(shaku::Component)]
-#[shaku(interface = SessionRepositoryTrait)]
 pub struct SessionRepository {
     database: Arc<Mutex<Database>>,
+}
+
+impl shaku::Component<crate::presentation::di::AppModule> for SessionRepository {
+    type Interface = dyn SessionRepositoryTrait;
+    type Parameters = ();
+
+    fn build(
+        _context: &mut shaku::ModuleBuildContext<crate::presentation::di::AppModule>,
+        _params: Self::Parameters,
+    ) -> Box<dyn SessionRepositoryTrait> {
+        Box::new(SessionRepository::default())
+    }
 }
 
 impl SessionRepository {
@@ -52,7 +62,7 @@ impl SessionRepository {
         let db = self.db_with_lock()?;
 
         // Repository manages the transaction boundary
-        let conn = db.get_connection();
+        let conn = db.get_connection()?;
         let tx = conn.unchecked_transaction()?;
         log::debug!("Database transaction started");
 
@@ -160,7 +170,7 @@ impl SessionRepository {
     /// Get language performance statistics
     pub fn get_language_stats(&self, _days: Option<i64>) -> Result<Vec<(String, f64, usize)>> {
         let db = self.db_with_lock()?;
-        let conn = db.get_connection();
+        let conn = db.get_connection()?;
 
         // Query with proper time filtering for last 30 days
         let query = "SELECT language, AVG(cpm) as avg_cpm, COUNT(*) as session_count

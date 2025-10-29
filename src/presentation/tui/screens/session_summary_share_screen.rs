@@ -55,7 +55,9 @@ pub trait SessionSummaryShareScreenInterface: Screen {}
 #[derive(shaku::Component)]
 #[shaku(interface = SessionSummaryShareScreenInterface)]
 pub struct SessionSummaryShareScreen {
+    #[shaku(default)]
     session_result: RwLock<Option<SessionResult>>,
+    #[shaku(default)]
     git_repository: RwLock<Option<GitRepository>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,

@@ -1,4 +1,4 @@
-use crate::domain::repositories::challenge_repository::CHALLENGE_REPOSITORY;
+use crate::domain::repositories::challenge_repository::ChallengeRepositoryInterface;
 use crate::infrastructure::logging::{setup_console_logging, setup_logging};
 use crate::presentation::cli::args::{CacheCommands, RepoCommands};
 use crate::presentation::cli::commands::{
@@ -6,8 +6,10 @@ use crate::presentation::cli::commands::{
     run_stats, run_trending,
 };
 use crate::presentation::cli::{Cli, Commands};
+use crate::presentation::di::AppModule;
 use crate::presentation::game::GameData;
 use crate::{GitTypeError, Result};
+use shaku::HasComponent;
 
 pub fn run_cli(cli: Cli) -> Result<()> {
     if let Err(e) = setup_logging() {
@@ -22,7 +24,11 @@ pub fn run_cli(cli: Cli) -> Result<()> {
         Some(Commands::History) => run_history(),
         Some(Commands::Stats) => run_stats(),
         Some(Commands::Export { format, output }) => run_export(format.clone(), output.clone()),
-        Some(Commands::Cache { cache_command }) => run_cache_command(cache_command),
+        Some(Commands::Cache { cache_command }) => {
+            let module = AppModule::builder().build();
+            let challenge_repository: &dyn ChallengeRepositoryInterface = module.resolve_ref();
+            run_cache_command(cache_command, challenge_repository)
+        }
         Some(Commands::Repo { repo_command }) => run_repo_command(repo_command),
         Some(Commands::Trending {
             language,
@@ -33,9 +39,12 @@ pub fn run_cli(cli: Cli) -> Result<()> {
     }
 }
 
-fn run_cache_command(cache_command: &CacheCommands) -> Result<()> {
+fn run_cache_command(
+    cache_command: &CacheCommands,
+    challenge_repository: &dyn ChallengeRepositoryInterface,
+) -> Result<()> {
     match cache_command {
-        CacheCommands::Stats => match CHALLENGE_REPOSITORY.get_cache_stats() {
+        CacheCommands::Stats => match challenge_repository.get_cache_stats() {
             Ok((file_count, total_bytes)) => {
                 println!("Challenge Cache Statistics:");
                 println!("  Cached repositories: {}", file_count);
@@ -61,19 +70,19 @@ fn run_cache_command(cache_command: &CacheCommands) -> Result<()> {
             }
             Err(e) => {
                 eprintln!("Error getting cache stats: {}", e);
-                return Err(GitTypeError::TerminalError(e));
+                return Err(GitTypeError::TerminalError(e.to_string()));
             }
         },
-        CacheCommands::Clear => match CHALLENGE_REPOSITORY.clear_cache() {
+        CacheCommands::Clear => match challenge_repository.clear_cache() {
             Ok(()) => {
                 println!("Challenge cache cleared successfully.");
             }
             Err(e) => {
                 eprintln!("Error clearing cache: {}", e);
-                return Err(GitTypeError::TerminalError(e));
+                return Err(GitTypeError::TerminalError(e.to_string()));
             }
         },
-        CacheCommands::List => match CHALLENGE_REPOSITORY.list_cache_keys() {
+        CacheCommands::List => match challenge_repository.list_cache_keys() {
             Ok(keys) => {
                 if keys.is_empty() {
                     println!("No cached challenges found.");
@@ -86,7 +95,7 @@ fn run_cache_command(cache_command: &CacheCommands) -> Result<()> {
             }
             Err(e) => {
                 eprintln!("Error listing cache keys: {}", e);
-                return Err(GitTypeError::TerminalError(e));
+                return Err(GitTypeError::TerminalError(e.to_string()));
             }
         },
     }

@@ -108,6 +108,10 @@ impl<T: Screen + Send + Sync + ?Sized> Screen for ArcScreenWrapper<T> {
         self.0.cleanup()
     }
 
+    fn on_pushed_from(&self, source_screen: &dyn Screen) -> Result<()> {
+        self.0.on_pushed_from(source_screen)
+    }
+
     fn get_update_strategy(&self) -> UpdateStrategy {
         self.0.get_update_strategy()
     }
@@ -198,14 +202,23 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
             manager.pending_transition.clone()
         };
 
+        log::info!(
+            "ScreenManager: EventBus subscribers address: {:p}",
+            event_bus.as_event_bus().get_subscribers_ptr()
+        );
+
         // Subscribe to NavigateTo events
         {
             let pending_transition_clone = pending_transition.clone();
             event_bus
                 .as_event_bus()
                 .subscribe(move |event: &NavigateTo| {
+                    log::info!("ScreenManager: Received NavigateTo event: {:?}", event);
                     if let Ok(mut pending) = pending_transition_clone.lock() {
                         *pending = Some(event.clone());
+                        log::info!("ScreenManager: Set pending transition to {:?}", event);
+                    } else {
+                        log::error!("ScreenManager: Failed to lock pending_transition");
                     }
                 });
         }
@@ -526,7 +539,8 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
                     .transpose()?;
 
                 // Load next challenge in TypingScreen
-                self.screens
+                let load_result = self
+                    .screens
                     .get_mut(&ScreenType::Typing)
                     .and_then(|screen| screen.as_any().downcast_ref::<TypingScreen>())
                     .map(|screen| screen.load_current_challenge())
@@ -540,7 +554,15 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
                             ))
                         }
                     })
-                    .transpose()?;
+                    .transpose();
+
+                if let Err(e) = load_result {
+                    log::error!(
+                        "ScreenManager: Failed to load challenge in TypingScreen: {}",
+                        e
+                    );
+                    return Err(e);
+                }
 
                 Ok(())
             }
@@ -569,7 +591,13 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
             };
 
             if let Some(transition) = pending_transition {
-                let _ = self.handle_transition(transition);
+                log::info!(
+                    "ScreenManager: Processing pending transition: {:?}",
+                    transition
+                );
+                if let Err(e) = self.handle_transition(transition) {
+                    log::error!("ScreenManager: Failed to handle transition: {}", e);
+                }
             }
 
             // Check if exit was requested
@@ -837,8 +865,8 @@ impl ScreenManagerFactory for ScreenManagerFactoryImpl {
         game_data: Arc<Mutex<GameData>>,
         _module: &crate::presentation::di::AppModule,
     ) -> ScreenManagerImpl<CrosstermBackend<Stdout>> {
-        let event_bus_ref = self.event_bus.as_event_bus();
-        let event_bus = Arc::new(event_bus_ref.clone());
+        // Use the Arc<dyn EventBusInterface> directly from DI - ensures same instance everywhere
+        let event_bus = self.event_bus.clone();
         let terminal = self.terminal.get();
         let mut manager = ScreenManagerImpl::new(event_bus.clone(), game_data.clone(), terminal);
 

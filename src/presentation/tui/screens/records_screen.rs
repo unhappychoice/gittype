@@ -110,12 +110,19 @@ pub trait RecordsScreenInterface: Screen {}
 #[derive(shaku::Component)]
 #[shaku(interface = RecordsScreenInterface)]
 pub struct RecordsScreen {
+    #[shaku(default)]
     sessions: RwLock<Vec<SessionDisplayData>>,
+    #[shaku(default)]
     repositories: RwLock<Vec<StoredRepository>>,
+    #[shaku(default)]
     filter_state: RwLock<FilterState>,
+    #[shaku(default)]
     list_state: RwLock<ListState>,
+    #[shaku(default)]
     scroll_state: RwLock<ScrollbarState>,
+    #[shaku(default)]
     action_result: RwLock<Option<RecordsAction>>,
+    #[shaku(default)]
     selected_session_for_detail: RwLock<Option<SessionDisplayData>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,

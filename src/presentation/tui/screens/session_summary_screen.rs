@@ -62,9 +62,13 @@ pub trait SessionSummaryScreenInterface: Screen {}
 #[derive(shaku::Component)]
 #[shaku(interface = SessionSummaryScreenInterface)]
 pub struct SessionSummaryScreen {
+    #[shaku(default)]
     action_result: RwLock<Option<ResultAction>>,
+    #[shaku(default)]
     session_result: RwLock<Option<SessionResult>>,
+    #[shaku(default)]
     git_repository: RwLock<Option<GitRepository>>,
+    #[shaku(default)]
     session_manager: RwLock<Option<Arc<Mutex<SessionManager>>>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,

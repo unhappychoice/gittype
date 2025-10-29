@@ -72,12 +72,13 @@ fn test_ensure_repository_in_transaction() {
         root_path: None,
     };
 
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx = conn.unchecked_transaction().unwrap();
     let id = dao
         .ensure_repository_in_transaction(&tx, &git_repo)
         .unwrap();
     tx.commit().unwrap();
+    drop(conn);
 
     assert!(id > 0, "Should return positive repository ID");
 
@@ -341,7 +342,7 @@ fn test_multiple_repositories_in_transaction() {
         },
     ];
 
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx = conn.unchecked_transaction().unwrap();
 
     let mut ids = Vec::new();
@@ -351,6 +352,7 @@ fn test_multiple_repositories_in_transaction() {
     }
 
     tx.commit().unwrap();
+    drop(conn);
 
     // All IDs should be unique and positive
     assert_eq!(ids.len(), 3, "Should create 3 repositories");

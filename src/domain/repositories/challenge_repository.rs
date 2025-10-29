@@ -1,9 +1,10 @@
 use crate::domain::models::{Challenge, DifficultyLevel, GitRepository};
 use crate::infrastructure::storage::compressed_file_storage::CompressedFileStorage;
-use crate::infrastructure::storage::file_storage::FileStorage;
 use crate::presentation::game::models::StepType;
 use crate::presentation::tui::screens::loading_screen::ProgressReporter;
+use crate::Result;
 use rayon::prelude::*;
+use shaku::Interface;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
@@ -25,41 +26,41 @@ struct CacheData {
     challenge_pointers: Vec<ChallengePointer>,
 }
 
-#[derive(Debug, Clone)]
-pub struct ChallengeRepository {
-    cache_dir: PathBuf,
-    storage: CompressedFileStorage,
-    file_storage: FileStorage,
-}
-
-impl ChallengeRepository {
-    pub fn new() -> Self {
-        let file_storage = FileStorage::new();
-        let cache_dir = file_storage
-            .get_app_data_dir()
-            .unwrap_or_else(|_| PathBuf::from("."))
-            .join("cache");
-
-        Self {
-            cache_dir,
-            storage: CompressedFileStorage::new(),
-            file_storage,
-        }
-    }
-
-    pub fn with_cache_dir(cache_dir: PathBuf) -> Self {
-        Self {
-            cache_dir,
-            storage: CompressedFileStorage::new(),
-            file_storage: FileStorage::new(),
-        }
-    }
-
-    pub fn save_challenges(
+pub trait ChallengeRepositoryInterface: Interface {
+    fn save_challenges(
         &self,
         repo: &GitRepository,
         challenges: &[Challenge],
-    ) -> Result<(), String> {
+        reporter: Option<&dyn ProgressReporter>,
+    ) -> Result<()>;
+
+    fn load_challenges_with_progress(
+        &self,
+        repo: &GitRepository,
+        reporter: Option<&dyn ProgressReporter>,
+    ) -> Result<Option<Vec<Challenge>>>;
+
+    fn get_cache_stats(&self) -> Result<(usize, u64)>;
+    fn clear_cache(&self) -> Result<()>;
+    fn invalidate_repository(&self, repo: &GitRepository) -> Result<bool>;
+    fn list_cache_keys(&self) -> Result<Vec<String>>;
+}
+
+#[derive(Debug, Clone, shaku::Component)]
+#[shaku(interface = ChallengeRepositoryInterface)]
+pub struct ChallengeRepository {
+    #[shaku(default)]
+    cache_dir: PathBuf,
+    #[shaku(inject)]
+    storage: Arc<
+        dyn crate::infrastructure::storage::compressed_file_storage::CompressedFileStorageInterface,
+    >,
+    #[shaku(inject)]
+    file_storage: Arc<dyn crate::infrastructure::storage::file_storage::FileStorageInterface>,
+}
+
+impl ChallengeRepository {
+    pub fn save_challenges(&self, repo: &GitRepository, challenges: &[Challenge]) -> Result<()> {
         if repo.is_dirty {
             return Ok(());
         }
@@ -90,9 +91,13 @@ impl ChallengeRepository {
             challenge_pointers,
         };
 
-        self.storage
-            .save(&cache_file, &cache_data)
-            .map_err(|e| e.to_string())
+        let storage = (self.storage.as_ref() as &dyn std::any::Any)
+            .downcast_ref::<CompressedFileStorage>()
+            .ok_or_else(|| {
+                crate::GitTypeError::ExtractionFailed("Failed to downcast storage".to_string())
+            })?;
+
+        storage.save(&cache_file, &cache_data)
     }
 
     pub fn load_challenges_with_progress(
@@ -105,7 +110,11 @@ impl ChallengeRepository {
         }
 
         let cache_file = self.get_cache_file(repo);
-        let cache_data: CacheData = self.storage.load(&cache_file).ok()??;
+
+        let storage = (self.storage.as_ref() as &dyn std::any::Any)
+            .downcast_ref::<CompressedFileStorage>()?;
+
+        let cache_data: CacheData = storage.load(&cache_file).ok()??;
 
         let current_commit = repo.commit_hash.as_deref().unwrap_or("");
         if cache_data.commit_hash != current_commit {
@@ -148,15 +157,15 @@ impl ChallengeRepository {
         Some(challenges)
     }
 
-    pub fn clear_cache(&self) -> Result<(), String> {
+    pub fn clear_cache(&self) -> Result<()> {
         let files = self.storage.list_files_in_dir(&self.cache_dir);
         for file in files {
-            self.storage.delete_file(&file).map_err(|e| e.to_string())?;
+            self.storage.delete_file(&file)?;
         }
         Ok(())
     }
 
-    pub fn get_cache_stats(&self) -> Result<(usize, u64), String> {
+    pub fn get_cache_stats(&self) -> Result<(usize, u64)> {
         let files = self.storage.list_files_in_dir(&self.cache_dir);
         let count = files.len();
         let total_size = files
@@ -166,26 +175,30 @@ impl ChallengeRepository {
         Ok((count, total_size))
     }
 
-    pub fn invalidate_repository(&self, repo: &GitRepository) -> Result<bool, String> {
+    pub fn invalidate_repository(&self, repo: &GitRepository) -> Result<bool> {
         let cache_file = self.get_cache_file(repo);
         if self.storage.file_exists(&cache_file) {
-            self.storage
-                .delete_file(&cache_file)
-                .map_err(|e| e.to_string())?;
+            self.storage.delete_file(&cache_file)?;
             Ok(true)
         } else {
             Ok(false)
         }
     }
 
-    pub fn list_cache_keys(&self) -> Result<Vec<String>, String> {
+    pub fn list_cache_keys(&self) -> Result<Vec<String>> {
         let files = self.storage.list_files_in_dir(&self.cache_dir);
+
+        let storage = (self.storage.as_ref() as &dyn std::any::Any)
+            .downcast_ref::<CompressedFileStorage>()
+            .ok_or_else(|| {
+                crate::GitTypeError::ExtractionFailed("Failed to downcast storage".to_string())
+            })?;
 
         let mut keys: Vec<String> = files
             .iter()
             .filter_map(|path| {
                 if path.file_name()?.to_str()?.ends_with(".bin") {
-                    self.storage
+                    storage
                         .load::<CacheData>(path)
                         .ok()
                         .flatten()
@@ -281,11 +294,39 @@ impl ChallengeRepository {
     }
 }
 
-impl Default for ChallengeRepository {
-    fn default() -> Self {
-        Self::new()
+impl ChallengeRepositoryInterface for ChallengeRepository {
+    fn save_challenges(
+        &self,
+        repo: &GitRepository,
+        challenges: &[Challenge],
+        _reporter: Option<&dyn ProgressReporter>,
+    ) -> Result<()> {
+        ChallengeRepository::save_challenges(self, repo, challenges)
+    }
+
+    fn load_challenges_with_progress(
+        &self,
+        repo: &GitRepository,
+        reporter: Option<&dyn ProgressReporter>,
+    ) -> Result<Option<Vec<Challenge>>> {
+        Ok(ChallengeRepository::load_challenges_with_progress(
+            self, repo, reporter,
+        ))
+    }
+
+    fn get_cache_stats(&self) -> Result<(usize, u64)> {
+        ChallengeRepository::get_cache_stats(self)
+    }
+
+    fn clear_cache(&self) -> Result<()> {
+        ChallengeRepository::clear_cache(self)
+    }
+
+    fn invalidate_repository(&self, repo: &GitRepository) -> Result<bool> {
+        ChallengeRepository::invalidate_repository(self, repo)
+    }
+
+    fn list_cache_keys(&self) -> Result<Vec<String>> {
+        ChallengeRepository::list_cache_keys(self)
     }
 }
-
-pub static CHALLENGE_REPOSITORY: once_cell::sync::Lazy<ChallengeRepository> =
-    once_cell::sync::Lazy::new(ChallengeRepository::new);

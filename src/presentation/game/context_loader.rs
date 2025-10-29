@@ -1,10 +1,10 @@
 use crate::domain::models::Challenge;
-use crate::infrastructure::storage::file_storage::FileStorage;
+use crate::infrastructure::storage::file_storage::{FileStorage, FileStorageInterface};
 use crate::presentation::game::GameData;
 use crate::Result;
 use std::path::{Path, PathBuf};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct CodeContext {
     pub pre_context: Vec<String>,
     pub post_context: Vec<String>,
@@ -12,10 +12,7 @@ pub struct CodeContext {
 
 impl CodeContext {
     pub fn empty() -> Self {
-        Self {
-            pre_context: Vec::new(),
-            post_context: Vec::new(),
-        }
+        Self::default()
     }
 }
 

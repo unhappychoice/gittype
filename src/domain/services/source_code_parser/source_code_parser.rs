@@ -3,7 +3,7 @@ use crate::domain::models::{CodeChunk, ExtractionOptions};
 use crate::domain::services::source_code_parser::parsers::parse_with_thread_local;
 use crate::domain::services::source_code_parser::ChunkExtractor;
 use crate::infrastructure::git::LocalGitRepositoryClient;
-use crate::infrastructure::storage::file_storage::FileStorage;
+use crate::infrastructure::storage::file_storage::{FileStorage, FileStorageInterface};
 use crate::presentation::game::models::StepType;
 use crate::presentation::tui::screens::loading_screen::ProgressReporter;
 use crate::{GitTypeError, Result};
@@ -77,7 +77,7 @@ impl SourceCodeParser {
         files_to_process
             .first()
             .map(|(first_file, _)| first_file)
-            .and_then(|path| LocalGitRepositoryClient::get_repository_root(path))
+            .and_then(|path| LocalGitRepositoryClient::new().get_repository_root(path))
             .ok_or_else(|| GitTypeError::ExtractionFailed("Git repository not found".to_string()))
     }
 

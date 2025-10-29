@@ -2,21 +2,34 @@ use crate::domain::error::{GitTypeError, Result};
 use crate::domain::models::GitRepository;
 use crate::infrastructure::git::git_repository_ref_parser::GitRepositoryRefParser;
 use git2::Repository;
+use shaku::{Component, Interface};
 use std::path::{Path, PathBuf};
 
+pub trait LocalGitRepositoryClientInterface: Interface {
+    fn is_git_repository(&self, path: &Path) -> bool;
+    fn get_repository_root(&self, path: &Path) -> Option<PathBuf>;
+    fn extract_git_repository(&self, repo_path: &Path) -> Result<GitRepository>;
+}
+
+#[derive(Component, Default, Clone)]
+#[shaku(interface = LocalGitRepositoryClientInterface)]
 pub struct LocalGitRepositoryClient;
 
 impl LocalGitRepositoryClient {
-    pub fn is_git_repository(path: &Path) -> bool {
+    pub fn new() -> Self {
+        Self
+    }
+
+    pub fn is_git_repository(&self, path: &Path) -> bool {
         let git_dir = path.join(".git");
         git_dir.exists()
     }
 
-    pub fn get_repository_root(path: &Path) -> Option<PathBuf> {
+    pub fn get_repository_root(&self, path: &Path) -> Option<PathBuf> {
         let mut current_path = path.to_path_buf();
 
         loop {
-            if Self::is_git_repository(&current_path) {
+            if self.is_git_repository(&current_path) {
                 return Some(current_path);
             }
 
@@ -28,12 +41,12 @@ impl LocalGitRepositoryClient {
         None
     }
 
-    pub fn extract_git_repository(repo_path: &Path) -> Result<GitRepository> {
+    pub fn extract_git_repository(&self, repo_path: &Path) -> Result<GitRepository> {
         let canonical_path = repo_path.canonicalize().map_err(|_| {
             GitTypeError::ExtractionFailed("Path canonicalization failed".to_string())
         })?;
 
-        let git_root = Self::get_repository_root(&canonical_path).ok_or_else(|| {
+        let git_root = self.get_repository_root(&canonical_path).ok_or_else(|| {
             GitTypeError::ExtractionFailed("Git repository not found".to_string())
         })?;
 
@@ -41,14 +54,14 @@ impl LocalGitRepositoryClient {
             GitTypeError::ExtractionFailed(format!("Failed to open git repository: {}", e))
         })?;
 
-        let remote_url = Self::get_remote_url(&repo)?;
+        let remote_url = self.get_remote_url(&repo)?;
         let repo_ref = GitRepositoryRefParser::parse(&remote_url).map_err(|_| {
             GitTypeError::ExtractionFailed("Failed to parse remote URL".to_string())
         })?;
 
-        let branch = Self::get_current_branch(&repo).ok();
-        let commit_hash = Self::get_current_commit_hash(&repo).ok();
-        let is_dirty = Self::is_working_directory_dirty(&repo).unwrap_or(false);
+        let branch = self.get_current_branch(&repo).ok();
+        let commit_hash = self.get_current_commit_hash(&repo).ok();
+        let is_dirty = self.is_working_directory_dirty(&repo).unwrap_or(false);
 
         Ok(GitRepository {
             user_name: repo_ref.owner,
@@ -61,7 +74,7 @@ impl LocalGitRepositoryClient {
         })
     }
 
-    fn get_remote_url(repo: &Repository) -> Result<String> {
+    fn get_remote_url(&self, repo: &Repository) -> Result<String> {
         repo.find_remote("origin")
             .map_err(|e| {
                 GitTypeError::ExtractionFailed(format!("Failed to find origin remote: {}", e))
@@ -74,7 +87,7 @@ impl LocalGitRepositoryClient {
             })
     }
 
-    fn get_current_branch(repo: &Repository) -> Result<String> {
+    fn get_current_branch(&self, repo: &Repository) -> Result<String> {
         repo.head()
             .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to get HEAD: {}", e)))
             .map(|head| head.shorthand().map(str::to_string))
@@ -85,7 +98,7 @@ impl LocalGitRepositoryClient {
             })
     }
 
-    fn get_current_commit_hash(repo: &Repository) -> Result<String> {
+    fn get_current_commit_hash(&self, repo: &Repository) -> Result<String> {
         repo.head()
             .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to get HEAD: {}", e)))
             .map(|head| head.target().map(|oid| oid.to_string()))
@@ -96,7 +109,7 @@ impl LocalGitRepositoryClient {
             })
     }
 
-    fn is_working_directory_dirty(repo: &Repository) -> Result<bool> {
+    fn is_working_directory_dirty(&self, repo: &Repository) -> Result<bool> {
         repo.statuses(None)
             .map_err(|e| {
                 GitTypeError::ExtractionFailed(format!("Failed to get repository status: {}", e))
@@ -105,7 +118,7 @@ impl LocalGitRepositoryClient {
     }
 
     /// Create a GitRepository from a local path
-    pub fn create_from_local_path(path: &Path) -> Result<GitRepository> {
+    pub fn create_from_local_path(&self, path: &Path) -> Result<GitRepository> {
         let repo = Repository::open(path).map_err(|e| {
             GitTypeError::ExtractionFailed(format!("Failed to open git repository: {}", e))
         })?;
@@ -160,5 +173,19 @@ impl LocalGitRepositoryClient {
             is_dirty,
             root_path: Some(path.to_path_buf()),
         })
+    }
+}
+
+impl LocalGitRepositoryClientInterface for LocalGitRepositoryClient {
+    fn is_git_repository(&self, path: &Path) -> bool {
+        self.is_git_repository(path)
+    }
+
+    fn get_repository_root(&self, path: &Path) -> Option<PathBuf> {
+        self.get_repository_root(path)
+    }
+
+    fn extract_git_repository(&self, repo_path: &Path) -> Result<GitRepository> {
+        self.extract_git_repository(repo_path)
     }
 }

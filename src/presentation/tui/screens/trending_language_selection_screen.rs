@@ -19,7 +19,9 @@ pub trait TrendingLanguageSelectionScreenInterface: Screen {}
 #[derive(shaku::Component)]
 #[shaku(interface = TrendingLanguageSelectionScreenInterface)]
 pub struct TrendingLanguageSelectionScreen {
+    #[shaku(default)]
     list_state: RwLock<ListState>,
+    #[shaku(default)]
     selected_language: RwLock<Option<String>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,

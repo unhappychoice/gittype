@@ -68,12 +68,19 @@ pub trait AnalyticsScreenInterface: Screen {}
 #[derive(shaku::Component)]
 #[shaku(interface = AnalyticsScreenInterface)]
 pub struct AnalyticsScreen {
+    #[shaku(default)]
     view_mode: RwLock<ViewMode>,
+    #[shaku(default)]
     data: RwLock<Option<AnalyticsData>>,
+    #[shaku(default)]
     repository_list_state: RwLock<ListState>,
+    #[shaku(default)]
     language_list_state: RwLock<ListState>,
+    #[shaku(default)]
     repository_scroll_state: RwLock<ScrollbarState>,
+    #[shaku(default)]
     language_scroll_state: RwLock<ScrollbarState>,
+    #[shaku(default)]
     action_result: RwLock<Option<AnalyticsAction>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,

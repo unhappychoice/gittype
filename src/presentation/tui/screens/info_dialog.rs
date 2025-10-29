@@ -38,6 +38,7 @@ pub trait InfoDialogScreenInterface: Screen {}
 #[derive(shaku::Component)]
 #[shaku(interface = InfoDialogScreenInterface)]
 pub struct InfoDialogScreen {
+    #[shaku(default)]
     state: RwLock<InfoDialogState>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,

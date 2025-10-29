@@ -71,9 +71,13 @@ pub trait SessionDetailsDialogInterface: Screen {}
 #[derive(shaku::Component)]
 #[shaku(interface = SessionDetailsDialogInterface)]
 pub struct SessionDetailsDialog {
+    #[shaku(default)]
     session_result: RwLock<Option<SessionResult>>,
+    #[shaku(default)]
     repo_info: RwLock<Option<GitRepository>>,
+    #[shaku(default)]
     best_status: RwLock<Option<BestStatus>>,
+    #[shaku(default)]
     best_records: RwLock<Option<BestRecords>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,

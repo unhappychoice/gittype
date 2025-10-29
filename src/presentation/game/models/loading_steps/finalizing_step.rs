@@ -63,7 +63,11 @@ impl Step for FinalizingStep {
                     .current_repo_path
                     .as_ref()
                     .or(context.repo_path)
-                    .and_then(|path| LocalGitRepositoryClient::create_from_local_path(path).ok())
+                    .and_then(|path| {
+                        LocalGitRepositoryClient::new()
+                            .create_from_local_path(path)
+                            .ok()
+                    })
             });
 
         // Verify challenges are available in GameData

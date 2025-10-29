@@ -1,3 +1,4 @@
+use crate::integration::screens::mocks::trending_repository_mock::MockTrendingRepository;
 use crate::integration::screens::mocks::trending_repository_selection_screen_mock::MockTrendingRepositorySelectionDataProvider;
 use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
@@ -8,7 +9,10 @@ use std::sync::Arc;
 screen_snapshot_test!(
     test_trending_repository_selection_screen_snapshot,
     TrendingRepositorySelectionScreen,
-    TrendingRepositorySelectionScreen::new(Arc::new(EventBus::new())),
+    TrendingRepositorySelectionScreen::new(
+        Arc::new(EventBus::new()),
+        Arc::new(MockTrendingRepository::new())
+    ),
     provider = MockTrendingRepositorySelectionDataProvider
 );
 
@@ -16,6 +20,10 @@ screen_snapshot_test!(
 screen_key_event_test!(
     test_trending_repository_selection_screen_esc_exits,
     TrendingRepositorySelectionScreen,
+    |event_bus| TrendingRepositorySelectionScreen::new(
+        event_bus,
+        Arc::new(MockTrendingRepository::new())
+    ),
     NavigateTo,
     KeyCode::Esc,
     KeyModifiers::empty(),
@@ -25,6 +33,10 @@ screen_key_event_test!(
 screen_key_event_test!(
     test_trending_repository_selection_screen_ctrl_c_exits,
     TrendingRepositorySelectionScreen,
+    |event_bus| TrendingRepositorySelectionScreen::new(
+        event_bus,
+        Arc::new(MockTrendingRepository::new())
+    ),
     NavigateTo,
     KeyCode::Char('c'),
     KeyModifiers::CONTROL,
@@ -34,6 +46,10 @@ screen_key_event_test!(
 screen_key_event_test!(
     test_trending_repository_selection_screen_space_selects,
     TrendingRepositorySelectionScreen,
+    |event_bus| TrendingRepositorySelectionScreen::new(
+        event_bus,
+        Arc::new(MockTrendingRepository::new())
+    ),
     NavigateTo,
     KeyCode::Char(' '),
     KeyModifiers::empty(),
@@ -41,8 +57,12 @@ screen_key_event_test!(
 );
 
 // Non-event key tests
-screen_key_tests!(
+screen_key_tests_custom!(
     TrendingRepositorySelectionScreen,
+    |event_bus| TrendingRepositorySelectionScreen::new(
+        event_bus,
+        Arc::new(MockTrendingRepository::new())
+    ),
     MockTrendingRepositorySelectionDataProvider,
     [
         (
@@ -72,7 +92,10 @@ screen_key_tests!(
 screen_basic_methods_test!(
     test_trending_repository_selection_screen_basic_methods,
     TrendingRepositorySelectionScreen,
-    TrendingRepositorySelectionScreen::new(Arc::new(EventBus::new())),
+    TrendingRepositorySelectionScreen::new(
+        Arc::new(EventBus::new()),
+        Arc::new(MockTrendingRepository::new())
+    ),
     gittype::presentation::tui::ScreenType::TrendingRepositorySelection,
     true,
     MockTrendingRepositorySelectionDataProvider

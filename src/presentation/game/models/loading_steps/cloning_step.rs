@@ -61,11 +61,12 @@ impl Step for CloningStep {
             }
         };
 
-        let repo_path = RemoteGitRepositoryClient::clone_repository(repo_spec, progress_callback)?;
+        let repo_path =
+            RemoteGitRepositoryClient::new().clone_repository(repo_spec, progress_callback)?;
         context.current_repo_path = Some(repo_path.clone());
 
         // Extract git repository information after cloning
-        let repository = LocalGitRepositoryClient::extract_git_repository(&repo_path)?;
+        let repository = LocalGitRepositoryClient::new().extract_git_repository(&repo_path)?;
         context.git_repository = Some(repository.clone());
         let _ = GameData::set_git_repository(Some(repository));
 

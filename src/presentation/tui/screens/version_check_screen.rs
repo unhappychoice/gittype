@@ -23,7 +23,9 @@ pub trait VersionCheckScreenInterface: Screen {}
 #[derive(shaku::Component)]
 #[shaku(interface = VersionCheckScreenInterface)]
 pub struct VersionCheckScreen {
+    #[shaku(default)]
     current_version: RwLock<String>,
+    #[shaku(default)]
     latest_version: RwLock<String>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,

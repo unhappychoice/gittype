@@ -1,9 +1,11 @@
 use crate::domain::models::ExtractionOptions;
 use crate::domain::models::{Challenge, CodeChunk, GitRepository};
+use crate::domain::repositories::challenge_repository::ChallengeRepositoryInterface;
 use crate::presentation::tui::screens::LoadingScreen;
 use crate::Result;
 use ratatui::style::Color;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 pub mod cache_check_step;
 pub mod cloning_step;
@@ -41,6 +43,7 @@ pub struct ExecutionContext<'a> {
     pub repo_path: Option<&'a PathBuf>,
     pub extraction_options: Option<&'a ExtractionOptions>,
     pub loading_screen: Option<&'a LoadingScreen>,
+    pub challenge_repository: Option<Arc<dyn ChallengeRepositoryInterface>>,
     pub current_repo_path: Option<PathBuf>,
     pub git_repository: Option<GitRepository>,
     pub scanned_files: Option<Vec<PathBuf>>, // Temporary storage for step results

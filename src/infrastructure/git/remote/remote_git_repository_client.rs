@@ -4,15 +4,29 @@ use crate::infrastructure::git::git_repository_ref_parser::GitRepositoryRefParse
 use crate::GitTypeError;
 use git2::build::{CheckoutBuilder, RepoBuilder};
 use git2::{Cred, FetchOptions, RemoteCallbacks};
+use shaku::{Component, Interface};
 use std::cell::RefCell;
 use std::fs::{create_dir_all, remove_dir_all};
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
+pub trait RemoteGitRepositoryClientInterface: Interface {
+    fn get_local_repo_path(&self, repo_info: &GitRepositoryRef) -> Result<PathBuf>;
+    fn delete_repository(&self, repo_info: &GitRepositoryRef) -> Result<()>;
+    fn is_repository_complete(&self, path: &Path) -> bool;
+    fn is_repository_cached(&self, remote_url: &str) -> bool;
+}
+
+#[derive(Component, Default, Clone)]
+#[shaku(interface = RemoteGitRepositoryClientInterface)]
 pub struct RemoteGitRepositoryClient;
 
 impl RemoteGitRepositoryClient {
-    pub fn get_local_repo_path(repo_info: &GitRepositoryRef) -> Result<PathBuf> {
+    pub fn new() -> Self {
+        Self
+    }
+
+    pub fn get_local_repo_path(&self, repo_info: &GitRepositoryRef) -> Result<PathBuf> {
         dirs::home_dir()
             .ok_or_else(|| {
                 GitTypeError::InvalidRepositoryFormat(
@@ -29,7 +43,7 @@ impl RemoteGitRepositoryClient {
             })
     }
 
-    pub fn clone_repository<F>(repo_spec: &str, progress_callback: F) -> Result<PathBuf>
+    pub fn clone_repository<F>(&self, repo_spec: &str, progress_callback: F) -> Result<PathBuf>
     where
         F: FnMut(usize, usize),
     {
@@ -37,9 +51,9 @@ impl RemoteGitRepositoryClient {
 
         log::info!("Cloning repository: {}/{}", repo_info.owner, repo_info.name);
 
-        let local_path = Self::get_local_repo_path(&repo_info)?;
+        let local_path = self.get_local_repo_path(&repo_info)?;
 
-        if local_path.exists() && Self::is_repository_complete(&local_path) {
+        if local_path.exists() && self.is_repository_complete(&local_path) {
             return Ok(local_path);
         }
 
@@ -89,18 +103,45 @@ impl RemoteGitRepositoryClient {
         Ok(local_path)
     }
 
-    pub fn is_repository_complete(repo_path: &Path) -> bool {
+    pub fn is_repository_complete(&self, repo_path: &Path) -> bool {
         repo_path.join(".git").exists()
             && repo_path.join(".git/HEAD").exists()
             && repo_path.join(".git/objects").exists()
             && repo_path.join(".git/refs").exists()
     }
 
-    pub fn is_repository_cached(remote_url: &str) -> bool {
+    pub fn delete_repository(&self, repo_info: &GitRepositoryRef) -> Result<()> {
+        let local_path = self.get_local_repo_path(repo_info)?;
+        if local_path.exists() {
+            remove_dir_all(&local_path)?;
+        }
+        Ok(())
+    }
+
+    pub fn is_repository_cached(&self, remote_url: &str) -> bool {
         GitRepositoryRefParser::parse(remote_url)
             .and_then(|repo_info| {
-                Self::get_local_repo_path(&repo_info).map(|path| path.exists() && path.is_dir())
+                self.get_local_repo_path(&repo_info)
+                    .map(|path| path.exists() && path.is_dir())
             })
             .unwrap_or(false)
+    }
+}
+
+impl RemoteGitRepositoryClientInterface for RemoteGitRepositoryClient {
+    fn get_local_repo_path(&self, repo_info: &GitRepositoryRef) -> Result<PathBuf> {
+        self.get_local_repo_path(repo_info)
+    }
+
+    fn delete_repository(&self, repo_info: &GitRepositoryRef) -> Result<()> {
+        self.delete_repository(repo_info)
+    }
+
+    fn is_repository_complete(&self, path: &Path) -> bool {
+        self.is_repository_complete(path)
+    }
+
+    fn is_repository_cached(&self, remote_url: &str) -> bool {
+        self.is_repository_cached(remote_url)
     }
 }
