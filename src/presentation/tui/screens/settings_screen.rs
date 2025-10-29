@@ -57,13 +57,21 @@ pub trait SettingsScreenInterface: Screen {}
 #[derive(shaku::Component)]
 #[shaku(interface = SettingsScreenInterface)]
 pub struct SettingsScreen {
+    #[shaku(default)]
     current_section: RwLock<SettingsSection>,
+    #[shaku(default)]
     color_mode_state: RwLock<ListState>,
+    #[shaku(default)]
     theme_state: RwLock<ListState>,
+    #[shaku(default)]
     color_modes: RwLock<Vec<ColorMode>>,
+    #[shaku(default)]
     themes: RwLock<Vec<Theme>>,
+    #[shaku(default)]
     original_theme: RwLock<Theme>,
+    #[shaku(default)]
     original_color_mode: RwLock<ColorMode>,
+    #[shaku(default)]
     is_preview_mode: RwLock<bool>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,

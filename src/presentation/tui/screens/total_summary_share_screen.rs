@@ -45,8 +45,11 @@ pub trait TotalSummaryShareScreenInterface: Screen {}
 #[derive(shaku::Component)]
 #[shaku(interface = TotalSummaryShareScreenInterface)]
 pub struct TotalSummaryShareScreen {
+    #[shaku(default)]
     total_result: RwLock<TotalResult>,
+    #[shaku(default)]
     fallback_url: RwLock<Option<(String, SharingPlatform)>>,
+    #[shaku(default)]
     last_fallback_state: RwLock<bool>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,

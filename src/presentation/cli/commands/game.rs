@@ -1,3 +1,4 @@
+use crate::domain::events::EventBusInterface;
 use crate::domain::models::ExtractionOptions;
 use crate::domain::models::Languages;
 use crate::domain::services::theme_manager::ThemeManager;
@@ -23,6 +24,17 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
 
     // Create DI container
     let container = AppModule::builder().build();
+
+    // Get EventBus from DI container FIRST - before creating any screens
+    // This ensures SessionManager is initialized with the correct EventBus
+    let event_bus: Arc<dyn EventBusInterface> = container.resolve();
+
+    // Initialize SessionManager with correct EventBus BEFORE creating screens
+    // Some screens (like StageSummaryScreen) call SessionManager::instance() in their constructor,
+    // which would trigger Lazy initialization with a wrong EventBus if we don't do this first
+    let _ = SessionManager::instance(); // Trigger Lazy initialization
+    let _ = SessionManager::set_global_event_bus(event_bus.clone());
+    SessionManager::setup_event_subscriptions_after_init();
 
     // Get ScreenManagerFactory from DI container
     let factory: &dyn ScreenManagerFactory = container.resolve_ref();
@@ -105,14 +117,6 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
     // Create ScreenManager using DI container factory
     let screen_manager_impl = factory.create(GameData::instance(), &container);
     let screen_manager = Arc::new(Mutex::new(screen_manager_impl));
-
-    // Get EventBus from ScreenManager and set it to SessionManager
-    let event_bus = {
-        let manager = screen_manager.lock().unwrap();
-        manager.get_event_bus()
-    };
-    let _ = SessionManager::set_global_event_bus(event_bus.clone());
-    SessionManager::setup_event_subscriptions_after_init();
 
     // Set up signal handlers with ScreenManager reference
     setup_signal_handlers(screen_manager.clone());

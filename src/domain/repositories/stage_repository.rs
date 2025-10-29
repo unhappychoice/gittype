@@ -12,10 +12,20 @@ pub trait StageRepositoryTrait: shaku::Interface {
 }
 
 /// Repository for stage-based business logic
-#[derive(shaku::Component)]
-#[shaku(interface = StageRepositoryTrait)]
 pub struct StageRepository {
     database: Arc<Mutex<Database>>,
+}
+
+impl shaku::Component<crate::presentation::di::AppModule> for StageRepository {
+    type Interface = dyn StageRepositoryTrait;
+    type Parameters = ();
+
+    fn build(
+        _context: &mut shaku::ModuleBuildContext<crate::presentation::di::AppModule>,
+        _params: Self::Parameters,
+    ) -> Box<dyn StageRepositoryTrait> {
+        Box::new(StageRepository::default())
+    }
 }
 
 impl StageRepositoryTrait for StageRepository {

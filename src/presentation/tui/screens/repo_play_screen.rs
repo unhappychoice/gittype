@@ -1,4 +1,5 @@
 use crate::domain::events::EventBusInterface;
+use crate::infrastructure::git::RemoteGitRepositoryClient;
 use crate::domain::models::storage::StoredRepositoryWithLanguages;
 use crate::domain::services::repository_service::RepositoryService;
 use crate::infrastructure::database::database::Database;
@@ -24,8 +25,11 @@ pub trait RepoPlayScreenInterface: Screen {}
 #[derive(shaku::Component)]
 #[shaku(interface = RepoPlayScreenInterface)]
 pub struct RepoPlayScreen {
+    #[shaku(default)]
     repositories: RwLock<Vec<(StoredRepositoryWithLanguages, bool)>>,
+    #[shaku(default)]
     list_state: RwLock<ListState>,
+    #[shaku(default)]
     selected_index: RwLock<Option<usize>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
@@ -60,7 +64,7 @@ pub struct RepoPlayScreenDataProvider;
 impl ScreenDataProvider for RepoPlayScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
         let db = Database::new()?;
-        let service = RepositoryService::new(db);
+        let service = RepositoryService::new(db, RemoteGitRepositoryClient::new());
 
         let repositories_with_cache = service.get_all_repositories_with_cache_status()?;
 

@@ -3,6 +3,16 @@ use crate::domain::repositories::trending_repository::TrendingRepositoryInfo;
 use crate::Result;
 #[cfg(not(feature = "test-mocks"))]
 use crate::{GitTypeError, Result};
+use shaku::Interface;
+
+#[async_trait::async_trait]
+pub trait OssInsightClientInterface: Interface + std::fmt::Debug {
+    async fn fetch_trending_repositories(
+        &self,
+        language: Option<&str>,
+        period: &str,
+    ) -> Result<Vec<TrendingRepositoryInfo>>;
+}
 
 #[cfg(not(feature = "test-mocks"))]
 mod real_impl {
@@ -11,8 +21,10 @@ mod real_impl {
     use serde::Deserialize;
     use std::time::Duration;
 
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, shaku::Component)]
+    #[shaku(interface = OssInsightClientInterface)]
     pub struct OssInsightClient {
+        #[shaku(default)]
         client: Client,
     }
 
@@ -21,50 +33,6 @@ mod real_impl {
             Self {
                 client: Client::new(),
             }
-        }
-
-        pub async fn fetch_trending_repositories(
-            &self,
-            language: Option<&str>,
-            period: &str,
-        ) -> Result<Vec<TrendingRepositoryInfo>> {
-            let api_period = match period {
-                "daily" => "past_24_hours",
-                "weekly" => "past_week",
-                "monthly" => "past_month",
-                _ => "past_24_hours",
-            };
-
-            let mut url = format!(
-                "https://api.ossinsight.io/v1/trends/repos/?period={}",
-                api_period
-            );
-
-            if let Some(lang) = language {
-                let api_lang = self.map_language_name(lang);
-                url = format!("{}&language={}", url, urlencoding::encode(&api_lang));
-            }
-
-            let response = self
-                .client
-                .get(&url)
-                .header("User-Agent", "gittype")
-                .header("Accept", "application/json")
-                .timeout(Duration::from_secs(10))
-                .send()
-                .await?;
-
-            if !response.status().is_success() {
-                return Err(GitTypeError::ApiError(format!(
-                    "OSS Insight API request failed: {}",
-                    response.status()
-                )));
-            }
-
-            let api_response: ApiResponse = response.json().await?;
-            let repositories = self.convert_api_response(api_response);
-
-            Ok(repositories)
         }
 
         fn map_language_name(&self, lang: &str) -> String {
@@ -110,6 +78,53 @@ mod real_impl {
         }
     }
 
+    #[async_trait::async_trait]
+    impl OssInsightClientInterface for OssInsightClient {
+        async fn fetch_trending_repositories(
+            &self,
+            language: Option<&str>,
+            period: &str,
+        ) -> Result<Vec<TrendingRepositoryInfo>> {
+            let api_period = match period {
+                "daily" => "past_24_hours",
+                "weekly" => "past_week",
+                "monthly" => "past_month",
+                _ => "past_24_hours",
+            };
+
+            let mut url = format!(
+                "https://api.ossinsight.io/v1/trends/repos/?period={}",
+                api_period
+            );
+
+            if let Some(lang) = language {
+                let api_lang = self.map_language_name(lang);
+                url = format!("{}&language={}", url, urlencoding::encode(&api_lang));
+            }
+
+            let response = self
+                .client
+                .get(&url)
+                .header("User-Agent", "gittype")
+                .header("Accept", "application/json")
+                .timeout(Duration::from_secs(10))
+                .send()
+                .await?;
+
+            if !response.status().is_success() {
+                return Err(GitTypeError::ApiError(format!(
+                    "OSS Insight API request failed: {}",
+                    response.status()
+                )));
+            }
+
+            let api_response: ApiResponse = response.json().await?;
+            let repositories = self.convert_api_response(api_response);
+
+            Ok(repositories)
+        }
+    }
+
     #[derive(Deserialize)]
     struct ApiResponse {
         data: ApiData,
@@ -135,7 +150,8 @@ mod real_impl {
 mod mock_impl {
     use super::*;
 
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, shaku::Component)]
+    #[shaku(interface = OssInsightClientInterface)]
     pub struct OssInsightClient;
 
     impl OssInsightClient {
@@ -156,6 +172,17 @@ mod mock_impl {
     impl Default for OssInsightClient {
         fn default() -> Self {
             Self::new()
+        }
+    }
+
+    #[async_trait::async_trait]
+    impl OssInsightClientInterface for OssInsightClient {
+        async fn fetch_trending_repositories(
+            &self,
+            language: Option<&str>,
+            period: &str,
+        ) -> Result<Vec<TrendingRepositoryInfo>> {
+            OssInsightClient::fetch_trending_repositories(self, language, period).await
         }
     }
 }

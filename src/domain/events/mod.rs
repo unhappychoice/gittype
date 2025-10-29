@@ -33,6 +33,10 @@ impl EventBus {
         }
     }
 
+    pub fn get_subscribers_ptr(&self) -> *const RwLock<HashMap<TypeId, Vec<BoxedHandler>>> {
+        Arc::as_ptr(&self.subscribers)
+    }
+
     pub fn publish<E: Event>(&self, event: E) {
         let type_id = TypeId::of::<E>();
 

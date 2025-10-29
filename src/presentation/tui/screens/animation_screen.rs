@@ -48,10 +48,13 @@ pub trait AnimationScreenInterface: Screen {}
 #[derive(shaku::Component)]
 #[shaku(interface = AnimationScreenInterface)]
 pub struct AnimationScreen {
+    #[shaku(default)]
     animation: RwLock<Option<TypingAnimationView>>,
 
+    #[shaku(default)]
     session_result: RwLock<Option<SessionResult>>,
 
+    #[shaku(default)]
     animation_initialized: RwLock<bool>,
 
     #[shaku(inject)]

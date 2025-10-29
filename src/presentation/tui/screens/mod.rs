@@ -39,7 +39,7 @@ pub use records_screen::{RecordsScreen, RecordsScreenInterface, RecordsScreenPro
 pub use repo_list_screen::{RepoListScreen, RepoListScreenDataProvider};
 pub use repo_play_screen::{RepoPlayScreen, RepoPlayScreenDataProvider};
 pub use session_detail_screen::{
-    SessionDetailScreen, SessionDetailScreenInterface, SessionDetailScreenProvider,
+    SessionDetailScreen, SessionDetailScreenInterface,
 };
 pub use session_details_dialog::{
     SessionDetailsDialog, SessionDetailsDialogInterface, SessionDetailsDialogProvider,

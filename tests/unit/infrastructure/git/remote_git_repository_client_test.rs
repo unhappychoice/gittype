@@ -5,7 +5,8 @@ mod tests {
     #[test]
     fn test_is_repository_complete_without_git_dir() {
         let temp_dir = tempfile::TempDir::new().unwrap();
-        let is_complete = RemoteGitRepositoryClient::is_repository_complete(temp_dir.path());
+        let client = RemoteGitRepositoryClient::new();
+        let is_complete = client.is_repository_complete(temp_dir.path());
         assert!(!is_complete);
     }
 
@@ -14,7 +15,8 @@ mod tests {
         let temp_dir = tempfile::TempDir::new().unwrap();
         std::fs::create_dir_all(temp_dir.path().join(".git")).unwrap();
 
-        let is_complete = RemoteGitRepositoryClient::is_repository_complete(temp_dir.path());
+        let client = RemoteGitRepositoryClient::new();
+        let is_complete = client.is_repository_complete(temp_dir.path());
         assert!(!is_complete);
     }
 
@@ -28,7 +30,8 @@ mod tests {
         std::fs::create_dir_all(git_dir.join("objects")).unwrap();
         std::fs::create_dir_all(git_dir.join("refs")).unwrap();
 
-        let is_complete = RemoteGitRepositoryClient::is_repository_complete(temp_dir.path());
+        let client = RemoteGitRepositoryClient::new();
+        let is_complete = client.is_repository_complete(temp_dir.path());
         assert!(is_complete);
     }
 }

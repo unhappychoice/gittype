@@ -59,17 +59,32 @@ impl ScreenDataProvider for StageSummaryDataProvider {
 
 pub trait StageSummaryScreenInterface: Screen {}
 
+#[derive(Clone)]
+pub struct SessionManagerRef(Arc<Mutex<SessionManager>>);
+
+impl Default for SessionManagerRef {
+    fn default() -> Self {
+        Self(SessionManager::instance())
+    }
+}
+
 #[derive(shaku::Component)]
 #[shaku(interface = StageSummaryScreenInterface)]
 pub struct StageSummaryScreen {
+    #[shaku(default)]
     pub stage_result: RwLock<Option<StageResult>>,
+    #[shaku(default)]
     action_result: RwLock<Option<ResultAction>>,
+    #[shaku(default)]
     session_current_stage: RwLock<usize>,
+    #[shaku(default)]
     total_stages: RwLock<usize>,
+    #[shaku(default)]
     is_completed: RwLock<bool>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
-    session_manager: Arc<Mutex<SessionManager>>,
+    #[shaku(default)]
+    session_manager: SessionManagerRef,
 }
 
 impl StageSummaryScreen {
@@ -81,7 +96,7 @@ impl StageSummaryScreen {
             total_stages: RwLock::new(3),
             is_completed: RwLock::new(false),
             event_bus,
-            session_manager: SessionManager::instance(),
+            session_manager: SessionManagerRef::default(),
         }
     }
 
@@ -161,6 +176,7 @@ impl Screen for StageSummaryScreen {
             KeyCode::Char(' ') => {
                 let is_session_completed = self
                     .session_manager
+                    .0
                     .lock()
                     .ok()
                     .and_then(|sm| sm.is_session_completed().ok())

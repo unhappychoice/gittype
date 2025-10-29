@@ -2,6 +2,7 @@ use crate::domain::events::EventBusInterface;
 use crate::domain::models::storage::StoredRepositoryWithLanguages;
 use crate::domain::services::repository_service::RepositoryService;
 use crate::infrastructure::database::database::Database;
+use crate::infrastructure::git::RemoteGitRepositoryClient;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::views::repo_list::{
     CacheInfoView, ControlsView, HeaderView, LegendView, RepositoryListView,
@@ -26,7 +27,9 @@ pub trait RepoListScreenInterface: Screen {}
 #[derive(shaku::Component)]
 #[shaku(interface = RepoListScreenInterface)]
 pub struct RepoListScreen {
+    #[shaku(default)]
     repositories: RwLock<Vec<(StoredRepositoryWithLanguages, bool)>>,
+    #[shaku(default)]
     cache_dir: RwLock<String>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
@@ -47,7 +50,8 @@ pub struct RepoListScreenDataProvider;
 impl ScreenDataProvider for RepoListScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
         let db = Database::new()?;
-        let service = RepositoryService::new(db);
+        let remote_git_client = RemoteGitRepositoryClient::new();
+        let service = RepositoryService::new(db, remote_git_client);
 
         let repositories_with_cache = service.get_all_repositories_with_cache_status()?;
         let cache_dir = RepositoryService::get_cache_directory();
