@@ -1,5 +1,4 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
-use crate::domain::repositories::challenge_repository::CHALLENGE_REPOSITORY;
 use crate::domain::services::challenge_generator::ChallengeGenerator;
 use crate::presentation::game::GameData;
 use crate::presentation::ui::Colors;
@@ -70,17 +69,21 @@ impl Step for GeneratingStep {
 
         // Cache the generated challenges if we have git repository info
         if let Some(ref git_repo) = context.git_repository {
-            match CHALLENGE_REPOSITORY.save_challenges(git_repo, &generated_challenges) {
-                Ok(_) => {
-                    log::info!(
-                        "Successfully cached {} challenges for {}",
-                        generated_challenges.len(),
-                        git_repo.remote_url
-                    );
+            if let Some(ref challenge_repository) = context.challenge_repository {
+                match challenge_repository.save_challenges(git_repo, &generated_challenges, None) {
+                    Ok(_) => {
+                        log::info!(
+                            "Successfully cached {} challenges for {}",
+                            generated_challenges.len(),
+                            git_repo.remote_url
+                        );
+                    }
+                    Err(e) => {
+                        log::warn!("Failed to cache challenges: {}", e);
+                    }
                 }
-                Err(e) => {
-                    log::warn!("Failed to cache challenges: {}", e);
-                }
+            } else {
+                log::warn!("No challenge repository available - skipping cache save");
             }
         }
 

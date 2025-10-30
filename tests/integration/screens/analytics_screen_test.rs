@@ -6,11 +6,12 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
 use gittype::presentation::tui::screens::analytics_screen::AnalyticsScreen;
+use std::sync::Arc;
 
 screen_snapshot_test!(
     test_analytics_screen_snapshot_overview,
     AnalyticsScreen,
-    AnalyticsScreen::new(EventBus::new()),
+    AnalyticsScreen::new(Arc::new(EventBus::new())),
     provider = MockAnalyticsDataProvider
 );
 
@@ -18,7 +19,7 @@ screen_snapshot_test!(
 screen_snapshot_test!(
     test_analytics_screen_snapshot_overview_with_activity,
     AnalyticsScreen,
-    AnalyticsScreen::new(EventBus::new()),
+    AnalyticsScreen::new(Arc::new(EventBus::new())),
     provider = MockAnalyticsDataProviderWithActivity
 );
 
@@ -26,14 +27,14 @@ screen_snapshot_test!(
 screen_snapshot_test!(
     test_analytics_screen_snapshot_overview_empty,
     AnalyticsScreen,
-    AnalyticsScreen::new(EventBus::new()),
+    AnalyticsScreen::new(Arc::new(EventBus::new())),
     provider = MockAnalyticsDataProviderEmpty
 );
 
 screen_snapshot_test!(
     test_analytics_screen_snapshot_trends,
     AnalyticsScreen,
-    AnalyticsScreen::new(EventBus::new()),
+    AnalyticsScreen::new(Arc::new(EventBus::new())),
     provider = MockAnalyticsDataProvider,
     keys = [KeyEvent::new(KeyCode::Right, KeyModifiers::empty())]
 );
@@ -42,7 +43,7 @@ screen_snapshot_test!(
 screen_snapshot_test!(
     test_analytics_screen_snapshot_trends_empty,
     AnalyticsScreen,
-    AnalyticsScreen::new(EventBus::new()),
+    AnalyticsScreen::new(Arc::new(EventBus::new())),
     provider = MockAnalyticsDataProviderEmpty,
     keys = [KeyEvent::new(KeyCode::Right, KeyModifiers::empty())]
 );
@@ -50,7 +51,7 @@ screen_snapshot_test!(
 screen_snapshot_test!(
     test_analytics_screen_snapshot_repositories,
     AnalyticsScreen,
-    AnalyticsScreen::new(EventBus::new()),
+    AnalyticsScreen::new(Arc::new(EventBus::new())),
     provider = MockAnalyticsDataProvider,
     keys = [
         KeyEvent::new(KeyCode::Right, KeyModifiers::empty()),
@@ -62,7 +63,7 @@ screen_snapshot_test!(
 screen_snapshot_test!(
     test_analytics_screen_snapshot_repositories_with_activity,
     AnalyticsScreen,
-    AnalyticsScreen::new(EventBus::new()),
+    AnalyticsScreen::new(Arc::new(EventBus::new())),
     provider = MockAnalyticsDataProviderWithActivity,
     keys = [
         KeyEvent::new(KeyCode::Right, KeyModifiers::empty()),
@@ -74,7 +75,7 @@ screen_snapshot_test!(
 screen_snapshot_test!(
     test_analytics_screen_snapshot_repositories_empty,
     AnalyticsScreen,
-    AnalyticsScreen::new(EventBus::new()),
+    AnalyticsScreen::new(Arc::new(EventBus::new())),
     provider = MockAnalyticsDataProviderEmpty,
     keys = [
         KeyEvent::new(KeyCode::Right, KeyModifiers::empty()),
@@ -85,7 +86,7 @@ screen_snapshot_test!(
 screen_snapshot_test!(
     test_analytics_screen_snapshot_languages,
     AnalyticsScreen,
-    AnalyticsScreen::new(EventBus::new()),
+    AnalyticsScreen::new(Arc::new(EventBus::new())),
     provider = MockAnalyticsDataProvider,
     keys = [
         KeyEvent::new(KeyCode::Right, KeyModifiers::empty()),
@@ -98,7 +99,7 @@ screen_snapshot_test!(
 screen_snapshot_test!(
     test_analytics_screen_snapshot_languages_with_activity,
     AnalyticsScreen,
-    AnalyticsScreen::new(EventBus::new()),
+    AnalyticsScreen::new(Arc::new(EventBus::new())),
     provider = MockAnalyticsDataProviderWithActivity,
     keys = [
         KeyEvent::new(KeyCode::Right, KeyModifiers::empty()),
@@ -111,7 +112,7 @@ screen_snapshot_test!(
 screen_snapshot_test!(
     test_analytics_screen_snapshot_languages_empty,
     AnalyticsScreen,
-    AnalyticsScreen::new(EventBus::new()),
+    AnalyticsScreen::new(Arc::new(EventBus::new())),
     provider = MockAnalyticsDataProviderEmpty,
     keys = [
         KeyEvent::new(KeyCode::Right, KeyModifiers::empty()),
@@ -196,7 +197,7 @@ screen_key_tests!(
 screen_basic_methods_test!(
     test_analytics_screen_basic_methods,
     AnalyticsScreen,
-    AnalyticsScreen::new(EventBus::new()),
+    AnalyticsScreen::new(Arc::new(EventBus::new())),
     gittype::presentation::tui::ScreenType::Analytics,
     false,
     MockAnalyticsDataProvider

@@ -1,5 +1,4 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
-use crate::domain::repositories::challenge_repository::CHALLENGE_REPOSITORY;
 use crate::presentation::game::GameData;
 use crate::presentation::tui::screens::loading_screen::ProgressReporter;
 use crate::presentation::ui::Colors;
@@ -80,8 +79,14 @@ impl Step for CacheCheckStep {
             return Ok(StepResult::Skipped);
         }
 
+        // Get challenge repository from context
+        let Some(ref challenge_repository) = context.challenge_repository else {
+            log::warn!("No challenge repository available - skipping cache check");
+            return Ok(StepResult::Skipped);
+        };
+
         // Try to load from cache
-        let Some(cached_challenges) = CHALLENGE_REPOSITORY.load_challenges_with_progress(
+        let Ok(Some(cached_challenges)) = challenge_repository.load_challenges_with_progress(
             git_repo,
             context.loading_screen.map(|s| s as &dyn ProgressReporter),
         ) else {

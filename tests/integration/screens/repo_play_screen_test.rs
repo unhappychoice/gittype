@@ -3,11 +3,12 @@ use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
 use gittype::presentation::tui::screens::RepoPlayScreen;
+use std::sync::Arc;
 
 screen_snapshot_test!(
     test_repo_play_screen_snapshot,
     RepoPlayScreen,
-    RepoPlayScreen::new(EventBus::new()),
+    RepoPlayScreen::new(Arc::new(EventBus::new())),
     provider = MockRepoPlayDataProvider
 );
 
@@ -71,7 +72,7 @@ screen_key_tests!(
 screen_basic_methods_test!(
     test_repo_play_screen_basic_methods,
     RepoPlayScreen,
-    RepoPlayScreen::new(EventBus::new()),
+    RepoPlayScreen::new(Arc::new(EventBus::new())),
     gittype::presentation::tui::ScreenType::RepoPlay,
     true,
     MockRepoPlayDataProvider

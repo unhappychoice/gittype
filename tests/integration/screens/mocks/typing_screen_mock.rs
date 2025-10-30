@@ -1,4 +1,4 @@
-use gittype::domain::events::EventBus;
+use gittype::domain::events::EventBusInterface;
 use gittype::domain::models::Challenge;
 use gittype::domain::services::scoring::tracker::StageTracker;
 use gittype::presentation::game::stage_repository::StageRepository;
@@ -20,7 +20,7 @@ impl ScreenDataProvider for MockTypingScreenDataProvider {
 
 /// Helper function to create TypingScreen with optional challenge
 pub fn create_typing_screen_with_challenge(
-    event_bus: EventBus,
+    event_bus: Arc<dyn EventBusInterface>,
     code: Option<&str>,
 ) -> TypingScreen {
     let (game_data, stage_repository) = if let Some(code_content) = code {
@@ -106,7 +106,7 @@ pub fn create_typing_screen_with_challenge(
         }
     }
 
-    let mut screen = TypingScreen::new(event_bus, game_data, session_manager);
+    let screen = TypingScreen::new(event_bus, game_data, session_manager);
 
     // Load challenge if provided
     if code.is_some() {

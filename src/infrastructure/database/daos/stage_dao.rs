@@ -20,7 +20,7 @@ impl<'a> StageDao<'a> {
         &self,
         repository_id: Option<i64>,
     ) -> Result<Vec<StoredStageResult>> {
-        let conn = self.db.get_connection();
+        let conn = self.db.get_connection()?;
 
         let query = if repository_id.is_some() {
             "SELECT sr.id, sr.repository_id, r.repository_name, r.user_name,
@@ -61,7 +61,7 @@ impl<'a> StageDao<'a> {
         language: &str,
         repository_id: Option<i64>,
     ) -> Result<Vec<StoredStageResult>> {
-        let conn = self.db.get_connection();
+        let conn = self.db.get_connection()?;
 
         let query = if repository_id.is_some() {
             "SELECT sr.id, sr.repository_id, r.repository_name, r.user_name,
@@ -105,7 +105,7 @@ impl<'a> StageDao<'a> {
         difficulty: &str,
         repository_id: Option<i64>,
     ) -> Result<Vec<StoredStageResult>> {
-        let conn = self.db.get_connection();
+        let conn = self.db.get_connection()?;
 
         let query = if repository_id.is_some() {
             "SELECT sr.id, sr.repository_id, r.repository_name, r.user_name,
@@ -145,7 +145,7 @@ impl<'a> StageDao<'a> {
 
     /// Get stage statistics for completed stages only
     pub fn get_stage_statistics(&self, repository_id: Option<i64>) -> Result<StageStatistics> {
-        let conn = self.db.get_connection();
+        let conn = self.db.get_connection()?;
 
         let query = if repository_id.is_some() {
             "SELECT 
@@ -216,7 +216,7 @@ impl<'a> StageDao<'a> {
 
     /// Get language breakdown for completed stages
     pub fn get_language_breakdown(&self, repository_id: Option<i64>) -> Result<Vec<LanguageStats>> {
-        let conn = self.db.get_connection();
+        let conn = self.db.get_connection()?;
 
         let query = if repository_id.is_some() {
             "SELECT 
@@ -275,7 +275,7 @@ impl<'a> StageDao<'a> {
         &self,
         repository_id: Option<i64>,
     ) -> Result<Vec<DifficultyStats>> {
-        let conn = self.db.get_connection();
+        let conn = self.db.get_connection()?;
 
         let query = if repository_id.is_some() {
             "SELECT 

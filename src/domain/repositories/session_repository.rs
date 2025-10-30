@@ -10,13 +10,34 @@ use std::sync::{Arc, Mutex};
 
 type StageResultTuple = (String, StageResult, usize, Option<Challenge>);
 
-pub trait SessionRepositoryTrait: Send {
+pub trait SessionRepositoryTrait: shaku::Interface {
     fn get_session_stage_results(&self, session_id: i64) -> Result<Vec<SessionStageResult>>;
+    fn get_all_repositories(&self) -> Result<Vec<StoredRepository>>;
+    fn get_sessions_filtered(
+        &self,
+        repository_filter: Option<i64>,
+        date_filter_days: Option<i64>,
+        sort_by: &str,
+        sort_descending: bool,
+    ) -> Result<Vec<StoredSession>>;
+    fn get_session_result(&self, session_id: i64) -> Result<Option<SessionResultData>>;
 }
 
 /// Repository for session business logic
 pub struct SessionRepository {
     database: Arc<Mutex<Database>>,
+}
+
+impl shaku::Component<crate::presentation::di::AppModule> for SessionRepository {
+    type Interface = dyn SessionRepositoryTrait;
+    type Parameters = ();
+
+    fn build(
+        _context: &mut shaku::ModuleBuildContext<crate::presentation::di::AppModule>,
+        _params: Self::Parameters,
+    ) -> Box<dyn SessionRepositoryTrait> {
+        Box::new(SessionRepository::default())
+    }
 }
 
 impl SessionRepository {
@@ -41,7 +62,7 @@ impl SessionRepository {
         let db = self.db_with_lock()?;
 
         // Repository manages the transaction boundary
-        let conn = db.get_connection();
+        let conn = db.get_connection()?;
         let tx = conn.unchecked_transaction()?;
         log::debug!("Database transaction started");
 
@@ -149,7 +170,7 @@ impl SessionRepository {
     /// Get language performance statistics
     pub fn get_language_stats(&self, _days: Option<i64>) -> Result<Vec<(String, f64, usize)>> {
         let db = self.db_with_lock()?;
-        let conn = db.get_connection();
+        let conn = db.get_connection()?;
 
         // Query with proper time filtering for last 30 days
         let query = "SELECT language, AVG(cpm) as avg_cpm, COUNT(*) as session_count
@@ -481,6 +502,30 @@ impl BestStatus {
 impl SessionRepositoryTrait for SessionRepository {
     fn get_session_stage_results(&self, session_id: i64) -> Result<Vec<SessionStageResult>> {
         SessionRepository::get_session_stage_results(self, session_id)
+    }
+
+    fn get_all_repositories(&self) -> Result<Vec<StoredRepository>> {
+        SessionRepository::get_all_repositories(self)
+    }
+
+    fn get_sessions_filtered(
+        &self,
+        repository_filter: Option<i64>,
+        date_filter_days: Option<i64>,
+        sort_by: &str,
+        sort_descending: bool,
+    ) -> Result<Vec<StoredSession>> {
+        SessionRepository::get_sessions_filtered(
+            self,
+            repository_filter,
+            date_filter_days,
+            sort_by,
+            sort_descending,
+        )
+    }
+
+    fn get_session_result(&self, session_id: i64) -> Result<Option<SessionResultData>> {
+        SessionRepository::get_session_result_for_analytics(self, session_id)
     }
 }
 

@@ -3,6 +3,7 @@ use crate::Result;
 #[cfg(not(feature = "test-mocks"))]
 use crate::{GitTypeError, Result};
 use serde::Deserialize;
+use shaku::{Component, Interface};
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct GitHubRelease {
@@ -76,3 +77,21 @@ pub use real_impl::GitHubApiClient;
 
 #[cfg(feature = "test-mocks")]
 pub use mock_impl::GitHubApiClient;
+
+// DI Factory for GitHubApiClient
+pub trait GitHubApiClientFactory: Interface {
+    fn create(&self) -> Result<GitHubApiClient>;
+}
+
+#[derive(Component, Default)]
+#[shaku(interface = GitHubApiClientFactory)]
+pub struct GitHubApiClientFactoryImpl {
+    #[shaku(default)]
+    _marker: (),
+}
+
+impl GitHubApiClientFactory for GitHubApiClientFactoryImpl {
+    fn create(&self) -> Result<GitHubApiClient> {
+        GitHubApiClient::new()
+    }
+}

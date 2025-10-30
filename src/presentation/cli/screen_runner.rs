@@ -1,13 +1,13 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::{EventBus, EventBusInterface};
 use crate::presentation::game::GameData;
-use crate::presentation::tui::{Screen, ScreenManager, ScreenType};
+use crate::presentation::tui::{Screen, ScreenManagerImpl, ScreenType};
 use crate::Result;
 use std::sync::{Arc, Mutex};
 
 /// Runs a single screen with optional data initialization and result extraction
 pub fn run_screen<S, D, R, F>(
     screen_type: ScreenType,
-    screen_factory: impl FnOnce(EventBus) -> S,
+    screen_factory: impl FnOnce(Arc<dyn EventBusInterface>) -> S,
     data: Option<D>,
     extract_result: Option<F>,
 ) -> Result<Option<R>>
@@ -17,20 +17,21 @@ where
     F: FnOnce(&S) -> Option<R>,
 {
     // Create EventBus and ScreenManager
-    let event_bus = EventBus::new();
+    let event_bus: Arc<dyn EventBusInterface> = Arc::new(EventBus::new());
     let backend = ratatui::backend::CrosstermBackend::new(std::io::stdout());
     let terminal = ratatui::Terminal::new(backend).map_err(|e| {
         crate::GitTypeError::TerminalError(format!("Failed to create terminal: {}", e))
     })?;
-    let mut screen_manager = ScreenManager::new(event_bus.clone(), GameData::instance(), terminal);
+    let mut screen_manager =
+        ScreenManagerImpl::new(Arc::clone(&event_bus), GameData::instance(), terminal);
 
     // Create and register screen
-    let screen = screen_factory(event_bus.clone());
+    let screen = screen_factory(Arc::clone(&event_bus));
     screen_manager.register_screen(screen);
 
     // Setup event subscriptions
     let manager_ref = Arc::new(Mutex::new(screen_manager));
-    ScreenManager::setup_event_subscriptions(&manager_ref);
+    ScreenManagerImpl::setup_event_subscriptions(&manager_ref);
 
     // Initialize terminal and set current screen
     {

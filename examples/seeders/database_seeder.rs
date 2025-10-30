@@ -46,7 +46,7 @@ impl DatabaseSeeder {
 
     fn seed_repositories(&self, seed_data: &SeedData) -> Result<()> {
         let db = self.db_with_lock()?;
-        let conn = db.get_connection();
+        let conn = db.get_connection().unwrap();
 
         for repo in &seed_data.repositories {
             conn.execute(
@@ -67,7 +67,7 @@ impl DatabaseSeeder {
 
     fn seed_sessions(&self, seed_data: &SeedData) -> Result<()> {
         let db = self.db_with_lock()?;
-        let conn = db.get_connection();
+        let conn = db.get_connection().unwrap();
 
         for session in &seed_data.sessions {
             conn.execute(
@@ -127,7 +127,7 @@ impl DatabaseSeeder {
 
     fn seed_challenges(&self, seed_data: &SeedData) -> Result<()> {
         let db = self.db_with_lock()?;
-        let conn = db.get_connection();
+        let conn = db.get_connection().unwrap();
 
         for challenge in &seed_data.challenges {
             conn.execute(
@@ -152,7 +152,7 @@ impl DatabaseSeeder {
 
     fn seed_stages(&self, seed_data: &SeedData) -> Result<()> {
         let db = self.db_with_lock()?;
-        let conn = db.get_connection();
+        let conn = db.get_connection().unwrap();
 
         for stage in &seed_data.stages {
             conn.execute(

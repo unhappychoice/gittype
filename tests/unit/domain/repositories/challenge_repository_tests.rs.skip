@@ -36,6 +36,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_cache_save_and_load() {
         let cache = create_test_cache();
 

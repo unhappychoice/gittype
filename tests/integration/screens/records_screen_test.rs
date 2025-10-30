@@ -1,13 +1,19 @@
 use crate::integration::screens::mocks::records_screen_mock::MockRecordsDataProvider;
+use crate::integration::screens::mocks::session_service_mock::MockSessionService;
 use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
 use gittype::presentation::tui::screens::records_screen::RecordsScreen;
+use std::sync::Arc;
 
 screen_snapshot_test!(
     test_records_screen_snapshot_with_mock_data,
     RecordsScreen,
-    RecordsScreen::new(EventBus::new()),
+    {
+        let event_bus = Arc::new(EventBus::new());
+        let session_service = Arc::new(MockSessionService::new());
+        RecordsScreen::new(event_bus, session_service)
+    },
     provider = MockRecordsDataProvider
 );
 
@@ -15,6 +21,7 @@ screen_snapshot_test!(
 screen_key_event_test!(
     test_records_screen_esc_navigates_to_title,
     RecordsScreen,
+    |event_bus| RecordsScreen::new(event_bus, Arc::new(MockSessionService::new())),
     NavigateTo,
     KeyCode::Esc,
     KeyModifiers::empty(),
@@ -24,6 +31,7 @@ screen_key_event_test!(
 screen_key_event_test!(
     test_records_screen_ctrl_c_exits,
     RecordsScreen,
+    |event_bus| RecordsScreen::new(event_bus, Arc::new(MockSessionService::new())),
     NavigateTo,
     KeyCode::Char('c'),
     KeyModifiers::CONTROL,
@@ -33,6 +41,7 @@ screen_key_event_test!(
 screen_key_event_test!(
     test_records_screen_enter_views_details,
     RecordsScreen,
+    |event_bus| RecordsScreen::new(event_bus, Arc::new(MockSessionService::new())),
     NavigateTo,
     KeyCode::Enter,
     KeyModifiers::empty(),
@@ -42,6 +51,7 @@ screen_key_event_test!(
 screen_key_event_test!(
     test_records_screen_space_views_details,
     RecordsScreen,
+    |event_bus| RecordsScreen::new(event_bus, Arc::new(MockSessionService::new())),
     NavigateTo,
     KeyCode::Char(' '),
     KeyModifiers::empty(),
@@ -49,8 +59,9 @@ screen_key_event_test!(
 );
 
 // Non-event key tests
-screen_key_tests!(
+screen_key_tests_custom!(
     RecordsScreen,
+    |event_bus| RecordsScreen::new(event_bus, Arc::new(MockSessionService::new())),
     MockRecordsDataProvider,
     [
         (
@@ -95,7 +106,11 @@ screen_key_tests!(
 screen_basic_methods_test!(
     test_records_screen_basic_methods,
     RecordsScreen,
-    RecordsScreen::new(EventBus::new()),
+    {
+        let event_bus = Arc::new(EventBus::new());
+        let session_service = Arc::new(MockSessionService::new());
+        RecordsScreen::new(event_bus, session_service)
+    },
     gittype::presentation::tui::ScreenType::Records,
     false,
     MockRecordsDataProvider
