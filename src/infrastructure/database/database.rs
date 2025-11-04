@@ -180,11 +180,5 @@ impl DatabaseInterface for Database {
 }
 
 pub trait HasDatabase {
-    fn database(&self) -> &Arc<Mutex<Database>>;
-
-    fn db_with_lock(&self) -> Result<MutexGuard<'_, Database>> {
-        self.database()
-            .lock()
-            .map_err(|e| GitTypeError::database_error(format!("Failed to acquire lock: {}", e)))
-    }
+    fn database(&self) -> &Arc<dyn DatabaseInterface>;
 }

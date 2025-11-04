@@ -10,6 +10,15 @@ pub struct VersionRepository {
     file_storage: FileStorage,
 }
 
+impl Default for VersionRepository {
+    fn default() -> Self {
+        Self {
+            github_client: GitHubApiClient::new().expect("Failed to create GitHub API client"),
+            file_storage: FileStorage::new(),
+        }
+    }
+}
+
 impl VersionRepository {
     const VERSION_CACHE_FILENAME: &'static str = "version_cache.json";
 

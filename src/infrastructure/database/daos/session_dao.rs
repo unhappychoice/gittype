@@ -1,4 +1,4 @@
-use super::super::database::Database;
+use super::super::database::{Database, DatabaseInterface};
 use crate::domain::models::storage::{
     SaveStageParams, SessionResultData, SessionStageResult, StoredSession,
 };
@@ -7,14 +7,15 @@ use crate::domain::services::scoring::RankCalculator;
 use crate::{domain::error::GitTypeError, Result};
 use chrono::{DateTime, Utc};
 use rusqlite::{params, OptionalExtension, Transaction};
+use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-pub struct SessionDao<'a> {
-    db: &'a Database,
+pub struct SessionDao {
+    db: Arc<dyn DatabaseInterface>,
 }
 
-impl<'a> SessionDao<'a> {
-    pub fn new(db: &'a Database) -> Self {
+impl SessionDao {
+    pub fn new(db: Arc<dyn DatabaseInterface>) -> Self {
         Self { db }
     }
 

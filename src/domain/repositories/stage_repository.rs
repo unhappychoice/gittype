@@ -2,9 +2,9 @@ use crate::domain::models::storage::{
     DifficultyStats, LanguageStats, StageStatistics, StoredStageResult,
 };
 use crate::infrastructure::database::daos::StageDao;
-use crate::infrastructure::database::database::{Database, HasDatabase};
+use crate::infrastructure::database::database::{Database, DatabaseInterface, HasDatabase};
 use crate::Result;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 pub trait StageRepositoryTrait: shaku::Interface {
     fn get_completed_stages(&self, repository_id: Option<i64>) -> Result<Vec<StoredStageResult>>;
@@ -13,7 +13,7 @@ pub trait StageRepositoryTrait: shaku::Interface {
 
 /// Repository for stage-based business logic
 pub struct StageRepository {
-    database: Arc<Mutex<Database>>,
+    database: Arc<dyn DatabaseInterface>,
 }
 
 impl shaku::Component<crate::presentation::di::AppModule> for StageRepository {
@@ -42,7 +42,7 @@ impl StageRepository {
     pub fn new() -> Result<Self> {
         let database = Database::new()?;
         Ok(Self {
-            database: Arc::new(Mutex::new(database)),
+            database: Arc::new(database) as Arc<dyn DatabaseInterface>,
         })
     }
 
@@ -51,9 +51,9 @@ impl StageRepository {
         &self,
         repository_id: Option<i64>,
     ) -> Result<Vec<StoredStageResult>> {
-        let db = self.db_with_lock()?;
+        
 
-        let dao = StageDao::new(&db);
+        let dao = StageDao::new(Arc::clone(&self.database));
         dao.get_completed_stages(repository_id)
     }
 
@@ -63,9 +63,9 @@ impl StageRepository {
         language: &str,
         repository_id: Option<i64>,
     ) -> Result<Vec<StoredStageResult>> {
-        let db = self.db_with_lock()?;
+        
 
-        let dao = StageDao::new(&db);
+        let dao = StageDao::new(Arc::clone(&self.database));
         dao.get_completed_stages_by_language(language, repository_id)
     }
 
@@ -75,25 +75,25 @@ impl StageRepository {
         difficulty: &str,
         repository_id: Option<i64>,
     ) -> Result<Vec<StoredStageResult>> {
-        let db = self.db_with_lock()?;
+        
 
-        let dao = StageDao::new(&db);
+        let dao = StageDao::new(Arc::clone(&self.database));
         dao.get_completed_stages_by_difficulty(difficulty, repository_id)
     }
 
     /// Get stage statistics for completed stages only
     pub fn get_stage_statistics(&self, repository_id: Option<i64>) -> Result<StageStatistics> {
-        let db = self.db_with_lock()?;
+        
 
-        let dao = StageDao::new(&db);
+        let dao = StageDao::new(Arc::clone(&self.database));
         dao.get_stage_statistics(repository_id)
     }
 
     /// Get language breakdown for completed stages
     pub fn get_language_breakdown(&self, repository_id: Option<i64>) -> Result<Vec<LanguageStats>> {
-        let db = self.db_with_lock()?;
+        
 
-        let dao = StageDao::new(&db);
+        let dao = StageDao::new(Arc::clone(&self.database));
         dao.get_language_breakdown(repository_id)
     }
 
@@ -102,15 +102,15 @@ impl StageRepository {
         &self,
         repository_id: Option<i64>,
     ) -> Result<Vec<DifficultyStats>> {
-        let db = self.db_with_lock()?;
+        
 
-        let dao = StageDao::new(&db);
+        let dao = StageDao::new(Arc::clone(&self.database));
         dao.get_difficulty_breakdown(repository_id)
     }
 }
 
 impl HasDatabase for StageRepository {
-    fn database(&self) -> &Arc<Mutex<Database>> {
+    fn database(&self) -> &Arc<dyn DatabaseInterface> {
         &self.database
     }
 }
@@ -121,9 +121,9 @@ impl Default for StageRepository {
             log::warn!("Failed to initialize StageRepository: {}", e);
             // Return a dummy repository that will fail gracefully
             Self {
-                database: Arc::new(Mutex::new(
+                database: Arc::new(
                     Database::new().expect("Failed to create fallback database"),
-                )),
+                ) as Arc<dyn DatabaseInterface>,
             }
         })
     }

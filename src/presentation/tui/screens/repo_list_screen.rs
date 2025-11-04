@@ -49,7 +49,8 @@ pub struct RepoListScreenDataProvider;
 
 impl ScreenDataProvider for RepoListScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let db = Database::new()?;
+        use crate::domain::services::repository_service::RepositoryServiceInterface;
+        let db = Arc::new(Database::new()?);
         let remote_git_client = RemoteGitRepositoryClient::new();
         let service = RepositoryService::new(db, remote_git_client);
 

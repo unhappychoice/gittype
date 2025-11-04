@@ -1,44 +1,44 @@
 use crate::domain::models::storage::StoredRepository;
 use crate::domain::models::GitRepository;
 use crate::infrastructure::database::daos::RepositoryDao;
-use crate::infrastructure::database::database::{Database, HasDatabase};
+use crate::infrastructure::database::database::{Database, DatabaseInterface, HasDatabase};
 use crate::Result;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 /// Repository for Git repository business logic
 pub struct GitRepositoryRepository {
-    database: Arc<Mutex<Database>>,
+    database: Arc<dyn DatabaseInterface>,
 }
 
 impl GitRepositoryRepository {
     pub fn new() -> Result<Self> {
         let database = Database::new()?;
         Ok(Self {
-            database: Arc::new(Mutex::new(database)),
+            database: Arc::new(database) as Arc<dyn DatabaseInterface>,
         })
     }
 
     /// Get or create a repository record
     pub fn ensure_repository(&self, git_repo: &GitRepository) -> Result<i64> {
-        let db = self.db_with_lock()?;
+        
 
-        let dao = RepositoryDao::new(&db);
+        let dao = RepositoryDao::new(Arc::clone(&self.database));
         dao.ensure_repository(git_repo)
     }
 
     /// Get all repositories
     pub fn get_all_repositories(&self) -> Result<Vec<StoredRepository>> {
-        let db = self.db_with_lock()?;
+        
 
-        let dao = RepositoryDao::new(&db);
+        let dao = RepositoryDao::new(Arc::clone(&self.database));
         dao.get_all_repositories()
     }
 
     /// Get a repository by ID
     pub fn get_repository_by_id(&self, repository_id: i64) -> Result<Option<StoredRepository>> {
-        let db = self.db_with_lock()?;
+        
 
-        let dao = RepositoryDao::new(&db);
+        let dao = RepositoryDao::new(Arc::clone(&self.database));
         dao.get_repository_by_id(repository_id)
     }
 
@@ -48,9 +48,9 @@ impl GitRepositoryRepository {
         user_name: &str,
         repository_name: &str,
     ) -> Result<Option<StoredRepository>> {
-        let db = self.db_with_lock()?;
+        
 
-        let dao = RepositoryDao::new(&db);
+        let dao = RepositoryDao::new(Arc::clone(&self.database));
         dao.find_repository(user_name, repository_name)
     }
 
@@ -66,7 +66,7 @@ impl GitRepositoryRepository {
 }
 
 impl HasDatabase for GitRepositoryRepository {
-    fn database(&self) -> &Arc<Mutex<Database>> {
+    fn database(&self) -> &Arc<dyn DatabaseInterface> {
         &self.database
     }
 }
@@ -77,9 +77,9 @@ impl Default for GitRepositoryRepository {
             log::warn!("Failed to initialize RepositoryRepository: {}", e);
             // Return a dummy repository that will fail gracefully
             Self {
-                database: Arc::new(Mutex::new(
+                database: Arc::new(
                     Database::new().expect("Failed to create fallback database"),
-                )),
+                ) as Arc<dyn DatabaseInterface>,
             }
         })
     }

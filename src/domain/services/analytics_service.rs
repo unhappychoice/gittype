@@ -1,9 +1,11 @@
 use crate::domain::error::Result;
-use crate::domain::repositories::SessionRepository;
+use crate::domain::repositories::session_repository::SessionRepositoryTrait;
 use crate::infrastructure::database::daos::RepositoryDao;
-use crate::infrastructure::database::database::Database;
+use crate::infrastructure::database::database::DatabaseInterface;
 use chrono::NaiveDate;
+use shaku::Interface;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 #[derive(Debug, Clone)]
 pub struct AnalyticsData {
@@ -59,22 +61,32 @@ pub struct LangStats {
     pub stages_skipped: usize,
 }
 
+pub trait AnalyticsServiceInterface: Interface {
+    fn load_analytics_data(&self) -> Result<AnalyticsData>;
+}
+
+#[derive(shaku::Component)]
+#[shaku(interface = AnalyticsServiceInterface)]
 pub struct AnalyticsService {
-    session_repository: SessionRepository,
-    db: Database,
+    #[shaku(inject)]
+    session_repository: Arc<dyn SessionRepositoryTrait>,
+    #[shaku(inject)]
+    db: Arc<dyn DatabaseInterface>,
 }
 
 impl AnalyticsService {
-    pub fn new(session_repository: SessionRepository, db: Database) -> Self {
+    pub fn new(session_repository: Arc<dyn SessionRepositoryTrait>, db: Arc<dyn DatabaseInterface>) -> Self {
         Self {
             session_repository,
             db,
         }
     }
+}
 
-    pub fn load_analytics_data(&self) -> Result<AnalyticsData> {
+impl AnalyticsServiceInterface for AnalyticsService {
+    fn load_analytics_data(&self) -> Result<AnalyticsData> {
         let session_repo = &self.session_repository;
-        let git_repo_repo = RepositoryDao::new(&self.db);
+        let git_repo_repo = RepositoryDao::new(Arc::clone(&self.db));
         let sessions = session_repo.get_sessions_filtered(None, Some(90), "date", true)?;
 
         if sessions.is_empty() {

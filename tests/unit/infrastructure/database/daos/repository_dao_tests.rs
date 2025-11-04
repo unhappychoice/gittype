@@ -1,18 +1,20 @@
 use gittype::domain::models::GitRepository;
 use gittype::infrastructure::database::daos::RepositoryDao;
-use gittype::infrastructure::database::database::Database;
+use gittype::infrastructure::database::database::{Database, DatabaseInterface};
+use std::sync::Arc;
 
 #[test]
 fn test_new_creates_dao() {
-    let db = Database::new().expect("Failed to create database");
-    let _dao = RepositoryDao::new(&db);
+    let db = Arc::new(Database::new().expect("Failed to create database")) as Arc<dyn DatabaseInterface>;
+    let _dao = RepositoryDao::new(Arc::clone(&db));
 }
 
 #[test]
 fn test_ensure_repository_creates_new_repository() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "testuser".to_string(),
@@ -30,9 +32,10 @@ fn test_ensure_repository_creates_new_repository() {
 
 #[test]
 fn test_ensure_repository_returns_existing_repository() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "existinguser".to_string(),
@@ -58,9 +61,10 @@ fn test_ensure_repository_returns_existing_repository() {
 
 #[test]
 fn test_ensure_repository_in_transaction() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "txuser".to_string(),
@@ -92,9 +96,10 @@ fn test_ensure_repository_in_transaction() {
 
 #[test]
 fn test_get_all_repositories() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = RepositoryDao::new(Arc::clone(&db));
 
     // Create multiple repositories
     let repos = vec![
@@ -149,9 +154,10 @@ fn test_get_all_repositories() {
 
 #[test]
 fn test_get_repository_by_id() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "fetchuser".to_string(),
@@ -181,9 +187,10 @@ fn test_get_repository_by_id() {
 
 #[test]
 fn test_get_repository_by_id_not_found() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = RepositoryDao::new(Arc::clone(&db));
 
     let found = dao.get_repository_by_id(99999).unwrap();
     assert!(found.is_none(), "Should return None for non-existent ID");
@@ -191,9 +198,10 @@ fn test_get_repository_by_id_not_found() {
 
 #[test]
 fn test_find_repository() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "searchuser".to_string(),
@@ -219,9 +227,10 @@ fn test_find_repository() {
 
 #[test]
 fn test_find_repository_not_found() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = RepositoryDao::new(Arc::clone(&db));
 
     let found = dao
         .find_repository("nonexistentuser", "nonexistentrepo")
@@ -234,9 +243,10 @@ fn test_find_repository_not_found() {
 
 #[test]
 fn test_get_all_repositories_with_languages() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = RepositoryDao::new(Arc::clone(&db));
 
     // Create a repository
     let git_repo = GitRepository {
@@ -271,9 +281,10 @@ fn test_get_all_repositories_with_languages() {
 
 #[test]
 fn test_repository_uniqueness_constraint() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = RepositoryDao::new(Arc::clone(&db));
 
     // Create two repositories with same user_name and repository_name but different remote_url
     let git_repo1 = GitRepository {
@@ -308,9 +319,10 @@ fn test_repository_uniqueness_constraint() {
 
 #[test]
 fn test_multiple_repositories_in_transaction() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = RepositoryDao::new(Arc::clone(&db));
 
     let repos = vec![
         GitRepository {
