@@ -1,18 +1,20 @@
 use gittype::domain::models::{Challenge, DifficultyLevel};
 use gittype::infrastructure::database::daos::ChallengeDao;
-use gittype::infrastructure::database::database::Database;
+use gittype::infrastructure::database::database::{Database, DatabaseInterface};
+use std::sync::Arc;
 
 #[test]
 fn test_new_creates_dao() {
-    let db = Database::new().expect("Failed to create database");
-    let _dao = ChallengeDao::new(&db);
+    let db = Arc::new(Database::new().expect("Failed to create database")) as Arc<dyn DatabaseInterface>;
+    let _dao = ChallengeDao::new(Arc::clone(&db));
 }
 
 #[test]
 fn test_ensure_challenge_creates_new_challenge() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let dao = ChallengeDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = ChallengeDao::new(Arc::clone(&db));
 
     let challenge = Challenge::new("test-challenge-1".to_string(), "fn test() {}".to_string())
         .with_language("rust".to_string())
@@ -33,9 +35,10 @@ fn test_ensure_challenge_creates_new_challenge() {
 
 #[test]
 fn test_ensure_challenge_returns_existing_challenge() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let dao = ChallengeDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = ChallengeDao::new(Arc::clone(&db));
 
     let challenge = Challenge::new("test-challenge-2".to_string(), "fn test() {}".to_string())
         .with_language("rust".to_string());
@@ -63,9 +66,10 @@ fn test_ensure_challenge_returns_existing_challenge() {
 
 #[test]
 fn test_ensure_challenge_with_different_difficulties() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let dao = ChallengeDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = ChallengeDao::new(Arc::clone(&db));
 
     let difficulties = [
         DifficultyLevel::Easy,
@@ -98,9 +102,10 @@ fn test_ensure_challenge_with_different_difficulties() {
 
 #[test]
 fn test_ensure_challenge_with_comment_ranges() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let dao = ChallengeDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = ChallengeDao::new(Arc::clone(&db));
 
     let challenge = Challenge::new(
         "test-challenge-comments".to_string(),
@@ -121,9 +126,10 @@ fn test_ensure_challenge_with_comment_ranges() {
 
 #[test]
 fn test_ensure_multiple_challenges_in_transaction() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let dao = ChallengeDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = ChallengeDao::new(Arc::clone(&db));
 
     let challenges: Vec<Challenge> = (0..5)
         .map(|i| {

@@ -1,15 +1,16 @@
-use super::super::database::Database;
+use super::super::database::DatabaseInterface;
 use crate::domain::models::storage::{StoredRepository, StoredRepositoryWithLanguages};
 use crate::domain::models::GitRepository;
 use crate::{domain::error::GitTypeError, Result};
 use rusqlite::{params, Transaction};
+use std::sync::Arc;
 
-pub struct RepositoryDao<'a> {
-    db: &'a Database,
+pub struct RepositoryDao {
+    db: Arc<dyn DatabaseInterface>,
 }
 
-impl<'a> RepositoryDao<'a> {
-    pub fn new(db: &'a Database) -> Self {
+impl RepositoryDao {
+    pub fn new(db: Arc<dyn DatabaseInterface>) -> Self {
         Self { db }
     }
 

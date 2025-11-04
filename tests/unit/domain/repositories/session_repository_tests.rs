@@ -449,7 +449,7 @@ fn test_has_database_trait_implementation() {
 
     // Verify database access through HasDatabase trait
     let db_arc = repo.database();
-    assert!(db_arc.lock().is_ok());
+    assert!(db_arc.get_connection().is_ok());
 }
 
 // Integration tests with actual data

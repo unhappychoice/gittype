@@ -4,9 +4,9 @@ use crate::domain::models::storage::{
 use crate::domain::models::{Challenge, GitRepository, SessionResult};
 use crate::domain::services::scoring::{StageCalculator, StageResult, StageTracker};
 use crate::infrastructure::database::daos::{ChallengeDao, RepositoryDao, SessionDao};
-use crate::infrastructure::database::database::{Database, HasDatabase};
+use crate::infrastructure::database::database::{Database, DatabaseInterface, HasDatabase};
 use crate::{domain::error::GitTypeError, Result};
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 type StageResultTuple = (String, StageResult, usize, Option<Challenge>);
 
@@ -21,11 +21,13 @@ pub trait SessionRepositoryTrait: shaku::Interface {
         sort_descending: bool,
     ) -> Result<Vec<StoredSession>>;
     fn get_session_result(&self, session_id: i64) -> Result<Option<SessionResultData>>;
+    fn get_language_stats(&self, days: Option<i64>) -> Result<Vec<(String, f64, usize)>>;
+    fn get_session_result_for_analytics(&self, session_id: i64) -> Result<Option<SessionResultData>>;
 }
 
 /// Repository for session business logic
 pub struct SessionRepository {
-    database: Arc<Mutex<Database>>,
+    database: Arc<dyn DatabaseInterface>,
 }
 
 impl shaku::Component<crate::presentation::di::AppModule> for SessionRepository {
@@ -44,7 +46,7 @@ impl SessionRepository {
     pub fn new() -> Result<Self> {
         let database = Database::new()?;
         Ok(Self {
-            database: Arc::new(Mutex::new(database)),
+            database: Arc::new(database) as Arc<dyn DatabaseInterface>,
         })
     }
 
@@ -59,17 +61,17 @@ impl SessionRepository {
         challenges: &[Challenge],
     ) -> Result<i64> {
         log::debug!("Starting session recording...");
-        let db = self.db_with_lock()?;
+        
 
         // Repository manages the transaction boundary
-        let conn = db.get_connection()?;
+        let conn = self.database.get_connection()?;
         let tx = conn.unchecked_transaction()?;
         log::debug!("Database transaction started");
 
         // Create DAOs
-        let repository_dao = RepositoryDao::new(&db);
-        let session_dao = SessionDao::new(&db);
-        let challenge_dao = ChallengeDao::new(&db);
+        let repository_dao = RepositoryDao::new(Arc::clone(&self.database));
+        let session_dao = SessionDao::new(Arc::clone(&self.database));
+        let challenge_dao = ChallengeDao::new(Arc::clone(&self.database));
 
         // 1. Get or create repository
         let repository_id = if let Some(repo) = git_repository {
@@ -153,24 +155,24 @@ impl SessionRepository {
 
     /// Get session history for a specific repository
     pub fn get_repository_history(&self, repository_id: i64) -> Result<Vec<StoredSession>> {
-        let db = self.db_with_lock()?;
+        
 
-        let dao = SessionDao::new(&db);
+        let dao = SessionDao::new(Arc::clone(&self.database));
         dao.get_repository_sessions(repository_id)
     }
 
     /// Get all repositories
     pub fn get_all_repositories(&self) -> Result<Vec<StoredRepository>> {
-        let db = self.db_with_lock()?;
+        
 
-        let dao = RepositoryDao::new(&db);
+        let dao = RepositoryDao::new(Arc::clone(&self.database));
         dao.get_all_repositories()
     }
 
     /// Get language performance statistics
     pub fn get_language_stats(&self, _days: Option<i64>) -> Result<Vec<(String, f64, usize)>> {
-        let db = self.db_with_lock()?;
-        let conn = db.get_connection()?;
+        
+        let conn = self.database.get_connection()?;
 
         // Query with proper time filtering for last 30 days
         let query = "SELECT language, AVG(cpm) as avg_cpm, COUNT(*) as session_count
@@ -206,8 +208,8 @@ impl SessionRepository {
         sort_by: &str,
         sort_descending: bool,
     ) -> Result<Vec<StoredSession>> {
-        let db = self.db_with_lock()?;
-        let dao = SessionDao::new(&db);
+        
+        let dao = SessionDao::new(Arc::clone(&self.database));
         dao.get_sessions_filtered(
             repository_filter,
             date_filter_days,
@@ -218,13 +220,14 @@ impl SessionRepository {
 
     /// Get stage results for a specific session
     pub fn get_session_stage_results(&self, session_id: i64) -> Result<Vec<SessionStageResult>> {
-        let db = self.db_with_lock()?;
-        let dao = SessionDao::new(&db);
+        
+        let dao = SessionDao::new(Arc::clone(&self.database));
         dao.get_session_stage_results(session_id)
     }
 
     /// Create a global singleton instance
-    pub fn global() -> &'static Arc<Mutex<Option<SessionRepository>>> {
+    pub fn global() -> &'static Arc<std::sync::Mutex<Option<SessionRepository>>> {
+        use std::sync::Mutex;
         static INSTANCE: std::sync::OnceLock<Arc<Mutex<Option<SessionRepository>>>> =
             std::sync::OnceLock::new();
 
@@ -282,8 +285,8 @@ impl SessionRepository {
 
     /// Get best records for comparison display
     pub fn get_best_records(&self) -> Result<BestRecords> {
-        let db = self.db_with_lock()?;
-        let dao = SessionDao::new(&db);
+        
+        let dao = SessionDao::new(Arc::clone(&self.database));
 
         let todays_best = dao.get_todays_best_session()?;
         let weekly_best = dao.get_weekly_best_session()?;
@@ -455,8 +458,8 @@ impl SessionRepository {
         &self,
         session_id: i64,
     ) -> Result<Option<SessionResultData>> {
-        let db = self.db_with_lock()?;
-        let dao = SessionDao::new(&db);
+        
+        let dao = SessionDao::new(Arc::clone(&self.database));
         dao.get_session_result(session_id)
     }
 }
@@ -527,10 +530,18 @@ impl SessionRepositoryTrait for SessionRepository {
     fn get_session_result(&self, session_id: i64) -> Result<Option<SessionResultData>> {
         SessionRepository::get_session_result_for_analytics(self, session_id)
     }
+
+    fn get_language_stats(&self, days: Option<i64>) -> Result<Vec<(String, f64, usize)>> {
+        SessionRepository::get_language_stats(self, days)
+    }
+
+    fn get_session_result_for_analytics(&self, session_id: i64) -> Result<Option<SessionResultData>> {
+        SessionRepository::get_session_result_for_analytics(self, session_id)
+    }
 }
 
 impl HasDatabase for SessionRepository {
-    fn database(&self) -> &Arc<Mutex<Database>> {
+    fn database(&self) -> &Arc<dyn DatabaseInterface> {
         &self.database
     }
 }
@@ -541,9 +552,9 @@ impl Default for SessionRepository {
             log::warn!("Failed to initialize SessionRepository: {}", e);
             // Return a dummy repository that will fail gracefully
             Self {
-                database: Arc::new(Mutex::new(
+                database: Arc::new(
                     Database::new().expect("Failed to create fallback database"),
-                )),
+                ) as Arc<dyn DatabaseInterface>,
             }
         })
     }

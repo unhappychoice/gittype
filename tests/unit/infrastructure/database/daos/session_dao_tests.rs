@@ -1,20 +1,22 @@
 use gittype::domain::models::{Challenge, DifficultyLevel, GitRepository, SessionResult};
 use gittype::infrastructure::database::daos::{ChallengeDao, RepositoryDao, SessionDao};
-use gittype::infrastructure::database::database::Database;
+use gittype::infrastructure::database::database::{Database, DatabaseInterface};
+use std::sync::Arc;
 use std::time::Duration;
 
 #[test]
 fn test_new_creates_dao() {
-    let db = Database::new().expect("Failed to create database");
-    let _dao = SessionDao::new(&db);
+    let db = Arc::new(Database::new().expect("Failed to create database")) as Arc<dyn DatabaseInterface>;
+    let _dao = SessionDao::new(Arc::clone(&db));
 }
 
 #[test]
 fn test_create_session_in_transaction() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "testuser".to_string(),
@@ -52,10 +54,11 @@ fn test_create_session_in_transaction() {
 
 #[test]
 fn test_save_session_result_in_transaction() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "resultuser".to_string(),
@@ -132,11 +135,12 @@ fn test_save_session_result_in_transaction() {
 
 #[test]
 fn test_save_stage_result_in_transaction() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
-    let challenge_dao = ChallengeDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
+    let challenge_dao = ChallengeDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "stageuser".to_string(),
@@ -250,10 +254,11 @@ fn test_save_stage_result_in_transaction() {
 
 #[test]
 fn test_get_repository_sessions() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "historyuser".to_string(),
@@ -299,10 +304,11 @@ fn test_get_repository_sessions() {
 
 #[test]
 fn test_get_todays_best_session() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "todayuser".to_string(),
@@ -367,10 +373,11 @@ fn test_get_todays_best_session() {
 
 #[test]
 fn test_get_weekly_best_session() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "weekuser".to_string(),
@@ -421,10 +428,11 @@ fn test_get_weekly_best_session() {
 
 #[test]
 fn test_get_all_time_best_session() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "alltimeuser".to_string(),
@@ -489,10 +497,11 @@ fn test_get_all_time_best_session() {
 
 #[test]
 fn test_get_session_result() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "getuser".to_string(),
@@ -550,9 +559,10 @@ fn test_get_session_result() {
 
 #[test]
 fn test_get_session_result_not_found() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
 
     let result = session_dao.get_session_result(99999).unwrap();
     assert!(
@@ -563,10 +573,11 @@ fn test_get_session_result_not_found() {
 
 #[test]
 fn test_get_sessions_filtered_by_repository() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     // Create two repositories
     let git_repo1 = GitRepository {
@@ -648,10 +659,11 @@ fn test_get_sessions_filtered_by_repository() {
 
 #[test]
 fn test_get_sessions_filtered_by_date() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "dateuser".to_string(),
@@ -709,10 +721,11 @@ fn test_get_sessions_filtered_by_date() {
 
 #[test]
 fn test_get_sessions_filtered_sorted_by_score() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "sortuser".to_string(),
@@ -782,11 +795,12 @@ fn test_get_sessions_filtered_sorted_by_score() {
 
 #[test]
 fn test_get_session_stage_results() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
-    let challenge_dao = ChallengeDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
+    let challenge_dao = ChallengeDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "stageresultuser".to_string(),

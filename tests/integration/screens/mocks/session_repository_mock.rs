@@ -108,4 +108,15 @@ impl SessionRepositoryTrait for MockSessionRepository {
     ) -> Result<Option<gittype::domain::models::storage::SessionResultData>> {
         Ok(None)
     }
+
+    fn get_language_stats(&self, _days: Option<i64>) -> Result<Vec<(String, f64, usize)>> {
+        Ok(vec![])
+    }
+
+    fn get_session_result_for_analytics(
+        &self,
+        _session_id: i64,
+    ) -> Result<Option<gittype::domain::models::storage::SessionResultData>> {
+        Ok(None)
+    }
 }

@@ -90,8 +90,9 @@ pub struct AnalyticsScreenDataProvider {}
 
 impl ScreenDataProvider for AnalyticsScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let session_repository = SessionRepository::new()?;
-        let db = Database::new()?;
+        use crate::domain::services::analytics_service::AnalyticsServiceInterface;
+        let session_repository = Arc::new(SessionRepository::new()?);
+        let db = Arc::new(Database::new()?);
         let service = AnalyticsService::new(session_repository, db);
 
         service

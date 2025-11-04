@@ -1,16 +1,17 @@
-use super::super::database::Database;
+use super::super::database::DatabaseInterface;
 use crate::domain::models::Challenge;
 use crate::{domain::error::GitTypeError, Result};
 use rusqlite::{params, Transaction};
 use serde_json;
+use std::sync::Arc;
 
-pub struct ChallengeDao<'a> {
+pub struct ChallengeDao {
     #[allow(dead_code)]
-    db: &'a Database,
+    db: Arc<dyn DatabaseInterface>,
 }
 
-impl<'a> ChallengeDao<'a> {
-    pub fn new(db: &'a Database) -> Self {
+impl ChallengeDao {
+    pub fn new(db: Arc<dyn DatabaseInterface>) -> Self {
         Self { db }
     }
 

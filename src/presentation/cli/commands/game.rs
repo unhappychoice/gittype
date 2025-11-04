@@ -2,7 +2,7 @@ use crate::domain::events::EventBusInterface;
 use crate::domain::models::ExtractionOptions;
 use crate::domain::models::Languages;
 use crate::domain::services::theme_manager::ThemeManager;
-use crate::domain::services::version_service::VersionService;
+use crate::domain::services::version_service::{VersionService, VersionServiceInterface};
 use crate::infrastructure::console::{Console, ConsoleImpl};
 use crate::infrastructure::logging;
 use crate::presentation::cli::args::Cli;

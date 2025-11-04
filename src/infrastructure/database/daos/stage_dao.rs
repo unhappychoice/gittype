@@ -1,17 +1,18 @@
-use super::super::database::Database;
+use super::super::database::DatabaseInterface;
 use crate::domain::models::storage::{
     DifficultyStats, LanguageStats, StageStatistics, StoredStageResult,
 };
 use crate::{domain::error::GitTypeError, Result};
 use chrono::{DateTime, Utc};
 use rusqlite::params;
+use std::sync::Arc;
 
-pub struct StageDao<'a> {
-    db: &'a Database,
+pub struct StageDao {
+    db: Arc<dyn DatabaseInterface>,
 }
 
-impl<'a> StageDao<'a> {
-    pub fn new(db: &'a Database) -> Self {
+impl StageDao {
+    pub fn new(db: Arc<dyn DatabaseInterface>) -> Self {
         Self { db }
     }
 

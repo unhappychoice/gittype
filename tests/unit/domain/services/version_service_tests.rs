@@ -1,6 +1,6 @@
 #[allow(clippy::module_inception)]
 mod version_service_tests {
-    use gittype::domain::services::VersionService;
+    use gittype::domain::services::version_service::{VersionService, VersionServiceInterface};
 
     #[tokio::test]
     async fn test_version_update_available() {

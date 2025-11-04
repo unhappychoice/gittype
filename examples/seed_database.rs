@@ -1,9 +1,9 @@
 mod seeders;
 
 use clap::Parser;
-use gittype::{infrastructure::database::database::Database, Result};
+use gittype::{infrastructure::database::database::{Database, DatabaseInterface}, Result};
 use seeders::DatabaseSeeder;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 #[derive(Parser)]
 #[command(name = "seed_database")]
@@ -28,13 +28,11 @@ fn main() -> Result<()> {
 
     println!("🌱 Starting database seeding...");
 
-    let database = Arc::new(Mutex::new(Database::new()?));
+    let db = Database::new()?;
+    let database: Arc<dyn DatabaseInterface> = Arc::new(db);
 
     // Initialize database tables if needed
-    {
-        let db = database.lock().unwrap();
-        db.init()?;
-    }
+    database.init_tables()?;
 
     if args.clear {
         println!("🧹 Clearing existing data...");
@@ -55,9 +53,8 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn clear_database(database: &Arc<Mutex<Database>>) -> Result<()> {
-    let db = database.lock().unwrap();
-    let conn = db.get_connection().unwrap();
+fn clear_database(database: &Arc<dyn DatabaseInterface>) -> Result<()> {
+    let conn = database.get_connection()?;
 
     // Disable foreign key checks temporarily
     conn.execute("PRAGMA foreign_keys = OFF", [])?;
