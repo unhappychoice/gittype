@@ -1,9 +1,8 @@
 use crate::domain::error::Result;
 use crate::domain::models::storage::repository::{StoredRepository, StoredRepositoryWithLanguages};
-use crate::infrastructure::database::daos::RepositoryDao;
-use crate::infrastructure::database::database::DatabaseInterface;
+use crate::infrastructure::database::daos::RepositoryDaoInterface;
 use crate::infrastructure::git::remote::remote_git_repository_client::RemoteGitRepositoryClient;
-use crate::infrastructure::storage::file_storage::{FileStorage, FileStorageInterface};
+use crate::infrastructure::storage::file_storage::FileStorage;
 use shaku::Interface;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -11,22 +10,27 @@ use std::sync::Arc;
 pub trait RepositoryServiceInterface: Interface {
     fn get_all_repositories(&self) -> Result<Vec<StoredRepository>>;
     fn get_all_repositories_with_languages(&self) -> Result<Vec<StoredRepositoryWithLanguages>>;
-    fn get_all_repositories_with_cache_status(&self) -> Result<Vec<(StoredRepositoryWithLanguages, bool)>>;
+    fn get_all_repositories_with_cache_status(
+        &self,
+    ) -> Result<Vec<(StoredRepositoryWithLanguages, bool)>>;
 }
 
 #[derive(shaku::Component)]
 #[shaku(interface = RepositoryServiceInterface)]
 pub struct RepositoryService {
     #[shaku(inject)]
-    db: Arc<dyn DatabaseInterface>,
+    repository_dao: Arc<dyn RepositoryDaoInterface>,
     #[shaku(default)]
     remote_git_client: RemoteGitRepositoryClient,
 }
 
 impl RepositoryService {
-    pub fn new(db: Arc<dyn DatabaseInterface>, remote_git_client: RemoteGitRepositoryClient) -> Self {
+    pub fn new(
+        repository_dao: Arc<dyn RepositoryDaoInterface>,
+        remote_git_client: RemoteGitRepositoryClient,
+    ) -> Self {
         Self {
-            db,
+            repository_dao,
             remote_git_client,
         }
     }
@@ -34,15 +38,11 @@ impl RepositoryService {
 
 impl RepositoryServiceInterface for RepositoryService {
     fn get_all_repositories(&self) -> Result<Vec<StoredRepository>> {
-        let repo_dao = RepositoryDao::new(Arc::clone(&self.db));
-        repo_dao.get_all_repositories()
+        self.repository_dao.get_all_repositories()
     }
 
-    fn get_all_repositories_with_languages(
-        &self,
-    ) -> Result<Vec<StoredRepositoryWithLanguages>> {
-        let repo_dao = RepositoryDao::new(Arc::clone(&self.db));
-        repo_dao.get_all_repositories_with_languages()
+    fn get_all_repositories_with_languages(&self) -> Result<Vec<StoredRepositoryWithLanguages>> {
+        self.repository_dao.get_all_repositories_with_languages()
     }
 
     fn get_all_repositories_with_cache_status(

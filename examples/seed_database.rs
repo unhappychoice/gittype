@@ -1,7 +1,10 @@
 mod seeders;
 
 use clap::Parser;
-use gittype::{infrastructure::database::database::{Database, DatabaseInterface}, Result};
+use gittype::{
+    infrastructure::database::database::{Database, DatabaseInterface},
+    Result,
+};
 use seeders::DatabaseSeeder;
 use std::sync::Arc;
 

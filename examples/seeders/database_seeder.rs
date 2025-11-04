@@ -1,5 +1,5 @@
 use super::data::SeedData;
-use gittype::infrastructure::database::database::{Database, DatabaseInterface, HasDatabase};
+use gittype::infrastructure::database::database::{DatabaseInterface, HasDatabase};
 use gittype::Result;
 use std::sync::Arc;
 

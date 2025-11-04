@@ -1,5 +1,8 @@
 use gittype::domain::models::git_repository::GitRepository;
-use gittype::domain::repositories::git_repository_repository::GitRepositoryRepository;
+use gittype::domain::repositories::git_repository_repository::GitRepositoryRepositoryInterface;
+use gittype::presentation::di::AppModule;
+use shaku::HasComponent;
+use std::sync::Arc;
 
 fn create_test_repository() -> GitRepository {
     GitRepository {
@@ -13,19 +16,14 @@ fn create_test_repository() -> GitRepository {
     }
 }
 
-fn create_test_repo_repository() -> GitRepositoryRepository {
-    GitRepositoryRepository::new().expect("Failed to create test repository")
+fn create_test_repo_repository() -> Arc<dyn GitRepositoryRepositoryInterface> {
+    let module = AppModule::builder().build();
+    module.resolve()
 }
 
 #[test]
-fn new_creates_repository() {
-    let result = GitRepositoryRepository::new();
-    assert!(result.is_ok());
-}
-
-#[test]
-fn default_creates_repository() {
-    let _repo = GitRepositoryRepository::default();
+fn creates_repository_via_di() {
+    let _repo = create_test_repo_repository();
     // Test passes if construction succeeds
 }
 

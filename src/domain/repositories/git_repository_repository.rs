@@ -1,86 +1,63 @@
 use crate::domain::models::storage::StoredRepository;
 use crate::domain::models::GitRepository;
-use crate::infrastructure::database::daos::RepositoryDao;
-use crate::infrastructure::database::database::{Database, DatabaseInterface, HasDatabase};
+use crate::infrastructure::database::daos::RepositoryDaoInterface;
 use crate::Result;
+use shaku::Interface;
 use std::sync::Arc;
 
-/// Repository for Git repository business logic
-pub struct GitRepositoryRepository {
-    database: Arc<dyn DatabaseInterface>,
+pub trait GitRepositoryRepositoryInterface: Interface {
+    fn ensure_repository(&self, git_repo: &GitRepository) -> Result<i64>;
+    fn get_all_repositories(&self) -> Result<Vec<StoredRepository>>;
+    fn get_repository_by_id(&self, repository_id: i64) -> Result<Option<StoredRepository>>;
+    fn find_repository(
+        &self,
+        user_name: &str,
+        repository_name: &str,
+    ) -> Result<Option<StoredRepository>>;
+    fn get_user_repositories(&self, user_name: &str) -> Result<Vec<StoredRepository>>;
 }
 
-impl GitRepositoryRepository {
-    pub fn new() -> Result<Self> {
-        let database = Database::new()?;
-        Ok(Self {
-            database: Arc::new(database) as Arc<dyn DatabaseInterface>,
-        })
-    }
+/// Repository for Git repository business logic
+#[derive(shaku::Component)]
+#[shaku(interface = GitRepositoryRepositoryInterface)]
+pub struct GitRepositoryRepository {
+    #[shaku(inject)]
+    repository_dao: Arc<dyn RepositoryDaoInterface>,
+}
 
+impl GitRepositoryRepositoryInterface for GitRepositoryRepository {
     /// Get or create a repository record
-    pub fn ensure_repository(&self, git_repo: &GitRepository) -> Result<i64> {
-        
-
-        let dao = RepositoryDao::new(Arc::clone(&self.database));
-        dao.ensure_repository(git_repo)
+    fn ensure_repository(&self, git_repo: &GitRepository) -> Result<i64> {
+        self.repository_dao.ensure_repository(git_repo)
     }
 
     /// Get all repositories
-    pub fn get_all_repositories(&self) -> Result<Vec<StoredRepository>> {
-        
-
-        let dao = RepositoryDao::new(Arc::clone(&self.database));
-        dao.get_all_repositories()
+    fn get_all_repositories(&self) -> Result<Vec<StoredRepository>> {
+        self.repository_dao.get_all_repositories()
     }
 
     /// Get a repository by ID
-    pub fn get_repository_by_id(&self, repository_id: i64) -> Result<Option<StoredRepository>> {
-        
-
-        let dao = RepositoryDao::new(Arc::clone(&self.database));
-        dao.get_repository_by_id(repository_id)
+    fn get_repository_by_id(&self, repository_id: i64) -> Result<Option<StoredRepository>> {
+        self.repository_dao.get_repository_by_id(repository_id)
     }
 
     /// Find repository by user and repository name
-    pub fn find_repository(
+    fn find_repository(
         &self,
         user_name: &str,
         repository_name: &str,
     ) -> Result<Option<StoredRepository>> {
-        
-
-        let dao = RepositoryDao::new(Arc::clone(&self.database));
-        dao.find_repository(user_name, repository_name)
+        self.repository_dao
+            .find_repository(user_name, repository_name)
     }
 
     /// Get repositories for a specific user
-    pub fn get_user_repositories(&self, user_name: &str) -> Result<Vec<StoredRepository>> {
+    fn get_user_repositories(&self, user_name: &str) -> Result<Vec<StoredRepository>> {
         let repositories = self.get_all_repositories()?;
         let user_repos = repositories
             .into_iter()
             .filter(|repo| repo.user_name == user_name)
             .collect();
         Ok(user_repos)
-    }
-}
-
-impl HasDatabase for GitRepositoryRepository {
-    fn database(&self) -> &Arc<dyn DatabaseInterface> {
-        &self.database
-    }
-}
-
-impl Default for GitRepositoryRepository {
-    fn default() -> Self {
-        Self::new().unwrap_or_else(|e| {
-            log::warn!("Failed to initialize RepositoryRepository: {}", e);
-            // Return a dummy repository that will fail gracefully
-            Self {
-                database: Arc::new(
-                    Database::new().expect("Failed to create fallback database"),
-                ) as Arc<dyn DatabaseInterface>,
-            }
-        })
     }
 }

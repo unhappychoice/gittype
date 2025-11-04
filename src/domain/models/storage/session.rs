@@ -93,6 +93,16 @@ pub struct SessionResultData {
     pub total: Option<i64>,
 }
 
+/// Parameters for saving session results
+pub struct SaveSessionResultParams<'a> {
+    pub session_id: i64,
+    pub repository_id: Option<i64>,
+    pub session_result: &'a crate::domain::models::SessionResult,
+    pub stage_engines: &'a [(String, crate::domain::services::scoring::StageTracker)],
+    pub game_mode: &'a str,
+    pub difficulty_level: Option<&'a str>,
+}
+
 /// Parameters for saving stage results
 pub struct SaveStageParams<'a> {
     pub session_id: i64,

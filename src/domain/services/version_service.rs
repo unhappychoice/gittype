@@ -4,9 +4,12 @@ use shaku::Interface;
 use std::future::Future;
 use std::pin::Pin;
 
+type VersionCheckFuture<'a> =
+    Pin<Box<dyn Future<Output = Result<(bool, String, String)>> + Send + 'a>>;
+
 pub trait VersionServiceInterface: Interface {
-    fn check(&self) -> Pin<Box<dyn Future<Output = Result<(bool, String, String)>> + Send + '_>>;
-    fn check_with_version(&self, current_version: &str) -> Pin<Box<dyn Future<Output = Result<(bool, String, String)>> + Send + '_>>;
+    fn check(&self) -> VersionCheckFuture<'_>;
+    fn check_with_version(&self, current_version: &str) -> VersionCheckFuture<'_>;
 }
 
 #[derive(shaku::Component)]
@@ -32,7 +35,10 @@ impl VersionServiceInterface for VersionService {
         })
     }
 
-    fn check_with_version(&self, current_version: &str) -> Pin<Box<dyn Future<Output = Result<(bool, String, String)>> + Send + '_>> {
+    fn check_with_version(
+        &self,
+        current_version: &str,
+    ) -> Pin<Box<dyn Future<Output = Result<(bool, String, String)>> + Send + '_>> {
         let current_version = current_version.to_string();
         Box::pin(async move {
             let latest_version = self.repository.fetch_latest_version().await?;

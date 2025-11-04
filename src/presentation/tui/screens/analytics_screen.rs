@@ -1,7 +1,8 @@
 use crate::domain::events::EventBusInterface;
 use crate::domain::repositories::SessionRepository;
 use crate::domain::services::analytics_service::{AnalyticsData, AnalyticsService};
-use crate::infrastructure::database::database::Database;
+use crate::infrastructure::database::daos::{RepositoryDao, RepositoryDaoInterface};
+use crate::infrastructure::database::database::{Database, DatabaseInterface};
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::views::analytics::{
     LanguagesView, OverviewView, RepositoriesView, TrendsView,
@@ -92,8 +93,10 @@ impl ScreenDataProvider for AnalyticsScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
         use crate::domain::services::analytics_service::AnalyticsServiceInterface;
         let session_repository = Arc::new(SessionRepository::new()?);
-        let db = Arc::new(Database::new()?);
-        let service = AnalyticsService::new(session_repository, db);
+        let db = Arc::new(Database::new()?) as Arc<dyn DatabaseInterface>;
+        let repository_dao =
+            Arc::new(RepositoryDao::new(Arc::clone(&db))) as Arc<dyn RepositoryDaoInterface>;
+        let service = AnalyticsService::new(session_repository, repository_dao);
 
         service
             .load_analytics_data()

@@ -1,11 +1,15 @@
 use gittype::domain::models::{Challenge, DifficultyLevel, GitRepository, SessionResult};
-use gittype::infrastructure::database::daos::{ChallengeDao, RepositoryDao, SessionDao, StageDao};
+use gittype::infrastructure::database::daos::{
+    ChallengeDao, ChallengeDaoInterface, RepositoryDao, RepositoryDaoInterface, SessionDao,
+    SessionDaoInterface, StageDao, StageDaoInterface,
+};
 use gittype::infrastructure::database::database::{Database, DatabaseInterface};
 use std::sync::Arc;
 
 #[test]
 fn test_new_creates_dao() {
-    let db = Arc::new(Database::new().expect("Failed to create database")) as Arc<dyn DatabaseInterface>;
+    let db =
+        Arc::new(Database::new().expect("Failed to create database")) as Arc<dyn DatabaseInterface>;
     let _dao = StageDao::new(Arc::clone(&db));
 }
 
@@ -80,12 +84,14 @@ fn setup_test_data(
         session_dao
             .save_session_result_in_transaction(
                 &tx,
-                session_id,
-                Some(repository_id),
-                &session_result,
-                &[],
-                "normal",
-                Some("easy"),
+                gittype::domain::models::storage::SaveSessionResultParams {
+                    session_id,
+                    repository_id: Some(repository_id),
+                    session_result: &session_result,
+                    stage_engines: &[],
+                    game_mode: "normal",
+                    difficulty_level: Some("easy"),
+                },
             )
             .unwrap();
 

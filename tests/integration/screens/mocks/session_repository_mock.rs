@@ -1,5 +1,7 @@
 use gittype::domain::models::storage::{SessionStageResult, StoredRepository, StoredSession};
+use gittype::domain::models::{Challenge, GitRepository, SessionResult};
 use gittype::domain::repositories::session_repository::SessionRepositoryTrait;
+use gittype::domain::services::scoring::StageTracker;
 use gittype::Result;
 
 pub struct MockSessionRepository {}
@@ -118,5 +120,17 @@ impl SessionRepositoryTrait for MockSessionRepository {
         _session_id: i64,
     ) -> Result<Option<gittype::domain::models::storage::SessionResultData>> {
         Ok(None)
+    }
+
+    fn record_session(
+        &self,
+        _session_result: &SessionResult,
+        _git_repository: Option<&GitRepository>,
+        _game_mode: &str,
+        _difficulty_level: Option<&str>,
+        _stage_trackers: &[(String, StageTracker)],
+        _challenges: &[Challenge],
+    ) -> Result<i64> {
+        Ok(1)
     }
 }

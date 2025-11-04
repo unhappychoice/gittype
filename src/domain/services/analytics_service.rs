@@ -1,7 +1,6 @@
 use crate::domain::error::Result;
 use crate::domain::repositories::session_repository::SessionRepositoryTrait;
-use crate::infrastructure::database::daos::RepositoryDao;
-use crate::infrastructure::database::database::DatabaseInterface;
+use crate::infrastructure::database::daos::RepositoryDaoInterface;
 use chrono::NaiveDate;
 use shaku::Interface;
 use std::collections::HashMap;
@@ -71,14 +70,17 @@ pub struct AnalyticsService {
     #[shaku(inject)]
     session_repository: Arc<dyn SessionRepositoryTrait>,
     #[shaku(inject)]
-    db: Arc<dyn DatabaseInterface>,
+    repository_dao: Arc<dyn RepositoryDaoInterface>,
 }
 
 impl AnalyticsService {
-    pub fn new(session_repository: Arc<dyn SessionRepositoryTrait>, db: Arc<dyn DatabaseInterface>) -> Self {
+    pub fn new(
+        session_repository: Arc<dyn SessionRepositoryTrait>,
+        repository_dao: Arc<dyn RepositoryDaoInterface>,
+    ) -> Self {
         Self {
             session_repository,
-            db,
+            repository_dao,
         }
     }
 }
@@ -86,7 +88,7 @@ impl AnalyticsService {
 impl AnalyticsServiceInterface for AnalyticsService {
     fn load_analytics_data(&self) -> Result<AnalyticsData> {
         let session_repo = &self.session_repository;
-        let git_repo_repo = RepositoryDao::new(Arc::clone(&self.db));
+        let git_repo_repo = &self.repository_dao;
         let sessions = session_repo.get_sessions_filtered(None, Some(90), "date", true)?;
 
         if sessions.is_empty() {
