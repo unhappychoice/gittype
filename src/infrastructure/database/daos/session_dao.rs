@@ -1,4 +1,4 @@
-use super::super::database::Database;
+use super::super::database::{Database, DatabaseInterface};
 use crate::domain::models::storage::{
     SaveStageParams, SessionResultData, SessionStageResult, StoredSession,
 };
@@ -7,14 +7,15 @@ use crate::domain::services::scoring::RankCalculator;
 use crate::{domain::error::GitTypeError, Result};
 use chrono::{DateTime, Utc};
 use rusqlite::{params, OptionalExtension, Transaction};
+use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-pub struct SessionDao<'a> {
-    db: &'a Database,
+pub struct SessionDao {
+    db: Arc<dyn DatabaseInterface>,
 }
 
-impl<'a> SessionDao<'a> {
-    pub fn new(db: &'a Database) -> Self {
+impl SessionDao {
+    pub fn new(db: Arc<dyn DatabaseInterface>) -> Self {
         Self { db }
     }
 
@@ -185,7 +186,7 @@ impl<'a> SessionDao<'a> {
 
     /// Get session history for a repository
     pub fn get_repository_sessions(&self, repository_id: i64) -> Result<Vec<StoredSession>> {
-        let conn = self.db.get_connection();
+        let conn = self.db.get_connection()?;
         let mut stmt = conn.prepare(
             "SELECT id, repository_id, started_at, completed_at, branch, commit_hash,
                     is_dirty, game_mode, difficulty_level, max_stages, time_limit_seconds
@@ -236,7 +237,7 @@ impl<'a> SessionDao<'a> {
 
     /// Get best session record from today
     pub fn get_todays_best_session(&self) -> Result<Option<StoredSession>> {
-        let conn = self.db.get_connection();
+        let conn = self.db.get_connection()?;
         let today = chrono::Utc::now().date_naive().format("%Y-%m-%d");
 
         let mut stmt = conn.prepare(
@@ -284,7 +285,7 @@ impl<'a> SessionDao<'a> {
 
     /// Get best session record from past 7 days
     pub fn get_weekly_best_session(&self) -> Result<Option<StoredSession>> {
-        let conn = self.db.get_connection();
+        let conn = self.db.get_connection()?;
         let week_ago = chrono::Utc::now().date_naive() - chrono::Duration::days(7);
 
         let mut stmt = conn.prepare(
@@ -332,7 +333,7 @@ impl<'a> SessionDao<'a> {
 
     /// Get all-time best session record
     pub fn get_all_time_best_session(&self) -> Result<Option<StoredSession>> {
-        let conn = self.db.get_connection();
+        let conn = self.db.get_connection()?;
 
         let mut stmt = conn.prepare(
             "SELECT s.id, s.repository_id, s.started_at, s.completed_at, s.branch, s.commit_hash,
@@ -378,7 +379,7 @@ impl<'a> SessionDao<'a> {
 
     /// Get session result data for a specific session ID
     pub fn get_session_result(&self, session_id: i64) -> Result<Option<SessionResultData>> {
-        let conn = self.db.get_connection();
+        let conn = self.db.get_connection()?;
 
         let mut stmt = conn.prepare(
             "SELECT keystrokes, mistakes, duration_ms, wpm, cpm, accuracy, 
@@ -422,7 +423,7 @@ impl<'a> SessionDao<'a> {
         sort_by: &str,
         sort_descending: bool,
     ) -> Result<Vec<StoredSession>> {
-        let conn = self.db.get_connection();
+        let conn = self.db.get_connection()?;
 
         let mut query = String::from(
             "SELECT s.id, s.repository_id, s.started_at, s.completed_at, s.branch, s.commit_hash,
@@ -504,7 +505,7 @@ impl<'a> SessionDao<'a> {
 
     /// Get stage results for a specific session
     pub fn get_session_stage_results(&self, session_id: i64) -> Result<Vec<SessionStageResult>> {
-        let conn = self.db.get_connection();
+        let conn = self.db.get_connection()?;
 
         let mut stmt = conn.prepare(
             "SELECT sr.wpm, sr.cpm, sr.accuracy, sr.keystrokes, sr.mistakes, sr.duration_ms, 

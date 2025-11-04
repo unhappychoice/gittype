@@ -1,21 +1,22 @@
-use super::super::database::Database;
+use super::super::database::DatabaseInterface;
 use crate::domain::models::storage::{StoredRepository, StoredRepositoryWithLanguages};
 use crate::domain::models::GitRepository;
 use crate::{domain::error::GitTypeError, Result};
 use rusqlite::{params, Transaction};
+use std::sync::Arc;
 
-pub struct RepositoryDao<'a> {
-    db: &'a Database,
+pub struct RepositoryDao {
+    db: Arc<dyn DatabaseInterface>,
 }
 
-impl<'a> RepositoryDao<'a> {
-    pub fn new(db: &'a Database) -> Self {
+impl RepositoryDao {
+    pub fn new(db: Arc<dyn DatabaseInterface>) -> Self {
         Self { db }
     }
 
     /// Get or create repository record
     pub fn ensure_repository(&self, git_repo: &GitRepository) -> Result<i64> {
-        let conn = self.db.get_connection();
+        let conn = self.db.get_connection()?;
         let tx = conn.unchecked_transaction()?;
         let id = self.ensure_repository_in_transaction(&tx, git_repo)?;
         tx.commit()?;
@@ -56,7 +57,7 @@ impl<'a> RepositoryDao<'a> {
 
     /// Get all repositories
     pub fn get_all_repositories(&self) -> Result<Vec<StoredRepository>> {
-        let conn = self.db.get_connection();
+        let conn = self.db.get_connection()?;
         let mut stmt = conn.prepare(
             "SELECT id, user_name, repository_name, remote_url FROM repositories ORDER BY user_name, repository_name",
         )?;
@@ -77,7 +78,7 @@ impl<'a> RepositoryDao<'a> {
 
     /// Get a specific repository by ID
     pub fn get_repository_by_id(&self, repository_id: i64) -> Result<Option<StoredRepository>> {
-        let conn = self.db.get_connection();
+        let conn = self.db.get_connection()?;
         let mut stmt = conn.prepare(
             "SELECT id, user_name, repository_name, remote_url FROM repositories WHERE id = ?",
         )?;
@@ -105,7 +106,7 @@ impl<'a> RepositoryDao<'a> {
         user_name: &str,
         repository_name: &str,
     ) -> Result<Option<StoredRepository>> {
-        let conn = self.db.get_connection();
+        let conn = self.db.get_connection()?;
         let mut stmt = conn.prepare(
             "SELECT id, user_name, repository_name, remote_url FROM repositories WHERE user_name = ? AND repository_name = ?",
         )?;
@@ -131,7 +132,7 @@ impl<'a> RepositoryDao<'a> {
     pub fn get_all_repositories_with_languages(
         &self,
     ) -> Result<Vec<StoredRepositoryWithLanguages>> {
-        let conn = self.db.get_connection();
+        let conn = self.db.get_connection()?;
         let mut stmt = conn.prepare(
             "SELECT DISTINCT r.id, r.user_name, r.repository_name, r.remote_url, 
                     GROUP_CONCAT(DISTINCT sr.language) as languages

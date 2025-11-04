@@ -1,7 +1,18 @@
 use crate::domain::repositories::VersionRepository;
 use crate::{GitTypeError, Result};
+use shaku::Interface;
+use std::future::Future;
+use std::pin::Pin;
 
+pub trait VersionServiceInterface: Interface {
+    fn check(&self) -> Pin<Box<dyn Future<Output = Result<(bool, String, String)>> + Send + '_>>;
+    fn check_with_version(&self, current_version: &str) -> Pin<Box<dyn Future<Output = Result<(bool, String, String)>> + Send + '_>>;
+}
+
+#[derive(shaku::Component)]
+#[shaku(interface = VersionServiceInterface)]
 pub struct VersionService {
+    #[shaku(default)]
     repository: VersionRepository,
 }
 
@@ -11,26 +22,27 @@ impl VersionService {
             repository: VersionRepository::new()?,
         })
     }
+}
 
-    /// Check if a new version is available and return both the result and versions
-    pub async fn check(&self) -> Result<(bool, String, String)> {
-        let current_version = env!("CARGO_PKG_VERSION").to_string();
-        self.check_with_version(&current_version).await
+impl VersionServiceInterface for VersionService {
+    fn check(&self) -> Pin<Box<dyn Future<Output = Result<(bool, String, String)>> + Send + '_>> {
+        Box::pin(async move {
+            let current_version = env!("CARGO_PKG_VERSION").to_string();
+            self.check_with_version(&current_version).await
+        })
     }
 
-    /// Check if a new version is available with a custom current version
-    pub async fn check_with_version(
-        &self,
-        current_version: &str,
-    ) -> Result<(bool, String, String)> {
+    fn check_with_version(&self, current_version: &str) -> Pin<Box<dyn Future<Output = Result<(bool, String, String)>> + Send + '_>> {
         let current_version = current_version.to_string();
-        let latest_version = self.repository.fetch_latest_version().await?;
-        let has_update = Self::is_version_newer(&latest_version, &current_version);
-
-        Ok((has_update, current_version, latest_version))
+        Box::pin(async move {
+            let latest_version = self.repository.fetch_latest_version().await?;
+            let has_update = VersionService::is_version_newer(&latest_version, &current_version);
+            Ok((has_update, current_version, latest_version))
+        })
     }
+}
 
-    /// Compare two version strings and determine if the first is newer
+impl VersionService {
     fn is_version_newer(latest: &str, current: &str) -> bool {
         let latest_parts = Self::parse_version(latest);
         let current_parts = Self::parse_version(current);
@@ -50,7 +62,6 @@ impl VersionService {
         }
     }
 
-    /// Parse a version string into a vector of numeric parts
     fn parse_version(version: &str) -> Result<Vec<u32>> {
         version
             .split('.')

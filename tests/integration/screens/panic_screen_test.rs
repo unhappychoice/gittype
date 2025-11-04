@@ -3,13 +3,14 @@ use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
 use gittype::presentation::tui::screens::panic_screen::PanicScreen;
+use std::sync::Arc;
 
 screen_snapshot_test!(
     test_panic_screen_snapshot_with_fixed_timestamp,
     PanicScreen,
     PanicScreen::with_error_message(
         "Test panic message".to_string(),
-        EventBus::new(),
+        Arc::new(EventBus::new()),
         Some("SystemTime { tv_sec: 1700000000, tv_nsec: 0 }".to_string())
     )
 );
@@ -30,7 +31,7 @@ fn test_panic_screen_other_keys_ignored() {
     use gittype::presentation::tui::ScreenDataProvider;
     use std::sync::{Arc, Mutex};
 
-    let event_bus = EventBus::new();
+    let event_bus = Arc::new(EventBus::new());
     let events = Arc::new(Mutex::new(Vec::new()));
     let events_clone = Arc::clone(&events);
 
@@ -38,7 +39,7 @@ fn test_panic_screen_other_keys_ignored() {
         events_clone.lock().unwrap().push(event.clone());
     });
 
-    let mut screen = PanicScreen::new(event_bus);
+    let screen = PanicScreen::new(event_bus);
     let data = EmptyMockProvider.provide().unwrap();
     let _ = screen.init_with_data(data);
 
@@ -70,7 +71,7 @@ fn test_panic_screen_other_keys_ignored() {
 screen_basic_methods_test!(
     test_panic_screen_basic_methods,
     PanicScreen,
-    PanicScreen::new(EventBus::new()),
+    PanicScreen::new(Arc::new(EventBus::new())),
     gittype::presentation::tui::ScreenType::Panic,
     false
 );

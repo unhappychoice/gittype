@@ -2,7 +2,7 @@ use super::super::models::color_mode::ColorMode;
 use super::super::models::color_scheme::{ColorScheme, CustomThemeFile, ThemeFile};
 use super::super::models::theme::Theme;
 use crate::domain::services::config_manager::ConfigService;
-use crate::infrastructure::storage::file_storage::FileStorage;
+use crate::infrastructure::storage::file_storage::{FileStorage, FileStorageInterface};
 use once_cell::sync::Lazy;
 
 pub static THEME_MANAGER: Lazy<std::sync::RwLock<ThemeManager>> = Lazy::new(|| {
@@ -133,7 +133,7 @@ impl ThemeManager {
         };
 
         let custom_theme_json = serde_json::to_string_pretty(&custom_theme)?;
-        file_storage.write(&custom_theme_path, custom_theme_json)?;
+        file_storage.write(&custom_theme_path, custom_theme_json.as_bytes())?;
 
         Ok(())
     }

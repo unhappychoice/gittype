@@ -5,5 +5,5 @@ pub mod screens;
 pub mod views;
 
 pub use screen::*;
-pub use screen_manager::ScreenManager;
+pub use screen_manager::{ScreenManagerFactory, ScreenManagerFactoryImpl, ScreenManagerImpl};
 pub use screen_transition_manager::ScreenTransitionManager;

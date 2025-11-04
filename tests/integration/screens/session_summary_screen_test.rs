@@ -5,25 +5,26 @@ use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::presentation::game::events::NavigateTo;
 use gittype::presentation::tui::screens::session_summary_screen::SessionSummaryScreen;
+use std::sync::Arc;
 
 screen_snapshot_test!(
     test_session_summary_screen_snapshot,
     SessionSummaryScreen,
-    SessionSummaryScreen::new(EventBus::new()),
+    SessionSummaryScreen::new(Arc::new(EventBus::new())),
     provider = MockSessionSummaryDataProvider
 );
 
 screen_snapshot_test!(
     test_session_summary_screen_load_balancer_primarch_snapshot,
     SessionSummaryScreen,
-    SessionSummaryScreen::new(EventBus::new()),
+    SessionSummaryScreen::new(Arc::new(EventBus::new())),
     provider = MockLoadBalancerPrimarchDataProvider
 );
 
 screen_snapshot_test!(
     test_session_summary_screen_compiler_snapshot,
     SessionSummaryScreen,
-    SessionSummaryScreen::new(EventBus::new()),
+    SessionSummaryScreen::new(Arc::new(EventBus::new())),
     provider = MockCompilerDataProvider
 );
 
@@ -122,7 +123,7 @@ screen_key_event_test!(
 screen_basic_methods_test!(
     test_session_summary_screen_basic_methods,
     SessionSummaryScreen,
-    SessionSummaryScreen::new(EventBus::new()),
+    SessionSummaryScreen::new(Arc::new(EventBus::new())),
     gittype::presentation::tui::ScreenType::SessionSummary,
     false,
     MockSessionSummaryDataProvider

@@ -1,16 +1,19 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::EventBusInterface;
 use crate::domain::models::ExtractionOptions;
 use crate::domain::models::Languages;
 use crate::domain::services::theme_manager::ThemeManager;
-use crate::domain::services::version_service::VersionService;
+use crate::domain::services::version_service::{VersionService, VersionServiceInterface};
 use crate::infrastructure::console::{Console, ConsoleImpl};
 use crate::infrastructure::logging;
 use crate::presentation::cli::args::Cli;
+use crate::presentation::di::AppModule;
 use crate::presentation::game::{GameData, SessionManager};
 use crate::presentation::signal_handler::setup_signal_handlers;
 use crate::presentation::tui::screens::{VersionCheckResult, VersionCheckScreen};
-use crate::presentation::tui::{ScreenManager, ScreenType};
+use crate::presentation::tui::ScreenType;
+use crate::presentation::tui::{ScreenManagerFactory, ScreenManagerImpl};
 use crate::{GitTypeError, Result};
+use shaku::HasComponent;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
@@ -19,8 +22,22 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
 
     let console = ConsoleImpl::new();
 
-    // Create single EventBus instance for the entire application
-    let event_bus = EventBus::new();
+    // Create DI container
+    let container = AppModule::builder().build();
+
+    // Get EventBus from DI container FIRST - before creating any screens
+    // This ensures SessionManager is initialized with the correct EventBus
+    let event_bus: Arc<dyn EventBusInterface> = container.resolve();
+
+    // Initialize SessionManager with correct EventBus BEFORE creating screens
+    // Some screens (like StageSummaryScreen) call SessionManager::instance() in their constructor,
+    // which would trigger Lazy initialization with a wrong EventBus if we don't do this first
+    let _ = SessionManager::instance(); // Trigger Lazy initialization
+    let _ = SessionManager::set_global_event_bus(event_bus.clone());
+    SessionManager::setup_event_subscriptions_after_init();
+
+    // Get ScreenManagerFactory from DI container
+    let factory: &dyn ScreenManagerFactory = container.resolve_ref();
 
     // Check for updates before starting the game session
     let should_exit = {
@@ -97,31 +114,21 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
         initial_repo_path
     );
 
-    let _ = SessionManager::set_global_event_bus(event_bus.clone());
-    SessionManager::setup_event_subscriptions_after_init();
-
-    // Create and initialize ScreenManager
-    let backend = ratatui::backend::CrosstermBackend::new(std::io::stdout());
-    let terminal = ratatui::Terminal::new(backend)
-        .map_err(|e| GitTypeError::TerminalError(format!("Failed to create terminal: {}", e)))?;
-    let screen_manager = Arc::new(Mutex::new(ScreenManager::new(
-        event_bus.clone(),
-        GameData::instance(),
-        terminal,
-    )));
+    // Create ScreenManager using DI container factory
+    let screen_manager_impl = factory.create(GameData::instance(), &container);
+    let screen_manager = Arc::new(Mutex::new(screen_manager_impl));
 
     // Set up signal handlers with ScreenManager reference
     setup_signal_handlers(screen_manager.clone());
 
     {
         let mut manager = screen_manager.lock().unwrap();
-        manager.initialize_all_screens()?;
         manager.initialize_terminal()?;
         manager.set_current_screen(ScreenType::Loading)?;
     }
 
     // Set up event subscriptions after initialization
-    ScreenManager::setup_event_subscriptions(&screen_manager);
+    ScreenManagerImpl::setup_event_subscriptions(&screen_manager);
 
     // Run ScreenManager - LoadingScreen will handle processing internally
     // StageRepository and SessionManager will be initialized automatically when data is ready
