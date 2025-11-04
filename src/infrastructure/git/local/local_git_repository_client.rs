@@ -203,7 +203,6 @@ impl LocalGitRepositoryClient {
     }
 }
 
-
 impl LocalGitRepositoryClientInterface for LocalGitRepositoryClient {
     fn is_git_repository(&self, path: &Path) -> bool {
         self.is_git_repository(path)

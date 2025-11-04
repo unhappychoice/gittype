@@ -1,23 +1,30 @@
 use gittype::domain::models::{Challenge, GitRepository, SessionResult};
-use gittype::domain::repositories::SessionRepository;
+use gittype::domain::repositories::session_repository::{
+    SessionRepository, SessionRepositoryTrait,
+};
 use gittype::domain::services::analytics_service::{AnalyticsService, AnalyticsServiceInterface};
 use gittype::domain::services::scoring::{StageInput, StageTracker};
-use gittype::infrastructure::database::database::Database;
+use gittype::infrastructure::database::daos::{RepositoryDao, RepositoryDaoInterface};
+use gittype::infrastructure::database::database::{Database, DatabaseInterface};
 use std::sync::Arc;
 
 #[test]
 fn test_analytics_service_new() {
     let session_repository = Arc::new(SessionRepository::new().unwrap());
-    let db = Arc::new(Database::new().unwrap());
-    let _service = AnalyticsService::new(session_repository, db);
+    let db = Arc::new(Database::new().unwrap()) as Arc<dyn DatabaseInterface>;
+    let repository_dao =
+        Arc::new(RepositoryDao::new(Arc::clone(&db))) as Arc<dyn RepositoryDaoInterface>;
+    let _service = AnalyticsService::new(session_repository, repository_dao);
     // Service creation should succeed without error
 }
 
 #[test]
 fn test_load_analytics_data_empty() {
     let session_repository = Arc::new(SessionRepository::new().unwrap());
-    let db = Arc::new(Database::new().unwrap());
-    let service = AnalyticsService::new(session_repository, db);
+    let db = Arc::new(Database::new().unwrap()) as Arc<dyn DatabaseInterface>;
+    let repository_dao =
+        Arc::new(RepositoryDao::new(Arc::clone(&db))) as Arc<dyn RepositoryDaoInterface>;
+    let service = AnalyticsService::new(session_repository, repository_dao);
 
     let result = service.load_analytics_data();
     assert!(result.is_ok());
@@ -35,7 +42,7 @@ fn test_load_analytics_data_empty() {
 #[test]
 fn test_load_analytics_data_with_session() {
     let session_repository = Arc::new(SessionRepository::new().unwrap());
-    let db = Arc::new(Database::new().unwrap());
+    let db = Arc::new(Database::new().unwrap()) as Arc<dyn DatabaseInterface>;
 
     // Record a test session
     let mut session_result = SessionResult::new();
@@ -77,7 +84,9 @@ fn test_load_analytics_data_with_session() {
         .unwrap();
 
     // Load analytics data
-    let service = AnalyticsService::new(session_repository, db);
+    let repository_dao =
+        Arc::new(RepositoryDao::new(Arc::clone(&db))) as Arc<dyn RepositoryDaoInterface>;
+    let service = AnalyticsService::new(session_repository, repository_dao);
     let result = service.load_analytics_data();
     assert!(result.is_ok());
 
@@ -90,7 +99,7 @@ fn test_load_analytics_data_with_session() {
 #[test]
 fn test_load_analytics_data_repository_stats() {
     let session_repository = Arc::new(SessionRepository::new().unwrap());
-    let db = Arc::new(Database::new().unwrap());
+    let db = Arc::new(Database::new().unwrap()) as Arc<dyn DatabaseInterface>;
 
     // Record sessions for the same repository
     for i in 0..3 {
@@ -128,7 +137,9 @@ fn test_load_analytics_data_repository_stats() {
     }
 
     // Load analytics data
-    let service = AnalyticsService::new(session_repository, db);
+    let repository_dao =
+        Arc::new(RepositoryDao::new(Arc::clone(&db))) as Arc<dyn RepositoryDaoInterface>;
+    let service = AnalyticsService::new(session_repository, repository_dao);
     let result = service.load_analytics_data();
     assert!(result.is_ok());
 
@@ -150,7 +161,7 @@ fn test_load_analytics_data_repository_stats() {
 #[test]
 fn test_load_analytics_data_language_stats() {
     let session_repository = Arc::new(SessionRepository::new().unwrap());
-    let db = Arc::new(Database::new().unwrap());
+    let db = Arc::new(Database::new().unwrap()) as Arc<dyn DatabaseInterface>;
 
     // Record a session with language
     let mut session_result = SessionResult::new();
@@ -192,7 +203,9 @@ fn test_load_analytics_data_language_stats() {
         .unwrap();
 
     // Load analytics data
-    let service = AnalyticsService::new(session_repository, db);
+    let repository_dao =
+        Arc::new(RepositoryDao::new(Arc::clone(&db))) as Arc<dyn RepositoryDaoInterface>;
+    let service = AnalyticsService::new(session_repository, repository_dao);
     let result = service.load_analytics_data();
     assert!(result.is_ok());
 
@@ -209,7 +222,7 @@ fn test_load_analytics_data_language_stats() {
 #[test]
 fn test_load_analytics_data_daily_sessions() {
     let session_repository = Arc::new(SessionRepository::new().unwrap());
-    let db = Arc::new(Database::new().unwrap());
+    let db = Arc::new(Database::new().unwrap()) as Arc<dyn DatabaseInterface>;
 
     // Record a session
     let mut session_result = SessionResult::new();
@@ -242,7 +255,9 @@ fn test_load_analytics_data_daily_sessions() {
         .unwrap();
 
     // Load analytics data
-    let service = AnalyticsService::new(session_repository, db);
+    let repository_dao =
+        Arc::new(RepositoryDao::new(Arc::clone(&db))) as Arc<dyn RepositoryDaoInterface>;
+    let service = AnalyticsService::new(session_repository, repository_dao);
     let result = service.load_analytics_data();
     assert!(result.is_ok());
 

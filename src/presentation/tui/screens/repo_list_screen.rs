@@ -1,7 +1,7 @@
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::storage::StoredRepositoryWithLanguages;
 use crate::domain::services::repository_service::RepositoryService;
-use crate::infrastructure::database::database::Database;
+use crate::infrastructure::database::database::{Database, DatabaseInterface};
 use crate::infrastructure::git::RemoteGitRepositoryClient;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::views::repo_list::{
@@ -50,9 +50,12 @@ pub struct RepoListScreenDataProvider;
 impl ScreenDataProvider for RepoListScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
         use crate::domain::services::repository_service::RepositoryServiceInterface;
-        let db = Arc::new(Database::new()?);
+        use crate::infrastructure::database::daos::{RepositoryDao, RepositoryDaoInterface};
+        let db = Arc::new(Database::new()?) as Arc<dyn DatabaseInterface>;
+        let repository_dao =
+            Arc::new(RepositoryDao::new(Arc::clone(&db))) as Arc<dyn RepositoryDaoInterface>;
         let remote_git_client = RemoteGitRepositoryClient::new();
-        let service = RepositoryService::new(db, remote_git_client);
+        let service = RepositoryService::new(repository_dao, remote_git_client);
 
         let repositories_with_cache = service.get_all_repositories_with_cache_status()?;
         let cache_dir = RepositoryService::get_cache_directory();

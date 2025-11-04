@@ -170,8 +170,13 @@ impl Screen for TitleScreen {
                     *self.action_result.write().unwrap() =
                         Some(TitleAction::Start(DIFFICULTIES[selected_difficulty].1));
                     let event_bus = self.event_bus.as_event_bus();
-                    log::info!("TitleScreen: EventBus subscribers address: {:p}", event_bus.get_subscribers_ptr());
-                    log::info!("TitleScreen: Publishing NavigateTo::Replace(ScreenType::Typing) event");
+                    log::info!(
+                        "TitleScreen: EventBus subscribers address: {:p}",
+                        event_bus.get_subscribers_ptr()
+                    );
+                    log::info!(
+                        "TitleScreen: Publishing NavigateTo::Replace(ScreenType::Typing) event"
+                    );
                     event_bus.publish(NavigateTo::Replace(ScreenType::Typing));
                     log::info!("TitleScreen: NavigateTo event published");
                     Ok(())

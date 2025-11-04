@@ -1,5 +1,7 @@
 use gittype::domain::models::{Challenge, GitRepository, SessionResult};
-use gittype::domain::repositories::SessionRepository;
+use gittype::domain::repositories::session_repository::{
+    SessionRepository, SessionRepositoryTrait,
+};
 use gittype::domain::services::scoring::{StageInput, StageTracker};
 use gittype::domain::services::session_service::SessionService;
 

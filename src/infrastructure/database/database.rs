@@ -165,7 +165,6 @@ impl Database {
     }
 }
 
-
 impl DatabaseInterface for Database {
     fn get_connection(&self) -> Result<MutexGuard<'_, Connection>> {
         self.get_connection()

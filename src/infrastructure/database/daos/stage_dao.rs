@@ -5,9 +5,30 @@ use crate::domain::models::storage::{
 use crate::{domain::error::GitTypeError, Result};
 use chrono::{DateTime, Utc};
 use rusqlite::params;
+use shaku::{Component, Interface};
 use std::sync::Arc;
 
+pub trait StageDaoInterface: Interface {
+    fn get_completed_stages(&self, repository_id: Option<i64>) -> Result<Vec<StoredStageResult>>;
+    fn get_completed_stages_by_language(
+        &self,
+        language: &str,
+        repository_id: Option<i64>,
+    ) -> Result<Vec<StoredStageResult>>;
+    fn get_completed_stages_by_difficulty(
+        &self,
+        difficulty: &str,
+        repository_id: Option<i64>,
+    ) -> Result<Vec<StoredStageResult>>;
+    fn get_stage_statistics(&self, repository_id: Option<i64>) -> Result<StageStatistics>;
+    fn get_language_breakdown(&self, repository_id: Option<i64>) -> Result<Vec<LanguageStats>>;
+    fn get_difficulty_breakdown(&self, repository_id: Option<i64>) -> Result<Vec<DifficultyStats>>;
+}
+
+#[derive(Component)]
+#[shaku(interface = StageDaoInterface)]
 pub struct StageDao {
+    #[shaku(inject)]
     db: Arc<dyn DatabaseInterface>,
 }
 
@@ -15,12 +36,11 @@ impl StageDao {
     pub fn new(db: Arc<dyn DatabaseInterface>) -> Self {
         Self { db }
     }
+}
 
+impl StageDaoInterface for StageDao {
     /// Get completed stages for a specific repository (excludes skipped/failed)
-    pub fn get_completed_stages(
-        &self,
-        repository_id: Option<i64>,
-    ) -> Result<Vec<StoredStageResult>> {
+    fn get_completed_stages(&self, repository_id: Option<i64>) -> Result<Vec<StoredStageResult>> {
         let conn = self.db.get_connection()?;
 
         let query = if repository_id.is_some() {
@@ -57,7 +77,7 @@ impl StageDao {
     }
 
     /// Get completed stages filtered by language
-    pub fn get_completed_stages_by_language(
+    fn get_completed_stages_by_language(
         &self,
         language: &str,
         repository_id: Option<i64>,
@@ -101,7 +121,7 @@ impl StageDao {
     }
 
     /// Get completed stages filtered by difficulty level
-    pub fn get_completed_stages_by_difficulty(
+    fn get_completed_stages_by_difficulty(
         &self,
         difficulty: &str,
         repository_id: Option<i64>,
@@ -145,7 +165,7 @@ impl StageDao {
     }
 
     /// Get stage statistics for completed stages only
-    pub fn get_stage_statistics(&self, repository_id: Option<i64>) -> Result<StageStatistics> {
+    fn get_stage_statistics(&self, repository_id: Option<i64>) -> Result<StageStatistics> {
         let conn = self.db.get_connection()?;
 
         let query = if repository_id.is_some() {
@@ -216,7 +236,7 @@ impl StageDao {
     }
 
     /// Get language breakdown for completed stages
-    pub fn get_language_breakdown(&self, repository_id: Option<i64>) -> Result<Vec<LanguageStats>> {
+    fn get_language_breakdown(&self, repository_id: Option<i64>) -> Result<Vec<LanguageStats>> {
         let conn = self.db.get_connection()?;
 
         let query = if repository_id.is_some() {
@@ -272,10 +292,7 @@ impl StageDao {
     }
 
     /// Get difficulty breakdown for completed stages
-    pub fn get_difficulty_breakdown(
-        &self,
-        repository_id: Option<i64>,
-    ) -> Result<Vec<DifficultyStats>> {
+    fn get_difficulty_breakdown(&self, repository_id: Option<i64>) -> Result<Vec<DifficultyStats>> {
         let conn = self.db.get_connection()?;
 
         let query = if repository_id.is_some() {
@@ -345,15 +362,16 @@ impl StageDao {
         };
         Ok(difficulties)
     }
+}
 
-    /// Map a database row to a StoredStageResult
+impl StageDao {
+    /// Helper method to map a row to StoredStageResult
     fn map_stage_result_row(
         &self,
         row: &rusqlite::Row,
     ) -> std::result::Result<StoredStageResult, rusqlite::Error> {
-        let completed_at_str: String = row.get(13)?;
-        let completed_at = Self::parse_sqlite_timestamp(&completed_at_str)
-            .map_err(|e| rusqlite::Error::ToSqlConversionFailure(Box::new(e)))?;
+        let timestamp: String = row.get(13)?;
+        let completed_at = Self::parse_sqlite_timestamp(&timestamp).unwrap_or_else(|_| Utc::now());
 
         Ok(StoredStageResult {
             id: row.get(0)?,

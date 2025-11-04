@@ -1,6 +1,6 @@
-use crate::domain::repositories::challenge_repository::ChallengeRepositoryInterface;
 use crate::domain::models::ExtractionOptions;
 use crate::domain::models::{Challenge, CodeChunk, GitRepository};
+use crate::domain::repositories::challenge_repository::ChallengeRepositoryInterface;
 use crate::presentation::tui::screens::LoadingScreen;
 use crate::Result;
 use ratatui::style::Color;

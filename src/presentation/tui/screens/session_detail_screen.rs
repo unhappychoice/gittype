@@ -42,10 +42,12 @@ pub struct SessionDetailScreen {
 impl SessionDetailScreen {
     pub fn new(
         event_bus: Arc<dyn crate::domain::events::EventBusInterface>,
-        session_repository: Arc<dyn crate::domain::repositories::session_repository::SessionRepositoryTrait>,
+        session_repository: Arc<
+            dyn crate::domain::repositories::session_repository::SessionRepositoryTrait,
+        >,
     ) -> Self {
         use std::sync::RwLock;
-        
+
         Self {
             session_data: RwLock::new(SessionDisplayData::default()),
             stage_results: RwLock::new(Vec::new()),
@@ -101,9 +103,11 @@ impl Screen for SessionDetailScreen {
             )
         })?;
 
-        log::debug!("Session data retrieved: id={}, repository={:?}",
+        log::debug!(
+            "Session data retrieved: id={}, repository={:?}",
             session_data.session.id,
-            session_data.repository.as_ref().map(|r| &r.repository_name));
+            session_data.repository.as_ref().map(|r| &r.repository_name)
+        );
 
         if session_data.session.id == 0 {
             log::error!("Session id is 0");
@@ -116,9 +120,11 @@ impl Screen for SessionDetailScreen {
             .session_repository
             .get_session_stage_results(session_data.session.id)?;
 
-        log::debug!("Retrieved {} stage results for session {}",
+        log::debug!(
+            "Retrieved {} stage results for session {}",
             stage_results.len(),
-            session_data.session.id);
+            session_data.session.id
+        );
 
         *self.session_data.write().unwrap() = session_data.clone();
         *self.stage_results.write().unwrap() = stage_results;

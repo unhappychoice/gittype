@@ -1,12 +1,16 @@
 use gittype::domain::models::{Challenge, DifficultyLevel, GitRepository, SessionResult};
-use gittype::infrastructure::database::daos::{ChallengeDao, RepositoryDao, SessionDao};
+use gittype::infrastructure::database::daos::{
+    ChallengeDao, ChallengeDaoInterface, RepositoryDao, RepositoryDaoInterface, SessionDao,
+    SessionDaoInterface,
+};
 use gittype::infrastructure::database::database::{Database, DatabaseInterface};
 use std::sync::Arc;
 use std::time::Duration;
 
 #[test]
 fn test_new_creates_dao() {
-    let db = Arc::new(Database::new().expect("Failed to create database")) as Arc<dyn DatabaseInterface>;
+    let db =
+        Arc::new(Database::new().expect("Failed to create database")) as Arc<dyn DatabaseInterface>;
     let _dao = SessionDao::new(Arc::clone(&db));
 }
 
@@ -109,12 +113,14 @@ fn test_save_session_result_in_transaction() {
     session_dao
         .save_session_result_in_transaction(
             &tx,
-            session_id,
-            Some(repository_id),
-            &session_result,
-            &[],
-            "normal",
-            Some("medium"),
+            gittype::domain::models::storage::SaveSessionResultParams {
+                session_id,
+                repository_id: Some(repository_id),
+                session_result: &session_result,
+                stage_engines: &[],
+                game_mode: "normal",
+                difficulty_level: Some("medium"),
+            },
         )
         .unwrap();
 
@@ -290,7 +296,7 @@ fn test_get_repository_sessions() {
             )
             .unwrap();
         tx.commit().unwrap();
-    drop(conn);
+        drop(conn);
     }
 
     let sessions = session_dao.get_repository_sessions(repository_id).unwrap();
@@ -344,17 +350,19 @@ fn test_get_todays_best_session() {
         session_dao
             .save_session_result_in_transaction(
                 &tx,
-                session_id,
-                Some(repository_id),
-                &session_result,
-                &[],
-                "normal",
-                Some("easy"),
+                gittype::domain::models::storage::SaveSessionResultParams {
+                    session_id,
+                    repository_id: Some(repository_id),
+                    session_result: &session_result,
+                    stage_engines: &[],
+                    game_mode: "normal",
+                    difficulty_level: Some("easy"),
+                },
             )
             .unwrap();
 
         tx.commit().unwrap();
-    drop(conn);
+        drop(conn);
     }
 
     let best = session_dao.get_todays_best_session().unwrap();
@@ -410,12 +418,14 @@ fn test_get_weekly_best_session() {
     session_dao
         .save_session_result_in_transaction(
             &tx,
-            session_id,
-            Some(repository_id),
-            &session_result,
-            &[],
-            "normal",
-            Some("easy"),
+            gittype::domain::models::storage::SaveSessionResultParams {
+                session_id,
+                repository_id: Some(repository_id),
+                session_result: &session_result,
+                stage_engines: &[],
+                game_mode: "normal",
+                difficulty_level: Some("easy"),
+            },
         )
         .unwrap();
 
@@ -468,17 +478,19 @@ fn test_get_all_time_best_session() {
         session_dao
             .save_session_result_in_transaction(
                 &tx,
-                session_id,
-                Some(repository_id),
-                &session_result,
-                &[],
-                "normal",
-                Some("easy"),
+                gittype::domain::models::storage::SaveSessionResultParams {
+                    session_id,
+                    repository_id: Some(repository_id),
+                    session_result: &session_result,
+                    stage_engines: &[],
+                    game_mode: "normal",
+                    difficulty_level: Some("easy"),
+                },
             )
             .unwrap();
 
         tx.commit().unwrap();
-    drop(conn);
+        drop(conn);
     }
 
     let all_time_best = session_dao.get_all_time_best_session().unwrap();
@@ -536,12 +548,14 @@ fn test_get_session_result() {
     session_dao
         .save_session_result_in_transaction(
             &tx,
-            session_id,
-            Some(repository_id),
-            &session_result,
-            &[],
-            "normal",
-            Some("easy"),
+            gittype::domain::models::storage::SaveSessionResultParams {
+                session_id,
+                repository_id: Some(repository_id),
+                session_result: &session_result,
+                stage_engines: &[],
+                game_mode: "normal",
+                difficulty_level: Some("easy"),
+            },
         )
         .unwrap();
 
@@ -630,17 +644,19 @@ fn test_get_sessions_filtered_by_repository() {
         session_dao
             .save_session_result_in_transaction(
                 &tx,
-                session_id,
-                Some(*repo_id),
-                &session_result,
-                &[],
-                "normal",
-                Some("easy"),
+                gittype::domain::models::storage::SaveSessionResultParams {
+                    session_id,
+                    repository_id: Some(*repo_id),
+                    session_result: &session_result,
+                    stage_engines: &[],
+                    game_mode: "normal",
+                    difficulty_level: Some("easy"),
+                },
             )
             .unwrap();
 
         tx.commit().unwrap();
-    drop(conn);
+        drop(conn);
     }
 
     // Filter by repository
@@ -696,12 +712,14 @@ fn test_get_sessions_filtered_by_date() {
     session_dao
         .save_session_result_in_transaction(
             &tx,
-            session_id,
-            Some(repository_id),
-            &session_result,
-            &[],
-            "normal",
-            Some("easy"),
+            gittype::domain::models::storage::SaveSessionResultParams {
+                session_id,
+                repository_id: Some(repository_id),
+                session_result: &session_result,
+                stage_engines: &[],
+                game_mode: "normal",
+                difficulty_level: Some("easy"),
+            },
         )
         .unwrap();
 
@@ -761,17 +779,19 @@ fn test_get_sessions_filtered_sorted_by_score() {
         session_dao
             .save_session_result_in_transaction(
                 &tx,
-                session_id,
-                Some(repository_id),
-                &session_result,
-                &[],
-                "normal",
-                Some("easy"),
+                gittype::domain::models::storage::SaveSessionResultParams {
+                    session_id,
+                    repository_id: Some(repository_id),
+                    session_result: &session_result,
+                    stage_engines: &[],
+                    game_mode: "normal",
+                    difficulty_level: Some("easy"),
+                },
             )
             .unwrap();
 
         tx.commit().unwrap();
-    drop(conn);
+        drop(conn);
     }
 
     // Sort by score descending
@@ -912,7 +932,7 @@ fn test_get_session_stage_results() {
         .unwrap();
 
         tx.commit().unwrap();
-    drop(conn);
+        drop(conn);
     }
 
     // Get stage results

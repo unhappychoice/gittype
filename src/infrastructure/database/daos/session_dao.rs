@@ -1,16 +1,55 @@
-use super::super::database::{Database, DatabaseInterface};
+use super::super::database::DatabaseInterface;
 use crate::domain::models::storage::{
-    SaveStageParams, SessionResultData, SessionStageResult, StoredSession,
+    SaveSessionResultParams, SaveStageParams, SessionResultData, SessionStageResult, StoredSession,
 };
 use crate::domain::models::{GitRepository, SessionResult};
 use crate::domain::services::scoring::RankCalculator;
 use crate::{domain::error::GitTypeError, Result};
 use chrono::{DateTime, Utc};
 use rusqlite::{params, OptionalExtension, Transaction};
+use shaku::{Component, Interface};
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+pub trait SessionDaoInterface: Interface {
+    fn create_session_in_transaction(
+        &self,
+        tx: &Transaction,
+        repository_id: Option<i64>,
+        session_result: &SessionResult,
+        git_repo: Option<&GitRepository>,
+        game_mode: &str,
+        difficulty_level: Option<&str>,
+    ) -> Result<i64>;
+    fn save_session_result_in_transaction(
+        &self,
+        tx: &Transaction,
+        params: SaveSessionResultParams,
+    ) -> Result<()>;
+    fn save_stage_result_in_transaction(
+        &self,
+        tx: &Transaction,
+        params: SaveStageParams,
+    ) -> Result<()>;
+    fn get_repository_sessions(&self, repository_id: i64) -> Result<Vec<StoredSession>>;
+    fn get_todays_best_session(&self) -> Result<Option<StoredSession>>;
+    fn get_weekly_best_session(&self) -> Result<Option<StoredSession>>;
+    fn get_all_time_best_session(&self) -> Result<Option<StoredSession>>;
+    fn get_session_result(&self, session_id: i64) -> Result<Option<SessionResultData>>;
+    fn get_sessions_filtered(
+        &self,
+        repository_id: Option<i64>,
+        days: Option<i64>,
+        order_by: &str,
+        ascending: bool,
+    ) -> Result<Vec<StoredSession>>;
+    fn get_session_stage_results(&self, session_id: i64) -> Result<Vec<SessionStageResult>>;
+}
+
+#[derive(Component)]
+#[shaku(interface = SessionDaoInterface)]
 pub struct SessionDao {
+    #[shaku(inject)]
     db: Arc<dyn DatabaseInterface>,
 }
 
@@ -18,9 +57,11 @@ impl SessionDao {
     pub fn new(db: Arc<dyn DatabaseInterface>) -> Self {
         Self { db }
     }
+}
 
+impl SessionDaoInterface for SessionDao {
     /// Create session record within an existing transaction
-    pub fn create_session_in_transaction(
+    fn create_session_in_transaction(
         &self,
         tx: &Transaction,
         repository_id: Option<i64>,
@@ -55,17 +96,16 @@ impl SessionDao {
     }
 
     /// Save session result within an existing transaction
-    #[allow(clippy::too_many_arguments)]
-    pub fn save_session_result_in_transaction(
+    fn save_session_result_in_transaction(
         &self,
         tx: &Transaction,
-        session_id: i64,
-        repository_id: Option<i64>,
-        session_result: &SessionResult,
-        _stage_engines: &[(String, crate::domain::services::scoring::StageTracker)],
-        game_mode: &str,
-        difficulty_level: Option<&str>,
+        params: SaveSessionResultParams,
     ) -> Result<()> {
+        let session_id = params.session_id;
+        let repository_id = params.repository_id;
+        let session_result = params.session_result;
+        let game_mode = params.game_mode;
+        let difficulty_level = params.difficulty_level;
         // Calculate tier and rank from session score
         let session_rank = crate::domain::models::Rank::for_score(session_result.session_score);
         let tier_name = match session_rank.tier() {
@@ -122,7 +162,7 @@ impl SessionDao {
     }
 
     /// Save stage result within an existing transaction  
-    pub fn save_stage_result_in_transaction(
+    fn save_stage_result_in_transaction(
         &self,
         tx: &Transaction,
         params: SaveStageParams,
@@ -185,7 +225,7 @@ impl SessionDao {
     }
 
     /// Get session history for a repository
-    pub fn get_repository_sessions(&self, repository_id: i64) -> Result<Vec<StoredSession>> {
+    fn get_repository_sessions(&self, repository_id: i64) -> Result<Vec<StoredSession>> {
         let conn = self.db.get_connection()?;
         let mut stmt = conn.prepare(
             "SELECT id, repository_id, started_at, completed_at, branch, commit_hash,
@@ -228,15 +268,8 @@ impl SessionDao {
         Ok(sessions)
     }
 
-    /// Convert SystemTime to SQLite timestamp string
-    fn system_time_to_sqlite_timestamp(time: SystemTime) -> String {
-        let duration = time.duration_since(UNIX_EPOCH).unwrap();
-        let datetime = DateTime::<Utc>::from_timestamp(duration.as_secs() as i64, 0).unwrap();
-        datetime.format("%Y-%m-%d %H:%M:%S").to_string()
-    }
-
     /// Get best session record from today
-    pub fn get_todays_best_session(&self) -> Result<Option<StoredSession>> {
+    fn get_todays_best_session(&self) -> Result<Option<StoredSession>> {
         let conn = self.db.get_connection()?;
         let today = chrono::Utc::now().date_naive().format("%Y-%m-%d");
 
@@ -284,7 +317,7 @@ impl SessionDao {
     }
 
     /// Get best session record from past 7 days
-    pub fn get_weekly_best_session(&self) -> Result<Option<StoredSession>> {
+    fn get_weekly_best_session(&self) -> Result<Option<StoredSession>> {
         let conn = self.db.get_connection()?;
         let week_ago = chrono::Utc::now().date_naive() - chrono::Duration::days(7);
 
@@ -332,7 +365,7 @@ impl SessionDao {
     }
 
     /// Get all-time best session record
-    pub fn get_all_time_best_session(&self) -> Result<Option<StoredSession>> {
+    fn get_all_time_best_session(&self) -> Result<Option<StoredSession>> {
         let conn = self.db.get_connection()?;
 
         let mut stmt = conn.prepare(
@@ -378,7 +411,7 @@ impl SessionDao {
     }
 
     /// Get session result data for a specific session ID
-    pub fn get_session_result(&self, session_id: i64) -> Result<Option<SessionResultData>> {
+    fn get_session_result(&self, session_id: i64) -> Result<Option<SessionResultData>> {
         let conn = self.db.get_connection()?;
 
         let mut stmt = conn.prepare(
@@ -416,7 +449,7 @@ impl SessionDao {
     }
 
     /// Get sessions with filtering and sorting
-    pub fn get_sessions_filtered(
+    fn get_sessions_filtered(
         &self,
         repository_filter: Option<i64>,
         date_filter_days: Option<i64>,
@@ -504,7 +537,7 @@ impl SessionDao {
     }
 
     /// Get stage results for a specific session
-    pub fn get_session_stage_results(&self, session_id: i64) -> Result<Vec<SessionStageResult>> {
+    fn get_session_stage_results(&self, session_id: i64) -> Result<Vec<SessionStageResult>> {
         let conn = self.db.get_connection()?;
 
         let mut stmt = conn.prepare(
@@ -551,6 +584,15 @@ impl SessionDao {
             .collect::<std::result::Result<Vec<_>, _>>()?;
 
         Ok(stage_results)
+    }
+}
+
+impl SessionDao {
+    /// Convert SystemTime to SQLite timestamp string
+    fn system_time_to_sqlite_timestamp(time: SystemTime) -> String {
+        let duration = time.duration_since(UNIX_EPOCH).unwrap();
+        let datetime = DateTime::<Utc>::from_timestamp(duration.as_secs() as i64, 0).unwrap();
+        datetime.format("%Y-%m-%d %H:%M:%S").to_string()
     }
 
     /// Parse SQLite timestamp string to DateTime<Utc>

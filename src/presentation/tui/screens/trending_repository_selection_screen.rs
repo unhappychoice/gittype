@@ -115,9 +115,11 @@ impl Screen for TrendingRepositorySelectionScreen {
             let cache_key = format!("{}:{}", language.as_deref().unwrap_or("all"), period);
 
             // Fetch repositories
-            let repositories = self
-                .trending_repository
-                .get_trending_repositories_sync(&cache_key, language.as_deref(), &period)?;
+            let repositories = self.trending_repository.get_trending_repositories_sync(
+                &cache_key,
+                language.as_deref(),
+                &period,
+            )?;
 
             *self.repositories.write().unwrap() = repositories;
             let mut list_state = ListState::default();

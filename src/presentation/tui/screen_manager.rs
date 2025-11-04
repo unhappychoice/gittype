@@ -202,7 +202,10 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
             manager.pending_transition.clone()
         };
 
-        log::info!("ScreenManager: EventBus subscribers address: {:p}", event_bus.as_event_bus().get_subscribers_ptr());
+        log::info!(
+            "ScreenManager: EventBus subscribers address: {:p}",
+            event_bus.as_event_bus().get_subscribers_ptr()
+        );
 
         // Subscribe to NavigateTo events
         {
@@ -536,7 +539,8 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
                     .transpose()?;
 
                 // Load next challenge in TypingScreen
-                let load_result = self.screens
+                let load_result = self
+                    .screens
                     .get_mut(&ScreenType::Typing)
                     .and_then(|screen| screen.as_any().downcast_ref::<TypingScreen>())
                     .map(|screen| screen.load_current_challenge())
@@ -553,7 +557,10 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
                     .transpose();
 
                 if let Err(e) = load_result {
-                    log::error!("ScreenManager: Failed to load challenge in TypingScreen: {}", e);
+                    log::error!(
+                        "ScreenManager: Failed to load challenge in TypingScreen: {}",
+                        e
+                    );
                     return Err(e);
                 }
 
@@ -584,7 +591,10 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
             };
 
             if let Some(transition) = pending_transition {
-                log::info!("ScreenManager: Processing pending transition: {:?}", transition);
+                log::info!(
+                    "ScreenManager: Processing pending transition: {:?}",
+                    transition
+                );
                 if let Err(e) = self.handle_transition(transition) {
                     log::error!("ScreenManager: Failed to handle transition: {}", e);
                 }

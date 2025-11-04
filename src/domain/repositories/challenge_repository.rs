@@ -52,17 +52,15 @@ pub struct ChallengeRepository {
     #[shaku(default)]
     cache_dir: PathBuf,
     #[shaku(inject)]
-    storage: Arc<dyn crate::infrastructure::storage::compressed_file_storage::CompressedFileStorageInterface>,
+    storage: Arc<
+        dyn crate::infrastructure::storage::compressed_file_storage::CompressedFileStorageInterface,
+    >,
     #[shaku(inject)]
     file_storage: Arc<dyn crate::infrastructure::storage::file_storage::FileStorageInterface>,
 }
 
 impl ChallengeRepository {
-    pub fn save_challenges(
-        &self,
-        repo: &GitRepository,
-        challenges: &[Challenge],
-    ) -> Result<()> {
+    pub fn save_challenges(&self, repo: &GitRepository, challenges: &[Challenge]) -> Result<()> {
         if repo.is_dirty {
             return Ok(());
         }
@@ -95,7 +93,9 @@ impl ChallengeRepository {
 
         let storage = (self.storage.as_ref() as &dyn std::any::Any)
             .downcast_ref::<CompressedFileStorage>()
-            .ok_or_else(|| crate::GitTypeError::ExtractionFailed("Failed to downcast storage".to_string()))?;
+            .ok_or_else(|| {
+                crate::GitTypeError::ExtractionFailed("Failed to downcast storage".to_string())
+            })?;
 
         storage.save(&cache_file, &cache_data)
     }
@@ -190,7 +190,9 @@ impl ChallengeRepository {
 
         let storage = (self.storage.as_ref() as &dyn std::any::Any)
             .downcast_ref::<CompressedFileStorage>()
-            .ok_or_else(|| crate::GitTypeError::ExtractionFailed("Failed to downcast storage".to_string()))?;
+            .ok_or_else(|| {
+                crate::GitTypeError::ExtractionFailed("Failed to downcast storage".to_string())
+            })?;
 
         let mut keys: Vec<String> = files
             .iter()
@@ -307,7 +309,9 @@ impl ChallengeRepositoryInterface for ChallengeRepository {
         repo: &GitRepository,
         reporter: Option<&dyn ProgressReporter>,
     ) -> Result<Option<Vec<Challenge>>> {
-        Ok(ChallengeRepository::load_challenges_with_progress(self, repo, reporter))
+        Ok(ChallengeRepository::load_challenges_with_progress(
+            self, repo, reporter,
+        ))
     }
 
     fn get_cache_stats(&self) -> Result<(usize, u64)> {

@@ -92,8 +92,8 @@ impl TrendingRepository {
             return None;
         }
 
-        let file_storage = (self.file_storage.as_ref() as &dyn std::any::Any)
-            .downcast_ref::<FileStorage>()?;
+        let file_storage =
+            (self.file_storage.as_ref() as &dyn std::any::Any).downcast_ref::<FileStorage>()?;
 
         let cache_data: TrendingCacheData = file_storage.read_json(&cache_file).ok()??;
 
@@ -127,8 +127,8 @@ impl TrendingRepository {
 
         let cache_file = self.get_cache_file(key);
 
-        if let Some(file_storage) = (self.file_storage.as_ref() as &dyn std::any::Any)
-            .downcast_ref::<FileStorage>()
+        if let Some(file_storage) =
+            (self.file_storage.as_ref() as &dyn std::any::Any).downcast_ref::<FileStorage>()
         {
             let _ = file_storage.write_json(&cache_file, &cache_data);
         }

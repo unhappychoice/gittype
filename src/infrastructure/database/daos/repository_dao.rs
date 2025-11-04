@@ -3,9 +3,30 @@ use crate::domain::models::storage::{StoredRepository, StoredRepositoryWithLangu
 use crate::domain::models::GitRepository;
 use crate::{domain::error::GitTypeError, Result};
 use rusqlite::{params, Transaction};
+use shaku::{Component, Interface};
 use std::sync::Arc;
 
+pub trait RepositoryDaoInterface: Interface {
+    fn ensure_repository(&self, git_repo: &GitRepository) -> Result<i64>;
+    fn ensure_repository_in_transaction(
+        &self,
+        tx: &Transaction,
+        git_repo: &GitRepository,
+    ) -> Result<i64>;
+    fn get_all_repositories(&self) -> Result<Vec<StoredRepository>>;
+    fn get_repository_by_id(&self, repository_id: i64) -> Result<Option<StoredRepository>>;
+    fn find_repository(
+        &self,
+        user_name: &str,
+        repository_name: &str,
+    ) -> Result<Option<StoredRepository>>;
+    fn get_all_repositories_with_languages(&self) -> Result<Vec<StoredRepositoryWithLanguages>>;
+}
+
+#[derive(Component)]
+#[shaku(interface = RepositoryDaoInterface)]
 pub struct RepositoryDao {
+    #[shaku(inject)]
     db: Arc<dyn DatabaseInterface>,
 }
 
@@ -13,9 +34,11 @@ impl RepositoryDao {
     pub fn new(db: Arc<dyn DatabaseInterface>) -> Self {
         Self { db }
     }
+}
 
+impl RepositoryDaoInterface for RepositoryDao {
     /// Get or create repository record
-    pub fn ensure_repository(&self, git_repo: &GitRepository) -> Result<i64> {
+    fn ensure_repository(&self, git_repo: &GitRepository) -> Result<i64> {
         let conn = self.db.get_connection()?;
         let tx = conn.unchecked_transaction()?;
         let id = self.ensure_repository_in_transaction(&tx, git_repo)?;
@@ -24,7 +47,7 @@ impl RepositoryDao {
     }
 
     /// Get or create repository record within an existing transaction
-    pub fn ensure_repository_in_transaction(
+    fn ensure_repository_in_transaction(
         &self,
         tx: &Transaction,
         git_repo: &GitRepository,
@@ -56,7 +79,7 @@ impl RepositoryDao {
     }
 
     /// Get all repositories
-    pub fn get_all_repositories(&self) -> Result<Vec<StoredRepository>> {
+    fn get_all_repositories(&self) -> Result<Vec<StoredRepository>> {
         let conn = self.db.get_connection()?;
         let mut stmt = conn.prepare(
             "SELECT id, user_name, repository_name, remote_url FROM repositories ORDER BY user_name, repository_name",
@@ -77,7 +100,7 @@ impl RepositoryDao {
     }
 
     /// Get a specific repository by ID
-    pub fn get_repository_by_id(&self, repository_id: i64) -> Result<Option<StoredRepository>> {
+    fn get_repository_by_id(&self, repository_id: i64) -> Result<Option<StoredRepository>> {
         let conn = self.db.get_connection()?;
         let mut stmt = conn.prepare(
             "SELECT id, user_name, repository_name, remote_url FROM repositories WHERE id = ?",
@@ -101,7 +124,7 @@ impl RepositoryDao {
     }
 
     /// Find repository by user and repository name
-    pub fn find_repository(
+    fn find_repository(
         &self,
         user_name: &str,
         repository_name: &str,
@@ -129,9 +152,7 @@ impl RepositoryDao {
     }
 
     /// Get all repositories with their languages
-    pub fn get_all_repositories_with_languages(
-        &self,
-    ) -> Result<Vec<StoredRepositoryWithLanguages>> {
+    fn get_all_repositories_with_languages(&self) -> Result<Vec<StoredRepositoryWithLanguages>> {
         let conn = self.db.get_connection()?;
         let mut stmt = conn.prepare(
             "SELECT DISTINCT r.id, r.user_name, r.repository_name, r.remote_url, 

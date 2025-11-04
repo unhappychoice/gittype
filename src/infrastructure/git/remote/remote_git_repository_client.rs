@@ -121,12 +121,12 @@ impl RemoteGitRepositoryClient {
     pub fn is_repository_cached(&self, remote_url: &str) -> bool {
         GitRepositoryRefParser::parse(remote_url)
             .and_then(|repo_info| {
-                self.get_local_repo_path(&repo_info).map(|path| path.exists() && path.is_dir())
+                self.get_local_repo_path(&repo_info)
+                    .map(|path| path.exists() && path.is_dir())
             })
             .unwrap_or(false)
     }
 }
-
 
 impl RemoteGitRepositoryClientInterface for RemoteGitRepositoryClient {
     fn get_local_repo_path(&self, repo_info: &GitRepositoryRef) -> Result<PathBuf> {

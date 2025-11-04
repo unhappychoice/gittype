@@ -1,21 +1,36 @@
 use gittype::domain::models::{Challenge, GitRepository, SessionResult};
-use gittype::domain::repositories::SessionRepository;
-use gittype::domain::services::repository_service::{RepositoryService, RepositoryServiceInterface};
+use gittype::domain::repositories::session_repository::{
+    SessionRepository, SessionRepositoryTrait,
+};
+use gittype::domain::services::repository_service::{
+    RepositoryService, RepositoryServiceInterface,
+};
 use gittype::domain::services::scoring::{StageInput, StageTracker};
-use gittype::infrastructure::database::database::Database;
+use gittype::infrastructure::database::daos::{RepositoryDao, RepositoryDaoInterface};
+use gittype::infrastructure::database::database::{Database, DatabaseInterface};
 use std::sync::Arc;
 
 #[test]
 fn test_repository_service_new() {
-    let db = Arc::new(Database::new().unwrap());
-    let _service = RepositoryService::new(db, gittype::infrastructure::git::RemoteGitRepositoryClient::new());
+    let db = Arc::new(Database::new().unwrap()) as Arc<dyn DatabaseInterface>;
+    let repository_dao =
+        Arc::new(RepositoryDao::new(Arc::clone(&db))) as Arc<dyn RepositoryDaoInterface>;
+    let _service = RepositoryService::new(
+        repository_dao,
+        gittype::infrastructure::git::RemoteGitRepositoryClient::new(),
+    );
     // Service creation should succeed without error
 }
 
 #[test]
 fn test_get_all_repositories_empty() {
-    let db = Arc::new(Database::new().unwrap());
-    let service = RepositoryService::new(db, gittype::infrastructure::git::RemoteGitRepositoryClient::new());
+    let db = Arc::new(Database::new().unwrap()) as Arc<dyn DatabaseInterface>;
+    let repository_dao =
+        Arc::new(RepositoryDao::new(Arc::clone(&db))) as Arc<dyn RepositoryDaoInterface>;
+    let service = RepositoryService::new(
+        repository_dao,
+        gittype::infrastructure::git::RemoteGitRepositoryClient::new(),
+    );
 
     let result = service.get_all_repositories();
     assert!(result.is_ok());
@@ -71,8 +86,13 @@ fn test_get_all_repositories_with_data() {
     assert!(found, "Repository should be in the list");
 
     // Also test RepositoryService with a fresh database
-    let db = Arc::new(Database::new().unwrap());
-    let service = RepositoryService::new(db, gittype::infrastructure::git::RemoteGitRepositoryClient::new());
+    let db = Arc::new(Database::new().unwrap()) as Arc<dyn DatabaseInterface>;
+    let repository_dao =
+        Arc::new(RepositoryDao::new(Arc::clone(&db))) as Arc<dyn RepositoryDaoInterface>;
+    let service = RepositoryService::new(
+        repository_dao,
+        gittype::infrastructure::git::RemoteGitRepositoryClient::new(),
+    );
     let result = service.get_all_repositories();
     assert!(result.is_ok());
 }
@@ -80,8 +100,13 @@ fn test_get_all_repositories_with_data() {
 #[test]
 fn test_get_all_repositories_with_languages() {
     // Test RepositoryService method with fresh database
-    let db = Arc::new(Database::new().unwrap());
-    let service = RepositoryService::new(db, gittype::infrastructure::git::RemoteGitRepositoryClient::new());
+    let db = Arc::new(Database::new().unwrap()) as Arc<dyn DatabaseInterface>;
+    let repository_dao =
+        Arc::new(RepositoryDao::new(Arc::clone(&db))) as Arc<dyn RepositoryDaoInterface>;
+    let service = RepositoryService::new(
+        repository_dao,
+        gittype::infrastructure::git::RemoteGitRepositoryClient::new(),
+    );
     let result = service.get_all_repositories_with_languages();
     assert!(result.is_ok());
 
@@ -92,8 +117,13 @@ fn test_get_all_repositories_with_languages() {
 #[test]
 fn test_get_all_repositories_with_cache_status() {
     // Test RepositoryService method with fresh database
-    let db = Arc::new(Database::new().unwrap());
-    let service = RepositoryService::new(db, gittype::infrastructure::git::RemoteGitRepositoryClient::new());
+    let db = Arc::new(Database::new().unwrap()) as Arc<dyn DatabaseInterface>;
+    let repository_dao =
+        Arc::new(RepositoryDao::new(Arc::clone(&db))) as Arc<dyn RepositoryDaoInterface>;
+    let service = RepositoryService::new(
+        repository_dao,
+        gittype::infrastructure::git::RemoteGitRepositoryClient::new(),
+    );
     let result = service.get_all_repositories_with_cache_status();
     assert!(result.is_ok());
 
@@ -137,8 +167,13 @@ fn test_get_cache_directory_consistency() {
 #[test]
 fn test_multiple_repositories() {
     // Test that service can handle multiple repositories
-    let db = Arc::new(Database::new().unwrap());
-    let service = RepositoryService::new(db, gittype::infrastructure::git::RemoteGitRepositoryClient::new());
+    let db = Arc::new(Database::new().unwrap()) as Arc<dyn DatabaseInterface>;
+    let repository_dao =
+        Arc::new(RepositoryDao::new(Arc::clone(&db))) as Arc<dyn RepositoryDaoInterface>;
+    let service = RepositoryService::new(
+        repository_dao,
+        gittype::infrastructure::git::RemoteGitRepositoryClient::new(),
+    );
     let result = service.get_all_repositories();
     assert!(result.is_ok());
 
@@ -149,8 +184,13 @@ fn test_multiple_repositories() {
 #[test]
 fn test_repository_service_with_languages_multiple() {
     // Test get_all_repositories_with_languages method
-    let db = Arc::new(Database::new().unwrap());
-    let service = RepositoryService::new(db, gittype::infrastructure::git::RemoteGitRepositoryClient::new());
+    let db = Arc::new(Database::new().unwrap()) as Arc<dyn DatabaseInterface>;
+    let repository_dao =
+        Arc::new(RepositoryDao::new(Arc::clone(&db))) as Arc<dyn RepositoryDaoInterface>;
+    let service = RepositoryService::new(
+        repository_dao,
+        gittype::infrastructure::git::RemoteGitRepositoryClient::new(),
+    );
     let result = service.get_all_repositories_with_languages();
     assert!(result.is_ok());
 

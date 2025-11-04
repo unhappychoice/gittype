@@ -61,7 +61,8 @@ impl Step for CloningStep {
             }
         };
 
-        let repo_path = RemoteGitRepositoryClient::new().clone_repository(repo_spec, progress_callback)?;
+        let repo_path =
+            RemoteGitRepositoryClient::new().clone_repository(repo_spec, progress_callback)?;
         context.current_repo_path = Some(repo_path.clone());
 
         // Extract git repository information after cloning

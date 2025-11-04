@@ -1,11 +1,12 @@
 use gittype::domain::models::{Challenge, DifficultyLevel};
-use gittype::infrastructure::database::daos::ChallengeDao;
+use gittype::infrastructure::database::daos::{ChallengeDao, ChallengeDaoInterface};
 use gittype::infrastructure::database::database::{Database, DatabaseInterface};
 use std::sync::Arc;
 
 #[test]
 fn test_new_creates_dao() {
-    let db = Arc::new(Database::new().expect("Failed to create database")) as Arc<dyn DatabaseInterface>;
+    let db =
+        Arc::new(Database::new().expect("Failed to create database")) as Arc<dyn DatabaseInterface>;
     let _dao = ChallengeDao::new(Arc::clone(&db));
 }
 

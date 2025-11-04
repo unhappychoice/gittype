@@ -126,10 +126,12 @@ pub struct LoadingScreen {
 impl LoadingScreen {
     pub fn new(
         event_bus: Arc<dyn crate::domain::events::EventBusInterface>,
-        challenge_repository: Arc<dyn crate::domain::repositories::challenge_repository::ChallengeRepositoryInterface>,
+        challenge_repository: Arc<
+            dyn crate::domain::repositories::challenge_repository::ChallengeRepositoryInterface,
+        >,
     ) -> Self {
-        use std::sync::RwLock;
         use crate::presentation::game::game_data::GameData;
+        use std::sync::RwLock;
 
         Self {
             state: RwLock::new(LoadingScreenState::default()),
@@ -476,9 +478,10 @@ impl Screen for LoadingScreen {
     }
 
     fn update(&self) -> Result<bool> {
-        let game_data_guard = self.game_data.0
-            .lock()
-            .map_err(|e| GitTypeError::TerminalError(format!("Failed to lock game data: {}", e)))?;
+        let game_data_guard =
+            self.game_data.0.lock().map_err(|e| {
+                GitTypeError::TerminalError(format!("Failed to lock game data: {}", e))
+            })?;
 
         let is_completed = game_data_guard.completed();
         let is_failed = game_data_guard.failed();
