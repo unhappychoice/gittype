@@ -17,19 +17,67 @@ impl GitRepositoryRefParser {
     }
 
     fn parse_ssh_format(repo_spec: &str) -> Result<GitRepositoryRef> {
-        let (host_part, repo_part) = repo_spec.split_once(':').ok_or_else(|| {
+        // Handle ssh:// URL format
+        if let Some(url_part) = repo_spec.strip_prefix("ssh://") {
+            // Parse ssh://[user@]host[:port]/owner/repo format
+            let (host_with_user, path) = url_part.split_once('/').ok_or_else(|| {
+                GitTypeError::InvalidRepositoryFormat("Invalid SSH URL format".to_string())
+            })?;
+
+            // Extract host (remove user@ prefix and port suffix if present)
+            let host = host_with_user
+                .split('@')
+                .next_back()
+                .unwrap_or(host_with_user);
+
+            // Parse owner/repo from path
+            let (owner, name) = path
+                .strip_suffix(".git")
+                .unwrap_or(path)
+                .split_once('/')
+                .ok_or_else(|| {
+                    GitTypeError::InvalidRepositoryFormat(
+                        "Invalid repository path format".to_string(),
+                    )
+                })?;
+
+            return Ok(GitRepositoryRef {
+                origin: host.to_string(),
+                owner: owner.to_string(),
+                name: name.to_string(),
+            });
+        }
+
+        // Handle traditional git@host:path format
+        let (host_part, path_part) = repo_spec.split_once(':').ok_or_else(|| {
             GitTypeError::InvalidRepositoryFormat("Invalid SSH repository format".to_string())
         })?;
 
+        // Extract origin (host) from git@host part
         let origin = host_part
             .split('@')
             .nth(1)
             .unwrap_or("github.com")
             .to_string();
 
-        let (owner, name) = repo_part
+        // Handle port number in path: host:port:owner/repo or host:owner/repo
+        let repo_path = if let Some((maybe_port, rest)) = path_part.split_once(':') {
+            // Check if the first part is a port number
+            if maybe_port.parse::<u16>().is_ok() {
+                // This is a port number, use the rest as the path
+                rest
+            } else {
+                // Not a port number, use the entire path_part
+                path_part
+            }
+        } else {
+            path_part
+        };
+
+        // Parse owner/repo from the path
+        let (owner, name) = repo_path
             .strip_suffix(".git")
-            .unwrap_or(repo_part)
+            .unwrap_or(repo_path)
             .split_once('/')
             .ok_or_else(|| {
                 GitTypeError::InvalidRepositoryFormat("Invalid repository path format".to_string())
