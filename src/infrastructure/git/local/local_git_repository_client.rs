@@ -127,7 +127,9 @@ impl LocalGitRepositoryClient {
                 .to_string();
             ("local".to_string(), repo_name)
         } else {
-            Self::parse_repo_info(&remote_url)
+            GitRepositoryRefParser::parse(&remote_url)
+                .map(|repo_ref| (repo_ref.owner, repo_ref.name))
+                .unwrap_or_else(|_| ("unknown".to_string(), "unknown".to_string()))
         };
 
         // Get current branch
@@ -158,34 +160,5 @@ impl LocalGitRepositoryClient {
             is_dirty,
             root_path: Some(path.to_path_buf()),
         })
-    }
-
-    /// Parse repository info from URL
-    fn parse_repo_info(url: &str) -> (String, String) {
-        // Try to extract owner/repo from URL
-        if let Some(ssh_part) = url.strip_prefix("git@") {
-            if let Some(colon_pos) = ssh_part.find(':') {
-                let path = &ssh_part[colon_pos + 1..];
-                let parts: Vec<&str> = path.trim_end_matches(".git").split('/').collect();
-                if parts.len() >= 2 {
-                    return (parts[0].to_string(), parts[1].to_string());
-                }
-            }
-        }
-
-        if let Some(url_without_protocol) = url
-            .strip_prefix("https://")
-            .or_else(|| url.strip_prefix("http://"))
-        {
-            let parts: Vec<&str> = url_without_protocol.split('/').collect();
-            if parts.len() >= 3 {
-                return (
-                    parts[1].to_string(),
-                    parts[2].trim_end_matches(".git").to_string(),
-                );
-            }
-        }
-
-        ("unknown".to_string(), "unknown".to_string())
     }
 }

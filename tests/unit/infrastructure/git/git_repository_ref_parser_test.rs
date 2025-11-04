@@ -151,4 +151,56 @@ mod tests {
         assert_eq!(repo_ref.owner, "my-org");
         assert_eq!(repo_ref.name, "my-project");
     }
+
+    #[test]
+    fn test_parse_ssh_url_format_with_port() {
+        let repo_ref =
+            GitRepositoryRefParser::parse("ssh://git@github.com:22/user/repo.git").unwrap();
+        assert_eq!(repo_ref.origin, "github.com:22");
+        assert_eq!(repo_ref.owner, "user");
+        assert_eq!(repo_ref.name, "repo");
+    }
+
+    #[test]
+    fn test_parse_ssh_url_format_with_custom_port() {
+        let repo_ref =
+            GitRepositoryRefParser::parse("ssh://git@gitlab.com:2222/owner/project.git").unwrap();
+        assert_eq!(repo_ref.origin, "gitlab.com:2222");
+        assert_eq!(repo_ref.owner, "owner");
+        assert_eq!(repo_ref.name, "project");
+    }
+
+    #[test]
+    fn test_parse_ssh_url_format_without_port() {
+        let repo_ref = GitRepositoryRefParser::parse("ssh://git@github.com/user/repo.git").unwrap();
+        assert_eq!(repo_ref.origin, "github.com");
+        assert_eq!(repo_ref.owner, "user");
+        assert_eq!(repo_ref.name, "repo");
+    }
+
+    #[test]
+    fn test_parse_traditional_ssh_format_with_port() {
+        let repo_ref =
+            GitRepositoryRefParser::parse("git@github.com:22:owner/reponame.git").unwrap();
+        assert_eq!(repo_ref.origin, "github.com");
+        assert_eq!(repo_ref.owner, "owner");
+        assert_eq!(repo_ref.name, "reponame");
+    }
+
+    #[test]
+    fn test_parse_traditional_ssh_format_with_custom_port() {
+        let repo_ref =
+            GitRepositoryRefParser::parse("git@gitlab.com:2222:owner/project.git").unwrap();
+        assert_eq!(repo_ref.origin, "gitlab.com");
+        assert_eq!(repo_ref.owner, "owner");
+        assert_eq!(repo_ref.name, "project");
+    }
+
+    #[test]
+    fn test_parse_traditional_ssh_format_with_port_no_git_suffix() {
+        let repo_ref = GitRepositoryRefParser::parse("git@github.com:22:user/repository").unwrap();
+        assert_eq!(repo_ref.origin, "github.com");
+        assert_eq!(repo_ref.owner, "user");
+        assert_eq!(repo_ref.name, "repository");
+    }
 }
