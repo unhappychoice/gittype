@@ -390,26 +390,8 @@ fn color_scheme_from_theme_file_includes_typing_colors() {
     );
 }
 
-#[test]
-fn color_scheme_from_theme_file_includes_language_colors() {
-    let theme = sample_theme_file();
-    let scheme = ColorScheme::from_theme_file(&theme, &ColorMode::Dark);
-
-    // Language colors should be loaded from lang_dark.json (RGB values)
-    // Just verify they are set and not empty
-    match &scheme.lang_rust {
-        SerializableColor::Rgb { .. } => (),
-        SerializableColor::Name(_) => (),
-    }
-    match &scheme.lang_python {
-        SerializableColor::Rgb { .. } => (),
-        SerializableColor::Name(_) => (),
-    }
-    match &scheme.lang_javascript {
-        SerializableColor::Rgb { .. } => (),
-        SerializableColor::Name(_) => (),
-    }
-}
+// Language colors are now managed by ThemeService, not ColorScheme
+// This test is no longer needed
 
 #[test]
 fn color_scheme_clone_works() {

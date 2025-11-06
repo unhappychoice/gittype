@@ -1,4 +1,4 @@
-use gittype::presentation::game::rank_messages::{
+use gittype::domain::models::ui::rank_messages::{
     get_colored_messages_for_rank, get_hacking_messages_for_rank, ColoredMessage,
 };
 

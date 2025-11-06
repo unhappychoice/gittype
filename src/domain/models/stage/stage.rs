@@ -1,4 +1,4 @@
-use super::Challenge;
+use crate::domain::models::Challenge;
 use std::time::Duration;
 
 #[derive(Debug, Clone)]

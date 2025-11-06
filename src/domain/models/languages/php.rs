@@ -1,5 +1,4 @@
 use crate::domain::models::Language;
-use crate::presentation::ui::Colors;
 use std::hash::Hash;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -12,11 +11,6 @@ impl Language for Php {
     fn extensions(&self) -> Vec<&'static str> {
         vec!["php", "phtml", "php3", "php4", "php5"]
     }
-
-    fn color(&self) -> ratatui::style::Color {
-        Colors::lang_php()
-    }
-
     fn display_name(&self) -> &'static str {
         "PHP"
     }

@@ -1,4 +1,4 @@
-use crate::presentation::game::ascii_digits::get_digit_patterns;
+use crate::domain::models::ui::ascii_digits::get_digit_patterns;
 use crate::presentation::ui::Colors;
 use ratatui::{
     layout::{Alignment, Rect},
@@ -11,17 +11,17 @@ use ratatui::{
 pub struct TypingCountdownView;
 
 impl TypingCountdownView {
-    pub fn render(frame: &mut Frame, count: u8) {
+    pub fn render(frame: &mut Frame, count: u8, colors: &Colors) {
         let area = frame.area();
         let center_x = area.width / 2;
         let center_y = area.height / 2;
 
         let color = match count {
-            3 => Colors::countdown_3(),
-            2 => Colors::countdown_2(),
-            1 => Colors::countdown_1(),
-            0 => Colors::countdown_go(),
-            _ => Colors::text(),
+            3 => colors.countdown_3(),
+            2 => colors.countdown_2(),
+            1 => colors.countdown_1(),
+            0 => colors.countdown_go(),
+            _ => colors.text(),
         };
 
         if count > 0 && count <= 3 {

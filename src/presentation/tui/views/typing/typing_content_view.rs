@@ -1,6 +1,7 @@
 use crate::{
     domain::models::Challenge,
-    presentation::game::{context_loader::CodeContext, typing_core::TypingCore},
+    domain::models::typing::CodeContext,
+    domain::services::typing_core::TypingCore,
     presentation::ui::Colors,
 };
 use ratatui::{
@@ -41,6 +42,7 @@ impl TypingContentView {
         typing_core: &TypingCore,
         chars: &[char],
         code_context: &CodeContext,
+        colors: &Colors,
     ) {
         if show_code {
             let view_height = area.height.saturating_sub(2);
@@ -51,6 +53,7 @@ impl TypingContentView {
                 chars,
                 code_context,
                 view_height,
+                colors,
             );
             let total_lines = content_spans.len() as u16;
 
@@ -72,9 +75,9 @@ impl TypingContentView {
                 .block(
                     Block::default()
                         .borders(Borders::ALL)
-                        .border_style(Style::default().fg(Colors::border()))
+                        .border_style(Style::default().fg(colors.border()))
                         .title("Code")
-                        .title_style(Style::default().fg(Colors::key_action()))
+                        .title_style(Style::default().fg(colors.key_action()))
                         .padding(ratatui::widgets::Padding::uniform(1)),
                 );
             frame.render_widget(content, area);
@@ -82,9 +85,9 @@ impl TypingContentView {
             let empty_content = Paragraph::new(Text::from(vec![])).block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border()))
+                    .border_style(Style::default().fg(colors.border()))
                     .title("Code")
-                    .title_style(Style::default().fg(Colors::key_action()))
+                    .title_style(Style::default().fg(colors.key_action()))
                     .padding(ratatui::widgets::Padding::uniform(1)),
             );
             frame.render_widget(empty_content, area);
@@ -99,11 +102,13 @@ impl TypingContentView {
         chars: &[char],
         code_context: &CodeContext,
         view_height: u16,
+        colors: &Colors,
     ) -> Vec<Line<'static>> {
         let mut lines = Vec::new();
         let start_line_number = challenge.and_then(|c| c.start_line).unwrap_or(1);
 
-        let pre_context_lines = self.get_cached_pre_context_lines(code_context, start_line_number);
+        let pre_context_lines =
+            self.get_cached_pre_context_lines(code_context, start_line_number, colors);
         lines.extend(pre_context_lines);
 
         let main_content_lines = self.get_cached_main_content_lines(
@@ -113,15 +118,16 @@ impl TypingContentView {
             chars,
             start_line_number,
             view_height,
+            colors,
         );
         lines.extend(main_content_lines);
 
         let post_context_lines =
-            self.get_cached_post_context_lines(code_context, challenge, start_line_number);
+            self.get_cached_post_context_lines(code_context, challenge, start_line_number, colors);
         lines.extend(post_context_lines);
 
         if lines.is_empty() {
-            let line_num_span = self.create_line_number_span(start_line_number, false);
+            let line_num_span = self.create_line_number_span(start_line_number, false, colors);
             lines.push(Line::from(vec![line_num_span]));
         }
 
@@ -138,17 +144,18 @@ impl TypingContentView {
         lines: &mut Vec<Line<'static>>,
         code_context: &CodeContext,
         start_line_number: usize,
+        colors: &Colors,
     ) {
         for (ctx_idx, pre_line) in code_context.pre_context.iter().enumerate() {
             let ctx_line_number =
                 start_line_number.saturating_sub(code_context.pre_context.len() - ctx_idx);
             let line_num_span = Span::styled(
                 format!("{:>4} │ ", ctx_line_number),
-                Style::default().fg(Colors::text_secondary()),
+                Style::default().fg(colors.text_secondary()),
             );
             let content_span = Span::styled(
                 pre_line.clone(),
-                Style::default().fg(Colors::text_secondary()),
+                Style::default().fg(colors.text_secondary()),
             );
             lines.push(Line::from(vec![line_num_span, content_span]));
         }
@@ -160,6 +167,7 @@ impl TypingContentView {
         code_context: &CodeContext,
         challenge: Option<&Challenge>,
         start_line_number: usize,
+        colors: &Colors,
     ) {
         let end_line_number = challenge
             .and_then(|c| c.end_line)
@@ -169,11 +177,11 @@ impl TypingContentView {
             let ctx_line_number = end_line_number + ctx_idx + 1;
             let line_num_span = Span::styled(
                 format!("{:>4} │ ", ctx_line_number),
-                Style::default().fg(Colors::text_secondary()),
+                Style::default().fg(colors.text_secondary()),
             );
             let content_span = Span::styled(
                 post_line.clone(),
-                Style::default().fg(Colors::text_secondary()),
+                Style::default().fg(colors.text_secondary()),
             );
             lines.push(Line::from(vec![line_num_span, content_span]));
         }
@@ -183,6 +191,7 @@ impl TypingContentView {
         &mut self,
         code_context: &CodeContext,
         start_line_number: usize,
+        colors: &Colors,
     ) -> Vec<Line<'static>> {
         let cache_key = self.calculate_pre_context_cache_key(code_context, start_line_number);
 
@@ -195,7 +204,7 @@ impl TypingContentView {
 
         // Generate new lines
         let mut lines = Vec::new();
-        self.add_pre_context_lines(&mut lines, code_context, start_line_number);
+        self.add_pre_context_lines(&mut lines, code_context, start_line_number, colors);
 
         // Cache the result
         self.pre_context_cache = Some((cache_key, lines.clone()));
@@ -207,6 +216,7 @@ impl TypingContentView {
         code_context: &CodeContext,
         challenge: Option<&Challenge>,
         start_line_number: usize,
+        colors: &Colors,
     ) -> Vec<Line<'static>> {
         let cache_key =
             self.calculate_post_context_cache_key(code_context, challenge, start_line_number);
@@ -220,7 +230,13 @@ impl TypingContentView {
 
         // Generate new lines
         let mut lines = Vec::new();
-        self.add_post_context_lines(&mut lines, code_context, challenge, start_line_number);
+        self.add_post_context_lines(
+            &mut lines,
+            code_context,
+            challenge,
+            start_line_number,
+            colors,
+        );
 
         // Cache the result
         self.post_context_cache = Some((cache_key, lines.clone()));
@@ -235,6 +251,7 @@ impl TypingContentView {
         chars: &[char],
         start_line_number: usize,
         view_height: u16,
+        colors: &Colors,
     ) -> Vec<Line<'static>> {
         let cache_key = self.calculate_main_content_cache_key(
             terminal_width,
@@ -260,6 +277,7 @@ impl TypingContentView {
             typing_core,
             chars,
             start_line_number,
+            colors,
         );
 
         // Cache the result
@@ -274,6 +292,7 @@ impl TypingContentView {
         typing_core: &TypingCore,
         chars: &[char],
         start_line_number: usize,
+        colors: &Colors,
     ) {
         let line_number_width = 6u16;
         let max_width = terminal_width.saturating_sub(line_number_width + 1);
@@ -295,6 +314,7 @@ impl TypingContentView {
                 let line_num_span = self.create_line_number_span(
                     start_line_number + line_number,
                     line_number == current_line_number,
+                    colors,
                 );
                 current_line_spans.push(line_num_span);
                 current_line_width += line_number_width;
@@ -318,6 +338,7 @@ impl TypingContentView {
                 is_in_comment,
                 current_display_position,
                 current_mistake_position,
+                colors,
             );
 
             let (display_char, char_width) = self.format_character(ch);
@@ -339,14 +360,19 @@ impl TypingContentView {
         }
     }
 
-    fn create_line_number_span(&self, line_number: usize, is_current: bool) -> Span<'static> {
+    fn create_line_number_span(
+        &self,
+        line_number: usize,
+        is_current: bool,
+        colors: &Colors,
+    ) -> Span<'static> {
         let line_num_text = format!("{:>4} │ ", line_number);
         let style = if is_current {
             Style::default()
-                .fg(Colors::warning())
+                .fg(colors.warning())
                 .add_modifier(ratatui::style::Modifier::BOLD)
         } else {
-            Style::default().fg(Colors::text_secondary())
+            Style::default().fg(colors.text_secondary())
         };
         Span::styled(line_num_text, style)
     }
@@ -363,29 +389,30 @@ impl TypingContentView {
         is_in_comment: bool,
         current_display_position: usize,
         current_mistake_position: Option<usize>,
+        colors: &Colors,
     ) -> Style {
         if is_in_comment {
-            Style::default().fg(Colors::text_secondary())
+            Style::default().fg(colors.text_secondary())
         } else if char_index < current_display_position {
-            Style::default().fg(Colors::typed_text())
+            Style::default().fg(colors.typed_text())
         } else if char_index == current_display_position {
             if let Some(mistake_pos) = current_mistake_position {
                 if char_index == mistake_pos {
                     Style::default()
-                        .fg(Colors::current_cursor())
-                        .bg(Colors::mistake_bg())
+                        .fg(colors.current_cursor())
+                        .bg(colors.mistake_bg())
                 } else {
                     Style::default()
-                        .fg(Colors::current_cursor())
-                        .bg(Colors::cursor_bg())
+                        .fg(colors.current_cursor())
+                        .bg(colors.cursor_bg())
                 }
             } else {
                 Style::default()
-                    .fg(Colors::current_cursor())
-                    .bg(Colors::cursor_bg())
+                    .fg(colors.current_cursor())
+                    .bg(colors.cursor_bg())
             }
         } else {
-            Style::default().fg(Colors::untyped_text())
+            Style::default().fg(colors.untyped_text())
         }
     }
 

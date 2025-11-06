@@ -16,6 +16,7 @@ impl RepositoryListView {
         area: Rect,
         repositories: &[TrendingRepositoryInfo],
         list_state: &mut ListState,
+        colors: &Colors,
     ) {
         let items: Vec<ListItem> = repositories
             .iter()
@@ -43,22 +44,19 @@ impl RepositoryListView {
                 let line_spans = vec![
                     Span::styled(
                         format!("{:2}. ", i + 1),
-                        Style::default().fg(Colors::text_secondary()),
+                        Style::default().fg(colors.text_secondary()),
                     ),
                     Span::styled(
                         format!("{:<35}", truncated_repo_name),
                         Style::default()
-                            .fg(Colors::text())
+                            .fg(colors.text())
                             .add_modifier(Modifier::BOLD),
                     ),
                     Span::styled(
                         format!("{:>12} ", format!("({})", language)),
-                        Style::default().fg(Colors::success()),
+                        Style::default().fg(colors.success()),
                     ),
-                    Span::styled(
-                        truncated_desc,
-                        Style::default().fg(Colors::text_secondary()),
-                    ),
+                    Span::styled(truncated_desc, Style::default().fg(colors.text_secondary())),
                 ];
 
                 ListItem::new(Line::from(line_spans))
@@ -69,19 +67,19 @@ impl RepositoryListView {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border()))
+                    .border_style(Style::default().fg(colors.border()))
                     .title("Trending Repositories")
                     .title_style(
                         Style::default()
-                            .fg(Colors::text())
+                            .fg(colors.text())
                             .add_modifier(Modifier::BOLD),
                     )
                     .padding(Padding::uniform(1)),
             )
-            .style(Style::default().fg(Colors::text()))
+            .style(Style::default().fg(colors.text()))
             .highlight_style(
                 Style::default()
-                    .bg(Colors::background_secondary())
+                    .bg(colors.background_secondary())
                     .add_modifier(Modifier::BOLD),
             );
         frame.render_stateful_widget(list, area, list_state);

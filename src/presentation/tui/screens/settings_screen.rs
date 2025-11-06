@@ -2,8 +2,7 @@ use crate::domain::events::EventBusInterface;
 use crate::domain::models::color_mode::ColorMode;
 use crate::domain::models::theme::Theme;
 use crate::domain::services::config_service::{ConfigService, ConfigServiceInterface};
-use crate::domain::services::theme_service::THEME_MANAGER;
-use crate::presentation::game::events::NavigateTo;
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType};
 use crate::presentation::ui::Colors;
 use crate::Result;
@@ -76,14 +75,22 @@ pub struct SettingsScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
+    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    #[shaku(inject)]
     config_service: Arc<dyn ConfigServiceInterface>,
 }
 
 impl SettingsScreen {
     #[cfg(feature = "test-mocks")]
     pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
+        use crate::domain::services::theme_service::ThemeService;
         use crate::infrastructure::storage::file_storage::FileStorage;
-        let config_service = Arc::new(ConfigService::new(Arc::new(FileStorage::new())).unwrap());
+        let file_storage = Arc::new(FileStorage::new());
+        let config_service = Arc::new(ConfigService::new(file_storage.clone()).unwrap());
+        let theme_service = Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        ));
         Self {
             current_section: RwLock::new(SettingsSection::default()),
             color_mode_state: RwLock::new(ListState::default()),
@@ -95,6 +102,7 @@ impl SettingsScreen {
             is_preview_mode: RwLock::new(false),
             event_bus,
             config_service,
+            theme_service,
         }
     }
 
@@ -105,20 +113,22 @@ impl SettingsScreen {
         let selected_theme = self.get_selected_theme();
 
         if let (Some(color_mode), Some(theme)) = (selected_color_mode, selected_theme) {
-            let mut theme_manager = THEME_MANAGER.write().unwrap();
-            theme_manager.current_color_mode = color_mode.clone();
-            theme_manager.current_theme = theme.clone();
+            self.theme_service
+                .set_current_color_mode(color_mode.clone());
+            self.theme_service.set_current_theme(theme.clone());
         }
     }
 
     fn revert_to_original(&self) {
         let is_preview_mode = *self.is_preview_mode.read().unwrap();
         if is_preview_mode {
-            let mut theme_manager = THEME_MANAGER.write().unwrap();
             let original_color_mode = self.original_color_mode.read().unwrap();
             let original_theme = self.original_theme.read().unwrap();
-            theme_manager.current_color_mode = original_color_mode.clone();
-            theme_manager.current_theme = original_theme.clone();
+            self.theme_service
+                .set_current_color_mode(original_color_mode.clone());
+            self.theme_service.set_current_theme(original_theme.clone());
+
+            // Color scheme is already updated in theme_service
             *self.is_preview_mode.write().unwrap() = false;
         }
     }
@@ -132,8 +142,8 @@ impl SettingsScreen {
 
         if let (Some(color_mode), Some(theme)) = (selected_color_mode, selected_theme) {
             // Downcast to concrete type to access update_config method
-            if let Some(config_service) = (self.config_service.as_ref() as &dyn std::any::Any)
-                .downcast_ref::<ConfigService>()
+            if let Some(config_service) =
+                (self.config_service.as_ref() as &dyn std::any::Any).downcast_ref::<ConfigService>()
             {
                 let _ = config_service.update_config(|config| {
                     config.theme.current_color_mode = color_mode.clone();
@@ -158,7 +168,7 @@ impl SettingsScreen {
         theme_state.selected().and_then(|i| themes.get(i).cloned())
     }
 
-    fn render_color_mode_section(&self, f: &mut Frame, area: Rect) {
+    fn render_color_mode_section(&self, f: &mut Frame, area: Rect, colors: &Colors) {
         let color_modes = self.color_modes.read().unwrap();
         let items: Vec<ListItem> = color_modes
             .iter()
@@ -176,16 +186,16 @@ impl SettingsScreen {
                 Block::default()
                     .title("Color Mode")
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border()))
+                    .border_style(Style::default().fg(colors.border()))
                     .padding(Padding::horizontal(2)),
             )
-            .highlight_style(Style::default().bg(Colors::text()).fg(Colors::background()));
+            .highlight_style(Style::default().bg(colors.text()).fg(colors.background()));
 
         let mut color_mode_state = self.color_mode_state.write().unwrap();
         f.render_stateful_widget(list, area, &mut *color_mode_state);
     }
 
-    fn render_theme_section(&self, f: &mut Frame, area: Rect) {
+    fn render_theme_section(&self, f: &mut Frame, area: Rect, colors: &Colors) {
         let themes = self.themes.read().unwrap();
         let items: Vec<ListItem> = themes
             .iter()
@@ -197,16 +207,16 @@ impl SettingsScreen {
                 Block::default()
                     .title("Theme")
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border()))
+                    .border_style(Style::default().fg(colors.border()))
                     .padding(Padding::horizontal(2)),
             )
-            .highlight_style(Style::default().bg(Colors::text()).fg(Colors::background()));
+            .highlight_style(Style::default().bg(colors.text()).fg(colors.background()));
 
         let mut theme_state = self.theme_state.write().unwrap();
         f.render_stateful_widget(list, area, &mut *theme_state);
     }
 
-    fn render_description(&self, f: &mut Frame, area: Rect) {
+    fn render_description(&self, f: &mut Frame, area: Rect, colors: &Colors) {
         let current_section = *self.current_section.read().unwrap();
         let content = match current_section {
             SettingsSection::ColorMode => {
@@ -223,21 +233,21 @@ impl SettingsScreen {
 
                     // Add color preview lines with actual colors
                     let color_examples = vec![
-                        ("Border", Colors::border()),
-                        ("Title", Colors::title()),
-                        ("Text", Colors::text()),
-                        ("Text Secondary", Colors::text_secondary()),
-                        ("Success", Colors::success()),
-                        ("Error", Colors::error()),
-                        ("Warning", Colors::warning()),
-                        ("Info", Colors::info()),
-                        ("Key Action", Colors::key_action()),
-                        ("Key Navigation", Colors::key_navigation()),
-                        ("Key Back", Colors::key_back()),
-                        ("Typed Text", Colors::typed_text()),
-                        ("Cursor", Colors::current_cursor()),
-                        ("Mistake", Colors::mistake_bg()),
-                        ("Untyped Text", Colors::untyped_text()),
+                        ("Border", colors.border()),
+                        ("Title", colors.title()),
+                        ("Text", colors.text()),
+                        ("Text Secondary", colors.text_secondary()),
+                        ("Success", colors.success()),
+                        ("Error", colors.error()),
+                        ("Warning", colors.warning()),
+                        ("Info", colors.info()),
+                        ("Key Action", colors.key_action()),
+                        ("Key Navigation", colors.key_navigation()),
+                        ("Key Back", colors.key_back()),
+                        ("Typed Text", colors.typed_text()),
+                        ("Cursor", colors.current_cursor()),
+                        ("Mistake", colors.mistake_bg()),
+                        ("Untyped Text", colors.untyped_text()),
                     ];
 
                     for (name, color) in color_examples {
@@ -256,12 +266,12 @@ impl SettingsScreen {
         };
 
         let paragraph = Paragraph::new(content)
-            .style(Style::default().fg(Colors::text()))
+            .style(Style::default().fg(colors.text()))
             .block(
                 Block::default()
                     .title("Description")
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border()))
+                    .border_style(Style::default().fg(colors.border()))
                     .padding(Padding::horizontal(2)),
             )
             .wrap(Wrap { trim: true })
@@ -270,7 +280,7 @@ impl SettingsScreen {
         f.render_widget(paragraph, area);
     }
 
-    fn render_tabs(&self, f: &mut Frame, area: Rect) {
+    fn render_tabs(&self, f: &mut Frame, area: Rect, colors: &Colors) {
         let sections = SettingsSection::all();
         let titles: Vec<Line> = sections
             .iter()
@@ -287,16 +297,16 @@ impl SettingsScreen {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border()))
+                    .border_style(Style::default().fg(colors.border()))
                     .title("Settings"),
             )
-            .highlight_style(Style::default().fg(Colors::text()).bold())
+            .highlight_style(Style::default().fg(colors.text()).bold())
             .select(selected_index);
 
         f.render_widget(tabs, area);
     }
 
-    fn render_content(&self, f: &mut Frame, area: Rect) {
+    fn render_content(&self, f: &mut Frame, area: Rect, colors: &Colors) {
         let content_chunks = Layout::default()
             .direction(Direction::Horizontal)
             .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
@@ -305,27 +315,27 @@ impl SettingsScreen {
         let current_section = *self.current_section.read().unwrap();
         match current_section {
             SettingsSection::ColorMode => {
-                self.render_color_mode_section(f, content_chunks[0]);
-                self.render_description(f, content_chunks[1]);
+                self.render_color_mode_section(f, content_chunks[0], &colors);
+                self.render_description(f, content_chunks[1], &colors);
             }
             SettingsSection::Theme => {
-                self.render_theme_section(f, content_chunks[0]);
-                self.render_description(f, content_chunks[1]);
+                self.render_theme_section(f, content_chunks[0], &colors);
+                self.render_description(f, content_chunks[1], &colors);
             }
         }
     }
 
-    fn render_footer(&self, f: &mut Frame, area: Rect) {
+    fn render_footer(&self, f: &mut Frame, area: Rect, colors: &Colors) {
         // Instructions (matching help screen format)
         let instructions = vec![
-            Span::styled("[←→/HL]", Style::default().fg(Colors::info())),
-            Span::styled(" Switch tabs ", Style::default().fg(Colors::text())),
-            Span::styled("[↑↓/JK]", Style::default().fg(Colors::info())),
-            Span::styled(" Navigate ", Style::default().fg(Colors::text())),
-            Span::styled("[SPACE]", Style::default().fg(Colors::key_action())),
-            Span::styled(" Save ", Style::default().fg(Colors::text())),
-            Span::styled("[ESC]", Style::default().fg(Colors::error())),
-            Span::styled(" Cancel", Style::default().fg(Colors::text())),
+            Span::styled("[←→/HL]", Style::default().fg(colors.info())),
+            Span::styled(" Switch tabs ", Style::default().fg(colors.text())),
+            Span::styled("[↑↓/JK]", Style::default().fg(colors.info())),
+            Span::styled(" Navigate ", Style::default().fg(colors.text())),
+            Span::styled("[SPACE]", Style::default().fg(colors.key_action())),
+            Span::styled(" Save ", Style::default().fg(colors.text())),
+            Span::styled("[ESC]", Style::default().fg(colors.error())),
+            Span::styled(" Cancel", Style::default().fg(colors.text())),
         ];
         let instructions_para =
             Paragraph::new(Line::from(instructions)).alignment(Alignment::Center);
@@ -337,12 +347,12 @@ pub struct SettingsScreenDataProvider;
 
 impl ScreenDataProvider for SettingsScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let theme_manager = THEME_MANAGER.read().unwrap();
+        // Return empty data - SettingsScreen will fetch data from its injected theme_service
         let data = SettingsScreenData {
-            color_modes: vec![ColorMode::Dark, ColorMode::Light],
-            themes: theme_manager.get_available_themes(),
-            current_theme: theme_manager.current_theme.clone(),
-            current_color_mode: theme_manager.current_color_mode.clone(),
+            color_modes: vec![],
+            themes: vec![],
+            current_theme: Theme::default(),
+            current_color_mode: ColorMode::default(),
         };
         Ok(Box::new(data))
     }
@@ -361,24 +371,25 @@ impl Screen for SettingsScreen {
     }
 
     fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
-        let data = data.downcast::<SettingsScreenData>()?;
+        let _data = data.downcast::<SettingsScreenData>()?;
 
-        *self.color_modes.write().unwrap() = data.color_modes;
-        *self.themes.write().unwrap() = data.themes;
-        *self.original_theme.write().unwrap() = data.current_theme.clone();
-        *self.original_color_mode.write().unwrap() = data.current_color_mode.clone();
+        // Fetch data from theme_service since provider returns empty data
+        let color_modes = vec![ColorMode::Dark, ColorMode::Light];
+        let themes = self.theme_service.get_available_themes();
+        let current_theme = self.theme_service.get_current_theme();
+        let current_color_mode = self.theme_service.get_current_color_mode();
+
+        *self.color_modes.write().unwrap() = color_modes.clone();
+        *self.themes.write().unwrap() = themes.clone();
+        *self.original_theme.write().unwrap() = current_theme.clone();
+        *self.original_color_mode.write().unwrap() = current_color_mode.clone();
 
         // Set initial selections
-        let color_modes = self.color_modes.read().unwrap();
-        if let Some(pos) = color_modes
-            .iter()
-            .position(|m| m == &data.current_color_mode)
-        {
+        if let Some(pos) = color_modes.iter().position(|m| m == &current_color_mode) {
             self.color_mode_state.write().unwrap().select(Some(pos));
         }
 
-        let themes = self.themes.read().unwrap();
-        if let Some(pos) = themes.iter().position(|t| t.id == data.current_theme.id) {
+        if let Some(pos) = themes.iter().position(|t| t.id == current_theme.id) {
             self.theme_state.write().unwrap().select(Some(pos));
         }
 
@@ -482,6 +493,7 @@ impl Screen for SettingsScreen {
     }
 
     fn render_ratatui(&self, f: &mut Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
         let area = f.area();
 
         let chunks = Layout::default()
@@ -493,9 +505,9 @@ impl Screen for SettingsScreen {
             ])
             .split(area);
 
-        self.render_tabs(f, chunks[0]);
-        self.render_content(f, chunks[1]);
-        self.render_footer(f, chunks[2]);
+        self.render_tabs(f, chunks[0], &colors);
+        self.render_content(f, chunks[1], &colors);
+        self.render_footer(f, chunks[2], &colors);
 
         Ok(())
     }

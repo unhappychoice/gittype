@@ -11,7 +11,7 @@ use ratatui::{
 pub struct PlatformOptionsView;
 
 impl PlatformOptionsView {
-    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect) {
+    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect, colors: &Colors) {
         let platforms = SharingPlatform::all();
 
         let chunks = Layout::default()
@@ -23,7 +23,7 @@ impl PlatformOptionsView {
             let option_text = format!("[{}] {}", i + 1, platform.name());
             let option_line = Line::from(vec![Span::styled(
                 option_text,
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             )]);
             let option_widget = Paragraph::new(option_line).alignment(Alignment::Center);
             frame.render_widget(option_widget, chunks[i]);

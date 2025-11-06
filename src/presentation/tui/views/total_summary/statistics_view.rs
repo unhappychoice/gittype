@@ -11,7 +11,12 @@ use ratatui::{
 pub struct StatisticsView;
 
 impl StatisticsView {
-    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect, total_summary: &TotalResult) {
+    pub fn render(
+        frame: &mut Frame,
+        area: ratatui::layout::Rect,
+        total_summary: &TotalResult,
+        colors: &Colors,
+    ) {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -24,23 +29,23 @@ impl StatisticsView {
 
         // Line 1: Overall CPM, WPM, Accuracy
         let line1 = Line::from(vec![
-            Span::styled("Overall ", Style::default().fg(Colors::text())),
-            Span::styled("CPM: ", Style::default().fg(Colors::cpm_wpm())),
+            Span::styled("Overall ", Style::default().fg(colors.text())),
+            Span::styled("CPM: ", Style::default().fg(colors.cpm_wpm())),
             Span::styled(
                 format!("{:.1}", total_summary.overall_cpm),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(" | ", Style::default().fg(Colors::text())),
-            Span::styled("WPM: ", Style::default().fg(Colors::cpm_wpm())),
+            Span::styled(" | ", Style::default().fg(colors.text())),
+            Span::styled("WPM: ", Style::default().fg(colors.cpm_wpm())),
             Span::styled(
                 format!("{:.1}", total_summary.overall_wpm),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(" | ", Style::default().fg(Colors::text())),
-            Span::styled("Accuracy: ", Style::default().fg(Colors::accuracy())),
+            Span::styled(" | ", Style::default().fg(colors.text())),
+            Span::styled("Accuracy: ", Style::default().fg(colors.accuracy())),
             Span::styled(
                 format!("{:.1}%", total_summary.overall_accuracy),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
         ]);
         frame.render_widget(
@@ -50,26 +55,26 @@ impl StatisticsView {
 
         // Line 2: Sessions and Stages
         let line2 = Line::from(vec![
-            Span::styled("Total ", Style::default().fg(Colors::text())),
-            Span::styled("Sessions: ", Style::default().fg(Colors::stage_info())),
+            Span::styled("Total ", Style::default().fg(colors.text())),
+            Span::styled("Sessions: ", Style::default().fg(colors.stage_info())),
             Span::styled(
                 format!("{}", total_summary.total_sessions_attempted),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(" | ", Style::default().fg(Colors::text())),
-            Span::styled("Completed: ", Style::default().fg(Colors::success())),
+            Span::styled(" | ", Style::default().fg(colors.text())),
+            Span::styled("Completed: ", Style::default().fg(colors.success())),
             Span::styled(
                 format!("{}", total_summary.total_sessions_completed),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(" | ", Style::default().fg(Colors::text())),
-            Span::styled("Stages: ", Style::default().fg(Colors::stage_info())),
+            Span::styled(" | ", Style::default().fg(colors.text())),
+            Span::styled("Stages: ", Style::default().fg(colors.stage_info())),
             Span::styled(
                 format!(
                     "{}/{}",
                     total_summary.total_stages_completed, total_summary.total_stages_attempted
                 ),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
         ]);
         frame.render_widget(
@@ -79,23 +84,23 @@ impl StatisticsView {
 
         // Line 3: Keystrokes, Mistakes, Skipped
         let line3 = Line::from(vec![
-            Span::styled("Total ", Style::default().fg(Colors::text())),
-            Span::styled("Keystrokes: ", Style::default().fg(Colors::stage_info())),
+            Span::styled("Total ", Style::default().fg(colors.text())),
+            Span::styled("Keystrokes: ", Style::default().fg(colors.stage_info())),
             Span::styled(
                 format!("{}", total_summary.total_keystrokes),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(" | ", Style::default().fg(Colors::text())),
-            Span::styled("Mistakes: ", Style::default().fg(Colors::error())),
+            Span::styled(" | ", Style::default().fg(colors.text())),
+            Span::styled("Mistakes: ", Style::default().fg(colors.error())),
             Span::styled(
                 format!("{}", total_summary.total_mistakes),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(" | ", Style::default().fg(Colors::text())),
-            Span::styled("Skipped: ", Style::default().fg(Colors::warning())),
+            Span::styled(" | ", Style::default().fg(colors.text())),
+            Span::styled("Skipped: ", Style::default().fg(colors.warning())),
             Span::styled(
                 format!("{}", total_summary.total_stages_skipped),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
         ]);
         frame.render_widget(
@@ -105,25 +110,25 @@ impl StatisticsView {
 
         // Line 4: Best/Worst sessions
         let line4 = Line::from(vec![
-            Span::styled("Best Session: ", Style::default().fg(Colors::text())),
+            Span::styled("Best Session: ", Style::default().fg(colors.text())),
             Span::styled(
                 format!("{:.0} CPM", total_summary.best_session_wpm * 5.0),
-                Style::default().fg(Colors::cpm_wpm()),
+                Style::default().fg(colors.cpm_wpm()),
             ),
-            Span::styled(", ", Style::default().fg(Colors::text())),
+            Span::styled(", ", Style::default().fg(colors.text())),
             Span::styled(
                 format!("{:.1}%", total_summary.best_session_accuracy),
-                Style::default().fg(Colors::accuracy()),
+                Style::default().fg(colors.accuracy()),
             ),
-            Span::styled(" | Worst: ", Style::default().fg(Colors::text())),
+            Span::styled(" | Worst: ", Style::default().fg(colors.text())),
             Span::styled(
                 format!("{:.0} CPM", total_summary.worst_session_wpm * 5.0),
-                Style::default().fg(Colors::cpm_wpm()),
+                Style::default().fg(colors.cpm_wpm()),
             ),
-            Span::styled(", ", Style::default().fg(Colors::text())),
+            Span::styled(", ", Style::default().fg(colors.text())),
             Span::styled(
                 format!("{:.1}%", total_summary.worst_session_accuracy),
-                Style::default().fg(Colors::accuracy()),
+                Style::default().fg(colors.accuracy()),
             ),
         ]);
         frame.render_widget(

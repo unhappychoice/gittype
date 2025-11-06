@@ -2,11 +2,10 @@ use crate::domain::events::EventBusInterface;
 use crate::domain::models::storage::SessionStageResult;
 use crate::domain::repositories::session_repository::SessionRepositoryTrait;
 use crate::domain::services::session_service::SessionDisplayData;
-use crate::presentation::game::events::NavigateTo;
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::tui::screens::RecordsScreen;
 use crate::presentation::tui::views::{PerformanceMetricsView, SessionInfoView, StageDetailsView};
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
-use crate::presentation::ui::Colors;
 use crate::{GitTypeError, Result};
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::{
@@ -36,12 +35,15 @@ pub struct SessionDetailScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
+    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    #[shaku(inject)]
     session_repository: Arc<dyn SessionRepositoryTrait>,
 }
 
 impl SessionDetailScreen {
     pub fn new(
         event_bus: Arc<dyn crate::domain::events::EventBusInterface>,
+        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
         session_repository: Arc<
             dyn crate::domain::repositories::session_repository::SessionRepositoryTrait,
         >,
@@ -53,6 +55,7 @@ impl SessionDetailScreen {
             stage_results: RwLock::new(Vec::new()),
             stage_scroll_offset: RwLock::new(0),
             event_bus,
+            theme_service,
             session_repository,
         }
     }
@@ -164,6 +167,7 @@ impl Screen for SessionDetailScreen {
     }
 
     fn render_ratatui(&self, frame: &mut ratatui::Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
         let session_data = self.session_data.read().unwrap();
         let stage_results = self.stage_results.read().unwrap();
         let stage_scroll_offset = *self.stage_scroll_offset.read().unwrap();
@@ -180,7 +184,7 @@ impl Screen for SessionDetailScreen {
         let title = Paragraph::new("Session Details")
             .style(
                 Style::default()
-                    .fg(Colors::info())
+                    .fg(colors.info())
                     .add_modifier(Modifier::BOLD),
             )
             .alignment(Alignment::Left);
@@ -201,20 +205,22 @@ impl Screen for SessionDetailScreen {
             top_chunks[0],
             &session_data.session,
             session_data.repository.as_ref(),
+            &colors,
         );
-        PerformanceMetricsView::render(frame, top_chunks[1], session_data.session_result.as_ref());
+        PerformanceMetricsView::render(frame, top_chunks[1], session_data.session_result.as_ref(), &colors);
         StageDetailsView::render(
             frame,
             content_chunks[1],
             &stage_results,
             stage_scroll_offset,
+            &colors,
         );
 
         let controls_line = Line::from(vec![
-            Span::styled("[↑↓/JK]", Style::default().fg(Colors::key_navigation())),
-            Span::styled(" Scroll Stages  ", Style::default().fg(Colors::text())),
-            Span::styled("[ESC]", Style::default().fg(Colors::error())),
-            Span::styled(" Back", Style::default().fg(Colors::text())),
+            Span::styled("[↑↓/JK]", Style::default().fg(colors.key_navigation())),
+            Span::styled(" Scroll Stages  ", Style::default().fg(colors.text())),
+            Span::styled("[ESC]", Style::default().fg(colors.error())),
+            Span::styled(" Back", Style::default().fg(colors.text())),
         ]);
 
         let controls = Paragraph::new(controls_line).alignment(Alignment::Center);

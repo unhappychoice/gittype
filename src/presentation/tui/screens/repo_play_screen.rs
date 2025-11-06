@@ -3,7 +3,7 @@ use crate::domain::models::storage::StoredRepositoryWithLanguages;
 use crate::domain::services::repository_service::RepositoryService;
 use crate::infrastructure::database::database::{Database, DatabaseInterface};
 use crate::infrastructure::git::RemoteGitRepositoryClient;
-use crate::presentation::game::events::NavigateTo;
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::tui::views::repo_play::{ControlsView, HeaderView, RepositoryListView};
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::Result;
@@ -33,10 +33,15 @@ pub struct RepoPlayScreen {
     selected_index: RwLock<Option<usize>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
 }
 
 impl RepoPlayScreen {
-    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    ) -> Self {
         let mut list_state = ListState::default();
         list_state.select(Some(0));
 
@@ -45,6 +50,7 @@ impl RepoPlayScreen {
             list_state: RwLock::new(list_state),
             selected_index: RwLock::new(None),
             event_bus,
+            theme_service,
         }
     }
 
@@ -148,6 +154,7 @@ impl Screen for RepoPlayScreen {
     }
 
     fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
         // Add horizontal padding
         let outer_chunks = Layout::default()
             .direction(Direction::Horizontal)
@@ -167,11 +174,11 @@ impl Screen for RepoPlayScreen {
             ])
             .split(outer_chunks[1]);
 
-        HeaderView::render(frame, chunks[0]);
+        HeaderView::render(frame, chunks[0], &colors);
         let repositories = self.repositories.read().unwrap();
         let mut list_state = self.list_state.write().unwrap();
-        RepositoryListView::render(frame, chunks[1], &repositories, &mut list_state);
-        ControlsView::render(frame, chunks[2]);
+        RepositoryListView::render(frame, chunks[1], &repositories, &mut list_state, &colors);
+        ControlsView::render(frame, chunks[2], &colors);
 
         Ok(())
     }

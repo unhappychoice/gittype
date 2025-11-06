@@ -12,7 +12,7 @@ use ratatui::{
 pub struct OverviewView;
 
 impl OverviewView {
-    pub fn render(f: &mut Frame, area: Rect, data: &AnalyticsData) {
+    pub fn render(f: &mut Frame, area: Rect, data: &AnalyticsData, colors: &Colors) {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -22,63 +22,63 @@ impl OverviewView {
             ])
             .split(area);
 
-        Self::render_overview_stats(f, chunks[0], data);
-        Self::render_simple_chart(f, chunks[1], data);
-        Self::render_bottom_stats(f, chunks[2], data);
+        Self::render_overview_stats(f, chunks[0], data, colors);
+        Self::render_simple_chart(f, chunks[1], data, colors);
+        Self::render_bottom_stats(f, chunks[2], data, colors);
     }
 
-    fn render_overview_stats(f: &mut Frame, area: Rect, data: &AnalyticsData) {
+    fn render_overview_stats(f: &mut Frame, area: Rect, data: &AnalyticsData, colors: &Colors) {
         // Overview stats (two lines)
         let overview_text = vec![
             Line::from(vec![
                 Span::raw("  "), // Left padding
-                Span::styled("Sessions: ", Style::default().fg(Colors::stage_info())),
+                Span::styled("Sessions: ", Style::default().fg(colors.stage_info())),
                 Span::styled(
                     data.total_sessions.to_string(),
-                    Style::default().fg(Colors::text()),
+                    Style::default().fg(colors.text()),
                 ),
                 Span::raw("  │  "),
-                Span::styled("Avg CPM: ", Style::default().fg(Colors::cpm_wpm())),
+                Span::styled("Avg CPM: ", Style::default().fg(colors.cpm_wpm())),
                 Span::styled(
                     format!("{:.1}", data.avg_cpm),
-                    Style::default().fg(Colors::text()),
+                    Style::default().fg(colors.text()),
                 ),
                 Span::raw("  │  "),
-                Span::styled("Best CPM: ", Style::default().fg(Colors::cpm_wpm())),
+                Span::styled("Best CPM: ", Style::default().fg(colors.cpm_wpm())),
                 Span::styled(
                     format!("{:.1}", data.best_cpm),
-                    Style::default().fg(Colors::text()),
+                    Style::default().fg(colors.text()),
                 ),
                 Span::raw("  │  "),
-                Span::styled("Avg Accuracy: ", Style::default().fg(Colors::accuracy())),
+                Span::styled("Avg Accuracy: ", Style::default().fg(colors.accuracy())),
                 Span::styled(
                     format!("{:.1}%", data.avg_accuracy),
-                    Style::default().fg(Colors::text()),
+                    Style::default().fg(colors.text()),
                 ),
             ]),
             Line::from(vec![
-                Span::styled("Total Time: ", Style::default().fg(Colors::duration())),
+                Span::styled("Total Time: ", Style::default().fg(colors.duration())),
                 Span::styled(
                     format!("{:.1}h", data.total_time_hours),
-                    Style::default().fg(Colors::text()),
+                    Style::default().fg(colors.text()),
                 ),
                 Span::raw("  │  "),
-                Span::styled("Avg Session: ", Style::default().fg(Colors::duration())),
+                Span::styled("Avg Session: ", Style::default().fg(colors.duration())),
                 Span::styled(
                     format!("{:.1}m", data.avg_session_duration),
-                    Style::default().fg(Colors::text()),
+                    Style::default().fg(colors.text()),
                 ),
                 Span::raw("  │  "),
-                Span::styled("Total Mistakes: ", Style::default().fg(Colors::error())),
+                Span::styled("Total Mistakes: ", Style::default().fg(colors.error())),
                 Span::styled(
                     data.total_mistakes.to_string(),
-                    Style::default().fg(Colors::text()),
+                    Style::default().fg(colors.text()),
                 ),
                 Span::raw("  │  "),
-                Span::styled("Repositories: ", Style::default().fg(Colors::key_action())),
+                Span::styled("Repositories: ", Style::default().fg(colors.key_action())),
                 Span::styled(
                     data.top_repositories.len().to_string(),
-                    Style::default().fg(Colors::text()),
+                    Style::default().fg(colors.text()),
                 ),
             ]),
         ];
@@ -88,13 +88,13 @@ impl OverviewView {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border()))
+                    .border_style(Style::default().fg(colors.border()))
                     .title("Overview (Last 7 days)"),
             );
         f.render_widget(overview, area);
     }
 
-    fn render_simple_chart(f: &mut Frame, area: Rect, data: &AnalyticsData) {
+    fn render_simple_chart(f: &mut Frame, area: Rect, data: &AnalyticsData, colors: &Colors) {
         if data.daily_sessions.is_empty() {
             let empty_msg = Paragraph::new(vec![
                 Line::from(""),
@@ -107,7 +107,7 @@ impl OverviewView {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border()))
+                    .border_style(Style::default().fg(colors.border()))
                     .title("Recent Activity"),
             );
             f.render_widget(empty_msg, area);
@@ -154,7 +154,7 @@ impl OverviewView {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border()))
+                    .border_style(Style::default().fg(colors.border()))
                     .title(format!(
                         "Recent Activity - {} Days | {} Total Sessions | Max: {}/Day",
                         continuous_data.len(),
@@ -165,19 +165,19 @@ impl OverviewView {
             .data(&bars)
             .bar_width(bar_width)
             .bar_gap(1) // Small gap for better readability
-            .bar_style(Style::default().fg(Colors::cpm_wpm()))
+            .bar_style(Style::default().fg(colors.cpm_wpm()))
             .value_style(
                 Style::default()
-                    .fg(Colors::accuracy())
+                    .fg(colors.accuracy())
                     .add_modifier(Modifier::BOLD),
             )
-            .label_style(Style::default().fg(Colors::info()))
+            .label_style(Style::default().fg(colors.info()))
             .max(max_value);
 
         f.render_widget(chart, area);
     }
 
-    fn render_bottom_stats(f: &mut Frame, area: Rect, data: &AnalyticsData) {
+    fn render_bottom_stats(f: &mut Frame, area: Rect, data: &AnalyticsData, colors: &Colors) {
         let chunks = Layout::default()
             .direction(Direction::Horizontal)
             .constraints([
@@ -215,10 +215,10 @@ impl OverviewView {
 
                 repo_lines.push(Line::from(vec![
                     Span::raw("  "), // Left padding
-                    Span::styled(index_text, Style::default().fg(Colors::text_secondary())),
-                    Span::styled(display_name, Style::default().fg(Colors::info())),
+                    Span::styled(index_text, Style::default().fg(colors.text_secondary())),
+                    Span::styled(display_name, Style::default().fg(colors.info())),
                     Span::raw(" ".repeat(spaces_needed)), // Spacer to push CPM right
-                    Span::styled(cpm_text, Style::default().fg(Colors::cpm_wpm())),
+                    Span::styled(cpm_text, Style::default().fg(colors.cpm_wpm())),
                 ]));
             }
         }
@@ -226,7 +226,7 @@ impl OverviewView {
         let repositories = Paragraph::new(repo_lines).block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Colors::border()))
+                .border_style(Style::default().fg(colors.border()))
                 .title("Top Repositories (Last 90 Days)"),
         );
         f.render_widget(repositories, chunks[0]);
@@ -262,10 +262,10 @@ impl OverviewView {
 
                 lang_lines.push(Line::from(vec![
                     Span::raw("  "), // Left padding
-                    Span::styled(index_text, Style::default().fg(Colors::text_secondary())),
-                    Span::styled(display_name, Style::default().fg(Colors::info())),
+                    Span::styled(index_text, Style::default().fg(colors.text_secondary())),
+                    Span::styled(display_name, Style::default().fg(colors.info())),
                     Span::raw(" ".repeat(spaces_needed)), // Spacer to push CPM right
-                    Span::styled(cpm_text, Style::default().fg(Colors::cpm_wpm())),
+                    Span::styled(cpm_text, Style::default().fg(colors.cpm_wpm())),
                 ]));
             }
         }
@@ -273,7 +273,7 @@ impl OverviewView {
         let languages = Paragraph::new(lang_lines).block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Colors::border()))
+                .border_style(Style::default().fg(colors.border()))
                 .title("Top Languages (Last 90 Days)"),
         );
         f.render_widget(languages, chunks[1]);

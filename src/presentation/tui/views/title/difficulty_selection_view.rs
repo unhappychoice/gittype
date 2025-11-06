@@ -18,6 +18,7 @@ impl DifficultySelectionView {
         selected_difficulty: usize,
         challenge_counts: &[usize; 5],
         error_message: Option<&String>,
+        colors: &Colors,
     ) {
         let (name, difficulty_level) = &difficulties[selected_difficulty];
         let count = challenge_counts[selected_difficulty];
@@ -34,15 +35,15 @@ impl DifficultySelectionView {
 
         // Line 1: Difficulty selection
         let difficulty_line = Line::from(vec![
-            Span::styled("Difficulty: ", Style::default().fg(Colors::text())),
-            Span::styled("← ", Style::default().fg(Colors::accuracy())),
+            Span::styled("Difficulty: ", Style::default().fg(colors.text())),
+            Span::styled("← ", Style::default().fg(colors.accuracy())),
             Span::styled(
                 name.to_string(),
                 Style::default()
-                    .fg(Colors::text())
+                    .fg(colors.text())
                     .add_modifier(Modifier::BOLD),
             ),
-            Span::styled(" →", Style::default().fg(Colors::accuracy())),
+            Span::styled(" →", Style::default().fg(colors.accuracy())),
         ]);
         frame.render_widget(
             Paragraph::new(difficulty_line).alignment(Alignment::Center),
@@ -58,7 +59,7 @@ impl DifficultySelectionView {
         let count_line = Paragraph::new(Line::from(vec![Span::styled(
             count_text,
             Style::default()
-                .fg(Colors::info())
+                .fg(colors.info())
                 .add_modifier(Modifier::DIM),
         )]))
         .alignment(Alignment::Center);
@@ -70,7 +71,7 @@ impl DifficultySelectionView {
             let error_line = Paragraph::new(Line::from(vec![Span::styled(
                 error.as_str(),
                 Style::default()
-                    .fg(Colors::error())
+                    .fg(colors.error())
                     .add_modifier(Modifier::BOLD),
             )]))
             .alignment(Alignment::Center);
@@ -81,7 +82,7 @@ impl DifficultySelectionView {
                 let desc_line = Paragraph::new(Line::from(vec![Span::styled(
                     *description,
                     Style::default()
-                        .fg(Colors::text())
+                        .fg(colors.text())
                         .add_modifier(Modifier::DIM),
                 )]))
                 .alignment(Alignment::Center);

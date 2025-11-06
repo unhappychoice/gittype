@@ -1,6 +1,6 @@
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::{GitRepository, SessionResult};
-use crate::presentation::game::events::NavigateTo;
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::game::{GameData, SessionManager};
 use crate::presentation::tui::views::session_failure::{ContentView, FooterView, HeaderView};
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
@@ -65,15 +65,21 @@ pub struct SessionFailureScreen {
     repo_info: RwLock<Option<GitRepository>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
 }
 
 impl SessionFailureScreen {
-    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    ) -> Self {
         Self {
             session_result: RwLock::new(SessionResult::default()),
             total_stages: RwLock::new(1),
             repo_info: RwLock::new(None),
             event_bus,
+            theme_service,
         }
     }
 }
@@ -131,6 +137,7 @@ impl Screen for SessionFailureScreen {
     }
 
     fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
         let area = frame.area();
 
         // Calculate vertical centering
@@ -154,9 +161,9 @@ impl Screen for SessionFailureScreen {
         let session_result = self.session_result.read().unwrap();
         let total_stages = *self.total_stages.read().unwrap();
 
-        HeaderView::render(frame, chunks[1]);
-        ContentView::render(frame, chunks[3], &session_result, total_stages);
-        FooterView::render(frame, chunks[5]);
+        HeaderView::render(frame, chunks[1], &colors);
+        ContentView::render(frame, chunks[3], &session_result, total_stages, &colors);
+        FooterView::render(frame, chunks[5], &colors);
 
         Ok(())
     }

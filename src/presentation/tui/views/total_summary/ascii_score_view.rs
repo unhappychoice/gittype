@@ -1,4 +1,4 @@
-use crate::presentation::game::ascii_digits::get_digit_patterns;
+use crate::domain::models::ui::ascii_digits::get_digit_patterns;
 use crate::presentation::ui::Colors;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
@@ -11,7 +11,7 @@ use ratatui::{
 pub struct AsciiScoreView;
 
 impl AsciiScoreView {
-    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect, score: f64) {
+    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect, score: f64, colors: &Colors) {
         let score_value = format!("{:.0}", score);
         let ascii_numbers = Self::create_ascii_numbers(&score_value);
 
@@ -29,7 +29,7 @@ impl AsciiScoreView {
             let widget = Paragraph::new(Line::from(vec![Span::styled(
                 line.as_str(),
                 Style::default()
-                    .fg(Colors::score())
+                    .fg(colors.score())
                     .add_modifier(Modifier::BOLD),
             )]))
             .alignment(Alignment::Center);

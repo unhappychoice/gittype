@@ -1,5 +1,4 @@
 use crate::domain::models::Language;
-use crate::presentation::ui::Colors;
 use std::hash::Hash;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -12,11 +11,6 @@ impl Language for Go {
     fn extensions(&self) -> Vec<&'static str> {
         vec!["go"]
     }
-
-    fn color(&self) -> ratatui::style::Color {
-        Colors::lang_go()
-    }
-
     fn display_name(&self) -> &'static str {
         "Go"
     }

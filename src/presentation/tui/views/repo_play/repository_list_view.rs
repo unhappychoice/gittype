@@ -17,6 +17,7 @@ impl RepositoryListView {
         area: Rect,
         repositories: &[(StoredRepositoryWithLanguages, bool)],
         list_state: &mut ListState,
+        colors: &Colors,
     ) {
         let items: Vec<ListItem> = repositories
             .iter()
@@ -24,15 +25,15 @@ impl RepositoryListView {
                 let repo_name = format!("{}/{}", repo.user_name, repo.repository_name);
                 let cache_indicator = if *is_cached { "●" } else { "○" };
                 let cache_color = if *is_cached {
-                    Colors::success()
+                    colors.success()
                 } else {
-                    Colors::text_secondary()
+                    colors.text_secondary()
                 };
 
                 let language_spans = if repo.languages.is_empty() {
                     vec![Span::styled(
                         "No challenges",
-                        Style::default().fg(Colors::text_secondary()),
+                        Style::default().fg(colors.text_secondary()),
                     )]
                 } else {
                     let mut spans = Vec::new();
@@ -40,12 +41,12 @@ impl RepositoryListView {
                         if i > 0 {
                             spans.push(Span::styled(
                                 ", ",
-                                Style::default().fg(Colors::text_secondary()),
+                                Style::default().fg(colors.text_secondary()),
                             ));
                         }
                         spans.push(Span::styled(
                             Languages::get_display_name(Some(lang)),
-                            Style::default().fg(Languages::get_color(Some(lang))),
+                            Style::default().fg(colors.info()),
                         ));
                     }
                     spans
@@ -58,7 +59,7 @@ impl RepositoryListView {
                     Span::styled(
                         format!("{:<32}", repo_name),
                         Style::default()
-                            .fg(Colors::text())
+                            .fg(colors.text())
                             .add_modifier(Modifier::BOLD),
                     ),
                     Span::raw(" "),
@@ -73,19 +74,19 @@ impl RepositoryListView {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border()))
+                    .border_style(Style::default().fg(colors.border()))
                     .title("Played Repositories")
                     .title_style(
                         Style::default()
-                            .fg(Colors::text())
+                            .fg(colors.text())
                             .add_modifier(Modifier::BOLD),
                     )
                     .padding(Padding::uniform(1)),
             )
-            .style(Style::default().fg(Colors::text()))
+            .style(Style::default().fg(colors.text()))
             .highlight_style(
                 Style::default()
-                    .bg(Colors::background_secondary())
+                    .bg(colors.background_secondary())
                     .add_modifier(Modifier::BOLD),
             );
         frame.render_stateful_widget(list, area, list_state);

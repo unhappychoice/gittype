@@ -1,5 +1,5 @@
 use crate::domain::models::RankTier;
-use crate::presentation::game::rank_messages::get_colored_messages_for_rank;
+use crate::domain::models::ui::rank_messages::get_colored_messages_for_rank;
 use ratatui::style::Color;
 use std::time::{Duration, Instant};
 

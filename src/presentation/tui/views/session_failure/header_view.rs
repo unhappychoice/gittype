@@ -10,11 +10,11 @@ use ratatui::{
 pub struct HeaderView;
 
 impl HeaderView {
-    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect) {
+    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect, colors: &Colors) {
         let header = Paragraph::new(Line::from(vec![Span::styled(
             "=== SESSION FAILED ===",
             Style::default()
-                .fg(Colors::error())
+                .fg(colors.error())
                 .add_modifier(Modifier::BOLD),
         )]))
         .alignment(Alignment::Center);

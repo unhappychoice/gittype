@@ -1,7 +1,10 @@
 use crate::integration::screens::helpers::EmptyMockProvider;
 use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
-use gittype::presentation::game::events::NavigateTo;
+use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
+use gittype::domain::models::theme::Theme;
+use gittype::domain::models::color_mode::ColorMode;
+use gittype::domain::events::presentation_events::NavigateTo;
 use gittype::presentation::tui::screens::panic_screen::PanicScreen;
 use std::sync::Arc;
 
@@ -11,6 +14,7 @@ screen_snapshot_test!(
     PanicScreen::with_error_message(
         "Test panic message".to_string(),
         Arc::new(EventBus::new()),
+        Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>,
         Some("SystemTime { tv_sec: 1700000000, tv_nsec: 0 }".to_string())
     )
 );
@@ -39,7 +43,8 @@ fn test_panic_screen_other_keys_ignored() {
         events_clone.lock().unwrap().push(event.clone());
     });
 
-    let screen = PanicScreen::new(event_bus);
+    let theme_service = Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>;
+    let screen = PanicScreen::new(event_bus, theme_service);
     let data = EmptyMockProvider.provide().unwrap();
     let _ = screen.init_with_data(data);
 
@@ -71,7 +76,7 @@ fn test_panic_screen_other_keys_ignored() {
 screen_basic_methods_test!(
     test_panic_screen_basic_methods,
     PanicScreen,
-    PanicScreen::new(Arc::new(EventBus::new())),
+    PanicScreen::new(Arc::new(EventBus::new()), Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>),
     gittype::presentation::tui::ScreenType::Panic,
     false
 );

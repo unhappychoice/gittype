@@ -1,6 +1,6 @@
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::{Rank, SessionResult};
-use crate::presentation::game::events::NavigateTo;
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::game::{GameData, SessionManager};
 use crate::presentation::tui::views::{
     OptionsView, RankView, ScoreView, SessionSummaryHeaderView, SummaryView,
@@ -72,16 +72,22 @@ pub struct SessionSummaryScreen {
     session_manager: RwLock<Option<Arc<Mutex<SessionManager>>>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
 }
 
 impl SessionSummaryScreen {
-    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    ) -> Self {
         Self {
             action_result: RwLock::new(None),
             session_result: RwLock::new(None),
             git_repository: RwLock::new(None),
             session_manager: RwLock::new(None),
             event_bus,
+            theme_service,
         }
     }
 
@@ -101,7 +107,13 @@ impl shaku::Provider<crate::presentation::di::AppModule> for SessionSummaryScree
         use shaku::HasComponent;
         let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
             module.resolve();
-        Ok(Box::new(SessionSummaryScreen::new(event_bus)))
+        let theme_service: std::sync::Arc<
+            dyn crate::domain::services::theme_service::ThemeServiceInterface,
+        > = module.resolve();
+        Ok(Box::new(SessionSummaryScreen::new(
+            event_bus,
+            theme_service,
+        )))
     }
 }
 
@@ -178,6 +190,7 @@ impl Screen for SessionSummaryScreen {
     }
 
     fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
         let session_result = self.session_result.read().unwrap();
         if let Some(ref session_result) = *session_result {
             let area = frame.area();
@@ -198,7 +211,7 @@ impl Screen for SessionSummaryScreen {
 
             // Get actual rank ASCII height
             let rank_patterns =
-                crate::presentation::game::ascii_rank_titles::get_all_rank_patterns();
+                crate::domain::models::ui::ascii_rank_titles::get_all_rank_patterns();
             let rank_lines = rank_patterns.get(best_rank.name());
             let rank_ascii_height = rank_lines.map(|l| l.len()).unwrap_or(0);
 
@@ -246,17 +259,23 @@ impl Screen for SessionSummaryScreen {
                 ])
                 .split(area);
 
-            SessionSummaryHeaderView::render(frame, chunks[1]);
-            RankView::render(frame, chunks[2], &best_rank, session_result.session_score);
+            SessionSummaryHeaderView::render(frame, chunks[1], &colors);
+            RankView::render(
+                frame,
+                chunks[2],
+                &best_rank,
+                session_result.session_score,
+            );
             ScoreView::render(
                 frame,
                 chunks[4],
                 session_result,
                 &best_rank,
                 best_status.as_ref(),
+                &colors,
             );
-            SummaryView::render(frame, chunks[6], session_result);
-            OptionsView::render(frame, chunks[8]);
+            SummaryView::render(frame, chunks[6], session_result, &colors);
+            OptionsView::render(frame, chunks[8], &colors);
         }
         Ok(())
     }

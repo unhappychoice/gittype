@@ -1,166 +1,108 @@
 use crate::domain::models::color_scheme::ColorScheme;
-use crate::domain::services::theme_service::ThemeService;
 use ratatui::style::Color;
 
 /// UI color scheme for gittype application
-pub struct Colors;
+pub struct Colors {
+    pub color_scheme: ColorScheme,
+}
 
 impl Colors {
-    /// Get the current color scheme
-    fn get_color_scheme() -> ColorScheme {
-        ThemeService::get_current_color_scheme()
+    /// Create Colors from ColorScheme
+    pub fn new(color_scheme: ColorScheme) -> Self {
+        Self { color_scheme }
     }
 
     // Primary colors for main UI elements
-    pub fn border() -> Color {
-        Self::get_color_scheme().border.into()
+    pub fn border(&self) -> Color {
+        self.color_scheme.border.clone().into()
     }
-    pub fn title() -> Color {
-        Self::get_color_scheme().title.into()
+    pub fn title(&self) -> Color {
+        self.color_scheme.title.clone().into()
     }
-    pub fn text() -> Color {
-        Self::get_color_scheme().text.into()
+    pub fn text(&self) -> Color {
+        self.color_scheme.text.clone().into()
     }
-    pub fn text_secondary() -> Color {
-        Self::get_color_scheme().text_secondary.into()
+    pub fn text_secondary(&self) -> Color {
+        self.color_scheme.text_secondary.clone().into()
     }
-    pub fn background() -> Color {
-        Self::get_color_scheme().background.into()
+    pub fn background(&self) -> Color {
+        self.color_scheme.background.clone().into()
     }
-    pub fn background_secondary() -> Color {
-        Self::get_color_scheme().background_secondary.into()
+    pub fn background_secondary(&self) -> Color {
+        self.color_scheme.background_secondary.clone().into()
     }
 
     // Status and feedback colors
-    pub fn success() -> Color {
-        Self::get_color_scheme().status_success.into()
+    pub fn success(&self) -> Color {
+        self.color_scheme.status_success.clone().into()
     }
-    pub fn info() -> Color {
-        Self::get_color_scheme().status_info.into()
+    pub fn info(&self) -> Color {
+        self.color_scheme.status_info.clone().into()
     }
-    pub fn error() -> Color {
-        Self::get_color_scheme().status_error.into()
+    pub fn error(&self) -> Color {
+        self.color_scheme.status_error.clone().into()
     }
-    pub fn warning() -> Color {
-        Self::get_color_scheme().status_warning.into()
+    pub fn warning(&self) -> Color {
+        self.color_scheme.status_warning.clone().into()
     }
 
     // Specific UI element colors
-    pub fn key_action() -> Color {
-        Self::get_color_scheme().key_action.into()
+    pub fn key_action(&self) -> Color {
+        self.color_scheme.key_action.clone().into()
     }
-    pub fn key_navigation() -> Color {
-        Self::get_color_scheme().key_navigation.into()
+    pub fn key_navigation(&self) -> Color {
+        self.color_scheme.key_navigation.clone().into()
     }
-    pub fn key_back() -> Color {
-        Self::get_color_scheme().key_back.into()
+    pub fn key_back(&self) -> Color {
+        self.color_scheme.key_back.clone().into()
     }
 
     // Metrics and performance colors
-    pub fn score() -> Color {
-        Self::get_color_scheme().metrics_score.into()
+    pub fn score(&self) -> Color {
+        self.color_scheme.metrics_score.clone().into()
     }
-    pub fn cpm_wpm() -> Color {
-        Self::get_color_scheme().metrics_cpm_wpm.into()
+    pub fn cpm_wpm(&self) -> Color {
+        self.color_scheme.metrics_cpm_wpm.clone().into()
     }
-    pub fn accuracy() -> Color {
-        Self::get_color_scheme().metrics_accuracy.into()
+    pub fn accuracy(&self) -> Color {
+        self.color_scheme.metrics_accuracy.clone().into()
     }
-    pub fn duration() -> Color {
-        Self::get_color_scheme().metrics_duration.into()
+    pub fn duration(&self) -> Color {
+        self.color_scheme.metrics_duration.clone().into()
     }
-    pub fn stage_info() -> Color {
-        Self::get_color_scheme().metrics_stage_info.into()
+    pub fn stage_info(&self) -> Color {
+        self.color_scheme.metrics_stage_info.clone().into()
     }
 
     // Typing interface colors
-    pub fn typed_text() -> Color {
-        Self::get_color_scheme().typing_typed_text.into()
+    pub fn typed_text(&self) -> Color {
+        self.color_scheme.typing_typed_text.clone().into()
     }
-    pub fn current_cursor() -> Color {
-        Self::get_color_scheme().typing_cursor_fg.into()
+    pub fn current_cursor(&self) -> Color {
+        self.color_scheme.typing_cursor_fg.clone().into()
     }
-    pub fn cursor_bg() -> Color {
-        Self::get_color_scheme().typing_cursor_bg.into()
+    pub fn cursor_bg(&self) -> Color {
+        self.color_scheme.typing_cursor_bg.clone().into()
     }
-    pub fn mistake_bg() -> Color {
-        Self::get_color_scheme().typing_mistake_bg.into()
+    pub fn mistake_bg(&self) -> Color {
+        self.color_scheme.typing_mistake_bg.clone().into()
     }
-    pub fn untyped_text() -> Color {
-        Self::get_color_scheme().typing_untyped_text.into()
+    pub fn untyped_text(&self) -> Color {
+        self.color_scheme.typing_untyped_text.clone().into()
     }
 
     // Countdown colors - using status colors in sequence
-    pub fn countdown_3() -> Color {
-        Self::success()
+    pub fn countdown_3(&self) -> Color {
+        self.success()
     }
-    pub fn countdown_2() -> Color {
-        Self::info()
+    pub fn countdown_2(&self) -> Color {
+        self.info()
     }
-    pub fn countdown_1() -> Color {
-        Self::warning()
+    pub fn countdown_1(&self) -> Color {
+        self.warning()
     }
-    pub fn countdown_go() -> Color {
-        Self::error()
-    }
-
-    // Programming language colors
-    pub fn lang_rust() -> Color {
-        Self::get_color_scheme().lang_rust.into()
-    }
-    pub fn lang_python() -> Color {
-        Self::get_color_scheme().lang_python.into()
-    }
-    pub fn lang_javascript() -> Color {
-        Self::get_color_scheme().lang_javascript.into()
-    }
-    pub fn lang_typescript() -> Color {
-        Self::get_color_scheme().lang_typescript.into()
-    }
-    pub fn lang_go() -> Color {
-        Self::get_color_scheme().lang_go.into()
-    }
-    pub fn lang_java() -> Color {
-        Self::get_color_scheme().lang_java.into()
-    }
-    pub fn lang_c() -> Color {
-        Self::get_color_scheme().lang_c.into()
-    }
-    pub fn lang_cpp() -> Color {
-        Self::get_color_scheme().lang_cpp.into()
-    }
-    pub fn lang_clojure() -> Color {
-        Self::get_color_scheme().lang_clojure.into()
-    }
-    pub fn lang_csharp() -> Color {
-        Self::get_color_scheme().lang_csharp.into()
-    }
-    pub fn lang_php() -> Color {
-        Self::get_color_scheme().lang_php.into()
-    }
-    pub fn lang_ruby() -> Color {
-        Self::get_color_scheme().lang_ruby.into()
-    }
-    pub fn lang_swift() -> Color {
-        Self::get_color_scheme().lang_swift.into()
-    }
-    pub fn lang_kotlin() -> Color {
-        Self::get_color_scheme().lang_kotlin.into()
-    }
-    pub fn lang_scala() -> Color {
-        Self::get_color_scheme().lang_scala.into()
-    }
-    pub fn lang_haskell() -> Color {
-        Self::get_color_scheme().lang_haskell.into()
-    }
-    pub fn lang_dart() -> Color {
-        Self::get_color_scheme().lang_dart.into()
-    }
-    pub fn lang_zig() -> Color {
-        Self::get_color_scheme().lang_zig.into()
-    }
-    pub fn lang_default() -> Color {
-        Self::get_color_scheme().lang_default.into()
+    pub fn countdown_go(&self) -> Color {
+        self.error()
     }
 
     // Rank tier colors (from rank_colors.rs)
@@ -178,6 +120,30 @@ impl Colors {
     }
     pub fn tier_legendary() -> Color {
         Color::Rgb(215, 95, 95) // #d75f5f - red
+    }
+
+    // Default colors for static contexts (e.g., rank messages)
+    // These use the default theme colors
+    pub fn default_text() -> Color {
+        Color::Rgb(200, 200, 200) // Light gray for text
+    }
+    pub fn default_success() -> Color {
+        Color::Rgb(80, 250, 123) // Green for success
+    }
+    pub fn default_info() -> Color {
+        Color::Rgb(139, 233, 253) // Cyan for info
+    }
+    pub fn default_error() -> Color {
+        Color::Rgb(255, 85, 85) // Red for error
+    }
+    pub fn default_warning() -> Color {
+        Color::Rgb(241, 250, 140) // Yellow for warning
+    }
+    pub fn default_score() -> Color {
+        Color::Rgb(255, 184, 108) // Orange for score
+    }
+    pub fn default_border() -> Color {
+        Color::Rgb(98, 114, 164) // Purple-ish for border
     }
 }
 

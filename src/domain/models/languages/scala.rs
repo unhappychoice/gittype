@@ -1,5 +1,4 @@
 use crate::domain::models::Language;
-use crate::presentation::ui::Colors;
 use std::hash::Hash;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -15,11 +14,6 @@ impl Language for Scala {
     fn aliases(&self) -> Vec<&'static str> {
         vec!["sc"]
     }
-
-    fn color(&self) -> ratatui::style::Color {
-        Colors::lang_scala()
-    }
-
     fn display_name(&self) -> &'static str {
         "Scala"
     }

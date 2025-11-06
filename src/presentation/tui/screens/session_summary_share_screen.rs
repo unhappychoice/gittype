@@ -1,6 +1,6 @@
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::SessionResult;
-use crate::presentation::game::events::NavigateTo;
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::game::{GameData, SessionManager};
 use crate::presentation::sharing::{SharingPlatform, SharingService};
 use crate::presentation::tui::views::{
@@ -61,14 +61,20 @@ pub struct SessionSummaryShareScreen {
     git_repository: RwLock<Option<GitRepository>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
 }
 
 impl SessionSummaryShareScreen {
-    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    ) -> Self {
         Self {
             session_result: RwLock::new(None),
             git_repository: RwLock::new(None),
             event_bus,
+            theme_service,
         }
     }
 }
@@ -84,7 +90,12 @@ impl shaku::Provider<crate::presentation::di::AppModule> for SessionSummaryShare
         use shaku::HasComponent;
         let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
             module.resolve();
-        Ok(Box::new(SessionSummaryShareScreen::new(event_bus)))
+        let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> =
+            module.resolve();
+        Ok(Box::new(SessionSummaryShareScreen::new(
+            event_bus,
+            theme_service,
+        )))
     }
 }
 
@@ -180,6 +191,7 @@ impl Screen for SessionSummaryShareScreen {
     }
 
     fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
         let session_result = self.session_result.read().unwrap();
         let git_repository = self.git_repository.read().unwrap();
         if let Some(ref session_result) = *session_result {
@@ -203,10 +215,10 @@ impl Screen for SessionSummaryShareScreen {
                 ])
                 .split(area);
 
-            ShareTitleView::render(frame, chunks[1]);
-            SharePreviewView::render(frame, chunks[3], session_result, &git_repository);
-            SharePlatformOptionsView::render(frame, chunks[5]);
-            ShareBackOptionView::render(frame, chunks[7]);
+            ShareTitleView::render(frame, chunks[1], &colors);
+            SharePreviewView::render(frame, chunks[3], session_result, &git_repository, &colors);
+            SharePlatformOptionsView::render(frame, chunks[5], &colors);
+            ShareBackOptionView::render(frame, chunks[7], &colors);
         }
         Ok(())
     }

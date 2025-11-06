@@ -18,6 +18,7 @@ impl StaticElementsView {
         subtitle_area: ratatui::layout::Rect,
         instructions_area: ratatui::layout::Rect,
         git_repository: Option<&GitRepository>,
+        colors: &Colors,
     ) {
         // Render logo
         let logo_lines = logo::get_logo_lines();
@@ -35,7 +36,7 @@ impl StaticElementsView {
         // Render subtitle
         let subtitle = Paragraph::new(Line::from(vec![Span::styled(
             "Code Typing Challenge",
-            Style::default().fg(Colors::text_secondary()),
+            Style::default().fg(colors.text_secondary()),
         )]))
         .alignment(Alignment::Center);
         frame.render_widget(subtitle, subtitle_area);
@@ -52,8 +53,8 @@ impl StaticElementsView {
 
         // Tier 1: Change Difficulty
         let tier1 = Line::from(vec![
-            Span::styled("[←→/HL]", Style::default().fg(Colors::key_navigation())),
-            Span::styled(" Change Difficulty", Style::default().fg(Colors::text())),
+            Span::styled("[←→/HL]", Style::default().fg(colors.key_navigation())),
+            Span::styled(" Change Difficulty", Style::default().fg(colors.text())),
         ]);
         frame.render_widget(
             Paragraph::new(tier1).alignment(Alignment::Center),
@@ -62,14 +63,14 @@ impl StaticElementsView {
 
         // Tier 2: Secondary actions
         let tier2 = Line::from(vec![
-            Span::styled("[R]", Style::default().fg(Colors::info())),
-            Span::styled(" Records  ", Style::default().fg(Colors::text())),
-            Span::styled("[A]", Style::default().fg(Colors::info())),
-            Span::styled(" Analytics  ", Style::default().fg(Colors::text())),
-            Span::styled("[S]", Style::default().fg(Colors::info())),
-            Span::styled(" Settings  ", Style::default().fg(Colors::text())),
-            Span::styled("[I/?]", Style::default().fg(Colors::info())),
-            Span::styled(" Help", Style::default().fg(Colors::text())),
+            Span::styled("[R]", Style::default().fg(colors.info())),
+            Span::styled(" Records  ", Style::default().fg(colors.text())),
+            Span::styled("[A]", Style::default().fg(colors.info())),
+            Span::styled(" Analytics  ", Style::default().fg(colors.text())),
+            Span::styled("[S]", Style::default().fg(colors.info())),
+            Span::styled(" Settings  ", Style::default().fg(colors.text())),
+            Span::styled("[I/?]", Style::default().fg(colors.info())),
+            Span::styled(" Help", Style::default().fg(colors.text())),
         ]);
         frame.render_widget(
             Paragraph::new(tier2).alignment(Alignment::Center),
@@ -78,10 +79,10 @@ impl StaticElementsView {
 
         // Tier 3: Primary actions
         let tier3 = Line::from(vec![
-            Span::styled("[SPACE]", Style::default().fg(Colors::success())),
-            Span::styled(" Start  ", Style::default().fg(Colors::text())),
-            Span::styled("[ESC]", Style::default().fg(Colors::error())),
-            Span::styled(" Quit", Style::default().fg(Colors::text())),
+            Span::styled("[SPACE]", Style::default().fg(colors.success())),
+            Span::styled(" Start  ", Style::default().fg(colors.text())),
+            Span::styled("[ESC]", Style::default().fg(colors.error())),
+            Span::styled(" Quit", Style::default().fg(colors.text())),
         ]);
         frame.render_widget(
             Paragraph::new(tier3).alignment(Alignment::Center),
@@ -89,6 +90,6 @@ impl StaticElementsView {
         );
 
         // Render git repository info
-        GitRepositoryView::render(frame, git_repository);
+        GitRepositoryView::render(frame, git_repository, colors);
     }
 }

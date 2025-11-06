@@ -1,21 +1,10 @@
+use crate::domain::models::typing::CodeContext;
 use crate::domain::models::Challenge;
 use crate::infrastructure::storage::file_storage::FileStorage;
 use crate::infrastructure::storage::file_storage::FileStorageInterface;
 use crate::presentation::game::GameData;
 use crate::Result;
 use std::path::{Path, PathBuf};
-
-#[derive(Debug, Clone, Default)]
-pub struct CodeContext {
-    pub pre_context: Vec<String>,
-    pub post_context: Vec<String>,
-}
-
-impl CodeContext {
-    pub fn empty() -> Self {
-        Self::default()
-    }
-}
 
 pub fn load_context_for_challenge(
     challenge: &Challenge,

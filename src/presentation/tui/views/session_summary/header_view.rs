@@ -10,7 +10,7 @@ use ratatui::{
 pub struct HeaderView;
 
 impl HeaderView {
-    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect) {
+    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect, colors: &Colors) {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -23,7 +23,7 @@ impl HeaderView {
         let session_title = Paragraph::new(Line::from(vec![Span::styled(
             "=== SESSION COMPLETE ===",
             Style::default()
-                .fg(Colors::info())
+                .fg(colors.info())
                 .add_modifier(Modifier::BOLD),
         )]))
         .alignment(Alignment::Center);
@@ -32,7 +32,7 @@ impl HeaderView {
         let youre_label = Paragraph::new(Line::from(vec![Span::styled(
             "YOU'RE:",
             Style::default()
-                .fg(Colors::info())
+                .fg(colors.info())
                 .add_modifier(Modifier::BOLD),
         )]))
         .alignment(Alignment::Center);

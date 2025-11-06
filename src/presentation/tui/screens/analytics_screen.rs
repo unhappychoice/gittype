@@ -3,7 +3,7 @@ use crate::domain::repositories::SessionRepository;
 use crate::domain::services::analytics_service::{AnalyticsData, AnalyticsService};
 use crate::infrastructure::database::daos::{RepositoryDao, RepositoryDaoInterface};
 use crate::infrastructure::database::database::{Database, DatabaseInterface};
-use crate::presentation::game::events::NavigateTo;
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::tui::views::analytics::{
     LanguagesView, OverviewView, RepositoriesView, TrendsView,
 };
@@ -85,6 +85,8 @@ pub struct AnalyticsScreen {
     action_result: RwLock<Option<AnalyticsAction>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
 }
 
 pub struct AnalyticsScreenDataProvider {}
@@ -105,7 +107,10 @@ impl ScreenDataProvider for AnalyticsScreenDataProvider {
 }
 
 impl AnalyticsScreen {
-    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    ) -> Self {
         let mut repository_list_state = ListState::default();
         repository_list_state.select(Some(0));
         let mut language_list_state = ListState::default();
@@ -120,6 +125,7 @@ impl AnalyticsScreen {
             language_scroll_state: RwLock::new(ScrollbarState::default()),
             action_result: RwLock::new(None),
             event_bus,
+            theme_service,
         }
     }
 
@@ -207,13 +213,13 @@ impl AnalyticsScreen {
         self.action_result.read().unwrap().clone()
     }
 
-    fn render_header(&self, f: &mut Frame, area: Rect) {
+    fn render_header(&self, f: &mut Frame, area: Rect, colors: &Colors) {
         let header = Paragraph::new(vec![Line::from(vec![
             Span::raw("  "),
             Span::styled(
                 "Performance Analytics",
                 Style::default()
-                    .fg(Colors::info())
+                    .fg(colors.info())
                     .add_modifier(Modifier::BOLD),
             ),
         ])])
@@ -221,13 +227,13 @@ impl AnalyticsScreen {
         .block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Colors::border()))
+                .border_style(Style::default().fg(colors.border()))
                 .title("GitType Analytics"),
         );
         f.render_widget(header, area);
     }
 
-    fn render_view_tabs(&self, f: &mut Frame, area: Rect) {
+    fn render_view_tabs(&self, f: &mut Frame, area: Rect, colors: &Colors) {
         let all_views = [
             ViewMode::Overview,
             ViewMode::Trends,
@@ -241,15 +247,15 @@ impl AnalyticsScreen {
         let view_mode = *self.view_mode.read().unwrap();
         for (i, view) in all_views.iter().enumerate() {
             if i > 0 {
-                tab_spans.push(Span::styled(" | ", Style::default().fg(Colors::text())));
+                tab_spans.push(Span::styled(" | ", Style::default().fg(colors.text())));
             }
 
             let style = if *view == view_mode {
                 Style::default()
-                    .fg(Colors::text())
+                    .fg(colors.text())
                     .add_modifier(Modifier::BOLD)
             } else {
-                Style::default().fg(Colors::text_secondary())
+                Style::default().fg(colors.text_secondary())
             };
 
             tab_spans.push(Span::styled(view.display_name(), style));
@@ -260,20 +266,20 @@ impl AnalyticsScreen {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border()))
+                    .border_style(Style::default().fg(colors.border()))
                     .title("Views"),
             );
 
         f.render_widget(tabs, area);
     }
 
-    fn render_content_with_state(&self, f: &mut Frame, area: Rect) {
+    fn render_content_with_state(&self, f: &mut Frame, area: Rect, colors: &Colors) {
         let data = self.data.read().unwrap();
         if let Some(data) = &*data {
             let view_mode = *self.view_mode.read().unwrap();
             match view_mode {
-                ViewMode::Overview => OverviewView::render(f, area, data),
-                ViewMode::Trends => TrendsView::render(f, area, data),
+                ViewMode::Overview => OverviewView::render(f, area, data, colors),
+                ViewMode::Trends => TrendsView::render(f, area, data, colors),
                 ViewMode::Repositories => {
                     let mut repo_list = self.repository_list_state.write().unwrap();
                     let mut repo_scroll = self.repository_scroll_state.write().unwrap();
@@ -283,6 +289,7 @@ impl AnalyticsScreen {
                         data,
                         &mut repo_list,
                         &mut repo_scroll,
+                        colors,
                     )
                 }
                 ViewMode::Languages => {
@@ -294,6 +301,7 @@ impl AnalyticsScreen {
                         data,
                         &mut lang_list,
                         &mut lang_scroll,
+                        colors,
                     )
                 }
             }
@@ -305,16 +313,16 @@ impl AnalyticsScreen {
         }
     }
 
-    fn render_controls(&self, f: &mut Frame, area: Rect) {
+    fn render_controls(&self, f: &mut Frame, area: Rect, colors: &Colors) {
         let controls_line = Line::from(vec![
-            Span::styled("[←→/HL]", Style::default().fg(Colors::key_navigation())),
-            Span::styled(" Switch View  ", Style::default().fg(Colors::text())),
-            Span::styled("[↑↓/JK]", Style::default().fg(Colors::key_navigation())),
-            Span::styled(" Navigate  ", Style::default().fg(Colors::text())),
-            Span::styled("[R]", Style::default().fg(Colors::score())),
-            Span::styled(" Refresh  ", Style::default().fg(Colors::text())),
-            Span::styled("[ESC]", Style::default().fg(Colors::error())),
-            Span::styled(" Back", Style::default().fg(Colors::text())),
+            Span::styled("[←→/HL]", Style::default().fg(colors.key_navigation())),
+            Span::styled(" Switch View  ", Style::default().fg(colors.text())),
+            Span::styled("[↑↓/JK]", Style::default().fg(colors.key_navigation())),
+            Span::styled(" Navigate  ", Style::default().fg(colors.text())),
+            Span::styled("[R]", Style::default().fg(colors.score())),
+            Span::styled(" Refresh  ", Style::default().fg(colors.text())),
+            Span::styled("[ESC]", Style::default().fg(colors.error())),
+            Span::styled(" Back", Style::default().fg(colors.text())),
         ]);
 
         let controls = Paragraph::new(controls_line).alignment(Alignment::Center);
@@ -333,7 +341,10 @@ impl shaku::Provider<crate::presentation::di::AppModule> for AnalyticsScreenProv
         use shaku::HasComponent;
         let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
             module.resolve();
-        Ok(Box::new(AnalyticsScreen::new(event_bus)))
+        let theme_service: std::sync::Arc<
+            dyn crate::domain::services::theme_service::ThemeServiceInterface,
+        > = module.resolve();
+        Ok(Box::new(AnalyticsScreen::new(event_bus, theme_service)))
     }
 }
 
@@ -415,6 +426,8 @@ impl Screen for AnalyticsScreen {
     }
 
     fn render_ratatui(&self, frame: &mut ratatui::Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
+
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -425,10 +438,10 @@ impl Screen for AnalyticsScreen {
             ])
             .split(frame.area());
 
-        self.render_header(frame, chunks[0]);
-        self.render_view_tabs(frame, chunks[1]);
-        self.render_content_with_state(frame, chunks[2]);
-        self.render_controls(frame, chunks[3]);
+        self.render_header(frame, chunks[0], &colors);
+        self.render_view_tabs(frame, chunks[1], &colors);
+        self.render_content_with_state(frame, chunks[2], &colors);
+        self.render_controls(frame, chunks[3], &colors);
 
         Ok(())
     }

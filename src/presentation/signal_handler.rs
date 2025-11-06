@@ -1,6 +1,6 @@
 use crate::domain::events::EventBus;
 use crate::infrastructure::logging::{log_error_to_file, log_panic_to_file};
-use crate::presentation::game::events::ExitRequested;
+use crate::domain::events::presentation_events::ExitRequested;
 use crate::presentation::tui::screens::PanicScreen;
 use crate::presentation::tui::{Screen, ScreenManagerImpl};
 use crate::GitTypeError;
@@ -114,8 +114,17 @@ fn show_panic_screen(
         .ok()
         .map(|mgr| mgr.get_event_bus())
         .unwrap_or_else(|| Arc::new(EventBus::default()));
+
+    // Get theme_service from DI container
+    use crate::domain::services::theme_service::ThemeServiceInterface;
+    use crate::presentation::di::AppModule;
+    use shaku::HasComponent;
+
+    let container = AppModule::builder().build();
+    let theme_service: Arc<dyn ThemeServiceInterface> = container.resolve();
+
     let mut panic_screen =
-        PanicScreen::with_error_message(error_message.to_string(), event_bus, None);
+        PanicScreen::with_error_message(error_message.to_string(), event_bus, theme_service, None);
 
     let result = panic_screen_loop_ratatui(&mut terminal, &mut panic_screen, error_message);
 

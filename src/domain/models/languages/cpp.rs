@@ -1,5 +1,4 @@
 use crate::domain::models::Language;
-use crate::presentation::ui::Colors;
 use std::hash::Hash;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -15,11 +14,6 @@ impl Language for Cpp {
     fn aliases(&self) -> Vec<&'static str> {
         vec!["c++"]
     }
-
-    fn color(&self) -> ratatui::style::Color {
-        Colors::lang_cpp()
-    }
-
     fn display_name(&self) -> &'static str {
         "C++"
     }

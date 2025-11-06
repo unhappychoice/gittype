@@ -2,11 +2,12 @@ use crate::domain::events::EventBusInterface;
 use crate::domain::models::ExtractionOptions;
 use crate::domain::models::{Challenge, GitRepository};
 use crate::domain::repositories::challenge_repository::ChallengeRepositoryInterface;
-use crate::presentation::game::events::ExitRequested;
+use crate::domain::events::presentation_events::ExitRequested;
 use crate::presentation::game::models::{ExecutionContext, StepManager, StepType};
 use crate::presentation::game::GameData;
 use crate::presentation::tui::views::LoadingMainView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::ui::Colors;
 use crate::{GitTypeError, Result};
 use ratatui::Frame;
 use std::path::PathBuf;
@@ -118,6 +119,8 @@ pub struct LoadingScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
+    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    #[shaku(inject)]
     challenge_repository: Arc<dyn ChallengeRepositoryInterface>,
     #[shaku(default)]
     game_data: GameDataRef,
@@ -129,6 +132,7 @@ impl LoadingScreen {
         challenge_repository: Arc<
             dyn crate::domain::repositories::challenge_repository::ChallengeRepositoryInterface,
         >,
+        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
     ) -> Self {
         use crate::presentation::game::game_data::GameData;
         use std::sync::RwLock;
@@ -138,6 +142,7 @@ impl LoadingScreen {
             render_handle: RwLock::new(None),
             event_bus,
             challenge_repository,
+            theme_service,
             game_data: GameDataRef(GameData::instance()),
         }
     }
@@ -204,6 +209,7 @@ impl LoadingScreen {
         let event_bus = self.event_bus.clone();
         let challenge_repository = self.challenge_repository.clone();
         let game_data = self.game_data.0.clone();
+        let theme_service = self.theme_service.clone();
 
         thread::spawn(move || {
             let loading_screen = LoadingScreen {
@@ -212,6 +218,7 @@ impl LoadingScreen {
                 event_bus: event_bus.clone(),
                 challenge_repository,
                 game_data: GameDataRef(game_data),
+                theme_service,
             };
 
             match loading_screen.process_repository(
@@ -340,8 +347,8 @@ impl LoadingScreen {
         }
     }
 
-    fn draw_ui_static(frame: &mut Frame, state: &LoadingScreenState) {
-        LoadingMainView::render(frame, state);
+    fn draw_ui_static(frame: &mut Frame, state: &LoadingScreenState, colors: &Colors) {
+        LoadingMainView::render(frame, state, colors);
     }
 
     pub fn cleanup(&self) -> Result<()> {
@@ -453,8 +460,9 @@ impl Screen for LoadingScreen {
     }
 
     fn render_ratatui(&self, frame: &mut ratatui::Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
         let state = self.state.read().unwrap();
-        Self::draw_ui_static(frame, &state);
+        Self::draw_ui_static(frame, &state, &colors);
         Ok(())
     }
 

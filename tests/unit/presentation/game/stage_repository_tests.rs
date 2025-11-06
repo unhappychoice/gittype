@@ -1,5 +1,6 @@
 use gittype::domain::models::{DifficultyLevel, GitRepository};
-use gittype::presentation::game::stage_repository::{GameMode, StageConfig, StageRepository};
+use gittype::domain::models::{GameMode, StageConfig};
+use gittype::presentation::game::stage_repository::StageRepository;
 use gittype::presentation::game::GameData;
 use std::sync::{Arc, Mutex};
 

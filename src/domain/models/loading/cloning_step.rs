@@ -23,13 +23,13 @@ impl Step for CloningStep {
         "Cloning repository"
     }
 
-    fn icon(&self, is_current: bool, is_completed: bool) -> (&str, Color) {
+    fn icon(&self, is_current: bool, is_completed: bool, colors: &Colors) -> (&str, Color) {
         if is_completed {
-            ("✓", Colors::success())
+            ("✓", colors.success())
         } else if is_current {
-            ("⚡", Colors::warning())
+            ("⚡", colors.warning())
         } else {
-            ("◦", Colors::text_secondary())
+            ("◦", colors.text_secondary())
         }
     }
 

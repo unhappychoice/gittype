@@ -11,7 +11,12 @@ use ratatui::{
 pub struct SummaryView;
 
 impl SummaryView {
-    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect, session_result: &SessionResult) {
+    pub fn render(
+        frame: &mut Frame,
+        area: ratatui::layout::Rect,
+        session_result: &SessionResult,
+        colors: &Colors,
+    ) {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -22,22 +27,22 @@ impl SummaryView {
 
         // Line 1: CPM | WPM | Time
         let line1 = Line::from(vec![
-            Span::styled("CPM: ", Style::default().fg(Colors::cpm_wpm())),
+            Span::styled("CPM: ", Style::default().fg(colors.cpm_wpm())),
             Span::styled(
                 format!("{:.0}", session_result.overall_cpm),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(" | ", Style::default().fg(Colors::text())),
-            Span::styled("WPM: ", Style::default().fg(Colors::cpm_wpm())),
+            Span::styled(" | ", Style::default().fg(colors.text())),
+            Span::styled("WPM: ", Style::default().fg(colors.cpm_wpm())),
             Span::styled(
                 format!("{:.0}", session_result.overall_wpm),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(" | ", Style::default().fg(Colors::text())),
-            Span::styled("Time: ", Style::default().fg(Colors::duration())),
+            Span::styled(" | ", Style::default().fg(colors.text())),
+            Span::styled("Time: ", Style::default().fg(colors.duration())),
             Span::styled(
                 format!("{:.1}s", session_result.session_duration.as_secs_f64()),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
         ]);
         let line1_widget = Paragraph::new(line1).alignment(Alignment::Center);
@@ -48,22 +53,22 @@ impl SummaryView {
         let total_mistakes = session_result.valid_mistakes + session_result.invalid_mistakes;
 
         let line2 = Line::from(vec![
-            Span::styled("Keystrokes: ", Style::default().fg(Colors::stage_info())),
+            Span::styled("Keystrokes: ", Style::default().fg(colors.stage_info())),
             Span::styled(
                 format!("{}", total_keystrokes),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(" | ", Style::default().fg(Colors::text())),
-            Span::styled("Mistakes: ", Style::default().fg(Colors::error())),
+            Span::styled(" | ", Style::default().fg(colors.text())),
+            Span::styled("Mistakes: ", Style::default().fg(colors.error())),
             Span::styled(
                 format!("{}", total_mistakes),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(" | ", Style::default().fg(Colors::text())),
-            Span::styled("Accuracy: ", Style::default().fg(Colors::accuracy())),
+            Span::styled(" | ", Style::default().fg(colors.text())),
+            Span::styled("Accuracy: ", Style::default().fg(colors.accuracy())),
             Span::styled(
                 format!("{:.1}%", session_result.overall_accuracy),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
         ]);
         let line2_widget = Paragraph::new(line2).alignment(Alignment::Center);

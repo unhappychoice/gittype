@@ -7,7 +7,7 @@ use crate::domain::services::scoring::{
     SessionCalculator, SessionTracker, StageCalculator, GLOBAL_TOTAL_TRACKER,
 };
 use crate::{
-    domain::models::{Challenge, DifficultyLevel, SessionResult},
+    domain::models::{Challenge, DifficultyLevel, SessionAction, SessionConfig, SessionResult, SessionState},
     domain::services::scoring::{StageInput, StageResult, StageTracker, GLOBAL_SESSION_TRACKER},
     presentation::game::stage_repository::StageRepository,
     GitTypeError, Result,
@@ -16,50 +16,6 @@ use once_cell::sync::Lazy;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-#[derive(Debug, Clone)]
-pub enum SessionState {
-    NotStarted,
-    InProgress {
-        current_stage: usize,
-        started_at: Instant,
-    },
-    Completed {
-        started_at: Instant,
-        completed_at: Instant,
-    },
-    Aborted {
-        started_at: Instant,
-        aborted_at: Instant,
-    },
-}
-
-#[derive(Debug, Clone)]
-pub enum SessionAction {
-    Start,
-    CompleteStage(StageResult),
-    Complete,
-    Abort,
-    Reset,
-}
-
-#[derive(Debug, Clone)]
-pub struct SessionConfig {
-    pub max_stages: usize,
-    pub session_timeout: Option<Duration>,
-    pub difficulty: DifficultyLevel,
-    pub max_skips: usize,
-}
-
-impl Default for SessionConfig {
-    fn default() -> Self {
-        Self {
-            max_stages: 3,
-            session_timeout: None,
-            difficulty: DifficultyLevel::Normal,
-            max_skips: 3,
-        }
-    }
-}
 
 /// Manages the overall session state and stage progression
 /// Singleton pattern for global state management

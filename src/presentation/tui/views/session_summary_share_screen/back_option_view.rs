@@ -10,10 +10,10 @@ use ratatui::{
 pub struct BackOptionView;
 
 impl BackOptionView {
-    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect) {
+    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect, colors: &Colors) {
         let back_line = Line::from(vec![
-            Span::styled("[ESC]", Style::default().fg(Colors::success())),
-            Span::styled(" Back to Results", Style::default().fg(Colors::text())),
+            Span::styled("[ESC]", Style::default().fg(colors.success())),
+            Span::styled(" Back to Results", Style::default().fg(colors.text())),
         ]);
         let back_widget = Paragraph::new(back_line).alignment(Alignment::Center);
         frame.render_widget(back_widget, area);

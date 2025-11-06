@@ -29,7 +29,7 @@ const SUPPORTED_LANGUAGES: &[(&str, &str)] = &[
 pub struct LanguageListView;
 
 impl LanguageListView {
-    pub fn render(frame: &mut Frame, area: Rect, list_state: &mut ListState) {
+    pub fn render(frame: &mut Frame, area: Rect, list_state: &mut ListState, colors: &Colors) {
         let items: Vec<ListItem> = SUPPORTED_LANGUAGES
             .iter()
             .enumerate()
@@ -37,12 +37,12 @@ impl LanguageListView {
                 let line_spans = vec![
                     Span::styled(
                         format!("{:2}. ", i + 1),
-                        Style::default().fg(Colors::text_secondary()),
+                        Style::default().fg(colors.text_secondary()),
                     ),
                     Span::styled(
                         format!("{:<20}", display_name),
                         Style::default()
-                            .fg(Colors::text())
+                            .fg(colors.text())
                             .add_modifier(Modifier::BOLD),
                     ),
                 ];
@@ -55,19 +55,19 @@ impl LanguageListView {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border()))
+                    .border_style(Style::default().fg(colors.border()))
                     .title("Programming Languages")
                     .title_style(
                         Style::default()
-                            .fg(Colors::text())
+                            .fg(colors.text())
                             .add_modifier(Modifier::BOLD),
                     )
                     .padding(Padding::uniform(1)),
             )
-            .style(Style::default().fg(Colors::text()))
+            .style(Style::default().fg(colors.text()))
             .highlight_style(
                 Style::default()
-                    .bg(Colors::background_secondary())
+                    .bg(colors.background_secondary())
                     .add_modifier(Modifier::BOLD),
             );
         frame.render_stateful_widget(list, area, list_state);

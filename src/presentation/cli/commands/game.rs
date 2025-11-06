@@ -1,7 +1,7 @@
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::ExtractionOptions;
 use crate::domain::models::Languages;
-use crate::domain::services::theme_service::ThemeService;
+use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::infrastructure::console::{Console, ConsoleImpl};
 use crate::infrastructure::logging;
 use crate::presentation::cli::args::Cli;
@@ -65,14 +65,17 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
         return Ok(());
     }
 
-    // Initialize theme manager
-    if let Err(e) = ThemeService::init() {
-        log::warn!("Failed to initialize theme manager: {}", e);
-        console.eprintln(&format!(
-            "⚠️ Warning: Failed to load theme configuration: {}",
-            e
-        ))?;
-        console.eprintln("   Using default theme.")?;
+    // Initialize theme service
+    {
+        let theme_service: &dyn ThemeServiceInterface = container.resolve_ref();
+        if let Err(e) = theme_service.init() {
+            log::warn!("Failed to initialize theme service: {}", e);
+            console.eprintln(&format!(
+                "⚠️ Warning: Failed to load theme configuration: {}",
+                e
+            ))?;
+            console.eprintln("   Using default theme.")?;
+        }
     }
 
     // Session repository will be initialized in DatabaseInitStep during loading screen

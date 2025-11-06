@@ -10,10 +10,10 @@ use ratatui::{
 pub struct ControlsView;
 
 impl ControlsView {
-    pub fn render(frame: &mut Frame, area: Rect) {
+    pub fn render(frame: &mut Frame, area: Rect, colors: &Colors) {
         let controls_line = Line::from(vec![
-            Span::styled("[ESC]", Style::default().fg(Colors::key_back())),
-            Span::styled(" Return", Style::default().fg(Colors::text())),
+            Span::styled("[ESC]", Style::default().fg(colors.key_back())),
+            Span::styled(" Return", Style::default().fg(colors.text())),
         ]);
         let controls = Paragraph::new(controls_line).alignment(Alignment::Center);
         frame.render_widget(controls, area);

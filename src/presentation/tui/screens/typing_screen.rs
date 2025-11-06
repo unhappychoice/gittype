@@ -1,11 +1,10 @@
 use crate::domain::events::domain_events::DomainEvent;
 use crate::domain::events::EventBusInterface;
+use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::models::typing::{CodeContext, InputResult, ProcessingOptions};
 use crate::domain::models::{Challenge, Countdown};
-use crate::presentation::game::events::NavigateTo;
-use crate::presentation::game::{
-    context_loader::{self, CodeContext},
-    typing_core::{InputResult, ProcessingOptions, TypingCore},
-};
+use crate::domain::services::context_loader;
+use crate::domain::services::typing_core::TypingCore;
 use crate::presentation::game::{GameData, SessionManager};
 use crate::presentation::tui::views::TypingView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
@@ -56,6 +55,8 @@ pub struct TypingScreen {
     typing_view: RwLock<TypingView>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
     #[shaku(default)]
     game_data: GameDataRef,
     #[shaku(default)]
@@ -76,6 +77,7 @@ pub enum SessionState {
 impl TypingScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
         game_data: Arc<Mutex<GameData>>,
         session_manager: Arc<Mutex<SessionManager>>,
     ) -> Self {
@@ -94,6 +96,7 @@ impl TypingScreen {
             dialog_shown: RwLock::new(false),
             typing_view: RwLock::new(TypingView::new()),
             event_bus,
+            theme_service,
             game_data: GameDataRef(game_data),
             session_manager: SessionManagerRef(session_manager),
         }
@@ -451,10 +454,13 @@ impl shaku::Provider<crate::presentation::di::AppModule> for TypingScreenProvide
         use shaku::HasComponent;
         let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
             module.resolve();
+        let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> =
+            module.resolve();
         let game_data = crate::presentation::game::GameData::instance();
         let session_manager = crate::presentation::game::SessionManager::instance();
         Ok(Box::new(TypingScreen::new(
             event_bus,
+            theme_service,
             game_data,
             session_manager,
         )))
@@ -525,6 +531,7 @@ impl Screen for TypingScreen {
     }
 
     fn render_ratatui(&self, frame: &mut ratatui::Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
         self.handle_countdown_logic();
 
         let chars: Vec<char> = self
@@ -552,6 +559,7 @@ impl Screen for TypingScreen {
             skips_remaining,
             *self.dialog_shown.read().unwrap(),
             &self.session_manager.0,
+            &colors,
         );
 
         Ok(())

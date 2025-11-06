@@ -17,6 +17,7 @@ impl SessionInfoView {
         area: ratatui::prelude::Rect,
         session: &StoredSession,
         repository: Option<&StoredRepository>,
+        colors: &Colors,
     ) {
         let mut info_lines = Vec::new();
 
@@ -25,7 +26,7 @@ impl SessionInfoView {
         if let Some(repo) = repository {
             info_lines.push(Line::from(vec![
                 Span::raw("  "),
-                Span::styled("Repository: ", Style::default().fg(Colors::accuracy())),
+                Span::styled("Repository: ", Style::default().fg(colors.accuracy())),
                 Span::raw(format!("{}/{}", repo.user_name, repo.repository_name)),
             ]));
         }
@@ -33,14 +34,14 @@ impl SessionInfoView {
         let local_time: DateTime<Local> = session.started_at.into();
         info_lines.push(Line::from(vec![
             Span::raw("  "),
-            Span::styled("Started: ", Style::default().fg(Colors::accuracy())),
+            Span::styled("Started: ", Style::default().fg(colors.accuracy())),
             Span::raw(local_time.format("%Y-%m-%d %H:%M:%S").to_string()),
         ]));
 
         if let Some(ref branch) = session.branch {
             info_lines.push(Line::from(vec![
                 Span::raw("  "),
-                Span::styled("Branch: ", Style::default().fg(Colors::accuracy())),
+                Span::styled("Branch: ", Style::default().fg(colors.accuracy())),
                 Span::raw(branch.clone()),
             ]));
         }
@@ -48,7 +49,7 @@ impl SessionInfoView {
         if let Some(ref commit) = session.commit_hash {
             info_lines.push(Line::from(vec![
                 Span::raw("  "),
-                Span::styled("Commit: ", Style::default().fg(Colors::accuracy())),
+                Span::styled("Commit: ", Style::default().fg(colors.accuracy())),
                 Span::raw(commit[..std::cmp::min(commit.len(), 12)].to_string()),
             ]));
         }
@@ -57,7 +58,7 @@ impl SessionInfoView {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border()))
+                    .border_style(Style::default().fg(colors.border()))
                     .title("Session"),
             )
             .wrap(Wrap { trim: false });

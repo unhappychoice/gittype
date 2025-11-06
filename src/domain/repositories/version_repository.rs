@@ -76,7 +76,9 @@ impl VersionRepository {
 
         let file_storage = (self.file_storage.as_ref() as &dyn std::any::Any)
             .downcast_ref::<FileStorage>()
-            .ok_or_else(|| crate::GitTypeError::ExtractionFailed("Failed to downcast storage".to_string()))?;
+            .ok_or_else(|| {
+                crate::GitTypeError::ExtractionFailed("Failed to downcast storage".to_string())
+            })?;
 
         file_storage.read_json(&cache_path)
     }
@@ -98,7 +100,9 @@ impl VersionRepository {
 
         let file_storage = (self.file_storage.as_ref() as &dyn std::any::Any)
             .downcast_ref::<FileStorage>()
-            .ok_or_else(|| crate::GitTypeError::ExtractionFailed("Failed to downcast storage".to_string()))?;
+            .ok_or_else(|| {
+                crate::GitTypeError::ExtractionFailed("Failed to downcast storage".to_string())
+            })?;
 
         file_storage.write_json(&cache_path, &entry)
     }

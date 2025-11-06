@@ -12,7 +12,7 @@ use ratatui::{
 pub struct SharingView;
 
 impl SharingView {
-    pub fn render_menu(frame: &mut Frame, total_summary: &TotalResult) {
+    pub fn render_menu(frame: &mut Frame, total_summary: &TotalResult, colors: &Colors) {
         let area = frame.area();
         let platforms = SharingPlatform::all();
 
@@ -54,7 +54,7 @@ impl SharingView {
         let title = Paragraph::new(Line::from(vec![Span::styled(
             "Share Your Total Results",
             Style::default()
-                .fg(Colors::info())
+                .fg(colors.info())
                 .add_modifier(Modifier::BOLD),
         )]))
         .alignment(Alignment::Center);
@@ -62,40 +62,40 @@ impl SharingView {
 
         // Preview line with colors
         let preview = Line::from(vec![
-            Span::styled("Score: ", Style::default().fg(Colors::score())),
+            Span::styled("Score: ", Style::default().fg(colors.score())),
             Span::styled(
                 format!("{:.0}", total_summary.total_score),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(", ", Style::default().fg(Colors::text())),
-            Span::styled("CPM: ", Style::default().fg(Colors::cpm_wpm())),
+            Span::styled(", ", Style::default().fg(colors.text())),
+            Span::styled("CPM: ", Style::default().fg(colors.cpm_wpm())),
             Span::styled(
                 format!("{:.0}", total_summary.overall_cpm),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(", ", Style::default().fg(Colors::text())),
-            Span::styled("Keystrokes: ", Style::default().fg(Colors::stage_info())),
+            Span::styled(", ", Style::default().fg(colors.text())),
+            Span::styled("Keystrokes: ", Style::default().fg(colors.stage_info())),
             Span::styled(
                 format!("{}", total_summary.total_keystrokes),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(", ", Style::default().fg(Colors::text())),
-            Span::styled("Sessions: ", Style::default().fg(Colors::info())),
+            Span::styled(", ", Style::default().fg(colors.text())),
+            Span::styled("Sessions: ", Style::default().fg(colors.info())),
             Span::styled(
                 format!(
                     "{}/{}",
                     total_summary.total_sessions_completed, total_summary.total_sessions_attempted
                 ),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(", ", Style::default().fg(Colors::text())),
-            Span::styled("Time: ", Style::default().fg(Colors::duration())),
+            Span::styled(", ", Style::default().fg(colors.text())),
+            Span::styled("Time: ", Style::default().fg(colors.duration())),
             Span::styled(
                 format!(
                     "{:.1}min",
                     total_summary.total_duration.as_secs_f64() / 60.0
                 ),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
         ]);
         frame.render_widget(
@@ -113,11 +113,11 @@ impl SharingView {
             let option = Line::from(vec![
                 Span::styled(
                     format!("[{}]", i + 1),
-                    Style::default().fg(Colors::success()),
+                    Style::default().fg(colors.success()),
                 ),
                 Span::styled(
                     format!(" {}", platform.name()),
-                    Style::default().fg(Colors::text()),
+                    Style::default().fg(colors.text()),
                 ),
             ]);
             frame.render_widget(
@@ -128,13 +128,18 @@ impl SharingView {
 
         // Back option
         let back = Line::from(vec![
-            Span::styled("[ESC]", Style::default().fg(Colors::error())),
-            Span::styled(" Back to Exit Screen", Style::default().fg(Colors::text())),
+            Span::styled("[ESC]", Style::default().fg(colors.error())),
+            Span::styled(" Back to Exit Screen", Style::default().fg(colors.text())),
         ]);
         frame.render_widget(Paragraph::new(back).alignment(Alignment::Center), chunks[7]);
     }
 
-    pub fn render_fallback_url(frame: &mut Frame, url: &str, platform: &SharingPlatform) {
+    pub fn render_fallback_url(
+        frame: &mut Frame,
+        url: &str,
+        platform: &SharingPlatform,
+        colors: &Colors,
+    ) {
         let area = frame.area();
 
         // Calculate total height
@@ -175,7 +180,7 @@ impl SharingView {
         let title = Paragraph::new(Line::from(vec![Span::styled(
             format!("Could not open {} automatically", platform.name()),
             Style::default()
-                .fg(Colors::warning())
+                .fg(colors.warning())
                 .add_modifier(Modifier::BOLD),
         )]))
         .alignment(Alignment::Center);
@@ -184,7 +189,7 @@ impl SharingView {
         // Instructions
         let instruction = Paragraph::new(Line::from(vec![Span::styled(
             "Please copy the URL below and open it in your browser:",
-            Style::default().fg(Colors::text()),
+            Style::default().fg(colors.text()),
         )]))
         .alignment(Alignment::Center);
         frame.render_widget(instruction, chunks[3]);
@@ -193,7 +198,7 @@ impl SharingView {
         let url_widget = Paragraph::new(Line::from(vec![Span::styled(
             url,
             Style::default()
-                .fg(Colors::info())
+                .fg(colors.info())
                 .add_modifier(Modifier::BOLD),
         )]))
         .alignment(Alignment::Center);
@@ -201,13 +206,13 @@ impl SharingView {
 
         // Exit option
         let exit = Line::from(vec![
-            Span::styled("[ESC]", Style::default().fg(Colors::error())),
-            Span::styled(" Exit", Style::default().fg(Colors::text())),
+            Span::styled("[ESC]", Style::default().fg(colors.error())),
+            Span::styled(" Exit", Style::default().fg(colors.text())),
         ]);
         frame.render_widget(Paragraph::new(exit).alignment(Alignment::Center), chunks[7]);
     }
 
-    pub fn render_exit_options(frame: &mut Frame, area: ratatui::layout::Rect) {
+    pub fn render_exit_options(frame: &mut Frame, area: ratatui::layout::Rect, colors: &Colors) {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -223,7 +228,7 @@ impl SharingView {
         let thanks = Paragraph::new(Line::from(vec![Span::styled(
             "Thanks for playing GitType!",
             Style::default()
-                .fg(Colors::success())
+                .fg(colors.success())
                 .add_modifier(Modifier::BOLD),
         )]))
         .alignment(Alignment::Center);
@@ -232,15 +237,15 @@ impl SharingView {
         // GitHub link
         let github = Paragraph::new(Line::from(vec![Span::styled(
             "✨ Star us on GitHub: https://github.com/unhappychoice/gittype",
-            Style::default().fg(Colors::warning()),
+            Style::default().fg(colors.warning()),
         )]))
         .alignment(Alignment::Center);
         frame.render_widget(github, chunks[1]);
 
         // Share option
         let share = Line::from(vec![
-            Span::styled("[S]", Style::default().fg(Colors::success())),
-            Span::styled(" Share Result", Style::default().fg(Colors::text())),
+            Span::styled("[S]", Style::default().fg(colors.success())),
+            Span::styled(" Share Result", Style::default().fg(colors.text())),
         ]);
         frame.render_widget(
             Paragraph::new(share).alignment(Alignment::Center),
@@ -249,8 +254,8 @@ impl SharingView {
 
         // Exit option
         let exit = Line::from(vec![
-            Span::styled("[ESC]", Style::default().fg(Colors::error())),
-            Span::styled(" Exit", Style::default().fg(Colors::text())),
+            Span::styled("[ESC]", Style::default().fg(colors.error())),
+            Span::styled(" Exit", Style::default().fg(colors.text())),
         ]);
         frame.render_widget(Paragraph::new(exit).alignment(Alignment::Center), chunks[4]);
     }

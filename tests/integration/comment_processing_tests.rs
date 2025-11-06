@@ -5,7 +5,7 @@ use gittype::domain::models::{Challenge, ChunkType};
 #[cfg(test)]
 use gittype::domain::services::challenge_generator::ChallengeGenerator;
 use gittype::domain::services::source_code_parser::{CommentProcessor, IndentProcessor};
-use gittype::presentation::game::typing_core::TypingCore;
+use gittype::domain::services::typing_core::TypingCore;
 use std::path::Path;
 
 /// Tests for the core bug: byte vs character position misalignment

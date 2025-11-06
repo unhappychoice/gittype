@@ -16,6 +16,7 @@ impl ContentView {
         area: ratatui::layout::Rect,
         session_result: &SessionResult,
         total_stages: usize,
+        colors: &Colors,
     ) {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
@@ -36,7 +37,7 @@ impl ContentView {
         );
         let stage_progress = Paragraph::new(Line::from(vec![Span::styled(
             stage_text,
-            Style::default().fg(Colors::info()),
+            Style::default().fg(colors.info()),
         )]))
         .alignment(Alignment::Center);
         frame.render_widget(stage_progress, chunks[0]);
@@ -47,20 +48,20 @@ impl ContentView {
 
         // Line 1: CPM | WPM | Time
         let metrics_line1 = Line::from(vec![
-            Span::styled("CPM: ", Style::default().fg(Colors::cpm_wpm())),
+            Span::styled("CPM: ", Style::default().fg(colors.cpm_wpm())),
             Span::styled(
                 format!("{:.0}", session_result.overall_cpm),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(" | WPM: ", Style::default().fg(Colors::cpm_wpm())),
+            Span::styled(" | WPM: ", Style::default().fg(colors.cpm_wpm())),
             Span::styled(
                 format!("{:.0}", session_result.overall_wpm),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(" | Time: ", Style::default().fg(Colors::duration())),
+            Span::styled(" | Time: ", Style::default().fg(colors.duration())),
             Span::styled(
                 format!("{:.1}s", session_result.session_duration.as_secs_f64()),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
         ]);
         let metrics_widget1 = Paragraph::new(metrics_line1).alignment(Alignment::Center);
@@ -68,20 +69,20 @@ impl ContentView {
 
         // Line 2: Keystrokes | Mistakes | Accuracy
         let metrics_line2 = Line::from(vec![
-            Span::styled("Keystrokes: ", Style::default().fg(Colors::stage_info())),
+            Span::styled("Keystrokes: ", Style::default().fg(colors.stage_info())),
             Span::styled(
                 format!("{}", total_keystrokes),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(" | Mistakes: ", Style::default().fg(Colors::error())),
+            Span::styled(" | Mistakes: ", Style::default().fg(colors.error())),
             Span::styled(
                 format!("{}", total_mistakes),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(" | Accuracy: ", Style::default().fg(Colors::accuracy())),
+            Span::styled(" | Accuracy: ", Style::default().fg(colors.accuracy())),
             Span::styled(
                 format!("{:.1}%", session_result.overall_accuracy),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
         ]);
         let metrics_widget2 = Paragraph::new(metrics_line2).alignment(Alignment::Center);
@@ -90,7 +91,7 @@ impl ContentView {
         // Failure message
         let fail_msg = Paragraph::new(Line::from(vec![Span::styled(
             "Challenge failed. Better luck next time!",
-            Style::default().fg(Colors::error()),
+            Style::default().fg(colors.error()),
         )]))
         .alignment(Alignment::Center);
         frame.render_widget(fail_msg, chunks[5]);

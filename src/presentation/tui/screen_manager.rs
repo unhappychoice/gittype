@@ -16,6 +16,9 @@
 //!
 //! ```rust,no_run
 //! use gittype::domain::events::{EventBus, EventBusInterface};
+//! use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
+//! use gittype::domain::models::theme::Theme;
+//! use gittype::domain::models::color_mode::ColorMode;
 //! use gittype::presentation::tui::screen_manager::ScreenManagerImpl;
 //! use gittype::presentation::tui::screens::TitleScreen;
 //! use gittype::presentation::game::GameData;
@@ -26,7 +29,8 @@
 //!
 //! fn example() -> gittype::Result<()> {
 //!     let event_bus = Arc::new(EventBus::new()) as Arc<dyn EventBusInterface>;
-//!     let screen = TitleScreen::new(event_bus.clone());
+//!     let theme_service = Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>;
+//!     let screen = TitleScreen::new(event_bus.clone(), theme_service);
 //!     let game_data = GameData::instance();
 //!     let backend = CrosstermBackend::new(stdout());
 //!     let terminal = Terminal::new(backend).unwrap();
@@ -39,7 +43,7 @@
 //!
 use crate::domain::events::{EventBus, EventBusInterface};
 use crate::infrastructure::terminal::TerminalInterface;
-use crate::presentation::game::events::{ExitRequested, NavigateTo};
+use crate::domain::events::presentation_events::{ExitRequested, NavigateTo};
 use crate::presentation::game::{GameData, SessionManager, StageRepository};
 use crate::presentation::tui::screen_transition_manager::ScreenTransitionManager;
 use crate::presentation::tui::screens::{

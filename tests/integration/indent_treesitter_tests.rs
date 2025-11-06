@@ -9,7 +9,7 @@ use gittype::domain::services::challenge_generator::ChallengeGenerator;
 use gittype::domain::services::source_code_parser::{
     ChunkExtractor, CommentProcessor, IndentProcessor,
 };
-use gittype::presentation::game::typing_core::TypingCore;
+use gittype::domain::services::typing_core::TypingCore;
 use std::path::Path;
 use tree_sitter::StreamingIterator;
 

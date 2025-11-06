@@ -16,41 +16,42 @@ impl PreviewView {
         area: ratatui::layout::Rect,
         metrics: &SessionResult,
         repo_info: &Option<GitRepository>,
+        colors: &Colors,
     ) {
         let best_rank = Rank::for_score(metrics.session_score);
         let total_mistakes = metrics.valid_mistakes + metrics.invalid_mistakes;
 
         let mut spans = vec![
-            Span::styled("\"", Style::default().fg(Colors::text())),
+            Span::styled("\"", Style::default().fg(colors.text())),
             Span::styled(best_rank.name(), Style::default().fg(best_rank.color())),
-            Span::styled("\" with ", Style::default().fg(Colors::text())),
+            Span::styled("\" with ", Style::default().fg(colors.text())),
             Span::styled(
                 format!("{:.0}pts", metrics.session_score),
-                Style::default().fg(Colors::score()),
+                Style::default().fg(colors.score()),
             ),
         ];
 
         if let Some(repo) = repo_info {
-            spans.push(Span::styled(" on [", Style::default().fg(Colors::text())));
+            spans.push(Span::styled(" on [", Style::default().fg(colors.text())));
             spans.push(Span::styled(
                 format!("{}/{}", repo.user_name, repo.repository_name),
-                Style::default().fg(Colors::info()),
+                Style::default().fg(colors.info()),
             ));
-            spans.push(Span::styled("]", Style::default().fg(Colors::text())));
+            spans.push(Span::styled("]", Style::default().fg(colors.text())));
         }
 
         spans.extend(vec![
-            Span::styled(" - ", Style::default().fg(Colors::text())),
-            Span::styled("CPM: ", Style::default().fg(Colors::cpm_wpm())),
+            Span::styled(" - ", Style::default().fg(colors.text())),
+            Span::styled("CPM: ", Style::default().fg(colors.cpm_wpm())),
             Span::styled(
                 format!("{:.0}", metrics.overall_cpm),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(", ", Style::default().fg(Colors::text())),
-            Span::styled("Mistakes: ", Style::default().fg(Colors::error())),
+            Span::styled(", ", Style::default().fg(colors.text())),
+            Span::styled("Mistakes: ", Style::default().fg(colors.error())),
             Span::styled(
                 format!("{}", total_mistakes),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
         ]);
 

@@ -3,7 +3,7 @@ use crate::integration::screens::mocks::typing_screen_mock::{
 };
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use gittype::domain::events::EventBus;
-use gittype::presentation::game::events::NavigateTo;
+use gittype::domain::events::presentation_events::NavigateTo;
 use gittype::presentation::tui::screens::typing_screen::TypingScreen;
 use std::sync::Arc;
 

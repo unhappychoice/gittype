@@ -10,7 +10,7 @@ use ratatui::{
 pub struct OptionsView;
 
 impl OptionsView {
-    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect) {
+    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect, colors: &Colors) {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -21,25 +21,25 @@ impl OptionsView {
 
         // Row 1: [D] Show Detail  [S] Share Result
         let row1 = Line::from(vec![
-            Span::styled("[D]", Style::default().fg(Colors::info())),
-            Span::styled(" Show Detail", Style::default().fg(Colors::text())),
-            Span::styled("  ", Style::default().fg(Colors::text())),
-            Span::styled("[S]", Style::default().fg(Colors::info())),
-            Span::styled(" Share Result", Style::default().fg(Colors::text())),
+            Span::styled("[D]", Style::default().fg(colors.info())),
+            Span::styled(" Show Detail", Style::default().fg(colors.text())),
+            Span::styled("  ", Style::default().fg(colors.text())),
+            Span::styled("[S]", Style::default().fg(colors.info())),
+            Span::styled(" Share Result", Style::default().fg(colors.text())),
         ]);
         let row1_widget = Paragraph::new(row1).alignment(Alignment::Center);
         frame.render_widget(row1_widget, chunks[0]);
 
         // Row 2: [R] Retry  [T] Back to Title  [ESC] Quit
         let row2 = Line::from(vec![
-            Span::styled("[R]", Style::default().fg(Colors::success())),
-            Span::styled(" Retry", Style::default().fg(Colors::text())),
-            Span::styled("  ", Style::default().fg(Colors::text())),
-            Span::styled("[T]", Style::default().fg(Colors::success())),
-            Span::styled(" Back to Title", Style::default().fg(Colors::text())),
-            Span::styled("  ", Style::default().fg(Colors::text())),
-            Span::styled("[ESC]", Style::default().fg(Colors::error())),
-            Span::styled(" Quit", Style::default().fg(Colors::text())),
+            Span::styled("[R]", Style::default().fg(colors.success())),
+            Span::styled(" Retry", Style::default().fg(colors.text())),
+            Span::styled("  ", Style::default().fg(colors.text())),
+            Span::styled("[T]", Style::default().fg(colors.success())),
+            Span::styled(" Back to Title", Style::default().fg(colors.text())),
+            Span::styled("  ", Style::default().fg(colors.text())),
+            Span::styled("[ESC]", Style::default().fg(colors.error())),
+            Span::styled(" Quit", Style::default().fg(colors.text())),
         ]);
         let row2_widget = Paragraph::new(row2).alignment(Alignment::Center);
         frame.render_widget(row2_widget, chunks[1]);

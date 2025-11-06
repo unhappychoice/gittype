@@ -1,5 +1,6 @@
 use gittype::domain::models::{Challenge, DifficultyLevel};
-use gittype::presentation::game::{GameData, GameMode, StageRepository};
+use gittype::domain::models::GameMode;
+use gittype::presentation::game::{GameData, StageRepository};
 use std::sync::{Arc, Mutex};
 
 fn create_test_challenges(count: usize) -> Vec<Challenge> {
