@@ -2,7 +2,6 @@ use crate::domain::models::languages::{
     CSharp, Clojure, Cpp, Dart, Go, Haskell, Java, JavaScript, Kotlin, Php, Python, Ruby, Rust,
     Scala, Swift, TypeScript, Zig, C,
 };
-use crate::presentation::ui::Colors;
 use std::hash::{Hash, Hasher};
 
 /// Domain trait representing a programming language
@@ -36,13 +35,33 @@ pub trait Language: std::fmt::Debug + Send + Sync {
         self.name()
     }
 
-    /// Returns the UI color for this language
-    fn color(&self) -> ratatui::style::Color {
-        Colors::lang_default()
-    }
-
     /// Returns true if the tree-sitter node represents a valid comment for this language
     fn is_valid_comment_node(&self, node: tree_sitter::Node) -> bool;
+
+    /// Returns the color for this language
+    fn color(&self) -> ratatui::style::Color {
+        use ratatui::style::Color;
+        match self.name() {
+            "rust" => Color::Red,
+            "python" => Color::Blue,
+            "javascript" => Color::Yellow,
+            "typescript" => Color::Blue,
+            "java" => Color::Red,
+            "c" => Color::Blue,
+            "cpp" => Color::Cyan,
+            "csharp" => Color::Magenta,
+            "go" => Color::Cyan,
+            "ruby" => Color::Red,
+            "php" => Color::Magenta,
+            "swift" => Color::Red,
+            "kotlin" => Color::Magenta,
+            "scala" => Color::Red,
+            "haskell" => Color::Magenta,
+            "dart" => Color::Cyan,
+            "zig" => Color::Yellow,
+            _ => Color::White,
+        }
+    }
 }
 
 pub struct Languages;
@@ -130,15 +149,6 @@ impl Languages {
         Self::all_languages()
             .into_iter()
             .find(|lang| lang.name() == name_lower || lang.aliases().contains(&name_lower.as_str()))
-    }
-
-    pub fn get_color(language: Option<&str>) -> ratatui::style::Color {
-        match language {
-            Some(lang) => Self::get_by_name(lang)
-                .map(|l| l.color())
-                .unwrap_or_else(Colors::lang_default),
-            None => Colors::lang_default(),
-        }
     }
 
     pub fn get_display_name(language: Option<&str>) -> String {

@@ -12,7 +12,7 @@ use ratatui::{
 pub struct LoadingDescriptionView;
 
 impl LoadingDescriptionView {
-    pub fn render(frame: &mut Frame, area: Rect, state: &LoadingScreenState) {
+    pub fn render(frame: &mut Frame, area: Rect, state: &LoadingScreenState, colors: &Colors) {
         let current_step_type = state
             .current_step
             .read()
@@ -22,7 +22,7 @@ impl LoadingDescriptionView {
         let mut description_lines = vec![
             Line::from(Span::styled(
                 "Analyzing your repository to create typing challenges...",
-                Style::default().fg(Colors::text_secondary()),
+                Style::default().fg(colors.text_secondary()),
             )),
             Line::from(Span::raw("")), // Empty line for spacing
         ];
@@ -45,18 +45,18 @@ impl LoadingDescriptionView {
                 };
 
                 let (icon, color) = if is_completed {
-                    ("✓", Colors::success())
+                    ("✓", colors.success())
                 } else if is_current {
-                    ("⚡", Colors::warning())
+                    ("⚡", colors.warning())
                 } else {
-                    ("○", Colors::text_secondary())
+                    ("○", colors.text_secondary())
                 };
 
                 description_lines.push(Line::from(vec![
                     Span::styled(format!("{} ", icon), Style::default().fg(color)),
                     Span::styled(
                         step_info.description.clone(),
-                        Style::default().fg(Colors::text_secondary()),
+                        Style::default().fg(colors.text_secondary()),
                     ),
                 ]));
             }

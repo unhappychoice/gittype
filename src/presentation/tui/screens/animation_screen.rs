@@ -1,7 +1,7 @@
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::{RankTier, SessionResult};
 use crate::domain::services::scoring::Rank;
-use crate::presentation::game::events::NavigateTo;
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::game::SessionManager;
 use crate::presentation::tui::views::typing::typing_animation_view::AnimationPhase;
 use crate::presentation::tui::views::TypingAnimationView;
@@ -59,15 +59,21 @@ pub struct AnimationScreen {
 
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
 }
 
 impl AnimationScreen {
-    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    ) -> Self {
         Self {
             animation: RwLock::new(None),
             session_result: RwLock::new(None),
             animation_initialized: RwLock::new(false),
             event_bus,
+            theme_service,
         }
     }
 
@@ -99,6 +105,7 @@ impl AnimationScreen {
         frame: &mut Frame,
         animation: &TypingAnimationView,
         _rank_name: &str,
+        colors: &Colors,
     ) {
         let area = frame.area();
 
@@ -125,7 +132,7 @@ impl AnimationScreen {
                     {
                         lines.push(Line::from(vec![
                             Span::styled(text, Style::default().fg(line_color)),
-                            Span::styled("█", Style::default().fg(Colors::text())),
+                            Span::styled("█", Style::default().fg(colors.text())),
                         ]));
                     } else if !text.is_empty() {
                         lines.push(Line::from(Span::styled(
@@ -141,7 +148,7 @@ impl AnimationScreen {
 
                 frame.render_widget(paragraph, chunks[1]);
 
-                self.render_skip_hint(frame, area);
+                self.render_skip_hint(frame, area, &colors);
             }
             AnimationPhase::Pause => {
                 let mut lines = Vec::new();
@@ -157,14 +164,14 @@ impl AnimationScreen {
                 let dots = ".".repeat(animation.get_pause_dots());
                 lines.push(Line::from(Span::styled(
                     dots,
-                    Style::default().fg(Colors::text_secondary()),
+                    Style::default().fg(colors.text_secondary()),
                 )));
 
                 let paragraph = Paragraph::new(Text::from(lines)).alignment(Alignment::Center);
 
                 frame.render_widget(paragraph, chunks[1]);
 
-                self.render_skip_hint(frame, area);
+                self.render_skip_hint(frame, area, &colors);
             }
             AnimationPhase::Complete => {
                 // Animation is complete, ready to transition to result
@@ -172,7 +179,7 @@ impl AnimationScreen {
         }
     }
 
-    fn render_skip_hint(&self, frame: &mut Frame, area: ratatui::layout::Rect) {
+    fn render_skip_hint(&self, frame: &mut Frame, area: ratatui::layout::Rect, colors: &Colors) {
         let skip_text = "[S] Skip";
         let skip_width = skip_text.len() as u16;
         let skip_height = 1;
@@ -188,7 +195,7 @@ impl AnimationScreen {
         };
 
         let skip_paragraph =
-            Paragraph::new(skip_text).style(Style::default().fg(Colors::text_secondary()));
+            Paragraph::new(skip_text).style(Style::default().fg(colors.text_secondary()));
 
         frame.render_widget(skip_paragraph, skip_area);
     }
@@ -246,6 +253,7 @@ impl Screen for AnimationScreen {
     }
 
     fn render_ratatui(&self, frame: &mut ratatui::Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
         let animation_guard = self.animation.read().unwrap();
         if let Some(ref animation) = *animation_guard {
             let session_result_guard = self.session_result.read().unwrap();
@@ -253,7 +261,7 @@ impl Screen for AnimationScreen {
                 let best_rank = Rank::for_score(session_result.session_score);
                 let rank_name = best_rank.name();
 
-                self.render_typing_animation_ratatui(frame, animation, rank_name);
+                self.render_typing_animation_ratatui(frame, animation, rank_name, &colors);
             }
         }
         Ok(())

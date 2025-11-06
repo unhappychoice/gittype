@@ -3,7 +3,8 @@ use crate::domain::models::DifficultyLevel;
 use crate::domain::services::scoring::{SessionTracker, TotalTracker};
 use crate::infrastructure::git::LocalGitRepositoryClient;
 use crate::presentation::game::GameData;
-use crate::presentation::game::{SessionConfig, SessionManager, StageRepository};
+use crate::presentation::game::{SessionManager, StageRepository};
+use crate::domain::models::SessionConfig;
 use crate::presentation::ui::Colors;
 use crate::{GitTypeError, Result};
 use ratatui::style::Color;
@@ -25,13 +26,13 @@ impl Step for FinalizingStep {
         "Finalizing"
     }
 
-    fn icon(&self, is_current: bool, is_completed: bool) -> (&str, Color) {
+    fn icon(&self, is_current: bool, is_completed: bool, colors: &Colors) -> (&str, Color) {
         if is_completed {
-            ("✓", Colors::success())
+            ("✓", colors.success())
         } else if is_current {
-            ("⚡", Colors::warning())
+            ("⚡", colors.warning())
         } else {
-            ("◦", Colors::text_secondary())
+            ("◦", colors.text_secondary())
         }
     }
 

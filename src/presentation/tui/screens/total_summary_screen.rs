@@ -1,11 +1,10 @@
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::TotalResult;
 use crate::domain::services::scoring::{TotalCalculator, TotalTracker, GLOBAL_TOTAL_TRACKER};
-use crate::presentation::game::events::NavigateTo;
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::tui::views::{AsciiScoreView, SharingView, StatisticsView};
 use crate::presentation::tui::ScreenDataProvider;
 use crate::presentation::tui::{Screen, ScreenType, UpdateStrategy};
-use crate::presentation::ui::Colors;
 use crate::{GitTypeError, Result};
 use crossterm::event::{self, KeyCode, KeyModifiers};
 use ratatui::{
@@ -63,14 +62,20 @@ pub struct TotalSummaryScreen {
     total_result: RwLock<Option<TotalResult>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
 }
 
 impl TotalSummaryScreen {
-    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    ) -> Self {
         Self {
             displayed: RwLock::new(false),
             total_result: RwLock::new(None),
             event_bus,
+            theme_service,
         }
     }
 }
@@ -86,7 +91,8 @@ impl shaku::Provider<crate::presentation::di::AppModule> for TotalSummaryScreenP
         use shaku::HasComponent;
         let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
             module.resolve();
-        Ok(Box::new(TotalSummaryScreen::new(event_bus)))
+        let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> = module.resolve();
+        Ok(Box::new(TotalSummaryScreen::new(event_bus, theme_service)))
     }
 }
 
@@ -132,6 +138,7 @@ impl Screen for TotalSummaryScreen {
     }
 
     fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
         let total_result = self.total_result.read().unwrap();
         if let Some(ref total_result) = *total_result {
             let area = frame.area();
@@ -172,20 +179,20 @@ impl Screen for TotalSummaryScreen {
             let title = Paragraph::new(Line::from(vec![Span::styled(
                 "=== TOTAL SUMMARY ===",
                 Style::default()
-                    .fg(Colors::info())
+                    .fg(colors.info())
                     .add_modifier(Modifier::BOLD),
             )]))
             .alignment(Alignment::Center);
             frame.render_widget(title, chunks[1]);
 
             // Score
-            AsciiScoreView::render(frame, chunks[3], total_result.total_score);
+            AsciiScoreView::render(frame, chunks[3], total_result.total_score, &colors);
 
             // Statistics
-            StatisticsView::render(frame, chunks[5], total_result);
+            StatisticsView::render(frame, chunks[5], total_result, &colors);
 
             // Options
-            SharingView::render_exit_options(frame, chunks[7]);
+            SharingView::render_exit_options(frame, chunks[7], &colors);
         }
         Ok(())
     }

@@ -16,6 +16,7 @@ impl StageResultsView {
         area: Rect,
         session_result: &SessionResult,
         repo_info: &Option<GitRepository>,
+        colors: &Colors,
     ) {
         if !session_result.stage_results.is_empty() {
             let mut lines = vec![];
@@ -32,7 +33,7 @@ impl StageResultsView {
             lines.push(Line::from(Span::styled(
                 stage_label,
                 Style::default()
-                    .fg(Colors::info())
+                    .fg(colors.info())
                     .add_modifier(Modifier::BOLD),
             )));
             lines.push(Line::from(""));
@@ -44,7 +45,7 @@ impl StageResultsView {
                 lines.push(Line::from(Span::styled(
                     format!("{}:", stage_name),
                     Style::default()
-                        .fg(Colors::text())
+                        .fg(colors.text())
                         .add_modifier(Modifier::BOLD),
                 )));
 
@@ -52,33 +53,27 @@ impl StageResultsView {
                 let mut metrics_spans = vec![];
                 metrics_spans.push(Span::styled("  ", Style::default()));
 
-                metrics_spans.push(Span::styled(
-                    "Score: ",
-                    Style::default().fg(Colors::score()),
-                ));
+                metrics_spans.push(Span::styled("Score: ", Style::default().fg(colors.score())));
                 metrics_spans.push(Span::styled(
                     format!("{:.0}", stage_result.challenge_score),
-                    Style::default().fg(Colors::text()),
+                    Style::default().fg(colors.text()),
                 ));
-                metrics_spans.push(Span::styled(" | ", Style::default().fg(Colors::text())));
+                metrics_spans.push(Span::styled(" | ", Style::default().fg(colors.text())));
 
-                metrics_spans.push(Span::styled(
-                    "CPM: ",
-                    Style::default().fg(Colors::cpm_wpm()),
-                ));
+                metrics_spans.push(Span::styled("CPM: ", Style::default().fg(colors.cpm_wpm())));
                 metrics_spans.push(Span::styled(
                     format!("{:.0}", stage_result.cpm),
-                    Style::default().fg(Colors::text()),
+                    Style::default().fg(colors.text()),
                 ));
-                metrics_spans.push(Span::styled(" | ", Style::default().fg(Colors::text())));
+                metrics_spans.push(Span::styled(" | ", Style::default().fg(colors.text())));
 
                 metrics_spans.push(Span::styled(
                     "Acc: ",
-                    Style::default().fg(Colors::accuracy()),
+                    Style::default().fg(colors.accuracy()),
                 ));
                 metrics_spans.push(Span::styled(
                     format!("{:.1}%", stage_result.accuracy),
-                    Style::default().fg(Colors::text()),
+                    Style::default().fg(colors.text()),
                 ));
 
                 lines.push(Line::from(metrics_spans));

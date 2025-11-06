@@ -30,7 +30,9 @@ impl ConfigService {
         let config_path = service.get_config_path()?;
         let storage = (service.file_storage.as_ref() as &dyn std::any::Any)
             .downcast_ref::<FileStorage>()
-            .ok_or_else(|| crate::GitTypeError::ExtractionFailed("Failed to downcast storage".to_string()))?;
+            .ok_or_else(|| {
+                crate::GitTypeError::ExtractionFailed("Failed to downcast storage".to_string())
+            })?;
 
         let config = storage
             .read_json::<Config>(&config_path)?
@@ -69,7 +71,9 @@ impl ConfigServiceInterface for ConfigService {
 
         let storage = (self.file_storage.as_ref() as &dyn std::any::Any)
             .downcast_ref::<FileStorage>()
-            .ok_or_else(|| crate::GitTypeError::ExtractionFailed("Failed to downcast storage".to_string()))?;
+            .ok_or_else(|| {
+                crate::GitTypeError::ExtractionFailed("Failed to downcast storage".to_string())
+            })?;
 
         let config = self.config.read().unwrap();
         storage.write_json(&config_path, &*config)

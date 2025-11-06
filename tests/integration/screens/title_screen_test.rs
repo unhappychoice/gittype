@@ -1,14 +1,17 @@
 use crate::integration::screens::mocks::title_screen_mock::MockTitleScreenDataProvider;
 use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
-use gittype::presentation::game::events::NavigateTo;
+use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
+use gittype::domain::models::theme::Theme;
+use gittype::domain::models::color_mode::ColorMode;
+use gittype::domain::events::presentation_events::NavigateTo;
 use gittype::presentation::tui::screens::title_screen::TitleScreen;
 use std::sync::Arc;
 
 screen_snapshot_test!(
     test_title_screen_snapshot,
     TitleScreen,
-    TitleScreen::new(Arc::new(EventBus::new())),
+    TitleScreen::new(Arc::new(EventBus::new()), Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>),
     provider = MockTitleScreenDataProvider
 );
 
@@ -144,7 +147,7 @@ screen_key_tests!(
 screen_basic_methods_test!(
     test_title_screen_basic_methods,
     TitleScreen,
-    TitleScreen::new(Arc::new(EventBus::new())),
+    TitleScreen::new(Arc::new(EventBus::new()), Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>),
     gittype::presentation::tui::ScreenType::Title,
     false,
     MockTitleScreenDataProvider

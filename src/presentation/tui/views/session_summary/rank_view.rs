@@ -1,7 +1,7 @@
 use crate::domain::models::Rank;
 use crate::domain::services::scoring::RankCalculator;
-use crate::presentation::game::ascii_rank_titles;
-use crate::presentation::game::rank_colors;
+use crate::domain::models::ui::ascii_rank_titles;
+use crate::domain::models::ui::rank_colors;
 use crate::presentation::ui::GradationText;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},

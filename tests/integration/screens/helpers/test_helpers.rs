@@ -25,16 +25,20 @@ macro_rules! screen_key_event_test {
         );
     };
 
-    // Version with default new(event_bus) initialization (6 params)
+    // Version with default new(event_bus, theme_service) initialization (6 params)
     ($test_name:ident, $screen_type:ty, $event_type:ty, $key_code:expr, $modifiers:expr, $provider:expr) => {
         #[test]
         fn $test_name() {
             use gittype::domain::events::EventBus;
+            use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
+            use gittype::domain::models::theme::Theme;
+            use gittype::domain::models::color_mode::ColorMode;
             use gittype::presentation::tui::Screen;
             use gittype::presentation::tui::ScreenDataProvider;
             use std::sync::{Arc, Mutex};
 
             let event_bus = Arc::new(EventBus::new());
+            let theme_service = Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>;
             let events = Arc::new(Mutex::new(Vec::new()));
             let events_clone = Arc::clone(&events);
 
@@ -42,7 +46,7 @@ macro_rules! screen_key_event_test {
                 events_clone.lock().unwrap().push(event.clone());
             });
 
-            let screen: $screen_type = <$screen_type>::new(event_bus);
+            let screen: $screen_type = <$screen_type>::new(event_bus, theme_service);
             let data = $provider.provide().unwrap();
             let _ = screen.init_with_data(data);
 
@@ -114,12 +118,16 @@ macro_rules! screen_key_test {
         #[test]
         fn $test_name() {
             use gittype::domain::events::EventBus;
+            use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
+            use gittype::domain::models::theme::Theme;
+            use gittype::domain::models::color_mode::ColorMode;
             use gittype::presentation::tui::Screen;
             use gittype::presentation::tui::ScreenDataProvider;
             use std::sync::Arc;
 
             let event_bus = Arc::new(EventBus::new());
-            let screen: $screen_type = <$screen_type>::new(event_bus);
+            let theme_service = Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>;
+            let screen: $screen_type = <$screen_type>::new(event_bus, theme_service);
             let data = $provider.provide().unwrap();
             let _ = screen.init_with_data(data);
 

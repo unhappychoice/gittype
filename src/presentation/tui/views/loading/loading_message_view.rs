@@ -10,13 +10,13 @@ use ratatui::{
 pub struct LoadingMessageView;
 
 impl LoadingMessageView {
-    pub fn render(frame: &mut Frame, area: Rect) {
+    pub fn render(frame: &mut Frame, area: Rect, colors: &Colors) {
         let loading_msg = Line::from(vec![
-            Span::styled("» ", Style::default().fg(Colors::warning())),
+            Span::styled("» ", Style::default().fg(colors.warning())),
             Span::styled(
                 "Loading...",
                 Style::default()
-                    .fg(Colors::warning())
+                    .fg(colors.warning())
                     .add_modifier(Modifier::BOLD),
             ),
         ]);

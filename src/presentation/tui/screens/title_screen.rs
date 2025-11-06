@@ -1,6 +1,6 @@
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::{DifficultyLevel, GitRepository};
-use crate::presentation::game::events::NavigateTo;
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::game::{GameData, StageRepository};
 use crate::presentation::tui::views::title::{DifficultySelectionView, StaticElementsView};
 use crate::presentation::tui::ScreenDataProvider;
@@ -82,10 +82,15 @@ pub struct TitleScreen {
     error_message: RwLock<Option<String>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
 }
 
 impl TitleScreen {
-    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    ) -> Self {
         Self {
             selected_difficulty: RwLock::new(1),
             challenge_counts: RwLock::new([0, 0, 0, 0, 0]),
@@ -94,6 +99,7 @@ impl TitleScreen {
             needs_render: RwLock::new(true),
             error_message: RwLock::new(None),
             event_bus,
+            theme_service,
         }
     }
 
@@ -242,6 +248,7 @@ impl Screen for TitleScreen {
     }
 
     fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
         let area = frame.area();
 
         // Calculate content layout
@@ -286,6 +293,7 @@ impl Screen for TitleScreen {
             chunks[3], // subtitle
             chunks[7], // instructions
             self.git_repository.read().unwrap().as_ref(),
+            &colors,
         );
 
         // Render difficulty selection
@@ -296,6 +304,7 @@ impl Screen for TitleScreen {
             *self.selected_difficulty.read().unwrap(),
             &self.challenge_counts.read().unwrap(),
             self.error_message.read().unwrap().as_ref(),
+            &colors,
         );
 
         Ok(())

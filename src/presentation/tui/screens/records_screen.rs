@@ -1,7 +1,7 @@
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::storage::StoredRepository;
 use crate::domain::services::session_service::{SessionDisplayData, SessionServiceInterface};
-use crate::presentation::game::events::NavigateTo;
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
@@ -127,12 +127,15 @@ pub struct RecordsScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
+    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    #[shaku(inject)]
     session_service: Arc<dyn SessionServiceInterface>,
 }
 
 impl RecordsScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
         session_service: Arc<dyn SessionServiceInterface>,
     ) -> Self {
         let mut list_state = ListState::default();
@@ -147,6 +150,7 @@ impl RecordsScreen {
             action_result: RwLock::new(None),
             selected_session_for_detail: RwLock::new(None),
             event_bus,
+            theme_service,
             session_service,
         }
     }
@@ -162,7 +166,7 @@ impl RecordsScreen {
         }
     }
 
-    fn render_session_list(&self, f: &mut Frame) {
+    fn render_session_list(&self, f: &mut Frame, colors: &Colors) {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -179,7 +183,7 @@ impl RecordsScreen {
                 Span::styled(
                     "Records - Typing Session Records",
                     Style::default()
-                        .fg(Colors::info())
+                        .fg(colors.info())
                         .add_modifier(Modifier::BOLD),
                 ),
             ]),
@@ -201,7 +205,7 @@ impl RecordsScreen {
                             sessions.len()
                         )
                     },
-                    Style::default().fg(Colors::accuracy()),
+                    Style::default().fg(colors.accuracy()),
                 ),
             ]),
         ];
@@ -209,7 +213,7 @@ impl RecordsScreen {
         let header = Paragraph::new(header_lines).block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Colors::border()))
+                .border_style(Style::default().fg(colors.border()))
                 .title("Session Records"),
         );
         f.render_widget(header, chunks[0]);
@@ -222,12 +226,12 @@ impl RecordsScreen {
                 Line::from("Start typing to build your records!"),
             ];
             let empty_paragraph = Paragraph::new(empty_msg)
-                .style(Style::default().fg(Colors::text_secondary()))
+                .style(Style::default().fg(colors.text_secondary()))
                 .alignment(Alignment::Center)
                 .block(
                     Block::default()
                         .borders(Borders::ALL)
-                        .border_style(Style::default().fg(Colors::border()))
+                        .border_style(Style::default().fg(colors.border()))
                         .title("Sessions"),
                 );
             f.render_widget(empty_paragraph, chunks[1]);
@@ -245,7 +249,7 @@ impl RecordsScreen {
             let items: Vec<ListItem> = sessions
                 .iter()
                 .map(|session_data| {
-                    let line = format_session_line_ratatui_static(session_data);
+                    let line = format_session_line_ratatui_static(session_data, colors);
                     ListItem::new(line)
                 })
                 .collect();
@@ -254,18 +258,18 @@ impl RecordsScreen {
                 .block(
                     Block::default()
                         .borders(Borders::ALL)
-                        .border_style(Style::default().fg(Colors::border()))
+                        .border_style(Style::default().fg(colors.border()))
                         .title("Sessions")
                         .title_style(
                             Style::default()
-                                .fg(Colors::text())
+                                .fg(colors.text())
                                 .add_modifier(Modifier::BOLD),
                         ),
                 )
-                .style(Style::default().fg(Colors::text()))
+                .style(Style::default().fg(colors.text()))
                 .highlight_style(
                     Style::default()
-                        .bg(Colors::background_secondary())
+                        .bg(colors.background_secondary())
                         .add_modifier(Modifier::BOLD),
                 )
                 .highlight_symbol("▶ ");
@@ -292,18 +296,18 @@ impl RecordsScreen {
         let controls_line = Line::from(vec![
             Span::styled(
                 "[↑↓/JK] Navigate  ",
-                Style::default().fg(Colors::key_navigation()),
+                Style::default().fg(colors.key_navigation()),
             ),
-            Span::styled("[SPACE]", Style::default().fg(Colors::key_action())),
-            Span::styled(" Details  ", Style::default().fg(Colors::text())),
-            Span::styled("[F]", Style::default().fg(Colors::border())),
-            Span::styled(" Filter  ", Style::default().fg(Colors::text())),
-            Span::styled("[S]", Style::default().fg(Colors::info())),
-            Span::styled(" Sort  ", Style::default().fg(Colors::text())),
-            Span::styled("[R]", Style::default().fg(Colors::warning())),
-            Span::styled(" Refresh  ", Style::default().fg(Colors::text())),
-            Span::styled("[ESC]", Style::default().fg(Colors::error())),
-            Span::styled(" Back", Style::default().fg(Colors::text())),
+            Span::styled("[SPACE]", Style::default().fg(colors.key_action())),
+            Span::styled(" Details  ", Style::default().fg(colors.text())),
+            Span::styled("[F]", Style::default().fg(colors.border())),
+            Span::styled(" Filter  ", Style::default().fg(colors.text())),
+            Span::styled("[S]", Style::default().fg(colors.info())),
+            Span::styled(" Sort  ", Style::default().fg(colors.text())),
+            Span::styled("[R]", Style::default().fg(colors.warning())),
+            Span::styled(" Refresh  ", Style::default().fg(colors.text())),
+            Span::styled("[ESC]", Style::default().fg(colors.error())),
+            Span::styled(" Back", Style::default().fg(colors.text())),
         ]);
 
         let controls = Paragraph::new(controls_line).alignment(Alignment::Center);
@@ -385,7 +389,10 @@ impl RecordsScreen {
     }
 }
 
-fn format_session_line_ratatui_static<'a>(session_data: &'a SessionDisplayData) -> Line<'a> {
+fn format_session_line_ratatui_static<'a>(
+    session_data: &'a SessionDisplayData,
+    colors: &Colors,
+) -> Line<'a> {
     let local_time: DateTime<Local> = session_data.session.started_at.into();
     let date_str = local_time.format("%Y-%m-%d %H:%M").to_string();
 
@@ -428,31 +435,31 @@ fn format_session_line_ratatui_static<'a>(session_data: &'a SessionDisplayData) 
     Line::from(vec![
         Span::styled(
             format!("{:<17}", date_str),
-            Style::default().fg(Colors::text()),
+            Style::default().fg(colors.text()),
         ),
         Span::styled(
             format!("{:<26}", repo_display),
-            Style::default().fg(Colors::info()),
+            Style::default().fg(colors.info()),
         ),
         Span::styled(
             format!("{:>6}", score_str),
-            Style::default().fg(Colors::score()),
+            Style::default().fg(colors.score()),
         ),
         Span::styled(
             format!("{:>6}", cpm_str),
-            Style::default().fg(Colors::success()),
+            Style::default().fg(colors.success()),
         ),
         Span::styled(
             format!("{:>6}", acc_str),
-            Style::default().fg(Colors::accuracy()),
+            Style::default().fg(colors.accuracy()),
         ),
         Span::styled(
             format!("{:>5}", stages_str),
-            Style::default().fg(Colors::border()),
+            Style::default().fg(colors.border()),
         ),
         Span::styled(
             format!("{:>10}", duration_str),
-            Style::default().fg(Colors::text_secondary()),
+            Style::default().fg(colors.text_secondary()),
         ),
     ])
 }
@@ -467,8 +474,14 @@ impl shaku::Provider<crate::presentation::di::AppModule> for RecordsScreenProvid
     ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
         use shaku::HasComponent;
         let event_bus: Arc<dyn crate::domain::events::EventBusInterface> = module.resolve();
+        let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> =
+            module.resolve();
         let session_service: Arc<dyn SessionServiceInterface> = module.resolve();
-        Ok(Box::new(RecordsScreen::new(event_bus, session_service)))
+        Ok(Box::new(RecordsScreen::new(
+            event_bus,
+            theme_service,
+            session_service,
+        )))
     }
 }
 
@@ -578,8 +591,9 @@ impl Screen for RecordsScreen {
     }
 
     fn render_ratatui(&self, frame: &mut ratatui::Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
         // Full implementation matching original render_session_list design
-        self.render_session_list(frame);
+        self.render_session_list(frame, &colors);
         Ok(())
     }
 

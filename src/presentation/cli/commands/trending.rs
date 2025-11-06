@@ -1,4 +1,5 @@
 use crate::domain::repositories::trending_repository::TrendingRepositoryInterface;
+use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::infrastructure::console::{Console, ConsoleImpl};
 use crate::presentation::cli::commands::run_game_session;
 use crate::presentation::cli::screen_runner::run_screen;
@@ -86,10 +87,16 @@ pub fn run_trending(
         return run_game_session(cli);
     } else if language.is_some() {
         // Language provided - show repositories directly
+        let theme_service: Arc<dyn ThemeServiceInterface> = container.resolve();
+
         let selected_repo = run_screen(
             ScreenType::TrendingRepositorySelection,
             |event_bus| {
-                TrendingRepositorySelectionScreen::new(event_bus, Arc::clone(&trending_repository))
+                TrendingRepositorySelectionScreen::new(
+                    event_bus,
+                    Arc::clone(&theme_service),
+                    Arc::clone(&trending_repository),
+                )
             },
             Some((language.clone(), period.clone())),
             Some(|screen: &TrendingRepositorySelectionScreen| {
@@ -115,10 +122,12 @@ pub fn run_trending(
         }
     } else {
         // No language provided - show language selection then repository selection
+        let theme_service: Arc<dyn ThemeServiceInterface> = container.resolve();
+
         // Step 1: Language selection
         let selected_language = run_screen(
             ScreenType::TrendingLanguageSelection,
-            TrendingLanguageSelectionScreen::new,
+            |event_bus| TrendingLanguageSelectionScreen::new(event_bus, Arc::clone(&theme_service)),
             None::<()>,
             Some(|screen: &TrendingLanguageSelectionScreen| {
                 screen.get_selected_language().map(|s| s.to_string())
@@ -132,6 +141,7 @@ pub fn run_trending(
                 |event_bus| {
                     TrendingRepositorySelectionScreen::new(
                         event_bus,
+                        Arc::clone(&theme_service),
                         Arc::clone(&trending_repository),
                     )
                 },

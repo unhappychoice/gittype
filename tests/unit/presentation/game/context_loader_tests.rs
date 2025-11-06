@@ -1,5 +1,5 @@
 use gittype::infrastructure::storage::file_storage::FileStorage;
-use gittype::presentation::game::context_loader::load_context_lines;
+use gittype::domain::services::context_loader::load_context_lines;
 use std::fs;
 use tempfile::NamedTempFile;
 

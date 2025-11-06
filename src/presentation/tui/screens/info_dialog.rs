@@ -1,6 +1,6 @@
 use crate::domain::events::{EventBus, EventBusInterface};
 use crate::infrastructure::browser;
-use crate::presentation::game::events::NavigateTo;
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
@@ -42,20 +42,32 @@ pub struct InfoDialogScreen {
     state: RwLock<InfoDialogState>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
 }
 
 impl InfoDialogScreen {
-    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    ) -> Self {
         Self {
             state: RwLock::new(InfoDialogState::Menu { selected_option: 0 }),
             event_bus,
+            theme_service,
         }
     }
 
-    pub fn new_fallback(title: String, url: String, event_bus: Arc<EventBus>) -> Self {
+    pub fn new_fallback(
+        title: String,
+        url: String,
+        event_bus: Arc<EventBus>,
+        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    ) -> Self {
         Self {
             state: RwLock::new(InfoDialogState::Fallback { title, url }),
             event_bus,
+            theme_service,
         }
     }
 
@@ -115,7 +127,7 @@ impl InfoDialogScreen {
         Ok(browser::open_url(url).is_ok())
     }
 
-    fn render_menu_ratatui(&self, frame: &mut Frame, selected_option: usize) {
+    fn render_menu_ratatui(&self, frame: &mut Frame, selected_option: usize, colors: &Colors) {
         let area = Self::centered_rect(50, 10, frame.area());
 
         frame.render_widget(Clear, area);
@@ -124,7 +136,7 @@ impl InfoDialogScreen {
             .title("Information & Links")
             .title_alignment(Alignment::Center)
             .borders(Borders::ALL)
-            .border_style(Style::default().fg(Colors::text()));
+            .border_style(Style::default().fg(colors.text()));
 
         frame.render_widget(block, area);
 
@@ -139,9 +151,9 @@ impl InfoDialogScreen {
             .enumerate()
             .map(|(i, (label, _))| {
                 let style = if i == selected_option {
-                    Style::default().fg(Colors::warning()).bold()
+                    Style::default().fg(colors.warning()).bold()
                 } else {
-                    Style::default().fg(Colors::text_secondary())
+                    Style::default().fg(colors.text_secondary())
                 };
 
                 let content = if i == selected_option {
@@ -154,7 +166,7 @@ impl InfoDialogScreen {
             })
             .collect();
 
-        let list = List::new(items).style(Style::default().fg(Colors::text()));
+        let list = List::new(items).style(Style::default().fg(colors.text()));
 
         let list_area = Rect {
             x: inner.x,
@@ -166,12 +178,12 @@ impl InfoDialogScreen {
         frame.render_widget(list, list_area);
 
         let instructions = vec![
-            Span::styled("[↑↓/JK]", Style::default().fg(Colors::info())),
-            Span::styled(" Navigate ", Style::default().fg(Colors::text())),
-            Span::styled("[SPACE]", Style::default().fg(Colors::key_action())),
-            Span::styled(" Select ", Style::default().fg(Colors::text())),
-            Span::styled("[ESC]", Style::default().fg(Colors::error())),
-            Span::styled(" Close", Style::default().fg(Colors::text())),
+            Span::styled("[↑↓/JK]", Style::default().fg(colors.info())),
+            Span::styled(" Navigate ", Style::default().fg(colors.text())),
+            Span::styled("[SPACE]", Style::default().fg(colors.key_action())),
+            Span::styled(" Select ", Style::default().fg(colors.text())),
+            Span::styled("[ESC]", Style::default().fg(colors.error())),
+            Span::styled(" Close", Style::default().fg(colors.text())),
         ];
 
         let instructions_para =
@@ -187,7 +199,7 @@ impl InfoDialogScreen {
         frame.render_widget(instructions_para, instructions_area);
     }
 
-    fn render_fallback_ratatui(&self, frame: &mut Frame, title: &str, url: &str) {
+    fn render_fallback_ratatui(&self, frame: &mut Frame, title: &str, url: &str, colors: &Colors) {
         let width = std::cmp::max(60, url.len() + 4) as u16;
         let area = Self::centered_rect(width, 8, frame.area());
 
@@ -197,7 +209,7 @@ impl InfoDialogScreen {
             .title(format!("Cannot open {}", title))
             .title_alignment(Alignment::Center)
             .borders(Borders::ALL)
-            .border_style(Style::default().fg(Colors::error()));
+            .border_style(Style::default().fg(colors.error()));
 
         frame.render_widget(block, area);
 
@@ -207,7 +219,7 @@ impl InfoDialogScreen {
         });
 
         let message = Paragraph::new("Please copy and paste the URL below:")
-            .style(Style::default().fg(Colors::warning()))
+            .style(Style::default().fg(colors.warning()))
             .alignment(Alignment::Center);
 
         let message_area = Rect {
@@ -220,7 +232,7 @@ impl InfoDialogScreen {
         frame.render_widget(message, message_area);
 
         let url_para = Paragraph::new(url)
-            .style(Style::default().fg(Colors::info()).bold())
+            .style(Style::default().fg(colors.info()).bold())
             .alignment(Alignment::Center);
 
         let url_area = Rect {
@@ -233,8 +245,8 @@ impl InfoDialogScreen {
         frame.render_widget(url_para, url_area);
 
         let back_instructions = vec![
-            Span::styled("[ESC]", Style::default().fg(Colors::key_action())),
-            Span::styled(" Back", Style::default().fg(Colors::text())),
+            Span::styled("[ESC]", Style::default().fg(colors.key_action())),
+            Span::styled(" Back", Style::default().fg(colors.text())),
         ];
 
         let back_para = Paragraph::new(Line::from(back_instructions)).alignment(Alignment::Center);
@@ -288,7 +300,9 @@ impl shaku::Provider<crate::presentation::di::AppModule> for InfoDialogScreenPro
     ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
         use shaku::HasComponent;
         let event_bus: Arc<dyn EventBusInterface> = module.resolve();
-        Ok(Box::new(InfoDialogScreen::new(event_bus)))
+        let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> =
+            module.resolve();
+        Ok(Box::new(InfoDialogScreen::new(event_bus, theme_service)))
     }
 }
 
@@ -359,12 +373,13 @@ impl Screen for InfoDialogScreen {
     }
 
     fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
         match &*self.state.read().unwrap() {
             InfoDialogState::Menu { selected_option } => {
-                self.render_menu_ratatui(frame, *selected_option);
+                self.render_menu_ratatui(frame, *selected_option, &colors);
             }
             InfoDialogState::Fallback { title, url } => {
-                self.render_fallback_ratatui(frame, title, url);
+                self.render_fallback_ratatui(frame, title, url, &colors);
             }
         }
         Ok(())

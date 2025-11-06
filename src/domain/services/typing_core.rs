@@ -1,3 +1,4 @@
+use crate::domain::models::typing::{InputResult, ProcessingOptions};
 use crate::domain::models::Challenge;
 
 #[derive(Debug, Clone)]
@@ -21,30 +22,6 @@ pub struct TypingCore {
     current_mistake_position: Option<usize>, // display position for highlighting
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct ProcessingOptions {
-    pub preserve_empty_lines: bool,
-    pub add_newline_symbols: bool,
-    pub highlight_special_chars: bool,
-}
-
-impl Default for ProcessingOptions {
-    fn default() -> Self {
-        Self {
-            preserve_empty_lines: true,
-            add_newline_symbols: true,
-            highlight_special_chars: true,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum InputResult {
-    Correct,   // Input was correct, continue
-    Incorrect, // Input was incorrect (mistake)
-    Completed, // Input was correct and typing is complete
-    NoAction,  // No input accepted (already completed)
-}
 
 impl TypingCore {
     pub fn new(

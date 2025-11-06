@@ -3,7 +3,7 @@ use crate::domain::models::storage::StoredRepositoryWithLanguages;
 use crate::domain::services::repository_service::RepositoryService;
 use crate::infrastructure::database::database::{Database, DatabaseInterface};
 use crate::infrastructure::git::RemoteGitRepositoryClient;
-use crate::presentation::game::events::NavigateTo;
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::tui::views::repo_list::{
     CacheInfoView, ControlsView, HeaderView, LegendView, RepositoryListView,
 };
@@ -33,14 +33,20 @@ pub struct RepoListScreen {
     cache_dir: RwLock<String>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
 }
 
 impl RepoListScreen {
-    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    ) -> Self {
         Self {
             repositories: RwLock::new(Vec::new()),
             cache_dir: RwLock::new(String::new()),
             event_bus,
+            theme_service,
         }
     }
 }
@@ -110,6 +116,7 @@ impl Screen for RepoListScreen {
     }
 
     fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -123,13 +130,13 @@ impl Screen for RepoListScreen {
             ])
             .split(frame.area());
 
-        HeaderView::render(frame, chunks[0]);
+        HeaderView::render(frame, chunks[0], &colors);
         let cache_dir = self.cache_dir.read().unwrap();
-        CacheInfoView::render(frame, chunks[2], &cache_dir);
+        CacheInfoView::render(frame, chunks[2], &cache_dir, &colors);
         let repositories = self.repositories.read().unwrap();
-        RepositoryListView::render(frame, chunks[4], &repositories);
-        LegendView::render(frame, chunks[5]);
-        ControlsView::render(frame, chunks[6]);
+        RepositoryListView::render(frame, chunks[4], &repositories, &colors);
+        LegendView::render(frame, chunks[5], &colors);
+        ControlsView::render(frame, chunks[6], &colors);
 
         Ok(())
     }

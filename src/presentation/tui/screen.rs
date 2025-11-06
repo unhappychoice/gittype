@@ -3,7 +3,7 @@ use crossterm::event::KeyEvent;
 use std::time::Duration;
 
 /// Trait for screen data providers
-pub trait ScreenDataProvider: Send {
+pub trait ScreenDataProvider: Send + shaku::Interface {
     /// Provide data for screen initialization
     fn provide(&self) -> Result<Box<dyn std::any::Any>>;
 }

@@ -1,6 +1,6 @@
 use gittype::domain::models::color_mode::ColorMode;
 use gittype::domain::models::theme::Theme;
-use gittype::domain::services::theme_service::ThemeService;
+use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
 
 #[test]
 fn get_available_themes_includes_default_themes() {
@@ -12,9 +12,16 @@ fn get_available_themes_includes_default_themes() {
 }
 
 #[test]
-fn init_returns_ok() {
-    let result = ThemeService::init();
-    assert!(result.is_ok());
+fn colors_instance_creation_works() {
+    use gittype::presentation::ui::Colors;
+
+    let theme = Theme::default();
+    let color_scheme = theme.dark;
+    let colors = Colors::new(color_scheme);
+    // If no panic, the test passes
+    // Verify we can call color methods
+    let _ = colors.border();
+    let _ = colors.title();
 }
 
 #[test]
@@ -51,7 +58,7 @@ fn default_theme_exists() {
 #[test]
 fn theme_manager_has_default_values() {
     let manager = ThemeService::new_for_test(Theme::default(), ColorMode::Dark);
-    assert_eq!(manager.current_theme.id, "default");
+    assert_eq!(manager.get_current_theme().id, "default");
 }
 
 #[test]

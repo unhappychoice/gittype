@@ -2,7 +2,7 @@ use crate::domain::events::EventBusInterface;
 use crate::domain::models::TotalResult;
 use crate::domain::services::scoring::{TotalCalculator, TotalTracker, GLOBAL_TOTAL_TRACKER};
 use crate::infrastructure::browser;
-use crate::presentation::game::events::NavigateTo;
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::sharing::SharingPlatform;
 use crate::presentation::tui::views::SharingView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
@@ -53,15 +53,21 @@ pub struct TotalSummaryShareScreen {
     last_fallback_state: RwLock<bool>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
 }
 
 impl TotalSummaryShareScreen {
-    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    ) -> Self {
         Self {
             total_result: RwLock::new(TotalResult::new()),
             fallback_url: RwLock::new(None),
             last_fallback_state: RwLock::new(false),
             event_bus,
+            theme_service,
         }
     }
 
@@ -146,7 +152,12 @@ impl shaku::Provider<crate::presentation::di::AppModule> for TotalSummaryShareSc
         use shaku::HasComponent;
         let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
             module.resolve();
-        Ok(Box::new(TotalSummaryShareScreen::new(event_bus)))
+        let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> =
+            module.resolve();
+        Ok(Box::new(TotalSummaryShareScreen::new(
+            event_bus,
+            theme_service,
+        )))
     }
 }
 
@@ -200,12 +211,13 @@ impl Screen for TotalSummaryShareScreen {
     }
 
     fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
         let fallback_url = self.fallback_url.read().unwrap();
         if let Some((url, platform)) = &*fallback_url {
-            SharingView::render_fallback_url(frame, url, platform);
+            SharingView::render_fallback_url(frame, url, platform, &colors);
         } else {
             let total_result = self.total_result.read().unwrap();
-            SharingView::render_menu(frame, &total_result);
+            SharingView::render_menu(frame, &total_result, &colors);
         }
         Ok(())
     }

@@ -16,6 +16,7 @@ pub mod generating_step;
 pub mod scanning_step;
 pub mod step_manager;
 
+use crate::presentation::ui::Colors;
 pub use cache_check_step::CacheCheckStep;
 pub use cloning_step::CloningStep;
 pub use database_init_step::DatabaseInitStep;
@@ -65,7 +66,7 @@ pub trait Step: Send + Sync {
     fn step_number(&self) -> usize;
     fn description(&self) -> &str;
     fn step_name(&self) -> &str;
-    fn icon(&self, is_current: bool, is_completed: bool) -> (&str, Color);
+    fn icon(&self, is_current: bool, is_completed: bool, colors: &Colors) -> (&str, Color);
     fn supports_progress(&self) -> bool;
     fn progress_unit(&self) -> &str;
     fn format_progress(

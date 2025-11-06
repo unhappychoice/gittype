@@ -1,14 +1,17 @@
 use crate::integration::screens::mocks::session_failure_screen_mock::MockSessionFailureDataProvider;
 use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
-use gittype::presentation::game::events::NavigateTo;
+use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
+use gittype::domain::models::theme::Theme;
+use gittype::domain::models::color_mode::ColorMode;
+use gittype::domain::events::presentation_events::NavigateTo;
 use gittype::presentation::tui::screens::session_failure_screen::SessionFailureScreen;
 use std::sync::Arc;
 
 screen_snapshot_test!(
     test_session_failure_screen_snapshot,
     SessionFailureScreen,
-    SessionFailureScreen::new(Arc::new(EventBus::new())),
+    SessionFailureScreen::new(Arc::new(EventBus::new()), Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>),
     provider = MockSessionFailureDataProvider
 );
 
@@ -71,7 +74,7 @@ screen_key_event_test!(
 screen_basic_methods_test!(
     test_session_failure_screen_basic_methods,
     SessionFailureScreen,
-    SessionFailureScreen::new(Arc::new(EventBus::new())),
+    SessionFailureScreen::new(Arc::new(EventBus::new()), Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>),
     gittype::presentation::tui::ScreenType::SessionFailure,
     false,
     MockSessionFailureDataProvider

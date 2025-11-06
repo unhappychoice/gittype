@@ -1,5 +1,5 @@
 use crate::domain::events::EventBusInterface;
-use crate::presentation::game::events::NavigateTo;
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::tui::views::VersionCheckView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::Result;
@@ -29,12 +29,18 @@ pub struct VersionCheckScreen {
     latest_version: RwLock<String>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
 }
 
 impl VersionCheckScreen {
-    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    ) -> Self {
         Self {
             event_bus,
+            theme_service,
             current_version: RwLock::new(String::new()),
             latest_version: RwLock::new(String::new()),
         }
@@ -60,8 +66,19 @@ impl VersionCheckScreen {
         current_version: &str,
         latest_version: &str,
     ) -> Result<VersionCheckResult> {
+        // Use default theme for legacy mode
+        let default_theme_json = include_str!("../../../../assets/themes/default.json");
+        let theme_file: crate::domain::models::color_scheme::ThemeFile =
+            serde_json::from_str(default_theme_json).expect("Default theme should be valid JSON");
+        let color_scheme = crate::domain::models::color_scheme::ColorScheme::from_theme_file(
+            &theme_file,
+            &crate::domain::models::color_mode::ColorMode::Dark,
+        );
+        let colors = crate::presentation::ui::Colors::new(color_scheme);
+
         loop {
-            terminal.draw(|f| VersionCheckView::draw_ui(f, current_version, latest_version))?;
+            terminal
+                .draw(|f| VersionCheckView::draw_ui(f, current_version, latest_version, &colors))?;
 
             if let Ok(true) = event::poll(std::time::Duration::from_millis(50)) {
                 if let Ok(Event::Key(key_event)) = event::read() {
@@ -130,9 +147,10 @@ impl Screen for VersionCheckScreen {
     }
 
     fn render_ratatui(&self, frame: &mut ratatui::Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
         let current = self.current_version.read().unwrap();
         let latest = self.latest_version.read().unwrap();
-        VersionCheckView::draw_ui(frame, &current, &latest);
+        VersionCheckView::draw_ui(frame, &current, &latest, &colors);
         Ok(())
     }
 

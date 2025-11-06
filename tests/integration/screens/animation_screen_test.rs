@@ -1,14 +1,17 @@
 use crate::integration::screens::mocks::animation_screen_mock::MockAnimationDataProvider;
 use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::EventBus;
-use gittype::presentation::game::events::NavigateTo;
+use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
+use gittype::domain::models::theme::Theme;
+use gittype::domain::models::color_mode::ColorMode;
+use gittype::domain::events::presentation_events::NavigateTo;
 use gittype::presentation::tui::screens::animation_screen::AnimationScreen;
 use std::sync::Arc;
 
 screen_snapshot_test!(
     test_animation_screen_snapshot_with_session_result,
     AnimationScreen,
-    AnimationScreen::new(Arc::new(EventBus::new())),
+    AnimationScreen::new(Arc::new(EventBus::new()), Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>),
     provider = MockAnimationDataProvider
 );
 
@@ -44,7 +47,7 @@ screen_key_event_test!(
 screen_basic_methods_test!(
     test_animation_screen_basic_methods,
     AnimationScreen,
-    AnimationScreen::new(Arc::new(EventBus::new())),
+    AnimationScreen::new(Arc::new(EventBus::new()), Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>),
     gittype::presentation::tui::ScreenType::Animation,
     false,
     MockAnimationDataProvider

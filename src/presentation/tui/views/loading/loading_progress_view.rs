@@ -15,7 +15,7 @@ const SPINNER_CHARS: &[char] = &['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦'
 pub struct LoadingProgressView;
 
 impl LoadingProgressView {
-    pub fn render(frame: &mut Frame, area: Rect, state: &LoadingScreenState) {
+    pub fn render(frame: &mut Frame, area: Rect, state: &LoadingScreenState, colors: &Colors) {
         let current_step_type = state
             .current_step
             .read()
@@ -99,7 +99,7 @@ impl LoadingProgressView {
         if total_files > 0 {
             let gauge = Gauge::default()
                 .block(Block::default())
-                .gauge_style(Style::default().fg(Colors::success()))
+                .gauge_style(Style::default().fg(colors.success()))
                 .ratio(progress.clamp(0.0, 1.0)); // Clamp progress to valid range
 
             frame.render_widget(gauge, progress_area[0]);
@@ -108,7 +108,7 @@ impl LoadingProgressView {
         // Render progress text
         let progress_line = Line::from(Span::styled(
             progress_text,
-            Style::default().fg(Colors::success()),
+            Style::default().fg(colors.success()),
         ));
 
         let progress_widget = Paragraph::new(vec![progress_line]).alignment(Alignment::Center);

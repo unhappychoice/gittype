@@ -1,6 +1,9 @@
 use gittype::domain::events::EventBusInterface;
 use gittype::domain::models::Challenge;
+use gittype::domain::models::color_mode::ColorMode;
+use gittype::domain::models::theme::Theme;
 use gittype::domain::services::scoring::tracker::StageTracker;
+use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
 use gittype::presentation::game::stage_repository::StageRepository;
 use gittype::presentation::game::{GameData, SessionManager};
 use gittype::presentation::tui::screens::typing_screen::TypingScreen;
@@ -81,8 +84,7 @@ pub fn create_typing_screen_with_challenge(
         let stage_tracker = StageTracker::new(code_content.to_string());
 
         if let Ok(mut manager) = session_manager.lock() {
-            use gittype::domain::models::DifficultyLevel;
-            use gittype::presentation::game::session_manager::{SessionConfig, SessionState};
+            use gittype::domain::models::{DifficultyLevel, SessionConfig, SessionState};
             use std::time::Instant;
 
             // Set difficulty to Easy to match the test challenge
@@ -106,7 +108,8 @@ pub fn create_typing_screen_with_challenge(
         }
     }
 
-    let screen = TypingScreen::new(event_bus, game_data, session_manager);
+    let theme_service = Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>;
+    let screen = TypingScreen::new(event_bus, theme_service, game_data, session_manager);
 
     // Load challenge if provided
     if code.is_some() {

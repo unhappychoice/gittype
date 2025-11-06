@@ -15,15 +15,16 @@ impl StageDetailsView {
         area: ratatui::prelude::Rect,
         stage_results: &[SessionStageResult],
         stage_scroll_offset: usize,
+        colors: &Colors,
     ) {
         if stage_results.is_empty() {
             let empty_msg = Paragraph::new("No stage data available")
-                .style(Style::default().fg(Colors::text_secondary()))
+                .style(Style::default().fg(colors.text_secondary()))
                 .alignment(ratatui::layout::Alignment::Center)
                 .block(
                     Block::default()
                         .borders(Borders::ALL)
-                        .border_style(Style::default().fg(Colors::border()))
+                        .border_style(Style::default().fg(colors.border()))
                         .title("Stage Details"),
                 );
             f.render_widget(empty_msg, area);
@@ -50,11 +51,11 @@ impl StageDetailsView {
             };
 
             let status_color = if stage.was_failed {
-                Colors::error()
+                colors.error()
             } else if stage.was_skipped {
-                Colors::warning()
+                colors.warning()
             } else {
-                Colors::success()
+                colors.success()
             };
 
             stage_text_lines.push(Line::from(vec![
@@ -62,7 +63,7 @@ impl StageDetailsView {
                 Span::styled(
                     format!("Stage #{} ", stage.stage_number),
                     Style::default()
-                        .fg(Colors::info())
+                        .fg(colors.info())
                         .add_modifier(Modifier::BOLD),
                 ),
                 Span::styled(format!("[{}]", status), Style::default().fg(status_color)),
@@ -73,56 +74,56 @@ impl StageDetailsView {
             {
                 stage_text_lines.push(Line::from(vec![
                     Span::raw("    "),
-                    Span::styled("File: ", Style::default().fg(Colors::stage_info())),
+                    Span::styled("File: ", Style::default().fg(colors.stage_info())),
                     Span::raw(format!("{}:{}-{}", file_path, start, end)),
                 ]));
             }
 
             stage_text_lines.push(Line::from(vec![
                 Span::raw("    "),
-                Span::styled("Score: ", Style::default().fg(Colors::score())),
+                Span::styled("Score: ", Style::default().fg(colors.score())),
                 Span::styled(
                     format!("{:.1}", stage.score),
-                    Style::default().fg(Colors::text()),
+                    Style::default().fg(colors.text()),
                 ),
                 Span::raw("  "),
-                Span::styled("CPM: ", Style::default().fg(Colors::cpm_wpm())),
+                Span::styled("CPM: ", Style::default().fg(colors.cpm_wpm())),
                 Span::styled(
                     format!("{:.1}", stage.cpm),
-                    Style::default().fg(Colors::text()),
+                    Style::default().fg(colors.text()),
                 ),
                 Span::raw("    "),
-                Span::styled("WPM: ", Style::default().fg(Colors::cpm_wpm())),
+                Span::styled("WPM: ", Style::default().fg(colors.cpm_wpm())),
                 Span::styled(
                     format!("{:.1}", stage.wpm),
-                    Style::default().fg(Colors::text()),
+                    Style::default().fg(colors.text()),
                 ),
             ]));
 
             stage_text_lines.push(Line::from(vec![
                 Span::raw("    "),
-                Span::styled("Keystrokes: ", Style::default().fg(Colors::stage_info())),
+                Span::styled("Keystrokes: ", Style::default().fg(colors.stage_info())),
                 Span::styled(
                     format!("{}", stage.keystrokes),
-                    Style::default().fg(Colors::text()),
+                    Style::default().fg(colors.text()),
                 ),
                 Span::raw("  "),
-                Span::styled("Mistakes: ", Style::default().fg(Colors::error())),
+                Span::styled("Mistakes: ", Style::default().fg(colors.error())),
                 Span::styled(
                     format!("{}", stage.mistakes),
-                    Style::default().fg(Colors::text()),
+                    Style::default().fg(colors.text()),
                 ),
                 Span::raw("  "),
-                Span::styled("Accuracy: ", Style::default().fg(Colors::accuracy())),
+                Span::styled("Accuracy: ", Style::default().fg(colors.accuracy())),
                 Span::styled(
                     format!("{:.1}%", stage.accuracy),
-                    Style::default().fg(Colors::text()),
+                    Style::default().fg(colors.text()),
                 ),
                 Span::raw("  "),
-                Span::styled("Duration: ", Style::default().fg(Colors::duration())),
+                Span::styled("Duration: ", Style::default().fg(colors.duration())),
                 Span::styled(
                     format!("{}ms", stage.duration_ms),
-                    Style::default().fg(Colors::text()),
+                    Style::default().fg(colors.text()),
                 ),
             ]));
 
@@ -145,11 +146,11 @@ impl StageDetailsView {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border()))
+                    .border_style(Style::default().fg(colors.border()))
                     .title(format!("Stage Details{}", scroll_info))
                     .title_style(
                         Style::default()
-                            .fg(Colors::text())
+                            .fg(colors.text())
                             .add_modifier(Modifier::BOLD),
                     ),
             )

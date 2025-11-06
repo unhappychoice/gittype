@@ -1,4 +1,4 @@
-use super::stage::{Stage, StageResult};
+use crate::domain::models::stage::{Stage, StageResult};
 use std::time::{Duration, Instant};
 
 #[derive(Debug, Clone)]

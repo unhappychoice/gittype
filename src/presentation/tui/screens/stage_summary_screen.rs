@@ -1,6 +1,6 @@
 use crate::domain::events::EventBusInterface;
 use crate::domain::services::scoring::{SessionTracker, StageResult, GLOBAL_SESSION_TRACKER};
-use crate::presentation::game::events::NavigateTo;
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::game::SessionManager;
 use crate::presentation::tui::screens::ResultAction;
 use crate::presentation::tui::views::StageCompletionView;
@@ -83,12 +83,17 @@ pub struct StageSummaryScreen {
     is_completed: RwLock<bool>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
     #[shaku(default)]
     session_manager: SessionManagerRef,
 }
 
 impl StageSummaryScreen {
-    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    ) -> Self {
         Self {
             stage_result: RwLock::new(None),
             action_result: RwLock::new(None),
@@ -96,6 +101,7 @@ impl StageSummaryScreen {
             total_stages: RwLock::new(3),
             is_completed: RwLock::new(false),
             event_bus,
+            theme_service,
             session_manager: SessionManagerRef::default(),
         }
     }
@@ -125,7 +131,9 @@ impl shaku::Provider<crate::presentation::di::AppModule> for StageSummaryScreenP
         use shaku::HasComponent;
         let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
             module.resolve();
-        Ok(Box::new(StageSummaryScreen::new(event_bus)))
+        let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> =
+            module.resolve();
+        Ok(Box::new(StageSummaryScreen::new(event_bus, theme_service)))
     }
 }
 
@@ -198,6 +206,7 @@ impl Screen for StageSummaryScreen {
     }
 
     fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
         let stage_result = self.stage_result.read().unwrap();
         if let Some(ref stage_result) = *stage_result {
             let is_completed = *self.is_completed.read().unwrap();
@@ -223,6 +232,7 @@ impl Screen for StageSummaryScreen {
                 total_stages,
                 has_next,
                 stage_result.keystrokes,
+                &colors,
             );
         }
 

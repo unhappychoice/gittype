@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
 pub mod domain_events;
+pub mod presentation_events;
 
 pub trait Event: Send + Sync + 'static {
     fn as_any(&self) -> &dyn Any;

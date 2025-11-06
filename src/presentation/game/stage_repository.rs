@@ -1,4 +1,4 @@
-use crate::domain::models::{Challenge, DifficultyLevel, GitRepository};
+use crate::domain::models::{Challenge, DifficultyLevel, GameMode, GitRepository, StageConfig};
 use crate::presentation::game::GameData;
 use crate::presentation::tui::screens::TitleScreen;
 use crate::presentation::tui::{ScreenManagerImpl, ScreenType};
@@ -9,35 +9,6 @@ use rand::seq::SliceRandom;
 use rand::{RngExt, SeedableRng};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-
-#[derive(Debug, Clone)]
-pub enum GameMode {
-    Normal,     // Random selection of few challenges
-    TimeAttack, // Time limit with all challenges
-    Custom {
-        // Custom configuration
-        max_stages: Option<usize>,
-        time_limit: Option<u64>, // seconds
-        difficulty: DifficultyLevel,
-    },
-}
-
-#[derive(Debug, Clone)]
-pub struct StageConfig {
-    pub game_mode: GameMode,
-    pub max_stages: usize,
-    pub seed: Option<u64>, // 再現可能なランダム生成用
-}
-
-impl Default for StageConfig {
-    fn default() -> Self {
-        Self {
-            game_mode: GameMode::Normal,
-            max_stages: 3,
-            seed: None,
-        }
-    }
-}
 
 /// Repository for managing challenges and stage building
 pub struct StageRepository {

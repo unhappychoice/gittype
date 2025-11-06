@@ -11,7 +11,7 @@ use ratatui::{
 pub struct GitRepositoryView;
 
 impl GitRepositoryView {
-    pub fn render(frame: &mut Frame, git_repository: Option<&GitRepository>) {
+    pub fn render(frame: &mut Frame, git_repository: Option<&GitRepository>, colors: &Colors) {
         if let Some(info) = git_repository {
             let area = frame.area();
 
@@ -39,7 +39,7 @@ impl GitRepositoryView {
 
             let git_info = Paragraph::new(Line::from(vec![Span::styled(
                 git_text,
-                Style::default().fg(Colors::text_secondary()),
+                Style::default().fg(colors.text_secondary()),
             )]))
             .alignment(Alignment::Center);
 

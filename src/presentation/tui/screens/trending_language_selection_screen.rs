@@ -1,5 +1,5 @@
 use crate::domain::events::EventBusInterface;
-use crate::presentation::game::events::NavigateTo;
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::tui::views::trending_language_selection::{
     ControlsView, HeaderView, LanguageListView,
 };
@@ -25,10 +25,15 @@ pub struct TrendingLanguageSelectionScreen {
     selected_language: RwLock<Option<String>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
 }
 
 impl TrendingLanguageSelectionScreen {
-    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    ) -> Self {
         let mut list_state = ListState::default();
         list_state.select(Some(0));
 
@@ -36,6 +41,7 @@ impl TrendingLanguageSelectionScreen {
             list_state: RwLock::new(list_state),
             selected_language: RwLock::new(None),
             event_bus,
+            theme_service,
         }
     }
 
@@ -43,7 +49,7 @@ impl TrendingLanguageSelectionScreen {
         self.selected_language.read().unwrap().clone()
     }
 
-    fn render_ui(&self, frame: &mut Frame) {
+    fn render_ui(&self, frame: &mut Frame, colors: &crate::presentation::ui::Colors) {
         // Add horizontal padding
         let outer_chunks = Layout::default()
             .direction(Direction::Horizontal)
@@ -63,10 +69,10 @@ impl TrendingLanguageSelectionScreen {
             ])
             .split(outer_chunks[1]);
 
-        HeaderView::render(frame, chunks[0]);
+        HeaderView::render(frame, chunks[0], colors);
         let mut list_state = self.list_state.write().unwrap();
-        LanguageListView::render(frame, chunks[1], &mut list_state);
-        ControlsView::render(frame, chunks[2]);
+        LanguageListView::render(frame, chunks[1], &mut list_state, colors);
+        ControlsView::render(frame, chunks[2], colors);
     }
 }
 
@@ -146,7 +152,8 @@ impl Screen for TrendingLanguageSelectionScreen {
     }
 
     fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
-        self.render_ui(frame);
+        let colors = self.theme_service.get_colors();
+        self.render_ui(frame, &colors);
         Ok(())
     }
 

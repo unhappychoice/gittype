@@ -131,6 +131,16 @@ impl SharingService {
         };
         use std::io::{stdout, Write};
 
+        // Use default theme for fallback display
+        let default_theme_json = include_str!("../../assets/themes/default.json");
+        let theme_file: crate::domain::models::color_scheme::ThemeFile =
+            serde_json::from_str(default_theme_json).expect("Default theme should be valid JSON");
+        let color_scheme = crate::domain::models::color_scheme::ColorScheme::from_theme_file(
+            &theme_file,
+            &crate::domain::models::color_mode::ColorMode::Dark,
+        );
+        let colors = crate::presentation::ui::Colors::new(color_scheme);
+
         let mut stdout = stdout();
         execute!(stdout, terminal::Clear(ClearType::All))?;
 
@@ -145,7 +155,7 @@ impl SharingService {
         execute!(
             stdout,
             SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(Colors::warning()))
+            SetForegroundColor(Colors::to_crossterm(colors.warning()))
         )?;
         execute!(stdout, Print(&title))?;
         execute!(stdout, ResetColor)?;
@@ -159,7 +169,7 @@ impl SharingService {
         )?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text()))
+            SetForegroundColor(Colors::to_crossterm(colors.text()))
         )?;
         execute!(stdout, Print(instruction))?;
         execute!(stdout, ResetColor)?;
@@ -170,7 +180,7 @@ impl SharingService {
         execute!(
             stdout,
             SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(Colors::info()))
+            SetForegroundColor(Colors::to_crossterm(colors.info()))
         )?;
         execute!(stdout, Print(&url_display))?;
         execute!(stdout, ResetColor)?;
@@ -181,7 +191,7 @@ impl SharingService {
         execute!(stdout, MoveTo(info_col, center_row + 4))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::text_secondary()))
+            SetForegroundColor(Colors::to_crossterm(colors.text_secondary()))
         )?;
         execute!(stdout, Print(info))?;
         execute!(stdout, ResetColor)?;
@@ -192,7 +202,7 @@ impl SharingService {
         execute!(stdout, MoveTo(continue_col, center_row + 6))?;
         execute!(
             stdout,
-            SetForegroundColor(Colors::to_crossterm(Colors::success()))
+            SetForegroundColor(Colors::to_crossterm(colors.success()))
         )?;
         execute!(stdout, Print(continue_text))?;
         execute!(stdout, ResetColor)?;

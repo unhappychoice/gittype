@@ -10,14 +10,14 @@ use ratatui::{
 pub struct HeaderView;
 
 impl HeaderView {
-    pub fn render(frame: &mut Frame, area: Rect) {
+    pub fn render(frame: &mut Frame, area: Rect, colors: &Colors) {
         let header_lines = vec![
             Line::from(vec![
                 Span::raw("  "),
                 Span::styled(
                     "🔥 Select Trending Repository to Play",
                     Style::default()
-                        .fg(Colors::info())
+                        .fg(colors.info())
                         .add_modifier(Modifier::BOLD),
                 ),
             ]),
@@ -27,7 +27,7 @@ impl HeaderView {
         let header = Paragraph::new(header_lines).block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Colors::border()))
+                .border_style(Style::default().fg(colors.border()))
                 .title("GitType - Trending"),
         );
         frame.render_widget(header, area);

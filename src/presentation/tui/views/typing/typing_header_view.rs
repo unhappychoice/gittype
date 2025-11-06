@@ -18,6 +18,7 @@ impl TypingHeaderView {
         area: ratatui::layout::Rect,
         challenge: Option<&Challenge>,
         git_repository: Option<&GitRepository>,
+        colors: &Colors,
     ) {
         let header_text = if let Some(challenge) = challenge {
             let difficulty_text = match &challenge.difficulty_level {
@@ -30,43 +31,42 @@ impl TypingHeaderView {
             // Create spans for colored language display before difficulty
             let mut spans = vec![Span::styled(
                 base_title,
-                Style::default().fg(Colors::text_secondary()),
+                Style::default().fg(colors.text_secondary()),
             )];
 
             // Add language with color if available
             if let Some(ref language) = challenge.language {
-                let language_color = Languages::get_color(Some(language));
                 let display_name = Languages::get_display_name(Some(language));
                 spans.push(Span::styled(
                     " ",
-                    Style::default().fg(Colors::text_secondary()),
+                    Style::default().fg(colors.text_secondary()),
                 ));
                 spans.push(Span::styled(
                     format!("[{}]", display_name),
-                    Style::default().fg(language_color),
+                    Style::default().fg(colors.info()),
                 ));
             }
 
             // Add difficulty at the end
             spans.push(Span::styled(
                 format!(" [{}]", difficulty_text),
-                Style::default().fg(Colors::text_secondary()),
+                Style::default().fg(colors.text_secondary()),
             ));
 
             Line::from(spans)
         } else {
             Line::from(vec![Span::styled(
                 "[Challenge]",
-                Style::default().fg(Colors::text_secondary()),
+                Style::default().fg(colors.text_secondary()),
             )])
         };
 
         let header = Paragraph::new(vec![header_text]).block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Colors::border()))
+                .border_style(Style::default().fg(colors.border()))
                 .title("Challenge")
-                .title_style(Style::default().fg(Colors::border()))
+                .title_style(Style::default().fg(colors.border()))
                 .padding(ratatui::widgets::Padding::horizontal(1)),
         );
         frame.render_widget(header, area);

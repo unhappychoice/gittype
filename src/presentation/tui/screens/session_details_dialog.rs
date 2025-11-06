@@ -1,7 +1,7 @@
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::SessionResult;
 use crate::domain::repositories::session_repository::{BestRecords, BestStatus, SessionRepository};
-use crate::presentation::game::events::NavigateTo;
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::game::{GameData, SessionManager};
 use crate::presentation::tui::views::{
     BestRecordsView, ControlsView, HeaderView, StageResultsView,
@@ -81,20 +81,26 @@ pub struct SessionDetailsDialog {
     best_records: RwLock<Option<BestRecords>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
 }
 
 impl SessionDetailsDialog {
-    pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    ) -> Self {
         Self {
             session_result: RwLock::new(None),
             repo_info: RwLock::new(None),
             best_status: RwLock::new(None),
             best_records: RwLock::new(None),
             event_bus,
+            theme_service,
         }
     }
 
-    fn ui(&self, f: &mut Frame) {
+    fn ui(&self, f: &mut Frame, colors: &crate::presentation::ui::Colors) {
         let session_result_ref = self.session_result.read().unwrap();
         let session_result = session_result_ref
             .as_ref()
@@ -147,7 +153,7 @@ impl SessionDetailsDialog {
             ])
             .split(horizontal_chunks[1]);
 
-        HeaderView::render(f, main_chunks[0]);
+        HeaderView::render(f, main_chunks[0], colors);
 
         let content_chunks = Layout::default()
             .direction(Direction::Vertical)
@@ -163,14 +169,16 @@ impl SessionDetailsDialog {
             session_result,
             self.best_status.read().unwrap().as_ref(),
             self.best_records.read().unwrap().as_ref(),
+            colors,
         );
         StageResultsView::render(
             f,
             content_chunks[1],
             session_result,
             &self.repo_info.read().unwrap(),
+            colors,
         );
-        ControlsView::render(f, main_chunks[4]);
+        ControlsView::render(f, main_chunks[4], colors);
     }
 }
 
@@ -185,7 +193,12 @@ impl shaku::Provider<crate::presentation::di::AppModule> for SessionDetailsDialo
         use shaku::HasComponent;
         let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
             module.resolve();
-        Ok(Box::new(SessionDetailsDialog::new(event_bus)))
+        let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> =
+            module.resolve();
+        Ok(Box::new(SessionDetailsDialog::new(
+            event_bus,
+            theme_service,
+        )))
     }
 }
 
@@ -231,7 +244,8 @@ impl Screen for SessionDetailsDialog {
     }
 
     fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
-        self.ui(frame);
+        let colors = self.theme_service.get_colors();
+        self.ui(frame, &colors);
         Ok(())
     }
 

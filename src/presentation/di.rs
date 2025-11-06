@@ -9,6 +9,7 @@ use crate::domain::services::analytics_service::AnalyticsService;
 use crate::domain::services::config_service::ConfigService;
 use crate::domain::services::repository_service::RepositoryService;
 use crate::domain::services::session_service::SessionService;
+use crate::domain::services::theme_service::ThemeService;
 use crate::domain::services::version_service::VersionService;
 use crate::infrastructure::database::daos::{ChallengeDao, RepositoryDao, SessionDao, StageDao};
 use crate::infrastructure::database::database::Database;
@@ -52,6 +53,7 @@ shaku::module! {
             RepositoryService,
             VersionService,
             ConfigService,
+            ThemeService,
             ScreenManagerFactoryImpl,
             TitleScreen,
             TypingScreen,
