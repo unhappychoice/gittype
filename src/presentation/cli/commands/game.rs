@@ -1,8 +1,7 @@
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::ExtractionOptions;
 use crate::domain::models::Languages;
-use crate::domain::services::theme_manager::ThemeManager;
-use crate::domain::services::version_service::{VersionService, VersionServiceInterface};
+use crate::domain::services::theme_service::ThemeService;
 use crate::infrastructure::console::{Console, ConsoleImpl};
 use crate::infrastructure::logging;
 use crate::presentation::cli::args::Cli;
@@ -45,7 +44,9 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
             GitTypeError::TerminalError(format!("Failed to create tokio runtime: {}", e))
         })?;
         rt.block_on(async {
-            let version_service = VersionService::new()?;
+            use crate::domain::services::version_service::VersionServiceInterface;
+            use shaku::HasComponent;
+            let version_service: std::sync::Arc<dyn VersionServiceInterface> = container.resolve();
             if let Ok((has_update, current_version, latest_version)) = version_service.check().await
             {
                 if has_update {
@@ -65,7 +66,7 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
     }
 
     // Initialize theme manager
-    if let Err(e) = ThemeManager::init() {
+    if let Err(e) = ThemeService::init() {
         log::warn!("Failed to initialize theme manager: {}", e);
         console.eprintln(&format!(
             "⚠️ Warning: Failed to load theme configuration: {}",

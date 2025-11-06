@@ -1,31 +1,39 @@
 use crate::domain::models::version::VersionCacheEntry;
-use crate::infrastructure::http::GitHubApiClient;
-use crate::infrastructure::storage::{file_storage::FileStorage, AppDataProvider};
+use crate::infrastructure::http::github_api_client::GitHubApiClientFactory;
+use crate::infrastructure::storage::app_data_provider::AppDataProvider;
+use crate::infrastructure::storage::file_storage::{FileStorage, FileStorageInterface};
 use crate::Result;
 use chrono::Utc;
+use shaku::Interface;
+use std::future::Future;
 use std::path::PathBuf;
+use std::pin::Pin;
+use std::sync::Arc;
 
+pub trait VersionRepositoryInterface: Interface {
+    fn fetch_latest_version(&self) -> Pin<Box<dyn Future<Output = Result<String>> + Send + '_>>;
+}
+
+#[derive(shaku::Component)]
+#[shaku(interface = VersionRepositoryInterface)]
 pub struct VersionRepository {
-    github_client: GitHubApiClient,
-    file_storage: FileStorage,
+    #[shaku(inject)]
+    github_client_factory: Arc<dyn GitHubApiClientFactory>,
+    #[shaku(inject)]
+    file_storage: Arc<dyn FileStorageInterface>,
 }
 
-impl Default for VersionRepository {
-    fn default() -> Self {
-        Self {
-            github_client: GitHubApiClient::new().expect("Failed to create GitHub API client"),
-            file_storage: FileStorage::new(),
-        }
-    }
-}
+impl AppDataProvider for VersionRepository {}
 
 impl VersionRepository {
     const VERSION_CACHE_FILENAME: &'static str = "version_cache.json";
 
-    pub fn new() -> Result<Self> {
+    #[cfg(feature = "test-mocks")]
+    pub fn new_for_test() -> Result<Self> {
+        use crate::infrastructure::http::github_api_client::GitHubApiClientFactoryImpl;
         Ok(Self {
-            github_client: GitHubApiClient::new()?,
-            file_storage: FileStorage::new(),
+            github_client_factory: Arc::new(GitHubApiClientFactoryImpl::default()),
+            file_storage: Arc::new(FileStorage::new()),
         })
     }
 
@@ -65,7 +73,12 @@ impl VersionRepository {
         }
 
         let cache_path = self.get_version_cache_path()?;
-        self.file_storage.read_json(&cache_path)
+
+        let file_storage = (self.file_storage.as_ref() as &dyn std::any::Any)
+            .downcast_ref::<FileStorage>()
+            .ok_or_else(|| crate::GitTypeError::ExtractionFailed("Failed to downcast storage".to_string()))?;
+
+        file_storage.read_json(&cache_path)
     }
 
     /// Save version information to cache
@@ -82,18 +95,24 @@ impl VersionRepository {
         };
 
         let cache_path = self.get_version_cache_path()?;
-        self.file_storage.write_json(&cache_path, &entry)
+
+        let file_storage = (self.file_storage.as_ref() as &dyn std::any::Any)
+            .downcast_ref::<FileStorage>()
+            .ok_or_else(|| crate::GitTypeError::ExtractionFailed("Failed to downcast storage".to_string()))?;
+
+        file_storage.write_json(&cache_path, &entry)
     }
 
     /// Fetch the latest version from GitHub API
     async fn fetch_from_api(&self) -> Result<String> {
-        let release = self.github_client.fetch_latest_release().await?;
+        let github_client = self.github_client_factory.create()?;
+        let release = github_client.fetch_latest_release().await?;
         let version = Self::normalize_version_tag(&release.tag_name);
         Ok(version)
     }
 
     fn get_version_cache_path(&self) -> Result<PathBuf> {
-        let app_dir = <FileStorage as AppDataProvider>::get_app_data_dir()?;
+        let app_dir = Self::get_app_data_dir()?;
         Ok(app_dir.join(Self::VERSION_CACHE_FILENAME))
     }
 
@@ -113,5 +132,11 @@ impl VersionRepository {
     /// Strip 'v' prefix from version tag if present
     fn normalize_version_tag(tag: &str) -> String {
         tag.strip_prefix('v').unwrap_or(tag).to_string()
+    }
+}
+
+impl VersionRepositoryInterface for VersionRepository {
+    fn fetch_latest_version(&self) -> Pin<Box<dyn Future<Output = Result<String>> + Send + '_>> {
+        Box::pin(VersionRepository::fetch_latest_version(self))
     }
 }

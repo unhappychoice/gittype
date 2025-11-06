@@ -4,6 +4,7 @@ use crate::domain::services::source_code_parser::parsers::parse_with_thread_loca
 use crate::domain::services::source_code_parser::ChunkExtractor;
 use crate::infrastructure::git::LocalGitRepositoryClient;
 use crate::infrastructure::storage::file_storage::FileStorage;
+use crate::infrastructure::storage::file_storage::FileStorageInterface;
 use crate::presentation::game::models::StepType;
 use crate::presentation::tui::screens::loading_screen::ProgressReporter;
 use crate::{GitTypeError, Result};

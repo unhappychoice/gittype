@@ -1,12 +1,14 @@
 use super::super::models::color_mode::ColorMode;
 use super::super::models::color_scheme::{ColorScheme, CustomThemeFile, ThemeFile};
 use super::super::models::theme::Theme;
-use crate::domain::services::config_manager::ConfigService;
+use crate::domain::services::config_service::{ConfigService, ConfigServiceInterface};
+use crate::infrastructure::storage::app_data_provider::AppDataProvider;
 use crate::infrastructure::storage::file_storage::FileStorage;
+use crate::infrastructure::storage::file_storage::FileStorageInterface;
 use once_cell::sync::Lazy;
 
-pub static THEME_MANAGER: Lazy<std::sync::RwLock<ThemeManager>> = Lazy::new(|| {
-    std::sync::RwLock::new(ThemeManager {
+pub static THEME_MANAGER: Lazy<std::sync::RwLock<ThemeService>> = Lazy::new(|| {
+    std::sync::RwLock::new(ThemeService {
         current_theme: Theme::default(),
         current_color_mode: ColorMode::Dark,
         file_storage: FileStorage::new(),
@@ -14,13 +16,15 @@ pub static THEME_MANAGER: Lazy<std::sync::RwLock<ThemeManager>> = Lazy::new(|| {
 });
 
 /// Theme manager with current theme and color mode
-pub struct ThemeManager {
+pub struct ThemeService {
     pub current_theme: Theme,
     pub current_color_mode: ColorMode,
     file_storage: FileStorage,
 }
 
-impl ThemeManager {
+impl AppDataProvider for ThemeService {}
+
+impl ThemeService {
     #[cfg(feature = "test-mocks")]
     pub fn new_for_test(current_theme: Theme, current_color_mode: ColorMode) -> Self {
         Self {
@@ -32,7 +36,9 @@ impl ThemeManager {
 
     /// Initialize the theme manager
     pub fn init() -> anyhow::Result<()> {
-        let config_manager = ConfigService::new()?;
+        use std::sync::Arc;
+        let file_storage = Arc::new(FileStorage::new());
+        let config_manager = ConfigService::new(file_storage)?;
 
         // Create default custom theme file if it doesn't exist
         let _ = Self::create_default_custom_theme_file();
@@ -102,15 +108,15 @@ impl ThemeManager {
 
     /// Get the custom theme file path
     fn get_custom_theme_path() -> std::path::PathBuf {
-        let file_storage = FileStorage::new();
-        file_storage
-            .get_app_data_dir()
+        Self::get_app_data_dir()
             .unwrap_or_else(|_| std::path::PathBuf::from("."))
             .join("custom-theme.json")
     }
 
     /// Create default custom theme file if it doesn't exist
     fn create_default_custom_theme_file() -> anyhow::Result<()> {
+        use crate::infrastructure::storage::file_storage::FileStorageInterface;
+
         let file_storage = FileStorage::new();
         let custom_theme_path = Self::get_custom_theme_path();
 

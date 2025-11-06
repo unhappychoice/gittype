@@ -1,5 +1,5 @@
 use gittype::infrastructure::storage::app_data_provider::AppDataProvider;
-use gittype::infrastructure::storage::file_storage::FileStorage;
+use gittype::infrastructure::storage::file_storage::{FileStorage, FileStorageInterface};
 
 struct TestProvider;
 impl AppDataProvider for TestProvider {}

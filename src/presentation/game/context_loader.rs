@@ -1,5 +1,6 @@
 use crate::domain::models::Challenge;
 use crate::infrastructure::storage::file_storage::FileStorage;
+use crate::infrastructure::storage::file_storage::FileStorageInterface;
 use crate::presentation::game::GameData;
 use crate::Result;
 use std::path::{Path, PathBuf};
