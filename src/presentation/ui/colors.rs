@@ -1,5 +1,5 @@
 use crate::domain::models::color_scheme::ColorScheme;
-use crate::domain::services::theme_manager::ThemeManager;
+use crate::domain::services::theme_service::ThemeService;
 use ratatui::style::Color;
 
 /// UI color scheme for gittype application
@@ -8,7 +8,7 @@ pub struct Colors;
 impl Colors {
     /// Get the current color scheme
     fn get_color_scheme() -> ColorScheme {
-        ThemeManager::get_current_color_scheme()
+        ThemeService::get_current_color_scheme()
     }
 
     // Primary colors for main UI elements

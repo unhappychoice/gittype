@@ -50,7 +50,7 @@ pub use session_summary_share_screen::{
     SessionSummaryShareScreen, SessionSummaryShareScreenInterface,
     SessionSummaryShareScreenProvider,
 };
-pub use settings_screen::{SettingsScreen, SettingsScreenInterface, SettingsScreenProvider};
+pub use settings_screen::{SettingsScreen, SettingsScreenInterface};
 pub use stage_summary_screen::{
     StageSummaryScreen, StageSummaryScreenInterface, StageSummaryScreenProvider,
 };

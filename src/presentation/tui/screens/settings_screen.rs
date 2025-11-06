@@ -1,8 +1,8 @@
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::color_mode::ColorMode;
 use crate::domain::models::theme::Theme;
-use crate::domain::services::config_manager::ConfigService;
-use crate::domain::services::theme_manager::THEME_MANAGER;
+use crate::domain::services::config_service::{ConfigService, ConfigServiceInterface};
+use crate::domain::services::theme_service::THEME_MANAGER;
 use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType};
 use crate::presentation::ui::Colors;
@@ -75,25 +75,29 @@ pub struct SettingsScreen {
     is_preview_mode: RwLock<bool>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    config_service: Arc<dyn ConfigServiceInterface>,
 }
 
 impl SettingsScreen {
+    #[cfg(feature = "test-mocks")]
     pub fn new(event_bus: Arc<dyn EventBusInterface>) -> Self {
+        use crate::infrastructure::storage::file_storage::FileStorage;
+        let config_service = Arc::new(ConfigService::new(Arc::new(FileStorage::new())).unwrap());
         Self {
-            current_section: RwLock::new(SettingsSection::ColorMode),
+            current_section: RwLock::new(SettingsSection::default()),
             color_mode_state: RwLock::new(ListState::default()),
             theme_state: RwLock::new(ListState::default()),
-            color_modes: RwLock::new(vec![]),
-            themes: RwLock::new(vec![]),
+            color_modes: RwLock::new(Vec::new()),
+            themes: RwLock::new(Vec::new()),
             original_theme: RwLock::new(Theme::default()),
-            original_color_mode: RwLock::new(ColorMode::Dark),
+            original_color_mode: RwLock::new(ColorMode::default()),
             is_preview_mode: RwLock::new(false),
             event_bus,
+            config_service,
         }
     }
-}
 
-impl SettingsScreen {
     fn apply_current_selection(&self) {
         *self.is_preview_mode.write().unwrap() = true;
 
@@ -123,14 +127,19 @@ impl SettingsScreen {
         *self.is_preview_mode.write().unwrap() = false;
 
         // Save theme and color mode to config file
-        if let Ok(mut config_manager) = ConfigService::new() {
-            let selected_color_mode = self.get_selected_color_mode();
-            let selected_theme = self.get_selected_theme();
+        let selected_color_mode = self.get_selected_color_mode();
+        let selected_theme = self.get_selected_theme();
 
-            if let (Some(color_mode), Some(theme)) = (selected_color_mode, selected_theme) {
-                config_manager.get_config_mut().theme.current_color_mode = color_mode.clone();
-                config_manager.get_config_mut().theme.current_theme_id = theme.id.clone();
-                let _ = config_manager.save();
+        if let (Some(color_mode), Some(theme)) = (selected_color_mode, selected_theme) {
+            // Downcast to concrete type to access update_config method
+            if let Some(config_service) = (self.config_service.as_ref() as &dyn std::any::Any)
+                .downcast_ref::<ConfigService>()
+            {
+                let _ = config_service.update_config(|config| {
+                    config.theme.current_color_mode = color_mode.clone();
+                    config.theme.current_theme_id = theme.id.clone();
+                });
+                let _ = self.config_service.save();
             }
         }
     }
@@ -336,21 +345,6 @@ impl ScreenDataProvider for SettingsScreenDataProvider {
             current_color_mode: theme_manager.current_color_mode.clone(),
         };
         Ok(Box::new(data))
-    }
-}
-
-pub struct SettingsScreenProvider;
-
-impl shaku::Provider<crate::presentation::di::AppModule> for SettingsScreenProvider {
-    type Interface = SettingsScreen;
-
-    fn provide(
-        module: &crate::presentation::di::AppModule,
-    ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
-        use shaku::HasComponent;
-        let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
-            module.resolve();
-        Ok(Box::new(SettingsScreen::new(event_bus)))
     }
 }
 

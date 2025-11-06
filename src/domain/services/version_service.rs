@@ -1,4 +1,5 @@
-use crate::domain::repositories::VersionRepository;
+use crate::domain::repositories::version_repository::VersionRepositoryInterface;
+use std::sync::Arc;
 use crate::{GitTypeError, Result};
 use shaku::Interface;
 use std::future::Future;
@@ -15,16 +16,8 @@ pub trait VersionServiceInterface: Interface {
 #[derive(shaku::Component)]
 #[shaku(interface = VersionServiceInterface)]
 pub struct VersionService {
-    #[shaku(default)]
-    repository: VersionRepository,
-}
-
-impl VersionService {
-    pub fn new() -> Result<Self> {
-        Ok(Self {
-            repository: VersionRepository::new()?,
-        })
-    }
+    #[shaku(inject)]
+    repository: Arc<dyn VersionRepositoryInterface>,
 }
 
 impl VersionServiceInterface for VersionService {
@@ -49,6 +42,14 @@ impl VersionServiceInterface for VersionService {
 }
 
 impl VersionService {
+    #[cfg(feature = "test-mocks")]
+    pub fn new_for_test() -> Result<Self> {
+        use crate::domain::repositories::version_repository::VersionRepository;
+        Ok(Self {
+            repository: Arc::new(VersionRepository::new_for_test()?),
+        })
+    }
+
     fn is_version_newer(latest: &str, current: &str) -> bool {
         let latest_parts = Self::parse_version(latest);
         let current_parts = Self::parse_version(current);

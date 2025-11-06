@@ -4,7 +4,7 @@ mod version_service_tests {
 
     #[tokio::test]
     async fn test_version_update_available() {
-        let service = VersionService::new().expect("Service creation should succeed with mocks");
+        let service = VersionService::new_for_test().expect("Service creation should succeed with mocks");
 
         // Test with current version 0.8.0, mock returns 1.0.0
         let (has_update, current_version, latest_version) = service
@@ -22,7 +22,7 @@ mod version_service_tests {
 
     #[tokio::test]
     async fn test_version_up_to_date() {
-        let service = VersionService::new().expect("Service creation should succeed");
+        let service = VersionService::new_for_test().expect("Service creation should succeed");
 
         // Test with current version 1.0.0, mock returns 1.0.0
         let (has_update, current_version, latest_version) = service
@@ -40,7 +40,7 @@ mod version_service_tests {
 
     #[tokio::test]
     async fn test_version_newer_than_latest() {
-        let service = VersionService::new().expect("Service creation should succeed");
+        let service = VersionService::new_for_test().expect("Service creation should succeed");
 
         // Test with current version 2.0.0, mock returns 1.0.0
         let (has_update, current_version, latest_version) = service
@@ -58,7 +58,7 @@ mod version_service_tests {
 
     #[tokio::test]
     async fn test_patch_version_update() {
-        let service = VersionService::new().expect("Service creation should succeed");
+        let service = VersionService::new_for_test().expect("Service creation should succeed");
 
         // Test with current version 0.9.9, mock returns 1.0.0
         let (has_update, current_version, latest_version) = service
@@ -76,7 +76,7 @@ mod version_service_tests {
 
     #[tokio::test]
     async fn test_service_creation() {
-        let service = VersionService::new();
+        let service = VersionService::new_for_test();
         assert!(
             service.is_ok(),
             "Service creation should succeed with mocks enabled"
@@ -85,7 +85,7 @@ mod version_service_tests {
 
     #[tokio::test]
     async fn test_multiple_calls_consistency() {
-        let service = VersionService::new().expect("Service creation should succeed");
+        let service = VersionService::new_for_test().expect("Service creation should succeed");
 
         let result1 = service
             .check_with_version("0.8.0")

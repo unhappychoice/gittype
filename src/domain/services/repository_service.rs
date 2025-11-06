@@ -2,7 +2,7 @@ use crate::domain::error::Result;
 use crate::domain::models::storage::repository::{StoredRepository, StoredRepositoryWithLanguages};
 use crate::infrastructure::database::daos::RepositoryDaoInterface;
 use crate::infrastructure::git::remote::remote_git_repository_client::RemoteGitRepositoryClient;
-use crate::infrastructure::storage::file_storage::FileStorage;
+use crate::infrastructure::storage::app_data_provider::AppDataProvider;
 use shaku::Interface;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -64,11 +64,11 @@ impl RepositoryServiceInterface for RepositoryService {
     }
 }
 
+impl AppDataProvider for RepositoryService {}
+
 impl RepositoryService {
     pub fn get_cache_directory() -> PathBuf {
-        let file_storage = FileStorage::new();
-        file_storage
-            .get_app_data_dir()
+        Self::get_app_data_dir()
             .unwrap_or_else(|_| PathBuf::from("."))
             .join("repos")
     }

@@ -1,4 +1,4 @@
-use gittype::infrastructure::storage::file_storage::{FileEntry, FileStorage};
+use gittype::infrastructure::storage::file_storage::{FileEntry, FileStorage, FileStorageInterface};
 use std::path::PathBuf;
 
 #[test]

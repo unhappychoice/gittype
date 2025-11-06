@@ -1,5 +1,7 @@
 use crate::infrastructure::console::{Console, ConsoleImpl};
+use crate::infrastructure::storage::app_data_provider::AppDataProvider;
 use crate::infrastructure::storage::file_storage::FileStorage;
+use crate::infrastructure::storage::file_storage::FileStorageInterface;
 use crate::presentation::cli::commands::run_game_session;
 use crate::presentation::cli::screen_runner::run_screen;
 use crate::presentation::cli::Cli;
@@ -18,13 +20,15 @@ pub fn run_repo_list() -> Result<()> {
     Ok(())
 }
 
+struct RepoClearCommand;
+impl AppDataProvider for RepoClearCommand {}
+
 pub fn run_repo_clear(force: bool) -> Result<()> {
     let file_storage = FileStorage::new();
     let console = ConsoleImpl::new();
 
     // Get the repos directory path
-    let repos_dir = file_storage
-        .get_app_data_dir()
+    let repos_dir = RepoClearCommand::get_app_data_dir()
         .map_err(|_| {
             GitTypeError::InvalidRepositoryFormat(
                 "Could not determine app data directory".to_string(),
