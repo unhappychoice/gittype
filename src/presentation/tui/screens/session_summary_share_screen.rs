@@ -1,7 +1,9 @@
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::SessionResult;
 use crate::domain::events::presentation_events::NavigateTo;
-use crate::presentation::game::{GameData, SessionManager};
+use crate::domain::services::session_manager_service::SessionManagerInterface;
+use crate::domain::stores::{RepositoryStore, RepositoryStoreInterface};
+use crate::domain::services::SessionManager;
 use crate::presentation::sharing::{SharingPlatform, SharingService};
 use crate::presentation::tui::views::{
     ShareBackOptionView, SharePlatformOptionsView, SharePreviewView, ShareTitleView,
@@ -13,40 +15,18 @@ use ratatui::{
     Frame,
 };
 use std::sync::RwLock;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 pub struct SessionSummaryShareData {
     pub session_result: SessionResult,
     pub git_repository: Option<GitRepository>,
 }
 
-pub struct SessionSummaryShareDataProvider {
-    session_manager: Arc<Mutex<SessionManager>>,
-    game_data: Arc<Mutex<GameData>>,
-}
+pub struct SessionSummaryShareDataProvider;
 
 impl ScreenDataProvider for SessionSummaryShareDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let session_result = self
-            .session_manager
-            .lock()
-            .map_err(|_| GitTypeError::TerminalError("Failed to lock SessionManager".to_string()))?
-            .get_session_result()
-            .ok_or_else(|| {
-                GitTypeError::TerminalError("No session result available".to_string())
-            })?;
-
-        let git_repository = self
-            .game_data
-            .lock()
-            .map_err(|_| GitTypeError::TerminalError("Failed to lock GameData".to_string()))?
-            .git_repository
-            .clone();
-
-        Ok(Box::new(SessionSummaryShareData {
-            session_result,
-            git_repository,
-        }))
+        Ok(Box::new(()))
     }
 }
 
@@ -63,18 +43,26 @@ pub struct SessionSummaryShareScreen {
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
     theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    #[shaku(inject)]
+    session_manager: Arc<dyn SessionManagerInterface>,
+    #[shaku(inject)]
+    repository_store: Arc<dyn RepositoryStoreInterface>,
 }
 
 impl SessionSummaryShareScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
         theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        session_manager: Arc<dyn SessionManagerInterface>,
+        repository_store: Arc<dyn RepositoryStoreInterface>,
     ) -> Self {
         Self {
             session_result: RwLock::new(None),
             git_repository: RwLock::new(None),
             event_bus,
             theme_service,
+            session_manager,
+            repository_store,
         }
     }
 }
@@ -88,13 +76,16 @@ impl shaku::Provider<crate::presentation::di::AppModule> for SessionSummaryShare
         module: &crate::presentation::di::AppModule,
     ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
         use shaku::HasComponent;
-        let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
-            module.resolve();
+        let event_bus: Arc<dyn EventBusInterface> = module.resolve();
         let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> =
             module.resolve();
+        let session_manager: Arc<dyn SessionManagerInterface> = module.resolve();
+        let repository_store: Arc<dyn RepositoryStoreInterface> = module.resolve();
         Ok(Box::new(SessionSummaryShareScreen::new(
             event_bus,
             theme_service,
+            session_manager,
+            repository_store,
         )))
     }
 }
@@ -108,17 +99,30 @@ impl Screen for SessionSummaryShareScreen {
     where
         Self: Sized,
     {
-        Box::new(SessionSummaryShareDataProvider {
-            session_manager: SessionManager::instance(),
-            game_data: GameData::instance(),
-        })
+        Box::new(SessionSummaryShareDataProvider)
     }
 
     fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
-        let data = data.downcast::<SessionSummaryShareData>()?;
+        let (session_result, git_repository) = if let Ok(data) = data.downcast::<SessionSummaryShareData>() {
+            (Some(data.session_result), data.git_repository)
+        } else {
+            // If no data provided, get from injected dependencies
+            let sm = self
+                .session_manager
+                .as_any()
+                .downcast_ref::<SessionManager>()
+                .ok_or_else(|| {
+                    GitTypeError::TerminalError("Failed to get SessionManager".to_string())
+                })?;
 
-        *self.session_result.write().unwrap() = Some(data.session_result);
-        *self.git_repository.write().unwrap() = data.git_repository;
+            let session_result = sm.get_session_result();
+            let git_repository = self.repository_store.get_repository();
+
+            (session_result, git_repository)
+        };
+
+        *self.session_result.write().unwrap() = session_result;
+        *self.git_repository.write().unwrap() = git_repository;
 
         Ok(())
     }

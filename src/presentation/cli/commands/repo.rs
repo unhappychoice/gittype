@@ -11,16 +11,8 @@ use crate::{GitTypeError, Result};
 use std::sync::Arc;
 
 pub fn run_repo_list() -> Result<()> {
-    use crate::domain::services::theme_service::ThemeServiceInterface;
-    use crate::presentation::di::AppModule;
-    use shaku::HasComponent;
-
-    let container = AppModule::builder().build();
-    let theme_service: Arc<dyn ThemeServiceInterface> = container.resolve();
-
-    run_screen(
+    run_screen::<RepoListScreen, _, _, _>(
         ScreenType::RepoList,
-        |event_bus| RepoListScreen::new(event_bus, Arc::clone(&theme_service)),
         None::<()>,
         None::<fn(&RepoListScreen) -> Option<()>>,
     )?;
@@ -126,9 +118,8 @@ pub fn run_repo_play() -> Result<()> {
     let theme_service: Arc<dyn ThemeServiceInterface> = container.resolve();
 
     // Run screen and get selected repository
-    let selected_repo = run_screen(
+    let selected_repo = run_screen::<RepoPlayScreen, _, _, _>(
         ScreenType::RepoPlay,
-        |event_bus| RepoPlayScreen::new(event_bus, Arc::clone(&theme_service)),
         None::<()>,
         Some(|screen: &RepoPlayScreen| {
             screen

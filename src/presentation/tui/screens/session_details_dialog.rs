@@ -2,7 +2,9 @@ use crate::domain::events::EventBusInterface;
 use crate::domain::models::SessionResult;
 use crate::domain::repositories::session_repository::{BestRecords, BestStatus, SessionRepository};
 use crate::domain::events::presentation_events::NavigateTo;
-use crate::presentation::game::{GameData, SessionManager};
+use crate::domain::services::session_manager_service::SessionManagerInterface;
+use crate::domain::stores::{RepositoryStore, RepositoryStoreInterface};
+use crate::domain::services::SessionManager;
 use crate::presentation::tui::views::{
     BestRecordsView, ControlsView, HeaderView, StageResultsView,
 };
@@ -13,7 +15,7 @@ use ratatui::{
     Frame,
 };
 use std::sync::RwLock;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 pub struct SessionDetailsDialogData {
     pub session_result: Option<SessionResult>,
@@ -22,47 +24,11 @@ pub struct SessionDetailsDialogData {
     pub best_records: Option<BestRecords>,
 }
 
-pub struct SessionDetailsDialogDataProvider {
-    session_manager: Arc<Mutex<SessionManager>>,
-    game_data: Arc<Mutex<GameData>>,
-}
+pub struct SessionDetailsDialogDataProvider;
 
 impl ScreenDataProvider for SessionDetailsDialogDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let session_result = self
-            .session_manager
-            .lock()
-            .map_err(|_| GitTypeError::TerminalError("Failed to lock SessionManager".to_string()))?
-            .get_session_result();
-
-        let repo_info = self
-            .game_data
-            .lock()
-            .map_err(|_| GitTypeError::TerminalError("Failed to lock GameData".to_string()))?
-            .git_repository
-            .clone();
-
-        let best_status = if let Some(ref result) = session_result {
-            self.session_manager
-                .lock()
-                .map_err(|_| {
-                    GitTypeError::TerminalError("Failed to lock SessionManager".to_string())
-                })?
-                .get_best_status_for_score(result.session_score)
-                .ok()
-                .flatten()
-        } else {
-            None
-        };
-
-        let best_records = SessionRepository::get_best_records_global().ok().flatten();
-
-        Ok(Box::new(SessionDetailsDialogData {
-            session_result,
-            repo_info,
-            best_status,
-            best_records,
-        }))
+        Ok(Box::new(()))
     }
 }
 
@@ -83,12 +49,18 @@ pub struct SessionDetailsDialog {
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
     theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    #[shaku(inject)]
+    session_manager: Arc<dyn SessionManagerInterface>,
+    #[shaku(inject)]
+    repository_store: Arc<dyn RepositoryStoreInterface>,
 }
 
 impl SessionDetailsDialog {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
         theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        session_manager: Arc<dyn SessionManagerInterface>,
+        repository_store: Arc<dyn RepositoryStoreInterface>,
     ) -> Self {
         Self {
             session_result: RwLock::new(None),
@@ -97,6 +69,8 @@ impl SessionDetailsDialog {
             best_records: RwLock::new(None),
             event_bus,
             theme_service,
+            session_manager,
+            repository_store,
         }
     }
 
@@ -191,13 +165,16 @@ impl shaku::Provider<crate::presentation::di::AppModule> for SessionDetailsDialo
         module: &crate::presentation::di::AppModule,
     ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
         use shaku::HasComponent;
-        let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
-            module.resolve();
+        let event_bus: Arc<dyn EventBusInterface> = module.resolve();
         let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> =
             module.resolve();
+        let session_manager: Arc<dyn SessionManagerInterface> = module.resolve();
+        let repository_store: Arc<dyn RepositoryStoreInterface> = module.resolve();
         Ok(Box::new(SessionDetailsDialog::new(
             event_bus,
             theme_service,
+            session_manager,
+            repository_store,
         )))
     }
 }
@@ -211,19 +188,49 @@ impl Screen for SessionDetailsDialog {
     where
         Self: Sized,
     {
-        Box::new(SessionDetailsDialogDataProvider {
-            session_manager: SessionManager::instance(),
-            game_data: GameData::instance(),
-        })
+        Box::new(SessionDetailsDialogDataProvider)
     }
 
     fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
-        let dialog_data = data.downcast::<SessionDetailsDialogData>()?;
+        // Try to downcast to SessionDetailsDialogData first
+        let (session_result, repo_info, best_status, best_records) =
+            if let Ok(dialog_data) = data.downcast::<SessionDetailsDialogData>() {
+                (
+                    dialog_data.session_result,
+                    dialog_data.repo_info,
+                    dialog_data.best_status,
+                    dialog_data.best_records,
+                )
+            } else {
+                // If no data provided, get from injected dependencies
+                let sm = self
+                    .session_manager
+                    .as_any()
+                    .downcast_ref::<SessionManager>()
+                    .ok_or_else(|| {
+                        GitTypeError::TerminalError("Failed to get SessionManager".to_string())
+                    })?;
 
-        *self.session_result.write().unwrap() = dialog_data.session_result;
-        *self.repo_info.write().unwrap() = dialog_data.repo_info;
-        *self.best_status.write().unwrap() = dialog_data.best_status;
-        *self.best_records.write().unwrap() = dialog_data.best_records;
+                let session_result = sm.get_session_result();
+                let repo_info = self.repository_store.get_repository();
+
+                let best_status = if let Some(ref result) = session_result {
+                    sm.get_best_status_for_score(result.session_score)
+                        .ok()
+                        .flatten()
+                } else {
+                    None
+                };
+
+                let best_records = SessionRepository::get_best_records_global().ok().flatten();
+
+                (session_result, repo_info, best_status, best_records)
+            };
+
+        *self.session_result.write().unwrap() = session_result;
+        *self.repo_info.write().unwrap() = repo_info;
+        *self.best_status.write().unwrap() = best_status;
+        *self.best_records.write().unwrap() = best_records;
 
         Ok(())
     }

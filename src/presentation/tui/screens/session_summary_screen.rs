@@ -1,7 +1,9 @@
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::{Rank, SessionResult};
 use crate::domain::events::presentation_events::NavigateTo;
-use crate::presentation::game::{GameData, SessionManager};
+use crate::domain::services::session_manager_service::SessionManagerInterface;
+use crate::domain::stores::{RepositoryStore, RepositoryStoreInterface};
+use crate::domain::services::SessionManager;
 use crate::presentation::tui::views::{
     OptionsView, RankView, ScoreView, SessionSummaryHeaderView, SummaryView,
 };
@@ -12,39 +14,18 @@ use ratatui::{
     Frame,
 };
 use std::sync::RwLock;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 pub struct SessionSummaryScreenData {
     pub session_result: Option<SessionResult>,
     pub git_repository: Option<GitRepository>,
-    pub session_manager: Arc<Mutex<SessionManager>>,
 }
 
-pub struct SessionSummaryScreenDataProvider {
-    session_manager: Arc<Mutex<SessionManager>>,
-    game_data: Arc<Mutex<GameData>>,
-}
+pub struct SessionSummaryScreenDataProvider;
 
 impl ScreenDataProvider for SessionSummaryScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let session_result = self
-            .session_manager
-            .lock()
-            .map_err(|_| GitTypeError::TerminalError("Failed to lock SessionManager".to_string()))?
-            .get_session_result();
-
-        let git_repository = self
-            .game_data
-            .lock()
-            .map_err(|_| GitTypeError::TerminalError("Failed to lock GameData".to_string()))?
-            .git_repository
-            .clone();
-
-        Ok(Box::new(SessionSummaryScreenData {
-            session_result,
-            git_repository,
-            session_manager: Arc::clone(&self.session_manager),
-        }))
+        Ok(Box::new(()))
     }
 }
 
@@ -68,10 +49,12 @@ pub struct SessionSummaryScreen {
     session_result: RwLock<Option<SessionResult>>,
     #[shaku(default)]
     git_repository: RwLock<Option<GitRepository>>,
-    #[shaku(default)]
-    session_manager: RwLock<Option<Arc<Mutex<SessionManager>>>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    session_manager: Arc<dyn SessionManagerInterface>,
+    #[shaku(inject)]
+    repository_store: Arc<dyn RepositoryStoreInterface>,
     #[shaku(inject)]
     theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
 }
@@ -80,13 +63,16 @@ impl SessionSummaryScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
         theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        session_manager: Arc<dyn SessionManagerInterface>,
+        repository_store: Arc<dyn RepositoryStoreInterface>,
     ) -> Self {
         Self {
             action_result: RwLock::new(None),
             session_result: RwLock::new(None),
             git_repository: RwLock::new(None),
-            session_manager: RwLock::new(None),
             event_bus,
+            session_manager,
+            repository_store,
             theme_service,
         }
     }
@@ -105,14 +91,16 @@ impl shaku::Provider<crate::presentation::di::AppModule> for SessionSummaryScree
         module: &crate::presentation::di::AppModule,
     ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
         use shaku::HasComponent;
-        let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
+        let event_bus: Arc<dyn EventBusInterface> = module.resolve();
+        let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> =
             module.resolve();
-        let theme_service: std::sync::Arc<
-            dyn crate::domain::services::theme_service::ThemeServiceInterface,
-        > = module.resolve();
+        let session_manager: Arc<dyn SessionManagerInterface> = module.resolve();
+        let repository_store: Arc<dyn RepositoryStoreInterface> = module.resolve();
         Ok(Box::new(SessionSummaryScreen::new(
             event_bus,
             theme_service,
+            session_manager,
+            repository_store,
         )))
     }
 }
@@ -126,20 +114,32 @@ impl Screen for SessionSummaryScreen {
     where
         Self: Sized,
     {
-        Box::new(SessionSummaryScreenDataProvider {
-            session_manager: SessionManager::instance(),
-            game_data: GameData::instance(),
-        })
+        Box::new(SessionSummaryScreenDataProvider)
     }
 
     fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
         *self.action_result.write().unwrap() = None;
 
-        let screen_data = data.downcast::<SessionSummaryScreenData>()?;
+        let (session_result, git_repository) = if let Ok(screen_data) = data.downcast::<SessionSummaryScreenData>() {
+            (screen_data.session_result.clone(), screen_data.git_repository.clone())
+        } else {
+            // If no data provided, get from injected dependencies
+            let sm = self
+                .session_manager
+                .as_any()
+                .downcast_ref::<SessionManager>()
+                .ok_or_else(|| {
+                    GitTypeError::TerminalError("Failed to get SessionManager".to_string())
+                })?;
 
-        *self.session_result.write().unwrap() = screen_data.session_result.clone();
-        *self.git_repository.write().unwrap() = screen_data.git_repository.clone();
-        *self.session_manager.write().unwrap() = Some(Arc::clone(&screen_data.session_manager));
+            let session_result = sm.get_session_result();
+            let git_repository = self.repository_store.get_repository();
+
+            (session_result, git_repository)
+        };
+
+        *self.session_result.write().unwrap() = session_result;
+        *self.git_repository.write().unwrap() = git_repository;
 
         Ok(())
     }
@@ -198,10 +198,10 @@ impl Screen for SessionSummaryScreen {
             let best_rank = Rank::for_score(session_result.session_score);
 
             // Get best status using session start records from SessionManager instance
-            let session_manager = self.session_manager.read().unwrap();
-            let best_status = session_manager
-                .as_ref()
-                .and_then(|manager| manager.lock().ok())
+            let best_status = self
+                .session_manager
+                .as_any()
+                .downcast_ref::<SessionManager>()
                 .and_then(|manager| {
                     manager
                         .get_best_status_for_score(session_result.session_score)

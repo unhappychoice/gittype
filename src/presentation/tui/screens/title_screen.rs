@@ -1,7 +1,9 @@
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::{DifficultyLevel, GitRepository};
 use crate::domain::events::presentation_events::NavigateTo;
-use crate::presentation::game::{GameData, StageRepository};
+use crate::domain::services::stage_builder_service::StageRepositoryInterface;
+use crate::domain::stores::RepositoryStoreInterface;
+use crate::domain::services::StageRepository;
 use crate::presentation::tui::views::title::{DifficultySelectionView, StaticElementsView};
 use crate::presentation::tui::ScreenDataProvider;
 use crate::presentation::tui::{Screen, ScreenType, UpdateStrategy};
@@ -11,7 +13,7 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
 };
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, RwLock};
 
 const DIFFICULTIES: [(&str, DifficultyLevel); 5] = [
     ("Easy", DifficultyLevel::Easy),
@@ -26,31 +28,11 @@ pub struct TitleScreenData {
     pub git_repository: Option<GitRepository>,
 }
 
-pub struct TitleScreenDataProvider {
-    stage_repository: Arc<Mutex<StageRepository>>,
-    game_data: Arc<Mutex<GameData>>,
-}
+pub struct TitleScreenDataProvider;
 
 impl ScreenDataProvider for TitleScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let challenge_counts = self
-            .stage_repository
-            .lock()
-            .map_err(|e| {
-                GitTypeError::TerminalError(format!("Failed to lock StageRepository: {}", e))
-            })?
-            .count_challenges_by_difficulty();
-
-        let git_repository = self
-            .game_data
-            .lock()
-            .map_err(|e| GitTypeError::TerminalError(format!("Failed to lock GameData: {}", e)))?
-            .repository();
-
-        Ok(Box::new(TitleScreenData {
-            challenge_counts,
-            git_repository,
-        }))
+        Ok(Box::new(()))
     }
 }
 
@@ -84,12 +66,18 @@ pub struct TitleScreen {
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
     theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    #[shaku(inject)]
+    stage_repository: Arc<dyn StageRepositoryInterface>,
+    #[shaku(inject)]
+    repository_store: Arc<dyn RepositoryStoreInterface>,
 }
 
 impl TitleScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
         theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        stage_repository: Arc<dyn StageRepositoryInterface>,
+        repository_store: Arc<dyn RepositoryStoreInterface>,
     ) -> Self {
         Self {
             selected_difficulty: RwLock::new(1),
@@ -100,6 +88,8 @@ impl TitleScreen {
             error_message: RwLock::new(None),
             event_bus,
             theme_service,
+            stage_repository,
+            repository_store,
         }
     }
 
@@ -143,19 +133,31 @@ impl Screen for TitleScreen {
     where
         Self: Sized,
     {
-        Box::new(TitleScreenDataProvider {
-            stage_repository: StageRepository::instance(),
-            game_data: GameData::instance(),
-        })
+        Box::new(TitleScreenDataProvider)
     }
 
     fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
         *self.action_result.write().unwrap() = None;
         *self.needs_render.write().unwrap() = true;
 
-        let screen_data = data.downcast::<TitleScreenData>()?;
-        *self.challenge_counts.write().unwrap() = screen_data.challenge_counts;
-        *self.git_repository.write().unwrap() = screen_data.git_repository;
+        let (challenge_counts, git_repository) = if let Ok(screen_data) = data.downcast::<TitleScreenData>() {
+            (screen_data.challenge_counts, screen_data.git_repository)
+        } else {
+            // If no data provided, get from injected dependencies
+            let challenge_counts = self
+                .stage_repository
+                .as_any()
+                .downcast_ref::<StageRepository>()
+                .map(|repo| repo.count_challenges_by_difficulty())
+                .unwrap_or([0; 5]);
+
+            let git_repository = self.repository_store.get_repository();
+
+            (challenge_counts, git_repository)
+        };
+
+        *self.challenge_counts.write().unwrap() = challenge_counts;
+        *self.git_repository.write().unwrap() = git_repository;
 
         Ok(())
     }

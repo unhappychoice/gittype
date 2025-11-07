@@ -2,13 +2,13 @@ use crate::domain::models::typing::CodeContext;
 use crate::domain::models::Challenge;
 use crate::infrastructure::storage::file_storage::FileStorage;
 use crate::infrastructure::storage::file_storage::FileStorageInterface;
-use crate::presentation::game::GameData;
 use crate::Result;
 use std::path::{Path, PathBuf};
 
 pub fn load_context_for_challenge(
     challenge: &Challenge,
     context_lines: usize,
+    git_root: Option<&Path>,
 ) -> Result<CodeContext> {
     let file_storage = FileStorage::new();
     let Some(source_path) = &challenge.source_file_path else {
@@ -27,16 +27,11 @@ pub fn load_context_for_challenge(
     let file_path = if Path::new(source_path).is_absolute() {
         PathBuf::from(source_path)
     } else {
-        // Get git root from GameData's GitRepository and resolve relative path
-        if let Some(git_repository) = GameData::get_git_repository() {
-            if let Some(git_root) = git_repository.root_path {
-                git_root.join(source_path)
-            } else {
-                // Fallback to using the path as-is if git root is not found in GitRepository
-                PathBuf::from(source_path)
-            }
+        // Resolve relative path from git root if available
+        if let Some(root) = git_root {
+            root.join(source_path)
         } else {
-            // Fallback to using the path as-is if git repository is not found
+            // Fallback to using the path as-is if git root is not provided
             PathBuf::from(source_path)
         }
     };

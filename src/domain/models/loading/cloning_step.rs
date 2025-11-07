@@ -1,6 +1,5 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
 use crate::infrastructure::git::{LocalGitRepositoryClient, RemoteGitRepositoryClient};
-use crate::presentation::game::GameData;
 use crate::presentation::tui::screens::loading_screen::ProgressReporter;
 use crate::presentation::ui::Colors;
 use crate::Result;
@@ -68,7 +67,11 @@ impl Step for CloningStep {
         // Extract git repository information after cloning
         let repository = LocalGitRepositoryClient::new().extract_git_repository(&repo_path)?;
         context.git_repository = Some(repository.clone());
-        let _ = GameData::set_git_repository(Some(repository));
+
+        // Store in RepositoryStore
+        if let Some(repository_store) = &context.repository_store {
+            repository_store.set_repository(repository);
+        }
 
         Ok(StepResult::RepoPath(repo_path))
     }

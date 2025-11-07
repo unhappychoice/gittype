@@ -1,14 +1,15 @@
 use crate::domain::events::EventBusInterface;
 use crate::domain::services::scoring::{SessionTracker, StageResult, GLOBAL_SESSION_TRACKER};
 use crate::domain::events::presentation_events::NavigateTo;
-use crate::presentation::game::SessionManager;
+use crate::domain::services::session_manager_service::SessionManagerInterface;
+use crate::domain::services::SessionManager;
 use crate::presentation::tui::screens::ResultAction;
 use crate::presentation::tui::views::StageCompletionView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::{GitTypeError, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::Frame;
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, RwLock};
 
 pub struct StageSummaryData {
     pub stage_result: StageResult,
@@ -17,56 +18,15 @@ pub struct StageSummaryData {
     pub is_completed: bool,
 }
 
-pub struct StageSummaryDataProvider {
-    session_tracker: Arc<Mutex<Option<SessionTracker>>>,
-    session_manager: Arc<Mutex<SessionManager>>,
-}
+pub struct StageSummaryDataProvider;
 
 impl ScreenDataProvider for StageSummaryDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let stage_result = self
-            .session_tracker
-            .lock()
-            .map_err(|e| {
-                GitTypeError::TerminalError(format!("Failed to lock session tracker: {}", e))
-            })?
-            .as_ref()
-            .and_then(|t| {
-                let data = t.get_data();
-                data.stage_results.last().cloned()
-            })
-            .ok_or_else(|| GitTypeError::TerminalError("No stage result available".to_string()))?;
-
-        let session_manager = self.session_manager.lock().map_err(|e| {
-            GitTypeError::TerminalError(format!("Failed to lock SessionManager: {}", e))
-        })?;
-
-        let (current_stage, total_stages) = session_manager
-            .get_stage_info()
-            .map_err(|e| GitTypeError::TerminalError(format!("Failed to get stage info: {}", e)))?;
-        let is_completed = session_manager.is_session_completed().map_err(|e| {
-            GitTypeError::TerminalError(format!("Failed to check if session completed: {}", e))
-        })?;
-
-        Ok(Box::new(StageSummaryData {
-            stage_result,
-            current_stage,
-            total_stages,
-            is_completed,
-        }))
+        Ok(Box::new(()))
     }
 }
 
 pub trait StageSummaryScreenInterface: Screen {}
-
-#[derive(Clone)]
-pub struct SessionManagerRef(Arc<Mutex<SessionManager>>);
-
-impl Default for SessionManagerRef {
-    fn default() -> Self {
-        Self(SessionManager::instance())
-    }
-}
 
 #[derive(shaku::Component)]
 #[shaku(interface = StageSummaryScreenInterface)]
@@ -85,14 +45,15 @@ pub struct StageSummaryScreen {
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
     theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
-    #[shaku(default)]
-    session_manager: SessionManagerRef,
+    #[shaku(inject)]
+    session_manager: Arc<dyn SessionManagerInterface>,
 }
 
 impl StageSummaryScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
         theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        session_manager: Arc<dyn SessionManagerInterface>,
     ) -> Self {
         Self {
             stage_result: RwLock::new(None),
@@ -102,7 +63,7 @@ impl StageSummaryScreen {
             is_completed: RwLock::new(false),
             event_bus,
             theme_service,
-            session_manager: SessionManagerRef::default(),
+            session_manager,
         }
     }
 
@@ -129,11 +90,15 @@ impl shaku::Provider<crate::presentation::di::AppModule> for StageSummaryScreenP
         module: &crate::presentation::di::AppModule,
     ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
         use shaku::HasComponent;
-        let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
-            module.resolve();
+        let event_bus: Arc<dyn EventBusInterface> = module.resolve();
         let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> =
             module.resolve();
-        Ok(Box::new(StageSummaryScreen::new(event_bus, theme_service)))
+        let session_manager: Arc<dyn SessionManagerInterface> = module.resolve();
+        Ok(Box::new(StageSummaryScreen::new(
+            event_bus,
+            theme_service,
+            session_manager,
+        )))
     }
 }
 
@@ -146,21 +111,50 @@ impl Screen for StageSummaryScreen {
     where
         Self: Sized,
     {
-        Box::new(StageSummaryDataProvider {
-            session_tracker: GLOBAL_SESSION_TRACKER.clone(),
-            session_manager: SessionManager::instance(),
-        })
+        Box::new(StageSummaryDataProvider)
     }
 
     fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
         *self.action_result.write().unwrap() = None;
 
-        let data = data.downcast::<StageSummaryData>()?;
+        let (stage_result, current_stage, total_stages, is_completed) =
+            if let Ok(data) = data.downcast::<StageSummaryData>() {
+                (
+                    Some(data.stage_result),
+                    data.current_stage,
+                    data.total_stages,
+                    data.is_completed,
+                )
+            } else {
+                // If no data provided, get from injected dependencies
+                let stage_result = GLOBAL_SESSION_TRACKER
+                    .lock()
+                    .ok()
+                    .and_then(|tracker| {
+                        tracker.as_ref().and_then(|t| {
+                            let data = t.get_data();
+                            data.stage_results.last().cloned()
+                        })
+                    });
 
-        *self.stage_result.write().unwrap() = Some(data.stage_result);
-        *self.session_current_stage.write().unwrap() = data.current_stage;
-        *self.total_stages.write().unwrap() = data.total_stages;
-        *self.is_completed.write().unwrap() = data.is_completed;
+                let sm = self
+                    .session_manager
+                    .as_any()
+                    .downcast_ref::<SessionManager>()
+                    .ok_or_else(|| {
+                        GitTypeError::TerminalError("Failed to get SessionManager".to_string())
+                    })?;
+
+                let (current_stage, total_stages) = sm.get_stage_info().unwrap_or((1, 3));
+                let is_completed = sm.is_session_completed().unwrap_or(false);
+
+                (stage_result, current_stage, total_stages, is_completed)
+            };
+
+        *self.stage_result.write().unwrap() = stage_result;
+        *self.session_current_stage.write().unwrap() = current_stage;
+        *self.total_stages.write().unwrap() = total_stages;
+        *self.is_completed.write().unwrap() = is_completed;
 
         Ok(())
     }
@@ -184,9 +178,8 @@ impl Screen for StageSummaryScreen {
             KeyCode::Char(' ') => {
                 let is_session_completed = self
                     .session_manager
-                    .0
-                    .lock()
-                    .ok()
+                    .as_any()
+                    .downcast_ref::<SessionManager>()
                     .and_then(|sm| sm.is_session_completed().ok())
                     .unwrap_or(true);
 

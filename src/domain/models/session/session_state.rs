@@ -16,3 +16,9 @@ pub enum SessionState {
         aborted_at: Instant,
     },
 }
+
+impl Default for SessionState {
+    fn default() -> Self {
+        SessionState::NotStarted
+    }
+}

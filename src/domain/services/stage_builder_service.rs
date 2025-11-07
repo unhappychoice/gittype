@@ -1,9 +1,10 @@
 use crate::domain::models::{Challenge, DifficultyLevel, GameMode, GitRepository, StageConfig};
-use crate::presentation::game::GameData;
+use crate::domain::stores::{
+    ChallengeStoreInterface, RepositoryStoreInterface, SessionStoreInterface,
+};
 use crate::presentation::tui::screens::TitleScreen;
 use crate::presentation::tui::{ScreenManagerImpl, ScreenType};
-use crate::{GitTypeError, Result};
-use once_cell::sync::Lazy;
+use crate::Result;
 use rand::rngs::StdRng;
 use rand::seq::SliceRandom;
 use rand::{RngExt, SeedableRng};
@@ -11,69 +12,98 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 /// Repository for managing challenges and stage building
+#[derive(shaku::Component)]
+#[shaku(interface = StageRepositoryInterface)]
 pub struct StageRepository {
-    git_repository: Option<GitRepository>,
-    config: StageConfig,
-    built_stages: Vec<Challenge>,
-    current_index: usize,
-    difficulty_indices: HashMap<DifficultyLevel, Vec<usize>>,
-    indices_cached: bool,
-    cached_challenges: Option<Vec<Challenge>>,
-    game_data: Arc<Mutex<GameData>>,
+    #[shaku(default)]
+    git_repository: Mutex<Option<GitRepository>>,
+    #[shaku(default)]
+    config: Mutex<StageConfig>,
+    #[shaku(default)]
+    built_stages: Mutex<Vec<Challenge>>,
+    #[shaku(default)]
+    current_index: Mutex<usize>,
+    #[shaku(default)]
+    difficulty_indices: Mutex<HashMap<DifficultyLevel, Vec<usize>>>,
+    #[shaku(default)]
+    indices_cached: Mutex<bool>,
+    #[shaku(default)]
+    cached_challenges: Mutex<Option<Vec<Challenge>>>,
+    #[shaku(inject)]
+    challenge_store: Arc<dyn ChallengeStoreInterface>,
+    #[shaku(inject)]
+    repository_store: Arc<dyn RepositoryStoreInterface>,
+    #[shaku(inject)]
+    session_store: Arc<dyn SessionStoreInterface>,
 }
 
-/// Global StageRepository instance
-static GLOBAL_STAGE_REPOSITORY: Lazy<Arc<Mutex<StageRepository>>> =
-    Lazy::new(|| Arc::new(Mutex::new(StageRepository::new(None, GameData::instance()))));
+pub trait StageRepositoryInterface: shaku::Interface {
+    // Note: update_title_screen_data() is not included here because it's generic
+    // over the Backend type, making the trait not object-safe. Instead, callers
+    // should downcast to the concrete StageRepository type when needed.
+    fn as_any(&self) -> &dyn std::any::Any;
+}
+impl StageRepositoryInterface for StageRepository {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+}
+
 
 impl StageRepository {
-    pub fn new(git_repository: Option<GitRepository>, game_data: Arc<Mutex<GameData>>) -> Self {
+    pub fn new(
+        git_repository: Option<GitRepository>,
+        challenge_store: Arc<dyn ChallengeStoreInterface>,
+        repository_store: Arc<dyn RepositoryStoreInterface>,
+        session_store: Arc<dyn SessionStoreInterface>,
+    ) -> Self {
         Self {
-            git_repository,
-            config: StageConfig::default(),
-            built_stages: Vec::new(),
-            current_index: 0,
-            difficulty_indices: HashMap::new(),
-            indices_cached: false,
-            cached_challenges: None,
-            game_data,
+            git_repository: Mutex::new(git_repository),
+            config: Mutex::new(StageConfig::default()),
+            built_stages: Mutex::new(Vec::new()),
+            current_index: Mutex::new(0),
+            difficulty_indices: Mutex::new(HashMap::new()),
+            indices_cached: Mutex::new(false),
+            cached_challenges: Mutex::new(None),
+            challenge_store,
+            repository_store,
+            session_store,
         }
     }
 
     pub fn with_config(
         git_repository: Option<GitRepository>,
         config: StageConfig,
-        game_data: Arc<Mutex<GameData>>,
+        challenge_store: Arc<dyn ChallengeStoreInterface>,
+        repository_store: Arc<dyn RepositoryStoreInterface>,
+        session_store: Arc<dyn SessionStoreInterface>,
     ) -> Self {
         Self {
-            git_repository,
-            config,
-            built_stages: Vec::new(),
-            current_index: 0,
-            difficulty_indices: std::collections::HashMap::new(),
-            indices_cached: false,
-            cached_challenges: None,
-            game_data,
+            git_repository: Mutex::new(git_repository),
+            config: Mutex::new(config),
+            built_stages: Mutex::new(Vec::new()),
+            current_index: Mutex::new(0),
+            difficulty_indices: Mutex::new(std::collections::HashMap::new()),
+            indices_cached: Mutex::new(false),
+            cached_challenges: Mutex::new(None),
+            challenge_store,
+            repository_store,
+            session_store,
         }
     }
 
-    pub fn with_mode(mut self, mode: GameMode) -> Self {
-        self.config.game_mode = mode;
+    pub fn with_mode(self, mode: GameMode) -> Self {
+        self.config.lock().unwrap().game_mode = mode;
         self
     }
 
-    pub fn with_max_stages(mut self, max_stages: usize) -> Self {
-        self.config.max_stages = max_stages;
+    pub fn with_max_stages(self, max_stages: usize) -> Self {
+        self.config.lock().unwrap().max_stages = max_stages;
         self
     }
 
-    pub fn with_seed(mut self, seed: u64) -> Self {
-        self.config.seed = Some(seed);
-        self
-    }
-
-    pub fn with_game_data(mut self, game_data: Arc<Mutex<GameData>>) -> Self {
-        self.game_data = game_data;
+    pub fn with_seed(self, seed: u64) -> Self {
+        self.config.lock().unwrap().seed = Some(seed);
         self
     }
 
@@ -81,10 +111,7 @@ impl StageRepository {
     where
         F: FnOnce(&Vec<Challenge>) -> R,
     {
-        self.game_data
-            .lock()
-            .ok()
-            .and_then(|data| data.challenges.as_ref().map(f))
+        self.challenge_store.get_challenges().as_ref().map(f)
     }
 
     /// Build stages based on configuration
@@ -94,7 +121,8 @@ impl StageRepository {
                 return vec![];
             }
 
-            match &self.config.game_mode {
+            let config = self.config.lock().unwrap();
+            match &config.game_mode {
                 GameMode::Normal => self.build_normal_stages(available_challenges),
                 GameMode::TimeAttack => self.build_time_attack_stages(available_challenges),
                 GameMode::Custom {
@@ -103,7 +131,7 @@ impl StageRepository {
                     ..
                 } => self.build_custom_stages(
                     available_challenges,
-                    max_stages.unwrap_or(self.config.max_stages),
+                    max_stages.unwrap_or(config.max_stages),
                     difficulty,
                 ),
             }
@@ -113,7 +141,7 @@ impl StageRepository {
 
     fn build_normal_stages(&self, available_challenges: &[Challenge]) -> Vec<Challenge> {
         let mut challenges = available_challenges.to_vec();
-        let target_count = self.config.max_stages.min(challenges.len());
+        let target_count = self.config.lock().unwrap().max_stages.min(challenges.len());
 
         // Random selection
         let mut rng = self.create_rng();
@@ -173,16 +201,17 @@ impl StageRepository {
     }
 
     fn create_rng(&self) -> StdRng {
-        match self.config.seed {
+        match self.config.lock().unwrap().seed {
             Some(seed) => StdRng::seed_from_u64(seed),
             None => rand::make_rng(),
         }
     }
 
     pub fn get_mode_description(&self) -> String {
-        match &self.config.game_mode {
+        let config = self.config.lock().unwrap();
+        match &config.game_mode {
             GameMode::Normal => {
-                format!("Normal Mode - {} random challenges", self.config.max_stages)
+                format!("Normal Mode - {} random challenges", config.max_stages)
             }
             GameMode::TimeAttack => "Time Attack Mode - All challenges".to_string(),
             GameMode::Custom {
@@ -190,7 +219,7 @@ impl StageRepository {
                 time_limit,
                 difficulty,
             } => {
-                let stages = max_stages.unwrap_or(self.config.max_stages);
+                let stages = max_stages.unwrap_or(config.max_stages);
                 let time_desc = match time_limit {
                     Some(t) => format!(" ({}s limit)", t),
                     None => "".to_string(),
@@ -208,7 +237,7 @@ impl StageRepository {
         manager: &mut ScreenManagerImpl<B>,
     ) -> Result<()> {
         // Only update if indices are cached to avoid GameData access during screen transitions
-        if !self.indices_cached {
+        if !*self.indices_cached.lock().unwrap() {
             return Ok(());
         }
 
@@ -218,7 +247,7 @@ impl StageRepository {
         if let Some(screen) = manager.get_screen_mut(&ScreenType::Title) {
             if let Some(title_screen) = screen.as_any().downcast_ref::<TitleScreen>() {
                 title_screen.set_challenge_counts(challenge_counts);
-                title_screen.set_git_repository(self.git_repository.clone());
+                title_screen.set_git_repository(self.git_repository.lock().unwrap().clone());
             }
         }
         Ok(())
@@ -226,26 +255,22 @@ impl StageRepository {
 
     pub fn count_challenges_by_difficulty(&self) -> [usize; 5] {
         // Use cached indices for O(1) counting
-        if self.indices_cached {
+        if *self.indices_cached.lock().unwrap() {
             let mut counts = [0; 5];
-            counts[0] = self
-                .difficulty_indices
+            let difficulty_indices = self.difficulty_indices.lock().unwrap();
+            counts[0] = difficulty_indices
                 .get(&DifficultyLevel::Easy)
                 .map_or(0, |v| v.len());
-            counts[1] = self
-                .difficulty_indices
+            counts[1] = difficulty_indices
                 .get(&DifficultyLevel::Normal)
                 .map_or(0, |v| v.len());
-            counts[2] = self
-                .difficulty_indices
+            counts[2] = difficulty_indices
                 .get(&DifficultyLevel::Hard)
                 .map_or(0, |v| v.len());
-            counts[3] = self
-                .difficulty_indices
+            counts[3] = difficulty_indices
                 .get(&DifficultyLevel::Wild)
                 .map_or(0, |v| v.len());
-            counts[4] = self
-                .difficulty_indices
+            counts[4] = difficulty_indices
                 .get(&DifficultyLevel::Zen)
                 .map_or(0, |v| v.len());
             counts
@@ -275,176 +300,54 @@ impl StageRepository {
     }
 }
 
-impl Default for StageRepository {
-    fn default() -> Self {
-        Self::new(None, GameData::instance())
-    }
-}
+// Default implementation removed - use new() with stores instead
 
 impl StageRepository {
     /// Set cached challenges (for testing)
-    pub fn set_cached_challenges(&mut self, challenges: Vec<Challenge>) {
-        self.built_stages = challenges.clone();
-        self.cached_challenges = Some(challenges);
-        self.indices_cached = false;
+    pub fn set_cached_challenges(&self, challenges: Vec<Challenge>) {
+        *self.built_stages.lock().unwrap() = challenges.clone();
+        *self.cached_challenges.lock().unwrap() = Some(challenges);
+        *self.indices_cached.lock().unwrap() = false;
     }
 
-    /// Get the global StageRepository instance
-    pub fn instance() -> Arc<Mutex<StageRepository>> {
-        GLOBAL_STAGE_REPOSITORY.clone()
-    }
-
-    /// Initialize the global StageRepository
-    pub fn initialize_global(git_repository: Option<GitRepository>) -> Result<()> {
-        let mut repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            GitTypeError::TerminalError(format!("Failed to lock global StageRepository: {}", e))
-        })?;
-
-        *repo = Self::new(git_repository, GameData::instance());
-        Ok(())
-    }
-
-    pub fn initialize_global_with_stages(git_repository: Option<GitRepository>) -> Result<()> {
-        let mut repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            GitTypeError::TerminalError(format!("Failed to lock global StageRepository: {}", e))
-        })?;
-
-        *repo = Self::new(git_repository, GameData::instance());
-        repo.build_and_store_stages();
-        Ok(())
-    }
-
-    /// Set difficulty for the global repository and rebuild stages
-    pub fn set_global_difficulty(difficulty: DifficultyLevel) -> Result<()> {
-        let mut repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            GitTypeError::TerminalError(format!("Failed to lock global StageRepository: {}", e))
-        })?;
-
-        // Create new config with the difficulty
-        let config = StageConfig {
-            game_mode: GameMode::Custom {
-                max_stages: Some(3),
-                time_limit: None,
-                difficulty,
-            },
-            max_stages: 3,
-            seed: None,
-        };
-
-        repo.config = config;
-        // Don't rebuild stages/indices - just update config
-        // Indices are already cached and difficulty filtering happens at runtime
-        repo.current_index = 0;
-        log::info!(
-            "✅ StageRepository: Difficulty set to {:?} (keeping cached indices)",
-            difficulty
-        );
-        Ok(())
-    }
-
-    /// Get the next challenge from the global repository
-    pub fn get_next_global_challenge() -> Result<Option<Challenge>> {
-        let mut repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            GitTypeError::TerminalError(format!("Failed to lock global StageRepository: {}", e))
-        })?;
-
-        if repo.current_index < repo.built_stages.len() {
-            let challenge = repo.built_stages[repo.current_index].clone();
-            repo.current_index += 1;
-            Ok(Some(challenge))
-        } else {
-            Ok(None)
-        }
-    }
-
-    /// Check if there are more challenges available without consuming them
-    pub fn has_next_global_challenge() -> Result<bool> {
-        let repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            GitTypeError::TerminalError(format!("Failed to lock global StageRepository: {}", e))
-        })?;
-
-        Ok(repo.current_index < repo.built_stages.len())
-    }
-
-    /// Get current stage info (current stage number, total stages)
-    pub fn get_global_stage_info() -> Result<(usize, usize)> {
-        let repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            GitTypeError::TerminalError(format!("Failed to lock global StageRepository: {}", e))
-        })?;
-
-        Ok((repo.current_index + 1, repo.built_stages.len()))
-    }
-
-    /// Build stages and store them internally
-    fn build_and_store_stages(&mut self) {
-        self.built_stages = self.build_stages();
-        self.current_index = 0;
-    }
 
     /// Get a single challenge for specific difficulty (optimized with cached data)
     pub fn get_challenge_for_difficulty(
-        &mut self,
+        &self,
         difficulty: DifficultyLevel,
     ) -> Option<Challenge> {
         // Ensure indices are built
         self.build_difficulty_indices();
 
-        if let Some(indices) = self.difficulty_indices.get(&difficulty) {
+        let difficulty_indices = self.difficulty_indices.lock().unwrap();
+        if let Some(indices) = difficulty_indices.get(&difficulty) {
             if indices.is_empty() {
                 None
-            } else if let Some(ref cached_challenges) = self.cached_challenges {
-                // O(1) lookup using cached challenges (no GameData access!)
-                let mut rng = self.create_rng();
-                let random_index_pos = rng.random_range(0..indices.len());
-                let challenge_index = indices[random_index_pos];
+            } else {
+                let cached_challenges = self.cached_challenges.lock().unwrap();
+                if let Some(ref challenges) = *cached_challenges {
+                    // O(1) lookup using cached challenges (no GameData access!)
+                    let mut rng = self.create_rng();
+                    let random_index_pos = rng.random_range(0..indices.len());
+                    let challenge_index = indices[random_index_pos];
 
-                if challenge_index < cached_challenges.len() {
-                    Some(cached_challenges[challenge_index].clone())
+                    if challenge_index < challenges.len() {
+                        Some(challenges[challenge_index].clone())
+                    } else {
+                        None
+                    }
                 } else {
                     None
                 }
-            } else {
-                None
             }
         } else {
             None
         }
     }
 
-    /// Get challenge for specific difficulty (static version for global instance)
-    pub fn get_global_challenge_for_difficulty(
-        difficulty: DifficultyLevel,
-    ) -> Result<Option<Challenge>> {
-        let mut repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            GitTypeError::TerminalError(format!("Failed to lock global StageRepository: {}", e))
-        })?;
-
-        Ok(repo.get_challenge_for_difficulty(difficulty))
-    }
-
-    /// Build difficulty indices for global repository
-    pub fn build_global_difficulty_indices() -> Result<()> {
-        let mut repo = GLOBAL_STAGE_REPOSITORY.lock().map_err(|e| {
-            GitTypeError::TerminalError(format!("Failed to lock global StageRepository: {}", e))
-        })?;
-
-        repo.build_difficulty_indices();
-        Ok(())
-    }
-
-    /// Update title screen data globally (called once during initialization)
-    pub fn update_global_title_screen_data() -> Result<()> {
-        // This will be called from finalizing step with proper screen manager access
-        // For now, just log that it's ready
-        log::info!(
-            "✅ StageRepository: Title screen data ready (will be updated by ScreenManager)"
-        );
-        Ok(())
-    }
-
     /// Build difficulty indices for O(1) challenge lookup
-    pub fn build_difficulty_indices(&mut self) {
-        if self.indices_cached {
+    pub fn build_difficulty_indices(&self) {
+        if *self.indices_cached.lock().unwrap() {
             return;
         }
 
@@ -477,9 +380,9 @@ impl StageRepository {
 
         if let Some(cached_challenges) = result {
             // Replace the actual indices with the temporary ones
-            self.difficulty_indices = temp_indices;
-            self.cached_challenges = Some(cached_challenges);
-            self.indices_cached = true;
+            *self.difficulty_indices.lock().unwrap() = temp_indices;
+            *self.cached_challenges.lock().unwrap() = Some(cached_challenges);
+            *self.indices_cached.lock().unwrap() = true;
         }
     }
 }

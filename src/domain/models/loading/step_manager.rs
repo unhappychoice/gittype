@@ -2,7 +2,7 @@ use super::{
     CacheCheckStep, CloningStep, DatabaseInitStep, ExecutionContext, ExtractingStep,
     FinalizingStep, GeneratingStep, ScanningStep, Step, StepResult,
 };
-use crate::presentation::game::models::StepType;
+use crate::domain::models::loading::StepType;
 use crate::presentation::tui::screens::loading_screen::ProgressReporter;
 use crate::Result;
 

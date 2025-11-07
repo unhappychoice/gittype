@@ -4,7 +4,7 @@ use super::{
 use crate::domain::models::typing::CodeContext;
 use crate::domain::models::{Challenge, GitRepository};
 use crate::domain::services::typing_core::TypingCore;
-use crate::presentation::game::SessionManager;
+use crate::domain::services::SessionManager;
 use crate::presentation::ui::Colors;
 use ratatui::{
     layout::{Constraint, Direction, Layout},
@@ -43,7 +43,7 @@ impl TypingView {
         countdown_number: Option<u8>,
         skips_remaining: usize,
         dialog_shown: bool,
-        session_manager: &std::sync::Arc<std::sync::Mutex<SessionManager>>,
+        session_manager: &std::sync::Arc<dyn crate::domain::services::session_manager_service::SessionManagerInterface>,
         colors: &Colors,
     ) {
         let countdown_active = countdown_number.is_some();
@@ -79,7 +79,7 @@ impl TypingView {
         );
 
         // Metrics
-        if let Ok(instance) = session_manager.lock() {
+        if let Some(instance) = session_manager.as_any().downcast_ref::<SessionManager>() {
             if let Some(stage_tracker) = instance.get_current_stage_tracker() {
                 TypingFooterView::render_metrics(
                     frame,
@@ -87,7 +87,7 @@ impl TypingView {
                     waiting_to_start,
                     countdown_active,
                     skips_remaining,
-                    stage_tracker,
+                    &stage_tracker,
                     typing_core,
                     colors,
                 );

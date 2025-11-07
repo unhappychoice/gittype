@@ -1,6 +1,5 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
 use crate::domain::services::challenge_generator::ChallengeGenerator;
-use crate::presentation::game::GameData;
 use crate::presentation::ui::Colors;
 use crate::{GitTypeError, Result};
 use ratatui::style::Color;
@@ -87,8 +86,22 @@ impl Step for GeneratingStep {
             }
         }
 
-        // Store challenges in GameData
-        GameData::set_results(generated_challenges, context.git_repository.take())?;
+        // Store challenges in ChallengeStore
+        if let Some(challenge_store) = &context.challenge_store {
+            challenge_store.set_challenges(generated_challenges);
+        }
+
+        // Store git repository in RepositoryStore
+        if let (Some(repository_store), Some(git_repo)) =
+            (&context.repository_store, &context.git_repository)
+        {
+            repository_store.set_repository(git_repo.clone());
+        }
+
+        // Mark loading as completed
+        if let Some(session_store) = &context.session_store {
+            session_store.set_loading_completed(true);
+        }
 
         Ok(StepResult::Skipped)
     }

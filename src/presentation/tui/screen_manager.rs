@@ -15,36 +15,25 @@
 //! ## Usage Example
 //!
 //! ```rust,no_run
-//! use gittype::domain::events::{EventBus, EventBusInterface};
-//! use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
-//! use gittype::domain::models::theme::Theme;
-//! use gittype::domain::models::color_mode::ColorMode;
 //! use gittype::presentation::tui::screen_manager::ScreenManagerImpl;
-//! use gittype::presentation::tui::screens::TitleScreen;
-//! use gittype::presentation::game::GameData;
 //! use ratatui::backend::CrosstermBackend;
-//! use ratatui::Terminal;
-//! use std::io::stdout;
-//! use std::sync::Arc;
 //!
 //! fn example() -> gittype::Result<()> {
-//!     let event_bus = Arc::new(EventBus::new()) as Arc<dyn EventBusInterface>;
-//!     let theme_service = Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>;
-//!     let screen = TitleScreen::new(event_bus.clone(), theme_service);
-//!     let game_data = GameData::instance();
-//!     let backend = CrosstermBackend::new(stdout());
-//!     let terminal = Terminal::new(backend).unwrap();
-//!
-//!     let mut manager = ScreenManagerImpl::default();
+//!     // ScreenManagerImpl is typically created via DI container
+//!     let manager = ScreenManagerImpl::<CrosstermBackend<std::io::Stdout>>::default();
 //!     // Manager usage example
 //!     Ok(())
 //! }
 //! ```
 //!
 use crate::domain::events::{EventBus, EventBusInterface};
-use crate::infrastructure::terminal::TerminalInterface;
 use crate::domain::events::presentation_events::{ExitRequested, NavigateTo};
-use crate::presentation::game::{GameData, SessionManager, StageRepository};
+use crate::domain::services::{SessionManager, stage_builder_service::StageRepository};
+use crate::domain::services::session_manager_service::SessionManagerInterface;
+use crate::domain::services::stage_builder_service::StageRepositoryInterface;
+use crate::domain::stores::{ChallengeStore, RepositoryStore, SessionStore};
+use crate::domain::stores::{ChallengeStoreInterface, RepositoryStoreInterface, SessionStoreInterface};
+use crate::infrastructure::terminal::TerminalInterface;
 use crate::presentation::tui::screen_transition_manager::ScreenTransitionManager;
 use crate::presentation::tui::screens::{
     AnalyticsScreen, AnalyticsScreenInterface, AnimationScreen, AnimationScreenInterface,
@@ -137,7 +126,6 @@ impl<T: Screen + Send + Sync + ?Sized> Screen for ArcScreenWrapper<T> {
 pub trait ScreenManagerFactory: Interface {
     fn create(
         &self,
-        game_data: Arc<Mutex<GameData>>,
         module: &crate::presentation::di::AppModule,
     ) -> ScreenManagerImpl<CrosstermBackend<Stdout>>;
 }
@@ -160,14 +148,21 @@ pub struct ScreenManagerImpl<
     // Event bus for UI events
     event_bus: Arc<dyn EventBusInterface>,
 
-    // Game data
-    game_data: Arc<Mutex<GameData>>,
+    // Session store for loading state
+    session_store: Arc<dyn SessionStoreInterface>,
+
+    // Session manager for session state
+    session_manager: Arc<dyn SessionManagerInterface>,
+    /// StageRepository instance
+    stage_repository: Arc<dyn StageRepositoryInterface>,
 }
 
 impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
-        game_data: Arc<Mutex<GameData>>,
+        session_store: Arc<dyn SessionStoreInterface>,
+        session_manager: Arc<dyn SessionManagerInterface>,
+        stage_repository: Arc<dyn StageRepositoryInterface>,
         terminal: Terminal<B>,
     ) -> Self {
         Self {
@@ -180,12 +175,10 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
             exit_requested: false,
             pending_transition: Arc::new(Mutex::new(None)),
             event_bus: event_bus.clone(),
-            game_data,
+            session_store,
+            session_manager,
+            stage_repository,
         }
-    }
-
-    fn get_game_data(&self) -> Arc<Mutex<GameData>> {
-        self.game_data.clone()
     }
 
     pub fn get_event_bus(&self) -> Arc<dyn EventBusInterface> {
@@ -480,7 +473,7 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
             }
             ScreenTransition::Replace(screen_type) => {
                 let validated_screen_type =
-                    ScreenTransitionManager::reduce(self.current_screen_type.clone(), screen_type)?;
+                    ScreenTransitionManager::reduce(self.current_screen_type.clone(), screen_type, &self.session_manager)?;
 
                 self.prepare_screen_if_needed(&validated_screen_type)?;
                 self.set_current_screen(validated_screen_type)?;
@@ -488,7 +481,7 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
             }
             ScreenTransition::PopTo(screen_type) => {
                 let validated_screen_type =
-                    ScreenTransitionManager::reduce(self.current_screen_type.clone(), screen_type)?;
+                    ScreenTransitionManager::reduce(self.current_screen_type.clone(), screen_type, &self.session_manager)?;
 
                 self.prepare_screen_if_needed(&validated_screen_type)?;
                 self.pop_to_screen(validated_screen_type)?;
@@ -528,19 +521,13 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
                         _ => None,
                     });
 
-                // Apply difficulty to global repositories if found
-                selected_difficulty
-                    .map(|difficulty| {
-                        StageRepository::set_global_difficulty(difficulty)?;
-
-                        // Also set difficulty in SessionManager
-                        if let Ok(mut session_manager) = SessionManager::instance().lock() {
-                            session_manager.set_difficulty(difficulty);
-                        }
-
-                        Ok::<_, GitTypeError>(())
-                    })
-                    .transpose()?;
+                // Apply difficulty to session manager if found
+                if let Some(difficulty) = selected_difficulty {
+                    // Set difficulty in SessionManager via downcast
+                    if let Some(sm) = self.session_manager.as_any().downcast_ref::<SessionManager>() {
+                        sm.set_difficulty(difficulty);
+                    }
+                }
 
                 // Load next challenge in TypingScreen
                 let load_result = self
@@ -617,9 +604,6 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
     }
 
     fn update_and_render(&mut self) -> Result<()> {
-        // Get game_data before mutable borrow to avoid borrow checker error
-        let game_data = self.get_game_data();
-
         if let Some(screen) = self.screens.get_mut(&self.current_screen_type) {
             let strategy = screen.get_update_strategy();
             let now = Instant::now();
@@ -638,10 +622,8 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
 
                 // Special handling for LoadingScreen auto-transition
                 if self.current_screen_type == ScreenType::Loading && !needs_render {
-                    let data = game_data.lock().unwrap();
-                    let loading_completed = data.loading_completed;
-                    let loading_failed = data.loading_failed;
-                    drop(data);
+                    let loading_completed = self.session_store.is_loading_completed();
+                    let loading_failed = self.session_store.is_loading_failed();
 
                     // LoadingScreen completed, transition to Title
                     if loading_completed {
@@ -649,8 +631,9 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
                         self.handle_transition(ScreenTransition::Replace(ScreenType::Title))?;
 
                         // Update title screen with challenge counts from StageRepository
-                        let stage_repo_instance = StageRepository::instance();
-                        if let Ok(repo) = stage_repo_instance.lock() {
+                        // Note: We need to downcast because update_title_screen_data is generic
+                        let repo_arc = self.stage_repository.clone();
+                        if let Some(repo) = repo_arc.as_any().downcast_ref::<StageRepository>() {
                             let _ = repo.update_title_screen_data(self);
                         }
 
@@ -812,7 +795,34 @@ impl Default for ScreenManagerImpl<CrosstermBackend<Stdout>> {
     fn default() -> Self {
         let backend = CrosstermBackend::new(stdout());
         let terminal = Terminal::new(backend).expect("Failed to create terminal");
-        Self::new(Arc::new(EventBus::new()), GameData::instance(), terminal)
+
+        // Create stores and repositories
+        let challenge_store = Arc::new(ChallengeStore::default()) as Arc<dyn ChallengeStoreInterface>;
+        let repository_store = Arc::new(RepositoryStore::default()) as Arc<dyn RepositoryStoreInterface>;
+        let session_store = Arc::new(SessionStore::default()) as Arc<dyn SessionStoreInterface>;
+
+        let stage_repository = StageRepository::new(
+            None,
+            challenge_store.clone(),
+            repository_store.clone(),
+            session_store.clone(),
+        );
+        let stage_repository: Arc<dyn StageRepositoryInterface> = Arc::new(stage_repository);
+
+        let event_bus: Arc<dyn EventBusInterface> = Arc::new(EventBus::new());
+        let session_manager = SessionManager::new_with_dependencies(
+            Arc::clone(&event_bus),
+            Arc::clone(&stage_repository),
+        );
+        let session_manager: Arc<dyn SessionManagerInterface> = Arc::new(session_manager);
+
+        Self::new(
+            Arc::clone(&event_bus),
+            session_store.clone(),
+            session_manager,
+            stage_repository,
+            terminal,
+        )
     }
 }
 
@@ -821,6 +831,12 @@ impl Default for ScreenManagerImpl<CrosstermBackend<Stdout>> {
 pub struct ScreenManagerFactoryImpl {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    session_store: Arc<dyn SessionStoreInterface>,
+    #[shaku(inject)]
+    session_manager: Arc<dyn SessionManagerInterface>,
+    #[shaku(inject)]
+    stage_repository: Arc<dyn StageRepositoryInterface>,
     #[shaku(inject)]
     terminal: Arc<dyn TerminalInterface>,
     #[shaku(inject)]
@@ -866,13 +882,15 @@ pub struct ScreenManagerFactoryImpl {
 impl ScreenManagerFactory for ScreenManagerFactoryImpl {
     fn create(
         &self,
-        game_data: Arc<Mutex<GameData>>,
         _module: &crate::presentation::di::AppModule,
     ) -> ScreenManagerImpl<CrosstermBackend<Stdout>> {
         // Use the Arc<dyn EventBusInterface> directly from DI - ensures same instance everywhere
         let event_bus = self.event_bus.clone();
+        let session_store = self.session_store.clone();
+        let session_manager = self.session_manager.clone();
+        let stage_repository = self.stage_repository.clone();
         let terminal = self.terminal.get();
-        let mut manager = ScreenManagerImpl::new(event_bus.clone(), game_data.clone(), terminal);
+        let mut manager = ScreenManagerImpl::new(event_bus.clone(), session_store, session_manager, stage_repository, terminal);
 
         // Register screens from DI (Components)
         // Explicit type coercion from Arc<dyn Interface> to Arc<dyn Screen>
