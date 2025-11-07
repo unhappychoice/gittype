@@ -6,9 +6,7 @@ use ratatui::{
     widgets::{Block, Borders, Clear, List, ListItem, Paragraph},
     Frame,
 };
-
 use std::sync::{Arc, RwLock};
-
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::{EventBus, EventBusInterface};
 use crate::domain::services::theme_service::ThemeServiceInterface;

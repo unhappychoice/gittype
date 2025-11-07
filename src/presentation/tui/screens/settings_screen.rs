@@ -17,7 +17,6 @@ use ratatui::{
 };
 use std::sync::Arc;
 use std::sync::RwLock;
-
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub enum SettingsSection {
     #[default]

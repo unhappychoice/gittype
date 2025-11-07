@@ -1,6 +1,5 @@
 use std::borrow::Cow;
 use std::path::Path;
-
 use super::{git_repository::GitRepository, CodeChunk, DifficultyLevel};
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]

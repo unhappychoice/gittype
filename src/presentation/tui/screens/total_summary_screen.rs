@@ -7,7 +7,6 @@ use ratatui::{
     Frame,
 };
 use std::sync::{Arc, Mutex, RwLock};
-
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::TotalResult;

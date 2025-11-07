@@ -1,9 +1,7 @@
 use shaku::Interface;
-
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
-
 use crate::domain::models::color_mode::ColorMode;
 use crate::domain::models::color_scheme::{
     ColorScheme, CustomThemeFile, SerializableColor, ThemeFile,

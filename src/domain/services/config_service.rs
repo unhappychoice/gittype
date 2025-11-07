@@ -1,8 +1,6 @@
 use shaku::Interface;
-
 use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
-
 use crate::domain::models::config::Config;
 use crate::infrastructure::storage::file_storage::{FileStorage, FileStorageInterface};
 use crate::infrastructure::storage::AppDataProvider;

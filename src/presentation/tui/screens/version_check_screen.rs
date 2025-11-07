@@ -4,10 +4,8 @@ use crossterm::{
     ExecutableCommand,
 };
 use ratatui::{backend::CrosstermBackend, Terminal};
-
 use std::io::{stdout, Stdout};
 use std::sync::{Arc, RwLock};
-
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::services::theme_service::ThemeServiceInterface;

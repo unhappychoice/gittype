@@ -1,8 +1,6 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::Frame;
-
 use std::sync::{Arc, RwLock};
-
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::services::scoring::StageResult;

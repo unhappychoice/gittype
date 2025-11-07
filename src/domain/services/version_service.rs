@@ -1,9 +1,7 @@
 use shaku::Interface;
-
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
-
 use crate::domain::repositories::version_repository::VersionRepositoryInterface;
 use crate::{GitTypeError, Result};
 

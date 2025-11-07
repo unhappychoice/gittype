@@ -1,8 +1,6 @@
 use shaku::Interface;
-
 use std::path::PathBuf;
 use std::sync::Arc;
-
 use crate::domain::error::Result;
 use crate::domain::models::storage::repository::{StoredRepository, StoredRepositoryWithLanguages};
 use crate::infrastructure::database::daos::RepositoryDaoInterface;

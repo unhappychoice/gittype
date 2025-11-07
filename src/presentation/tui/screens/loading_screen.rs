@@ -1,6 +1,5 @@
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::Frame;
-
 use std::path::PathBuf;
 use std::sync::{
     atomic::{AtomicBool, AtomicUsize, Ordering},
@@ -8,7 +7,6 @@ use std::sync::{
 };
 use std::thread;
 use std::time::Duration;
-
 use crate::domain::events::presentation_events::ExitRequested;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::loading::{ExecutionContext, StepManager, StepType};

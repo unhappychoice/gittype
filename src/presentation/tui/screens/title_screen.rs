@@ -4,7 +4,6 @@ use ratatui::{
     Frame,
 };
 use std::sync::{Arc, RwLock};
-
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::{DifficultyLevel, GitRepository};

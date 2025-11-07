@@ -1,6 +1,5 @@
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
-
 use crate::domain::events::domain_events::DomainEvent;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::{

@@ -6,10 +6,8 @@ use ratatui::{
     widgets::Paragraph,
     Frame,
 };
-
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
-
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::{RankTier, SessionResult};

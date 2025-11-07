@@ -1,6 +1,5 @@
 use std::any::Any;
 use std::time::Instant;
-
 use super::Event;
 
 // Unified domain event enum for pattern matching
