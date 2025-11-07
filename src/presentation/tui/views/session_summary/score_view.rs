@@ -1,8 +1,8 @@
+use crate::domain::models::ui::ascii_digits::get_digit_patterns;
+use crate::domain::models::ui::rank_colors;
 use crate::domain::models::{Rank, SessionResult};
 use crate::domain::repositories::session_repository::BestStatus;
 use crate::domain::repositories::SessionRepository;
-use crate::domain::models::ui::ascii_digits::get_digit_patterns;
-use crate::domain::models::ui::rank_colors;
 use crate::presentation::ui::{Colors, GradationText};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},

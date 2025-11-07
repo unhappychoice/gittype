@@ -48,7 +48,7 @@ pub fn run_trending(
 
     // Create DI container and resolve TrendingRepository
     let container = AppModule::builder().build();
-    let trending_repository: Arc<dyn TrendingRepositoryInterface> = container.resolve();
+    let _trending_repository: Arc<dyn TrendingRepositoryInterface> = container.resolve();
 
     // Validate language if provided
     if let Some(ref lang) = language {
@@ -87,7 +87,7 @@ pub fn run_trending(
         return run_game_session(cli);
     } else if language.is_some() {
         // Language provided - show repositories directly
-        let theme_service: Arc<dyn ThemeServiceInterface> = container.resolve();
+        let _theme_service: Arc<dyn ThemeServiceInterface> = container.resolve();
 
         let selected_repo = run_screen::<TrendingRepositorySelectionScreen, _, _, _>(
             ScreenType::TrendingRepositorySelection,
@@ -115,7 +115,7 @@ pub fn run_trending(
         }
     } else {
         // No language provided - show language selection then repository selection
-        let theme_service: Arc<dyn ThemeServiceInterface> = container.resolve();
+        let _theme_service: Arc<dyn ThemeServiceInterface> = container.resolve();
 
         // Step 1: Language selection
         let selected_language = run_screen::<TrendingLanguageSelectionScreen, _, _, _>(

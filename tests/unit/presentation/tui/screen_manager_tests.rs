@@ -1,10 +1,15 @@
 use crossterm::event::KeyEvent;
 use gittype::domain::events::EventBus;
-use gittype::domain::services::{SessionManager, stage_builder_service::StageRepository};
+use gittype::domain::services::scoring::{
+    SessionTracker, SessionTrackerInterface, TotalTracker, TotalTrackerInterface,
+};
 use gittype::domain::services::session_manager_service::SessionManagerInterface;
 use gittype::domain::services::stage_builder_service::StageRepositoryInterface;
+use gittype::domain::services::{stage_builder_service::StageRepository, SessionManager};
 use gittype::domain::stores::{ChallengeStore, RepositoryStore, SessionStore};
-use gittype::domain::stores::{ChallengeStoreInterface, RepositoryStoreInterface, SessionStoreInterface};
+use gittype::domain::stores::{
+    ChallengeStoreInterface, RepositoryStoreInterface, SessionStoreInterface,
+};
 use gittype::infrastructure::terminal::TerminalInterface;
 use gittype::presentation::tui::{
     Screen, ScreenDataProvider, ScreenManagerImpl, ScreenTransition, ScreenType, UpdateStrategy,
@@ -38,7 +43,8 @@ fn create_test_screen_manager() -> ScreenManagerImpl<TestBackend> {
 
     // Create stores for DI
     let challenge_store = Arc::new(ChallengeStore::default()) as Arc<dyn ChallengeStoreInterface>;
-    let repository_store = Arc::new(RepositoryStore::default()) as Arc<dyn RepositoryStoreInterface>;
+    let repository_store =
+        Arc::new(RepositoryStore::default()) as Arc<dyn RepositoryStoreInterface>;
     let session_store_arc = Arc::new(SessionStore::default()) as Arc<dyn SessionStoreInterface>;
 
     // Create StageRepository
@@ -51,16 +57,26 @@ fn create_test_screen_manager() -> ScreenManagerImpl<TestBackend> {
     let stage_repository: Arc<dyn StageRepositoryInterface> = Arc::new(stage_repository);
 
     // Create SessionManager with dependencies
+    let session_tracker: Arc<dyn SessionTrackerInterface> = Arc::new(SessionTracker::default());
+    let total_tracker: Arc<dyn TotalTrackerInterface> = Arc::new(TotalTracker::default());
     let session_manager = SessionManager::new_with_dependencies(
         event_bus.clone(),
         stage_repository.clone(),
+        session_tracker,
+        total_tracker,
     );
     let session_manager: Arc<dyn SessionManagerInterface> = Arc::new(session_manager);
 
     let backend = TestBackend::new(80, 24);
     let terminal = Terminal::new(backend).expect("Failed to create test terminal");
 
-    ScreenManagerImpl::new(event_bus, session_store_arc, session_manager, stage_repository, terminal)
+    ScreenManagerImpl::new(
+        event_bus,
+        session_store_arc,
+        session_manager,
+        stage_repository,
+        terminal,
+    )
 }
 
 // Mock screen for testing

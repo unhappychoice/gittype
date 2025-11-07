@@ -1,19 +1,16 @@
-use crate::domain::events::EventBusInterface;
 use crate::domain::models::ExtractionOptions;
 use crate::domain::models::Languages;
 use crate::domain::services::theme_service::ThemeServiceInterface;
+use crate::domain::stores::RepositoryStoreInterface;
 use crate::infrastructure::console::{Console, ConsoleImpl};
 use crate::infrastructure::logging;
 use crate::presentation::cli::args::Cli;
 use crate::presentation::di::AppModule;
-use crate::domain::stores::RepositoryStoreInterface;
-use crate::domain::services::SessionManager;
 use crate::presentation::signal_handler::setup_signal_handlers;
 use crate::presentation::tui::screens::{VersionCheckResult, VersionCheckScreen};
 use crate::presentation::tui::ScreenType;
 use crate::presentation::tui::{ScreenManagerFactory, ScreenManagerImpl};
 use crate::{GitTypeError, Result};
-use shaku::HasComponent;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
@@ -26,12 +23,17 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
     let container = AppModule::builder().build();
 
     // Get SessionManager from DI container and setup event subscriptions
-    use crate::domain::services::session_manager_service::{SessionManagerInterface, SessionManager};
+    use crate::domain::services::session_manager_service::{
+        SessionManager, SessionManagerInterface,
+    };
     use shaku::HasComponent;
     let session_manager_trait: Arc<dyn SessionManagerInterface> = container.resolve();
 
     // Downcast to concrete SessionManager type for event subscription setup
-    if let Some(session_manager) = session_manager_trait.as_any().downcast_ref::<SessionManager>() {
+    if let Some(_session_manager) = session_manager_trait
+        .as_any()
+        .downcast_ref::<SessionManager>()
+    {
         // Get a new Arc pointing to the same SessionManager
         // This is safe because we know the type matches
         let session_manager_arc = unsafe {
@@ -76,10 +78,7 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
         let config_service: &dyn ConfigServiceInterface = container.resolve_ref();
         if let Err(e) = config_service.init() {
             log::warn!("Failed to initialize config service: {}", e);
-            console.eprintln(&format!(
-                "⚠️ Warning: Failed to load configuration: {}",
-                e
-            ))?;
+            console.eprintln(&format!("⚠️ Warning: Failed to load configuration: {}", e))?;
             console.eprintln("   Using default configuration.")?;
         }
     }

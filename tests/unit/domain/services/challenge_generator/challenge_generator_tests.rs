@@ -1,9 +1,9 @@
+use gittype::domain::models::loading::StepType;
 use gittype::domain::models::{
     Challenge, ChunkType, CodeChunk, DifficultyLevel, ExtractionOptions, Languages,
 };
 use gittype::domain::services::challenge_generator::ChallengeGenerator;
 use gittype::domain::services::source_code_parser::SourceCodeParser;
-use gittype::domain::models::loading::StepType;
 use gittype::presentation::tui::screens::loading_screen::ProgressReporter;
 use std::collections::HashMap;
 use std::path::PathBuf;

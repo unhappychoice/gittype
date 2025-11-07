@@ -1,9 +1,9 @@
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::{Rank, SessionResult};
-use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::services::session_manager_service::SessionManagerInterface;
-use crate::domain::stores::{RepositoryStore, RepositoryStoreInterface};
 use crate::domain::services::SessionManager;
+use crate::domain::stores::RepositoryStoreInterface;
 use crate::presentation::tui::views::{
     OptionsView, RankView, ScoreView, SessionSummaryHeaderView, SummaryView,
 };
@@ -13,8 +13,8 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
 };
-use std::sync::RwLock;
 use std::sync::Arc;
+use std::sync::RwLock;
 
 pub struct SessionSummaryScreenData {
     pub session_result: Option<SessionResult>,
@@ -120,23 +120,27 @@ impl Screen for SessionSummaryScreen {
     fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
         *self.action_result.write().unwrap() = None;
 
-        let (session_result, git_repository) = if let Ok(screen_data) = data.downcast::<SessionSummaryScreenData>() {
-            (screen_data.session_result.clone(), screen_data.git_repository.clone())
-        } else {
-            // If no data provided, get from injected dependencies
-            let sm = self
-                .session_manager
-                .as_any()
-                .downcast_ref::<SessionManager>()
-                .ok_or_else(|| {
-                    GitTypeError::TerminalError("Failed to get SessionManager".to_string())
-                })?;
+        let (session_result, git_repository) =
+            if let Ok(screen_data) = data.downcast::<SessionSummaryScreenData>() {
+                (
+                    screen_data.session_result.clone(),
+                    screen_data.git_repository.clone(),
+                )
+            } else {
+                // If no data provided, get from injected dependencies
+                let sm = self
+                    .session_manager
+                    .as_any()
+                    .downcast_ref::<SessionManager>()
+                    .ok_or_else(|| {
+                        GitTypeError::TerminalError("Failed to get SessionManager".to_string())
+                    })?;
 
-            let session_result = sm.get_session_result();
-            let git_repository = self.repository_store.get_repository();
+                let session_result = sm.get_session_result();
+                let git_repository = self.repository_store.get_repository();
 
-            (session_result, git_repository)
-        };
+                (session_result, git_repository)
+            };
 
         *self.session_result.write().unwrap() = session_result;
         *self.git_repository.write().unwrap() = git_repository;
@@ -260,12 +264,7 @@ impl Screen for SessionSummaryScreen {
                 .split(area);
 
             SessionSummaryHeaderView::render(frame, chunks[1], &colors);
-            RankView::render(
-                frame,
-                chunks[2],
-                &best_rank,
-                session_result.session_score,
-            );
+            RankView::render(frame, chunks[2], &best_rank, session_result.session_score);
             ScoreView::render(
                 frame,
                 chunks[4],

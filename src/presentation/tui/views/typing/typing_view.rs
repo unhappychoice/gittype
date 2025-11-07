@@ -43,7 +43,9 @@ impl TypingView {
         countdown_number: Option<u8>,
         skips_remaining: usize,
         dialog_shown: bool,
-        session_manager: &std::sync::Arc<dyn crate::domain::services::session_manager_service::SessionManagerInterface>,
+        session_manager: &std::sync::Arc<
+            dyn crate::domain::services::session_manager_service::SessionManagerInterface,
+        >,
         colors: &Colors,
     ) {
         let countdown_active = countdown_number.is_some();

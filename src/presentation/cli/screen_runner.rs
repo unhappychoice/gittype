@@ -1,4 +1,3 @@
-use crate::domain::events::EventBusInterface;
 use crate::presentation::di::AppModule;
 use crate::presentation::tui::{Screen, ScreenManagerImpl, ScreenType};
 use crate::Result;
@@ -23,7 +22,7 @@ where
     let factory: &dyn crate::presentation::tui::ScreenManagerFactory = container.resolve_ref();
 
     // Create ScreenManager using DI container factory (all screens already registered)
-    let mut screen_manager = factory.create(&container);
+    let screen_manager = factory.create(&container);
 
     // Setup event subscriptions
     let manager_ref = Arc::new(Mutex::new(screen_manager));

@@ -1,7 +1,7 @@
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::storage::StoredRepository;
 use crate::domain::services::session_service::{SessionDisplayData, SessionServiceInterface};
-use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;

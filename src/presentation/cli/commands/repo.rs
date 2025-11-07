@@ -115,7 +115,7 @@ pub fn run_repo_play() -> Result<()> {
 
     let console = ConsoleImpl::new();
     let container = AppModule::builder().build();
-    let theme_service: Arc<dyn ThemeServiceInterface> = container.resolve();
+    let _theme_service: Arc<dyn ThemeServiceInterface> = container.resolve();
 
     // Run screen and get selected repository
     let selected_repo = run_screen::<RepoPlayScreen, _, _, _>(

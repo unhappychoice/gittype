@@ -1,11 +1,11 @@
 use crate::integration::screens::mocks::records_screen_mock::MockRecordsDataProvider;
 use crate::integration::screens::mocks::session_service_mock::MockSessionService;
 use crossterm::event::{KeyCode, KeyModifiers};
-use gittype::domain::events::EventBus;
-use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
-use gittype::domain::models::theme::Theme;
-use gittype::domain::models::color_mode::ColorMode;
 use gittype::domain::events::presentation_events::NavigateTo;
+use gittype::domain::events::EventBus;
+use gittype::domain::models::color_mode::ColorMode;
+use gittype::domain::models::theme::Theme;
+use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
 use gittype::presentation::tui::screens::records_screen::RecordsScreen;
 use std::sync::Arc;
 
@@ -14,7 +14,10 @@ screen_snapshot_test!(
     RecordsScreen,
     {
         let event_bus = Arc::new(EventBus::new());
-        let theme_service = Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>;
+        let theme_service = Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        )) as Arc<dyn ThemeServiceInterface>;
         let session_service = Arc::new(MockSessionService::new());
         RecordsScreen::new(event_bus, theme_service, session_service)
     },
@@ -26,8 +29,15 @@ screen_key_event_test!(
     test_records_screen_esc_navigates_to_title,
     RecordsScreen,
     |event_bus| {
-        let theme_service = Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>;
-        RecordsScreen::new(event_bus, theme_service, Arc::new(MockSessionService::new()))
+        let theme_service = Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        )) as Arc<dyn ThemeServiceInterface>;
+        RecordsScreen::new(
+            event_bus,
+            theme_service,
+            Arc::new(MockSessionService::new()),
+        )
     },
     NavigateTo,
     KeyCode::Esc,
@@ -39,8 +49,15 @@ screen_key_event_test!(
     test_records_screen_ctrl_c_exits,
     RecordsScreen,
     |event_bus| {
-        let theme_service = Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>;
-        RecordsScreen::new(event_bus, theme_service, Arc::new(MockSessionService::new()))
+        let theme_service = Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        )) as Arc<dyn ThemeServiceInterface>;
+        RecordsScreen::new(
+            event_bus,
+            theme_service,
+            Arc::new(MockSessionService::new()),
+        )
     },
     NavigateTo,
     KeyCode::Char('c'),
@@ -52,8 +69,15 @@ screen_key_event_test!(
     test_records_screen_enter_views_details,
     RecordsScreen,
     |event_bus| {
-        let theme_service = Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>;
-        RecordsScreen::new(event_bus, theme_service, Arc::new(MockSessionService::new()))
+        let theme_service = Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        )) as Arc<dyn ThemeServiceInterface>;
+        RecordsScreen::new(
+            event_bus,
+            theme_service,
+            Arc::new(MockSessionService::new()),
+        )
     },
     NavigateTo,
     KeyCode::Enter,
@@ -65,8 +89,15 @@ screen_key_event_test!(
     test_records_screen_space_views_details,
     RecordsScreen,
     |event_bus| {
-        let theme_service = Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>;
-        RecordsScreen::new(event_bus, theme_service, Arc::new(MockSessionService::new()))
+        let theme_service = Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        )) as Arc<dyn ThemeServiceInterface>;
+        RecordsScreen::new(
+            event_bus,
+            theme_service,
+            Arc::new(MockSessionService::new()),
+        )
     },
     NavigateTo,
     KeyCode::Char(' '),
@@ -78,8 +109,15 @@ screen_key_event_test!(
 screen_key_tests_custom!(
     RecordsScreen,
     |event_bus| {
-        let theme_service = Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>;
-        RecordsScreen::new(event_bus, theme_service, Arc::new(MockSessionService::new()))
+        let theme_service = Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        )) as Arc<dyn ThemeServiceInterface>;
+        RecordsScreen::new(
+            event_bus,
+            theme_service,
+            Arc::new(MockSessionService::new()),
+        )
     },
     MockRecordsDataProvider,
     [
@@ -127,7 +165,10 @@ screen_basic_methods_test!(
     RecordsScreen,
     {
         let event_bus = Arc::new(EventBus::new());
-        let theme_service = Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>;
+        let theme_service = Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        )) as Arc<dyn ThemeServiceInterface>;
         let session_service = Arc::new(MockSessionService::new());
         RecordsScreen::new(event_bus, theme_service, session_service)
     },

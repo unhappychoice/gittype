@@ -3,7 +3,6 @@
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 
-
 static RANK_PATTERNS: Lazy<HashMap<String, Vec<String>>> = Lazy::new(|| {
     let mut patterns = HashMap::new();
 

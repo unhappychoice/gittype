@@ -1,5 +1,5 @@
-use crate::domain::events::EventBusInterface;
 use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::EventBusInterface;
 use crate::presentation::tui::views::trending_language_selection::{
     ControlsView, HeaderView, LanguageListView,
 };

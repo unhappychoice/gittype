@@ -1,5 +1,5 @@
-use gittype::domain::models::{Rank, RankTier};
 use gittype::domain::models::ui::ascii_rank_titles::get_all_rank_patterns;
+use gittype::domain::models::{Rank, RankTier};
 
 #[test]
 fn test_all_rank_titles_have_ascii_art() {

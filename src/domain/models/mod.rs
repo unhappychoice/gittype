@@ -33,5 +33,5 @@ pub use language::{Language, Languages};
 pub use rank::{Rank, RankTier};
 pub use session::{Session, SessionAction, SessionConfig, SessionResult, SessionState};
 pub use stage::{GameMode, Stage, StageConfig, StageResult};
-pub use typing::{CodeContext, InputResult, ProcessingOptions};
 pub use total::{Total, TotalResult};
+pub use typing::{CodeContext, InputResult, ProcessingOptions};

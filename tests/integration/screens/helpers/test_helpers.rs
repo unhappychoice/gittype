@@ -30,15 +30,18 @@ macro_rules! screen_key_event_test {
         #[test]
         fn $test_name() {
             use gittype::domain::events::EventBus;
-            use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
-            use gittype::domain::models::theme::Theme;
             use gittype::domain::models::color_mode::ColorMode;
+            use gittype::domain::models::theme::Theme;
+            use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
             use gittype::presentation::tui::Screen;
             use gittype::presentation::tui::ScreenDataProvider;
             use std::sync::{Arc, Mutex};
 
             let event_bus = Arc::new(EventBus::new());
-            let theme_service = Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>;
+            let theme_service = Arc::new(ThemeService::new_for_test(
+                Theme::default(),
+                ColorMode::Dark,
+            )) as Arc<dyn ThemeServiceInterface>;
             let events = Arc::new(Mutex::new(Vec::new()));
             let events_clone = Arc::clone(&events);
 
@@ -118,15 +121,18 @@ macro_rules! screen_key_test {
         #[test]
         fn $test_name() {
             use gittype::domain::events::EventBus;
-            use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
-            use gittype::domain::models::theme::Theme;
             use gittype::domain::models::color_mode::ColorMode;
+            use gittype::domain::models::theme::Theme;
+            use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
             use gittype::presentation::tui::Screen;
             use gittype::presentation::tui::ScreenDataProvider;
             use std::sync::Arc;
 
             let event_bus = Arc::new(EventBus::new());
-            let theme_service = Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>;
+            let theme_service = Arc::new(ThemeService::new_for_test(
+                Theme::default(),
+                ColorMode::Dark,
+            )) as Arc<dyn ThemeServiceInterface>;
             let screen: $screen_type = <$screen_type>::new(event_bus, theme_service);
             let data = $provider.provide().unwrap();
             let _ = screen.init_with_data(data);

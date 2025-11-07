@@ -1,6 +1,6 @@
 use gittype::domain::models::StageResult;
 use gittype::domain::services::scoring::calculator::SessionCalculator;
-use gittype::domain::services::scoring::tracker::SessionTracker;
+use gittype::domain::services::scoring::tracker::{SessionTracker, SessionTrackerInterface};
 use gittype::domain::services::scoring::ScoreCalculator;
 use std::time::Duration;
 
@@ -8,7 +8,7 @@ const EPSILON: f64 = 0.001;
 
 #[test]
 fn test_calculate_empty_session() {
-    let tracker = SessionTracker::new();
+    let tracker = SessionTracker::new_for_test();
     let result = SessionCalculator::calculate(&tracker);
 
     assert_eq!(result.stages_completed, 0);
@@ -31,7 +31,7 @@ fn test_calculate_empty_session() {
 
 #[test]
 fn test_calculate_single_completed_stage() {
-    let mut tracker = SessionTracker::new();
+    let tracker = SessionTracker::new_for_test();
     let stage_result = StageResult {
         cpm: 100.0,
         wpm: 20.0,
@@ -65,7 +65,7 @@ fn test_calculate_single_completed_stage() {
 
 #[test]
 fn test_calculate_multiple_stages_mixed() {
-    let mut tracker = SessionTracker::new();
+    let tracker = SessionTracker::new_for_test();
     // Completed stage
     let stage_result1 = StageResult {
         cpm: 100.0,
@@ -162,7 +162,7 @@ fn test_calculate_multiple_stages_mixed() {
 
 #[test]
 fn test_calculate_session_successful() {
-    let mut tracker = SessionTracker::new();
+    let tracker = SessionTracker::new_for_test();
     let stage_result1 = StageResult {
         cpm: 100.0,
         wpm: 20.0,
@@ -191,7 +191,7 @@ fn test_calculate_session_successful() {
 
 #[test]
 fn test_calculate_session_with_no_valid_keystrokes() {
-    let mut tracker = SessionTracker::new();
+    let tracker = SessionTracker::new_for_test();
     let stage_result = StageResult {
         cpm: 0.0,
         wpm: 0.0,

@@ -1,10 +1,10 @@
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::SessionResult;
 use crate::domain::repositories::session_repository::{BestRecords, BestStatus, SessionRepository};
-use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::services::session_manager_service::SessionManagerInterface;
-use crate::domain::stores::{RepositoryStore, RepositoryStoreInterface};
 use crate::domain::services::SessionManager;
+use crate::domain::stores::RepositoryStoreInterface;
 use crate::presentation::tui::views::{
     BestRecordsView, ControlsView, HeaderView, StageResultsView,
 };
@@ -14,8 +14,8 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
 };
-use std::sync::RwLock;
 use std::sync::Arc;
+use std::sync::RwLock;
 
 pub struct SessionDetailsDialogData {
     pub session_result: Option<SessionResult>,

@@ -22,7 +22,6 @@ pub struct TypingCore {
     current_mistake_position: Option<usize>, // display position for highlighting
 }
 
-
 impl TypingCore {
     pub fn new(
         original_text: &str,

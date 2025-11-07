@@ -1,17 +1,23 @@
 use crate::integration::screens::helpers::EmptyMockProvider;
 use crossterm::event::{KeyCode, KeyModifiers};
-use gittype::domain::events::EventBus;
-use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
-use gittype::domain::models::theme::Theme;
-use gittype::domain::models::color_mode::ColorMode;
 use gittype::domain::events::presentation_events::NavigateTo;
+use gittype::domain::events::EventBus;
+use gittype::domain::models::color_mode::ColorMode;
+use gittype::domain::models::theme::Theme;
+use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
 use gittype::presentation::tui::screens::info_dialog::InfoDialogScreen;
 use std::sync::Arc;
 
 screen_snapshot_test!(
     test_info_dialog_snapshot_default,
     InfoDialogScreen,
-    InfoDialogScreen::new(Arc::new(EventBus::new()), Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>)
+    InfoDialogScreen::new(
+        Arc::new(EventBus::new()),
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark
+        )) as Arc<dyn ThemeServiceInterface>
+    )
 );
 
 // Event-producing key tests (Menu state)
@@ -70,7 +76,13 @@ screen_key_tests!(
 screen_basic_methods_test!(
     test_info_dialog_basic_methods,
     InfoDialogScreen,
-    InfoDialogScreen::new(Arc::new(EventBus::new()), Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>),
+    InfoDialogScreen::new(
+        Arc::new(EventBus::new()),
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark
+        )) as Arc<dyn ThemeServiceInterface>
+    ),
     gittype::presentation::tui::ScreenType::InfoDialog,
     false
 );

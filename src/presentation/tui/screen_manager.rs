@@ -26,13 +26,18 @@
 //! }
 //! ```
 //!
-use crate::domain::events::{EventBus, EventBusInterface};
 use crate::domain::events::presentation_events::{ExitRequested, NavigateTo};
-use crate::domain::services::{SessionManager, stage_builder_service::StageRepository};
+use crate::domain::events::{EventBus, EventBusInterface};
+use crate::domain::services::scoring::{
+    SessionTracker, SessionTrackerInterface, TotalTracker, TotalTrackerInterface,
+};
 use crate::domain::services::session_manager_service::SessionManagerInterface;
 use crate::domain::services::stage_builder_service::StageRepositoryInterface;
+use crate::domain::services::{stage_builder_service::StageRepository, SessionManager};
 use crate::domain::stores::{ChallengeStore, RepositoryStore, SessionStore};
-use crate::domain::stores::{ChallengeStoreInterface, RepositoryStoreInterface, SessionStoreInterface};
+use crate::domain::stores::{
+    ChallengeStoreInterface, RepositoryStoreInterface, SessionStoreInterface,
+};
 use crate::infrastructure::terminal::TerminalInterface;
 use crate::presentation::tui::screen_transition_manager::ScreenTransitionManager;
 use crate::presentation::tui::screens::{
@@ -44,10 +49,10 @@ use crate::presentation::tui::screens::{
     SessionFailureScreen, SessionFailureScreenInterface, SessionSummaryScreen,
     SessionSummaryScreenInterface, SessionSummaryShareScreen, SessionSummaryShareScreenInterface,
     SettingsScreen, SettingsScreenInterface, StageSummaryScreen, StageSummaryScreenInterface,
-    TitleAction, TitleScreen, TitleScreenInterface, TotalSummaryScreen,
-    TotalSummaryScreenInterface, TotalSummaryShareScreen, TotalSummaryShareScreenInterface,
-    TrendingLanguageSelectionScreen, TrendingRepositorySelectionScreen, TypingScreen,
-    TypingScreenInterface, VersionCheckScreen, VersionCheckScreenInterface,
+    TitleScreen, TitleScreenInterface, TotalSummaryScreen, TotalSummaryScreenInterface,
+    TotalSummaryShareScreen, TotalSummaryShareScreenInterface, TrendingLanguageSelectionScreen,
+    TrendingRepositorySelectionScreen, TypingScreen, TypingScreenInterface, VersionCheckScreen,
+    VersionCheckScreenInterface,
 };
 use crate::presentation::tui::{
     Screen, ScreenDataProvider, ScreenTransition, ScreenType, UpdateStrategy,
@@ -439,8 +444,6 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
 
     pub fn pop_screen(&mut self) -> Result<()> {
         if let Some(previous_screen) = self.screen_stack.pop() {
-            // Prepare the screen before transitioning, just like in handle_transition
-            self.prepare_screen_if_needed(&previous_screen)?;
             self.set_current_screen(previous_screen)
         } else {
             Ok(())
@@ -463,7 +466,6 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
         match transition {
             ScreenTransition::None => Ok(()),
             ScreenTransition::Push(screen_type) => {
-                self.prepare_screen_if_needed(&screen_type)?;
                 self.push_screen(screen_type)?;
                 self.render_current_screen()
             }
@@ -472,18 +474,22 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
                 self.render_current_screen()
             }
             ScreenTransition::Replace(screen_type) => {
-                let validated_screen_type =
-                    ScreenTransitionManager::reduce(self.current_screen_type.clone(), screen_type, &self.session_manager)?;
+                let validated_screen_type = ScreenTransitionManager::reduce(
+                    self.current_screen_type.clone(),
+                    screen_type,
+                    &self.session_manager,
+                )?;
 
-                self.prepare_screen_if_needed(&validated_screen_type)?;
                 self.set_current_screen(validated_screen_type)?;
                 self.render_current_screen()
             }
             ScreenTransition::PopTo(screen_type) => {
-                let validated_screen_type =
-                    ScreenTransitionManager::reduce(self.current_screen_type.clone(), screen_type, &self.session_manager)?;
+                let validated_screen_type = ScreenTransitionManager::reduce(
+                    self.current_screen_type.clone(),
+                    screen_type,
+                    &self.session_manager,
+                )?;
 
-                self.prepare_screen_if_needed(&validated_screen_type)?;
                 self.pop_to_screen(validated_screen_type)?;
                 self.render_current_screen()
             }
@@ -504,60 +510,6 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
                 }
                 Ok(())
             }
-        }
-    }
-
-    fn prepare_screen_if_needed(&mut self, screen_type: &ScreenType) -> Result<()> {
-        match screen_type {
-            ScreenType::Typing => {
-                // Check if coming from Title screen and apply selected difficulty
-                let selected_difficulty = self
-                    .screens
-                    .get(&ScreenType::Title)
-                    .and_then(|title_screen| title_screen.as_any().downcast_ref::<TitleScreen>())
-                    .and_then(|title| title.get_action_result())
-                    .and_then(|action| match action {
-                        TitleAction::Start(difficulty) => Some(difficulty),
-                        _ => None,
-                    });
-
-                // Apply difficulty to session manager if found
-                if let Some(difficulty) = selected_difficulty {
-                    // Set difficulty in SessionManager via downcast
-                    if let Some(sm) = self.session_manager.as_any().downcast_ref::<SessionManager>() {
-                        sm.set_difficulty(difficulty);
-                    }
-                }
-
-                // Load next challenge in TypingScreen
-                let load_result = self
-                    .screens
-                    .get_mut(&ScreenType::Typing)
-                    .and_then(|screen| screen.as_any().downcast_ref::<TypingScreen>())
-                    .map(|screen| screen.load_current_challenge())
-                    .transpose()?
-                    .map(|loaded| {
-                        if loaded {
-                            Ok(())
-                        } else {
-                            Err(GitTypeError::TerminalError(
-                                "No challenges available. ".to_string(),
-                            ))
-                        }
-                    })
-                    .transpose();
-
-                if let Err(e) = load_result {
-                    log::error!(
-                        "ScreenManager: Failed to load challenge in TypingScreen: {}",
-                        e
-                    );
-                    return Err(e);
-                }
-
-                Ok(())
-            }
-            _ => Ok(()),
         }
     }
 
@@ -797,8 +749,10 @@ impl Default for ScreenManagerImpl<CrosstermBackend<Stdout>> {
         let terminal = Terminal::new(backend).expect("Failed to create terminal");
 
         // Create stores and repositories
-        let challenge_store = Arc::new(ChallengeStore::default()) as Arc<dyn ChallengeStoreInterface>;
-        let repository_store = Arc::new(RepositoryStore::default()) as Arc<dyn RepositoryStoreInterface>;
+        let challenge_store =
+            Arc::new(ChallengeStore::default()) as Arc<dyn ChallengeStoreInterface>;
+        let repository_store =
+            Arc::new(RepositoryStore::default()) as Arc<dyn RepositoryStoreInterface>;
         let session_store = Arc::new(SessionStore::default()) as Arc<dyn SessionStoreInterface>;
 
         let stage_repository = StageRepository::new(
@@ -810,9 +764,15 @@ impl Default for ScreenManagerImpl<CrosstermBackend<Stdout>> {
         let stage_repository: Arc<dyn StageRepositoryInterface> = Arc::new(stage_repository);
 
         let event_bus: Arc<dyn EventBusInterface> = Arc::new(EventBus::new());
+
+        let session_tracker: Arc<dyn SessionTrackerInterface> = Arc::new(SessionTracker::default());
+        let total_tracker: Arc<dyn TotalTrackerInterface> = Arc::new(TotalTracker::default());
+
         let session_manager = SessionManager::new_with_dependencies(
             Arc::clone(&event_bus),
             Arc::clone(&stage_repository),
+            session_tracker,
+            total_tracker,
         );
         let session_manager: Arc<dyn SessionManagerInterface> = Arc::new(session_manager);
 
@@ -890,7 +850,13 @@ impl ScreenManagerFactory for ScreenManagerFactoryImpl {
         let session_manager = self.session_manager.clone();
         let stage_repository = self.stage_repository.clone();
         let terminal = self.terminal.get();
-        let mut manager = ScreenManagerImpl::new(event_bus.clone(), session_store, session_manager, stage_repository, terminal);
+        let mut manager = ScreenManagerImpl::new(
+            event_bus.clone(),
+            session_store,
+            session_manager,
+            stage_repository,
+            terminal,
+        );
 
         // Register screens from DI (Components)
         // Explicit type coercion from Arc<dyn Interface> to Arc<dyn Screen>

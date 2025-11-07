@@ -53,7 +53,7 @@ impl ConfigService {
         F: FnOnce(&mut Config),
     {
         let mut config = self.config.write().unwrap();
-        updater(&mut *config);
+        updater(&mut config);
         Ok(())
     }
 

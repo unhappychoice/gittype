@@ -1,6 +1,6 @@
+use crate::domain::models::loading::StepType;
 use crate::domain::models::{Challenge, DifficultyLevel, GitRepository};
 use crate::infrastructure::storage::compressed_file_storage::CompressedFileStorage;
-use crate::domain::models::loading::StepType;
 use crate::presentation::tui::screens::loading_screen::ProgressReporter;
 use crate::Result;
 use rayon::prelude::*;

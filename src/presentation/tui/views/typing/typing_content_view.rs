@@ -1,8 +1,6 @@
 use crate::{
-    domain::models::Challenge,
-    domain::models::typing::CodeContext,
-    domain::services::typing_core::TypingCore,
-    presentation::ui::Colors,
+    domain::models::typing::CodeContext, domain::models::Challenge,
+    domain::services::typing_core::TypingCore, presentation::ui::Colors,
 };
 use ratatui::{
     style::Style,
@@ -94,6 +92,7 @@ impl TypingContentView {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn create_content_spans(
         &mut self,
         terminal_width: u16,
@@ -243,6 +242,7 @@ impl TypingContentView {
         lines
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn get_cached_main_content_lines(
         &mut self,
         terminal_width: u16,

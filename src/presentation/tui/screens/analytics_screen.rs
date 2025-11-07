@@ -1,9 +1,9 @@
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::repositories::SessionRepository;
 use crate::domain::services::analytics_service::{AnalyticsData, AnalyticsService};
 use crate::infrastructure::database::daos::{RepositoryDao, RepositoryDaoInterface};
 use crate::infrastructure::database::database::{Database, DatabaseInterface};
-use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::tui::views::analytics::{
     LanguagesView, OverviewView, RepositoriesView, TrendsView,
 };
