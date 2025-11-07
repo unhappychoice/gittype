@@ -1,14 +1,3 @@
-use crossterm::event::{KeyCode, KeyModifiers};
-use ratatui::{
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
-    style::{Modifier, Style},
-    text::{Line, Span},
-    widgets::{Block, Borders, ListState, Paragraph, ScrollbarState},
-    Frame,
-};
-
-use std::sync::{Arc, RwLock};
-
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::repositories::SessionRepository;
@@ -24,6 +13,15 @@ use crate::presentation::tui::views::analytics::{
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
+use crossterm::event::{KeyCode, KeyModifiers};
+use ratatui::{
+    layout::{Alignment, Constraint, Direction, Layout, Rect},
+    style::{Modifier, Style},
+    text::{Line, Span},
+    widgets::{Block, Borders, ListState, Paragraph, ScrollbarState},
+    Frame,
+};
+use std::sync::{Arc, RwLock};
 
 #[derive(Debug, Clone, PartialEq, Copy, Default)]
 pub enum ViewMode {

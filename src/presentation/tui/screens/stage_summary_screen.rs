@@ -1,8 +1,3 @@
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
-use ratatui::Frame;
-
-use std::sync::{Arc, RwLock};
-
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::services::scoring::StageResult;
@@ -13,6 +8,9 @@ use crate::presentation::tui::screens::ResultAction;
 use crate::presentation::tui::views::StageCompletionView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::{GitTypeError, Result};
+use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use ratatui::Frame;
+use std::sync::{Arc, RwLock};
 
 pub struct StageSummaryData {
     pub stage_result: StageResult,

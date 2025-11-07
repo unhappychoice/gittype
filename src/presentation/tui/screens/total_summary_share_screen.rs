@@ -1,8 +1,3 @@
-use crossterm::event::{self, KeyCode, KeyModifiers};
-use ratatui::Frame;
-
-use std::sync::{Arc, Mutex, RwLock};
-
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::TotalResult;
@@ -13,6 +8,9 @@ use crate::presentation::sharing::SharingPlatform;
 use crate::presentation::tui::views::SharingView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::{GitTypeError, Result};
+use crossterm::event::{self, KeyCode, KeyModifiers};
+use ratatui::Frame;
+use std::sync::{Arc, Mutex, RwLock};
 
 pub struct TotalSummaryShareData {
     pub total_result: TotalResult,

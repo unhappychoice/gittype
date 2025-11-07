@@ -1,11 +1,3 @@
-use crossterm::event::{KeyCode, KeyModifiers};
-use ratatui::{
-    layout::{Constraint, Direction, Layout},
-    Frame,
-};
-
-use std::sync::{Arc, RwLock};
-
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::{GitRepository, SessionResult};
@@ -16,6 +8,12 @@ use crate::domain::stores::RepositoryStoreInterface;
 use crate::presentation::tui::views::session_failure::{ContentView, FooterView, HeaderView};
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::Result;
+use crossterm::event::{KeyCode, KeyModifiers};
+use ratatui::{
+    layout::{Constraint, Direction, Layout},
+    Frame,
+};
+use std::sync::{Arc, RwLock};
 
 pub struct SessionFailureScreenData {
     pub session_result: SessionResult,

@@ -1,10 +1,3 @@
-use rand::rngs::StdRng;
-use rand::seq::SliceRandom;
-use rand::{RngExt, SeedableRng};
-
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
-
 use crate::domain::models::{Challenge, DifficultyLevel, GameMode, GitRepository, StageConfig};
 use crate::domain::stores::{
     ChallengeStoreInterface, RepositoryStoreInterface, SessionStoreInterface,
@@ -12,6 +5,11 @@ use crate::domain::stores::{
 use crate::presentation::tui::screens::TitleScreen;
 use crate::presentation::tui::{ScreenManagerImpl, ScreenType};
 use crate::Result;
+use rand::rngs::StdRng;
+use rand::seq::SliceRandom;
+use rand::{RngExt, SeedableRng};
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
 /// Repository for managing challenges and stage building
 #[derive(shaku::Component)]

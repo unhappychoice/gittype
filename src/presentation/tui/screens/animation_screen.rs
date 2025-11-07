@@ -1,15 +1,3 @@
-use crossterm::event::{KeyCode, KeyModifiers};
-use ratatui::{
-    layout::{Alignment, Constraint, Direction, Layout},
-    style::Style,
-    text::{Line, Span, Text},
-    widgets::Paragraph,
-    Frame,
-};
-
-use std::sync::{Arc, RwLock};
-use std::time::Duration;
-
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::{RankTier, SessionResult};
@@ -22,6 +10,16 @@ use crate::presentation::tui::views::TypingAnimationView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::{GitTypeError, Result};
+use crossterm::event::{KeyCode, KeyModifiers};
+use ratatui::{
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::Style,
+    text::{Line, Span, Text},
+    widgets::Paragraph,
+    Frame,
+};
+use std::sync::{Arc, RwLock};
+use std::time::Duration;
 
 pub struct AnimationData {
     pub session_result: SessionResult,

@@ -1,10 +1,3 @@
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
-use ratatui::{
-    layout::{Constraint, Direction, Layout},
-    Frame,
-};
-use std::sync::{Arc, RwLock};
-
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::{DifficultyLevel, GitRepository};
@@ -17,6 +10,12 @@ use crate::presentation::tui::views::title::{DifficultySelectionView, StaticElem
 use crate::presentation::tui::ScreenDataProvider;
 use crate::presentation::tui::{Screen, ScreenType, UpdateStrategy};
 use crate::Result;
+use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use ratatui::{
+    layout::{Constraint, Direction, Layout},
+    Frame,
+};
+use std::sync::{Arc, RwLock};
 
 const DIFFICULTIES: [(&str, DifficultyLevel); 5] = [
     ("Easy", DifficultyLevel::Easy),

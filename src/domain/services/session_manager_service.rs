@@ -1,6 +1,3 @@
-use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
-
 use crate::domain::events::domain_events::DomainEvent;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::{
@@ -15,6 +12,8 @@ use crate::domain::services::scoring::{
 };
 use crate::domain::services::stage_builder_service::{StageRepository, StageRepositoryInterface};
 use crate::{GitTypeError, Result};
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 
 /// Manages the overall session state and stage progression
 #[derive(shaku::Component)]

@@ -1,12 +1,10 @@
-use shaku::Interface;
-
-use chrono::NaiveDate;
-use std::collections::HashMap;
-use std::sync::Arc;
-
 use crate::domain::error::Result;
 use crate::domain::repositories::session_repository::SessionRepositoryTrait;
 use crate::infrastructure::database::daos::RepositoryDaoInterface;
+use chrono::NaiveDate;
+use shaku::Interface;
+use std::collections::HashMap;
+use std::sync::Arc;
 
 #[derive(Debug, Clone)]
 pub struct AnalyticsData {

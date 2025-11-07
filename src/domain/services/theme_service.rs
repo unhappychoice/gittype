@@ -1,9 +1,3 @@
-use shaku::Interface;
-
-use std::collections::HashMap;
-use std::path::PathBuf;
-use std::sync::{Arc, RwLock};
-
 use crate::domain::models::color_mode::ColorMode;
 use crate::domain::models::color_scheme::{
     ColorScheme, CustomThemeFile, SerializableColor, ThemeFile,
@@ -13,6 +7,10 @@ use crate::domain::services::config_service::ConfigServiceInterface;
 use crate::infrastructure::storage::app_data_provider::AppDataProvider;
 use crate::infrastructure::storage::file_storage::{FileStorage, FileStorageInterface};
 use crate::presentation::ui::Colors;
+use shaku::Interface;
+use std::collections::HashMap;
+use std::path::PathBuf;
+use std::sync::{Arc, RwLock};
 
 pub struct ThemeServiceState {
     current_theme: Theme,

@@ -1,3 +1,10 @@
+use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::{EventBus, EventBusInterface};
+use crate::domain::services::theme_service::ThemeServiceInterface;
+use crate::infrastructure::browser;
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::ui::Colors;
+use crate::Result;
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},
@@ -6,16 +13,7 @@ use ratatui::{
     widgets::{Block, Borders, Clear, List, ListItem, Paragraph},
     Frame,
 };
-
 use std::sync::{Arc, RwLock};
-
-use crate::domain::events::presentation_events::NavigateTo;
-use crate::domain::events::{EventBus, EventBusInterface};
-use crate::domain::services::theme_service::ThemeServiceInterface;
-use crate::infrastructure::browser;
-use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
-use crate::presentation::ui::Colors;
-use crate::Result;
 
 pub enum InfoAction {
     OpenGithub,

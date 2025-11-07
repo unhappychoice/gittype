@@ -1,8 +1,3 @@
-use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
-
-use std::sync::{Arc, RwLock};
-use std::time::Duration;
-
 use crate::domain::events::domain_events::DomainEvent;
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
@@ -17,6 +12,9 @@ use crate::domain::stores::RepositoryStoreInterface;
 use crate::presentation::tui::views::TypingView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::Result;
+use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
+use std::sync::{Arc, RwLock};
+use std::time::Duration;
 
 pub trait TypingScreenInterface: Screen {}
 

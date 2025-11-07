@@ -1,14 +1,3 @@
-use crossterm::event::{KeyCode, KeyModifiers};
-use ratatui::Frame;
-
-use std::path::PathBuf;
-use std::sync::{
-    atomic::{AtomicBool, AtomicUsize, Ordering},
-    Arc, RwLock,
-};
-use std::thread;
-use std::time::Duration;
-
 use crate::domain::events::presentation_events::ExitRequested;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::loading::{ExecutionContext, StepManager, StepType};
@@ -24,6 +13,15 @@ use crate::presentation::tui::views::LoadingMainView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
+use crossterm::event::{KeyCode, KeyModifiers};
+use ratatui::Frame;
+use std::path::PathBuf;
+use std::sync::{
+    atomic::{AtomicBool, AtomicUsize, Ordering},
+    Arc, RwLock,
+};
+use std::thread;
+use std::time::Duration;
 
 pub trait ProgressReporter: Sync {
     fn set_step(&self, step_type: StepType);

@@ -1,9 +1,8 @@
-use std::path::{Path, PathBuf};
-
 use crate::domain::models::typing::CodeContext;
 use crate::domain::models::Challenge;
 use crate::infrastructure::storage::file_storage::{FileStorage, FileStorageInterface};
 use crate::Result;
+use std::path::{Path, PathBuf};
 
 pub fn load_context_for_challenge(
     challenge: &Challenge,

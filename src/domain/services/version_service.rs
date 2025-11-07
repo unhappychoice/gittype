@@ -1,11 +1,9 @@
+use crate::domain::repositories::version_repository::VersionRepositoryInterface;
+use crate::{GitTypeError, Result};
 use shaku::Interface;
-
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
-
-use crate::domain::repositories::version_repository::VersionRepositoryInterface;
-use crate::{GitTypeError, Result};
 
 type VersionCheckFuture<'a> =
     Pin<Box<dyn Future<Output = Result<(bool, String, String)>> + Send + 'a>>;

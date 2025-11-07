@@ -1,14 +1,12 @@
-use rayon::prelude::*;
-use shaku::Interface;
-
-use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
-
 use crate::domain::models::loading::StepType;
 use crate::domain::models::{Challenge, DifficultyLevel, GitRepository};
 use crate::infrastructure::storage::compressed_file_storage::CompressedFileStorage;
 use crate::presentation::tui::screens::loading_screen::ProgressReporter;
 use crate::Result;
+use rayon::prelude::*;
+use shaku::Interface;
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 struct ChallengePointer {

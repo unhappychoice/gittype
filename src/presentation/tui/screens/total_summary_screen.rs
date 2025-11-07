@@ -1,3 +1,11 @@
+use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::EventBusInterface;
+use crate::domain::models::TotalResult;
+use crate::domain::services::scoring::{TotalCalculator, TotalTracker, TotalTrackerInterface};
+use crate::domain::services::theme_service::ThemeServiceInterface;
+use crate::presentation::tui::views::{AsciiScoreView, SharingView, StatisticsView};
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::{GitTypeError, Result};
 use crossterm::event::{self, KeyCode, KeyModifiers};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
@@ -7,15 +15,6 @@ use ratatui::{
     Frame,
 };
 use std::sync::{Arc, Mutex, RwLock};
-
-use crate::domain::events::presentation_events::NavigateTo;
-use crate::domain::events::EventBusInterface;
-use crate::domain::models::TotalResult;
-use crate::domain::services::scoring::{TotalCalculator, TotalTracker, TotalTrackerInterface};
-use crate::domain::services::theme_service::ThemeServiceInterface;
-use crate::presentation::tui::views::{AsciiScoreView, SharingView, StatisticsView};
-use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
-use crate::{GitTypeError, Result};
 
 pub struct TotalSummaryScreenData {
     pub total_result: TotalResult,

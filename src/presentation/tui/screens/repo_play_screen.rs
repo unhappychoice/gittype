@@ -1,12 +1,3 @@
-use crossterm::event::{KeyCode, KeyEvent, KeyEventKind};
-use ratatui::{
-    layout::{Constraint, Direction, Layout},
-    widgets::ListState,
-    Frame,
-};
-
-use std::sync::{Arc, RwLock};
-
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::storage::StoredRepositoryWithLanguages;
@@ -17,6 +8,13 @@ use crate::infrastructure::git::RemoteGitRepositoryClient;
 use crate::presentation::tui::views::repo_play::{ControlsView, HeaderView, RepositoryListView};
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::Result;
+use crossterm::event::{KeyCode, KeyEvent, KeyEventKind};
+use ratatui::{
+    layout::{Constraint, Direction, Layout},
+    widgets::ListState,
+    Frame,
+};
+use std::sync::{Arc, RwLock};
 
 pub struct RepoPlayScreenData {
     pub repositories: Vec<(StoredRepositoryWithLanguages, bool)>,

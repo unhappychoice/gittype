@@ -1,13 +1,3 @@
-use ratatui::{
-    layout::{Alignment, Constraint, Direction, Layout},
-    style::Style,
-    text::{Line, Span},
-    widgets::{Block, Borders, Padding, Paragraph, Wrap},
-    Frame,
-};
-
-use std::sync::{Arc, RwLock};
-
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::services::theme_service::ThemeServiceInterface;
@@ -15,6 +5,14 @@ use crate::infrastructure::logging::get_current_log_file_path;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
+use ratatui::{
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::Style,
+    text::{Line, Span},
+    widgets::{Block, Borders, Padding, Paragraph, Wrap},
+    Frame,
+};
+use std::sync::{Arc, RwLock};
 
 pub trait PanicScreenInterface: Screen {}
 

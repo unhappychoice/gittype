@@ -1,9 +1,8 @@
-use std::collections::HashMap;
-use std::sync::Arc;
-
 use crate::domain::error::Result;
 use crate::domain::models::storage::{SessionResultData, StoredRepository, StoredSession};
 use crate::domain::repositories::session_repository::SessionRepositoryTrait;
+use std::collections::HashMap;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct SessionDisplayData {

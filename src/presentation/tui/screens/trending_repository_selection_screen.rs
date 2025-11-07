@@ -1,12 +1,3 @@
-use crossterm::event::{KeyCode, KeyEvent, KeyEventKind};
-use ratatui::{
-    layout::{Constraint, Direction, Layout},
-    widgets::ListState,
-    Frame,
-};
-
-use std::sync::{Arc, RwLock};
-
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::repositories::trending_repository::{
@@ -18,6 +9,13 @@ use crate::presentation::tui::views::trending_repository_selection::{
 };
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::Result;
+use crossterm::event::{KeyCode, KeyEvent, KeyEventKind};
+use ratatui::{
+    layout::{Constraint, Direction, Layout},
+    widgets::ListState,
+    Frame,
+};
+use std::sync::{Arc, RwLock};
 
 pub trait TrendingRepositorySelectionScreenInterface: Screen {}
 

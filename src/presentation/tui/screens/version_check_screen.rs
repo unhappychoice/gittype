@@ -1,19 +1,17 @@
-use crossterm::{
-    event::{self, Event, KeyCode, KeyModifiers},
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-    ExecutableCommand,
-};
-use ratatui::{backend::CrosstermBackend, Terminal};
-
-use std::io::{stdout, Stdout};
-use std::sync::{Arc, RwLock};
-
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::presentation::tui::views::VersionCheckView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::Result;
+use crossterm::{
+    event::{self, Event, KeyCode, KeyModifiers},
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    ExecutableCommand,
+};
+use ratatui::{backend::CrosstermBackend, Terminal};
+use std::io::{stdout, Stdout};
+use std::sync::{Arc, RwLock};
 
 pub enum VersionCheckResult {
     Continue,

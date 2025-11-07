@@ -1,3 +1,11 @@
+use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::EventBusInterface;
+use crate::domain::models::storage::StoredRepository;
+use crate::domain::services::session_service::{SessionDisplayData, SessionServiceInterface};
+use crate::domain::services::theme_service::ThemeServiceInterface;
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::ui::Colors;
+use crate::Result;
 use chrono::{DateTime, Local};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Margin},
@@ -9,17 +17,7 @@ use ratatui::{
     },
     Frame,
 };
-
 use std::sync::{Arc, RwLock};
-
-use crate::domain::events::presentation_events::NavigateTo;
-use crate::domain::events::EventBusInterface;
-use crate::domain::models::storage::StoredRepository;
-use crate::domain::services::session_service::{SessionDisplayData, SessionServiceInterface};
-use crate::domain::services::theme_service::ThemeServiceInterface;
-use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
-use crate::presentation::ui::Colors;
-use crate::Result;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum SortBy {

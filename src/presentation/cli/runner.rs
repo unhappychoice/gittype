@@ -1,5 +1,3 @@
-use shaku::HasComponent;
-
 use crate::domain::repositories::challenge_repository::ChallengeRepositoryInterface;
 use crate::infrastructure::logging::{setup_console_logging, setup_logging};
 use crate::presentation::cli::args::{CacheCommands, RepoCommands};
@@ -10,6 +8,7 @@ use crate::presentation::cli::commands::{
 use crate::presentation::cli::{Cli, Commands};
 use crate::presentation::di::AppModule;
 use crate::{GitTypeError, Result};
+use shaku::HasComponent;
 
 pub fn run_cli(cli: Cli) -> Result<()> {
     if let Err(e) = setup_logging() {
