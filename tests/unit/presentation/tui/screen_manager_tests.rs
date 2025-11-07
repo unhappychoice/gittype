@@ -1,7 +1,11 @@
 use crossterm::event::KeyEvent;
 use gittype::domain::events::EventBus;
+use gittype::domain::services::{SessionManager, stage_builder_service::StageRepository};
+use gittype::domain::services::session_manager_service::SessionManagerInterface;
+use gittype::domain::services::stage_builder_service::StageRepositoryInterface;
+use gittype::domain::stores::{ChallengeStore, RepositoryStore, SessionStore};
+use gittype::domain::stores::{ChallengeStoreInterface, RepositoryStoreInterface, SessionStoreInterface};
 use gittype::infrastructure::terminal::TerminalInterface;
-use gittype::presentation::game::GameData;
 use gittype::presentation::tui::{
     Screen, ScreenDataProvider, ScreenManagerImpl, ScreenTransition, ScreenType, UpdateStrategy,
 };
@@ -11,7 +15,7 @@ use ratatui::Frame;
 use ratatui::Terminal;
 use std::any::Any;
 use std::io::Stdout;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 // Mock TerminalInterface for testing
 #[allow(dead_code)]
@@ -31,11 +35,32 @@ impl TerminalInterface for MockTerminalInterface {
 #[cfg(test)]
 fn create_test_screen_manager() -> ScreenManagerImpl<TestBackend> {
     let event_bus = Arc::new(EventBus::new());
-    let game_data = Arc::new(Mutex::new(GameData::default()));
+
+    // Create stores for DI
+    let challenge_store = Arc::new(ChallengeStore::default()) as Arc<dyn ChallengeStoreInterface>;
+    let repository_store = Arc::new(RepositoryStore::default()) as Arc<dyn RepositoryStoreInterface>;
+    let session_store_arc = Arc::new(SessionStore::default()) as Arc<dyn SessionStoreInterface>;
+
+    // Create StageRepository
+    let stage_repository = StageRepository::new(
+        None,
+        challenge_store.clone(),
+        repository_store.clone(),
+        session_store_arc.clone(),
+    );
+    let stage_repository: Arc<dyn StageRepositoryInterface> = Arc::new(stage_repository);
+
+    // Create SessionManager with dependencies
+    let session_manager = SessionManager::new_with_dependencies(
+        event_bus.clone(),
+        stage_repository.clone(),
+    );
+    let session_manager: Arc<dyn SessionManagerInterface> = Arc::new(session_manager);
+
     let backend = TestBackend::new(80, 24);
     let terminal = Terminal::new(backend).expect("Failed to create test terminal");
 
-    ScreenManagerImpl::new(event_bus, game_data, terminal)
+    ScreenManagerImpl::new(event_bus, session_store_arc, session_manager, stage_repository, terminal)
 }
 
 // Mock screen for testing

@@ -1,5 +1,5 @@
 use gittype::domain::services::challenge_generator::progress_tracker::ProgressTracker;
-use gittype::presentation::game::models::StepType;
+use gittype::domain::models::loading::StepType;
 use gittype::presentation::tui::screens::loading_screen::ProgressReporter;
 use std::sync::{Arc, Mutex};
 

@@ -3,8 +3,7 @@ use crate::domain::models::ExtractionOptions;
 use crate::domain::models::{Challenge, GitRepository};
 use crate::domain::repositories::challenge_repository::ChallengeRepositoryInterface;
 use crate::domain::events::presentation_events::ExitRequested;
-use crate::presentation::game::models::{ExecutionContext, StepManager, StepType};
-use crate::presentation::game::GameData;
+use crate::domain::models::loading::{ExecutionContext, StepManager, StepType};
 use crate::presentation::tui::views::LoadingMainView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
@@ -13,7 +12,7 @@ use ratatui::Frame;
 use std::path::PathBuf;
 use std::sync::{
     atomic::{AtomicBool, AtomicUsize, Ordering},
-    Arc, Mutex, RwLock,
+    Arc, RwLock,
 };
 use std::thread;
 use std::time::Duration;
@@ -100,15 +99,6 @@ pub struct StepInfo {
 
 pub trait LoadingScreenInterface: Screen {}
 
-#[derive(Clone)]
-pub struct GameDataRef(Arc<Mutex<GameData>>);
-
-impl Default for GameDataRef {
-    fn default() -> Self {
-        Self(GameData::instance())
-    }
-}
-
 #[derive(shaku::Component)]
 #[shaku(interface = LoadingScreenInterface)]
 pub struct LoadingScreen {
@@ -122,28 +112,57 @@ pub struct LoadingScreen {
     theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
     #[shaku(inject)]
     challenge_repository: Arc<dyn ChallengeRepositoryInterface>,
-    #[shaku(default)]
-    game_data: GameDataRef,
+    #[shaku(inject)]
+    challenge_store: Arc<dyn crate::domain::stores::ChallengeStoreInterface>,
+    #[shaku(inject)]
+    repository_store: Arc<dyn crate::domain::stores::RepositoryStoreInterface>,
+    #[shaku(inject)]
+    session_store: Arc<dyn crate::domain::stores::SessionStoreInterface>,
+    #[shaku(inject)]
+    stage_repository: Arc<dyn crate::domain::services::stage_builder_service::StageRepositoryInterface>,
+    #[shaku(inject)]
+    session_manager: Arc<dyn crate::domain::services::session_manager_service::SessionManagerInterface>,
 }
 
 impl LoadingScreen {
-    pub fn new(
-        event_bus: Arc<dyn crate::domain::events::EventBusInterface>,
-        challenge_repository: Arc<
-            dyn crate::domain::repositories::challenge_repository::ChallengeRepositoryInterface,
-        >,
+    #[cfg(feature = "test-mocks")]
+    pub fn new_for_test(
+        event_bus: Arc<dyn EventBusInterface>,
+        challenge_repository: Arc<dyn ChallengeRepositoryInterface>,
         theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
     ) -> Self {
-        use crate::presentation::game::game_data::GameData;
-        use std::sync::RwLock;
+        use crate::domain::stores::{ChallengeStore, RepositoryStore, SessionStore};
+        use crate::domain::services::{SessionManager, stage_builder_service::StageRepository};
+        use crate::domain::services::stage_builder_service::StageRepositoryInterface;
+        use crate::domain::services::session_manager_service::SessionManagerInterface;
+
+        let challenge_store = Arc::new(ChallengeStore::new_for_test());
+        let repository_store = Arc::new(RepositoryStore::new_for_test());
+        let session_store = Arc::new(SessionStore::new_for_test());
+
+        let stage_repository = Arc::new(StageRepository::new(
+            None,
+            challenge_store.clone(),
+            repository_store.clone(),
+            session_store.clone(),
+        )) as Arc<dyn StageRepositoryInterface>;
+
+        let session_manager = Arc::new(SessionManager::new_with_dependencies(
+            event_bus.clone(),
+            stage_repository.clone(),
+        )) as Arc<dyn SessionManagerInterface>;
 
         Self {
             state: RwLock::new(LoadingScreenState::default()),
             render_handle: RwLock::new(None),
             event_bus,
-            challenge_repository,
             theme_service,
-            game_data: GameDataRef(GameData::instance()),
+            challenge_repository,
+            challenge_store,
+            repository_store,
+            session_store,
+            stage_repository,
+            session_manager,
         }
     }
 }
@@ -168,20 +187,9 @@ pub struct LoadingScreenDataProvider;
 
 impl ScreenDataProvider for LoadingScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let game_data = GameData::instance();
-        let processing_params = game_data
-            .lock()
-            .map_err(|e| GitTypeError::TerminalError(format!("Failed to lock game data: {}", e)))?
-            .processing_parameters()
-            .map(
-                |(repo_spec, repo_path, extraction_options)| ProcessingParams {
-                    repo_spec,
-                    repo_path,
-                    extraction_options,
-                },
-            );
-
-        Ok(Box::new(LoadingScreenData { processing_params }))
+        Ok(Box::new(LoadingScreenData {
+            processing_params: None,
+        }))
     }
 }
 
@@ -208,7 +216,11 @@ impl LoadingScreen {
         let repo_path_owned = repo_path.cloned();
         let event_bus = self.event_bus.clone();
         let challenge_repository = self.challenge_repository.clone();
-        let game_data = self.game_data.0.clone();
+        let challenge_store = self.challenge_store.clone();
+        let repository_store = self.repository_store.clone();
+        let session_store = self.session_store.clone();
+        let stage_repository = self.stage_repository.clone();
+        let session_manager = self.session_manager.clone();
         let theme_service = self.theme_service.clone();
 
         thread::spawn(move || {
@@ -217,7 +229,11 @@ impl LoadingScreen {
                 render_handle: RwLock::new(None),
                 event_bus: event_bus.clone(),
                 challenge_repository,
-                game_data: GameDataRef(game_data),
+                challenge_store: challenge_store.clone(),
+                repository_store: repository_store.clone(),
+                session_store: session_store.clone(),
+                stage_repository,
+                session_manager,
                 theme_service,
             };
 
@@ -230,15 +246,12 @@ impl LoadingScreen {
                     challenges: _,
                     git_repository: _,
                 }) => {
-                    // Challenges and git_repository are already stored in GameData
-                    // by GeneratingStep and FinalizingStep respectively
                     log::info!("Repository processing completed successfully");
                 }
                 Err(e) => {
                     log::error!("Repository processing failed: {}", e);
-                    if let Ok(mut data) = GameData::instance().lock() {
-                        data.mark_failed(format!("Repository processing failed: {}", e));
-                    }
+                    session_store.set_loading_failed(true);
+                    session_store.set_error_message(format!("Repository processing failed: {}", e));
                 }
             }
 
@@ -327,6 +340,11 @@ impl LoadingScreen {
             scanned_files: None,
             chunks: None,
             cache_used: false,
+            challenge_store: Some(self.challenge_store.clone()),
+            repository_store: Some(self.repository_store.clone()),
+            session_store: Some(self.session_store.clone()),
+            stage_repository: Some(self.stage_repository.clone()),
+            session_manager: Some(self.session_manager.clone()),
         };
 
         match step_manager.execute_pipeline(&mut context) {
@@ -432,16 +450,24 @@ impl Screen for LoadingScreen {
     fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
         let loading_data = data.downcast::<LoadingScreenData>()?;
 
-        let params = loading_data.processing_params.ok_or_else(|| {
-            GitTypeError::ScreenInitializationError(
-                "No processing parameters found in LoadingScreenData".to_string(),
-            )
-        })?;
+        // Get processing parameters from LoadingScreenData if provided, 
+        // otherwise fallback to RepositoryStore
+        let (repo_spec, repo_path, extraction_options) = if let Some(params) = loading_data.processing_params {
+            (params.repo_spec, params.repo_path, params.extraction_options)
+        } else {
+            // Fallback to RepositoryStore
+            let repo_spec = self.repository_store.get_repo_spec();
+            let repo_path = self.repository_store.get_repo_path();
+            let extraction_options = self.repository_store.get_extraction_options()
+                .unwrap_or_default();
+            
+            (repo_spec, repo_path, extraction_options)
+        };
 
         self.start_background_processing(
-            params.repo_spec.as_deref(),
-            params.repo_path.as_ref(),
-            params.extraction_options,
+            repo_spec.as_deref(),
+            repo_path.as_ref(),
+            extraction_options,
         )?;
 
         self.show_initial()
@@ -486,14 +512,8 @@ impl Screen for LoadingScreen {
     }
 
     fn update(&self) -> Result<bool> {
-        let game_data_guard =
-            self.game_data.0.lock().map_err(|e| {
-                GitTypeError::TerminalError(format!("Failed to lock game data: {}", e))
-            })?;
-
-        let is_completed = game_data_guard.completed();
-        let is_failed = game_data_guard.failed();
-        drop(game_data_guard);
+        let is_completed = self.session_store.is_loading_completed();
+        let is_failed = self.session_store.is_loading_failed();
 
         if is_completed {
             if let Ok(mut current_step) = self.state.read().unwrap().current_step.write() {

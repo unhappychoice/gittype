@@ -8,9 +8,12 @@ use crate::domain::repositories::version_repository::VersionRepository;
 use crate::domain::services::analytics_service::AnalyticsService;
 use crate::domain::services::config_service::ConfigService;
 use crate::domain::services::repository_service::RepositoryService;
+use crate::domain::services::session_manager_service::SessionManager;
 use crate::domain::services::session_service::SessionService;
+use crate::domain::services::stage_builder_service::StageRepository as StageBuilderRepository;
 use crate::domain::services::theme_service::ThemeService;
 use crate::domain::services::version_service::VersionService;
+use crate::domain::stores::{ChallengeStore, RepositoryStore, SessionStore};
 use crate::infrastructure::database::daos::{ChallengeDao, RepositoryDao, SessionDao, StageDao};
 use crate::infrastructure::database::database::Database;
 use crate::infrastructure::http::github_api_client::GitHubApiClientFactoryImpl;
@@ -42,6 +45,9 @@ shaku::module! {
             StageDao,
             EventBus,
             TerminalComponent,
+            ChallengeStore,
+            RepositoryStore,
+            SessionStore,
             GitRepositoryRepository,
             SessionRepository,
             DomainStageRepository,
@@ -49,6 +55,8 @@ shaku::module! {
             TrendingRepository,
             VersionRepository,
             SessionService,
+            SessionManager,
+            StageBuilderRepository,
             AnalyticsService,
             RepositoryService,
             VersionService,

@@ -2,7 +2,8 @@ use crate::domain::events::EventBusInterface;
 use crate::domain::models::{RankTier, SessionResult};
 use crate::domain::services::scoring::Rank;
 use crate::domain::events::presentation_events::NavigateTo;
-use crate::presentation::game::SessionManager;
+use crate::domain::services::session_manager_service::SessionManagerInterface;
+use crate::domain::services::SessionManager;
 use crate::presentation::tui::views::typing::typing_animation_view::AnimationPhase;
 use crate::presentation::tui::views::TypingAnimationView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
@@ -17,29 +18,18 @@ use ratatui::{
     Frame,
 };
 use std::sync::RwLock;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::time::Duration;
 
 pub struct AnimationData {
     pub session_result: SessionResult,
 }
 
-pub struct AnimationDataProvider {
-    session_manager: Arc<Mutex<SessionManager>>,
-}
+pub struct AnimationDataProvider;
 
 impl ScreenDataProvider for AnimationDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let session_result = self
-            .session_manager
-            .lock()
-            .map_err(|_| GitTypeError::TerminalError("Failed to lock SessionManager".to_string()))?
-            .get_session_result()
-            .ok_or_else(|| {
-                GitTypeError::TerminalError("No session result available".to_string())
-            })?;
-
-        Ok(Box::new(AnimationData { session_result }))
+        Ok(Box::new(()))
     }
 }
 
@@ -61,12 +51,15 @@ pub struct AnimationScreen {
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
     theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    #[shaku(inject)]
+    session_manager: Arc<dyn SessionManagerInterface>,
 }
 
 impl AnimationScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
         theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        session_manager: Arc<dyn SessionManagerInterface>,
     ) -> Self {
         Self {
             animation: RwLock::new(None),
@@ -74,6 +67,7 @@ impl AnimationScreen {
             animation_initialized: RwLock::new(false),
             event_bus,
             theme_service,
+            session_manager,
         }
     }
 
@@ -218,9 +212,7 @@ impl Screen for AnimationScreen {
     where
         Self: Sized,
     {
-        Box::new(AnimationDataProvider {
-            session_manager: SessionManager::instance(),
-        })
+        Box::new(AnimationDataProvider)
     }
 
     fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
@@ -230,9 +222,20 @@ impl Screen for AnimationScreen {
             *self.session_result.write().unwrap() = None;
         }
 
-        let data = data.downcast::<AnimationData>()?;
+        // Try to downcast to AnimationData first
+        let session_result = if let Ok(data) = data.downcast::<AnimationData>() {
+            data.session_result
+        } else {
+            // If no data provided, get from SessionManager
+            if let Some(sm) = self.session_manager.as_any().downcast_ref::<SessionManager>() {
+                sm.get_session_result()
+                    .ok_or_else(|| GitTypeError::TerminalError("No session result available".to_string()))?
+            } else {
+                return Err(GitTypeError::TerminalError("Failed to get SessionManager".to_string()).into());
+            }
+        };
 
-        self.set_session_result(data.session_result);
+        self.set_session_result(session_result);
         Ok(())
     }
 

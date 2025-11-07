@@ -1,6 +1,6 @@
 use gittype::domain::services::source_file_extractor::SourceFileExtractor;
 use gittype::infrastructure::storage::file_storage::FileStorage;
-use gittype::presentation::game::models::StepType;
+use gittype::domain::models::loading::StepType;
 use gittype::presentation::tui::screens::loading_screen::ProgressReporter;
 use std::path::Path;
 use std::sync::RwLock;

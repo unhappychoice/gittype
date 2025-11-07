@@ -1,13 +1,13 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
-use crate::domain::models::DifficultyLevel;
+use crate::domain::models::{DifficultyLevel, SessionConfig, SessionState};
 use crate::domain::services::scoring::{SessionTracker, TotalTracker};
+use crate::domain::services::stage_builder_service::StageRepository;
+use crate::domain::services::SessionManager;
 use crate::infrastructure::git::LocalGitRepositoryClient;
-use crate::presentation::game::GameData;
-use crate::presentation::game::{SessionManager, StageRepository};
-use crate::domain::models::SessionConfig;
 use crate::presentation::ui::Colors;
 use crate::{GitTypeError, Result};
 use ratatui::style::Color;
+use std::time::Instant;
 
 #[derive(Debug, Clone)]
 pub struct FinalizingStep;
@@ -58,7 +58,6 @@ impl Step for FinalizingStep {
             .git_repository
             .as_ref()
             .cloned()
-            .or_else(GameData::get_git_repository)
             .or_else(|| {
                 context
                     .current_repo_path
@@ -71,8 +70,17 @@ impl Step for FinalizingStep {
                     })
             });
 
-        // Verify challenges are available in GameData
-        let challenge_count = GameData::with_challenges(|c| c.len()).unwrap_or(0);
+        // Get stores from context
+        let challenge_store = context
+            .challenge_store
+            .clone()
+            .ok_or_else(|| GitTypeError::TerminalError("ChallengeStore not available".to_string()))?;
+
+        // Verify challenges are available
+        let challenge_count = challenge_store
+            .get_challenges()
+            .map(|c| c.len())
+            .unwrap_or(0);
 
         if challenge_count == 0 {
             return Err(GitTypeError::ExtractionFailed(
@@ -80,28 +88,46 @@ impl Step for FinalizingStep {
             ));
         }
 
-        // Initialize StageRepository (no longer requires challenges ownership)
-        StageRepository::initialize_global(git_repository.clone())?;
-
-        // Build difficulty indices for optimal performance
-        StageRepository::build_global_difficulty_indices()?;
-
-        // Update title screen with challenge data (done once during initialization)
-        StageRepository::update_global_title_screen_data()?;
+        // Initialize StageRepository: build difficulty indices for optimal performance
+        if let Some(stage_repository) = &context.stage_repository {
+            // Downcast to concrete type to call build_difficulty_indices
+            if let Some(concrete_stage_repo) = stage_repository.as_any().downcast_ref::<StageRepository>() {
+                concrete_stage_repo.build_difficulty_indices();
+            }
+        } else {
+            log::warn!("StageRepository not available in context, skipping difficulty index build");
+        }
 
         // Initialize SessionManager
-        SessionManager::reset_global_session()?;
-        let session_config = SessionConfig {
-            max_stages: 3,
-            session_timeout: None,
-            difficulty: DifficultyLevel::Normal,
-            max_skips: 3,
-        };
-        SessionManager::initialize_session(Some(session_config))?;
-        SessionManager::set_git_repository(git_repository)?;
-        SessionManager::start_global_session()?;
+        if let Some(session_manager) = &context.session_manager {
+            // Downcast to concrete type to access methods
+            if let Some(concrete_session_manager) = session_manager.as_any().downcast_ref::<SessionManager>() {
+                // Reset session to clean state
+                concrete_session_manager.reset();
 
-        // Initialize global trackers for Ctrl+C handler
+                // Set session configuration
+                let session_config = SessionConfig {
+                    max_stages: 3,
+                    session_timeout: None,
+                    difficulty: DifficultyLevel::Normal,
+                    max_skips: 3,
+                };
+                concrete_session_manager.set_config(session_config);
+
+                // Set git repository context
+                concrete_session_manager.set_git_repository(git_repository);
+
+                // Start session by setting state to InProgress
+                concrete_session_manager.set_state(SessionState::InProgress {
+                    current_stage: 0,
+                    started_at: Instant::now(),
+                });
+            }
+        } else {
+            log::warn!("SessionManager not available in context, skipping session initialization");
+        }
+
+        // Initialize global tracker instances for compatibility with existing code paths
         SessionTracker::initialize_global_instance(SessionTracker::new());
         TotalTracker::initialize_global_instance(TotalTracker::new());
 

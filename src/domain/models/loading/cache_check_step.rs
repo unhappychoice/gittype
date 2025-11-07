@@ -1,5 +1,4 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
-use crate::presentation::game::GameData;
 use crate::presentation::tui::screens::loading_screen::ProgressReporter;
 use crate::presentation::ui::Colors;
 use crate::Result;
@@ -106,7 +105,17 @@ impl Step for CacheCheckStep {
 
         let challenge_count = cached_challenges.len();
 
-        GameData::set_results(cached_challenges, context.git_repository.clone())?;
+        // Store challenges in ChallengeStore
+        if let Some(challenge_store) = &context.challenge_store {
+            challenge_store.set_challenges(cached_challenges);
+        }
+
+        // Store git repository in RepositoryStore
+        if let (Some(repository_store), Some(git_repo)) =
+            (&context.repository_store, &context.git_repository)
+        {
+            repository_store.set_repository(git_repo.clone());
+        }
 
         // Mark that cache was used so other steps can skip
         context.cache_used = true;
@@ -114,6 +123,11 @@ impl Step for CacheCheckStep {
             "Cache hit: {} challenges loaded from cache",
             challenge_count
         );
+
+        // Mark loading as completed
+        if let Some(session_store) = &context.session_store {
+            session_store.set_loading_completed(true);
+        }
 
         Ok(StepResult::Skipped)
     }

@@ -89,15 +89,8 @@ pub fn run_trending(
         // Language provided - show repositories directly
         let theme_service: Arc<dyn ThemeServiceInterface> = container.resolve();
 
-        let selected_repo = run_screen(
+        let selected_repo = run_screen::<TrendingRepositorySelectionScreen, _, _, _>(
             ScreenType::TrendingRepositorySelection,
-            |event_bus| {
-                TrendingRepositorySelectionScreen::new(
-                    event_bus,
-                    Arc::clone(&theme_service),
-                    Arc::clone(&trending_repository),
-                )
-            },
             Some((language.clone(), period.clone())),
             Some(|screen: &TrendingRepositorySelectionScreen| {
                 screen.get_selected_index().and_then(|idx| {
@@ -125,9 +118,8 @@ pub fn run_trending(
         let theme_service: Arc<dyn ThemeServiceInterface> = container.resolve();
 
         // Step 1: Language selection
-        let selected_language = run_screen(
+        let selected_language = run_screen::<TrendingLanguageSelectionScreen, _, _, _>(
             ScreenType::TrendingLanguageSelection,
-            |event_bus| TrendingLanguageSelectionScreen::new(event_bus, Arc::clone(&theme_service)),
             None::<()>,
             Some(|screen: &TrendingLanguageSelectionScreen| {
                 screen.get_selected_language().map(|s| s.to_string())
@@ -136,15 +128,8 @@ pub fn run_trending(
 
         if let Some(lang) = selected_language {
             // Step 2: Repository selection with selected language
-            let selected_repo = run_screen(
+            let selected_repo = run_screen::<TrendingRepositorySelectionScreen, _, _, _>(
                 ScreenType::TrendingRepositorySelection,
-                |event_bus| {
-                    TrendingRepositorySelectionScreen::new(
-                        event_bus,
-                        Arc::clone(&theme_service),
-                        Arc::clone(&trending_repository),
-                    )
-                },
                 Some((Some(lang), period.clone())),
                 Some(|screen: &TrendingRepositorySelectionScreen| {
                     screen.get_selected_index().and_then(|idx| {

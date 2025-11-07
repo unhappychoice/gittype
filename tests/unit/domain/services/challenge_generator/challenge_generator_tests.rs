@@ -3,7 +3,7 @@ use gittype::domain::models::{
 };
 use gittype::domain::services::challenge_generator::ChallengeGenerator;
 use gittype::domain::services::source_code_parser::SourceCodeParser;
-use gittype::presentation::game::models::StepType;
+use gittype::domain::models::loading::StepType;
 use gittype::presentation::tui::screens::loading_screen::ProgressReporter;
 use std::collections::HashMap;
 use std::path::PathBuf;

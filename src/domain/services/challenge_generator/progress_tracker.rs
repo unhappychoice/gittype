@@ -1,4 +1,4 @@
-use crate::presentation::game::models::StepType;
+use crate::domain::models::loading::StepType;
 use crate::presentation::tui::screens::loading_screen::ProgressReporter;
 use std::sync::{
     atomic::{AtomicUsize, Ordering},

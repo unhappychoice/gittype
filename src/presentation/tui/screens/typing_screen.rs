@@ -2,37 +2,22 @@ use crate::domain::events::domain_events::DomainEvent;
 use crate::domain::events::EventBusInterface;
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::models::typing::{CodeContext, InputResult, ProcessingOptions};
-use crate::domain::models::{Challenge, Countdown};
+use crate::domain::models::{Challenge, Countdown, GitRepository};
 use crate::domain::services::context_loader;
+use crate::domain::services::session_manager_service::SessionManagerInterface;
+use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::domain::services::typing_core::TypingCore;
-use crate::presentation::game::{GameData, SessionManager};
+use crate::domain::services::SessionManager;
+use crate::domain::stores::RepositoryStoreInterface;
 use crate::presentation::tui::views::TypingView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
-use crate::{domain::models::GitRepository, Result};
+use crate::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use std::sync::RwLock;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 pub trait TypingScreenInterface: Screen {}
-
-#[derive(Clone)]
-pub struct GameDataRef(Arc<Mutex<GameData>>);
-
-impl Default for GameDataRef {
-    fn default() -> Self {
-        Self(GameData::instance())
-    }
-}
-
-#[derive(Clone)]
-pub struct SessionManagerRef(Arc<Mutex<SessionManager>>);
-
-impl Default for SessionManagerRef {
-    fn default() -> Self {
-        Self(SessionManager::instance())
-    }
-}
 
 #[derive(shaku::Component)]
 #[shaku(interface = TypingScreenInterface)]
@@ -56,11 +41,11 @@ pub struct TypingScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
-    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
-    #[shaku(default)]
-    game_data: GameDataRef,
-    #[shaku(default)]
-    session_manager: SessionManagerRef,
+    theme_service: Arc<dyn ThemeServiceInterface>,
+    #[shaku(inject)]
+    repository_store: Arc<dyn RepositoryStoreInterface>,
+    #[shaku(inject)]
+    session_manager: Arc<dyn SessionManagerInterface>,
 }
 
 pub enum SessionState {
@@ -77,14 +62,11 @@ pub enum SessionState {
 impl TypingScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
-        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
-        game_data: Arc<Mutex<GameData>>,
-        session_manager: Arc<Mutex<SessionManager>>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
+        repository_store: Arc<dyn RepositoryStoreInterface>,
+        session_manager: Arc<dyn SessionManagerInterface>,
     ) -> Self {
-        let git_repository = game_data
-            .lock()
-            .ok()
-            .and_then(|data| data.git_repository.clone());
+        let git_repository = repository_store.get_repository();
 
         Self {
             countdown: RwLock::new(Countdown::new()),
@@ -97,8 +79,8 @@ impl TypingScreen {
             typing_view: RwLock::new(TypingView::new()),
             event_bus,
             theme_service,
-            game_data: GameDataRef(game_data),
-            session_manager: SessionManagerRef(session_manager),
+            repository_store,
+            session_manager,
         }
     }
 
@@ -116,9 +98,9 @@ impl TypingScreen {
         }
     }
 
-    /// Load the current challenge from global SessionManager
+    /// Load the current challenge from SessionManager
     pub fn load_current_challenge(&self) -> Result<bool> {
-        let challenge = if let Ok(session_manager) = self.session_manager.0.lock() {
+        let challenge = if let Some(session_manager) = self.session_manager.as_any().downcast_ref::<SessionManager>() {
             session_manager.get_current_challenge()?
         } else {
             None
@@ -133,17 +115,18 @@ impl TypingScreen {
 
             *self.typing_core.write().unwrap() =
                 TypingCore::new(&challenge.code_content, comment_ranges, options);
+
+            // Get git root from repository store for context loading
+            let git_repository = self.repository_store.get_repository();
+            let git_root = git_repository.as_ref()
+                .and_then(|repo| repo.root_path.as_ref().map(|p| p.as_path()));
             *self.code_context.write().unwrap() =
-                context_loader::load_context_for_challenge(&challenge, 4)?;
+                context_loader::load_context_for_challenge(&challenge, 4, git_root)?;
 
             *self.countdown.write().unwrap() = Countdown::new();
             *self.challenge.write().unwrap() = Some(challenge.clone());
-            // Update git_repository from GameData
-            *self.git_repository.write().unwrap() = if let Ok(game_data) = self.game_data.0.lock() {
-                game_data.repository()
-            } else {
-                None
-            };
+            // Update git_repository from RepositoryStore
+            *self.git_repository.write().unwrap() = self.repository_store.get_repository();
             *self.waiting_to_start.write().unwrap() = true;
             *self.dialog_shown.write().unwrap() = false;
 
@@ -328,7 +311,7 @@ impl TypingScreen {
 
     fn handle_skip_action(&self) -> Result<SessionState> {
         self.close_dialog();
-        let skips_remaining = if let Ok(session_manager) = self.session_manager.0.lock() {
+        let skips_remaining = if let Some(session_manager) = self.session_manager.as_any().downcast_ref::<SessionManager>() {
             session_manager.get_skips_remaining().unwrap_or(0)
         } else {
             0
@@ -452,16 +435,14 @@ impl shaku::Provider<crate::presentation::di::AppModule> for TypingScreenProvide
         module: &crate::presentation::di::AppModule,
     ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
         use shaku::HasComponent;
-        let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
-            module.resolve();
-        let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> =
-            module.resolve();
-        let game_data = crate::presentation::game::GameData::instance();
-        let session_manager = crate::presentation::game::SessionManager::instance();
+        let event_bus: Arc<dyn EventBusInterface> = module.resolve();
+        let theme_service: Arc<dyn ThemeServiceInterface> = module.resolve();
+        let repository_store: Arc<dyn RepositoryStoreInterface> = module.resolve();
+        let session_manager: Arc<dyn SessionManagerInterface> = module.resolve();
         Ok(Box::new(TypingScreen::new(
             event_bus,
             theme_service,
-            game_data,
+            repository_store,
             session_manager,
         )))
     }
@@ -541,7 +522,7 @@ impl Screen for TypingScreen {
             .text_to_display()
             .chars()
             .collect();
-        let skips_remaining = if let Ok(session_manager) = self.session_manager.0.lock() {
+        let skips_remaining = if let Some(session_manager) = self.session_manager.as_any().downcast_ref::<SessionManager>() {
             session_manager.get_skips_remaining().unwrap_or(0)
         } else {
             0
@@ -558,7 +539,7 @@ impl Screen for TypingScreen {
             self.countdown.read().unwrap().get_current_count(),
             skips_remaining,
             *self.dialog_shown.read().unwrap(),
-            &self.session_manager.0,
+            &self.session_manager,
             &colors,
         );
 

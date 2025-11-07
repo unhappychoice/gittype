@@ -1,6 +1,9 @@
 use crate::domain::models::ExtractionOptions;
 use crate::domain::models::{Challenge, CodeChunk, GitRepository};
 use crate::domain::repositories::challenge_repository::ChallengeRepositoryInterface;
+use crate::domain::stores::{
+    ChallengeStoreInterface, RepositoryStoreInterface, SessionStoreInterface,
+};
 use crate::presentation::tui::screens::LoadingScreen;
 use crate::Result;
 use ratatui::style::Color;
@@ -50,6 +53,11 @@ pub struct ExecutionContext<'a> {
     pub scanned_files: Option<Vec<PathBuf>>, // Temporary storage for step results
     pub chunks: Option<Vec<CodeChunk>>,      // Chunks from ExtractingStep
     pub cache_used: bool, // Flag to indicate cache was used and remaining steps should be skipped
+    pub challenge_store: Option<Arc<dyn ChallengeStoreInterface>>,
+    pub repository_store: Option<Arc<dyn RepositoryStoreInterface>>,
+    pub session_store: Option<Arc<dyn SessionStoreInterface>>,
+    pub stage_repository: Option<Arc<dyn crate::domain::services::stage_builder_service::StageRepositoryInterface>>,
+    pub session_manager: Option<Arc<dyn crate::domain::services::session_manager_service::SessionManagerInterface>>,
 }
 
 #[derive(Debug)]

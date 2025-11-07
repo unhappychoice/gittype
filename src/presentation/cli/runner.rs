@@ -7,7 +7,6 @@ use crate::presentation::cli::commands::{
 };
 use crate::presentation::cli::{Cli, Commands};
 use crate::presentation::di::AppModule;
-use crate::presentation::game::GameData;
 use crate::{GitTypeError, Result};
 use shaku::HasComponent;
 
@@ -17,8 +16,6 @@ pub fn run_cli(cli: Cli) -> Result<()> {
         eprintln!("⚠️ Warning: Failed to setup file logging: {}", e);
         eprintln!("   Logs will only be shown in console.");
     }
-
-    let _ = GameData::initialize();
 
     match &cli.command {
         Some(Commands::History) => run_history(),

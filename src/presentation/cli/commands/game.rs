@@ -6,7 +6,8 @@ use crate::infrastructure::console::{Console, ConsoleImpl};
 use crate::infrastructure::logging;
 use crate::presentation::cli::args::Cli;
 use crate::presentation::di::AppModule;
-use crate::presentation::game::{GameData, SessionManager};
+use crate::domain::stores::RepositoryStoreInterface;
+use crate::domain::services::SessionManager;
 use crate::presentation::signal_handler::setup_signal_handlers;
 use crate::presentation::tui::screens::{VersionCheckResult, VersionCheckScreen};
 use crate::presentation::tui::ScreenType;
@@ -24,16 +25,20 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
     // Create DI container
     let container = AppModule::builder().build();
 
-    // Get EventBus from DI container FIRST - before creating any screens
-    // This ensures SessionManager is initialized with the correct EventBus
-    let event_bus: Arc<dyn EventBusInterface> = container.resolve();
+    // Get SessionManager from DI container and setup event subscriptions
+    use crate::domain::services::session_manager_service::{SessionManagerInterface, SessionManager};
+    use shaku::HasComponent;
+    let session_manager_trait: Arc<dyn SessionManagerInterface> = container.resolve();
 
-    // Initialize SessionManager with correct EventBus BEFORE creating screens
-    // Some screens (like StageSummaryScreen) call SessionManager::instance() in their constructor,
-    // which would trigger Lazy initialization with a wrong EventBus if we don't do this first
-    let _ = SessionManager::instance(); // Trigger Lazy initialization
-    let _ = SessionManager::set_global_event_bus(event_bus.clone());
-    SessionManager::setup_event_subscriptions_after_init();
+    // Downcast to concrete SessionManager type for event subscription setup
+    if let Some(session_manager) = session_manager_trait.as_any().downcast_ref::<SessionManager>() {
+        // Get a new Arc pointing to the same SessionManager
+        // This is safe because we know the type matches
+        let session_manager_arc = unsafe {
+            Arc::from_raw(Arc::into_raw(session_manager_trait.clone()) as *const SessionManager)
+        };
+        SessionManager::setup_event_subscriptions(session_manager_arc);
+    }
 
     // Get ScreenManagerFactory from DI container
     let factory: &dyn ScreenManagerFactory = container.resolve_ref();
@@ -110,16 +115,24 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
         Some(&default_repo_path)
     };
 
-    GameData::set_processing_parameters(repo_spec, initial_repo_path, &options)?;
+    // Store processing parameters in RepositoryStore
+    let repository_store: &dyn RepositoryStoreInterface = container.resolve_ref();
+    if let Some(spec) = repo_spec {
+        repository_store.set_repo_spec(spec.to_string());
+    }
+    if let Some(path) = initial_repo_path {
+        repository_store.set_repo_path(path.clone());
+    }
+    repository_store.set_extraction_options(options.clone());
 
     log::info!(
-        "Initializing all screens with GameData parameters: repo_spec={:?}, repo_path={:?}",
+        "Initializing all screens with processing parameters: repo_spec={:?}, repo_path={:?}",
         repo_spec,
         initial_repo_path
     );
 
     // Create ScreenManager using DI container factory
-    let screen_manager_impl = factory.create(GameData::instance(), &container);
+    let screen_manager_impl = factory.create(&container);
     let screen_manager = Arc::new(Mutex::new(screen_manager_impl));
 
     // Set up signal handlers with ScreenManager reference

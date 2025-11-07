@@ -1,17 +1,36 @@
 use crate::integration::screens::mocks::title_screen_mock::MockTitleScreenDataProvider;
 use crossterm::event::{KeyCode, KeyModifiers};
-use gittype::domain::events::EventBus;
+use gittype::domain::events::{EventBus, EventBusInterface};
 use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
+use gittype::domain::services::stage_builder_service::{StageRepository, StageRepositoryInterface};
+use gittype::domain::stores::{ChallengeStore, RepositoryStore, SessionStore};
+use gittype::domain::stores::{ChallengeStoreInterface, RepositoryStoreInterface, SessionStoreInterface};
 use gittype::domain::models::theme::Theme;
 use gittype::domain::models::color_mode::ColorMode;
 use gittype::domain::events::presentation_events::NavigateTo;
 use gittype::presentation::tui::screens::title_screen::TitleScreen;
 use std::sync::Arc;
 
+// Helper function to create TitleScreen with all required dependencies
+fn create_title_screen(event_bus: Arc<dyn EventBusInterface>) -> TitleScreen {
+    let theme_service = Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>;
+    let challenge_store = Arc::new(ChallengeStore::new_for_test()) as Arc<dyn ChallengeStoreInterface>;
+    let repository_store = Arc::new(RepositoryStore::new_for_test()) as Arc<dyn RepositoryStoreInterface>;
+    let session_store = Arc::new(SessionStore::new_for_test()) as Arc<dyn SessionStoreInterface>;
+    let stage_repository = Arc::new(StageRepository::new(
+        None,
+        challenge_store,
+        repository_store.clone(),
+        session_store,
+    )) as Arc<dyn StageRepositoryInterface>;
+
+    TitleScreen::new(event_bus, theme_service, stage_repository, repository_store)
+}
+
 screen_snapshot_test!(
     test_title_screen_snapshot,
     TitleScreen,
-    TitleScreen::new(Arc::new(EventBus::new()), Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>),
+    create_title_screen(Arc::new(EventBus::new())),
     provider = MockTitleScreenDataProvider
 );
 
@@ -19,6 +38,7 @@ screen_snapshot_test!(
 screen_key_event_test!(
     test_title_screen_space_starts_game,
     TitleScreen,
+    create_title_screen,
     NavigateTo,
     KeyCode::Char(' '),
     KeyModifiers::empty(),
@@ -28,6 +48,7 @@ screen_key_event_test!(
 screen_key_event_test!(
     test_title_screen_esc_exits,
     TitleScreen,
+    create_title_screen,
     NavigateTo,
     KeyCode::Esc,
     KeyModifiers::empty(),
@@ -37,6 +58,7 @@ screen_key_event_test!(
 screen_key_event_test!(
     test_title_screen_ctrl_c_exits,
     TitleScreen,
+    create_title_screen,
     NavigateTo,
     KeyCode::Char('c'),
     KeyModifiers::CONTROL,
@@ -46,6 +68,7 @@ screen_key_event_test!(
 screen_key_event_test!(
     test_title_screen_i_opens_help,
     TitleScreen,
+    create_title_screen,
     NavigateTo,
     KeyCode::Char('i'),
     KeyModifiers::empty(),
@@ -55,6 +78,7 @@ screen_key_event_test!(
 screen_key_event_test!(
     test_title_screen_question_opens_help,
     TitleScreen,
+    create_title_screen,
     NavigateTo,
     KeyCode::Char('?'),
     KeyModifiers::empty(),
@@ -64,6 +88,7 @@ screen_key_event_test!(
 screen_key_event_test!(
     test_title_screen_r_opens_records,
     TitleScreen,
+    create_title_screen,
     NavigateTo,
     KeyCode::Char('r'),
     KeyModifiers::empty(),
@@ -73,6 +98,7 @@ screen_key_event_test!(
 screen_key_event_test!(
     test_title_screen_capital_r_opens_records,
     TitleScreen,
+    create_title_screen,
     NavigateTo,
     KeyCode::Char('R'),
     KeyModifiers::empty(),
@@ -82,6 +108,7 @@ screen_key_event_test!(
 screen_key_event_test!(
     test_title_screen_a_opens_analytics,
     TitleScreen,
+    create_title_screen,
     NavigateTo,
     KeyCode::Char('a'),
     KeyModifiers::empty(),
@@ -91,6 +118,7 @@ screen_key_event_test!(
 screen_key_event_test!(
     test_title_screen_capital_a_opens_analytics,
     TitleScreen,
+    create_title_screen,
     NavigateTo,
     KeyCode::Char('A'),
     KeyModifiers::empty(),
@@ -100,6 +128,7 @@ screen_key_event_test!(
 screen_key_event_test!(
     test_title_screen_s_opens_settings,
     TitleScreen,
+    create_title_screen,
     NavigateTo,
     KeyCode::Char('s'),
     KeyModifiers::empty(),
@@ -109,6 +138,7 @@ screen_key_event_test!(
 screen_key_event_test!(
     test_title_screen_capital_s_opens_settings,
     TitleScreen,
+    create_title_screen,
     NavigateTo,
     KeyCode::Char('S'),
     KeyModifiers::empty(),
@@ -116,8 +146,9 @@ screen_key_event_test!(
 );
 
 // Non-event key tests
-screen_key_tests!(
+screen_key_tests_custom!(
     TitleScreen,
+    create_title_screen,
     MockTitleScreenDataProvider,
     [
         (
@@ -147,7 +178,7 @@ screen_key_tests!(
 screen_basic_methods_test!(
     test_title_screen_basic_methods,
     TitleScreen,
-    TitleScreen::new(Arc::new(EventBus::new()), Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>),
+    create_title_screen(Arc::new(EventBus::new())),
     gittype::presentation::tui::ScreenType::Title,
     false,
     MockTitleScreenDataProvider

@@ -1,13 +1,13 @@
-use crate::domain::events::{EventBus, EventBusInterface};
-use crate::presentation::game::GameData;
+use crate::domain::events::EventBusInterface;
+use crate::presentation::di::AppModule;
 use crate::presentation::tui::{Screen, ScreenManagerImpl, ScreenType};
 use crate::Result;
+use shaku::HasComponent;
 use std::sync::{Arc, Mutex};
 
 /// Runs a single screen with optional data initialization and result extraction
 pub fn run_screen<S, D, R, F>(
     screen_type: ScreenType,
-    screen_factory: impl FnOnce(Arc<dyn EventBusInterface>) -> S,
     data: Option<D>,
     extract_result: Option<F>,
 ) -> Result<Option<R>>
@@ -16,18 +16,14 @@ where
     D: 'static,
     F: FnOnce(&S) -> Option<R>,
 {
-    // Create EventBus and ScreenManager
-    let event_bus: Arc<dyn EventBusInterface> = Arc::new(EventBus::new());
-    let backend = ratatui::backend::CrosstermBackend::new(std::io::stdout());
-    let terminal = ratatui::Terminal::new(backend).map_err(|e| {
-        crate::GitTypeError::TerminalError(format!("Failed to create terminal: {}", e))
-    })?;
-    let mut screen_manager =
-        ScreenManagerImpl::new(Arc::clone(&event_bus), GameData::instance(), terminal);
+    // Create DI container
+    let container = AppModule::builder().build();
 
-    // Create and register screen
-    let screen = screen_factory(Arc::clone(&event_bus));
-    screen_manager.register_screen(screen);
+    // Get ScreenManagerFactory from DI container
+    let factory: &dyn crate::presentation::tui::ScreenManagerFactory = container.resolve_ref();
+
+    // Create ScreenManager using DI container factory (all screens already registered)
+    let mut screen_manager = factory.create(&container);
 
     // Setup event subscriptions
     let manager_ref = Arc::new(Mutex::new(screen_manager));
