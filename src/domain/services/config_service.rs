@@ -7,6 +7,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
 
 pub trait ConfigServiceInterface: Interface {
+    fn init(&self) -> Result<()>;
     fn get_config(&self) -> Config;
     fn save(&self) -> Result<()>;
 }
@@ -62,6 +63,22 @@ impl ConfigService {
 }
 
 impl ConfigServiceInterface for ConfigService {
+    fn init(&self) -> Result<()> {
+        let config_path = self.get_config_path()?;
+        let storage = (self.file_storage.as_ref() as &dyn std::any::Any)
+            .downcast_ref::<FileStorage>()
+            .ok_or_else(|| {
+                crate::GitTypeError::ExtractionFailed("Failed to downcast storage".to_string())
+            })?;
+
+        let config = storage
+            .read_json::<Config>(&config_path)?
+            .unwrap_or_default();
+
+        *self.config.write().unwrap() = config;
+        Ok(())
+    }
+
     fn get_config(&self) -> Config {
         self.config.read().unwrap().clone()
     }

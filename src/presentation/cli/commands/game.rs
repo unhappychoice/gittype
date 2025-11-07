@@ -70,6 +70,20 @@ pub fn run_game_session(cli: Cli) -> Result<()> {
         return Ok(());
     }
 
+    // Initialize config service (must be done before theme service)
+    {
+        use crate::domain::services::config_service::ConfigServiceInterface;
+        let config_service: &dyn ConfigServiceInterface = container.resolve_ref();
+        if let Err(e) = config_service.init() {
+            log::warn!("Failed to initialize config service: {}", e);
+            console.eprintln(&format!(
+                "⚠️ Warning: Failed to load configuration: {}",
+                e
+            ))?;
+            console.eprintln("   Using default configuration.")?;
+        }
+    }
+
     // Initialize theme service
     {
         let theme_service: &dyn ThemeServiceInterface = container.resolve_ref();
