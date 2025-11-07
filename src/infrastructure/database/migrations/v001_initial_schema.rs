@@ -1,6 +1,8 @@
-use super::Migration;
-use crate::Result;
 use rusqlite::Connection;
+
+use crate::Result;
+
+use super::Migration;
 
 pub struct InitialSchema;
 

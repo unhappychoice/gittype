@@ -1,12 +1,3 @@
-use crate::domain::events::presentation_events::NavigateTo;
-use crate::domain::events::EventBusInterface;
-use crate::domain::models::storage::SessionStageResult;
-use crate::domain::repositories::session_repository::SessionRepositoryTrait;
-use crate::domain::services::session_service::SessionDisplayData;
-use crate::presentation::tui::screens::RecordsScreen;
-use crate::presentation::tui::views::{PerformanceMetricsView, SessionInfoView, StageDetailsView};
-use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
-use crate::{GitTypeError, Result};
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
@@ -14,8 +5,19 @@ use ratatui::{
     text::{Line, Span},
     widgets::Paragraph,
 };
-use std::sync::Arc;
-use std::sync::RwLock;
+
+use std::sync::{Arc, RwLock};
+
+use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::EventBusInterface;
+use crate::domain::models::storage::SessionStageResult;
+use crate::domain::repositories::session_repository::SessionRepositoryTrait;
+use crate::domain::services::session_service::SessionDisplayData;
+use crate::domain::services::theme_service::ThemeServiceInterface;
+use crate::presentation::tui::screens::RecordsScreen;
+use crate::presentation::tui::views::{PerformanceMetricsView, SessionInfoView, StageDetailsView};
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::{GitTypeError, Result};
 
 pub enum SessionDetailAction {
     Return,
@@ -35,21 +37,17 @@ pub struct SessionDetailScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
-    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    theme_service: Arc<dyn ThemeServiceInterface>,
     #[shaku(inject)]
     session_repository: Arc<dyn SessionRepositoryTrait>,
 }
 
 impl SessionDetailScreen {
     pub fn new(
-        event_bus: Arc<dyn crate::domain::events::EventBusInterface>,
-        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
-        session_repository: Arc<
-            dyn crate::domain::repositories::session_repository::SessionRepositoryTrait,
-        >,
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
+        session_repository: Arc<dyn SessionRepositoryTrait>,
     ) -> Self {
-        use std::sync::RwLock;
-
         Self {
             session_data: RwLock::new(SessionDisplayData::default()),
             stage_results: RwLock::new(Vec::new()),

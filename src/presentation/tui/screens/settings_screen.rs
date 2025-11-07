@@ -3,6 +3,7 @@ use crate::domain::events::EventBusInterface;
 use crate::domain::models::color_mode::ColorMode;
 use crate::domain::models::theme::Theme;
 use crate::domain::services::config_service::{ConfigService, ConfigServiceInterface};
+use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType};
 use crate::presentation::ui::Colors;
 use crate::Result;
@@ -75,7 +76,7 @@ pub struct SettingsScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
-    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    theme_service: Arc<dyn ThemeServiceInterface>,
     #[shaku(inject)]
     config_service: Arc<dyn ConfigServiceInterface>,
 }

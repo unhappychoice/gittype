@@ -1,19 +1,22 @@
-use crate::domain::events::presentation_events::NavigateTo;
-use crate::domain::events::EventBusInterface;
-use crate::domain::models::{DifficultyLevel, GitRepository};
-use crate::domain::services::stage_builder_service::StageRepositoryInterface;
-use crate::domain::services::StageRepository;
-use crate::domain::stores::RepositoryStoreInterface;
-use crate::presentation::tui::views::title::{DifficultySelectionView, StaticElementsView};
-use crate::presentation::tui::ScreenDataProvider;
-use crate::presentation::tui::{Screen, ScreenType, UpdateStrategy};
-use crate::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
 };
 use std::sync::{Arc, RwLock};
+
+use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::EventBusInterface;
+use crate::domain::models::{DifficultyLevel, GitRepository};
+use crate::domain::services::session_manager_service::SessionManagerInterface;
+use crate::domain::services::stage_builder_service::StageRepositoryInterface;
+use crate::domain::services::theme_service::ThemeServiceInterface;
+use crate::domain::services::{SessionManager, StageRepository};
+use crate::domain::stores::RepositoryStoreInterface;
+use crate::presentation::tui::views::title::{DifficultySelectionView, StaticElementsView};
+use crate::presentation::tui::ScreenDataProvider;
+use crate::presentation::tui::{Screen, ScreenType, UpdateStrategy};
+use crate::Result;
 
 const DIFFICULTIES: [(&str, DifficultyLevel); 5] = [
     ("Easy", DifficultyLevel::Easy),
@@ -65,25 +68,22 @@ pub struct TitleScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
-    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    theme_service: Arc<dyn ThemeServiceInterface>,
     #[shaku(inject)]
     stage_repository: Arc<dyn StageRepositoryInterface>,
     #[shaku(inject)]
     repository_store: Arc<dyn RepositoryStoreInterface>,
     #[shaku(inject)]
-    session_manager:
-        Arc<dyn crate::domain::services::session_manager_service::SessionManagerInterface>,
+    session_manager: Arc<dyn SessionManagerInterface>,
 }
 
 impl TitleScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
-        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
         stage_repository: Arc<dyn StageRepositoryInterface>,
         repository_store: Arc<dyn RepositoryStoreInterface>,
-        session_manager: Arc<
-            dyn crate::domain::services::session_manager_service::SessionManagerInterface,
-        >,
+        session_manager: Arc<dyn SessionManagerInterface>,
     ) -> Self {
         Self {
             selected_difficulty: RwLock::new(1),
@@ -187,7 +187,6 @@ impl Screen for TitleScreen {
                     *self.action_result.write().unwrap() = Some(TitleAction::Start(difficulty));
 
                     // Set difficulty in SessionManager before transitioning to Typing screen
-                    use crate::domain::services::SessionManager;
                     if let Some(sm) = self
                         .session_manager
                         .as_any()

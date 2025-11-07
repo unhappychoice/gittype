@@ -1,5 +1,6 @@
-use crate::domain::models::stage::{Stage, StageResult};
 use std::time::{Duration, Instant};
+
+use crate::domain::models::stage::{Stage, StageResult};
 
 #[derive(Debug, Clone)]
 pub struct Session {

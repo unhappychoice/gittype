@@ -1,14 +1,14 @@
+use std::sync::Arc;
+
 use crate::infrastructure::console::{Console, ConsoleImpl};
 use crate::infrastructure::storage::app_data_provider::AppDataProvider;
-use crate::infrastructure::storage::file_storage::FileStorage;
-use crate::infrastructure::storage::file_storage::FileStorageInterface;
+use crate::infrastructure::storage::file_storage::{FileStorage, FileStorageInterface};
 use crate::presentation::cli::commands::run_game_session;
 use crate::presentation::cli::screen_runner::run_screen;
 use crate::presentation::cli::Cli;
 use crate::presentation::tui::screens::{RepoListScreen, RepoPlayScreen};
 use crate::presentation::tui::ScreenType;
 use crate::{GitTypeError, Result};
-use std::sync::Arc;
 
 pub fn run_repo_list() -> Result<()> {
     run_screen::<RepoListScreen, _, _, _>(

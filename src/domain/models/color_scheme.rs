@@ -1,7 +1,9 @@
-use crate::domain::models::color_mode::ColorMode;
 use ratatui::style::Color;
 use serde::{Deserialize, Serialize};
+
 use std::collections::HashMap;
+
+use crate::domain::models::color_mode::ColorMode;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ThemeFile {

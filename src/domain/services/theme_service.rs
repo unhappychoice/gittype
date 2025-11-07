@@ -1,14 +1,18 @@
-use super::super::models::color_mode::ColorMode;
-use super::super::models::color_scheme::{ColorScheme, CustomThemeFile, ThemeFile};
-use super::super::models::theme::Theme;
-use crate::domain::models::color_scheme::SerializableColor;
+use shaku::Interface;
+
+use std::collections::HashMap;
+use std::path::PathBuf;
+use std::sync::{Arc, RwLock};
+
+use crate::domain::models::color_mode::ColorMode;
+use crate::domain::models::color_scheme::{
+    ColorScheme, CustomThemeFile, SerializableColor, ThemeFile,
+};
+use crate::domain::models::theme::Theme;
 use crate::domain::services::config_service::ConfigServiceInterface;
 use crate::infrastructure::storage::app_data_provider::AppDataProvider;
 use crate::infrastructure::storage::file_storage::{FileStorage, FileStorageInterface};
 use crate::presentation::ui::Colors;
-use shaku::Interface;
-use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
 
 pub struct ThemeServiceState {
     current_theme: Theme,
@@ -22,7 +26,7 @@ impl Default for ThemeServiceState {
         Self {
             current_theme: Theme::default(),
             current_color_mode: ColorMode::Dark,
-            language_colors: std::collections::HashMap::new(),
+            language_colors: HashMap::new(),
         }
     }
 }
@@ -62,7 +66,7 @@ impl ThemeService {
             state: RwLock::new(ThemeServiceState {
                 current_theme,
                 current_color_mode,
-                language_colors: std::collections::HashMap::new(),
+                language_colors: HashMap::new(),
             }),
             file_storage,
             config_service,
@@ -78,9 +82,9 @@ impl ThemeService {
     }
 
     /// Get the custom theme file path
-    fn get_custom_theme_path(&self) -> std::path::PathBuf {
+    fn get_custom_theme_path(&self) -> PathBuf {
         Self::get_app_data_dir()
-            .unwrap_or_else(|_| std::path::PathBuf::from("."))
+            .unwrap_or_else(|_| PathBuf::from("."))
             .join("custom-theme.json")
     }
 
@@ -88,7 +92,7 @@ impl ThemeService {
     fn create_default_custom_theme_file() -> anyhow::Result<()> {
         let file_storage = FileStorage::new();
         let custom_theme_path = Self::get_app_data_dir()
-            .unwrap_or_else(|_| std::path::PathBuf::from("."))
+            .unwrap_or_else(|_| PathBuf::from("."))
             .join("custom-theme.json");
 
         if file_storage.file_exists(&custom_theme_path) {

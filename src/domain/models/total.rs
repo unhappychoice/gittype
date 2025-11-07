@@ -1,5 +1,6 @@
-use super::session::{Session, SessionResult};
 use std::time::{Duration, Instant};
+
+use super::session::{Session, SessionResult};
 
 #[derive(Debug, Clone)]
 pub struct Total {

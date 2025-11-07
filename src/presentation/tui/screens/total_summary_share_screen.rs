@@ -1,16 +1,18 @@
+use crossterm::event::{self, KeyCode, KeyModifiers};
+use ratatui::Frame;
+
+use std::sync::{Arc, Mutex, RwLock};
+
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::TotalResult;
 use crate::domain::services::scoring::{TotalCalculator, TotalTracker};
+use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::infrastructure::browser;
 use crate::presentation::sharing::SharingPlatform;
 use crate::presentation::tui::views::SharingView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::{GitTypeError, Result};
-use crossterm::event::{self};
-use ratatui::Frame;
-use std::sync::RwLock;
-use std::sync::{Arc, Mutex};
 
 pub struct TotalSummaryShareData {
     pub total_result: TotalResult,
@@ -54,13 +56,13 @@ pub struct TotalSummaryShareScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
-    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    theme_service: Arc<dyn ThemeServiceInterface>,
 }
 
 impl TotalSummaryShareScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
-        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
     ) -> Self {
         Self {
             total_result: RwLock::new(TotalResult::new()),
@@ -150,10 +152,8 @@ impl shaku::Provider<crate::presentation::di::AppModule> for TotalSummaryShareSc
         module: &crate::presentation::di::AppModule,
     ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
         use shaku::HasComponent;
-        let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
-            module.resolve();
-        let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> =
-            module.resolve();
+        let event_bus: std::sync::Arc<dyn EventBusInterface> = module.resolve();
+        let theme_service: Arc<dyn ThemeServiceInterface> = module.resolve();
         Ok(Box::new(TotalSummaryShareScreen::new(
             event_bus,
             theme_service,
@@ -186,7 +186,6 @@ impl Screen for TotalSummaryShareScreen {
     }
 
     fn handle_key_event(&self, key_event: event::KeyEvent) -> Result<()> {
-        use crossterm::event::{KeyCode, KeyModifiers};
         match key_event.code {
             KeyCode::Char('1') => self.handle_share_platform(SharingPlatform::X),
             KeyCode::Char('2') => self.handle_share_platform(SharingPlatform::Reddit),

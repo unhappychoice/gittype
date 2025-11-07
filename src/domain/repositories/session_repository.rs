@@ -1,3 +1,6 @@
+use std::sync::Arc;
+
+use crate::domain::error::GitTypeError;
 use crate::domain::models::storage::{
     SaveSessionResultParams, SaveStageParams, SessionResultData, SessionStageResult,
     StoredRepository, StoredSession,
@@ -9,8 +12,7 @@ use crate::infrastructure::database::daos::{
     SessionDaoInterface,
 };
 use crate::infrastructure::database::database::{Database, DatabaseInterface};
-use crate::{domain::error::GitTypeError, Result};
-use std::sync::Arc;
+use crate::Result;
 
 type StageResultTuple = (String, StageResult, usize, Option<Challenge>);
 
@@ -309,9 +311,9 @@ impl SessionRepository {
 
     /// Create a global singleton instance
     pub fn global() -> &'static Arc<std::sync::Mutex<Option<SessionRepository>>> {
-        use std::sync::Mutex;
-        static INSTANCE: std::sync::OnceLock<Arc<Mutex<Option<SessionRepository>>>> =
-            std::sync::OnceLock::new();
+        use std::sync::{Mutex, OnceLock};
+
+        static INSTANCE: OnceLock<Arc<Mutex<Option<SessionRepository>>>> = OnceLock::new();
 
         INSTANCE.get_or_init(|| Arc::new(Mutex::new(None)))
     }

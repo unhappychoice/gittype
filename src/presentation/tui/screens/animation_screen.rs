@@ -1,14 +1,3 @@
-use crate::domain::events::presentation_events::NavigateTo;
-use crate::domain::events::EventBusInterface;
-use crate::domain::models::{RankTier, SessionResult};
-use crate::domain::services::scoring::Rank;
-use crate::domain::services::session_manager_service::SessionManagerInterface;
-use crate::domain::services::SessionManager;
-use crate::presentation::tui::views::typing::typing_animation_view::AnimationPhase;
-use crate::presentation::tui::views::TypingAnimationView;
-use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
-use crate::presentation::ui::Colors;
-use crate::{GitTypeError, Result};
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
@@ -17,9 +6,22 @@ use ratatui::{
     widgets::Paragraph,
     Frame,
 };
-use std::sync::Arc;
-use std::sync::RwLock;
+
+use std::sync::{Arc, RwLock};
 use std::time::Duration;
+
+use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::EventBusInterface;
+use crate::domain::models::{RankTier, SessionResult};
+use crate::domain::services::scoring::Rank;
+use crate::domain::services::session_manager_service::SessionManagerInterface;
+use crate::domain::services::theme_service::ThemeServiceInterface;
+use crate::domain::services::SessionManager;
+use crate::presentation::tui::views::typing::typing_animation_view::AnimationPhase;
+use crate::presentation::tui::views::TypingAnimationView;
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::ui::Colors;
+use crate::{GitTypeError, Result};
 
 pub struct AnimationData {
     pub session_result: SessionResult,
@@ -50,7 +52,7 @@ pub struct AnimationScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
-    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    theme_service: Arc<dyn ThemeServiceInterface>,
     #[shaku(inject)]
     session_manager: Arc<dyn SessionManagerInterface>,
 }
@@ -58,7 +60,7 @@ pub struct AnimationScreen {
 impl AnimationScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
-        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
         session_manager: Arc<dyn SessionManagerInterface>,
     ) -> Self {
         Self {

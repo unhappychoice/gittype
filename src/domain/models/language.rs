@@ -1,8 +1,9 @@
+use std::hash::{Hash, Hasher};
+
 use crate::domain::models::languages::{
     CSharp, Clojure, Cpp, Dart, Go, Haskell, Java, JavaScript, Kotlin, Php, Python, Ruby, Rust,
     Scala, Swift, TypeScript, Zig, C,
 };
-use std::hash::{Hash, Hasher};
 
 /// Domain trait representing a programming language
 pub trait Language: std::fmt::Debug + Send + Sync {

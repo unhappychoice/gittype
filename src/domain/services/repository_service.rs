@@ -1,11 +1,13 @@
+use shaku::Interface;
+
+use std::path::PathBuf;
+use std::sync::Arc;
+
 use crate::domain::error::Result;
 use crate::domain::models::storage::repository::{StoredRepository, StoredRepositoryWithLanguages};
 use crate::infrastructure::database::daos::RepositoryDaoInterface;
 use crate::infrastructure::git::remote::remote_git_repository_client::RemoteGitRepositoryClient;
 use crate::infrastructure::storage::app_data_provider::AppDataProvider;
-use shaku::Interface;
-use std::path::PathBuf;
-use std::sync::Arc;
 
 pub trait RepositoryServiceInterface: Interface {
     fn get_all_repositories(&self) -> Result<Vec<StoredRepository>>;

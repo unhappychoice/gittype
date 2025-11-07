@@ -1,4 +1,5 @@
 use shaku::Interface;
+
 use std::sync::RwLock;
 
 pub trait SessionStoreInterface: Interface {

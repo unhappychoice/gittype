@@ -1,11 +1,13 @@
-use crate::infrastructure::http::oss_insight_client::OssInsightClientInterface;
-use crate::infrastructure::storage::file_storage::FileStorage;
-use crate::Result;
 use serde::{Deserialize, Serialize};
 use shaku::Interface;
+
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
+
+use crate::infrastructure::http::oss_insight_client::OssInsightClientInterface;
+use crate::infrastructure::storage::file_storage::FileStorage;
+use crate::Result;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TrendingRepositoryInfo {
@@ -162,6 +164,7 @@ impl TrendingRepository {
 
     fn get_cache_file(&self, key: &str) -> PathBuf {
         use sha2::{Digest, Sha256};
+
         let mut hasher = Sha256::new();
         hasher.update(key.as_bytes());
         let digest = hasher.finalize();

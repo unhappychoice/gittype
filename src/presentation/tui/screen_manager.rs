@@ -26,6 +26,23 @@
 //! }
 //! ```
 //!
+use crossterm::cursor::{Hide, Show};
+use crossterm::event::{poll, read, Event, KeyCode, KeyEventKind, KeyModifiers};
+use crossterm::execute;
+use crossterm::style::ResetColor;
+use crossterm::terminal::{
+    disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen,
+};
+use ratatui::backend::CrosstermBackend;
+use ratatui::Terminal;
+use shaku::{Component, Interface};
+
+use std::collections::HashMap;
+use std::io::{stdout, Stdout, Write};
+use std::sync::{Arc, Mutex};
+use std::thread::sleep;
+use std::time::{Duration, Instant};
+
 use crate::domain::events::presentation_events::{ExitRequested, NavigateTo};
 use crate::domain::events::{EventBus, EventBusInterface};
 use crate::domain::services::scoring::{
@@ -34,9 +51,9 @@ use crate::domain::services::scoring::{
 use crate::domain::services::session_manager_service::SessionManagerInterface;
 use crate::domain::services::stage_builder_service::StageRepositoryInterface;
 use crate::domain::services::{stage_builder_service::StageRepository, SessionManager};
-use crate::domain::stores::{ChallengeStore, RepositoryStore, SessionStore};
 use crate::domain::stores::{
-    ChallengeStoreInterface, RepositoryStoreInterface, SessionStoreInterface,
+    ChallengeStore, ChallengeStoreInterface, RepositoryStore, RepositoryStoreInterface,
+    SessionStore, SessionStoreInterface,
 };
 use crate::infrastructure::terminal::TerminalInterface;
 use crate::presentation::tui::screen_transition_manager::ScreenTransitionManager;
@@ -58,21 +75,6 @@ use crate::presentation::tui::{
     Screen, ScreenDataProvider, ScreenTransition, ScreenType, UpdateStrategy,
 };
 use crate::{GitTypeError, Result};
-use crossterm::cursor::{Hide, Show};
-use crossterm::event::{poll, read, Event, KeyCode, KeyEventKind, KeyModifiers};
-use crossterm::execute;
-use crossterm::style::ResetColor;
-use crossterm::terminal::{
-    disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen,
-};
-use ratatui::backend::CrosstermBackend;
-use ratatui::Terminal;
-use shaku::{Component, Interface};
-use std::collections::HashMap;
-use std::io::{stdout, Stdout, Write};
-use std::sync::{Arc, Mutex};
-use std::thread::sleep;
-use std::time::{Duration, Instant};
 
 /// Wrapper to make Arc<T: Screen> implement Screen
 struct ArcScreenWrapper<T: Screen + ?Sized>(Arc<T>);

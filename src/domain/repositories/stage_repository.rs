@@ -1,9 +1,10 @@
+use std::sync::Arc;
+
 use crate::domain::models::storage::{
     DifficultyStats, LanguageStats, StageStatistics, StoredStageResult,
 };
 use crate::infrastructure::database::daos::StageDaoInterface;
 use crate::Result;
-use std::sync::Arc;
 
 pub trait StageRepositoryTrait: shaku::Interface {
     fn get_completed_stages(&self, repository_id: Option<i64>) -> Result<Vec<StoredStageResult>>;

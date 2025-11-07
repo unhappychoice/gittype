@@ -1,10 +1,3 @@
-use crate::domain::events::presentation_events::NavigateTo;
-use crate::domain::events::EventBusInterface;
-use crate::domain::models::rank::{Rank, RankTier};
-use crate::infrastructure::browser;
-use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
-use crate::presentation::ui::Colors;
-use crate::Result;
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},
@@ -16,8 +9,17 @@ use ratatui::{
     },
     Frame,
 };
-use std::sync::Arc;
-use std::sync::RwLock;
+
+use std::sync::{Arc, RwLock};
+
+use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::EventBusInterface;
+use crate::domain::models::rank::{Rank, RankTier};
+use crate::domain::services::theme_service::ThemeServiceInterface;
+use crate::infrastructure::browser;
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::ui::Colors;
+use crate::Result;
 
 const THIRD_PARTY_LICENSES: &str = include_str!("../../../../LICENSE-THIRD-PARTY");
 
@@ -82,13 +84,13 @@ pub struct HelpScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
-    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    theme_service: Arc<dyn ThemeServiceInterface>,
 }
 
 impl HelpScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
-        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
     ) -> Self {
         Self {
             current_section: RwLock::new(HelpSection::CLI),

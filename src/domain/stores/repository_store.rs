@@ -1,7 +1,9 @@
-use crate::domain::models::{ExtractionOptions, GitRepository};
 use shaku::Interface;
+
 use std::path::PathBuf;
 use std::sync::RwLock;
+
+use crate::domain::models::{ExtractionOptions, GitRepository};
 
 pub trait RepositoryStoreInterface: Interface {
     fn get_repository(&self) -> Option<GitRepository>;

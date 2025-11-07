@@ -1,10 +1,14 @@
-use super::super::database::DatabaseInterface;
-use crate::domain::models::Challenge;
-use crate::{domain::error::GitTypeError, Result};
 use rusqlite::{params, Transaction};
 use serde_json;
 use shaku::{Component, Interface};
+
 use std::sync::Arc;
+
+use crate::domain::error::GitTypeError;
+use crate::domain::models::Challenge;
+use crate::Result;
+
+use super::super::database::DatabaseInterface;
 
 pub trait ChallengeDaoInterface: Interface {
     fn ensure_challenge_in_transaction(

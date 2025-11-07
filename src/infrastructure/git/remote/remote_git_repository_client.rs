@@ -1,14 +1,16 @@
-use crate::domain::error::Result;
-use crate::domain::models::GitRepositoryRef;
-use crate::infrastructure::git::git_repository_ref_parser::GitRepositoryRefParser;
-use crate::GitTypeError;
 use git2::build::{CheckoutBuilder, RepoBuilder};
 use git2::{Cred, FetchOptions, RemoteCallbacks};
 use shaku::{Component, Interface};
+
 use std::cell::RefCell;
 use std::fs::{create_dir_all, remove_dir_all};
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
+
+use crate::domain::error::Result;
+use crate::domain::models::GitRepositoryRef;
+use crate::infrastructure::git::git_repository_ref_parser::GitRepositoryRefParser;
+use crate::GitTypeError;
 
 pub trait RemoteGitRepositoryClientInterface: Interface {
     fn get_local_repo_path(&self, repo_info: &GitRepositoryRef) -> Result<PathBuf>;

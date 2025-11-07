@@ -1,11 +1,3 @@
-use crate::domain::events::presentation_events::NavigateTo;
-use crate::domain::events::EventBusInterface;
-use crate::domain::models::TotalResult;
-use crate::domain::services::scoring::{TotalCalculator, TotalTracker};
-use crate::presentation::tui::views::{AsciiScoreView, SharingView, StatisticsView};
-use crate::presentation::tui::ScreenDataProvider;
-use crate::presentation::tui::{Screen, ScreenType, UpdateStrategy};
-use crate::{GitTypeError, Result};
 use crossterm::event::{self, KeyCode, KeyModifiers};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
@@ -14,8 +6,16 @@ use ratatui::{
     widgets::Paragraph,
     Frame,
 };
-use std::sync::RwLock;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
+
+use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::EventBusInterface;
+use crate::domain::models::TotalResult;
+use crate::domain::services::scoring::{TotalCalculator, TotalTracker, TotalTrackerInterface};
+use crate::domain::services::theme_service::ThemeServiceInterface;
+use crate::presentation::tui::views::{AsciiScoreView, SharingView, StatisticsView};
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::{GitTypeError, Result};
 
 pub struct TotalSummaryScreenData {
     pub total_result: TotalResult,
@@ -63,16 +63,16 @@ pub struct TotalSummaryScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
-    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    theme_service: Arc<dyn ThemeServiceInterface>,
     #[shaku(inject)]
-    total_tracker: Arc<dyn crate::domain::services::scoring::TotalTrackerInterface>,
+    total_tracker: Arc<dyn TotalTrackerInterface>,
 }
 
 impl TotalSummaryScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
-        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
-        total_tracker: Arc<dyn crate::domain::services::scoring::TotalTrackerInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
+        total_tracker: Arc<dyn TotalTrackerInterface>,
     ) -> Self {
         Self {
             displayed: RwLock::new(false),
@@ -93,12 +93,9 @@ impl shaku::Provider<crate::presentation::di::AppModule> for TotalSummaryScreenP
         module: &crate::presentation::di::AppModule,
     ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
         use shaku::HasComponent;
-        let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
-            module.resolve();
-        let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> =
-            module.resolve();
-        let total_tracker: Arc<dyn crate::domain::services::scoring::TotalTrackerInterface> =
-            module.resolve();
+        let event_bus: std::sync::Arc<dyn EventBusInterface> = module.resolve();
+        let theme_service: Arc<dyn ThemeServiceInterface> = module.resolve();
+        let total_tracker: Arc<dyn TotalTrackerInterface> = module.resolve();
         Ok(Box::new(TotalSummaryScreen::new(
             event_bus,
             theme_service,

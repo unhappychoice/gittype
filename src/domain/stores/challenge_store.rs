@@ -1,6 +1,8 @@
-use crate::domain::models::Challenge;
 use shaku::Interface;
+
 use std::sync::RwLock;
+
+use crate::domain::models::Challenge;
 
 pub trait ChallengeStoreInterface: Interface {
     fn get_challenges(&self) -> Option<Vec<Challenge>>;

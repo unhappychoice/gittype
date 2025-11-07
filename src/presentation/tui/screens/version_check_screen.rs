@@ -1,17 +1,19 @@
-use crate::domain::events::presentation_events::NavigateTo;
-use crate::domain::events::EventBusInterface;
-use crate::presentation::tui::views::VersionCheckView;
-use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
-use crate::Result;
 use crossterm::{
-    event::{self, Event, KeyCode},
+    event::{self, Event, KeyCode, KeyModifiers},
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
 use ratatui::{backend::CrosstermBackend, Terminal};
+
 use std::io::{stdout, Stdout};
-use std::sync::Arc;
-use std::sync::RwLock;
+use std::sync::{Arc, RwLock};
+
+use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::EventBusInterface;
+use crate::domain::services::theme_service::ThemeServiceInterface;
+use crate::presentation::tui::views::VersionCheckView;
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::Result;
 
 pub enum VersionCheckResult {
     Continue,
@@ -30,13 +32,13 @@ pub struct VersionCheckScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
-    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    theme_service: Arc<dyn ThemeServiceInterface>,
 }
 
 impl VersionCheckScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
-        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
     ) -> Self {
         Self {
             event_bus,
@@ -124,7 +126,6 @@ impl Screen for VersionCheckScreen {
     }
 
     fn handle_key_event(&self, key_event: event::KeyEvent) -> Result<()> {
-        use crossterm::event::{KeyCode, KeyModifiers};
         match key_event.code {
             KeyCode::Esc => {
                 self.event_bus.as_event_bus().publish(NavigateTo::Exit);

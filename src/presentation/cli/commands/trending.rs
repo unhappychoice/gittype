@@ -1,3 +1,7 @@
+use shaku::HasComponent;
+
+use std::sync::Arc;
+
 use crate::domain::repositories::trending_repository::TrendingRepositoryInterface;
 use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::infrastructure::console::{Console, ConsoleImpl};
@@ -10,8 +14,6 @@ use crate::presentation::tui::screens::{
 };
 use crate::presentation::tui::ScreenType;
 use crate::{GitTypeError, Result};
-use shaku::HasComponent;
-use std::sync::Arc;
 
 const SUPPORTED_LANGUAGES: &[(&str, &str)] = &[
     ("C", "C"),

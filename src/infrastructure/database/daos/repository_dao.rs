@@ -1,10 +1,14 @@
-use super::super::database::DatabaseInterface;
-use crate::domain::models::storage::{StoredRepository, StoredRepositoryWithLanguages};
-use crate::domain::models::GitRepository;
-use crate::{domain::error::GitTypeError, Result};
 use rusqlite::{params, Transaction};
 use shaku::{Component, Interface};
+
 use std::sync::Arc;
+
+use crate::domain::error::GitTypeError;
+use crate::domain::models::storage::{StoredRepository, StoredRepositoryWithLanguages};
+use crate::domain::models::GitRepository;
+use crate::Result;
+
+use super::super::database::DatabaseInterface;
 
 pub trait RepositoryDaoInterface: Interface {
     fn ensure_repository(&self, git_repo: &GitRepository) -> Result<i64>;

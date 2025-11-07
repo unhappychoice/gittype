@@ -1,11 +1,13 @@
-use super::Event;
 use std::any::Any;
+use std::time::Instant;
+
+use super::Event;
 
 // Unified domain event enum for pattern matching
 #[derive(Debug, Clone)]
 pub enum DomainEvent {
     KeyPressed { key: char, position: usize },
-    StageStarted { start_time: std::time::Instant },
+    StageStarted { start_time: Instant },
     StagePaused,
     StageResumed,
     StageFinalized,

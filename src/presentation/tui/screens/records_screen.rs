@@ -1,10 +1,3 @@
-use crate::domain::events::presentation_events::NavigateTo;
-use crate::domain::events::EventBusInterface;
-use crate::domain::models::storage::StoredRepository;
-use crate::domain::services::session_service::{SessionDisplayData, SessionServiceInterface};
-use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
-use crate::presentation::ui::Colors;
-use crate::Result;
 use chrono::{DateTime, Local};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Margin},
@@ -16,8 +9,17 @@ use ratatui::{
     },
     Frame,
 };
-use std::sync::Arc;
-use std::sync::RwLock;
+
+use std::sync::{Arc, RwLock};
+
+use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::EventBusInterface;
+use crate::domain::models::storage::StoredRepository;
+use crate::domain::services::session_service::{SessionDisplayData, SessionServiceInterface};
+use crate::domain::services::theme_service::ThemeServiceInterface;
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::ui::Colors;
+use crate::Result;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum SortBy {
@@ -127,7 +129,7 @@ pub struct RecordsScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
-    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    theme_service: Arc<dyn ThemeServiceInterface>,
     #[shaku(inject)]
     session_service: Arc<dyn SessionServiceInterface>,
 }
@@ -135,7 +137,7 @@ pub struct RecordsScreen {
 impl RecordsScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
-        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
         session_service: Arc<dyn SessionServiceInterface>,
     ) -> Self {
         let mut list_state = ListState::default();
@@ -473,9 +475,8 @@ impl shaku::Provider<crate::presentation::di::AppModule> for RecordsScreenProvid
         module: &crate::presentation::di::AppModule,
     ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
         use shaku::HasComponent;
-        let event_bus: Arc<dyn crate::domain::events::EventBusInterface> = module.resolve();
-        let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> =
-            module.resolve();
+        let event_bus: Arc<dyn EventBusInterface> = module.resolve();
+        let theme_service: Arc<dyn ThemeServiceInterface> = module.resolve();
         let session_service: Arc<dyn SessionServiceInterface> = module.resolve();
         Ok(Box::new(RecordsScreen::new(
             event_bus,

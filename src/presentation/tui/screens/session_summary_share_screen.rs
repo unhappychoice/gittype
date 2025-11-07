@@ -1,7 +1,16 @@
+use crossterm::event::{KeyCode, KeyModifiers};
+use ratatui::{
+    layout::{Constraint, Direction, Layout},
+    Frame,
+};
+
+use std::sync::{Arc, RwLock};
+
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
-use crate::domain::models::SessionResult;
+use crate::domain::models::{GitRepository, SessionResult};
 use crate::domain::services::session_manager_service::SessionManagerInterface;
+use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::domain::services::SessionManager;
 use crate::domain::stores::RepositoryStoreInterface;
 use crate::presentation::sharing::{SharingPlatform, SharingService};
@@ -9,13 +18,7 @@ use crate::presentation::tui::views::{
     ShareBackOptionView, SharePlatformOptionsView, SharePreviewView, ShareTitleView,
 };
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
-use crate::{domain::models::GitRepository, GitTypeError, Result};
-use ratatui::{
-    layout::{Constraint, Direction, Layout},
-    Frame,
-};
-use std::sync::Arc;
-use std::sync::RwLock;
+use crate::{GitTypeError, Result};
 
 pub struct SessionSummaryShareData {
     pub session_result: SessionResult,
@@ -42,7 +45,7 @@ pub struct SessionSummaryShareScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
-    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    theme_service: Arc<dyn ThemeServiceInterface>,
     #[shaku(inject)]
     session_manager: Arc<dyn SessionManagerInterface>,
     #[shaku(inject)]
@@ -52,7 +55,7 @@ pub struct SessionSummaryShareScreen {
 impl SessionSummaryShareScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
-        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
         session_manager: Arc<dyn SessionManagerInterface>,
         repository_store: Arc<dyn RepositoryStoreInterface>,
     ) -> Self {
@@ -77,8 +80,7 @@ impl shaku::Provider<crate::presentation::di::AppModule> for SessionSummaryShare
     ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
         use shaku::HasComponent;
         let event_bus: Arc<dyn EventBusInterface> = module.resolve();
-        let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> =
-            module.resolve();
+        let theme_service: Arc<dyn ThemeServiceInterface> = module.resolve();
         let session_manager: Arc<dyn SessionManagerInterface> = module.resolve();
         let repository_store: Arc<dyn RepositoryStoreInterface> = module.resolve();
         Ok(Box::new(SessionSummaryShareScreen::new(
@@ -129,7 +131,6 @@ impl Screen for SessionSummaryShareScreen {
     }
 
     fn handle_key_event(&self, key_event: crossterm::event::KeyEvent) -> Result<()> {
-        use crossterm::event::{KeyCode, KeyModifiers};
         match key_event.code {
             KeyCode::Char('1') => {
                 let session_result = self.session_result.read().unwrap();

@@ -1,5 +1,6 @@
-use crate::domain::models::color_mode::ColorMode;
 use serde::{Deserialize, Serialize};
+
+use crate::domain::models::color_mode::ColorMode;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Config {

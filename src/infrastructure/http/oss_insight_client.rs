@@ -1,9 +1,7 @@
-use crate::domain::repositories::trending_repository::TrendingRepositoryInfo;
-#[cfg(feature = "test-mocks")]
-use crate::Result;
-#[cfg(not(feature = "test-mocks"))]
-use crate::{GitTypeError, Result};
 use shaku::Interface;
+
+use crate::domain::repositories::trending_repository::TrendingRepositoryInfo;
+use crate::Result;
 
 #[async_trait::async_trait]
 pub trait OssInsightClientInterface: Interface + std::fmt::Debug {
@@ -17,9 +15,13 @@ pub trait OssInsightClientInterface: Interface + std::fmt::Debug {
 #[cfg(not(feature = "test-mocks"))]
 mod real_impl {
     use super::*;
+
     use reqwest::Client;
     use serde::Deserialize;
+
     use std::time::Duration;
+
+    use crate::GitTypeError;
 
     #[derive(Debug, Clone, shaku::Component)]
     #[shaku(interface = OssInsightClientInterface)]

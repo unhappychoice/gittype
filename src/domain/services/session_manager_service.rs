@@ -1,21 +1,20 @@
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
+
 use crate::domain::events::domain_events::DomainEvent;
 use crate::domain::events::EventBusInterface;
-use crate::domain::models::GitRepository;
+use crate::domain::models::{
+    Challenge, DifficultyLevel, GitRepository, SessionAction, SessionConfig, SessionResult,
+    SessionState,
+};
 use crate::domain::repositories::session_repository::{BestRecords, BestStatus};
 use crate::domain::repositories::SessionRepository;
 use crate::domain::services::scoring::{
-    SessionCalculator, SessionTrackerInterface, StageCalculator, TotalTrackerInterface,
+    SessionCalculator, SessionTrackerInterface, StageCalculator, StageInput, StageResult,
+    StageTracker, TotalTrackerInterface,
 };
 use crate::domain::services::stage_builder_service::{StageRepository, StageRepositoryInterface};
-use crate::{
-    domain::models::{
-        Challenge, DifficultyLevel, SessionAction, SessionConfig, SessionResult, SessionState,
-    },
-    domain::services::scoring::{StageInput, StageResult, StageTracker},
-    GitTypeError, Result,
-};
-use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
+use crate::{GitTypeError, Result};
 
 /// Manages the overall session state and stage progression
 #[derive(shaku::Component)]

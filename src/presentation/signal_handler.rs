@@ -1,9 +1,3 @@
-use crate::domain::events::presentation_events::ExitRequested;
-use crate::domain::events::EventBus;
-use crate::infrastructure::logging::{log_error_to_file, log_panic_to_file};
-use crate::presentation::tui::screens::PanicScreen;
-use crate::presentation::tui::{Screen, ScreenManagerImpl};
-use crate::GitTypeError;
 use crossterm::cursor::{Hide, Show};
 use crossterm::execute;
 use crossterm::terminal::{
@@ -11,8 +5,16 @@ use crossterm::terminal::{
 };
 use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
+
 use std::io::{stdout, Write};
 use std::sync::{Arc, Mutex};
+
+use crate::domain::events::presentation_events::ExitRequested;
+use crate::domain::events::EventBus;
+use crate::infrastructure::logging::{log_error_to_file, log_panic_to_file};
+use crate::presentation::tui::screens::PanicScreen;
+use crate::presentation::tui::{Screen, ScreenManagerImpl};
+use crate::GitTypeError;
 
 pub fn setup_signal_handlers(
     screen_manager: Arc<Mutex<ScreenManagerImpl<CrosstermBackend<std::io::Stdout>>>>,

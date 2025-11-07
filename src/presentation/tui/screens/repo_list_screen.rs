@@ -1,7 +1,16 @@
+use crossterm::event::{KeyCode, KeyEvent, KeyEventKind};
+use ratatui::{
+    layout::{Constraint, Direction, Layout},
+    Frame,
+};
+
+use std::sync::{Arc, RwLock};
+
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::storage::StoredRepositoryWithLanguages;
 use crate::domain::services::repository_service::RepositoryService;
+use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::infrastructure::database::database::{Database, DatabaseInterface};
 use crate::infrastructure::git::RemoteGitRepositoryClient;
 use crate::presentation::tui::views::repo_list::{
@@ -9,13 +18,6 @@ use crate::presentation::tui::views::repo_list::{
 };
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::Result;
-use crossterm::event::{KeyCode, KeyEvent, KeyEventKind};
-use ratatui::{
-    layout::{Constraint, Direction, Layout},
-    Frame,
-};
-use std::sync::Arc;
-use std::sync::RwLock;
 
 pub struct RepoListScreenData {
     pub repositories: Vec<(StoredRepositoryWithLanguages, bool)>,
@@ -34,13 +36,13 @@ pub struct RepoListScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
-    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    theme_service: Arc<dyn ThemeServiceInterface>,
 }
 
 impl RepoListScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
-        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
     ) -> Self {
         Self {
             repositories: RwLock::new(Vec::new()),

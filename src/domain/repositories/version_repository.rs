@@ -1,14 +1,16 @@
+use chrono::Utc;
+use shaku::Interface;
+
+use std::future::Future;
+use std::path::PathBuf;
+use std::pin::Pin;
+use std::sync::Arc;
+
 use crate::domain::models::version::VersionCacheEntry;
 use crate::infrastructure::http::github_api_client::GitHubApiClientFactory;
 use crate::infrastructure::storage::app_data_provider::AppDataProvider;
 use crate::infrastructure::storage::file_storage::{FileStorage, FileStorageInterface};
 use crate::Result;
-use chrono::Utc;
-use shaku::Interface;
-use std::future::Future;
-use std::path::PathBuf;
-use std::pin::Pin;
-use std::sync::Arc;
 
 pub trait VersionRepositoryInterface: Interface {
     fn fetch_latest_version(&self) -> Pin<Box<dyn Future<Output = Result<String>> + Send + '_>>;

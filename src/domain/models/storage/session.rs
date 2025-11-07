@@ -1,5 +1,6 @@
-use crate::domain::models::{Challenge, StageResult};
 use chrono::{DateTime, Utc};
+
+use crate::domain::models::{Challenge, StageResult};
 
 #[derive(Debug, Clone)]
 pub struct StoredSession {

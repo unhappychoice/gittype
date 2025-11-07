@@ -1,21 +1,23 @@
-use crate::domain::events::presentation_events::NavigateTo;
-use crate::domain::events::EventBusInterface;
-use crate::domain::repositories::trending_repository::{
-    TrendingRepositoryInfo, TrendingRepositoryInterface,
-};
-use crate::presentation::tui::views::trending_repository_selection::{
-    ControlsView, HeaderView, RepositoryListView,
-};
-use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
-use crate::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
     layout::{Constraint, Direction, Layout},
     widgets::ListState,
     Frame,
 };
-use std::sync::Arc;
-use std::sync::RwLock;
+
+use std::sync::{Arc, RwLock};
+
+use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::EventBusInterface;
+use crate::domain::repositories::trending_repository::{
+    TrendingRepositoryInfo, TrendingRepositoryInterface,
+};
+use crate::domain::services::theme_service::ThemeServiceInterface;
+use crate::presentation::tui::views::trending_repository_selection::{
+    ControlsView, HeaderView, RepositoryListView,
+};
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::Result;
 
 pub trait TrendingRepositorySelectionScreenInterface: Screen {}
 
@@ -31,7 +33,7 @@ pub struct TrendingRepositorySelectionScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
-    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    theme_service: Arc<dyn ThemeServiceInterface>,
     #[shaku(inject)]
     trending_repository: Arc<dyn TrendingRepositoryInterface>,
 }
@@ -39,7 +41,7 @@ pub struct TrendingRepositorySelectionScreen {
 impl TrendingRepositorySelectionScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
-        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
         trending_repository: Arc<dyn TrendingRepositoryInterface>,
     ) -> Self {
         let mut list_state = ListState::default();
