@@ -1,12 +1,16 @@
-use super::super::database::DatabaseInterface;
-use crate::domain::models::storage::{
-    DifficultyStats, LanguageStats, StageStatistics, StoredStageResult,
-};
-use crate::{domain::error::GitTypeError, Result};
 use chrono::{DateTime, Utc};
 use rusqlite::params;
 use shaku::{Component, Interface};
+
 use std::sync::Arc;
+
+use crate::domain::error::GitTypeError;
+use crate::domain::models::storage::{
+    DifficultyStats, LanguageStats, StageStatistics, StoredStageResult,
+};
+use crate::Result;
+
+use super::super::database::DatabaseInterface;
 
 pub trait StageDaoInterface: Interface {
     fn get_completed_stages(&self, repository_id: Option<i64>) -> Result<Vec<StoredStageResult>>;

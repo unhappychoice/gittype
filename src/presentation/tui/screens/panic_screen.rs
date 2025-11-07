@@ -1,9 +1,3 @@
-use crate::domain::events::presentation_events::NavigateTo;
-use crate::domain::events::EventBusInterface;
-use crate::infrastructure::logging::get_current_log_file_path;
-use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
-use crate::presentation::ui::Colors;
-use crate::Result;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
     style::Style,
@@ -11,8 +5,16 @@ use ratatui::{
     widgets::{Block, Borders, Padding, Paragraph, Wrap},
     Frame,
 };
-use std::sync::Arc;
-use std::sync::RwLock;
+
+use std::sync::{Arc, RwLock};
+
+use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::EventBusInterface;
+use crate::domain::services::theme_service::ThemeServiceInterface;
+use crate::infrastructure::logging::get_current_log_file_path;
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::ui::Colors;
+use crate::Result;
 
 pub trait PanicScreenInterface: Screen {}
 
@@ -26,13 +28,13 @@ pub struct PanicScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
-    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    theme_service: Arc<dyn ThemeServiceInterface>,
 }
 
 impl PanicScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
-        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
     ) -> Self {
         Self {
             error_message: RwLock::new("An unexpected error occurred".to_string()),
@@ -45,7 +47,7 @@ impl PanicScreen {
     pub fn with_error_message(
         error_message: String,
         event_bus: Arc<dyn EventBusInterface>,
-        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
         timestamp: Option<String>,
     ) -> Self {
         Self {
@@ -194,8 +196,7 @@ impl shaku::Provider<crate::presentation::di::AppModule> for PanicScreenProvider
     ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
         use shaku::HasComponent;
         let event_bus: Arc<dyn EventBusInterface> = module.resolve();
-        let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> =
-            module.resolve();
+        let theme_service: Arc<dyn ThemeServiceInterface> = module.resolve();
         Ok(Box::new(PanicScreen::new(event_bus, theme_service)))
     }
 }

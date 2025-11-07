@@ -1,10 +1,14 @@
-use super::migrations::{get_all_migrations, get_latest_version};
-use crate::{domain::error::GitTypeError, Result};
 use rusqlite::Connection;
 use shaku::Interface;
+
 #[cfg(not(feature = "test-mocks"))]
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, MutexGuard};
+
+use crate::domain::error::GitTypeError;
+use crate::Result;
+
+use super::migrations::{get_all_migrations, get_latest_version};
 
 pub trait DatabaseInterface: Interface {
     fn get_connection(&self) -> Result<MutexGuard<'_, Connection>>;

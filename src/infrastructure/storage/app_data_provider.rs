@@ -1,11 +1,13 @@
-use crate::Result;
 use std::path::PathBuf;
+
+use crate::Result;
 
 pub trait AppDataProvider {
     fn get_app_data_dir() -> Result<PathBuf> {
         #[cfg(not(feature = "test-mocks"))]
         {
             use crate::GitTypeError;
+
             let data_dir = if cfg!(debug_assertions) {
                 std::env::current_dir()
                     .map_err(|e| {

@@ -1,12 +1,14 @@
+use rayon::prelude::*;
+use shaku::Interface;
+
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
+
 use crate::domain::models::loading::StepType;
 use crate::domain::models::{Challenge, DifficultyLevel, GitRepository};
 use crate::infrastructure::storage::compressed_file_storage::CompressedFileStorage;
 use crate::presentation::tui::screens::loading_screen::ProgressReporter;
 use crate::Result;
-use rayon::prelude::*;
-use shaku::Interface;
-use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 struct ChallengePointer {
@@ -278,11 +280,12 @@ impl ChallengeRepository {
     }
 
     fn get_cache_file(&self, repo: &GitRepository) -> PathBuf {
+        use sha2::{Digest, Sha256};
+
         let _ = self.file_storage.create_dir_all(&self.cache_dir);
         let commit = repo.commit_hash.as_deref().unwrap_or("nohash");
         let dirty = if repo.is_dirty { "dirty" } else { "clean" };
         let raw = format!("{}:{}:{}", repo.cache_key(), commit, dirty);
-        use sha2::{Digest, Sha256};
         let mut hasher = Sha256::new();
         hasher.update(raw.as_bytes());
         let digest = hasher.finalize();

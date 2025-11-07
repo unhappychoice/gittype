@@ -1,9 +1,3 @@
-use crate::domain::events::presentation_events::NavigateTo;
-use crate::domain::events::{EventBus, EventBusInterface};
-use crate::infrastructure::browser;
-use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
-use crate::presentation::ui::Colors;
-use crate::Result;
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},
@@ -12,8 +6,16 @@ use ratatui::{
     widgets::{Block, Borders, Clear, List, ListItem, Paragraph},
     Frame,
 };
-use std::sync::Arc;
-use std::sync::RwLock;
+
+use std::sync::{Arc, RwLock};
+
+use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::{EventBus, EventBusInterface};
+use crate::domain::services::theme_service::ThemeServiceInterface;
+use crate::infrastructure::browser;
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::ui::Colors;
+use crate::Result;
 
 pub enum InfoAction {
     OpenGithub,
@@ -43,13 +45,13 @@ pub struct InfoDialogScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
-    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    theme_service: Arc<dyn ThemeServiceInterface>,
 }
 
 impl InfoDialogScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
-        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
     ) -> Self {
         Self {
             state: RwLock::new(InfoDialogState::Menu { selected_option: 0 }),
@@ -62,7 +64,7 @@ impl InfoDialogScreen {
         title: String,
         url: String,
         event_bus: Arc<EventBus>,
-        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
     ) -> Self {
         Self {
             state: RwLock::new(InfoDialogState::Fallback { title, url }),
@@ -300,8 +302,7 @@ impl shaku::Provider<crate::presentation::di::AppModule> for InfoDialogScreenPro
     ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
         use shaku::HasComponent;
         let event_bus: Arc<dyn EventBusInterface> = module.resolve();
-        let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> =
-            module.resolve();
+        let theme_service: Arc<dyn ThemeServiceInterface> = module.resolve();
         Ok(Box::new(InfoDialogScreen::new(event_bus, theme_service)))
     }
 }

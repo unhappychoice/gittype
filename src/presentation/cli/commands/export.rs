@@ -1,6 +1,7 @@
+use std::path::PathBuf;
+
 use crate::infrastructure::console::{Console, ConsoleImpl};
 use crate::Result;
-use std::path::PathBuf;
 
 pub fn run_export(format: String, output: Option<PathBuf>) -> Result<()> {
     let console = ConsoleImpl::new();

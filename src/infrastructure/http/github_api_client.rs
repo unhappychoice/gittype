@@ -1,9 +1,8 @@
-#[cfg(feature = "test-mocks")]
-use crate::Result;
-#[cfg(not(feature = "test-mocks"))]
-use crate::{GitTypeError, Result};
 use serde::Deserialize;
 use shaku::{Component, Interface};
+
+use crate::GitTypeError;
+use crate::Result;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct GitHubRelease {

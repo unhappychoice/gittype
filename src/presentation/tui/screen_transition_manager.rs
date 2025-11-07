@@ -1,10 +1,11 @@
+use std::sync::Arc;
+
 use crate::domain::models::SessionAction;
 use crate::domain::services::scoring::{StageCalculator, StageInput};
 use crate::domain::services::session_manager_service::SessionManagerInterface;
 use crate::domain::services::SessionManager;
 use crate::presentation::tui::ScreenType;
 use crate::Result;
-use std::sync::Arc;
 
 pub struct ScreenTransitionManager;
 

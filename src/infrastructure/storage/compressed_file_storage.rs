@@ -1,11 +1,11 @@
-use super::AppDataProvider;
-#[cfg(feature = "test-mocks")]
-use crate::Result;
-#[cfg(not(feature = "test-mocks"))]
-use crate::{GitTypeError, Result};
 use serde::{Deserialize, Serialize};
 use shaku::Interface;
+
 use std::path::{Path, PathBuf};
+
+use crate::Result;
+
+use super::AppDataProvider;
 
 pub trait CompressedFileStorageInterface: Interface + std::fmt::Debug {
     fn delete_file(&self, file_path: &Path) -> Result<()>;
@@ -17,9 +17,13 @@ pub trait CompressedFileStorageInterface: Interface + std::fmt::Debug {
 #[cfg(not(feature = "test-mocks"))]
 mod real_impl {
     use super::*;
+
     use flate2::{read::GzDecoder, write::GzEncoder, Compression};
+
     use std::fs;
     use std::io::{Read, Write};
+
+    use crate::GitTypeError;
 
     #[derive(Debug, Clone, Default, shaku::Component)]
     #[shaku(interface = CompressedFileStorageInterface)]
@@ -119,9 +123,11 @@ mod real_impl {
 #[cfg(feature = "test-mocks")]
 mod mock_impl {
     use super::*;
-    use crate::GitTypeError;
+
     use std::collections::HashMap;
     use std::sync::{Arc, Mutex};
+
+    use crate::GitTypeError;
 
     #[derive(Debug, Clone, shaku::Component)]
     #[shaku(interface = CompressedFileStorageInterface)]

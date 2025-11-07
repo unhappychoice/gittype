@@ -1,20 +1,23 @@
+use crossterm::event::{KeyCode, KeyModifiers};
+use ratatui::{
+    layout::{Constraint, Direction, Layout},
+    Frame,
+};
+
+use std::sync::{Arc, RwLock};
+
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
-use crate::domain::models::{Rank, SessionResult};
+use crate::domain::models::{GitRepository, Rank, SessionResult};
 use crate::domain::services::session_manager_service::SessionManagerInterface;
+use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::domain::services::SessionManager;
 use crate::domain::stores::RepositoryStoreInterface;
 use crate::presentation::tui::views::{
     OptionsView, RankView, ScoreView, SessionSummaryHeaderView, SummaryView,
 };
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
-use crate::{domain::models::GitRepository, GitTypeError, Result};
-use ratatui::{
-    layout::{Constraint, Direction, Layout},
-    Frame,
-};
-use std::sync::Arc;
-use std::sync::RwLock;
+use crate::{GitTypeError, Result};
 
 pub struct SessionSummaryScreenData {
     pub session_result: Option<SessionResult>,
@@ -56,13 +59,13 @@ pub struct SessionSummaryScreen {
     #[shaku(inject)]
     repository_store: Arc<dyn RepositoryStoreInterface>,
     #[shaku(inject)]
-    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    theme_service: Arc<dyn ThemeServiceInterface>,
 }
 
 impl SessionSummaryScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
-        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
         session_manager: Arc<dyn SessionManagerInterface>,
         repository_store: Arc<dyn RepositoryStoreInterface>,
     ) -> Self {
@@ -92,8 +95,7 @@ impl shaku::Provider<crate::presentation::di::AppModule> for SessionSummaryScree
     ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
         use shaku::HasComponent;
         let event_bus: Arc<dyn EventBusInterface> = module.resolve();
-        let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> =
-            module.resolve();
+        let theme_service: Arc<dyn ThemeServiceInterface> = module.resolve();
         let session_manager: Arc<dyn SessionManagerInterface> = module.resolve();
         let repository_store: Arc<dyn RepositoryStoreInterface> = module.resolve();
         Ok(Box::new(SessionSummaryScreen::new(
@@ -149,8 +151,6 @@ impl Screen for SessionSummaryScreen {
     }
 
     fn handle_key_event(&self, key_event: crossterm::event::KeyEvent) -> Result<()> {
-        use crossterm::event::{KeyCode, KeyModifiers};
-
         match key_event.code {
             KeyCode::Char('d') | KeyCode::Char('D') => {
                 self.event_bus

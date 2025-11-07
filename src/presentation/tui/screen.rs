@@ -1,6 +1,8 @@
-use crate::Result;
 use crossterm::event::KeyEvent;
+
 use std::time::Duration;
+
+use crate::Result;
 
 /// Trait for screen data providers
 pub trait ScreenDataProvider: Send + shaku::Interface {

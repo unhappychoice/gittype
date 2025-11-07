@@ -1,8 +1,10 @@
+use shaku::HasComponent;
+
+use std::sync::{Arc, Mutex};
+
 use crate::presentation::di::AppModule;
 use crate::presentation::tui::{Screen, ScreenManagerImpl, ScreenType};
 use crate::Result;
-use shaku::HasComponent;
-use std::sync::{Arc, Mutex};
 
 /// Runs a single screen with optional data initialization and result extraction
 pub fn run_screen<S, D, R, F>(

@@ -1,6 +1,7 @@
+use serde::{Deserialize, Serialize};
+
 use crate::domain::models::color_mode::ColorMode;
 use crate::domain::models::color_scheme::{ColorScheme, ThemeFile};
-use serde::{Deserialize, Serialize};
 
 const THEME_FILES: &[&str] = &[
     include_str!("../../../assets/themes/default.json"),

@@ -1,9 +1,11 @@
+use shaku::Interface;
+
+use std::sync::Arc;
+
 use crate::domain::models::storage::StoredRepository;
 use crate::domain::models::GitRepository;
 use crate::infrastructure::database::daos::RepositoryDaoInterface;
 use crate::Result;
-use shaku::Interface;
-use std::sync::Arc;
 
 pub trait GitRepositoryRepositoryInterface: Interface {
     fn ensure_repository(&self, git_repo: &GitRepository) -> Result<i64>;

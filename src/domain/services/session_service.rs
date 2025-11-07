@@ -1,6 +1,9 @@
+use std::collections::HashMap;
+use std::sync::Arc;
+
 use crate::domain::error::Result;
 use crate::domain::models::storage::{SessionResultData, StoredRepository, StoredSession};
-use std::collections::HashMap;
+use crate::domain::repositories::session_repository::SessionRepositoryTrait;
 
 #[derive(Clone)]
 pub struct SessionDisplayData {
@@ -30,9 +33,6 @@ impl Default for SessionDisplayData {
         }
     }
 }
-
-use crate::domain::repositories::session_repository::SessionRepositoryTrait;
-use std::sync::Arc;
 
 pub trait SessionServiceInterface: shaku::Interface {
     fn get_sessions_with_display_data(

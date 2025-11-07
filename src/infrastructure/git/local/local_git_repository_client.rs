@@ -1,9 +1,11 @@
+use git2::Repository;
+use shaku::{Component, Interface};
+
+use std::path::{Path, PathBuf};
+
 use crate::domain::error::{GitTypeError, Result};
 use crate::domain::models::GitRepository;
 use crate::infrastructure::git::git_repository_ref_parser::GitRepositoryRefParser;
-use git2::Repository;
-use shaku::{Component, Interface};
-use std::path::{Path, PathBuf};
 
 pub trait LocalGitRepositoryClientInterface: Interface {
     fn is_git_repository(&self, path: &Path) -> bool;

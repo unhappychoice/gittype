@@ -1,15 +1,18 @@
+use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use ratatui::Frame;
+
+use std::sync::{Arc, RwLock};
+
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::services::scoring::StageResult;
 use crate::domain::services::session_manager_service::SessionManagerInterface;
+use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::domain::services::SessionManager;
 use crate::presentation::tui::screens::ResultAction;
 use crate::presentation::tui::views::StageCompletionView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::{GitTypeError, Result};
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
-use ratatui::Frame;
-use std::sync::{Arc, RwLock};
 
 pub struct StageSummaryData {
     pub stage_result: StageResult,
@@ -44,7 +47,7 @@ pub struct StageSummaryScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
-    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    theme_service: Arc<dyn ThemeServiceInterface>,
     #[shaku(inject)]
     session_manager: Arc<dyn SessionManagerInterface>,
 }
@@ -52,7 +55,7 @@ pub struct StageSummaryScreen {
 impl StageSummaryScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
-        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
         session_manager: Arc<dyn SessionManagerInterface>,
     ) -> Self {
         Self {
@@ -91,8 +94,7 @@ impl shaku::Provider<crate::presentation::di::AppModule> for StageSummaryScreenP
     ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
         use shaku::HasComponent;
         let event_bus: Arc<dyn EventBusInterface> = module.resolve();
-        let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> =
-            module.resolve();
+        let theme_service: Arc<dyn ThemeServiceInterface> = module.resolve();
         let session_manager: Arc<dyn SessionManagerInterface> = module.resolve();
         Ok(Box::new(StageSummaryScreen::new(
             event_bus,

@@ -1,14 +1,6 @@
-use crate::domain::events::presentation_events::ExitRequested;
-use crate::domain::events::EventBusInterface;
-use crate::domain::models::loading::{ExecutionContext, StepManager, StepType};
-use crate::domain::models::ExtractionOptions;
-use crate::domain::models::{Challenge, GitRepository};
-use crate::domain::repositories::challenge_repository::ChallengeRepositoryInterface;
-use crate::presentation::tui::views::LoadingMainView;
-use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
-use crate::presentation::ui::Colors;
-use crate::Result;
+use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::Frame;
+
 use std::path::PathBuf;
 use std::sync::{
     atomic::{AtomicBool, AtomicUsize, Ordering},
@@ -16,6 +8,22 @@ use std::sync::{
 };
 use std::thread;
 use std::time::Duration;
+
+use crate::domain::events::presentation_events::ExitRequested;
+use crate::domain::events::EventBusInterface;
+use crate::domain::models::loading::{ExecutionContext, StepManager, StepType};
+use crate::domain::models::{Challenge, ExtractionOptions, GitRepository};
+use crate::domain::repositories::challenge_repository::ChallengeRepositoryInterface;
+use crate::domain::services::session_manager_service::SessionManagerInterface;
+use crate::domain::services::stage_builder_service::StageRepositoryInterface;
+use crate::domain::services::theme_service::ThemeServiceInterface;
+use crate::domain::stores::{
+    ChallengeStoreInterface, RepositoryStoreInterface, SessionStoreInterface,
+};
+use crate::presentation::tui::views::LoadingMainView;
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::ui::Colors;
+use crate::Result;
 
 pub trait ProgressReporter: Sync {
     fn set_step(&self, step_type: StepType);
@@ -109,21 +117,19 @@ pub struct LoadingScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
-    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    theme_service: Arc<dyn ThemeServiceInterface>,
     #[shaku(inject)]
     challenge_repository: Arc<dyn ChallengeRepositoryInterface>,
     #[shaku(inject)]
-    challenge_store: Arc<dyn crate::domain::stores::ChallengeStoreInterface>,
+    challenge_store: Arc<dyn ChallengeStoreInterface>,
     #[shaku(inject)]
-    repository_store: Arc<dyn crate::domain::stores::RepositoryStoreInterface>,
+    repository_store: Arc<dyn RepositoryStoreInterface>,
     #[shaku(inject)]
-    session_store: Arc<dyn crate::domain::stores::SessionStoreInterface>,
+    session_store: Arc<dyn SessionStoreInterface>,
     #[shaku(inject)]
-    stage_repository:
-        Arc<dyn crate::domain::services::stage_builder_service::StageRepositoryInterface>,
+    stage_repository: Arc<dyn StageRepositoryInterface>,
     #[shaku(inject)]
-    session_manager:
-        Arc<dyn crate::domain::services::session_manager_service::SessionManagerInterface>,
+    session_manager: Arc<dyn SessionManagerInterface>,
 }
 
 impl LoadingScreen {
@@ -131,10 +137,8 @@ impl LoadingScreen {
     pub fn new_for_test(
         event_bus: Arc<dyn EventBusInterface>,
         challenge_repository: Arc<dyn ChallengeRepositoryInterface>,
-        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
     ) -> Self {
-        use crate::domain::services::session_manager_service::SessionManagerInterface;
-        use crate::domain::services::stage_builder_service::StageRepositoryInterface;
         use crate::domain::services::{stage_builder_service::StageRepository, SessionManager};
         use crate::domain::stores::{ChallengeStore, RepositoryStore, SessionStore};
 
@@ -492,8 +496,6 @@ impl Screen for LoadingScreen {
     }
 
     fn handle_key_event(&self, key_event: crossterm::event::KeyEvent) -> Result<()> {
-        use crossterm::event::{KeyCode, KeyModifiers};
-
         if key_event.code == KeyCode::Char('c')
             && key_event.modifiers.contains(KeyModifiers::CONTROL)
         {
@@ -525,7 +527,6 @@ impl Screen for LoadingScreen {
     }
 
     fn get_update_strategy(&self) -> UpdateStrategy {
-        use std::time::Duration;
         UpdateStrategy::TimeBased(Duration::from_millis(16))
     }
 

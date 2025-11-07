@@ -1,5 +1,6 @@
-use crate::domain::models::Challenge;
 use std::time::Duration;
+
+use crate::domain::models::Challenge;
 
 #[derive(Debug, Clone)]
 pub struct Stage {

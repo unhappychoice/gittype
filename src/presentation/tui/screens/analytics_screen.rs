@@ -1,15 +1,3 @@
-use crate::domain::events::presentation_events::NavigateTo;
-use crate::domain::events::EventBusInterface;
-use crate::domain::repositories::SessionRepository;
-use crate::domain::services::analytics_service::{AnalyticsData, AnalyticsService};
-use crate::infrastructure::database::daos::{RepositoryDao, RepositoryDaoInterface};
-use crate::infrastructure::database::database::{Database, DatabaseInterface};
-use crate::presentation::tui::views::analytics::{
-    LanguagesView, OverviewView, RepositoriesView, TrendsView,
-};
-use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
-use crate::presentation::ui::Colors;
-use crate::Result;
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
@@ -18,8 +6,24 @@ use ratatui::{
     widgets::{Block, Borders, ListState, Paragraph, ScrollbarState},
     Frame,
 };
-use std::sync::Arc;
-use std::sync::RwLock;
+
+use std::sync::{Arc, RwLock};
+
+use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::EventBusInterface;
+use crate::domain::repositories::SessionRepository;
+use crate::domain::services::analytics_service::{
+    AnalyticsData, AnalyticsService, AnalyticsServiceInterface,
+};
+use crate::domain::services::theme_service::ThemeServiceInterface;
+use crate::infrastructure::database::daos::{RepositoryDao, RepositoryDaoInterface};
+use crate::infrastructure::database::database::{Database, DatabaseInterface};
+use crate::presentation::tui::views::analytics::{
+    LanguagesView, OverviewView, RepositoriesView, TrendsView,
+};
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::presentation::ui::Colors;
+use crate::Result;
 
 #[derive(Debug, Clone, PartialEq, Copy, Default)]
 pub enum ViewMode {
@@ -86,14 +90,13 @@ pub struct AnalyticsScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
-    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    theme_service: Arc<dyn ThemeServiceInterface>,
 }
 
 pub struct AnalyticsScreenDataProvider {}
 
 impl ScreenDataProvider for AnalyticsScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        use crate::domain::services::analytics_service::AnalyticsServiceInterface;
         let session_repository = Arc::new(SessionRepository::new()?);
         let db = Arc::new(Database::new()?) as Arc<dyn DatabaseInterface>;
         let repository_dao =
@@ -109,7 +112,7 @@ impl ScreenDataProvider for AnalyticsScreenDataProvider {
 impl AnalyticsScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
-        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
     ) -> Self {
         let mut repository_list_state = ListState::default();
         repository_list_state.select(Some(0));
@@ -339,11 +342,8 @@ impl shaku::Provider<crate::presentation::di::AppModule> for AnalyticsScreenProv
         module: &crate::presentation::di::AppModule,
     ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
         use shaku::HasComponent;
-        let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
-            module.resolve();
-        let theme_service: std::sync::Arc<
-            dyn crate::domain::services::theme_service::ThemeServiceInterface,
-        > = module.resolve();
+        let event_bus: std::sync::Arc<dyn EventBusInterface> = module.resolve();
+        let theme_service: std::sync::Arc<dyn ThemeServiceInterface> = module.resolve();
         Ok(Box::new(AnalyticsScreen::new(event_bus, theme_service)))
     }
 }

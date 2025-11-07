@@ -1,5 +1,6 @@
-use crate::domain::models::DifficultyLevel;
 use std::time::Duration;
+
+use crate::domain::models::DifficultyLevel;
 
 #[derive(Debug, Clone)]
 pub struct SessionConfig {

@@ -1,9 +1,10 @@
+use anyhow::Result;
+use crossterm::event::KeyCode;
+
 use crate::domain::models::{GitRepository, SessionResult};
 use crate::domain::services::scoring::Rank;
 use crate::infrastructure::browser;
 use crate::presentation::ui::Colors;
-use anyhow::Result;
-use crossterm::event::KeyCode;
 
 #[derive(Debug, Clone)]
 pub enum SharingPlatform {

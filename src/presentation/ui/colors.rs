@@ -1,5 +1,6 @@
-use crate::domain::models::color_scheme::ColorScheme;
 use ratatui::style::Color;
+
+use crate::domain::models::color_scheme::ColorScheme;
 
 /// UI color scheme for gittype application
 pub struct Colors {

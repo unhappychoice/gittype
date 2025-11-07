@@ -1,10 +1,12 @@
 use std::any::Any;
 
+use crate::domain::events::Event;
+
 /// Event emitted when user requests to exit the application (Ctrl+C)
 #[derive(Clone, Debug)]
 pub struct ExitRequested;
 
-impl crate::domain::events::Event for ExitRequested {
+impl Event for ExitRequested {
     fn as_any(&self) -> &dyn Any {
         self
     }

@@ -1,5 +1,7 @@
-use crate::domain::models::ExtractionOptions;
-use crate::domain::models::Languages;
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
+
+use crate::domain::models::{ExtractionOptions, Languages};
 use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::domain::stores::RepositoryStoreInterface;
 use crate::infrastructure::console::{Console, ConsoleImpl};
@@ -8,11 +10,8 @@ use crate::presentation::cli::args::Cli;
 use crate::presentation::di::AppModule;
 use crate::presentation::signal_handler::setup_signal_handlers;
 use crate::presentation::tui::screens::{VersionCheckResult, VersionCheckScreen};
-use crate::presentation::tui::ScreenType;
-use crate::presentation::tui::{ScreenManagerFactory, ScreenManagerImpl};
+use crate::presentation::tui::{ScreenManagerFactory, ScreenManagerImpl, ScreenType};
 use crate::{GitTypeError, Result};
-use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
 
 pub fn run_game_session(cli: Cli) -> Result<()> {
     log::info!("Starting GitType game session");

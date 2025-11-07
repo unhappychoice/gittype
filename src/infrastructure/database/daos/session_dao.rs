@@ -1,15 +1,19 @@
-use super::super::database::DatabaseInterface;
-use crate::domain::models::storage::{
-    SaveSessionResultParams, SaveStageParams, SessionResultData, SessionStageResult, StoredSession,
-};
-use crate::domain::models::{GitRepository, SessionResult};
-use crate::domain::services::scoring::RankCalculator;
-use crate::{domain::error::GitTypeError, Result};
 use chrono::{DateTime, Utc};
 use rusqlite::{params, OptionalExtension, Transaction};
 use shaku::{Component, Interface};
+
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
+
+use crate::domain::error::GitTypeError;
+use crate::domain::models::storage::{
+    SaveSessionResultParams, SaveStageParams, SessionResultData, SessionStageResult, StoredSession,
+};
+use crate::domain::models::{GitRepository, Rank, RankTier, SessionResult};
+use crate::domain::services::scoring::RankCalculator;
+use crate::Result;
+
+use super::super::database::DatabaseInterface;
 
 pub trait SessionDaoInterface: Interface {
     fn create_session_in_transaction(
@@ -107,13 +111,13 @@ impl SessionDaoInterface for SessionDao {
         let game_mode = params.game_mode;
         let difficulty_level = params.difficulty_level;
         // Calculate tier and rank from session score
-        let session_rank = crate::domain::models::Rank::for_score(session_result.session_score);
+        let session_rank = Rank::for_score(session_result.session_score);
         let tier_name = match session_rank.tier() {
-            crate::domain::models::RankTier::Beginner => "Beginner",
-            crate::domain::models::RankTier::Intermediate => "Intermediate",
-            crate::domain::models::RankTier::Advanced => "Advanced",
-            crate::domain::models::RankTier::Expert => "Expert",
-            crate::domain::models::RankTier::Legendary => "Legendary",
+            RankTier::Beginner => "Beginner",
+            RankTier::Intermediate => "Intermediate",
+            RankTier::Advanced => "Advanced",
+            RankTier::Expert => "Expert",
+            RankTier::Legendary => "Legendary",
         };
 
         // Calculate position information using RankCalculator

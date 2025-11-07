@@ -1,20 +1,22 @@
-use crate::domain::events::presentation_events::NavigateTo;
-use crate::domain::events::EventBusInterface;
-use crate::domain::models::storage::StoredRepositoryWithLanguages;
-use crate::domain::services::repository_service::RepositoryService;
-use crate::infrastructure::database::database::{Database, DatabaseInterface};
-use crate::infrastructure::git::RemoteGitRepositoryClient;
-use crate::presentation::tui::views::repo_play::{ControlsView, HeaderView, RepositoryListView};
-use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
-use crate::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
     layout::{Constraint, Direction, Layout},
     widgets::ListState,
     Frame,
 };
-use std::sync::Arc;
-use std::sync::RwLock;
+
+use std::sync::{Arc, RwLock};
+
+use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::EventBusInterface;
+use crate::domain::models::storage::StoredRepositoryWithLanguages;
+use crate::domain::services::repository_service::RepositoryService;
+use crate::domain::services::theme_service::ThemeServiceInterface;
+use crate::infrastructure::database::database::{Database, DatabaseInterface};
+use crate::infrastructure::git::RemoteGitRepositoryClient;
+use crate::presentation::tui::views::repo_play::{ControlsView, HeaderView, RepositoryListView};
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::Result;
 
 pub struct RepoPlayScreenData {
     pub repositories: Vec<(StoredRepositoryWithLanguages, bool)>,
@@ -34,13 +36,13 @@ pub struct RepoPlayScreen {
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
-    theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    theme_service: Arc<dyn ThemeServiceInterface>,
 }
 
 impl RepoPlayScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
-        theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
     ) -> Self {
         let mut list_state = ListState::default();
         list_state.select(Some(0));
