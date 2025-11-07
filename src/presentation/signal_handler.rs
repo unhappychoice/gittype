@@ -1,6 +1,6 @@
+use crate::domain::events::presentation_events::ExitRequested;
 use crate::domain::events::EventBus;
 use crate::infrastructure::logging::{log_error_to_file, log_panic_to_file};
-use crate::domain::events::presentation_events::ExitRequested;
 use crate::presentation::tui::screens::PanicScreen;
 use crate::presentation::tui::{Screen, ScreenManagerImpl};
 use crate::GitTypeError;

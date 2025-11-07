@@ -1,7 +1,7 @@
-use gittype::domain::models::{Challenge, DifficultyLevel};
 use gittype::domain::models::GameMode;
-use gittype::domain::stores::{ChallengeStore, RepositoryStore, SessionStore};
+use gittype::domain::models::{Challenge, DifficultyLevel};
 use gittype::domain::services::StageRepository;
+use gittype::domain::stores::{ChallengeStore, RepositoryStore, SessionStore};
 use std::sync::Arc;
 
 fn create_test_challenges(count: usize) -> Vec<Challenge> {

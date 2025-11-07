@@ -1,21 +1,33 @@
 use crate::integration::screens::mocks::title_screen_mock::MockTitleScreenDataProvider;
 use crossterm::event::{KeyCode, KeyModifiers};
-use gittype::domain::events::{EventBus, EventBusInterface};
-use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
-use gittype::domain::services::stage_builder_service::{StageRepository, StageRepositoryInterface};
-use gittype::domain::stores::{ChallengeStore, RepositoryStore, SessionStore};
-use gittype::domain::stores::{ChallengeStoreInterface, RepositoryStoreInterface, SessionStoreInterface};
-use gittype::domain::models::theme::Theme;
-use gittype::domain::models::color_mode::ColorMode;
 use gittype::domain::events::presentation_events::NavigateTo;
+use gittype::domain::events::{EventBus, EventBusInterface};
+use gittype::domain::models::color_mode::ColorMode;
+use gittype::domain::models::theme::Theme;
+use gittype::domain::services::scoring::{
+    SessionTracker, SessionTrackerInterface, TotalTracker, TotalTrackerInterface,
+};
+use gittype::domain::services::session_manager_service::SessionManagerInterface;
+use gittype::domain::services::stage_builder_service::{StageRepository, StageRepositoryInterface};
+use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
+use gittype::domain::services::SessionManager;
+use gittype::domain::stores::{ChallengeStore, RepositoryStore, SessionStore};
+use gittype::domain::stores::{
+    ChallengeStoreInterface, RepositoryStoreInterface, SessionStoreInterface,
+};
 use gittype::presentation::tui::screens::title_screen::TitleScreen;
 use std::sync::Arc;
 
 // Helper function to create TitleScreen with all required dependencies
 fn create_title_screen(event_bus: Arc<dyn EventBusInterface>) -> TitleScreen {
-    let theme_service = Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>;
-    let challenge_store = Arc::new(ChallengeStore::new_for_test()) as Arc<dyn ChallengeStoreInterface>;
-    let repository_store = Arc::new(RepositoryStore::new_for_test()) as Arc<dyn RepositoryStoreInterface>;
+    let theme_service = Arc::new(ThemeService::new_for_test(
+        Theme::default(),
+        ColorMode::Dark,
+    )) as Arc<dyn ThemeServiceInterface>;
+    let challenge_store =
+        Arc::new(ChallengeStore::new_for_test()) as Arc<dyn ChallengeStoreInterface>;
+    let repository_store =
+        Arc::new(RepositoryStore::new_for_test()) as Arc<dyn RepositoryStoreInterface>;
     let session_store = Arc::new(SessionStore::new_for_test()) as Arc<dyn SessionStoreInterface>;
     let stage_repository = Arc::new(StageRepository::new(
         None,
@@ -24,7 +36,23 @@ fn create_title_screen(event_bus: Arc<dyn EventBusInterface>) -> TitleScreen {
         session_store,
     )) as Arc<dyn StageRepositoryInterface>;
 
-    TitleScreen::new(event_bus, theme_service, stage_repository, repository_store)
+    let session_tracker: Arc<dyn SessionTrackerInterface> = Arc::new(SessionTracker::default());
+    let total_tracker: Arc<dyn TotalTrackerInterface> = Arc::new(TotalTracker::default());
+    let session_manager = SessionManager::new_with_dependencies(
+        event_bus.clone(),
+        stage_repository.clone(),
+        session_tracker,
+        total_tracker,
+    );
+    let session_manager: Arc<dyn SessionManagerInterface> = Arc::new(session_manager);
+
+    TitleScreen::new(
+        event_bus,
+        theme_service,
+        stage_repository,
+        repository_store,
+        session_manager,
+    )
 }
 
 screen_snapshot_test!(

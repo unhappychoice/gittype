@@ -1,8 +1,8 @@
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::color_mode::ColorMode;
 use crate::domain::models::theme::Theme;
 use crate::domain::services::config_service::{ConfigService, ConfigServiceInterface};
-use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType};
 use crate::presentation::ui::Colors;
 use crate::Result;
@@ -315,12 +315,12 @@ impl SettingsScreen {
         let current_section = *self.current_section.read().unwrap();
         match current_section {
             SettingsSection::ColorMode => {
-                self.render_color_mode_section(f, content_chunks[0], &colors);
-                self.render_description(f, content_chunks[1], &colors);
+                self.render_color_mode_section(f, content_chunks[0], colors);
+                self.render_description(f, content_chunks[1], colors);
             }
             SettingsSection::Theme => {
-                self.render_theme_section(f, content_chunks[0], &colors);
-                self.render_description(f, content_chunks[1], &colors);
+                self.render_theme_section(f, content_chunks[0], colors);
+                self.render_description(f, content_chunks[1], colors);
             }
         }
     }

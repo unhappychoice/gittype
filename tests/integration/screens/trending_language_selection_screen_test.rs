@@ -1,17 +1,23 @@
 use crate::integration::screens::helpers::EmptyMockProvider;
 use crossterm::event::{KeyCode, KeyModifiers};
-use gittype::domain::events::EventBus;
-use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
-use gittype::domain::models::theme::Theme;
-use gittype::domain::models::color_mode::ColorMode;
 use gittype::domain::events::presentation_events::NavigateTo;
+use gittype::domain::events::EventBus;
+use gittype::domain::models::color_mode::ColorMode;
+use gittype::domain::models::theme::Theme;
+use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
 use gittype::presentation::tui::screens::TrendingLanguageSelectionScreen;
 use std::sync::Arc;
 
 screen_snapshot_test!(
     test_trending_language_selection_screen_snapshot,
     TrendingLanguageSelectionScreen,
-    TrendingLanguageSelectionScreen::new(Arc::new(EventBus::new()), Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>)
+    TrendingLanguageSelectionScreen::new(
+        Arc::new(EventBus::new()),
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark
+        )) as Arc<dyn ThemeServiceInterface>
+    )
 );
 
 // Event-producing key tests
@@ -74,7 +80,13 @@ screen_key_tests!(
 screen_basic_methods_test!(
     test_trending_language_selection_screen_basic_methods,
     TrendingLanguageSelectionScreen,
-    TrendingLanguageSelectionScreen::new(Arc::new(EventBus::new()), Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>),
+    TrendingLanguageSelectionScreen::new(
+        Arc::new(EventBus::new()),
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark
+        )) as Arc<dyn ThemeServiceInterface>
+    ),
     gittype::presentation::tui::ScreenType::TrendingLanguageSelection,
     true
 );

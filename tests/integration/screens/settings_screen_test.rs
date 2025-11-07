@@ -1,7 +1,7 @@
 use crate::integration::screens::mocks::settings_screen_mock::MockSettingsScreenDataProvider;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
-use gittype::domain::events::EventBus;
 use gittype::domain::events::presentation_events::NavigateTo;
+use gittype::domain::events::EventBus;
 use gittype::presentation::tui::screens::settings_screen::SettingsScreen;
 use gittype::presentation::tui::Screen;
 use gittype::presentation::tui::ScreenDataProvider;

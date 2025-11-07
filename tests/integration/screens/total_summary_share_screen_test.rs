@@ -1,17 +1,23 @@
 use crate::integration::screens::mocks::total_summary_share_screen_mock::MockTotalSummaryShareDataProvider;
 use crossterm::event::{KeyCode, KeyModifiers};
-use gittype::domain::events::EventBus;
-use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
-use gittype::domain::models::theme::Theme;
-use gittype::domain::models::color_mode::ColorMode;
 use gittype::domain::events::presentation_events::NavigateTo;
+use gittype::domain::events::EventBus;
+use gittype::domain::models::color_mode::ColorMode;
+use gittype::domain::models::theme::Theme;
+use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
 use gittype::presentation::tui::screens::total_summary_share_screen::TotalSummaryShareScreen;
 use std::sync::Arc;
 
 screen_snapshot_test!(
     test_total_summary_share_screen_snapshot,
     TotalSummaryShareScreen,
-    TotalSummaryShareScreen::new(Arc::new(EventBus::new()), Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>),
+    TotalSummaryShareScreen::new(
+        Arc::new(EventBus::new()),
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark
+        )) as Arc<dyn ThemeServiceInterface>
+    ),
     provider = MockTotalSummaryShareDataProvider
 );
 
@@ -66,7 +72,13 @@ screen_key_tests!(
 screen_basic_methods_test!(
     test_total_summary_share_screen_basic_methods,
     TotalSummaryShareScreen,
-    TotalSummaryShareScreen::new(Arc::new(EventBus::new()), Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>),
+    TotalSummaryShareScreen::new(
+        Arc::new(EventBus::new()),
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark
+        )) as Arc<dyn ThemeServiceInterface>
+    ),
     gittype::presentation::tui::ScreenType::TotalSummaryShare,
     false,
     MockTotalSummaryShareDataProvider

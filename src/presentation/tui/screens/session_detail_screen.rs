@@ -1,8 +1,8 @@
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::storage::SessionStageResult;
 use crate::domain::repositories::session_repository::SessionRepositoryTrait;
 use crate::domain::services::session_service::SessionDisplayData;
-use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::tui::screens::RecordsScreen;
 use crate::presentation::tui::views::{PerformanceMetricsView, SessionInfoView, StageDetailsView};
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
@@ -207,7 +207,12 @@ impl Screen for SessionDetailScreen {
             session_data.repository.as_ref(),
             &colors,
         );
-        PerformanceMetricsView::render(frame, top_chunks[1], session_data.session_result.as_ref(), &colors);
+        PerformanceMetricsView::render(
+            frame,
+            top_chunks[1],
+            session_data.session_result.as_ref(),
+            &colors,
+        );
         StageDetailsView::render(
             frame,
             content_chunks[1],

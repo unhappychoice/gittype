@@ -1,7 +1,8 @@
 use std::time::Instant;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub enum SessionState {
+    #[default]
     NotStarted,
     InProgress {
         current_stage: usize,
@@ -15,10 +16,4 @@ pub enum SessionState {
         started_at: Instant,
         aborted_at: Instant,
     },
-}
-
-impl Default for SessionState {
-    fn default() -> Self {
-        SessionState::NotStarted
-    }
 }

@@ -1,7 +1,7 @@
 use crate::domain::models::SessionAction;
 use crate::domain::services::scoring::{StageCalculator, StageInput};
-use crate::domain::services::SessionManager;
 use crate::domain::services::session_manager_service::SessionManagerInterface;
+use crate::domain::services::SessionManager;
 use crate::presentation::tui::ScreenType;
 use crate::Result;
 use std::sync::Arc;
@@ -132,7 +132,9 @@ impl ScreenTransitionManager {
         Ok(to_screen)
     }
 
-    fn handle_start_game_transition(session_manager: &Arc<dyn SessionManagerInterface>) -> Result<()> {
+    fn handle_start_game_transition(
+        session_manager: &Arc<dyn SessionManagerInterface>,
+    ) -> Result<()> {
         // Start session if not already in progress
         if let Some(sm) = session_manager.as_any().downcast_ref::<SessionManager>() {
             if !sm.is_in_progress() {

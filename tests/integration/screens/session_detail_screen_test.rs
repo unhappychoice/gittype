@@ -2,11 +2,11 @@ use crate::integration::screens::mocks::records_screen_mock::MockRecordsDataProv
 use crate::integration::screens::mocks::session_repository_mock::MockSessionRepository;
 use crate::integration::screens::mocks::session_service_mock::MockSessionService;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
-use gittype::domain::events::{EventBus, EventBusInterface};
-use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
-use gittype::domain::models::theme::Theme;
-use gittype::domain::models::color_mode::ColorMode;
 use gittype::domain::events::presentation_events::NavigateTo;
+use gittype::domain::events::{EventBus, EventBusInterface};
+use gittype::domain::models::color_mode::ColorMode;
+use gittype::domain::models::theme::Theme;
+use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
 use gittype::presentation::tui::screens::{RecordsScreen, SessionDetailScreen};
 use gittype::presentation::tui::Screen;
 use gittype::presentation::tui::ScreenDataProvider;
@@ -16,8 +16,15 @@ use std::sync::{Arc, Mutex};
 fn create_initialized_session_detail_screen(
     event_bus: Arc<dyn EventBusInterface>,
 ) -> SessionDetailScreen {
-    let theme_service = Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>;
-    let screen = SessionDetailScreen::new(event_bus.clone(), theme_service.clone(), Arc::new(MockSessionRepository::new()));
+    let theme_service = Arc::new(ThemeService::new_for_test(
+        Theme::default(),
+        ColorMode::Dark,
+    )) as Arc<dyn ThemeServiceInterface>;
+    let screen = SessionDetailScreen::new(
+        event_bus.clone(),
+        theme_service.clone(),
+        Arc::new(MockSessionRepository::new()),
+    );
 
     let records = RecordsScreen::new(
         Arc::new(EventBus::new()),
@@ -37,11 +44,17 @@ screen_snapshot_test!(
     SessionDetailScreen,
     SessionDetailScreen::new(
         Arc::new(EventBus::new()),
-        Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>,
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark
+        )) as Arc<dyn ThemeServiceInterface>,
         Arc::new(MockSessionRepository::new())
     ),
     pushed_from = {
-        let theme_service = Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>;
+        let theme_service = Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        )) as Arc<dyn ThemeServiceInterface>;
         let records = RecordsScreen::new(
             Arc::new(EventBus::new()),
             theme_service,

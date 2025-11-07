@@ -10,10 +10,6 @@ pub use calculator::{
 pub use rank_calculator::RankCalculator;
 pub use score_calculator::ScoreCalculator;
 pub use tracker::{
-    Keystroke, SessionTracker, SessionTrackerData, StageInput, StageTracker, StageTrackerData,
-    TotalTracker, TotalTrackerData,
+    Keystroke, SessionTracker, SessionTrackerData, SessionTrackerInterface, StageInput,
+    StageTracker, StageTrackerData, TotalTracker, TotalTrackerData, TotalTrackerInterface,
 };
-
-// Export global tracker instances
-pub use tracker::session::GLOBAL_SESSION_TRACKER;
-pub use tracker::total::GLOBAL_TOTAL_TRACKER;

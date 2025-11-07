@@ -1,8 +1,8 @@
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::repositories::trending_repository::{
     TrendingRepositoryInfo, TrendingRepositoryInterface,
 };
-use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::tui::views::trending_repository_selection::{
     ControlsView, HeaderView, RepositoryListView,
 };

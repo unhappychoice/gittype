@@ -1,20 +1,21 @@
 use crate::domain::events::domain_events::DomainEvent;
-use crate::domain::events::{EventBus, EventBusInterface};
+use crate::domain::events::EventBusInterface;
 use crate::domain::models::GitRepository;
 use crate::domain::repositories::session_repository::{BestRecords, BestStatus};
 use crate::domain::repositories::SessionRepository;
 use crate::domain::services::scoring::{
-    SessionCalculator, SessionTracker, StageCalculator, GLOBAL_TOTAL_TRACKER,
+    SessionCalculator, SessionTrackerInterface, StageCalculator, TotalTrackerInterface,
 };
 use crate::domain::services::stage_builder_service::{StageRepository, StageRepositoryInterface};
 use crate::{
-    domain::models::{Challenge, DifficultyLevel, SessionAction, SessionConfig, SessionResult, SessionState},
-    domain::services::scoring::{StageInput, StageResult, StageTracker, GLOBAL_SESSION_TRACKER},
+    domain::models::{
+        Challenge, DifficultyLevel, SessionAction, SessionConfig, SessionResult, SessionState,
+    },
+    domain::services::scoring::{StageInput, StageResult, StageTracker},
     GitTypeError, Result,
 };
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
-
 
 /// Manages the overall session state and stage progression
 #[derive(shaku::Component)]
@@ -40,6 +41,10 @@ pub struct SessionManager {
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
     stage_repository: Arc<dyn StageRepositoryInterface>,
+    #[shaku(inject)]
+    session_tracker: Arc<dyn SessionTrackerInterface>,
+    #[shaku(inject)]
+    total_tracker: Arc<dyn TotalTrackerInterface>,
 }
 
 pub trait SessionManagerInterface: shaku::Interface {
@@ -57,6 +62,8 @@ impl SessionManager {
     pub fn new_with_dependencies(
         event_bus: Arc<dyn EventBusInterface>,
         stage_repository: Arc<dyn StageRepositoryInterface>,
+        session_tracker: Arc<dyn SessionTrackerInterface>,
+        total_tracker: Arc<dyn TotalTrackerInterface>,
     ) -> Self {
         Self {
             state: Mutex::new(SessionState::NotStarted),
@@ -69,10 +76,12 @@ impl SessionManager {
             best_records_at_start: Mutex::new(None),
             event_bus,
             stage_repository,
+            session_tracker,
+            total_tracker,
         }
     }
 
-    pub fn set_event_bus(&self, event_bus: Arc<dyn EventBusInterface>) {
+    pub fn set_event_bus(&self, _event_bus: Arc<dyn EventBusInterface>) {
         // event_bus is Arc, which is already shared, so we can't replace it in interior mutability pattern
         // This method is deprecated and should not be used with DI
         log::warn!("set_event_bus called but event_bus is injected via DI and cannot be changed");
@@ -167,9 +176,8 @@ impl SessionManager {
                     *self.best_records_at_start.lock().unwrap()
                 );
 
-                // Initialize global session tracker
-                let session_tracker = SessionTracker::new();
-                SessionTracker::initialize_global_instance(session_tracker);
+                // Reset session tracker for new session
+                self.session_tracker.reset();
 
                 SessionState::InProgress {
                     current_stage: 1,
@@ -185,7 +193,10 @@ impl SessionManager {
                 },
                 SessionAction::CompleteStage(stage_result),
             ) => {
-                self.stage_results.lock().unwrap().push(stage_result.clone());
+                self.stage_results
+                    .lock()
+                    .unwrap()
+                    .push(stage_result.clone());
 
                 // Count actually completed stages (not skipped and not failed)
                 let completed_stages = self
@@ -238,10 +249,8 @@ impl SessionManager {
                 self.stage_trackers.lock().unwrap().clear();
                 self.session_challenges.lock().unwrap().clear();
 
-                // Clear global session tracker
-                let _ = GLOBAL_SESSION_TRACKER.lock().map(|mut tracker| {
-                    *tracker = None;
-                });
+                // Reset session tracker
+                self.session_tracker.reset();
 
                 SessionState::NotStarted
             }
@@ -281,7 +290,8 @@ impl SessionManager {
         self.session_challenges.lock().unwrap().clear();
 
         // Capture best records at session start for accurate comparison later
-        *self.best_records_at_start.lock().unwrap() = SessionRepository::get_best_records_global().ok().flatten();
+        *self.best_records_at_start.lock().unwrap() =
+            SessionRepository::get_best_records_global().ok().flatten();
 
         log::debug!(
             "SessionManager::initialize: captured best_records_at_start={:?}",
@@ -303,7 +313,10 @@ impl SessionManager {
         stage_tracker: StageTracker,
         challenge: Challenge,
     ) {
-        self.stage_trackers.lock().unwrap().push((stage_name, stage_tracker));
+        self.stage_trackers
+            .lock()
+            .unwrap()
+            .push((stage_name, stage_tracker));
         self.session_challenges.lock().unwrap().push(challenge);
     }
 
@@ -345,15 +358,22 @@ impl SessionManager {
 
     /// Check if session is completed
     pub fn is_session_completed(&self) -> Result<bool> {
-        Ok(matches!(*self.state.lock().unwrap(), SessionState::Completed { .. }))
+        Ok(matches!(
+            *self.state.lock().unwrap(),
+            SessionState::Completed { .. }
+        ))
     }
 
     /// Get current challenge for the session
     pub fn get_current_challenge(&self) -> Result<Option<Challenge>> {
         if matches!(*self.state.lock().unwrap(), SessionState::InProgress { .. }) {
-            let stage_repo = self.stage_repository.as_any()
+            let stage_repo = self
+                .stage_repository
+                .as_any()
                 .downcast_ref::<StageRepository>()
-                .ok_or_else(|| GitTypeError::TerminalError("Failed to downcast StageRepository".to_string()))?;
+                .ok_or_else(|| {
+                    GitTypeError::TerminalError("Failed to downcast StageRepository".to_string())
+                })?;
             Ok(stage_repo.get_challenge_for_difficulty(self.config.lock().unwrap().difficulty))
         } else {
             Ok(None)
@@ -378,6 +398,7 @@ impl SessionManager {
     }
 
     /// Start the session
+    #[allow(dead_code)]
     fn start_session(&self) -> Result<()> {
         let state = self.state.lock().unwrap();
         match *state {
@@ -389,9 +410,8 @@ impl SessionManager {
                     started_at: session_start_time,
                 };
 
-                // Initialize global session tracker
-                let session_tracker = SessionTracker::new();
-                SessionTracker::initialize_global_instance(session_tracker);
+                // Reset session tracker for new session
+                self.session_tracker.reset();
 
                 Ok(())
             }
@@ -448,15 +468,10 @@ impl SessionManager {
 
     /// Generate SessionResult using proper flow: SessionTracker -> SessionCalculator
     pub fn generate_session_result(&self) -> Option<SessionResult> {
-        // Use GLOBAL_SESSION_TRACKER and SessionCalculator for proper flow implementation
-        if let Ok(global_session_tracker) = GLOBAL_SESSION_TRACKER.lock() {
-            if let Some(ref session_tracker) = *global_session_tracker {
-                let result = SessionCalculator::calculate(session_tracker);
-                return Some(result);
-            }
-        }
-
-        None
+        // Use SessionTracker and SessionCalculator for proper flow implementation
+        let session_data = self.session_tracker.get_data();
+        let result = SessionCalculator::calculate_from_data(&session_data);
+        Some(result)
     }
 
     // Removed generate_total_result - not used
@@ -467,12 +482,8 @@ impl SessionManager {
             // Record session to database
             self.record_session_to_database(&session_result)?;
 
-            // Record session result in GLOBAL_TOTAL_TRACKER
-            if let Ok(mut global_total_tracker) = GLOBAL_TOTAL_TRACKER.lock() {
-                if let Some(ref mut tracker) = global_total_tracker.as_mut() {
-                    tracker.record(session_result);
-                }
-            }
+            // Record session result in total tracker
+            self.total_tracker.record(session_result);
         }
         Ok(())
     }
@@ -507,12 +518,8 @@ impl SessionManager {
     /// Add completed session to TotalTracker
     fn add_session_to_total_tracker(&self) -> Result<()> {
         if let Some(session_result) = self.generate_session_result() {
-            // Record session result in GLOBAL_TOTAL_TRACKER
-            if let Ok(mut global_total_tracker) = GLOBAL_TOTAL_TRACKER.lock() {
-                if let Some(ref mut tracker) = global_total_tracker.as_mut() {
-                    tracker.record(session_result);
-                }
-            }
+            // Record session result in total tracker
+            self.total_tracker.record(session_result);
         }
         Ok(())
     }
@@ -525,10 +532,8 @@ impl SessionManager {
         self.session_challenges.lock().unwrap().clear();
         *self.best_records_at_start.lock().unwrap() = None;
 
-        // Clear global session tracker
-        let _ = GLOBAL_SESSION_TRACKER.lock().map(|mut tracker| {
-            *tracker = None;
-        });
+        // Reset session tracker
+        self.session_tracker.reset();
     }
 
     // ============================================
@@ -539,9 +544,13 @@ impl SessionManager {
     pub fn get_next_challenge(&self) -> Result<Option<Challenge>> {
         if matches!(*self.state.lock().unwrap(), SessionState::InProgress { .. }) {
             // Get challenge from StageRepository based on current difficulty setting
-            let stage_repo = self.stage_repository.as_any()
+            let stage_repo = self
+                .stage_repository
+                .as_any()
                 .downcast_ref::<StageRepository>()
-                .ok_or_else(|| GitTypeError::TerminalError("Failed to downcast StageRepository".to_string()))?;
+                .ok_or_else(|| {
+                    GitTypeError::TerminalError("Failed to downcast StageRepository".to_string())
+                })?;
             Ok(stage_repo.get_challenge_for_difficulty(self.config.lock().unwrap().difficulty))
         } else {
             Ok(None)
@@ -572,6 +581,7 @@ impl SessionManager {
     }
 
     /// Get total stages (used by global API)
+    #[allow(dead_code)]
     fn total_stages(&self) -> usize {
         self.config.lock().unwrap().max_stages
     }
@@ -633,12 +643,8 @@ impl SessionManager {
                     let mut stage_result = StageCalculator::calculate(tracker);
                     stage_result.was_skipped = true;
 
-                    // Record in global session tracker
-                    if let Ok(mut global_session_tracker) = GLOBAL_SESSION_TRACKER.lock() {
-                        if let Some(ref mut session_tracker) = *global_session_tracker {
-                            session_tracker.record(stage_result.clone());
-                        }
-                    }
+                    // Record in session tracker
+                    self.session_tracker.record(stage_result.clone());
 
                     // Collect data before borrowing conflicts - move tracker out
                     let tracker_clone = tracker_guard.clone();
@@ -652,15 +658,24 @@ impl SessionManager {
                     // Add stage data to session before updating results
                     if let Some(tracker) = tracker_clone {
                         if let Some(challenge) = current_challenge {
-                            self.stage_trackers.lock().unwrap().push((stage_name.clone(), tracker.clone()));
+                            self.stage_trackers
+                                .lock()
+                                .unwrap()
+                                .push((stage_name.clone(), tracker.clone()));
                             self.session_challenges.lock().unwrap().push(challenge);
                         } else {
-                            self.stage_trackers.lock().unwrap().push((stage_name, tracker));
+                            self.stage_trackers
+                                .lock()
+                                .unwrap()
+                                .push((stage_name, tracker));
                         }
                     }
 
                     // Add skipped stage to results (don't advance stage)
-                    self.stage_results.lock().unwrap().push(stage_result.clone());
+                    self.stage_results
+                        .lock()
+                        .unwrap()
+                        .push(stage_result.clone());
 
                     // Return true to indicate new challenge should be generated
                     let skips_remaining = self.get_skips_remaining()?;
@@ -686,12 +701,8 @@ impl SessionManager {
             // 2. StageCalculator: Calculate stage result from StageTracker
             let stage_result = StageCalculator::calculate(tracker);
 
-            // 3. SessionTracker: Record stage result in global session tracker
-            if let Ok(mut global_session_tracker) = GLOBAL_SESSION_TRACKER.lock() {
-                if let Some(ref mut session_tracker) = *global_session_tracker {
-                    session_tracker.record(stage_result.clone());
-                }
-            }
+            // 3. SessionTracker: Record stage result in session tracker
+            self.session_tracker.record(stage_result.clone());
 
             // 4. Collect data before borrowing conflicts - clone tracker
             let tracker_clone = Some(tracker.clone());
@@ -705,10 +716,16 @@ impl SessionManager {
             // 5. Add stage data to session
             if let Some(tracker) = tracker_clone {
                 if let Some(challenge) = current_challenge {
-                    self.stage_trackers.lock().unwrap().push((stage_name.clone(), tracker.clone()));
+                    self.stage_trackers
+                        .lock()
+                        .unwrap()
+                        .push((stage_name.clone(), tracker.clone()));
                     self.session_challenges.lock().unwrap().push(challenge);
                 } else {
-                    self.stage_trackers.lock().unwrap().push((stage_name, tracker));
+                    self.stage_trackers
+                        .lock()
+                        .unwrap()
+                        .push((stage_name, tracker));
                 }
             }
 

@@ -1,6 +1,6 @@
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::infrastructure::logging::get_current_log_file_path;
-use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;

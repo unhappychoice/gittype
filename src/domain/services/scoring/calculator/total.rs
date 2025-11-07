@@ -1,5 +1,5 @@
 use crate::domain::models::TotalResult;
-use crate::domain::services::scoring::TotalTracker;
+use crate::domain::services::scoring::{TotalTracker, TotalTrackerData, TotalTrackerInterface};
 use std::time::{Duration, Instant};
 
 /// Total level result calculation
@@ -8,6 +8,10 @@ pub struct TotalCalculator;
 impl TotalCalculator {
     pub fn calculate(tracker: &TotalTracker) -> TotalResult {
         let data = tracker.get_data();
+        Self::calculate_from_data(&data)
+    }
+
+    pub fn calculate_from_data(data: &TotalTrackerData) -> TotalResult {
         let session_results = &data.session_results;
 
         let total_sessions_attempted = session_results.len();

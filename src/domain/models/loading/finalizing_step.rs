@@ -1,6 +1,5 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
 use crate::domain::models::{DifficultyLevel, SessionConfig, SessionState};
-use crate::domain::services::scoring::{SessionTracker, TotalTracker};
 use crate::domain::services::stage_builder_service::StageRepository;
 use crate::domain::services::SessionManager;
 use crate::infrastructure::git::LocalGitRepositoryClient;
@@ -54,27 +53,22 @@ impl Step for FinalizingStep {
     }
 
     fn execute(&self, context: &mut ExecutionContext) -> Result<StepResult> {
-        let git_repository = context
-            .git_repository
-            .as_ref()
-            .cloned()
-            .or_else(|| {
-                context
-                    .current_repo_path
-                    .as_ref()
-                    .or(context.repo_path)
-                    .and_then(|path| {
-                        LocalGitRepositoryClient::new()
-                            .create_from_local_path(path)
-                            .ok()
-                    })
-            });
+        let git_repository = context.git_repository.as_ref().cloned().or_else(|| {
+            context
+                .current_repo_path
+                .as_ref()
+                .or(context.repo_path)
+                .and_then(|path| {
+                    LocalGitRepositoryClient::new()
+                        .create_from_local_path(path)
+                        .ok()
+                })
+        });
 
         // Get stores from context
-        let challenge_store = context
-            .challenge_store
-            .clone()
-            .ok_or_else(|| GitTypeError::TerminalError("ChallengeStore not available".to_string()))?;
+        let challenge_store = context.challenge_store.clone().ok_or_else(|| {
+            GitTypeError::TerminalError("ChallengeStore not available".to_string())
+        })?;
 
         // Verify challenges are available
         let challenge_count = challenge_store
@@ -91,7 +85,9 @@ impl Step for FinalizingStep {
         // Initialize StageRepository: build difficulty indices for optimal performance
         if let Some(stage_repository) = &context.stage_repository {
             // Downcast to concrete type to call build_difficulty_indices
-            if let Some(concrete_stage_repo) = stage_repository.as_any().downcast_ref::<StageRepository>() {
+            if let Some(concrete_stage_repo) =
+                stage_repository.as_any().downcast_ref::<StageRepository>()
+            {
                 concrete_stage_repo.build_difficulty_indices();
             }
         } else {
@@ -101,7 +97,9 @@ impl Step for FinalizingStep {
         // Initialize SessionManager
         if let Some(session_manager) = &context.session_manager {
             // Downcast to concrete type to access methods
-            if let Some(concrete_session_manager) = session_manager.as_any().downcast_ref::<SessionManager>() {
+            if let Some(concrete_session_manager) =
+                session_manager.as_any().downcast_ref::<SessionManager>()
+            {
                 // Reset session to clean state
                 concrete_session_manager.reset();
 
@@ -127,9 +125,7 @@ impl Step for FinalizingStep {
             log::warn!("SessionManager not available in context, skipping session initialization");
         }
 
-        // Initialize global tracker instances for compatibility with existing code paths
-        SessionTracker::initialize_global_instance(SessionTracker::new());
-        TotalTracker::initialize_global_instance(TotalTracker::new());
+        // Tracker instances are now managed via DI - no need to initialize global instances
 
         Ok(StepResult::Skipped)
     }

@@ -1,7 +1,7 @@
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::TotalResult;
-use crate::domain::services::scoring::{TotalCalculator, TotalTracker, GLOBAL_TOTAL_TRACKER};
-use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::services::scoring::{TotalCalculator, TotalTracker};
 use crate::presentation::tui::views::{AsciiScoreView, SharingView, StatisticsView};
 use crate::presentation::tui::ScreenDataProvider;
 use crate::presentation::tui::{Screen, ScreenType, UpdateStrategy};
@@ -64,18 +64,22 @@ pub struct TotalSummaryScreen {
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
     theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+    #[shaku(inject)]
+    total_tracker: Arc<dyn crate::domain::services::scoring::TotalTrackerInterface>,
 }
 
 impl TotalSummaryScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
         theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
+        total_tracker: Arc<dyn crate::domain::services::scoring::TotalTrackerInterface>,
     ) -> Self {
         Self {
             displayed: RwLock::new(false),
             total_result: RwLock::new(None),
             event_bus,
             theme_service,
+            total_tracker,
         }
     }
 }
@@ -91,8 +95,15 @@ impl shaku::Provider<crate::presentation::di::AppModule> for TotalSummaryScreenP
         use shaku::HasComponent;
         let event_bus: std::sync::Arc<dyn crate::domain::events::EventBusInterface> =
             module.resolve();
-        let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> = module.resolve();
-        Ok(Box::new(TotalSummaryScreen::new(event_bus, theme_service)))
+        let theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface> =
+            module.resolve();
+        let total_tracker: Arc<dyn crate::domain::services::scoring::TotalTrackerInterface> =
+            module.resolve();
+        Ok(Box::new(TotalSummaryScreen::new(
+            event_bus,
+            theme_service,
+            total_tracker,
+        )))
     }
 }
 
@@ -105,14 +116,26 @@ impl Screen for TotalSummaryScreen {
     where
         Self: Sized,
     {
+        // This method is deprecated - use DI to get TotalTracker
         Box::new(TotalSummaryScreenDataProvider {
-            total_tracker: GLOBAL_TOTAL_TRACKER.clone(),
+            total_tracker: Arc::new(Mutex::new(None)),
         })
     }
 
     fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
-        let screen_data = data.downcast::<TotalSummaryScreenData>()?;
-        *self.total_result.write().unwrap() = Some(screen_data.total_result);
+        // Try to use external data first (for testing), otherwise get from injected total_tracker
+        let total_result = if let Ok(screen_data) = data.downcast::<TotalSummaryScreenData>() {
+            // Use external data (e.g., from tests with MockTotalSummaryDataProvider)
+            screen_data.total_result
+        } else {
+            // Get data from injected total_tracker (normal DI flow)
+            let total_data = self.total_tracker.get_data();
+            let mut result = TotalCalculator::calculate_from_data(&total_data);
+            result.finalize();
+            result
+        };
+
+        *self.total_result.write().unwrap() = Some(total_result);
         *self.displayed.write().unwrap() = false; // Reset displayed flag to allow re-rendering
         Ok(())
     }

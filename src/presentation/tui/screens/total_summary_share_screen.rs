@@ -1,8 +1,8 @@
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::TotalResult;
-use crate::domain::services::scoring::{TotalCalculator, TotalTracker, GLOBAL_TOTAL_TRACKER};
+use crate::domain::services::scoring::{TotalCalculator, TotalTracker};
 use crate::infrastructure::browser;
-use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::sharing::SharingPlatform;
 use crate::presentation::tui::views::SharingView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
@@ -170,8 +170,9 @@ impl Screen for TotalSummaryShareScreen {
     where
         Self: Sized,
     {
+        // This method is deprecated - use DI to get TotalTracker
         Box::new(TotalSummaryShareDataProvider {
-            total_tracker: GLOBAL_TOTAL_TRACKER.clone(),
+            total_tracker: Arc::new(Mutex::new(None)),
         })
     }
 

@@ -1,6 +1,6 @@
 use crate::domain::events::domain_events::DomainEvent;
-use crate::domain::events::EventBusInterface;
 use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::EventBusInterface;
 use crate::domain::models::typing::{CodeContext, InputResult, ProcessingOptions};
 use crate::domain::models::{Challenge, Countdown, GitRepository};
 use crate::domain::services::context_loader;
@@ -13,8 +13,8 @@ use crate::presentation::tui::views::TypingView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
+use std::sync::Arc;
 use std::sync::RwLock;
-use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 pub trait TypingScreenInterface: Screen {}
@@ -98,9 +98,12 @@ impl TypingScreen {
         }
     }
 
-    /// Load the current challenge from SessionManager
-    pub fn load_current_challenge(&self) -> Result<bool> {
-        let challenge = if let Some(session_manager) = self.session_manager.as_any().downcast_ref::<SessionManager>() {
+    fn load_current_challenge(&self) -> Result<bool> {
+        let challenge = if let Some(session_manager) = self
+            .session_manager
+            .as_any()
+            .downcast_ref::<SessionManager>()
+        {
             session_manager.get_current_challenge()?
         } else {
             None
@@ -118,8 +121,9 @@ impl TypingScreen {
 
             // Get git root from repository store for context loading
             let git_repository = self.repository_store.get_repository();
-            let git_root = git_repository.as_ref()
-                .and_then(|repo| repo.root_path.as_ref().map(|p| p.as_path()));
+            let git_root = git_repository
+                .as_ref()
+                .and_then(|repo| repo.root_path.as_deref());
             *self.code_context.write().unwrap() =
                 context_loader::load_context_for_challenge(&challenge, 4, git_root)?;
 
@@ -311,7 +315,11 @@ impl TypingScreen {
 
     fn handle_skip_action(&self) -> Result<SessionState> {
         self.close_dialog();
-        let skips_remaining = if let Some(session_manager) = self.session_manager.as_any().downcast_ref::<SessionManager>() {
+        let skips_remaining = if let Some(session_manager) = self
+            .session_manager
+            .as_any()
+            .downcast_ref::<SessionManager>()
+        {
             session_manager.get_skips_remaining().unwrap_or(0)
         } else {
             0
@@ -461,6 +469,8 @@ impl Screen for TypingScreen {
     }
 
     fn init_with_data(&self, _data: Box<dyn std::any::Any>) -> Result<()> {
+        // Load current challenge when screen is initialized
+        self.load_current_challenge()?;
         Ok(())
     }
 
@@ -522,7 +532,11 @@ impl Screen for TypingScreen {
             .text_to_display()
             .chars()
             .collect();
-        let skips_remaining = if let Some(session_manager) = self.session_manager.as_any().downcast_ref::<SessionManager>() {
+        let skips_remaining = if let Some(session_manager) = self
+            .session_manager
+            .as_any()
+            .downcast_ref::<SessionManager>()
+        {
             session_manager.get_skips_remaining().unwrap_or(0)
         } else {
             0

@@ -13,6 +13,7 @@ use ratatui::{
 pub struct TypingFooterView;
 
 impl TypingFooterView {
+    #[allow(clippy::too_many_arguments)]
     pub fn render_metrics(
         frame: &mut Frame,
         area: ratatui::layout::Rect,

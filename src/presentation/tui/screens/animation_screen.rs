@@ -1,7 +1,7 @@
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::{RankTier, SessionResult};
 use crate::domain::services::scoring::Rank;
-use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::services::session_manager_service::SessionManagerInterface;
 use crate::domain::services::SessionManager;
 use crate::presentation::tui::views::typing::typing_animation_view::AnimationPhase;
@@ -17,8 +17,8 @@ use ratatui::{
     widgets::Paragraph,
     Frame,
 };
-use std::sync::RwLock;
 use std::sync::Arc;
+use std::sync::RwLock;
 use std::time::Duration;
 
 pub struct AnimationData {
@@ -142,7 +142,7 @@ impl AnimationScreen {
 
                 frame.render_widget(paragraph, chunks[1]);
 
-                self.render_skip_hint(frame, area, &colors);
+                self.render_skip_hint(frame, area, colors);
             }
             AnimationPhase::Pause => {
                 let mut lines = Vec::new();
@@ -165,7 +165,7 @@ impl AnimationScreen {
 
                 frame.render_widget(paragraph, chunks[1]);
 
-                self.render_skip_hint(frame, area, &colors);
+                self.render_skip_hint(frame, area, colors);
             }
             AnimationPhase::Complete => {
                 // Animation is complete, ready to transition to result
@@ -227,11 +227,18 @@ impl Screen for AnimationScreen {
             data.session_result
         } else {
             // If no data provided, get from SessionManager
-            if let Some(sm) = self.session_manager.as_any().downcast_ref::<SessionManager>() {
-                sm.get_session_result()
-                    .ok_or_else(|| GitTypeError::TerminalError("No session result available".to_string()))?
+            if let Some(sm) = self
+                .session_manager
+                .as_any()
+                .downcast_ref::<SessionManager>()
+            {
+                sm.get_session_result().ok_or_else(|| {
+                    GitTypeError::TerminalError("No session result available".to_string())
+                })?
             } else {
-                return Err(GitTypeError::TerminalError("Failed to get SessionManager".to_string()).into());
+                return Err(GitTypeError::TerminalError(
+                    "Failed to get SessionManager".to_string(),
+                ));
             }
         };
 

@@ -1,16 +1,19 @@
-use gittype::domain::events::{EventBus, EventBusInterface};
-use gittype::domain::models::Challenge;
+use gittype::domain::events::EventBusInterface;
 use gittype::domain::models::color_mode::ColorMode;
 use gittype::domain::models::theme::Theme;
+use gittype::domain::models::Challenge;
 use gittype::domain::services::scoring::tracker::StageTracker;
+use gittype::domain::services::scoring::{
+    SessionTracker, SessionTrackerInterface, TotalTracker, TotalTrackerInterface,
+};
 use gittype::domain::services::session_manager_service::SessionManagerInterface;
+use gittype::domain::services::stage_builder_service::StageRepository;
 use gittype::domain::services::stage_builder_service::StageRepositoryInterface;
 use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
-use gittype::domain::stores::{ChallengeStore, RepositoryStore, RepositoryStoreInterface, SessionStore};
-use gittype::domain::services::stage_builder_service::StageRepository;
 use gittype::domain::services::SessionManager;
+use gittype::domain::stores::{ChallengeStore, RepositoryStore, SessionStore};
 use gittype::presentation::tui::screens::typing_screen::TypingScreen;
-use gittype::presentation::tui::ScreenDataProvider;
+use gittype::presentation::tui::{Screen, ScreenDataProvider};
 use gittype::Result;
 use std::sync::Arc;
 
@@ -29,55 +32,71 @@ pub fn create_typing_screen_with_challenge(
     event_bus: Arc<dyn EventBusInterface>,
     code: Option<&str>,
 ) -> TypingScreen {
-    let (challenge_store, repository_store, session_store, stage_repository) = if let Some(code_content) = code {
-        let challenge = Challenge {
-            id: "test_1".to_string(),
-            source_file_path: Some("test.rs".to_string()),
-            code_content: code_content.to_string(),
-            start_line: Some(1),
-            end_line: Some(code_content.lines().count()),
-            language: Some("rust".to_string()),
-            comment_ranges: vec![],
-            difficulty_level: Some(gittype::domain::models::DifficultyLevel::Easy),
+    let (_challenge_store, repository_store, _session_store, stage_repository) =
+        if let Some(code_content) = code {
+            let challenge = Challenge {
+                id: "test_1".to_string(),
+                source_file_path: Some("test.rs".to_string()),
+                code_content: code_content.to_string(),
+                start_line: Some(1),
+                end_line: Some(code_content.lines().count()),
+                language: Some("rust".to_string()),
+                comment_ranges: vec![],
+                difficulty_level: Some(gittype::domain::models::DifficultyLevel::Easy),
+            };
+
+            let challenge_store = Arc::new(ChallengeStore::new_for_test())
+                as Arc<dyn gittype::domain::stores::ChallengeStoreInterface>;
+            challenge_store.set_challenges(vec![challenge.clone()]);
+
+            let repository_store = Arc::new(RepositoryStore::new_for_test())
+                as Arc<dyn gittype::domain::stores::RepositoryStoreInterface>;
+            let session_store = Arc::new(SessionStore::new_for_test())
+                as Arc<dyn gittype::domain::stores::SessionStoreInterface>;
+
+            let stage_repo = StageRepository::new(
+                None,
+                challenge_store.clone(),
+                repository_store.clone(),
+                session_store.clone(),
+            );
+
+            // Build difficulty indices for challenge lookup
+            stage_repo.build_difficulty_indices();
+
+            let stage_repo_arc = Arc::new(stage_repo) as Arc<dyn StageRepositoryInterface>;
+
+            (
+                challenge_store,
+                repository_store,
+                session_store,
+                stage_repo_arc,
+            )
+        } else {
+            let challenge_store = Arc::new(ChallengeStore::new_for_test())
+                as Arc<dyn gittype::domain::stores::ChallengeStoreInterface>;
+            let repository_store = Arc::new(RepositoryStore::new_for_test())
+                as Arc<dyn gittype::domain::stores::RepositoryStoreInterface>;
+            let session_store = Arc::new(SessionStore::new_for_test())
+                as Arc<dyn gittype::domain::stores::SessionStoreInterface>;
+
+            let stage_repo = Arc::new(StageRepository::new(
+                None,
+                challenge_store.clone(),
+                repository_store.clone(),
+                session_store.clone(),
+            )) as Arc<dyn StageRepositoryInterface>;
+
+            (challenge_store, repository_store, session_store, stage_repo)
         };
 
-        let challenge_store = Arc::new(ChallengeStore::new_for_test()) as Arc<dyn gittype::domain::stores::ChallengeStoreInterface>;
-        challenge_store.set_challenges(vec![challenge.clone()]);
-
-        let repository_store = Arc::new(RepositoryStore::new_for_test()) as Arc<dyn gittype::domain::stores::RepositoryStoreInterface>;
-        let session_store = Arc::new(SessionStore::new_for_test()) as Arc<dyn gittype::domain::stores::SessionStoreInterface>;
-
-        let mut stage_repo = StageRepository::new(
-            None,
-            challenge_store.clone(),
-            repository_store.clone(),
-            session_store.clone(),
-        );
-
-        // Build difficulty indices for challenge lookup
-        stage_repo.build_difficulty_indices();
-
-        let stage_repo_arc = Arc::new(stage_repo) as Arc<dyn StageRepositoryInterface>;
-
-        (challenge_store, repository_store, session_store, stage_repo_arc)
-    } else {
-        let challenge_store = Arc::new(ChallengeStore::new_for_test()) as Arc<dyn gittype::domain::stores::ChallengeStoreInterface>;
-        let repository_store = Arc::new(RepositoryStore::new_for_test()) as Arc<dyn gittype::domain::stores::RepositoryStoreInterface>;
-        let session_store = Arc::new(SessionStore::new_for_test()) as Arc<dyn gittype::domain::stores::SessionStoreInterface>;
-
-        let stage_repo = Arc::new(StageRepository::new(
-            None,
-            challenge_store.clone(),
-            repository_store.clone(),
-            session_store.clone(),
-        )) as Arc<dyn StageRepositoryInterface>;
-
-        (challenge_store, repository_store, session_store, stage_repo)
-    };
-
+    let session_tracker: Arc<dyn SessionTrackerInterface> = Arc::new(SessionTracker::default());
+    let total_tracker: Arc<dyn TotalTrackerInterface> = Arc::new(TotalTracker::default());
     let session_manager = SessionManager::new_with_dependencies(
         event_bus.clone(),
         stage_repository.clone(),
+        session_tracker,
+        total_tracker,
     );
     let session_manager_arc = Arc::new(session_manager);
 
@@ -119,7 +138,10 @@ pub fn create_typing_screen_with_challenge(
         session_manager_arc.add_stage_data("test_stage".to_string(), stage_tracker, challenge);
     }
 
-    let theme_service = Arc::new(ThemeService::new_for_test(Theme::default(), ColorMode::Dark)) as Arc<dyn ThemeServiceInterface>;
+    let theme_service = Arc::new(ThemeService::new_for_test(
+        Theme::default(),
+        ColorMode::Dark,
+    )) as Arc<dyn ThemeServiceInterface>;
     let screen = TypingScreen::new(
         event_bus,
         theme_service,
@@ -129,7 +151,8 @@ pub fn create_typing_screen_with_challenge(
 
     // Load challenge if provided
     if code.is_some() {
-        let _ = screen.load_current_challenge();
+        // init_with_data will call load_current_challenge internally
+        let _ = screen.init_with_data(Box::new(()));
     }
 
     screen

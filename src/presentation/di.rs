@@ -8,6 +8,7 @@ use crate::domain::repositories::version_repository::VersionRepository;
 use crate::domain::services::analytics_service::AnalyticsService;
 use crate::domain::services::config_service::ConfigService;
 use crate::domain::services::repository_service::RepositoryService;
+use crate::domain::services::scoring::{SessionTracker, TotalTracker};
 use crate::domain::services::session_manager_service::SessionManager;
 use crate::domain::services::session_service::SessionService;
 use crate::domain::services::stage_builder_service::StageRepository as StageBuilderRepository;
@@ -56,6 +57,8 @@ shaku::module! {
             VersionRepository,
             SessionService,
             SessionManager,
+            SessionTracker,
+            TotalTracker,
             StageBuilderRepository,
             AnalyticsService,
             RepositoryService,

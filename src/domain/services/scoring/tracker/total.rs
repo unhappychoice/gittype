@@ -1,44 +1,58 @@
 use crate::domain::models::SessionResult;
-use once_cell::sync::Lazy;
-use std::sync::{Arc, Mutex};
+use shaku::Interface;
+use std::sync::RwLock;
 
-// Global total tracker for game-wide statistics
-pub static GLOBAL_TOTAL_TRACKER: Lazy<Arc<Mutex<Option<TotalTracker>>>> =
-    Lazy::new(|| Arc::new(Mutex::new(None)));
-
-/// Total level raw data tracking
-#[derive(Clone)]
-pub struct TotalTracker {
-    session_results: Vec<SessionResult>,
+pub trait TotalTrackerInterface: Interface {
+    fn record(&self, session_result: SessionResult);
+    fn get_data(&self) -> TotalTrackerData;
+    fn reset(&self);
 }
 
-impl TotalTracker {
-    pub fn new() -> Self {
-        Self {
-            session_results: Vec::new(),
-        }
-    }
+#[derive(Default)]
+pub struct TotalTrackerState {
+    pub session_results: Vec<SessionResult>,
+}
 
-    pub fn record(&mut self, session_result: SessionResult) {
-        self.session_results.push(session_result);
-    }
-
-    pub fn get_data(&self) -> TotalTrackerData {
-        TotalTrackerData {
-            session_results: self.session_results.clone(),
-        }
-    }
-
-    pub fn initialize_global_instance(tracker: TotalTracker) {
-        if let Ok(mut global) = GLOBAL_TOTAL_TRACKER.lock() {
-            *global = Some(tracker);
-        }
-    }
+/// Total level raw data tracking
+#[derive(shaku::Component)]
+#[shaku(interface = TotalTrackerInterface)]
+pub struct TotalTracker {
+    #[shaku(default)]
+    state: RwLock<TotalTrackerState>,
 }
 
 impl Default for TotalTracker {
     fn default() -> Self {
-        Self::new()
+        Self {
+            state: RwLock::new(TotalTrackerState::default()),
+        }
+    }
+}
+
+impl TotalTrackerInterface for TotalTracker {
+    fn record(&self, session_result: SessionResult) {
+        self.state
+            .write()
+            .unwrap()
+            .session_results
+            .push(session_result);
+    }
+
+    fn get_data(&self) -> TotalTrackerData {
+        TotalTrackerData {
+            session_results: self.state.read().unwrap().session_results.clone(),
+        }
+    }
+
+    fn reset(&self) {
+        self.state.write().unwrap().session_results.clear();
+    }
+}
+
+#[cfg(feature = "test-mocks")]
+impl TotalTracker {
+    pub fn new_for_test() -> Self {
+        Self::default()
     }
 }
 

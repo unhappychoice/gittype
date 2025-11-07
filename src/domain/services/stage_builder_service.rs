@@ -22,6 +22,7 @@ pub struct StageRepository {
     #[shaku(default)]
     built_stages: Mutex<Vec<Challenge>>,
     #[shaku(default)]
+    #[allow(dead_code)]
     current_index: Mutex<usize>,
     #[shaku(default)]
     difficulty_indices: Mutex<HashMap<DifficultyLevel, Vec<usize>>>,
@@ -32,8 +33,10 @@ pub struct StageRepository {
     #[shaku(inject)]
     challenge_store: Arc<dyn ChallengeStoreInterface>,
     #[shaku(inject)]
+    #[allow(dead_code)]
     repository_store: Arc<dyn RepositoryStoreInterface>,
     #[shaku(inject)]
+    #[allow(dead_code)]
     session_store: Arc<dyn SessionStoreInterface>,
 }
 
@@ -48,7 +51,6 @@ impl StageRepositoryInterface for StageRepository {
         self
     }
 }
-
 
 impl StageRepository {
     pub fn new(
@@ -310,12 +312,8 @@ impl StageRepository {
         *self.indices_cached.lock().unwrap() = false;
     }
 
-
     /// Get a single challenge for specific difficulty (optimized with cached data)
-    pub fn get_challenge_for_difficulty(
-        &self,
-        difficulty: DifficultyLevel,
-    ) -> Option<Challenge> {
+    pub fn get_challenge_for_difficulty(&self, difficulty: DifficultyLevel) -> Option<Challenge> {
         // Ensure indices are built
         self.build_difficulty_indices();
 

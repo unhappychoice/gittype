@@ -1,13 +1,13 @@
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::{DifficultyLevel, GitRepository};
-use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::services::stage_builder_service::StageRepositoryInterface;
-use crate::domain::stores::RepositoryStoreInterface;
 use crate::domain::services::StageRepository;
+use crate::domain::stores::RepositoryStoreInterface;
 use crate::presentation::tui::views::title::{DifficultySelectionView, StaticElementsView};
 use crate::presentation::tui::ScreenDataProvider;
 use crate::presentation::tui::{Screen, ScreenType, UpdateStrategy};
-use crate::{GitTypeError, Result};
+use crate::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{
     layout::{Constraint, Direction, Layout},
@@ -70,6 +70,9 @@ pub struct TitleScreen {
     stage_repository: Arc<dyn StageRepositoryInterface>,
     #[shaku(inject)]
     repository_store: Arc<dyn RepositoryStoreInterface>,
+    #[shaku(inject)]
+    session_manager:
+        Arc<dyn crate::domain::services::session_manager_service::SessionManagerInterface>,
 }
 
 impl TitleScreen {
@@ -78,6 +81,9 @@ impl TitleScreen {
         theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
         stage_repository: Arc<dyn StageRepositoryInterface>,
         repository_store: Arc<dyn RepositoryStoreInterface>,
+        session_manager: Arc<
+            dyn crate::domain::services::session_manager_service::SessionManagerInterface,
+        >,
     ) -> Self {
         Self {
             selected_difficulty: RwLock::new(1),
@@ -90,6 +96,7 @@ impl TitleScreen {
             theme_service,
             stage_repository,
             repository_store,
+            session_manager,
         }
     }
 
@@ -140,21 +147,22 @@ impl Screen for TitleScreen {
         *self.action_result.write().unwrap() = None;
         *self.needs_render.write().unwrap() = true;
 
-        let (challenge_counts, git_repository) = if let Ok(screen_data) = data.downcast::<TitleScreenData>() {
-            (screen_data.challenge_counts, screen_data.git_repository)
-        } else {
-            // If no data provided, get from injected dependencies
-            let challenge_counts = self
-                .stage_repository
-                .as_any()
-                .downcast_ref::<StageRepository>()
-                .map(|repo| repo.count_challenges_by_difficulty())
-                .unwrap_or([0; 5]);
+        let (challenge_counts, git_repository) =
+            if let Ok(screen_data) = data.downcast::<TitleScreenData>() {
+                (screen_data.challenge_counts, screen_data.git_repository)
+            } else {
+                // If no data provided, get from injected dependencies
+                let challenge_counts = self
+                    .stage_repository
+                    .as_any()
+                    .downcast_ref::<StageRepository>()
+                    .map(|repo| repo.count_challenges_by_difficulty())
+                    .unwrap_or([0; 5]);
 
-            let git_repository = self.repository_store.get_repository();
+                let git_repository = self.repository_store.get_repository();
 
-            (challenge_counts, git_repository)
-        };
+                (challenge_counts, git_repository)
+            };
 
         *self.challenge_counts.write().unwrap() = challenge_counts;
         *self.git_repository.write().unwrap() = git_repository;
@@ -175,8 +183,19 @@ impl Screen for TitleScreen {
                     Ok(())
                 } else {
                     *self.error_message.write().unwrap() = None;
-                    *self.action_result.write().unwrap() =
-                        Some(TitleAction::Start(DIFFICULTIES[selected_difficulty].1));
+                    let difficulty = DIFFICULTIES[selected_difficulty].1;
+                    *self.action_result.write().unwrap() = Some(TitleAction::Start(difficulty));
+
+                    // Set difficulty in SessionManager before transitioning to Typing screen
+                    use crate::domain::services::SessionManager;
+                    if let Some(sm) = self
+                        .session_manager
+                        .as_any()
+                        .downcast_ref::<SessionManager>()
+                    {
+                        sm.set_difficulty(difficulty);
+                    }
+
                     let event_bus = self.event_bus.as_event_bus();
                     log::info!(
                         "TitleScreen: EventBus subscribers address: {:p}",

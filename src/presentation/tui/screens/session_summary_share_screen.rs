@@ -1,9 +1,9 @@
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::SessionResult;
-use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::services::session_manager_service::SessionManagerInterface;
-use crate::domain::stores::{RepositoryStore, RepositoryStoreInterface};
 use crate::domain::services::SessionManager;
+use crate::domain::stores::RepositoryStoreInterface;
 use crate::presentation::sharing::{SharingPlatform, SharingService};
 use crate::presentation::tui::views::{
     ShareBackOptionView, SharePlatformOptionsView, SharePreviewView, ShareTitleView,
@@ -14,8 +14,8 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
 };
-use std::sync::RwLock;
 use std::sync::Arc;
+use std::sync::RwLock;
 
 pub struct SessionSummaryShareData {
     pub session_result: SessionResult,
@@ -103,23 +103,24 @@ impl Screen for SessionSummaryShareScreen {
     }
 
     fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
-        let (session_result, git_repository) = if let Ok(data) = data.downcast::<SessionSummaryShareData>() {
-            (Some(data.session_result), data.git_repository)
-        } else {
-            // If no data provided, get from injected dependencies
-            let sm = self
-                .session_manager
-                .as_any()
-                .downcast_ref::<SessionManager>()
-                .ok_or_else(|| {
-                    GitTypeError::TerminalError("Failed to get SessionManager".to_string())
-                })?;
+        let (session_result, git_repository) =
+            if let Ok(data) = data.downcast::<SessionSummaryShareData>() {
+                (Some(data.session_result), data.git_repository)
+            } else {
+                // If no data provided, get from injected dependencies
+                let sm = self
+                    .session_manager
+                    .as_any()
+                    .downcast_ref::<SessionManager>()
+                    .ok_or_else(|| {
+                        GitTypeError::TerminalError("Failed to get SessionManager".to_string())
+                    })?;
 
-            let session_result = sm.get_session_result();
-            let git_repository = self.repository_store.get_repository();
+                let session_result = sm.get_session_result();
+                let git_repository = self.repository_store.get_repository();
 
-            (session_result, git_repository)
-        };
+                (session_result, git_repository)
+            };
 
         *self.session_result.write().unwrap() = session_result;
         *self.git_repository.write().unwrap() = git_repository;

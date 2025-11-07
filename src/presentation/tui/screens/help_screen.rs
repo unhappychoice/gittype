@@ -1,7 +1,7 @@
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::rank::{Rank, RankTier};
 use crate::infrastructure::browser;
-use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;

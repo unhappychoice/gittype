@@ -1,13 +1,13 @@
+use crate::domain::events::presentation_events::ExitRequested;
 use crate::domain::events::EventBusInterface;
+use crate::domain::models::loading::{ExecutionContext, StepManager, StepType};
 use crate::domain::models::ExtractionOptions;
 use crate::domain::models::{Challenge, GitRepository};
 use crate::domain::repositories::challenge_repository::ChallengeRepositoryInterface;
-use crate::domain::events::presentation_events::ExitRequested;
-use crate::domain::models::loading::{ExecutionContext, StepManager, StepType};
 use crate::presentation::tui::views::LoadingMainView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
-use crate::{GitTypeError, Result};
+use crate::Result;
 use ratatui::Frame;
 use std::path::PathBuf;
 use std::sync::{
@@ -119,9 +119,11 @@ pub struct LoadingScreen {
     #[shaku(inject)]
     session_store: Arc<dyn crate::domain::stores::SessionStoreInterface>,
     #[shaku(inject)]
-    stage_repository: Arc<dyn crate::domain::services::stage_builder_service::StageRepositoryInterface>,
+    stage_repository:
+        Arc<dyn crate::domain::services::stage_builder_service::StageRepositoryInterface>,
     #[shaku(inject)]
-    session_manager: Arc<dyn crate::domain::services::session_manager_service::SessionManagerInterface>,
+    session_manager:
+        Arc<dyn crate::domain::services::session_manager_service::SessionManagerInterface>,
 }
 
 impl LoadingScreen {
@@ -131,10 +133,10 @@ impl LoadingScreen {
         challenge_repository: Arc<dyn ChallengeRepositoryInterface>,
         theme_service: Arc<dyn crate::domain::services::theme_service::ThemeServiceInterface>,
     ) -> Self {
-        use crate::domain::stores::{ChallengeStore, RepositoryStore, SessionStore};
-        use crate::domain::services::{SessionManager, stage_builder_service::StageRepository};
-        use crate::domain::services::stage_builder_service::StageRepositoryInterface;
         use crate::domain::services::session_manager_service::SessionManagerInterface;
+        use crate::domain::services::stage_builder_service::StageRepositoryInterface;
+        use crate::domain::services::{stage_builder_service::StageRepository, SessionManager};
+        use crate::domain::stores::{ChallengeStore, RepositoryStore, SessionStore};
 
         let challenge_store = Arc::new(ChallengeStore::new_for_test());
         let repository_store = Arc::new(RepositoryStore::new_for_test());
@@ -147,9 +149,18 @@ impl LoadingScreen {
             session_store.clone(),
         )) as Arc<dyn StageRepositoryInterface>;
 
+        // Create tracker instances
+        use crate::domain::services::scoring::{
+            SessionTracker, SessionTrackerInterface, TotalTracker, TotalTrackerInterface,
+        };
+        let session_tracker: Arc<dyn SessionTrackerInterface> = Arc::new(SessionTracker::default());
+        let total_tracker: Arc<dyn TotalTrackerInterface> = Arc::new(TotalTracker::default());
+
         let session_manager = Arc::new(SessionManager::new_with_dependencies(
             event_bus.clone(),
             stage_repository.clone(),
+            session_tracker,
+            total_tracker,
         )) as Arc<dyn SessionManagerInterface>;
 
         Self {
@@ -450,19 +461,26 @@ impl Screen for LoadingScreen {
     fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
         let loading_data = data.downcast::<LoadingScreenData>()?;
 
-        // Get processing parameters from LoadingScreenData if provided, 
+        // Get processing parameters from LoadingScreenData if provided,
         // otherwise fallback to RepositoryStore
-        let (repo_spec, repo_path, extraction_options) = if let Some(params) = loading_data.processing_params {
-            (params.repo_spec, params.repo_path, params.extraction_options)
-        } else {
-            // Fallback to RepositoryStore
-            let repo_spec = self.repository_store.get_repo_spec();
-            let repo_path = self.repository_store.get_repo_path();
-            let extraction_options = self.repository_store.get_extraction_options()
-                .unwrap_or_default();
-            
-            (repo_spec, repo_path, extraction_options)
-        };
+        let (repo_spec, repo_path, extraction_options) =
+            if let Some(params) = loading_data.processing_params {
+                (
+                    params.repo_spec,
+                    params.repo_path,
+                    params.extraction_options,
+                )
+            } else {
+                // Fallback to RepositoryStore
+                let repo_spec = self.repository_store.get_repo_spec();
+                let repo_path = self.repository_store.get_repo_path();
+                let extraction_options = self
+                    .repository_store
+                    .get_extraction_options()
+                    .unwrap_or_default();
+
+                (repo_spec, repo_path, extraction_options)
+            };
 
         self.start_background_processing(
             repo_spec.as_deref(),

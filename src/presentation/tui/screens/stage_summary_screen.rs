@@ -1,6 +1,6 @@
-use crate::domain::events::EventBusInterface;
-use crate::domain::services::scoring::{SessionTracker, StageResult, GLOBAL_SESSION_TRACKER};
 use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::EventBusInterface;
+use crate::domain::services::scoring::StageResult;
 use crate::domain::services::session_manager_service::SessionManagerInterface;
 use crate::domain::services::SessionManager;
 use crate::presentation::tui::screens::ResultAction;
@@ -127,16 +127,6 @@ impl Screen for StageSummaryScreen {
                 )
             } else {
                 // If no data provided, get from injected dependencies
-                let stage_result = GLOBAL_SESSION_TRACKER
-                    .lock()
-                    .ok()
-                    .and_then(|tracker| {
-                        tracker.as_ref().and_then(|t| {
-                            let data = t.get_data();
-                            data.stage_results.last().cloned()
-                        })
-                    });
-
                 let sm = self
                     .session_manager
                     .as_any()
@@ -145,6 +135,7 @@ impl Screen for StageSummaryScreen {
                         GitTypeError::TerminalError("Failed to get SessionManager".to_string())
                     })?;
 
+                let stage_result = sm.get_stage_results().last().cloned();
                 let (current_stage, total_stages) = sm.get_stage_info().unwrap_or((1, 3));
                 let is_completed = sm.is_session_completed().unwrap_or(false);
 

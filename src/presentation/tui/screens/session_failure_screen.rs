@@ -1,9 +1,9 @@
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::{GitRepository, SessionResult};
-use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::services::session_manager_service::SessionManagerInterface;
-use crate::domain::stores::{RepositoryStore, RepositoryStoreInterface};
 use crate::domain::services::SessionManager;
+use crate::domain::stores::RepositoryStoreInterface;
 use crate::presentation::tui::views::session_failure::{ContentView, FooterView, HeaderView};
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::Result;
@@ -11,8 +11,8 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
 };
-use std::sync::RwLock;
 use std::sync::Arc;
+use std::sync::RwLock;
 
 pub struct SessionFailureScreenData {
     pub session_result: SessionResult,
@@ -81,29 +81,32 @@ impl Screen for SessionFailureScreen {
     }
 
     fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
-        let (session_result, total_stages, repo_info) =
-            if let Ok(screen_data) = data.downcast::<SessionFailureScreenData>() {
-                (
-                    screen_data.session_result,
-                    screen_data.total_stages,
-                    screen_data.repo_info,
-                )
-            } else {
-                // If no data provided, get from injected dependencies
-                let sm = self
-                    .session_manager
-                    .as_any()
-                    .downcast_ref::<SessionManager>()
-                    .ok_or_else(|| {
-                        crate::GitTypeError::TerminalError("Failed to get SessionManager".to_string())
-                    })?;
+        let (session_result, total_stages, repo_info) = if let Ok(screen_data) =
+            data.downcast::<SessionFailureScreenData>()
+        {
+            (
+                screen_data.session_result,
+                screen_data.total_stages,
+                screen_data.repo_info,
+            )
+        } else {
+            // If no data provided, get from injected dependencies
+            let sm = self
+                .session_manager
+                .as_any()
+                .downcast_ref::<SessionManager>()
+                .ok_or_else(|| {
+                    crate::GitTypeError::TerminalError("Failed to get SessionManager".to_string())
+                })?;
 
-                let session_result = sm.get_session_result().unwrap_or_else(SessionResult::default);
-                let total_stages = sm.get_stage_info().map(|(_, total)| total).unwrap_or(1);
-                let repo_info = self.repository_store.get_repository();
+            let session_result = sm
+                .get_session_result()
+                .unwrap_or_else(SessionResult::default);
+            let total_stages = sm.get_stage_info().map(|(_, total)| total).unwrap_or(1);
+            let repo_info = self.repository_store.get_repository();
 
-                (session_result, total_stages, repo_info)
-            };
+            (session_result, total_stages, repo_info)
+        };
 
         *self.session_result.write().unwrap() = session_result;
         *self.total_stages.write().unwrap() = total_stages;

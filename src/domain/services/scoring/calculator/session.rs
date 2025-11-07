@@ -1,5 +1,7 @@
 use crate::domain::models::SessionResult;
-use crate::domain::services::scoring::{ScoreCalculator, SessionTracker};
+use crate::domain::services::scoring::{
+    ScoreCalculator, SessionTracker, SessionTrackerData, SessionTrackerInterface,
+};
 use std::time::Duration;
 
 /// Session level result calculation
@@ -9,7 +11,11 @@ impl SessionCalculator {
     /// Calculate session result using SessionTracker data only
     pub fn calculate(tracker: &SessionTracker) -> SessionResult {
         let data = tracker.get_data();
+        Self::calculate_from_data(&data)
+    }
 
+    /// Calculate session result directly from SessionTrackerData
+    pub fn calculate_from_data(data: &SessionTrackerData) -> SessionResult {
         // Calculate valid session duration (completed stages only)
         let valid_session_duration: Duration = data
             .stage_results
@@ -134,7 +140,7 @@ impl SessionCalculator {
             stages_completed,
             stages_attempted,
             stages_skipped,
-            stage_results: data.stage_results,
+            stage_results: data.stage_results.clone(),
             overall_accuracy,
             overall_wpm,
             overall_cpm,

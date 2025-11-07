@@ -1,5 +1,5 @@
-use gittype::infrastructure::storage::file_storage::FileStorage;
 use gittype::domain::services::context_loader::load_context_lines;
+use gittype::infrastructure::storage::file_storage::FileStorage;
 use std::fs;
 use tempfile::NamedTempFile;
 

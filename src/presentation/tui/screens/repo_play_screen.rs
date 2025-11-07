@@ -1,9 +1,9 @@
+use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::storage::StoredRepositoryWithLanguages;
 use crate::domain::services::repository_service::RepositoryService;
 use crate::infrastructure::database::database::{Database, DatabaseInterface};
 use crate::infrastructure::git::RemoteGitRepositoryClient;
-use crate::domain::events::presentation_events::NavigateTo;
 use crate::presentation::tui::views::repo_play::{ControlsView, HeaderView, RepositoryListView};
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::Result;
