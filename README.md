@@ -141,6 +141,10 @@ Perfect for when the game gets too addictive:
 
 ![GitType Settings](docs/images/settings-theme.png)
 
+## Related Projects 🎨
+
+Prefer watching code over typing it? Check out [**Gitlogue**](https://github.com/unhappychoice/gitlogue) - A terminal screensaver that animates your Git commit history with realistic typing effects.
+
 ## License 📄
 
 [MIT](LICENSE) - Because sharing is caring (and legal requirements)
