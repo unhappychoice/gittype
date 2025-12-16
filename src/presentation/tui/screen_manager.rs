@@ -61,15 +61,16 @@ use crate::presentation::tui::screens::{
     AnalyticsScreen, AnalyticsScreenInterface, AnimationScreen, AnimationScreenInterface,
     HelpScreen, HelpScreenInterface, InfoDialogScreen, InfoDialogScreenInterface, LoadingScreen,
     LoadingScreenInterface, PanicScreen, PanicScreenInterface, RecordsScreen,
-    RecordsScreenInterface, RepoListScreen, RepoPlayScreen, SessionDetailScreen,
-    SessionDetailScreenInterface, SessionDetailsDialog, SessionDetailsDialogInterface,
-    SessionFailureScreen, SessionFailureScreenInterface, SessionSummaryScreen,
-    SessionSummaryScreenInterface, SessionSummaryShareScreen, SessionSummaryShareScreenInterface,
-    SettingsScreen, SettingsScreenInterface, StageSummaryScreen, StageSummaryScreenInterface,
-    TitleScreen, TitleScreenInterface, TotalSummaryScreen, TotalSummaryScreenInterface,
-    TotalSummaryShareScreen, TotalSummaryShareScreenInterface, TrendingLanguageSelectionScreen,
-    TrendingRepositorySelectionScreen, TypingScreen, TypingScreenInterface, VersionCheckScreen,
-    VersionCheckScreenInterface,
+    RecordsScreenInterface, RepoListScreen, RepoListScreenInterface, RepoPlayScreen,
+    RepoPlayScreenInterface, SessionDetailScreen, SessionDetailScreenInterface, SessionDetailsDialog,
+    SessionDetailsDialogInterface, SessionFailureScreen, SessionFailureScreenInterface,
+    SessionSummaryScreen, SessionSummaryScreenInterface, SessionSummaryShareScreen,
+    SessionSummaryShareScreenInterface, SettingsScreen, SettingsScreenInterface, StageSummaryScreen,
+    StageSummaryScreenInterface, TitleScreen, TitleScreenInterface, TotalSummaryScreen,
+    TotalSummaryScreenInterface, TotalSummaryShareScreen, TotalSummaryShareScreenInterface,
+    TrendingLanguageSelectionScreen, TrendingLanguageSelectionScreenInterface,
+    TrendingRepositorySelectionScreen, TrendingRepositorySelectionScreenInterface, TypingScreen,
+    TypingScreenInterface, VersionCheckScreen, VersionCheckScreenInterface,
 };
 use crate::presentation::tui::{
     Screen, ScreenDataProvider, ScreenTransition, ScreenType, UpdateStrategy,
@@ -839,6 +840,14 @@ pub struct ScreenManagerFactoryImpl {
     total_summary_share_screen: Arc<dyn TotalSummaryShareScreenInterface>,
     #[shaku(inject)]
     version_check_screen: Arc<dyn VersionCheckScreenInterface>,
+    #[shaku(inject)]
+    repo_list_screen: Arc<dyn RepoListScreenInterface>,
+    #[shaku(inject)]
+    repo_play_screen: Arc<dyn RepoPlayScreenInterface>,
+    #[shaku(inject)]
+    trending_language_selection_screen: Arc<dyn TrendingLanguageSelectionScreenInterface>,
+    #[shaku(inject)]
+    trending_repository_selection_screen: Arc<dyn TrendingRepositorySelectionScreenInterface>,
 }
 
 impl ScreenManagerFactory for ScreenManagerFactoryImpl {
@@ -901,6 +910,16 @@ impl ScreenManagerFactory for ScreenManagerFactoryImpl {
         manager.register_screen_interface(total_summary_share_screen);
         let version_check_screen: Arc<dyn Screen> = self.version_check_screen.clone();
         manager.register_screen_interface(version_check_screen);
+        let repo_list_screen: Arc<dyn Screen> = self.repo_list_screen.clone();
+        manager.register_screen_interface(repo_list_screen);
+        let repo_play_screen: Arc<dyn Screen> = self.repo_play_screen.clone();
+        manager.register_screen_interface(repo_play_screen);
+        let trending_language_selection_screen: Arc<dyn Screen> =
+            self.trending_language_selection_screen.clone();
+        manager.register_screen_interface(trending_language_selection_screen);
+        let trending_repository_selection_screen: Arc<dyn Screen> =
+            self.trending_repository_selection_screen.clone();
+        manager.register_screen_interface(trending_repository_selection_screen);
 
         manager
     }
