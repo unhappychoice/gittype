@@ -519,6 +519,20 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
 
     /// Run the ScreenManager main loop
     pub fn run(&mut self) -> Result<()> {
+        self.run_loop()?;
+        self.cleanup_terminal()?;
+        Ok(())
+    }
+
+    /// Run the ScreenManager main loop without terminal cleanup at the end
+    pub fn run_without_cleanup(&mut self) -> Result<()> {
+        self.run_loop()?;
+        // Mark terminal as not initialized so Drop won't clean it up
+        self.terminal_initialized = false;
+        Ok(())
+    }
+
+    fn run_loop(&mut self) -> Result<()> {
         // Initialize current screen and force initial render
         self.render_current_screen()?;
 
@@ -552,9 +566,6 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
                 break;
             }
         }
-
-        // Clean up on exit
-        self.cleanup_terminal()?;
 
         Ok(())
     }
@@ -708,6 +719,16 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
 
     pub fn is_terminal_initialized(&self) -> bool {
         self.terminal_initialized
+    }
+
+    /// Skip terminal cleanup on drop (for use with ScreenRunnerContext)
+    pub fn skip_cleanup_on_drop(&mut self) {
+        self.terminal_initialized = false;
+    }
+
+    /// Mark terminal as already initialized (for chained screen runs)
+    pub fn mark_terminal_initialized(&mut self) {
+        self.terminal_initialized = true;
     }
 
     /// Static cleanup function for use when ScreenManager instance is not available

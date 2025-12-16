@@ -6,7 +6,7 @@ use crate::domain::repositories::trending_repository::TrendingRepositoryInterfac
 use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::infrastructure::console::{Console, ConsoleImpl};
 use crate::presentation::cli::commands::run_game_session;
-use crate::presentation::cli::screen_runner::run_screen;
+use crate::presentation::cli::screen_runner::{run_screen, ScreenRunnerContext};
 use crate::presentation::cli::Cli;
 use crate::presentation::di::AppModule;
 use crate::presentation::tui::screens::{
@@ -119,8 +119,11 @@ pub fn run_trending(
         // No language provided - show language selection then repository selection
         let _theme_service: Arc<dyn ThemeServiceInterface> = container.resolve();
 
+        // Use ScreenRunnerContext to share terminal state between screens
+        let ctx = ScreenRunnerContext::new()?;
+
         // Step 1: Language selection
-        let selected_language = run_screen::<TrendingLanguageSelectionScreen, _, _, _>(
+        let selected_language = ctx.run_screen::<TrendingLanguageSelectionScreen, _, _, _>(
             ScreenType::TrendingLanguageSelection,
             None::<()>,
             Some(|screen: &TrendingLanguageSelectionScreen| {
@@ -130,7 +133,7 @@ pub fn run_trending(
 
         if let Some(lang) = selected_language {
             // Step 2: Repository selection with selected language
-            let selected_repo = run_screen::<TrendingRepositorySelectionScreen, _, _, _>(
+            let selected_repo = ctx.run_screen::<TrendingRepositorySelectionScreen, _, _, _>(
                 ScreenType::TrendingRepositorySelection,
                 Some((Some(lang), period.clone())),
                 Some(|screen: &TrendingRepositorySelectionScreen| {
@@ -143,6 +146,9 @@ pub fn run_trending(
                 }),
             )?;
 
+            // Cleanup terminal before starting game
+            ctx.cleanup()?;
+
             if let Some(repo_name) = selected_repo {
                 let repo_url = format!("https://github.com/{}", repo_name);
                 let cli = Cli {
@@ -153,6 +159,9 @@ pub fn run_trending(
                 };
                 return run_game_session(cli);
             }
+        } else {
+            // User cancelled language selection
+            ctx.cleanup()?;
         }
     }
 
