@@ -4,6 +4,7 @@ use gittype::domain::events::presentation_events::NavigateTo;
 use gittype::domain::events::EventBus;
 use gittype::domain::models::color_mode::ColorMode;
 use gittype::domain::models::theme::Theme;
+use gittype::domain::services::scoring::{TotalTracker, TotalTrackerInterface};
 use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
 use gittype::presentation::tui::screens::total_summary_share_screen::TotalSummaryShareScreen;
 use std::sync::Arc;
@@ -16,7 +17,8 @@ screen_snapshot_test!(
         Arc::new(ThemeService::new_for_test(
             Theme::default(),
             ColorMode::Dark
-        )) as Arc<dyn ThemeServiceInterface>
+        )) as Arc<dyn ThemeServiceInterface>,
+        Arc::new(TotalTracker::new_for_test()) as Arc<dyn TotalTrackerInterface>
     ),
     provider = MockTotalSummaryShareDataProvider
 );
@@ -25,6 +27,16 @@ screen_snapshot_test!(
 screen_key_event_test!(
     test_total_summary_share_screen_esc_goes_back,
     TotalSummaryShareScreen,
+    |event_bus| {
+        TotalSummaryShareScreen::new(
+            event_bus,
+            Arc::new(ThemeService::new_for_test(
+                Theme::default(),
+                ColorMode::Dark,
+            )) as Arc<dyn ThemeServiceInterface>,
+            Arc::new(TotalTracker::new_for_test()) as Arc<dyn TotalTrackerInterface>,
+        )
+    },
     NavigateTo,
     KeyCode::Esc,
     KeyModifiers::empty(),
@@ -34,6 +46,16 @@ screen_key_event_test!(
 screen_key_event_test!(
     test_total_summary_share_screen_ctrl_c_exits,
     TotalSummaryShareScreen,
+    |event_bus| {
+        TotalSummaryShareScreen::new(
+            event_bus,
+            Arc::new(ThemeService::new_for_test(
+                Theme::default(),
+                ColorMode::Dark,
+            )) as Arc<dyn ThemeServiceInterface>,
+            Arc::new(TotalTracker::new_for_test()) as Arc<dyn TotalTrackerInterface>,
+        )
+    },
     NavigateTo,
     KeyCode::Char('c'),
     KeyModifiers::CONTROL,
@@ -41,8 +63,18 @@ screen_key_event_test!(
 );
 
 // Non-event key tests (browser opening will fail in test environment)
-screen_key_tests!(
+screen_key_tests_custom!(
     TotalSummaryShareScreen,
+    |event_bus| {
+        TotalSummaryShareScreen::new(
+            event_bus,
+            Arc::new(ThemeService::new_for_test(
+                Theme::default(),
+                ColorMode::Dark,
+            )) as Arc<dyn ThemeServiceInterface>,
+            Arc::new(TotalTracker::new_for_test()) as Arc<dyn TotalTrackerInterface>,
+        )
+    },
     MockTotalSummaryShareDataProvider,
     [
         (
@@ -77,7 +109,8 @@ screen_basic_methods_test!(
         Arc::new(ThemeService::new_for_test(
             Theme::default(),
             ColorMode::Dark
-        )) as Arc<dyn ThemeServiceInterface>
+        )) as Arc<dyn ThemeServiceInterface>,
+        Arc::new(TotalTracker::new_for_test()) as Arc<dyn TotalTrackerInterface>
     ),
     gittype::presentation::tui::ScreenType::TotalSummaryShare,
     false,

@@ -107,7 +107,7 @@ impl Screen for SessionSummaryShareScreen {
             if let Ok(data) = data.downcast::<SessionSummaryShareData>() {
                 (Some(data.session_result), data.git_repository)
             } else {
-                // If no data provided, get from injected dependencies
+                // Get from injected SessionManager (singleton via DI)
                 let sm = self
                     .session_manager
                     .as_any()

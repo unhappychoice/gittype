@@ -1,8 +1,8 @@
 use criterion::{criterion_group, criterion_main, Criterion};
+use gittype::domain::models::loading::StepType;
 use gittype::domain::models::{CodeChunk, ExtractionOptions, Languages};
 use gittype::domain::services::challenge_generator::ChallengeGenerator;
 use gittype::domain::services::source_code_parser::SourceCodeParser;
-use gittype::presentation::game::models::StepType;
 use gittype::presentation::tui::screens::loading_screen::ProgressReporter;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};

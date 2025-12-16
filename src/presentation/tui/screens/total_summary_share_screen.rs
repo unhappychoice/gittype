@@ -1,7 +1,7 @@
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::TotalResult;
-use crate::domain::services::scoring::{TotalCalculator, TotalTracker};
+use crate::domain::services::scoring::{TotalCalculator, TotalTracker, TotalTrackerInterface};
 use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::infrastructure::browser;
 use crate::presentation::sharing::SharingPlatform;
@@ -55,12 +55,15 @@ pub struct TotalSummaryShareScreen {
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
     theme_service: Arc<dyn ThemeServiceInterface>,
+    #[shaku(inject)]
+    total_tracker: Arc<dyn TotalTrackerInterface>,
 }
 
 impl TotalSummaryShareScreen {
     pub fn new(
         event_bus: Arc<dyn EventBusInterface>,
         theme_service: Arc<dyn ThemeServiceInterface>,
+        total_tracker: Arc<dyn TotalTrackerInterface>,
     ) -> Self {
         Self {
             total_result: RwLock::new(TotalResult::new()),
@@ -68,11 +71,8 @@ impl TotalSummaryShareScreen {
             last_fallback_state: RwLock::new(false),
             event_bus,
             theme_service,
+            total_tracker,
         }
-    }
-
-    pub fn set_total_result(&self, total_result: TotalResult) {
-        *self.total_result.write().unwrap() = total_result;
     }
 
     fn handle_share_platform(&self, platform: SharingPlatform) -> Result<()> {
@@ -152,9 +152,11 @@ impl shaku::Provider<crate::presentation::di::AppModule> for TotalSummaryShareSc
         use shaku::HasComponent;
         let event_bus: std::sync::Arc<dyn EventBusInterface> = module.resolve();
         let theme_service: Arc<dyn ThemeServiceInterface> = module.resolve();
+        let total_tracker: Arc<dyn TotalTrackerInterface> = module.resolve();
         Ok(Box::new(TotalSummaryShareScreen::new(
             event_bus,
             theme_service,
+            total_tracker,
         )))
     }
 }
@@ -177,9 +179,14 @@ impl Screen for TotalSummaryShareScreen {
     fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
         *self.last_fallback_state.write().unwrap() = false;
 
-        let data = data.downcast::<TotalSummaryShareData>()?;
-        *self.total_result.write().unwrap() = data.total_result;
+        let total_result = if let Ok(data) = data.downcast::<TotalSummaryShareData>() {
+            data.total_result
+        } else {
+            // Fallback: calculate from injected TotalTracker (DI singleton)
+            TotalCalculator::calculate_from_data(&self.total_tracker.get_data())
+        };
 
+        *self.total_result.write().unwrap() = total_result;
         Ok(())
     }
 

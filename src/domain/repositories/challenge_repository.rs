@@ -1,6 +1,14 @@
+use rayon::prelude::*;
+use shaku::Interface;
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
+
 use crate::domain::models::loading::StepType;
 use crate::domain::models::{Challenge, DifficultyLevel, GitRepository};
-use crate::infrastructure::storage::compressed_file_storage::CompressedFileStorage;
+use crate::infrastructure::storage::compressed_file_storage::{
+    CompressedFileStorage, CompressedFileStorageInterface,
+};
+use crate::infrastructure::storage::file_storage::FileStorageInterface;
 use crate::presentation::tui::screens::loading_screen::ProgressReporter;
 use crate::Result;
 use rayon::prelude::*;
@@ -52,11 +60,9 @@ pub struct ChallengeRepository {
     #[shaku(default)]
     cache_dir: PathBuf,
     #[shaku(inject)]
-    storage: Arc<
-        dyn crate::infrastructure::storage::compressed_file_storage::CompressedFileStorageInterface,
-    >,
+    storage: Arc<dyn CompressedFileStorageInterface>,
     #[shaku(inject)]
-    file_storage: Arc<dyn crate::infrastructure::storage::file_storage::FileStorageInterface>,
+    file_storage: Arc<dyn FileStorageInterface>,
 }
 
 impl ChallengeRepository {
@@ -158,7 +164,8 @@ impl ChallengeRepository {
     }
 
     pub fn clear_cache(&self) -> Result<()> {
-        let files = self.storage.list_files_in_dir(&self.cache_dir);
+        let cache_dir = self.effective_cache_dir();
+        let files = self.storage.list_files_in_dir(&cache_dir);
         for file in files {
             self.storage.delete_file(&file)?;
         }
@@ -166,7 +173,8 @@ impl ChallengeRepository {
     }
 
     pub fn get_cache_stats(&self) -> Result<(usize, u64)> {
-        let files = self.storage.list_files_in_dir(&self.cache_dir);
+        let cache_dir = self.effective_cache_dir();
+        let files = self.storage.list_files_in_dir(&cache_dir);
         let count = files.len();
         let total_size = files
             .iter()
@@ -186,7 +194,8 @@ impl ChallengeRepository {
     }
 
     pub fn list_cache_keys(&self) -> Result<Vec<String>> {
-        let files = self.storage.list_files_in_dir(&self.cache_dir);
+        let cache_dir = self.effective_cache_dir();
+        let files = self.storage.list_files_in_dir(&cache_dir);
 
         let storage = (self.storage.as_ref() as &dyn std::any::Any)
             .downcast_ref::<CompressedFileStorage>()
@@ -277,10 +286,22 @@ impl ChallengeRepository {
         })
     }
 
+    fn effective_cache_dir(&self) -> PathBuf {
+        if self.cache_dir.as_os_str().is_empty() {
+            self.file_storage
+                .get_app_data_dir()
+                .map(|p| p.join("cache"))
+                .unwrap_or_default()
+        } else {
+            self.cache_dir.clone()
+        }
+    }
+
     fn get_cache_file(&self, repo: &GitRepository) -> PathBuf {
         use sha2::{Digest, Sha256};
 
-        let _ = self.file_storage.create_dir_all(&self.cache_dir);
+        let cache_dir = self.effective_cache_dir();
+        let _ = self.file_storage.create_dir_all(&cache_dir);
         let commit = repo.commit_hash.as_deref().unwrap_or("nohash");
         let dirty = if repo.is_dirty { "dirty" } else { "clean" };
         let raw = format!("{}:{}:{}", repo.cache_key(), commit, dirty);
@@ -291,7 +312,7 @@ impl ChallengeRepository {
             .iter()
             .map(|b| format!("{:02x}", b))
             .collect::<String>();
-        self.cache_dir.join(format!("{}.bin", hex))
+        cache_dir.join(format!("{}.bin", hex))
     }
 }
 
