@@ -1,7 +1,6 @@
 use serde::Deserialize;
 use shaku::{Component, Interface};
 
-use crate::GitTypeError;
 use crate::Result;
 
 #[derive(Debug, Deserialize, Clone)]
@@ -12,6 +11,7 @@ pub struct GitHubRelease {
 #[cfg(not(feature = "test-mocks"))]
 mod real_impl {
     use super::*;
+    use crate::GitTypeError;
 
     pub struct GitHubApiClient {
         client: reqwest::Client,

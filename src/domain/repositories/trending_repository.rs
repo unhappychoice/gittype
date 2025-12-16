@@ -1,12 +1,11 @@
 use serde::{Deserialize, Serialize};
 use shaku::Interface;
-
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use crate::infrastructure::http::oss_insight_client::OssInsightClientInterface;
-use crate::infrastructure::storage::file_storage::FileStorage;
+use crate::infrastructure::storage::file_storage::{FileStorage, FileStorageInterface};
 use crate::Result;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -45,8 +44,10 @@ pub struct TrendingRepository {
     #[shaku(inject)]
     oss_insight_client: Arc<dyn OssInsightClientInterface>,
     #[shaku(inject)]
-    file_storage: Arc<dyn crate::infrastructure::storage::file_storage::FileStorageInterface>,
+    file_storage: Arc<dyn FileStorageInterface>,
 }
+
+const DEFAULT_TTL_SECONDS: u64 = 3600;
 
 impl TrendingRepository {
     /// Get trending repositories with caching and fallback to fresh data
@@ -105,7 +106,7 @@ impl TrendingRepository {
             .as_secs();
 
         // Check if cache is still valid
-        if current_time.saturating_sub(cache_data.timestamp) < self.ttl_seconds {
+        if current_time.saturating_sub(cache_data.timestamp) < self.effective_ttl_seconds() {
             Some(cache_data.repositories)
         } else {
             // Remove expired cache file
@@ -162,6 +163,25 @@ impl TrendingRepository {
         Ok(repositories)
     }
 
+    fn effective_cache_dir(&self) -> PathBuf {
+        if self.cache_dir.as_os_str().is_empty() {
+            self.file_storage
+                .get_app_data_dir()
+                .map(|p| p.join("cache"))
+                .unwrap_or_default()
+        } else {
+            self.cache_dir.clone()
+        }
+    }
+
+    fn effective_ttl_seconds(&self) -> u64 {
+        if self.ttl_seconds == 0 {
+            DEFAULT_TTL_SECONDS
+        } else {
+            self.ttl_seconds
+        }
+    }
+
     fn get_cache_file(&self, key: &str) -> PathBuf {
         use sha2::{Digest, Sha256};
 
@@ -172,7 +192,7 @@ impl TrendingRepository {
             .iter()
             .map(|b| format!("{:02x}", b))
             .collect::<String>();
-        self.cache_dir.join(format!("{}.json", hex))
+        self.effective_cache_dir().join(format!("{}.json", hex))
     }
 }
 
