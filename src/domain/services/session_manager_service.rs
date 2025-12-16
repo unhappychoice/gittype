@@ -632,61 +632,63 @@ impl SessionManager {
             ));
         }
 
-        match *self.state.lock().unwrap() {
-            SessionState::InProgress { .. } => {
-                // Record skip event and finalize current stage tracker
-                let mut tracker_guard = self.current_stage_tracker.lock().unwrap();
-                if let Some(ref mut tracker) = *tracker_guard {
-                    tracker.record(StageInput::Skip);
-                    let mut stage_result = StageCalculator::calculate(tracker);
-                    stage_result.was_skipped = true;
+        // Check state first and release lock immediately to avoid deadlock
+        // (get_current_challenge() also needs the state lock)
+        let is_in_progress = matches!(*self.state.lock().unwrap(), SessionState::InProgress { .. });
+        if !is_in_progress {
+            return Err(GitTypeError::TerminalError(
+                "Cannot skip stage: Session is not in progress".to_string(),
+            ));
+        }
 
-                    // Record in session tracker
-                    self.session_tracker.record(stage_result.clone());
+        // Record skip event and finalize current stage tracker
+        let mut tracker_guard = self.current_stage_tracker.lock().unwrap();
+        if let Some(ref mut tracker) = *tracker_guard {
+            tracker.record(StageInput::Skip);
+            let mut stage_result = StageCalculator::calculate(tracker);
+            stage_result.was_skipped = true;
 
-                    // Collect data before borrowing conflicts - move tracker out
-                    let tracker_clone = tracker_guard.clone();
-                    drop(tracker_guard);
-                    let current_challenge = self.get_current_challenge().ok().flatten();
-                    let stage_name = format!("Stage {}", self.current_stage());
+            // Record in session tracker
+            self.session_tracker.record(stage_result.clone());
 
-                    // Clear current stage tracker for new challenge
-                    *self.current_stage_tracker.lock().unwrap() = None;
+            // Collect data before borrowing conflicts - move tracker out
+            let tracker_clone = tracker_guard.clone();
+            drop(tracker_guard);
+            let current_challenge = self.get_current_challenge().ok().flatten();
+            let stage_name = format!("Stage {}", self.current_stage());
 
-                    // Add stage data to session before updating results
-                    if let Some(tracker) = tracker_clone {
-                        if let Some(challenge) = current_challenge {
-                            self.stage_trackers
-                                .lock()
-                                .unwrap()
-                                .push((stage_name.clone(), tracker.clone()));
-                            self.session_challenges.lock().unwrap().push(challenge);
-                        } else {
-                            self.stage_trackers
-                                .lock()
-                                .unwrap()
-                                .push((stage_name, tracker));
-                        }
-                    }
+            // Clear current stage tracker for new challenge
+            *self.current_stage_tracker.lock().unwrap() = None;
 
-                    // Add skipped stage to results (don't advance stage)
-                    self.stage_results
+            // Add stage data to session before updating results
+            if let Some(tracker) = tracker_clone {
+                if let Some(challenge) = current_challenge {
+                    self.stage_trackers
                         .lock()
                         .unwrap()
-                        .push(stage_result.clone());
-
-                    // Return true to indicate new challenge should be generated
-                    let skips_remaining = self.get_skips_remaining()?;
-                    Ok((stage_result, skips_remaining, true))
+                        .push((stage_name.clone(), tracker.clone()));
+                    self.session_challenges.lock().unwrap().push(challenge);
                 } else {
-                    Err(GitTypeError::TerminalError(
-                        "No active stage tracker to skip".to_string(),
-                    ))
+                    self.stage_trackers
+                        .lock()
+                        .unwrap()
+                        .push((stage_name, tracker));
                 }
             }
-            _ => Err(GitTypeError::TerminalError(
-                "Cannot skip stage: Session is not in progress".to_string(),
-            )),
+
+            // Add skipped stage to results (don't advance stage)
+            self.stage_results
+                .lock()
+                .unwrap()
+                .push(stage_result.clone());
+
+            // Return true to indicate new challenge should be generated
+            let skips_remaining = self.get_skips_remaining()?;
+            Ok((stage_result, skips_remaining, true))
+        } else {
+            Err(GitTypeError::TerminalError(
+                "No active stage tracker to skip".to_string(),
+            ))
         }
     }
 
