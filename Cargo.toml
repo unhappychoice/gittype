@@ -84,7 +84,7 @@ sha2 = "0.10"
 
 [dev-dependencies]
 paste = "1.0"
-insta = "1.44"
+insta = "1.45"
 criterion = "0.8"
 gittype = { path = ".", default-features = false, features = ["test-mocks"] }
 
