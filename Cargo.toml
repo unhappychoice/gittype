@@ -75,7 +75,7 @@ log4rs = "1.4"
 env_logger = "0.11"
 tempfile = "3.24"
 tokio = { version = "1.48", features = ["macros", "rt-multi-thread"] }
-reqwest = { version = "0.12", features = ["json"] }
+reqwest = { version = "0.13", features = ["json"] }
 async-trait = "0.1"
 atty = "0.2"
 bincode = { version = "2.0", features = ["serde"] }
