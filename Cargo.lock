@@ -49,9 +49,9 @@ checksum = "4b46cbb362ab8752921c97e041f5e366ee6297bd428a31275b9fcf1e380f7299"
 
 [[package]]
 name = "ansi-to-tui"
-version = "8.0.0"
+version = "8.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fdfd3cbf4843347ca072771a797484f1c3434a14d57f39d31c92dfb93a8799a8"
+checksum = "e42366bb9d958f042bf58f0a85e1b2d091997c1257ca49bddd7e4827aadc65fd"
 dependencies = [
  "nom",
  "ratatui-core",
