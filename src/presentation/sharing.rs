@@ -51,7 +51,7 @@ impl SharingService {
         }
     }
 
-    fn generate_share_url(
+    pub fn generate_share_url(
         metrics: &SessionResult,
         platform: &SharingPlatform,
         repo_info: &Option<GitRepository>,
@@ -95,7 +95,7 @@ impl SharingService {
         }
     }
 
-    fn create_share_text(metrics: &SessionResult, repo_info: &Option<GitRepository>) -> String {
+    pub fn create_share_text(metrics: &SessionResult, repo_info: &Option<GitRepository>) -> String {
         let best_rank = Rank::for_score(metrics.session_score);
         if let Some(repo) = repo_info {
             format!(
