@@ -1,5 +1,8 @@
+use std::sync::Arc;
+
 use crate::infrastructure::console::{Console, ConsoleImpl};
-use crate::infrastructure::storage::file_storage::FileStorage;
+use crate::infrastructure::storage::app_data_provider::AppDataProvider;
+use crate::infrastructure::storage::file_storage::{FileStorage, FileStorageInterface};
 use crate::presentation::cli::commands::run_game_session;
 use crate::presentation::cli::screen_runner::run_screen;
 use crate::presentation::cli::Cli;
@@ -8,9 +11,8 @@ use crate::presentation::tui::ScreenType;
 use crate::{GitTypeError, Result};
 
 pub fn run_repo_list() -> Result<()> {
-    run_screen(
+    run_screen::<RepoListScreen, _, _, _>(
         ScreenType::RepoList,
-        RepoListScreen::new,
         None::<()>,
         None::<fn(&RepoListScreen) -> Option<()>>,
     )?;
@@ -18,13 +20,15 @@ pub fn run_repo_list() -> Result<()> {
     Ok(())
 }
 
+struct RepoClearCommand;
+impl AppDataProvider for RepoClearCommand {}
+
 pub fn run_repo_clear(force: bool) -> Result<()> {
     let file_storage = FileStorage::new();
     let console = ConsoleImpl::new();
 
     // Get the repos directory path
-    let repos_dir = file_storage
-        .get_app_data_dir()
+    let repos_dir = RepoClearCommand::get_app_data_dir()
         .map_err(|_| {
             GitTypeError::InvalidRepositoryFormat(
                 "Could not determine app data directory".to_string(),
@@ -105,12 +109,17 @@ pub fn run_repo_clear(force: bool) -> Result<()> {
 }
 
 pub fn run_repo_play() -> Result<()> {
+    use crate::domain::services::theme_service::ThemeServiceInterface;
+    use crate::presentation::di::AppModule;
+    use shaku::HasComponent;
+
     let console = ConsoleImpl::new();
+    let container = AppModule::builder().build();
+    let _theme_service: Arc<dyn ThemeServiceInterface> = container.resolve();
 
     // Run screen and get selected repository
-    let selected_repo = run_screen(
+    let selected_repo = run_screen::<RepoPlayScreen, _, _, _>(
         ScreenType::RepoPlay,
-        RepoPlayScreen::new,
         None::<()>,
         Some(|screen: &RepoPlayScreen| {
             screen

@@ -1,6 +1,7 @@
+use gittype::domain::models::typing::ProcessingOptions;
 use gittype::domain::services::source_code_parser::parsers::parse_with_thread_local;
 use gittype::domain::services::source_code_parser::CommentProcessor;
-use gittype::presentation::game::typing_core::{ProcessingOptions, TypingCore};
+use gittype::domain::services::typing_core::TypingCore;
 use insta::assert_snapshot;
 use std::fmt;
 

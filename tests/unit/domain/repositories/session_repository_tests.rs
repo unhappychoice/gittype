@@ -4,7 +4,6 @@ use gittype::domain::repositories::session_repository::{
     BestRecords, BestStatus, SessionRepository, SessionRepositoryTrait,
 };
 use gittype::domain::services::scoring::{StageInput, StageTracker};
-use gittype::infrastructure::database::database::HasDatabase;
 use std::time::Duration;
 
 // BestStatus tests
@@ -212,11 +211,7 @@ fn test_session_repository_new() {
     assert!(result.is_ok());
 }
 
-#[test]
-fn test_session_repository_default() {
-    let _repo = SessionRepository::default();
-    // Test passes if construction succeeds
-}
+// Note: SessionRepository no longer implements Default trait since it uses DI
 
 #[test]
 fn test_get_all_repositories_with_data() {
@@ -443,14 +438,7 @@ fn test_session_repository_trait_implementation() {
     assert!(result.is_ok());
 }
 
-#[test]
-fn test_has_database_trait_implementation() {
-    let repo = SessionRepository::new().unwrap();
-
-    // Verify database access through HasDatabase trait
-    let db_arc = repo.database();
-    assert!(db_arc.lock().is_ok());
-}
+// Note: SessionRepository no longer implements HasDatabase trait since database is injected
 
 // Integration tests with actual data
 #[test]

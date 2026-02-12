@@ -10,11 +10,11 @@ use ratatui::{
 pub struct LoadingRepoInfoView;
 
 impl LoadingRepoInfoView {
-    pub fn render(frame: &mut Frame, area: Rect, repo_info: &str) {
+    pub fn render(frame: &mut Frame, area: Rect, repo_info: &str, colors: &Colors) {
         // Use same style as title_screen: DarkGrey color and centered
         let repo_line = Line::from(Span::styled(
             repo_info,
-            Style::default().fg(Colors::text_secondary()),
+            Style::default().fg(colors.text_secondary()),
         ));
 
         let repo_widget = Paragraph::new(vec![repo_line]).alignment(Alignment::Center);

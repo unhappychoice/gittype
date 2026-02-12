@@ -1,8 +1,10 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::EventBusInterface;
 use crate::domain::models::storage::StoredRepositoryWithLanguages;
 use crate::domain::services::repository_service::RepositoryService;
-use crate::infrastructure::database::database::Database;
-use crate::presentation::game::events::NavigateTo;
+use crate::domain::services::theme_service::ThemeServiceInterface;
+use crate::infrastructure::database::database::{Database, DatabaseInterface};
+use crate::infrastructure::git::RemoteGitRepositoryClient;
 use crate::presentation::tui::views::repo_list::{
     CacheInfoView, ControlsView, HeaderView, LegendView, RepositoryListView,
 };
@@ -13,24 +15,38 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
 };
+use std::sync::{Arc, RwLock};
 
 pub struct RepoListScreenData {
     pub repositories: Vec<(StoredRepositoryWithLanguages, bool)>,
     pub cache_dir: String,
 }
 
+pub trait RepoListScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = RepoListScreenInterface)]
 pub struct RepoListScreen {
-    repositories: Vec<(StoredRepositoryWithLanguages, bool)>,
-    cache_dir: String,
-    event_bus: EventBus,
+    #[shaku(default)]
+    repositories: RwLock<Vec<(StoredRepositoryWithLanguages, bool)>>,
+    #[shaku(default)]
+    cache_dir: RwLock<String>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    theme_service: Arc<dyn ThemeServiceInterface>,
 }
 
 impl RepoListScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
+    ) -> Self {
         Self {
-            repositories: Vec::new(),
-            cache_dir: String::new(),
+            repositories: RwLock::new(Vec::new()),
+            cache_dir: RwLock::new(String::new()),
             event_bus,
+            theme_service,
         }
     }
 }
@@ -39,8 +55,13 @@ pub struct RepoListScreenDataProvider;
 
 impl ScreenDataProvider for RepoListScreenDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
-        let db = Database::new()?;
-        let service = RepositoryService::new(db);
+        use crate::domain::services::repository_service::RepositoryServiceInterface;
+        use crate::infrastructure::database::daos::{RepositoryDao, RepositoryDaoInterface};
+        let db = Arc::new(Database::new()?) as Arc<dyn DatabaseInterface>;
+        let repository_dao =
+            Arc::new(RepositoryDao::new(Arc::clone(&db))) as Arc<dyn RepositoryDaoInterface>;
+        let remote_git_client = RemoteGitRepositoryClient::new();
+        let service = RepositoryService::new(repository_dao, remote_git_client);
 
         let repositories_with_cache = service.get_all_repositories_with_cache_status()?;
         let cache_dir = RepositoryService::get_cache_directory();
@@ -64,29 +85,29 @@ impl Screen for RepoListScreen {
         Box::new(RepoListScreenDataProvider)
     }
 
-    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
+    fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
         if let Ok(screen_data) = data.downcast::<RepoListScreenData>() {
-            self.repositories = screen_data.repositories;
-            self.cache_dir = screen_data.cache_dir;
+            *self.repositories.write().unwrap() = screen_data.repositories;
+            *self.cache_dir.write().unwrap() = screen_data.cache_dir;
         }
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: KeyEvent) -> Result<()> {
         if key_event.kind != KeyEventKind::Press {
             return Ok(());
         }
 
         match key_event.code {
             KeyCode::Esc => {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
             }
             KeyCode::Char('c')
                 if key_event
                     .modifiers
                     .contains(crossterm::event::KeyModifiers::CONTROL) =>
             {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
             }
             _ => {}
         }
@@ -94,7 +115,8 @@ impl Screen for RepoListScreen {
         Ok(())
     }
 
-    fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {
+    fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -108,11 +130,13 @@ impl Screen for RepoListScreen {
             ])
             .split(frame.area());
 
-        HeaderView::render(frame, chunks[0]);
-        CacheInfoView::render(frame, chunks[2], &self.cache_dir);
-        RepositoryListView::render(frame, chunks[4], &self.repositories);
-        LegendView::render(frame, chunks[5]);
-        ControlsView::render(frame, chunks[6]);
+        HeaderView::render(frame, chunks[0], &colors);
+        let cache_dir = self.cache_dir.read().unwrap();
+        CacheInfoView::render(frame, chunks[2], &cache_dir, &colors);
+        let repositories = self.repositories.read().unwrap();
+        RepositoryListView::render(frame, chunks[4], &repositories, &colors);
+        LegendView::render(frame, chunks[5], &colors);
+        ControlsView::render(frame, chunks[6], &colors);
 
         Ok(())
     }
@@ -121,11 +145,11 @@ impl Screen for RepoListScreen {
         UpdateStrategy::InputOnly
     }
 
-    fn update(&mut self) -> Result<bool> {
+    fn update(&self) -> Result<bool> {
         Ok(false)
     }
 
-    fn cleanup(&mut self) -> Result<()> {
+    fn cleanup(&self) -> Result<()> {
         Ok(())
     }
 
@@ -136,8 +160,6 @@ impl Screen for RepoListScreen {
     fn is_exitable(&self) -> bool {
         true
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl RepoListScreenInterface for RepoListScreen {}

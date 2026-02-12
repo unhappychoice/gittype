@@ -1,13 +1,25 @@
+use crate::integration::screens::mocks::trending_repository_mock::MockTrendingRepository;
 use crate::integration::screens::mocks::trending_repository_selection_screen_mock::MockTrendingRepositorySelectionDataProvider;
 use crossterm::event::{KeyCode, KeyModifiers};
+use gittype::domain::events::presentation_events::NavigateTo;
 use gittype::domain::events::EventBus;
-use gittype::presentation::game::events::NavigateTo;
+use gittype::domain::models::color_mode::ColorMode;
+use gittype::domain::models::theme::Theme;
+use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
 use gittype::presentation::tui::screens::TrendingRepositorySelectionScreen;
+use std::sync::Arc;
 
 screen_snapshot_test!(
     test_trending_repository_selection_screen_snapshot,
     TrendingRepositorySelectionScreen,
-    TrendingRepositorySelectionScreen::new(EventBus::new()),
+    TrendingRepositorySelectionScreen::new(
+        Arc::new(EventBus::new()),
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark
+        )) as Arc<dyn ThemeServiceInterface>,
+        Arc::new(MockTrendingRepository::new())
+    ),
     provider = MockTrendingRepositorySelectionDataProvider
 );
 
@@ -15,6 +27,17 @@ screen_snapshot_test!(
 screen_key_event_test!(
     test_trending_repository_selection_screen_esc_exits,
     TrendingRepositorySelectionScreen,
+    |event_bus| {
+        let theme_service = Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        )) as Arc<dyn ThemeServiceInterface>;
+        TrendingRepositorySelectionScreen::new(
+            event_bus,
+            theme_service,
+            Arc::new(MockTrendingRepository::new()),
+        )
+    },
     NavigateTo,
     KeyCode::Esc,
     KeyModifiers::empty(),
@@ -24,6 +47,17 @@ screen_key_event_test!(
 screen_key_event_test!(
     test_trending_repository_selection_screen_ctrl_c_exits,
     TrendingRepositorySelectionScreen,
+    |event_bus| {
+        let theme_service = Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        )) as Arc<dyn ThemeServiceInterface>;
+        TrendingRepositorySelectionScreen::new(
+            event_bus,
+            theme_service,
+            Arc::new(MockTrendingRepository::new()),
+        )
+    },
     NavigateTo,
     KeyCode::Char('c'),
     KeyModifiers::CONTROL,
@@ -33,6 +67,17 @@ screen_key_event_test!(
 screen_key_event_test!(
     test_trending_repository_selection_screen_space_selects,
     TrendingRepositorySelectionScreen,
+    |event_bus| {
+        let theme_service = Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        )) as Arc<dyn ThemeServiceInterface>;
+        TrendingRepositorySelectionScreen::new(
+            event_bus,
+            theme_service,
+            Arc::new(MockTrendingRepository::new()),
+        )
+    },
     NavigateTo,
     KeyCode::Char(' '),
     KeyModifiers::empty(),
@@ -40,8 +85,19 @@ screen_key_event_test!(
 );
 
 // Non-event key tests
-screen_key_tests!(
+screen_key_tests_custom!(
     TrendingRepositorySelectionScreen,
+    |event_bus| {
+        let theme_service = Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        )) as Arc<dyn ThemeServiceInterface>;
+        TrendingRepositorySelectionScreen::new(
+            event_bus,
+            theme_service,
+            Arc::new(MockTrendingRepository::new()),
+        )
+    },
     MockTrendingRepositorySelectionDataProvider,
     [
         (
@@ -71,7 +127,14 @@ screen_key_tests!(
 screen_basic_methods_test!(
     test_trending_repository_selection_screen_basic_methods,
     TrendingRepositorySelectionScreen,
-    TrendingRepositorySelectionScreen::new(EventBus::new()),
+    TrendingRepositorySelectionScreen::new(
+        Arc::new(EventBus::new()),
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark
+        )) as Arc<dyn ThemeServiceInterface>,
+        Arc::new(MockTrendingRepository::new())
+    ),
     gittype::presentation::tui::ScreenType::TrendingRepositorySelection,
     true,
     MockTrendingRepositorySelectionDataProvider

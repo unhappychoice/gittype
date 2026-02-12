@@ -1,4 +1,9 @@
-use crate::presentation::game::SessionManager;
+use std::sync::Arc;
+
+use crate::domain::models::SessionAction;
+use crate::domain::services::scoring::{StageCalculator, StageInput};
+use crate::domain::services::session_manager_service::SessionManagerInterface;
+use crate::domain::services::SessionManager;
 use crate::presentation::tui::ScreenType;
 use crate::Result;
 
@@ -6,7 +11,11 @@ pub struct ScreenTransitionManager;
 
 impl ScreenTransitionManager {
     /// Central reducer for screen transitions based on from->to screen types
-    pub fn reduce(current_screen: ScreenType, to_screen: ScreenType) -> Result<ScreenType> {
+    pub fn reduce(
+        current_screen: ScreenType,
+        to_screen: ScreenType,
+        session_manager: &Arc<dyn SessionManagerInterface>,
+    ) -> Result<ScreenType> {
         let from_screen = current_screen;
 
         // Handle transition-specific side effects based on from->to pattern
@@ -14,7 +23,7 @@ impl ScreenTransitionManager {
         match (&from_screen, &to_screen) {
             // From Title
             (ScreenType::Title, ScreenType::Typing) => {
-                Self::handle_start_game_transition()?;
+                Self::handle_start_game_transition(session_manager)?;
             }
             (ScreenType::Title, ScreenType::Records) => {}
             (ScreenType::Title, ScreenType::Analytics) => {}
@@ -25,10 +34,10 @@ impl ScreenTransitionManager {
             (ScreenType::Typing, ScreenType::StageSummary) => {}
             (ScreenType::Typing, ScreenType::Animation) => {
                 // Session completed - handle completion
-                Self::handle_session_completion()?;
+                Self::handle_session_completion(session_manager)?;
             }
             (ScreenType::Typing, ScreenType::SessionFailure) => {
-                Self::handle_game_failure()?;
+                Self::handle_game_failure(session_manager)?;
             }
             (ScreenType::Typing, ScreenType::TotalSummary) => {}
 
@@ -36,10 +45,10 @@ impl ScreenTransitionManager {
             (ScreenType::StageSummary, ScreenType::Typing) => {}
             (ScreenType::StageSummary, ScreenType::Animation) => {
                 // Session completed from stage summary
-                Self::handle_session_completion()?;
+                Self::handle_session_completion(session_manager)?;
             }
             (ScreenType::StageSummary, ScreenType::SessionFailure) => {
-                Self::handle_game_failure()?;
+                Self::handle_game_failure(session_manager)?;
             }
             (ScreenType::StageSummary, ScreenType::TotalSummary) => {}
 
@@ -50,7 +59,7 @@ impl ScreenTransitionManager {
             // From SessionSummary
             (ScreenType::SessionSummary, ScreenType::Title) => {
                 // Reset session when going back to title
-                Self::handle_session_reset()?;
+                Self::handle_session_reset(session_manager)?;
             }
             (ScreenType::SessionSummary, ScreenType::Records) => {}
             (ScreenType::SessionSummary, ScreenType::Analytics) => {}
@@ -58,7 +67,7 @@ impl ScreenTransitionManager {
             (ScreenType::SessionSummary, ScreenType::TotalSummary) => {}
             (ScreenType::SessionSummary, ScreenType::Typing) => {
                 // Session retry - reset and start new session
-                Self::handle_session_retry()?;
+                Self::handle_session_retry(session_manager)?;
             }
 
             (ScreenType::DetailsDialog, ScreenType::SessionSummary) => {}
@@ -66,11 +75,11 @@ impl ScreenTransitionManager {
 
             // From Failure
             (ScreenType::SessionFailure, ScreenType::Typing) => {
-                Self::handle_retry_transition()?;
+                Self::handle_retry_transition(session_manager)?;
             }
             (ScreenType::SessionFailure, ScreenType::Title) => {
                 // Reset session when going back to title from failure
-                Self::handle_session_reset()?;
+                Self::handle_session_reset(session_manager)?;
             }
             (ScreenType::SessionFailure, ScreenType::TotalSummary) => {}
 
@@ -124,43 +133,63 @@ impl ScreenTransitionManager {
         Ok(to_screen)
     }
 
-    fn handle_start_game_transition() -> Result<()> {
+    fn handle_start_game_transition(
+        session_manager: &Arc<dyn SessionManagerInterface>,
+    ) -> Result<()> {
         // Start session if not already in progress
-        if !SessionManager::is_global_session_in_progress()? {
-            SessionManager::on_session_start()?;
+        if let Some(sm) = session_manager.as_any().downcast_ref::<SessionManager>() {
+            if !sm.is_in_progress() {
+                sm.reduce(SessionAction::Start)?;
+            }
         }
-
         Ok(())
     }
 
-    fn handle_retry_transition() -> Result<()> {
+    fn handle_retry_transition(session_manager: &Arc<dyn SessionManagerInterface>) -> Result<()> {
         // Reset session state then start new session
-        SessionManager::reset_global_session()?;
-        SessionManager::on_session_start()?;
-
+        if let Some(sm) = session_manager.as_any().downcast_ref::<SessionManager>() {
+            sm.reduce(SessionAction::Reset)?;
+            sm.reduce(SessionAction::Start)?;
+        }
         Ok(())
     }
 
-    fn handle_game_failure() -> Result<()> {
-        let result = SessionManager::on_session_failure();
-        result?;
+    fn handle_game_failure(session_manager: &Arc<dyn SessionManagerInterface>) -> Result<()> {
+        if let Some(sm) = session_manager.as_any().downcast_ref::<SessionManager>() {
+            let mut tracker_guard = sm.current_stage_tracker.lock().unwrap();
+            if let Some(ref mut tracker) = *tracker_guard {
+                tracker.record(StageInput::Fail);
+                let stage_result = StageCalculator::calculate(tracker);
+                drop(tracker_guard);
+                sm.reduce(SessionAction::CompleteStage(stage_result))?;
+            } else {
+                drop(tracker_guard);
+            }
+            sm.reduce(SessionAction::Abort)?;
+        }
         Ok(())
     }
 
-    fn handle_session_completion() -> Result<()> {
-        SessionManager::on_session_complete()?;
+    fn handle_session_completion(session_manager: &Arc<dyn SessionManagerInterface>) -> Result<()> {
+        if let Some(sm) = session_manager.as_any().downcast_ref::<SessionManager>() {
+            sm.record_and_update_trackers()?;
+        }
         Ok(())
     }
 
-    fn handle_session_retry() -> Result<()> {
+    fn handle_session_retry(session_manager: &Arc<dyn SessionManagerInterface>) -> Result<()> {
         // Record completed session, reset state, then start new session
-        SessionManager::on_session_retry()?;
-        SessionManager::on_session_start()?;
+        if let Some(sm) = session_manager.as_any().downcast_ref::<SessionManager>() {
+            sm.reset();
+            sm.reduce(SessionAction::Start)?;
+        }
         Ok(())
     }
 
-    fn handle_session_reset() -> Result<()> {
-        SessionManager::reset_global_session()?;
+    fn handle_session_reset(session_manager: &Arc<dyn SessionManagerInterface>) -> Result<()> {
+        if let Some(sm) = session_manager.as_any().downcast_ref::<SessionManager>() {
+            sm.reduce(SessionAction::Reset)?;
+        }
         Ok(())
     }
 }

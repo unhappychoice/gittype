@@ -1,4 +1,4 @@
-use gittype::presentation::game::models::loading_steps::StepManager;
+use gittype::domain::models::loading::StepManager;
 
 #[test]
 fn new_creates_step_manager() {

@@ -60,6 +60,7 @@ mod real_impl {
 #[cfg(feature = "test-mocks")]
 mod mock_impl {
     use super::*;
+
     use std::cell::RefCell;
 
     #[derive(Debug, Clone)]

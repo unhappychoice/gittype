@@ -26,30 +26,50 @@ pub mod trending_language_selection_screen;
 pub mod trending_repository_selection_screen;
 
 // Re-exports
-pub use analytics_screen::AnalyticsScreen;
-pub use animation_screen::AnimationScreen;
-pub use help_screen::HelpScreen;
-pub use info_dialog::{InfoDialogScreen, InfoDialogScreenDataProvider};
-pub use loading_screen::LoadingScreen;
-pub use panic_screen::PanicScreen;
-pub use records_screen::RecordsScreen;
-pub use repo_list_screen::{RepoListScreen, RepoListScreenDataProvider};
-pub use repo_play_screen::{RepoPlayScreen, RepoPlayScreenDataProvider};
-pub use session_detail_screen::SessionDetailScreen;
-pub use session_details_dialog::SessionDetailsDialog;
-pub use session_failure_screen::SessionFailureScreen;
-pub use session_summary_screen::{ResultAction, SessionSummaryScreen};
-pub use session_summary_share_screen::SessionSummaryShareScreen;
-pub use settings_screen::SettingsScreen;
-pub use stage_summary_screen::StageSummaryScreen;
-pub use title_screen::{TitleAction, TitleScreen};
-pub use total_summary_screen::TotalSummaryScreen;
-pub use total_summary_share_screen::TotalSummaryShareScreen;
+pub use analytics_screen::{AnalyticsScreen, AnalyticsScreenInterface, AnalyticsScreenProvider};
+pub use animation_screen::{AnimationScreen, AnimationScreenInterface};
+pub use help_screen::{HelpScreen, HelpScreenInterface};
+pub use info_dialog::{
+    InfoDialogScreen, InfoDialogScreenDataProvider, InfoDialogScreenInterface,
+    InfoDialogScreenProvider,
+};
+pub use loading_screen::{LoadingScreen, LoadingScreenInterface};
+pub use panic_screen::{PanicScreen, PanicScreenInterface};
+pub use records_screen::{RecordsScreen, RecordsScreenInterface, RecordsScreenProvider};
+pub use repo_list_screen::{RepoListScreen, RepoListScreenDataProvider, RepoListScreenInterface};
+pub use repo_play_screen::{RepoPlayScreen, RepoPlayScreenDataProvider, RepoPlayScreenInterface};
+pub use session_detail_screen::{SessionDetailScreen, SessionDetailScreenInterface};
+pub use session_details_dialog::{
+    SessionDetailsDialog, SessionDetailsDialogInterface, SessionDetailsDialogProvider,
+};
+pub use session_failure_screen::{SessionFailureScreen, SessionFailureScreenInterface};
+pub use session_summary_screen::{
+    ResultAction, SessionSummaryScreen, SessionSummaryScreenInterface, SessionSummaryScreenProvider,
+};
+pub use session_summary_share_screen::{
+    SessionSummaryShareScreen, SessionSummaryShareScreenInterface,
+    SessionSummaryShareScreenProvider,
+};
+pub use settings_screen::{SettingsScreen, SettingsScreenInterface};
+pub use stage_summary_screen::{
+    StageSummaryScreen, StageSummaryScreenInterface, StageSummaryScreenProvider,
+};
+pub use title_screen::{TitleAction, TitleScreen, TitleScreenInterface};
+pub use total_summary_screen::{
+    TotalSummaryScreen, TotalSummaryScreenInterface, TotalSummaryScreenProvider,
+};
+pub use total_summary_share_screen::{
+    TotalSummaryShareScreen, TotalSummaryShareScreenInterface, TotalSummaryShareScreenProvider,
+};
 pub use trending_language_selection_screen::{
     TrendingLanguageSelectionScreen, TrendingLanguageSelectionScreenDataProvider,
+    TrendingLanguageSelectionScreenInterface,
 };
 pub use trending_repository_selection_screen::{
     TrendingRepositorySelectionScreen, TrendingRepositorySelectionScreenDataProvider,
+    TrendingRepositorySelectionScreenInterface,
 };
-pub use typing_screen::TypingScreen;
-pub use version_check_screen::{VersionCheckResult, VersionCheckScreen};
+pub use typing_screen::{TypingScreen, TypingScreenInterface, TypingScreenProvider};
+pub use version_check_screen::{
+    VersionCheckResult, VersionCheckScreen, VersionCheckScreenInterface,
+};

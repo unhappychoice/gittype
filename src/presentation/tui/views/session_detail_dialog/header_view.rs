@@ -9,11 +9,11 @@ use ratatui::{
 pub struct HeaderView;
 
 impl HeaderView {
-    pub fn render(f: &mut Frame, area: Rect) {
+    pub fn render(f: &mut Frame, area: Rect, colors: &Colors) {
         let title = Paragraph::new("=== SESSION DETAILS ===")
             .style(
                 Style::default()
-                    .fg(Colors::info())
+                    .fg(colors.info())
                     .add_modifier(Modifier::BOLD),
             )
             .alignment(Alignment::Center);

@@ -1,22 +1,82 @@
 use crossterm::event::KeyEvent;
 use gittype::domain::events::EventBus;
-use gittype::presentation::game::GameData;
-use gittype::presentation::tui::{
-    Screen, ScreenDataProvider, ScreenManager, ScreenTransition, ScreenType, UpdateStrategy,
+use gittype::domain::services::scoring::{
+    SessionTracker, SessionTrackerInterface, TotalTracker, TotalTrackerInterface,
 };
+use gittype::domain::services::session_manager_service::SessionManagerInterface;
+use gittype::domain::services::stage_builder_service::StageRepositoryInterface;
+use gittype::domain::services::{stage_builder_service::StageRepository, SessionManager};
+use gittype::domain::stores::{ChallengeStore, RepositoryStore, SessionStore};
+use gittype::domain::stores::{
+    ChallengeStoreInterface, RepositoryStoreInterface, SessionStoreInterface,
+};
+use gittype::infrastructure::terminal::TerminalInterface;
+use gittype::presentation::tui::{
+    Screen, ScreenDataProvider, ScreenManagerImpl, ScreenTransition, ScreenType, UpdateStrategy,
+};
+use ratatui::backend::CrosstermBackend;
 use ratatui::backend::TestBackend;
 use ratatui::Frame;
 use ratatui::Terminal;
 use std::any::Any;
-use std::sync::{Arc, Mutex};
+use std::io::Stdout;
+use std::sync::Arc;
 
-// Helper function to create a ScreenManager with TestBackend for testing
-fn create_test_screen_manager() -> ScreenManager<TestBackend> {
-    let event_bus = EventBus::new();
-    let game_data = Arc::new(Mutex::new(GameData::default()));
+// Mock TerminalInterface for testing
+#[allow(dead_code)]
+struct MockTerminalInterface;
+
+impl TerminalInterface for MockTerminalInterface {
+    fn get(&self) -> Terminal<CrosstermBackend<Stdout>> {
+        // This won't actually be called in these tests
+        // The tests directly construct ScreenManagerImpl with a terminal
+        panic!("MockTerminalInterface::get should not be called in tests")
+    }
+}
+
+// Helper function to create a ScreenManager for testing
+// Note: These tests are designed to work without a real terminal
+// They test the ScreenManager logic, not terminal I/O
+#[cfg(test)]
+fn create_test_screen_manager() -> ScreenManagerImpl<TestBackend> {
+    let event_bus = Arc::new(EventBus::new());
+
+    // Create stores for DI
+    let challenge_store = Arc::new(ChallengeStore::default()) as Arc<dyn ChallengeStoreInterface>;
+    let repository_store =
+        Arc::new(RepositoryStore::default()) as Arc<dyn RepositoryStoreInterface>;
+    let session_store_arc = Arc::new(SessionStore::default()) as Arc<dyn SessionStoreInterface>;
+
+    // Create StageRepository
+    let stage_repository = StageRepository::new(
+        None,
+        challenge_store.clone(),
+        repository_store.clone(),
+        session_store_arc.clone(),
+    );
+    let stage_repository: Arc<dyn StageRepositoryInterface> = Arc::new(stage_repository);
+
+    // Create SessionManager with dependencies
+    let session_tracker: Arc<dyn SessionTrackerInterface> = Arc::new(SessionTracker::default());
+    let total_tracker: Arc<dyn TotalTrackerInterface> = Arc::new(TotalTracker::default());
+    let session_manager = SessionManager::new_with_dependencies(
+        event_bus.clone(),
+        stage_repository.clone(),
+        session_tracker,
+        total_tracker,
+    );
+    let session_manager: Arc<dyn SessionManagerInterface> = Arc::new(session_manager);
+
     let backend = TestBackend::new(80, 24);
     let terminal = Terminal::new(backend).expect("Failed to create test terminal");
-    ScreenManager::new(event_bus, game_data, terminal)
+
+    ScreenManagerImpl::new(
+        event_bus,
+        session_store_arc,
+        session_manager,
+        stage_repository,
+        terminal,
+    )
 }
 
 // Mock screen for testing
@@ -51,23 +111,23 @@ impl Screen for MockScreen {
         Box::new(MockDataProvider)
     }
 
-    fn init_with_data(&mut self, _data: Box<dyn Any>) -> gittype::Result<()> {
+    fn init_with_data(&self, _data: Box<dyn Any>) -> gittype::Result<()> {
         Ok(())
     }
 
-    fn update(&mut self) -> gittype::Result<bool> {
+    fn update(&self) -> gittype::Result<bool> {
         Ok(false)
     }
 
-    fn render_ratatui(&mut self, _frame: &mut Frame) -> gittype::Result<()> {
+    fn render_ratatui(&self, _frame: &mut Frame) -> gittype::Result<()> {
         Ok(())
     }
 
-    fn handle_key_event(&mut self, _key_event: KeyEvent) -> gittype::Result<()> {
+    fn handle_key_event(&self, _key_event: KeyEvent) -> gittype::Result<()> {
         Ok(())
     }
 
-    fn cleanup(&mut self) -> gittype::Result<()> {
+    fn cleanup(&self) -> gittype::Result<()> {
         Ok(())
     }
 
@@ -76,10 +136,6 @@ impl Screen for MockScreen {
     }
 
     fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn as_any_mut(&mut self) -> &mut dyn Any {
         self
     }
 }
@@ -199,7 +255,7 @@ fn test_update_strategy_variants() {
 #[test]
 fn test_cleanup_terminal_static() {
     // This test verifies the function can be called
-    ScreenManager::<TestBackend>::cleanup_terminal_static();
+    ScreenManagerImpl::<TestBackend>::cleanup_terminal_static();
 }
 
 #[test]

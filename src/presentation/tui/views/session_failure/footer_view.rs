@@ -10,16 +10,16 @@ use ratatui::{
 pub struct FooterView;
 
 impl FooterView {
-    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect) {
+    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect, colors: &Colors) {
         let nav_line = Line::from(vec![
-            Span::styled("[R]", Style::default().fg(Colors::success())),
-            Span::styled(" Retry | ", Style::default().fg(Colors::text())),
-            Span::styled("[T]", Style::default().fg(Colors::success())),
-            Span::styled(" Back to Title | ", Style::default().fg(Colors::text())),
-            Span::styled("[ESC]", Style::default().fg(Colors::error())),
+            Span::styled("[R]", Style::default().fg(colors.success())),
+            Span::styled(" Retry | ", Style::default().fg(colors.text())),
+            Span::styled("[T]", Style::default().fg(colors.success())),
+            Span::styled(" Back to Title | ", Style::default().fg(colors.text())),
+            Span::styled("[ESC]", Style::default().fg(colors.error())),
             Span::styled(
                 " Session Summary & Exit",
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
         ]);
         let navigation = Paragraph::new(nav_line).alignment(Alignment::Center);

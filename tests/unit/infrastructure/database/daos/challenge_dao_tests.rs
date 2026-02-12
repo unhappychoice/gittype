@@ -1,46 +1,51 @@
 use gittype::domain::models::{Challenge, DifficultyLevel};
-use gittype::infrastructure::database::daos::ChallengeDao;
-use gittype::infrastructure::database::database::Database;
+use gittype::infrastructure::database::daos::{ChallengeDao, ChallengeDaoInterface};
+use gittype::infrastructure::database::database::{Database, DatabaseInterface};
+use std::sync::Arc;
 
 #[test]
 fn test_new_creates_dao() {
-    let db = Database::new().expect("Failed to create database");
-    let _dao = ChallengeDao::new(&db);
+    let db =
+        Arc::new(Database::new().expect("Failed to create database")) as Arc<dyn DatabaseInterface>;
+    let _dao = ChallengeDao::new(Arc::clone(&db));
 }
 
 #[test]
 fn test_ensure_challenge_creates_new_challenge() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let dao = ChallengeDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = ChallengeDao::new(Arc::clone(&db));
 
     let challenge = Challenge::new("test-challenge-1".to_string(), "fn test() {}".to_string())
         .with_language("rust".to_string())
         .with_source_info("src/test.rs".to_string(), 1, 10)
         .with_difficulty_level(DifficultyLevel::Easy);
 
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx = conn.unchecked_transaction().unwrap();
 
     let rowid = dao
         .ensure_challenge_in_transaction(&tx, &challenge)
         .unwrap();
     tx.commit().unwrap();
+    drop(conn);
 
     assert!(rowid > 0, "Should return positive rowid");
 }
 
 #[test]
 fn test_ensure_challenge_returns_existing_challenge() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let dao = ChallengeDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = ChallengeDao::new(Arc::clone(&db));
 
     let challenge = Challenge::new("test-challenge-2".to_string(), "fn test() {}".to_string())
         .with_language("rust".to_string());
 
     // Insert first time
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx1 = conn.unchecked_transaction().unwrap();
     let rowid1 = dao
         .ensure_challenge_in_transaction(&tx1, &challenge)
@@ -62,9 +67,10 @@ fn test_ensure_challenge_returns_existing_challenge() {
 
 #[test]
 fn test_ensure_challenge_with_different_difficulties() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let dao = ChallengeDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = ChallengeDao::new(Arc::clone(&db));
 
     let difficulties = [
         DifficultyLevel::Easy,
@@ -72,7 +78,7 @@ fn test_ensure_challenge_with_different_difficulties() {
         DifficultyLevel::Hard,
     ];
 
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     for (i, difficulty) in difficulties.iter().enumerate() {
         let challenge = Challenge::new(
             format!("test-challenge-diff-{}", i),
@@ -92,13 +98,15 @@ fn test_ensure_challenge_with_different_difficulties() {
             difficulty
         );
     }
+    drop(conn);
 }
 
 #[test]
 fn test_ensure_challenge_with_comment_ranges() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let dao = ChallengeDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = ChallengeDao::new(Arc::clone(&db));
 
     let challenge = Challenge::new(
         "test-challenge-comments".to_string(),
@@ -106,21 +114,23 @@ fn test_ensure_challenge_with_comment_ranges() {
     )
     .with_comment_ranges(vec![(0, 10)]);
 
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx = conn.unchecked_transaction().unwrap();
     let rowid = dao
         .ensure_challenge_in_transaction(&tx, &challenge)
         .unwrap();
     tx.commit().unwrap();
+    drop(conn);
 
     assert!(rowid > 0, "Should create challenge with comment ranges");
 }
 
 #[test]
 fn test_ensure_multiple_challenges_in_transaction() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let dao = ChallengeDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = ChallengeDao::new(Arc::clone(&db));
 
     let challenges: Vec<Challenge> = (0..5)
         .map(|i| {
@@ -132,7 +142,7 @@ fn test_ensure_multiple_challenges_in_transaction() {
         })
         .collect();
 
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx = conn.unchecked_transaction().unwrap();
 
     let mut rowids = Vec::new();
@@ -142,6 +152,7 @@ fn test_ensure_multiple_challenges_in_transaction() {
     }
 
     tx.commit().unwrap();
+    drop(conn);
 
     // All rowids should be unique and positive
     assert_eq!(rowids.len(), 5, "Should insert 5 challenges");

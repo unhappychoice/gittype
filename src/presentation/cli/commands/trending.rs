@@ -1,7 +1,14 @@
+use shaku::HasComponent;
+
+use std::sync::Arc;
+
+use crate::domain::repositories::trending_repository::TrendingRepositoryInterface;
+use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::infrastructure::console::{Console, ConsoleImpl};
 use crate::presentation::cli::commands::run_game_session;
-use crate::presentation::cli::screen_runner::run_screen;
+use crate::presentation::cli::screen_runner::{run_screen, ScreenRunnerContext};
 use crate::presentation::cli::Cli;
+use crate::presentation::di::AppModule;
 use crate::presentation::tui::screens::{
     TrendingLanguageSelectionScreen, TrendingRepositorySelectionScreen,
 };
@@ -41,6 +48,10 @@ pub fn run_trending(
 ) -> Result<()> {
     let console = ConsoleImpl::new();
 
+    // Create DI container and resolve TrendingRepository
+    let container = AppModule::builder().build();
+    let _trending_repository: Arc<dyn TrendingRepositoryInterface> = container.resolve();
+
     // Validate language if provided
     if let Some(ref lang) = language {
         if !validate_language(lang) {
@@ -78,15 +89,18 @@ pub fn run_trending(
         return run_game_session(cli);
     } else if language.is_some() {
         // Language provided - show repositories directly
-        let selected_repo = run_screen(
+        let _theme_service: Arc<dyn ThemeServiceInterface> = container.resolve();
+
+        let selected_repo = run_screen::<TrendingRepositorySelectionScreen, _, _, _>(
             ScreenType::TrendingRepositorySelection,
-            TrendingRepositorySelectionScreen::new,
             Some((language.clone(), period.clone())),
             Some(|screen: &TrendingRepositorySelectionScreen| {
-                screen
-                    .get_selected_index()
-                    .and_then(|idx| screen.get_repositories().get(idx))
-                    .map(|repo| repo.repo_name.clone())
+                screen.get_selected_index().and_then(|idx| {
+                    screen
+                        .get_repositories()
+                        .get(idx)
+                        .map(|repo| repo.repo_name.clone())
+                })
             }),
         )?;
 
@@ -103,10 +117,14 @@ pub fn run_trending(
         }
     } else {
         // No language provided - show language selection then repository selection
+        let _theme_service: Arc<dyn ThemeServiceInterface> = container.resolve();
+
+        // Use ScreenRunnerContext to share terminal state between screens
+        let ctx = ScreenRunnerContext::new()?;
+
         // Step 1: Language selection
-        let selected_language = run_screen(
+        let selected_language = ctx.run_screen::<TrendingLanguageSelectionScreen, _, _, _>(
             ScreenType::TrendingLanguageSelection,
-            TrendingLanguageSelectionScreen::new,
             None::<()>,
             Some(|screen: &TrendingLanguageSelectionScreen| {
                 screen.get_selected_language().map(|s| s.to_string())
@@ -115,17 +133,21 @@ pub fn run_trending(
 
         if let Some(lang) = selected_language {
             // Step 2: Repository selection with selected language
-            let selected_repo = run_screen(
+            let selected_repo = ctx.run_screen::<TrendingRepositorySelectionScreen, _, _, _>(
                 ScreenType::TrendingRepositorySelection,
-                TrendingRepositorySelectionScreen::new,
                 Some((Some(lang), period.clone())),
                 Some(|screen: &TrendingRepositorySelectionScreen| {
-                    screen
-                        .get_selected_index()
-                        .and_then(|idx| screen.get_repositories().get(idx))
-                        .map(|repo| repo.repo_name.clone())
+                    screen.get_selected_index().and_then(|idx| {
+                        screen
+                            .get_repositories()
+                            .get(idx)
+                            .map(|repo| repo.repo_name.clone())
+                    })
                 }),
             )?;
+
+            // Cleanup terminal before starting game
+            ctx.cleanup()?;
 
             if let Some(repo_name) = selected_repo {
                 let repo_url = format!("https://github.com/{}", repo_name);
@@ -137,6 +159,9 @@ pub fn run_trending(
                 };
                 return run_game_session(cli);
             }
+        } else {
+            // User cancelled language selection
+            ctx.cleanup()?;
         }
     }
 

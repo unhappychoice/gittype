@@ -20,6 +20,7 @@ impl RepositoriesView {
         data: &AnalyticsData,
         repository_list_state: &mut ListState,
         repository_scroll_state: &mut ScrollbarState,
+        colors: &Colors,
     ) {
         let chunks = Layout::default()
             .direction(Direction::Horizontal)
@@ -57,13 +58,13 @@ impl RepositoriesView {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border()))
+                    .border_style(Style::default().fg(colors.border()))
                     .title("Repositories"),
             )
-            .style(Style::default().fg(Colors::text()))
+            .style(Style::default().fg(colors.text()))
             .highlight_style(
                 Style::default()
-                    .bg(Colors::background_secondary())
+                    .bg(colors.background_secondary())
                     .add_modifier(Modifier::BOLD),
             )
             .highlight_symbol("► ");
@@ -90,7 +91,7 @@ impl RepositoriesView {
         );
 
         // Right side: Repository details
-        Self::render_repository_details(f, chunks[1], data, repository_list_state);
+        Self::render_repository_details(f, chunks[1], data, repository_list_state, colors);
     }
 
     fn render_repository_details(
@@ -98,6 +99,7 @@ impl RepositoriesView {
         area: Rect,
         data: &AnalyticsData,
         repository_list_state: &ListState,
+        colors: &Colors,
     ) {
         let selected_index = repository_list_state.selected();
 
@@ -111,11 +113,11 @@ impl RepositoriesView {
             let mut lines = vec![
                 Line::from(vec![
                     Span::raw("  "),
-                    Span::styled("Repository: ", Style::default().fg(Colors::text())),
+                    Span::styled("Repository: ", Style::default().fg(colors.text())),
                     Span::styled(
                         &repo_data.0,
                         Style::default()
-                            .fg(Colors::info())
+                            .fg(colors.info())
                             .add_modifier(Modifier::BOLD),
                     ),
                 ]),
@@ -129,32 +131,32 @@ impl RepositoriesView {
                         Span::styled(
                             "📈 Speed Metrics:",
                             Style::default()
-                                .fg(Colors::text())
+                                .fg(colors.text())
                                 .add_modifier(Modifier::BOLD),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Average CPM: ", Style::default().fg(Colors::cpm_wpm())),
+                        Span::styled("• Average CPM: ", Style::default().fg(colors.cpm_wpm())),
                         Span::styled(
                             format!("{:.1}", stats.avg_cpm),
-                            Style::default().fg(Colors::text()),
+                            Style::default().fg(colors.text()),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Average WPM: ", Style::default().fg(Colors::cpm_wpm())),
+                        Span::styled("• Average WPM: ", Style::default().fg(colors.cpm_wpm())),
                         Span::styled(
                             format!("{:.1}", stats.avg_wpm),
-                            Style::default().fg(Colors::text()),
+                            Style::default().fg(colors.text()),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Best CPM: ", Style::default().fg(Colors::cpm_wpm())),
+                        Span::styled("• Best CPM: ", Style::default().fg(colors.cpm_wpm())),
                         Span::styled(
                             format!("{:.1}", stats.best_cpm),
-                            Style::default().fg(Colors::text()),
+                            Style::default().fg(colors.text()),
                         ),
                     ]),
                     Line::from(""),
@@ -163,7 +165,7 @@ impl RepositoriesView {
                         Span::styled(
                             "🎯 Accuracy & Quality:",
                             Style::default()
-                                .fg(Colors::text())
+                                .fg(colors.text())
                                 .add_modifier(Modifier::BOLD),
                         ),
                     ]),
@@ -171,27 +173,27 @@ impl RepositoriesView {
                         Span::raw("    "),
                         Span::styled(
                             "• Average Accuracy: ",
-                            Style::default().fg(Colors::accuracy()),
+                            Style::default().fg(colors.accuracy()),
                         ),
                         Span::styled(
                             format!("{:.1}%", stats.avg_accuracy),
-                            Style::default().fg(Colors::text()),
+                            Style::default().fg(colors.text()),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Best Accuracy: ", Style::default().fg(Colors::accuracy())),
+                        Span::styled("• Best Accuracy: ", Style::default().fg(colors.accuracy())),
                         Span::styled(
                             format!("{:.1}%", stats.best_accuracy),
-                            Style::default().fg(Colors::text()),
+                            Style::default().fg(colors.text()),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Total Mistakes: ", Style::default().fg(Colors::error())),
+                        Span::styled("• Total Mistakes: ", Style::default().fg(colors.error())),
                         Span::styled(
                             format!("{}", stats.total_mistakes),
-                            Style::default().fg(Colors::text()),
+                            Style::default().fg(colors.text()),
                         ),
                     ]),
                     Line::from(""),
@@ -200,7 +202,7 @@ impl RepositoriesView {
                         Span::styled(
                             "📊 Volume & Activity:",
                             Style::default()
-                                .fg(Colors::text())
+                                .fg(colors.text())
                                 .add_modifier(Modifier::BOLD),
                         ),
                     ]),
@@ -208,34 +210,34 @@ impl RepositoriesView {
                         Span::raw("    "),
                         Span::styled(
                             "• Total Sessions: ",
-                            Style::default().fg(Colors::stage_info()),
+                            Style::default().fg(colors.stage_info()),
                         ),
                         Span::styled(
                             format!("{}", stats.total_sessions),
-                            Style::default().fg(Colors::text()),
+                            Style::default().fg(colors.text()),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
                         Span::styled(
                             "• Total Keystrokes: ",
-                            Style::default().fg(Colors::stage_info()),
+                            Style::default().fg(colors.stage_info()),
                         ),
                         Span::styled(
                             format!("{}", stats.total_keystrokes),
-                            Style::default().fg(Colors::text()),
+                            Style::default().fg(colors.text()),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Total Time: ", Style::default().fg(Colors::duration())),
+                        Span::styled("• Total Time: ", Style::default().fg(colors.duration())),
                         Span::styled(
                             format!(
                                 "{}h {}m",
                                 stats.total_duration_ms / 3600000,
                                 (stats.total_duration_ms % 3600000) / 60000
                             ),
-                            Style::default().fg(Colors::text()),
+                            Style::default().fg(colors.text()),
                         ),
                     ]),
                     Line::from(""),
@@ -244,30 +246,27 @@ impl RepositoriesView {
                         Span::styled(
                             "🏆 Progress:",
                             Style::default()
-                                .fg(Colors::text())
+                                .fg(colors.text())
                                 .add_modifier(Modifier::BOLD),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled("• Average Score: ", Style::default().fg(Colors::score())),
+                        Span::styled("• Average Score: ", Style::default().fg(colors.score())),
                         Span::styled(
                             format!("{:.0}", stats.avg_score),
-                            Style::default().fg(Colors::text()),
+                            Style::default().fg(colors.text()),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("    "),
-                        Span::styled(
-                            "• Total Stages: ",
-                            Style::default().fg(Colors::stage_info()),
-                        ),
+                        Span::styled("• Total Stages: ", Style::default().fg(colors.stage_info())),
                         Span::styled(
                             format!(
                                 "{}/{} completed",
                                 stats.stages_completed, stats.stages_attempted
                             ),
-                            Style::default().fg(Colors::text()),
+                            Style::default().fg(colors.text()),
                         ),
                     ]),
                 ]);
@@ -275,18 +274,18 @@ impl RepositoriesView {
                 lines.extend_from_slice(&[
                     Line::from(vec![
                         Span::raw("  "),
-                        Span::styled("• Average CPM: ", Style::default().fg(Colors::cpm_wpm())),
+                        Span::styled("• Average CPM: ", Style::default().fg(colors.cpm_wpm())),
                         Span::styled(
                             format!("{:.1}", repo_data.1),
-                            Style::default().fg(Colors::text()),
+                            Style::default().fg(colors.text()),
                         ),
                     ]),
                     Line::from(vec![
                         Span::raw("  "),
-                        Span::styled("• WPM Equivalent: ", Style::default().fg(Colors::cpm_wpm())),
+                        Span::styled("• WPM Equivalent: ", Style::default().fg(colors.cpm_wpm())),
                         Span::styled(
                             format!("{:.1}", repo_data.1 / 5.0),
-                            Style::default().fg(Colors::text()),
+                            Style::default().fg(colors.text()),
                         ),
                     ]),
                 ]);
@@ -300,7 +299,7 @@ impl RepositoriesView {
                     Span::raw("  "),
                     Span::styled(
                         "No Repository Selected",
-                        Style::default().fg(Colors::text_secondary()),
+                        Style::default().fg(colors.text_secondary()),
                     ),
                 ]),
                 Line::from(""),
@@ -316,7 +315,7 @@ impl RepositoriesView {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border()))
+                    .border_style(Style::default().fg(colors.border()))
                     .title("Repository Details (Last 90 Days)"),
             );
         f.render_widget(details, area);

@@ -56,14 +56,14 @@ impl Challenge {
     }
 
     pub fn from_chunk(chunk: &CodeChunk, difficulty: Option<DifficultyLevel>) -> Option<Self> {
+        use uuid::Uuid;
+
         // Early validation
         if chunk.content.trim().is_empty() {
             return None;
         }
 
-        use uuid;
-
-        let id = uuid::Uuid::new_v4().to_string();
+        let id = Uuid::new_v4().to_string();
         let code_content = chunk.content.clone();
         let source_file_path = Some(chunk.file_path.to_string_lossy().to_string());
         let start_line = Some(chunk.start_line);
@@ -90,9 +90,9 @@ impl Challenge {
         comment_ranges: &[(usize, usize)],
         difficulty: Option<DifficultyLevel>,
     ) -> Self {
-        use uuid;
+        use uuid::Uuid;
 
-        let id = uuid::Uuid::new_v4().to_string();
+        let id = Uuid::new_v4().to_string();
         let code_content = content.into_owned();
         let source_file_path = Some(chunk.file_path.to_string_lossy().to_string());
         let language = Some(chunk.language.clone());

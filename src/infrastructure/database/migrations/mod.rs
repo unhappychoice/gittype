@@ -1,7 +1,8 @@
 pub mod v001_initial_schema;
 
-use crate::Result;
 use rusqlite::Connection;
+
+use crate::Result;
 
 pub trait Migration {
     fn version(&self) -> i32;

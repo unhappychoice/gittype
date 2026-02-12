@@ -1,14 +1,14 @@
 use super::data::SeedData;
-use gittype::infrastructure::database::database::{Database, HasDatabase};
+use gittype::infrastructure::database::database::{DatabaseInterface, HasDatabase};
 use gittype::Result;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 pub struct DatabaseSeeder {
-    database: Arc<Mutex<Database>>,
+    database: Arc<dyn DatabaseInterface>,
 }
 
 impl DatabaseSeeder {
-    pub fn new(database: Arc<Mutex<Database>>) -> Self {
+    pub fn new(database: Arc<dyn DatabaseInterface>) -> Self {
         Self { database }
     }
 
@@ -45,8 +45,7 @@ impl DatabaseSeeder {
     }
 
     fn seed_repositories(&self, seed_data: &SeedData) -> Result<()> {
-        let db = self.db_with_lock()?;
-        let conn = db.get_connection();
+        let conn = self.database.get_connection()?;
 
         for repo in &seed_data.repositories {
             conn.execute(
@@ -66,8 +65,7 @@ impl DatabaseSeeder {
     }
 
     fn seed_sessions(&self, seed_data: &SeedData) -> Result<()> {
-        let db = self.db_with_lock()?;
-        let conn = db.get_connection();
+        let conn = self.database.get_connection()?;
 
         for session in &seed_data.sessions {
             conn.execute(
@@ -126,8 +124,7 @@ impl DatabaseSeeder {
     }
 
     fn seed_challenges(&self, seed_data: &SeedData) -> Result<()> {
-        let db = self.db_with_lock()?;
-        let conn = db.get_connection();
+        let conn = self.database.get_connection()?;
 
         for challenge in &seed_data.challenges {
             conn.execute(
@@ -151,8 +148,7 @@ impl DatabaseSeeder {
     }
 
     fn seed_stages(&self, seed_data: &SeedData) -> Result<()> {
-        let db = self.db_with_lock()?;
-        let conn = db.get_connection();
+        let conn = self.database.get_connection()?;
 
         for stage in &seed_data.stages {
             conn.execute(
@@ -259,7 +255,7 @@ impl DatabaseSeeder {
 }
 
 impl HasDatabase for DatabaseSeeder {
-    fn database(&self) -> &Arc<Mutex<Database>> {
+    fn database(&self) -> &Arc<dyn DatabaseInterface> {
         &self.database
     }
 }

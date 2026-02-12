@@ -1,6 +1,7 @@
-use crate::domain::events::EventBus;
+use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::EventBusInterface;
+use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::infrastructure::logging::get_current_log_file_path;
-use crate::presentation::game::events::NavigateTo;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
 use crate::Result;
@@ -11,31 +12,47 @@ use ratatui::{
     widgets::{Block, Borders, Padding, Paragraph, Wrap},
     Frame,
 };
+use std::sync::{Arc, RwLock};
 
+pub trait PanicScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = PanicScreenInterface)]
 pub struct PanicScreen {
-    error_message: String,
-    timestamp: String,
-    event_bus: EventBus,
+    #[shaku(default)]
+    error_message: RwLock<String>,
+    #[shaku(default)]
+    timestamp: RwLock<String>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    theme_service: Arc<dyn ThemeServiceInterface>,
 }
 
 impl PanicScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
+    ) -> Self {
         Self {
-            error_message: "An unexpected error occurred".to_string(),
-            timestamp: Self::get_current_timestamp(),
+            error_message: RwLock::new("An unexpected error occurred".to_string()),
+            timestamp: RwLock::new(Self::get_current_timestamp()),
             event_bus,
+            theme_service,
         }
     }
 
     pub fn with_error_message(
         error_message: String,
-        event_bus: EventBus,
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
         timestamp: Option<String>,
     ) -> Self {
         Self {
-            error_message,
-            timestamp: timestamp.unwrap_or_else(Self::get_current_timestamp),
+            error_message: RwLock::new(error_message),
+            timestamp: RwLock::new(timestamp.unwrap_or_else(Self::get_current_timestamp)),
             event_bus,
+            theme_service,
         }
     }
 
@@ -50,7 +67,7 @@ impl PanicScreen {
             .unwrap_or_else(|_| "Unknown time".to_string())
     }
 
-    fn render_panic_content(&self, frame: &mut Frame) {
+    fn render_panic_content(&self, frame: &mut Frame, colors: &Colors) {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -65,7 +82,7 @@ impl PanicScreen {
         // Render header (no border)
         let header_lines = vec![Line::from(""), Line::from("💥 APPLICATION PANIC 💥")];
         let header = Paragraph::new(header_lines)
-            .style(Style::default().fg(Colors::error()))
+            .style(Style::default().fg(colors.error()))
             .alignment(Alignment::Center);
         frame.render_widget(header, chunks[0]);
 
@@ -73,11 +90,11 @@ impl PanicScreen {
         let apology_lines = vec![
             Line::from(Span::styled(
                 "We sincerely apologize for this unexpected error.",
-                Style::default().fg(Colors::error()),
+                Style::default().fg(colors.error()),
             )),
             Line::from(Span::styled(
                 "Progress is saved per session. Current session data may be lost.",
-                Style::default().fg(Colors::warning()),
+                Style::default().fg(colors.warning()),
             )),
         ];
         let apology_widget = Paragraph::new(apology_lines).alignment(Alignment::Center);
@@ -91,13 +108,13 @@ impl PanicScreen {
             Line::from(""),
             Line::from(Span::styled(
                 "📋 Logs saved to:",
-                Style::default().fg(Colors::success()),
+                Style::default().fg(colors.success()),
             )),
             Line::from(Span::raw(log_path)),
             Line::from(""),
             Line::from(Span::styled(
                 "🐛 Report this issue:",
-                Style::default().fg(Colors::stage_info()),
+                Style::default().fg(colors.stage_info()),
             )),
             Line::from(Span::raw("https://github.com/unhappychoice/gittype/issues")),
             Line::from(""),
@@ -109,24 +126,27 @@ impl PanicScreen {
         frame.render_widget(help_widget, chunks[2]);
 
         // Render detailed error info
+        let timestamp = self.timestamp.read().unwrap();
+        let error_message = self.error_message.read().unwrap();
+
         let mut error_lines = vec![
-            Line::from(Span::styled("Time:", Style::default().fg(Colors::info()))),
-            Line::from(Span::raw(&self.timestamp)),
+            Line::from(Span::styled("Time:", Style::default().fg(colors.info()))),
+            Line::from(Span::raw(timestamp.as_str())),
             Line::from(""),
             Line::from(Span::styled(
                 "Panic Message:",
-                Style::default().fg(Colors::error()),
+                Style::default().fg(colors.error()),
             )),
         ];
 
         // Add error message lines (split for better readability)
-        for line in self.error_message.lines() {
+        for line in error_message.lines() {
             // Check if this line contains Location info and format it properly
             if line.trim().starts_with("Location:") {
                 error_lines.push(Line::from(""));
                 error_lines.push(Line::from(Span::styled(
                     "Location:",
-                    Style::default().fg(Colors::info()),
+                    Style::default().fg(colors.info()),
                 )));
                 let location_info = line.trim().strip_prefix("Location:").unwrap_or("").trim();
                 error_lines.push(Line::from(location_info));
@@ -148,7 +168,7 @@ impl PanicScreen {
 
         // Render ESC key at the bottom (no border, consistent with other screens)
         let esc_instruction = Paragraph::new(Line::from(vec![
-            Span::styled("[ESC]", Style::default().fg(Colors::key_back())),
+            Span::styled("[ESC]", Style::default().fg(colors.key_back())),
             Span::raw(" Exit"),
         ]))
         .alignment(Alignment::Center);
@@ -164,6 +184,21 @@ impl ScreenDataProvider for PanicScreenDataProvider {
     }
 }
 
+pub struct PanicScreenProvider;
+
+impl shaku::Provider<crate::presentation::di::AppModule> for PanicScreenProvider {
+    type Interface = PanicScreen;
+
+    fn provide(
+        module: &crate::presentation::di::AppModule,
+    ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
+        use shaku::HasComponent;
+        let event_bus: Arc<dyn EventBusInterface> = module.resolve();
+        let theme_service: Arc<dyn ThemeServiceInterface> = module.resolve();
+        Ok(Box::new(PanicScreen::new(event_bus, theme_service)))
+    }
+}
+
 impl Screen for PanicScreen {
     fn get_type(&self) -> ScreenType {
         ScreenType::Panic
@@ -176,23 +211,24 @@ impl Screen for PanicScreen {
         Box::new(PanicScreenDataProvider)
     }
 
-    fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
+    fn init_with_data(&self, _data: Box<dyn std::any::Any>) -> Result<()> {
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         use crossterm::event::KeyCode;
         match key_event.code {
             KeyCode::Esc => {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             _ => Ok(()),
         }
     }
 
-    fn render_ratatui(&mut self, frame: &mut Frame) -> Result<()> {
-        self.render_panic_content(frame);
+    fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
+        self.render_panic_content(frame, &colors);
         Ok(())
     }
 
@@ -200,15 +236,13 @@ impl Screen for PanicScreen {
         UpdateStrategy::InputOnly
     }
 
-    fn update(&mut self) -> Result<bool> {
+    fn update(&self) -> Result<bool> {
         Ok(false)
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl PanicScreenInterface for PanicScreen {}

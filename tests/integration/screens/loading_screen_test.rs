@@ -1,19 +1,17 @@
+use crate::integration::screens::mocks::challenge_repository_mock::MockChallengeRepository;
 use crossterm::event::{KeyCode, KeyModifiers};
+use gittype::domain::events::presentation_events::ExitRequested;
 use gittype::domain::events::EventBus;
-use gittype::presentation::game::events::ExitRequested;
-use gittype::presentation::game::game_data::GameData;
+use gittype::domain::models::color_mode::ColorMode;
+use gittype::domain::models::theme::Theme;
+use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
 use gittype::presentation::tui::screens::loading_screen::LoadingScreen;
 use gittype::presentation::tui::{Screen, ScreenType};
 use std::sync::{Arc, Mutex};
 
-// Note: LoadingScreen requires GameData initialization, so we use manual tests
-// instead of macros for better control
-
 #[test]
 fn test_loading_screen_ctrl_c_requests_exit() {
-    let _ = GameData::initialize();
-
-    let event_bus = EventBus::new();
+    let event_bus = Arc::new(EventBus::new());
     let events = Arc::new(Mutex::new(Vec::new()));
     let events_clone = Arc::clone(&events);
 
@@ -21,7 +19,14 @@ fn test_loading_screen_ctrl_c_requests_exit() {
         events_clone.lock().unwrap().push(event.clone());
     });
 
-    let mut screen = LoadingScreen::new(event_bus);
+    let screen = LoadingScreen::new_for_test(
+        event_bus,
+        Arc::new(MockChallengeRepository::new()),
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        )) as Arc<dyn ThemeServiceInterface>,
+    );
 
     screen
         .handle_key_event(crossterm::event::KeyEvent::new(
@@ -36,10 +41,15 @@ fn test_loading_screen_ctrl_c_requests_exit() {
 
 #[test]
 fn test_loading_screen_char_a_ignored() {
-    let _ = GameData::initialize();
-
-    let event_bus = EventBus::new();
-    let mut screen = LoadingScreen::new(event_bus);
+    let event_bus = Arc::new(EventBus::new());
+    let screen = LoadingScreen::new_for_test(
+        event_bus,
+        Arc::new(MockChallengeRepository::new()),
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        )) as Arc<dyn ThemeServiceInterface>,
+    );
 
     // Should not panic
     screen
@@ -52,10 +62,15 @@ fn test_loading_screen_char_a_ignored() {
 
 #[test]
 fn test_loading_screen_enter_ignored() {
-    let _ = GameData::initialize();
-
-    let event_bus = EventBus::new();
-    let mut screen = LoadingScreen::new(event_bus);
+    let event_bus = Arc::new(EventBus::new());
+    let screen = LoadingScreen::new_for_test(
+        event_bus,
+        Arc::new(MockChallengeRepository::new()),
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        )) as Arc<dyn ThemeServiceInterface>,
+    );
 
     // Should not panic
     screen
@@ -68,10 +83,15 @@ fn test_loading_screen_enter_ignored() {
 
 #[test]
 fn test_loading_screen_esc_ignored() {
-    let _ = GameData::initialize();
-
-    let event_bus = EventBus::new();
-    let mut screen = LoadingScreen::new(event_bus);
+    let event_bus = Arc::new(EventBus::new());
+    let screen = LoadingScreen::new_for_test(
+        event_bus,
+        Arc::new(MockChallengeRepository::new()),
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        )) as Arc<dyn ThemeServiceInterface>,
+    );
 
     // Should not panic
     screen
@@ -84,10 +104,15 @@ fn test_loading_screen_esc_ignored() {
 
 #[test]
 fn test_loading_screen_initialization() {
-    let _ = GameData::initialize();
-
-    let event_bus = EventBus::new();
-    let screen = LoadingScreen::new(event_bus);
+    let event_bus = Arc::new(EventBus::new());
+    let screen = LoadingScreen::new_for_test(
+        event_bus,
+        Arc::new(MockChallengeRepository::new()),
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        )) as Arc<dyn ThemeServiceInterface>,
+    );
 
     assert_eq!(screen.get_type(), ScreenType::Loading);
 }

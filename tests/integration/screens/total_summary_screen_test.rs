@@ -1,20 +1,45 @@
 use crate::integration::screens::mocks::total_summary_screen_mock::MockTotalSummaryDataProvider;
 use crossterm::event::{KeyCode, KeyModifiers};
+use gittype::domain::events::presentation_events::NavigateTo;
 use gittype::domain::events::EventBus;
-use gittype::presentation::game::events::NavigateTo;
+use gittype::domain::models::color_mode::ColorMode;
+use gittype::domain::models::theme::Theme;
+use gittype::domain::services::scoring::{TotalTracker, TotalTrackerInterface};
+use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
 use gittype::presentation::tui::screens::total_summary_screen::TotalSummaryScreen;
+use std::sync::Arc;
 
 screen_snapshot_test!(
     test_total_summary_screen_snapshot,
     TotalSummaryScreen,
-    TotalSummaryScreen::new(EventBus::new()),
+    TotalSummaryScreen::new(
+        Arc::new(EventBus::new()),
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark
+        )) as Arc<dyn ThemeServiceInterface>,
+        Arc::new(TotalTracker::default()) as Arc<dyn TotalTrackerInterface>
+    ),
     provider = MockTotalSummaryDataProvider
 );
+
+// Helper function to create TotalSummaryScreen
+fn create_total_summary_screen(
+    event_bus: Arc<dyn gittype::domain::events::EventBusInterface>,
+) -> TotalSummaryScreen {
+    let theme_service = Arc::new(ThemeService::new_for_test(
+        Theme::default(),
+        ColorMode::Dark,
+    )) as Arc<dyn ThemeServiceInterface>;
+    let total_tracker: Arc<dyn TotalTrackerInterface> = Arc::new(TotalTracker::default());
+    TotalSummaryScreen::new(event_bus, theme_service, total_tracker)
+}
 
 // Event-producing key tests
 screen_key_event_test!(
     test_total_summary_screen_s_shares,
     TotalSummaryScreen,
+    create_total_summary_screen,
     NavigateTo,
     KeyCode::Char('s'),
     KeyModifiers::empty(),
@@ -24,6 +49,7 @@ screen_key_event_test!(
 screen_key_event_test!(
     test_total_summary_screen_capital_s_shares,
     TotalSummaryScreen,
+    create_total_summary_screen,
     NavigateTo,
     KeyCode::Char('S'),
     KeyModifiers::empty(),
@@ -33,6 +59,7 @@ screen_key_event_test!(
 screen_key_event_test!(
     test_total_summary_screen_esc_exits,
     TotalSummaryScreen,
+    create_total_summary_screen,
     NavigateTo,
     KeyCode::Esc,
     KeyModifiers::empty(),
@@ -42,6 +69,7 @@ screen_key_event_test!(
 screen_key_event_test!(
     test_total_summary_screen_ctrl_c_exits,
     TotalSummaryScreen,
+    create_total_summary_screen,
     NavigateTo,
     KeyCode::Char('c'),
     KeyModifiers::CONTROL,
@@ -52,7 +80,14 @@ screen_key_event_test!(
 screen_basic_methods_test!(
     test_total_summary_screen_basic_methods,
     TotalSummaryScreen,
-    TotalSummaryScreen::new(EventBus::new()),
+    TotalSummaryScreen::new(
+        Arc::new(EventBus::new()),
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark
+        )) as Arc<dyn ThemeServiceInterface>,
+        Arc::new(TotalTracker::default()) as Arc<dyn TotalTrackerInterface>
+    ),
     gittype::presentation::tui::ScreenType::TotalSummary,
     false,
     MockTotalSummaryDataProvider

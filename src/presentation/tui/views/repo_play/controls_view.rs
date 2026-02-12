@@ -10,18 +10,18 @@ use ratatui::{
 pub struct ControlsView;
 
 impl ControlsView {
-    pub fn render(frame: &mut Frame, area: Rect) {
+    pub fn render(frame: &mut Frame, area: Rect, colors: &Colors) {
         let controls_line = Line::from(vec![
-            Span::styled("[↑↓/JK]", Style::default().fg(Colors::key_navigation())),
-            Span::styled(" Navigate  ", Style::default().fg(Colors::text())),
-            Span::styled("[SPACE]", Style::default().fg(Colors::key_action())),
-            Span::styled(" Play  ", Style::default().fg(Colors::text())),
-            Span::styled("[ESC]", Style::default().fg(Colors::key_back())),
-            Span::styled(" Return  ", Style::default().fg(Colors::text())),
-            Span::styled("●", Style::default().fg(Colors::success())),
-            Span::styled(" Cached ", Style::default().fg(Colors::text())),
-            Span::styled("○", Style::default().fg(Colors::text_secondary())),
-            Span::styled(" Not Cached", Style::default().fg(Colors::text())),
+            Span::styled("[↑↓/JK]", Style::default().fg(colors.key_navigation())),
+            Span::styled(" Navigate  ", Style::default().fg(colors.text())),
+            Span::styled("[SPACE]", Style::default().fg(colors.key_action())),
+            Span::styled(" Play  ", Style::default().fg(colors.text())),
+            Span::styled("[ESC]", Style::default().fg(colors.key_back())),
+            Span::styled(" Return  ", Style::default().fg(colors.text())),
+            Span::styled("●", Style::default().fg(colors.success())),
+            Span::styled(" Cached ", Style::default().fg(colors.text())),
+            Span::styled("○", Style::default().fg(colors.text_secondary())),
+            Span::styled(" Not Cached", Style::default().fg(colors.text())),
         ]);
         let controls = Paragraph::new(controls_line).alignment(Alignment::Center);
         frame.render_widget(controls, area);

@@ -1,20 +1,26 @@
 use gittype::domain::models::{Challenge, DifficultyLevel, GitRepository, SessionResult};
-use gittype::infrastructure::database::daos::{ChallengeDao, RepositoryDao, SessionDao};
-use gittype::infrastructure::database::database::Database;
+use gittype::infrastructure::database::daos::{
+    ChallengeDao, ChallengeDaoInterface, RepositoryDao, RepositoryDaoInterface, SessionDao,
+    SessionDaoInterface,
+};
+use gittype::infrastructure::database::database::{Database, DatabaseInterface};
+use std::sync::Arc;
 use std::time::Duration;
 
 #[test]
 fn test_new_creates_dao() {
-    let db = Database::new().expect("Failed to create database");
-    let _dao = SessionDao::new(&db);
+    let db =
+        Arc::new(Database::new().expect("Failed to create database")) as Arc<dyn DatabaseInterface>;
+    let _dao = SessionDao::new(Arc::clone(&db));
 }
 
 #[test]
 fn test_create_session_in_transaction() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "testuser".to_string(),
@@ -32,7 +38,7 @@ fn test_create_session_in_transaction() {
     session_result.session_score = 100.0;
     session_result.overall_wpm = 50.0;
 
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx = conn.unchecked_transaction().unwrap();
     let session_id = session_dao
         .create_session_in_transaction(
@@ -45,16 +51,18 @@ fn test_create_session_in_transaction() {
         )
         .unwrap();
     tx.commit().unwrap();
+    drop(conn);
 
     assert!(session_id > 0, "Should return positive session ID");
 }
 
 #[test]
 fn test_save_session_result_in_transaction() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "resultuser".to_string(),
@@ -86,7 +94,7 @@ fn test_save_session_result_in_transaction() {
     session_result.best_stage_accuracy = 98.0;
     session_result.worst_stage_accuracy = 92.0;
 
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx = conn.unchecked_transaction().unwrap();
 
     // Create session first
@@ -105,16 +113,19 @@ fn test_save_session_result_in_transaction() {
     session_dao
         .save_session_result_in_transaction(
             &tx,
-            session_id,
-            Some(repository_id),
-            &session_result,
-            &[],
-            "normal",
-            Some("medium"),
+            gittype::domain::models::storage::SaveSessionResultParams {
+                session_id,
+                repository_id: Some(repository_id),
+                session_result: &session_result,
+                stage_engines: &[],
+                game_mode: "normal",
+                difficulty_level: Some("medium"),
+            },
         )
         .unwrap();
 
     tx.commit().unwrap();
+    drop(conn);
 
     // Verify the session result was saved
     let result = session_dao.get_session_result(session_id).unwrap();
@@ -130,11 +141,12 @@ fn test_save_session_result_in_transaction() {
 
 #[test]
 fn test_save_stage_result_in_transaction() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
-    let challenge_dao = ChallengeDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
+    let challenge_dao = ChallengeDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "stageuser".to_string(),
@@ -153,18 +165,19 @@ fn test_save_stage_result_in_transaction() {
         .with_language("rust".to_string())
         .with_difficulty_level(DifficultyLevel::Easy);
 
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx = conn.unchecked_transaction().unwrap();
     challenge_dao
         .ensure_challenge_in_transaction(&tx, &challenge)
         .unwrap();
     tx.commit().unwrap();
+    drop(conn);
 
     // Create session
     let mut session_result = SessionResult::new();
     session_result.session_score = 100.0;
 
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx = conn.unchecked_transaction().unwrap();
     let session_id = session_dao
         .create_session_in_transaction(
@@ -177,9 +190,10 @@ fn test_save_stage_result_in_transaction() {
         )
         .unwrap();
     tx.commit().unwrap();
+    drop(conn);
 
     // Insert stage_results directly with RFC3339 timestamp
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx = conn.unchecked_transaction().unwrap();
 
     let completed_at = chrono::Utc::now().to_rfc3339();
@@ -236,6 +250,7 @@ fn test_save_stage_result_in_transaction() {
     .unwrap();
 
     tx.commit().unwrap();
+    drop(conn);
 
     // Verify stage result was saved
     let stage_results = session_dao.get_session_stage_results(session_id).unwrap();
@@ -245,10 +260,11 @@ fn test_save_stage_result_in_transaction() {
 
 #[test]
 fn test_get_repository_sessions() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "historyuser".to_string(),
@@ -267,7 +283,7 @@ fn test_get_repository_sessions() {
         let mut session_result = SessionResult::new();
         session_result.session_score = 100.0 + (i as f64) * 10.0;
 
-        let conn = db.get_connection();
+        let conn = db.get_connection().unwrap();
         let tx = conn.unchecked_transaction().unwrap();
         session_dao
             .create_session_in_transaction(
@@ -280,6 +296,7 @@ fn test_get_repository_sessions() {
             )
             .unwrap();
         tx.commit().unwrap();
+        drop(conn);
     }
 
     let sessions = session_dao.get_repository_sessions(repository_id).unwrap();
@@ -293,10 +310,11 @@ fn test_get_repository_sessions() {
 
 #[test]
 fn test_get_todays_best_session() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "todayuser".to_string(),
@@ -316,7 +334,7 @@ fn test_get_todays_best_session() {
         let mut session_result = SessionResult::new();
         session_result.session_score = score;
 
-        let conn = db.get_connection();
+        let conn = db.get_connection().unwrap();
         let tx = conn.unchecked_transaction().unwrap();
         let session_id = session_dao
             .create_session_in_transaction(
@@ -332,16 +350,19 @@ fn test_get_todays_best_session() {
         session_dao
             .save_session_result_in_transaction(
                 &tx,
-                session_id,
-                Some(repository_id),
-                &session_result,
-                &[],
-                "normal",
-                Some("easy"),
+                gittype::domain::models::storage::SaveSessionResultParams {
+                    session_id,
+                    repository_id: Some(repository_id),
+                    session_result: &session_result,
+                    stage_engines: &[],
+                    game_mode: "normal",
+                    difficulty_level: Some("easy"),
+                },
             )
             .unwrap();
 
         tx.commit().unwrap();
+        drop(conn);
     }
 
     let best = session_dao.get_todays_best_session().unwrap();
@@ -360,10 +381,11 @@ fn test_get_todays_best_session() {
 
 #[test]
 fn test_get_weekly_best_session() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "weekuser".to_string(),
@@ -380,7 +402,7 @@ fn test_get_weekly_best_session() {
     let mut session_result = SessionResult::new();
     session_result.session_score = 180.0;
 
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx = conn.unchecked_transaction().unwrap();
     let session_id = session_dao
         .create_session_in_transaction(
@@ -396,16 +418,19 @@ fn test_get_weekly_best_session() {
     session_dao
         .save_session_result_in_transaction(
             &tx,
-            session_id,
-            Some(repository_id),
-            &session_result,
-            &[],
-            "normal",
-            Some("easy"),
+            gittype::domain::models::storage::SaveSessionResultParams {
+                session_id,
+                repository_id: Some(repository_id),
+                session_result: &session_result,
+                stage_engines: &[],
+                game_mode: "normal",
+                difficulty_level: Some("easy"),
+            },
         )
         .unwrap();
 
     tx.commit().unwrap();
+    drop(conn);
 
     let weekly_best = session_dao.get_weekly_best_session().unwrap();
     assert!(weekly_best.is_some(), "Should find weekly best session");
@@ -413,10 +438,11 @@ fn test_get_weekly_best_session() {
 
 #[test]
 fn test_get_all_time_best_session() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "alltimeuser".to_string(),
@@ -436,7 +462,7 @@ fn test_get_all_time_best_session() {
         let mut session_result = SessionResult::new();
         session_result.session_score = score;
 
-        let conn = db.get_connection();
+        let conn = db.get_connection().unwrap();
         let tx = conn.unchecked_transaction().unwrap();
         let session_id = session_dao
             .create_session_in_transaction(
@@ -452,16 +478,19 @@ fn test_get_all_time_best_session() {
         session_dao
             .save_session_result_in_transaction(
                 &tx,
-                session_id,
-                Some(repository_id),
-                &session_result,
-                &[],
-                "normal",
-                Some("easy"),
+                gittype::domain::models::storage::SaveSessionResultParams {
+                    session_id,
+                    repository_id: Some(repository_id),
+                    session_result: &session_result,
+                    stage_engines: &[],
+                    game_mode: "normal",
+                    difficulty_level: Some("easy"),
+                },
             )
             .unwrap();
 
         tx.commit().unwrap();
+        drop(conn);
     }
 
     let all_time_best = session_dao.get_all_time_best_session().unwrap();
@@ -480,10 +509,11 @@ fn test_get_all_time_best_session() {
 
 #[test]
 fn test_get_session_result() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "getuser".to_string(),
@@ -502,7 +532,7 @@ fn test_get_session_result() {
     session_result.overall_wpm = 55.5;
     session_result.overall_accuracy = 94.2;
 
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx = conn.unchecked_transaction().unwrap();
     let session_id = session_dao
         .create_session_in_transaction(
@@ -518,16 +548,19 @@ fn test_get_session_result() {
     session_dao
         .save_session_result_in_transaction(
             &tx,
-            session_id,
-            Some(repository_id),
-            &session_result,
-            &[],
-            "normal",
-            Some("easy"),
+            gittype::domain::models::storage::SaveSessionResultParams {
+                session_id,
+                repository_id: Some(repository_id),
+                session_result: &session_result,
+                stage_engines: &[],
+                game_mode: "normal",
+                difficulty_level: Some("easy"),
+            },
         )
         .unwrap();
 
     tx.commit().unwrap();
+    drop(conn);
 
     let result = session_dao.get_session_result(session_id).unwrap();
     assert!(result.is_some(), "Should find session result");
@@ -540,9 +573,10 @@ fn test_get_session_result() {
 
 #[test]
 fn test_get_session_result_not_found() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
 
     let result = session_dao.get_session_result(99999).unwrap();
     assert!(
@@ -553,10 +587,11 @@ fn test_get_session_result_not_found() {
 
 #[test]
 fn test_get_sessions_filtered_by_repository() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     // Create two repositories
     let git_repo1 = GitRepository {
@@ -593,7 +628,7 @@ fn test_get_sessions_filtered_by_repository() {
         let mut session_result = SessionResult::new();
         session_result.session_score = 100.0;
 
-        let conn = db.get_connection();
+        let conn = db.get_connection().unwrap();
         let tx = conn.unchecked_transaction().unwrap();
         let session_id = session_dao
             .create_session_in_transaction(
@@ -609,16 +644,19 @@ fn test_get_sessions_filtered_by_repository() {
         session_dao
             .save_session_result_in_transaction(
                 &tx,
-                session_id,
-                Some(*repo_id),
-                &session_result,
-                &[],
-                "normal",
-                Some("easy"),
+                gittype::domain::models::storage::SaveSessionResultParams {
+                    session_id,
+                    repository_id: Some(*repo_id),
+                    session_result: &session_result,
+                    stage_engines: &[],
+                    game_mode: "normal",
+                    difficulty_level: Some("easy"),
+                },
             )
             .unwrap();
 
         tx.commit().unwrap();
+        drop(conn);
     }
 
     // Filter by repository
@@ -637,10 +675,11 @@ fn test_get_sessions_filtered_by_repository() {
 
 #[test]
 fn test_get_sessions_filtered_by_date() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "dateuser".to_string(),
@@ -657,7 +696,7 @@ fn test_get_sessions_filtered_by_date() {
     let mut session_result = SessionResult::new();
     session_result.session_score = 100.0;
 
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx = conn.unchecked_transaction().unwrap();
     let session_id = session_dao
         .create_session_in_transaction(
@@ -673,16 +712,19 @@ fn test_get_sessions_filtered_by_date() {
     session_dao
         .save_session_result_in_transaction(
             &tx,
-            session_id,
-            Some(repository_id),
-            &session_result,
-            &[],
-            "normal",
-            Some("easy"),
+            gittype::domain::models::storage::SaveSessionResultParams {
+                session_id,
+                repository_id: Some(repository_id),
+                session_result: &session_result,
+                stage_engines: &[],
+                game_mode: "normal",
+                difficulty_level: Some("easy"),
+            },
         )
         .unwrap();
 
     tx.commit().unwrap();
+    drop(conn);
 
     // Filter by last 7 days
     let sessions = session_dao
@@ -697,10 +739,11 @@ fn test_get_sessions_filtered_by_date() {
 
 #[test]
 fn test_get_sessions_filtered_sorted_by_score() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "sortuser".to_string(),
@@ -720,7 +763,7 @@ fn test_get_sessions_filtered_sorted_by_score() {
         let mut session_result = SessionResult::new();
         session_result.session_score = score;
 
-        let conn = db.get_connection();
+        let conn = db.get_connection().unwrap();
         let tx = conn.unchecked_transaction().unwrap();
         let session_id = session_dao
             .create_session_in_transaction(
@@ -736,16 +779,19 @@ fn test_get_sessions_filtered_sorted_by_score() {
         session_dao
             .save_session_result_in_transaction(
                 &tx,
-                session_id,
-                Some(repository_id),
-                &session_result,
-                &[],
-                "normal",
-                Some("easy"),
+                gittype::domain::models::storage::SaveSessionResultParams {
+                    session_id,
+                    repository_id: Some(repository_id),
+                    session_result: &session_result,
+                    stage_engines: &[],
+                    game_mode: "normal",
+                    difficulty_level: Some("easy"),
+                },
             )
             .unwrap();
 
         tx.commit().unwrap();
+        drop(conn);
     }
 
     // Sort by score descending
@@ -769,11 +815,12 @@ fn test_get_sessions_filtered_sorted_by_score() {
 
 #[test]
 fn test_get_session_stage_results() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let session_dao = SessionDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
-    let challenge_dao = ChallengeDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
+    let challenge_dao = ChallengeDao::new(Arc::clone(&db));
 
     let git_repo = GitRepository {
         user_name: "stageresultuser".to_string(),
@@ -797,7 +844,7 @@ fn test_get_session_stage_results() {
             .with_difficulty_level(DifficultyLevel::Normal),
     ];
 
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx = conn.unchecked_transaction().unwrap();
     for challenge in &challenges {
         challenge_dao
@@ -805,12 +852,13 @@ fn test_get_session_stage_results() {
             .unwrap();
     }
     tx.commit().unwrap();
+    drop(conn);
 
     // Create session
     let mut session_result = SessionResult::new();
     session_result.session_score = 100.0;
 
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx = conn.unchecked_transaction().unwrap();
     let session_id = session_dao
         .create_session_in_transaction(
@@ -823,10 +871,11 @@ fn test_get_session_stage_results() {
         )
         .unwrap();
     tx.commit().unwrap();
+    drop(conn);
 
     // Create stage results with RFC3339 timestamps
     for (i, challenge) in challenges.iter().enumerate() {
-        let conn = db.get_connection();
+        let conn = db.get_connection().unwrap();
         let tx = conn.unchecked_transaction().unwrap();
 
         let completed_at = chrono::Utc::now().to_rfc3339();
@@ -883,6 +932,7 @@ fn test_get_session_stage_results() {
         .unwrap();
 
         tx.commit().unwrap();
+        drop(conn);
     }
 
     // Get stage results

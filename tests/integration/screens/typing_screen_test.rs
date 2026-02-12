@@ -2,9 +2,10 @@ use crate::integration::screens::mocks::typing_screen_mock::{
     create_typing_screen_with_challenge, MockTypingScreenDataProvider,
 };
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use gittype::domain::events::presentation_events::NavigateTo;
 use gittype::domain::events::EventBus;
-use gittype::presentation::game::events::NavigateTo;
 use gittype::presentation::tui::screens::typing_screen::TypingScreen;
+use std::sync::Arc;
 
 // Note: TypingScreen has complex state management (waiting_to_start, countdown, dialog_shown)
 // These tests cover different display states
@@ -14,7 +15,7 @@ screen_snapshot_test!(
     test_typing_screen_snapshot_waiting_with_challenge,
     TypingScreen,
     create_typing_screen_with_challenge(
-        EventBus::new(),
+        Arc::new(EventBus::new()),
         Some("fn main() {\n    println!(\"Hello, world!\");\n}")
     ),
     provider = MockTypingScreenDataProvider
@@ -24,7 +25,7 @@ screen_snapshot_test!(
 screen_snapshot_test!(
     test_typing_screen_snapshot_dialog_shown,
     TypingScreen,
-    create_typing_screen_with_challenge(EventBus::new(), Some("fn test() { }")),
+    create_typing_screen_with_challenge(Arc::new(EventBus::new()), Some("fn test() { }")),
     provider = MockTypingScreenDataProvider,
     keys = [KeyEvent::new(KeyCode::Esc, KeyModifiers::empty())]
 );
@@ -34,7 +35,7 @@ screen_snapshot_test!(
     test_typing_screen_snapshot_countdown,
     TypingScreen,
     create_typing_screen_with_challenge(
-        EventBus::new(),
+        Arc::new(EventBus::new()),
         Some("fn main() {\n    println!(\"Hello\");\n}")
     ),
     provider = MockTypingScreenDataProvider,
@@ -51,8 +52,8 @@ fn test_typing_screen_snapshot_typing_progress() {
 
     std::env::set_var("TZ", "UTC");
 
-    let mut screen = create_typing_screen_with_challenge(
-        EventBus::new(),
+    let screen = create_typing_screen_with_challenge(
+        Arc::new(EventBus::new()),
         Some("fn main() {\n    println!(\"Hello\");\n}"),
     );
 
@@ -105,7 +106,7 @@ screen_key_event_test!(
 screen_snapshot_test!(
     test_typing_screen_snapshot_dialog_skip,
     TypingScreen,
-    create_typing_screen_with_challenge(EventBus::new(), Some("fn test() { }")),
+    create_typing_screen_with_challenge(Arc::new(EventBus::new()), Some("fn test() { }")),
     provider = MockTypingScreenDataProvider,
     keys = [
         KeyEvent::new(KeyCode::Esc, KeyModifiers::empty()),
@@ -123,8 +124,8 @@ fn test_typing_screen_snapshot_wrong_input() {
 
     std::env::set_var("TZ", "UTC");
 
-    let mut screen = create_typing_screen_with_challenge(
-        EventBus::new(),
+    let screen = create_typing_screen_with_challenge(
+        Arc::new(EventBus::new()),
         Some("fn main() {\n    println!(\"Hello\");\n}"),
     );
 
@@ -172,8 +173,8 @@ fn test_typing_screen_snapshot_backspace() {
 
     std::env::set_var("TZ", "UTC");
 
-    let mut screen = create_typing_screen_with_challenge(
-        EventBus::new(),
+    let screen = create_typing_screen_with_challenge(
+        Arc::new(EventBus::new()),
         Some("fn main() {\n    println!(\"Hello\");\n}"),
     );
 
@@ -222,8 +223,8 @@ fn test_typing_screen_snapshot_countdown_with_dialog() {
 
     std::env::set_var("TZ", "UTC");
 
-    let mut screen = create_typing_screen_with_challenge(
-        EventBus::new(),
+    let screen = create_typing_screen_with_challenge(
+        Arc::new(EventBus::new()),
         Some("fn main() {\n    println!(\"Hello\");\n}"),
     );
 
@@ -263,8 +264,8 @@ fn test_typing_screen_tab_key() {
     use gittype::presentation::tui::Screen;
     use gittype::presentation::tui::ScreenDataProvider;
 
-    let mut screen = create_typing_screen_with_challenge(
-        EventBus::new(),
+    let screen = create_typing_screen_with_challenge(
+        Arc::new(EventBus::new()),
         Some("fn main() {\n\tprintln!(\"Hello\");\n}"),
     );
 
@@ -304,8 +305,8 @@ fn test_typing_screen_enter_key() {
     use gittype::presentation::tui::Screen;
     use gittype::presentation::tui::ScreenDataProvider;
 
-    let mut screen = create_typing_screen_with_challenge(
-        EventBus::new(),
+    let screen = create_typing_screen_with_challenge(
+        Arc::new(EventBus::new()),
         Some("fn main() {\n    println!(\"Hello\");\n}"),
     );
 
@@ -342,8 +343,8 @@ fn test_typing_screen_completion() {
     use gittype::presentation::tui::Screen;
     use gittype::presentation::tui::ScreenDataProvider;
 
-    let mut screen = create_typing_screen_with_challenge(
-        EventBus::new(),
+    let screen = create_typing_screen_with_challenge(
+        Arc::new(EventBus::new()),
         Some("hi"), // Very short text to complete easily
     );
 
@@ -372,8 +373,8 @@ fn test_typing_screen_esc_during_typing() {
 
     std::env::set_var("TZ", "UTC");
 
-    let mut screen = create_typing_screen_with_challenge(
-        EventBus::new(),
+    let screen = create_typing_screen_with_challenge(
+        Arc::new(EventBus::new()),
         Some("fn main() {\n    println!(\"Hello\");\n}"),
     );
 
@@ -418,7 +419,7 @@ fn test_typing_screen_esc_during_typing() {
 screen_basic_methods_test!(
     test_typing_screen_basic_methods,
     TypingScreen,
-    create_typing_screen_with_challenge(EventBus::new(), None),
+    create_typing_screen_with_challenge(Arc::new(EventBus::new()), None),
     gittype::presentation::tui::ScreenType::Typing,
     false,
     MockTypingScreenDataProvider

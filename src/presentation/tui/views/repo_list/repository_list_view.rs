@@ -16,6 +16,7 @@ impl RepositoryListView {
         frame: &mut Frame,
         area: Rect,
         repositories: &[(StoredRepositoryWithLanguages, bool)],
+        colors: &Colors,
     ) {
         let repo_width = 35;
         let lang_width = 25;
@@ -30,15 +31,15 @@ impl RepositoryListView {
                     Span::styled(
                         format!("{} ", cache_indicator),
                         Style::default().fg(if *is_cached {
-                            Colors::success()
+                            colors.success()
                         } else {
-                            Colors::text_secondary()
+                            colors.text_secondary()
                         }),
                     ),
                     Span::styled(
                         format!("{:<width$}", repo_name, width = repo_width),
                         Style::default()
-                            .fg(Colors::text())
+                            .fg(colors.text())
                             .add_modifier(Modifier::BOLD),
                     ),
                 ];
@@ -47,7 +48,7 @@ impl RepositoryListView {
                 if repo.languages.is_empty() {
                     line_spans.push(Span::styled(
                         format!("{:<width$}", "No challenges", width = lang_width),
-                        Style::default().fg(Colors::text_secondary()),
+                        Style::default().fg(colors.text_secondary()),
                     ));
                 } else {
                     let mut current_length = 0;
@@ -56,7 +57,7 @@ impl RepositoryListView {
                             if current_length + 2 <= lang_width {
                                 line_spans.push(Span::styled(
                                     ", ",
-                                    Style::default().fg(Colors::text_secondary()),
+                                    Style::default().fg(colors.text_secondary()),
                                 ));
                                 current_length += 2;
                             } else {
@@ -67,13 +68,13 @@ impl RepositoryListView {
                         if current_length + lang_name.len() <= lang_width {
                             line_spans.push(Span::styled(
                                 lang_name.clone(),
-                                Style::default().fg(Languages::get_color(Some(lang))),
+                                Style::default().fg(colors.info()),
                             ));
                             current_length += lang_name.len();
                         } else if current_length + 3 <= lang_width {
                             line_spans.push(Span::styled(
                                 "...",
-                                Style::default().fg(Colors::text_secondary()),
+                                Style::default().fg(colors.text_secondary()),
                             ));
                             current_length += 3;
                             break;
@@ -90,7 +91,7 @@ impl RepositoryListView {
                 line_spans.push(Span::styled(" ", Style::default()));
                 line_spans.push(Span::styled(
                     repo.http_url(),
-                    Style::default().fg(Colors::text_secondary()),
+                    Style::default().fg(colors.text_secondary()),
                 ));
 
                 ListItem::new(Line::from(line_spans))
@@ -101,16 +102,16 @@ impl RepositoryListView {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border()))
+                    .border_style(Style::default().fg(colors.border()))
                     .title("Repository List")
                     .title_style(
                         Style::default()
-                            .fg(Colors::text())
+                            .fg(colors.text())
                             .add_modifier(Modifier::BOLD),
                     )
                     .padding(Padding::horizontal(1)),
             )
-            .style(Style::default().fg(Colors::text()));
+            .style(Style::default().fg(colors.text()));
         frame.render_widget(list, area);
     }
 }

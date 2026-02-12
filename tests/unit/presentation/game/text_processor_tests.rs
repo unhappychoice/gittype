@@ -1,4 +1,4 @@
-use gittype::presentation::game::text_processor::TextProcessor;
+use gittype::domain::services::text_processor::TextProcessor;
 
 #[test]
 fn process_challenge_text_empty_string() {

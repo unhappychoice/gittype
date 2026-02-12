@@ -10,7 +10,7 @@ use ratatui::{
 pub struct VersionCheckView;
 
 impl VersionCheckView {
-    pub fn draw_ui(f: &mut Frame, current_version: &str, latest_version: &str) {
+    pub fn draw_ui(f: &mut Frame, current_version: &str, latest_version: &str, colors: &Colors) {
         let size = f.area();
 
         // Create main layout for content and controls
@@ -42,7 +42,7 @@ impl VersionCheckView {
             Line::from(vec![Span::styled(
                 "🎮 GitType Update Available",
                 Style::default()
-                    .fg(Colors::title())
+                    .fg(colors.title())
                     .add_modifier(Modifier::BOLD),
             )]),
         ];
@@ -51,11 +51,11 @@ impl VersionCheckView {
 
         // Current version
         let current_text = vec![Line::from(vec![
-            Span::styled("Current version: ", Style::default().fg(Colors::text())),
+            Span::styled("Current version: ", Style::default().fg(colors.text())),
             Span::styled(
                 format!("v{}", current_version),
                 Style::default()
-                    .fg(Colors::text())
+                    .fg(colors.text())
                     .add_modifier(Modifier::BOLD),
             ),
         ])];
@@ -64,11 +64,11 @@ impl VersionCheckView {
 
         // Latest version
         let latest_text = vec![Line::from(vec![
-            Span::styled("Latest version:  ", Style::default().fg(Colors::text())),
+            Span::styled("Latest version:  ", Style::default().fg(colors.text())),
             Span::styled(
                 format!("v{}", latest_version),
                 Style::default()
-                    .fg(Colors::success())
+                    .fg(colors.success())
                     .add_modifier(Modifier::BOLD),
             ),
         ])];
@@ -83,7 +83,7 @@ impl VersionCheckView {
             Line::from("curl -sSL https://raw.githubusercontent.com/unhappychoice/gittype/main/install.sh | bash"),
         ];
         let install_para = Paragraph::new(install_text)
-            .style(Style::default().fg(Colors::text_secondary()))
+            .style(Style::default().fg(colors.text_secondary()))
             .wrap(Wrap { trim: true });
         f.render_widget(install_para, chunks[3]);
 
@@ -95,18 +95,18 @@ impl VersionCheckView {
                 Span::styled(
                     "[SPACE] ",
                     Style::default()
-                        .fg(Colors::success())
+                        .fg(colors.success())
                         .add_modifier(Modifier::BOLD),
                 ),
-                Span::styled("Continue", Style::default().fg(Colors::text())),
+                Span::styled("Continue", Style::default().fg(colors.text())),
                 Span::styled("  ", Style::default()),
                 Span::styled(
                     "[ESC] ",
                     Style::default()
-                        .fg(Colors::error())
+                        .fg(colors.error())
                         .add_modifier(Modifier::BOLD),
                 ),
-                Span::styled("Exit", Style::default().fg(Colors::text())),
+                Span::styled("Exit", Style::default().fg(colors.text())),
             ]),
         ];
         let control_para = Paragraph::new(control_text);

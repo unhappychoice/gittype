@@ -1,12 +1,12 @@
-use crate::domain::events::EventBus;
-use crate::domain::models::storage::{SessionStageResult, StoredSession};
-use crate::domain::repositories::session_repository::{SessionRepository, SessionRepositoryTrait};
+use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::EventBusInterface;
+use crate::domain::models::storage::SessionStageResult;
+use crate::domain::repositories::session_repository::SessionRepositoryTrait;
 use crate::domain::services::session_service::SessionDisplayData;
-use crate::presentation::game::events::NavigateTo;
+use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::presentation::tui::screens::RecordsScreen;
 use crate::presentation::tui::views::{PerformanceMetricsView, SessionInfoView, StageDetailsView};
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
-use crate::presentation::ui::Colors;
 use crate::{GitTypeError, Result};
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::{
@@ -15,52 +15,45 @@ use ratatui::{
     text::{Line, Span},
     widgets::Paragraph,
 };
+use std::sync::{Arc, RwLock};
 
 pub enum SessionDetailAction {
     Return,
 }
 
+pub trait SessionDetailScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = SessionDetailScreenInterface)]
 pub struct SessionDetailScreen {
-    session_data: SessionDisplayData,
-    stage_results: Vec<SessionStageResult>,
-    stage_scroll_offset: usize,
-    event_bus: EventBus,
-    session_repository: Option<Box<dyn SessionRepositoryTrait>>,
+    #[shaku(default)]
+    session_data: RwLock<SessionDisplayData>,
+    #[shaku(default)]
+    stage_results: RwLock<Vec<SessionStageResult>>,
+    #[shaku(default)]
+    stage_scroll_offset: RwLock<usize>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    theme_service: Arc<dyn ThemeServiceInterface>,
+    #[shaku(inject)]
+    session_repository: Arc<dyn SessionRepositoryTrait>,
 }
 
 impl SessionDetailScreen {
-    pub fn new(event_bus: EventBus) -> Self {
-        Self {
-            session_data: SessionDisplayData {
-                session: StoredSession {
-                    id: 0,
-                    repository_id: None,
-                    started_at: chrono::Utc::now(),
-                    completed_at: Some(chrono::Utc::now()),
-                    branch: None,
-                    commit_hash: None,
-                    is_dirty: false,
-                    game_mode: "default".to_string(),
-                    difficulty_level: None,
-                    max_stages: None,
-                    time_limit_seconds: None,
-                },
-                repository: None,
-                session_result: None,
-            },
-            stage_results: Vec::new(),
-            stage_scroll_offset: 0,
-            event_bus,
-            session_repository: None,
-        }
-    }
-
-    pub fn with_session_repository<T: SessionRepositoryTrait + 'static>(
-        mut self,
-        session_repository: T,
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
+        session_repository: Arc<dyn SessionRepositoryTrait>,
     ) -> Self {
-        self.session_repository = Some(Box::new(session_repository));
-        self
+        Self {
+            session_data: RwLock::new(SessionDisplayData::default()),
+            stage_results: RwLock::new(Vec::new()),
+            stage_scroll_offset: RwLock::new(0),
+            event_bus,
+            theme_service,
+            session_repository,
+        }
     }
 }
 
@@ -84,70 +77,84 @@ impl Screen for SessionDetailScreen {
         Box::new(SessionDetailScreenDataProvider)
     }
 
-    fn init_with_data(&mut self, data: Box<dyn std::any::Any>) -> Result<()> {
+    fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
         let _ = data;
         Ok(())
     }
 
-    fn on_pushed_from(&mut self, source_screen: &dyn Screen) -> Result<()> {
+    fn on_pushed_from(&self, source_screen: &dyn Screen) -> Result<()> {
+        log::debug!("SessionDetailScreen::on_pushed_from called");
+
         let records = source_screen
             .as_any()
             .downcast_ref::<RecordsScreen>()
             .ok_or_else(|| {
+                log::error!("Failed to downcast source_screen to RecordsScreen");
                 GitTypeError::ScreenInitializationError(
                     "SessionDetail must be pushed from Records screen".to_string(),
                 )
             })?;
 
-        let session_data = records
-            .get_selected_session_for_detail()
-            .as_ref()
-            .cloned()
-            .ok_or_else(|| {
-                GitTypeError::ScreenInitializationError(
-                    "SessionDetail requires selected session data from Records screen".to_string(),
-                )
-            })?;
+        let session_data = records.get_selected_session_for_detail().ok_or_else(|| {
+            log::error!("No session data selected in RecordsScreen");
+            GitTypeError::ScreenInitializationError(
+                "SessionDetail requires selected session data from Records screen".to_string(),
+            )
+        })?;
 
-        let stage_results = if let Some(ref repo) = self.session_repository {
-            repo.get_session_stage_results(session_data.session.id)?
-        } else {
-            let repo = SessionRepository::new()?;
-            repo.get_session_stage_results(session_data.session.id)?
-        };
+        log::debug!(
+            "Session data retrieved: id={}, repository={:?}",
+            session_data.session.id,
+            session_data.repository.as_ref().map(|r| &r.repository_name)
+        );
 
-        self.session_data = session_data;
-        self.stage_results = stage_results;
-        self.stage_scroll_offset = 0;
-
-        if self.session_data.session.id == 0 {
+        if session_data.session.id == 0 {
+            log::error!("Session id is 0");
             return Err(GitTypeError::ScreenInitializationError(
                 "SessionDetail: session id cannot be 0".to_string(),
             ));
         }
 
+        let stage_results = self
+            .session_repository
+            .get_session_stage_results(session_data.session.id)?;
+
+        log::debug!(
+            "Retrieved {} stage results for session {}",
+            stage_results.len(),
+            session_data.session.id
+        );
+
+        *self.session_data.write().unwrap() = session_data.clone();
+        *self.stage_results.write().unwrap() = stage_results;
+        *self.stage_scroll_offset.write().unwrap() = 0;
+
+        log::debug!("SessionDetailScreen initialized successfully");
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
+    fn handle_key_event(&self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         match key_event.code {
             KeyCode::Esc => {
-                self.event_bus.publish(NavigateTo::Pop);
+                self.event_bus.as_event_bus().publish(NavigateTo::Pop);
                 Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             KeyCode::Up => {
-                if self.stage_scroll_offset > 0 {
-                    self.stage_scroll_offset -= 1;
+                let mut offset = self.stage_scroll_offset.write().unwrap();
+                if *offset > 0 {
+                    *offset -= 1;
                 }
                 Ok(())
             }
             KeyCode::Down => {
-                if self.stage_scroll_offset + 1 < self.stage_results.len() {
-                    self.stage_scroll_offset += 1;
+                let mut offset = self.stage_scroll_offset.write().unwrap();
+                let stage_results = self.stage_results.read().unwrap();
+                if *offset + 1 < stage_results.len() {
+                    *offset += 1;
                 }
                 Ok(())
             }
@@ -155,7 +162,12 @@ impl Screen for SessionDetailScreen {
         }
     }
 
-    fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()> {
+    fn render_ratatui(&self, frame: &mut ratatui::Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
+        let session_data = self.session_data.read().unwrap();
+        let stage_results = self.stage_results.read().unwrap();
+        let stage_scroll_offset = *self.stage_scroll_offset.read().unwrap();
+
         let main_chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -168,7 +180,7 @@ impl Screen for SessionDetailScreen {
         let title = Paragraph::new("Session Details")
             .style(
                 Style::default()
-                    .fg(Colors::info())
+                    .fg(colors.info())
                     .add_modifier(Modifier::BOLD),
             )
             .alignment(Alignment::Left);
@@ -187,26 +199,29 @@ impl Screen for SessionDetailScreen {
         SessionInfoView::render(
             frame,
             top_chunks[0],
-            &self.session_data.session,
-            self.session_data.repository.as_ref(),
+            &session_data.session,
+            session_data.repository.as_ref(),
+            &colors,
         );
         PerformanceMetricsView::render(
             frame,
             top_chunks[1],
-            self.session_data.session_result.as_ref(),
+            session_data.session_result.as_ref(),
+            &colors,
         );
         StageDetailsView::render(
             frame,
             content_chunks[1],
-            &self.stage_results,
-            self.stage_scroll_offset,
+            &stage_results,
+            stage_scroll_offset,
+            &colors,
         );
 
         let controls_line = Line::from(vec![
-            Span::styled("[↑↓/JK]", Style::default().fg(Colors::key_navigation())),
-            Span::styled(" Scroll Stages  ", Style::default().fg(Colors::text())),
-            Span::styled("[ESC]", Style::default().fg(Colors::error())),
-            Span::styled(" Back", Style::default().fg(Colors::text())),
+            Span::styled("[↑↓/JK]", Style::default().fg(colors.key_navigation())),
+            Span::styled(" Scroll Stages  ", Style::default().fg(colors.text())),
+            Span::styled("[ESC]", Style::default().fg(colors.error())),
+            Span::styled(" Back", Style::default().fg(colors.text())),
         ]);
 
         let controls = Paragraph::new(controls_line).alignment(Alignment::Center);
@@ -215,7 +230,7 @@ impl Screen for SessionDetailScreen {
         Ok(())
     }
 
-    fn cleanup(&mut self) -> Result<()> {
+    fn cleanup(&self) -> Result<()> {
         Ok(())
     }
 
@@ -223,15 +238,13 @@ impl Screen for SessionDetailScreen {
         UpdateStrategy::InputOnly
     }
 
-    fn update(&mut self) -> Result<bool> {
+    fn update(&self) -> Result<bool> {
         Ok(false)
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl SessionDetailScreenInterface for SessionDetailScreen {}

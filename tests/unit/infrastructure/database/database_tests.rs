@@ -7,13 +7,13 @@ fn test_database_creation() {
     assert!(result.is_ok());
 
     let db = result.unwrap();
-    assert!(db.get_connection().prepare("SELECT 1").is_ok());
+    assert!(db.get_connection().unwrap().prepare("SELECT 1").is_ok());
 }
 
 #[test]
 fn test_tables_creation() {
     let db = Database::new().unwrap();
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
 
     // Check schema_version table
     let count: i32 = conn
@@ -57,7 +57,7 @@ fn test_schema_versioning() {
     assert_eq!(version, get_latest_version());
 
     // Check that schema_version table has the correct entry
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let count: i32 = conn
         .prepare("SELECT COUNT(*) FROM schema_version WHERE version = ?")
         .unwrap()
@@ -78,7 +78,7 @@ fn test_migration_idempotency() {
     assert_eq!(version, get_latest_version());
 
     // Should have the correct number of version entries (one per migration)
-    let conn = db2.get_connection();
+    let conn = db2.get_connection().unwrap();
     let count: i32 = conn
         .prepare("SELECT COUNT(*) FROM schema_version")
         .unwrap()
@@ -90,7 +90,7 @@ fn test_migration_idempotency() {
 #[test]
 fn test_normalized_tables_structure() {
     let db = Database::new().unwrap();
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
 
     // Check all tables exist
     let tables = vec![
@@ -165,7 +165,7 @@ fn test_normalized_tables_structure() {
 #[test]
 fn test_foreign_key_constraints() {
     let db = Database::new().unwrap();
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
 
     // Check foreign keys are enabled
     let fk_enabled: i32 = conn
@@ -187,7 +187,7 @@ fn test_foreign_key_constraints() {
 #[test]
 fn test_indexes_created() {
     let db = Database::new().unwrap();
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
 
     // Check that indexes were created
     let index_count: i32 = conn

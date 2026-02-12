@@ -1,5 +1,5 @@
 use crate::typing_core_test_with_parser;
-use gittype::presentation::game::typing_core::ProcessingOptions;
+use gittype::domain::models::typing::ProcessingOptions;
 
 typing_core_test_with_parser!(
     rust_function_with_comment,

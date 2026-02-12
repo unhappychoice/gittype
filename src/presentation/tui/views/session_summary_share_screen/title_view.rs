@@ -10,11 +10,11 @@ use ratatui::{
 pub struct TitleView;
 
 impl TitleView {
-    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect) {
+    pub fn render(frame: &mut Frame, area: ratatui::layout::Rect, colors: &Colors) {
         let title = Paragraph::new(Line::from(vec![Span::styled(
             "=== SHARE YOUR RESULT ===",
             Style::default()
-                .fg(Colors::info())
+                .fg(colors.info())
                 .add_modifier(Modifier::BOLD),
         )]))
         .alignment(Alignment::Center);

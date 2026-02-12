@@ -1,48 +1,68 @@
 use crate::domain::models::StageResult;
-use once_cell::sync::Lazy;
-use std::sync::{Arc, Mutex};
+use shaku::Interface;
+use std::sync::RwLock;
 use std::time::Instant;
 
-// Global session tracker for Ctrl+C handler
-pub static GLOBAL_SESSION_TRACKER: Lazy<Arc<Mutex<Option<SessionTracker>>>> =
-    Lazy::new(|| Arc::new(Mutex::new(None)));
-
-/// Session level raw data tracking
-#[derive(Clone)]
-pub struct SessionTracker {
-    session_start_time: Instant,
-    stage_results: Vec<StageResult>,
+pub trait SessionTrackerInterface: Interface {
+    fn record(&self, stage_result: StageResult);
+    fn get_data(&self) -> SessionTrackerData;
+    fn reset(&self);
 }
 
-impl SessionTracker {
-    pub fn new() -> Self {
+pub struct SessionTrackerState {
+    pub session_start_time: Instant,
+    pub stage_results: Vec<StageResult>,
+}
+
+impl Default for SessionTrackerState {
+    fn default() -> Self {
         Self {
             session_start_time: Instant::now(),
             stage_results: Vec::new(),
         }
     }
+}
 
-    pub fn record(&mut self, stage_result: StageResult) {
-        self.stage_results.push(stage_result);
-    }
-
-    pub fn get_data(&self) -> SessionTrackerData {
-        SessionTrackerData {
-            session_start_time: self.session_start_time,
-            stage_results: self.stage_results.clone(),
-        }
-    }
-
-    pub fn initialize_global_instance(tracker: SessionTracker) {
-        if let Ok(mut global) = GLOBAL_SESSION_TRACKER.lock() {
-            *global = Some(tracker);
-        }
-    }
+/// Session level raw data tracking
+#[derive(shaku::Component)]
+#[shaku(interface = SessionTrackerInterface)]
+pub struct SessionTracker {
+    #[shaku(default)]
+    state: RwLock<SessionTrackerState>,
 }
 
 impl Default for SessionTracker {
     fn default() -> Self {
-        Self::new()
+        Self {
+            state: RwLock::new(SessionTrackerState::default()),
+        }
+    }
+}
+
+impl SessionTrackerInterface for SessionTracker {
+    fn record(&self, stage_result: StageResult) {
+        self.state.write().unwrap().stage_results.push(stage_result);
+    }
+
+    fn get_data(&self) -> SessionTrackerData {
+        let state = self.state.read().unwrap();
+        SessionTrackerData {
+            session_start_time: state.session_start_time,
+            stage_results: state.stage_results.clone(),
+        }
+    }
+
+    fn reset(&self) {
+        let mut state = self.state.write().unwrap();
+        state.session_start_time = Instant::now();
+        state.stage_results.clear();
+    }
+}
+
+#[cfg(feature = "test-mocks")]
+impl SessionTracker {
+    pub fn new_for_test() -> Self {
+        Self::default()
     }
 }
 

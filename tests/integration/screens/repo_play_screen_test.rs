@@ -1,13 +1,23 @@
 use crate::integration::screens::mocks::repo_play_screen_mock::MockRepoPlayDataProvider;
 use crossterm::event::{KeyCode, KeyModifiers};
+use gittype::domain::events::presentation_events::NavigateTo;
 use gittype::domain::events::EventBus;
-use gittype::presentation::game::events::NavigateTo;
+use gittype::domain::models::color_mode::ColorMode;
+use gittype::domain::models::theme::Theme;
+use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
 use gittype::presentation::tui::screens::RepoPlayScreen;
+use std::sync::Arc;
 
 screen_snapshot_test!(
     test_repo_play_screen_snapshot,
     RepoPlayScreen,
-    RepoPlayScreen::new(EventBus::new()),
+    RepoPlayScreen::new(
+        Arc::new(EventBus::new()),
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark
+        )) as Arc<dyn ThemeServiceInterface>
+    ),
     provider = MockRepoPlayDataProvider
 );
 
@@ -71,7 +81,13 @@ screen_key_tests!(
 screen_basic_methods_test!(
     test_repo_play_screen_basic_methods,
     RepoPlayScreen,
-    RepoPlayScreen::new(EventBus::new()),
+    RepoPlayScreen::new(
+        Arc::new(EventBus::new()),
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark
+        )) as Arc<dyn ThemeServiceInterface>
+    ),
     gittype::presentation::tui::ScreenType::RepoPlay,
     true,
     MockRepoPlayDataProvider

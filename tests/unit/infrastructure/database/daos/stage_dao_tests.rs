@@ -1,23 +1,28 @@
 use gittype::domain::models::{Challenge, DifficultyLevel, GitRepository, SessionResult};
-use gittype::infrastructure::database::daos::{ChallengeDao, RepositoryDao, SessionDao, StageDao};
-use gittype::infrastructure::database::database::Database;
+use gittype::infrastructure::database::daos::{
+    ChallengeDao, ChallengeDaoInterface, RepositoryDao, RepositoryDaoInterface, SessionDao,
+    SessionDaoInterface, StageDao, StageDaoInterface,
+};
+use gittype::infrastructure::database::database::{Database, DatabaseInterface};
+use std::sync::Arc;
 
 #[test]
 fn test_new_creates_dao() {
-    let db = Database::new().expect("Failed to create database");
-    let _dao = StageDao::new(&db);
+    let db =
+        Arc::new(Database::new().expect("Failed to create database")) as Arc<dyn DatabaseInterface>;
+    let _dao = StageDao::new(Arc::clone(&db));
 }
 
 fn setup_test_data(
-    db: &Database,
+    db: &Arc<dyn DatabaseInterface>,
 ) -> (
     i64,
     GitRepository,
     Vec<(i64, Challenge)>, // (session_id, challenge)
 ) {
-    let repo_dao = RepositoryDao::new(db);
-    let session_dao = SessionDao::new(db);
-    let challenge_dao = ChallengeDao::new(db);
+    let repo_dao = RepositoryDao::new(Arc::clone(db));
+    let session_dao = SessionDao::new(Arc::clone(db));
+    let challenge_dao = ChallengeDao::new(Arc::clone(db));
 
     let git_repo = GitRepository {
         user_name: "testuser".to_string(),
@@ -47,7 +52,7 @@ fn setup_test_data(
             .with_difficulty_level(DifficultyLevel::Easy),
     ];
 
-    let conn = db.get_connection();
+    let conn = db.get_connection().unwrap();
     let tx = conn.unchecked_transaction().unwrap();
     for challenge in &challenges {
         challenge_dao
@@ -55,6 +60,7 @@ fn setup_test_data(
             .unwrap();
     }
     tx.commit().unwrap();
+    drop(conn);
 
     // Create sessions and stage results
     let mut session_challenges = Vec::new();
@@ -62,7 +68,7 @@ fn setup_test_data(
         let mut session_result = SessionResult::new();
         session_result.session_score = 100.0 + (i as f64 * 10.0);
 
-        let conn = db.get_connection();
+        let conn = db.get_connection().unwrap();
         let tx = conn.unchecked_transaction().unwrap();
         let session_id = session_dao
             .create_session_in_transaction(
@@ -78,12 +84,14 @@ fn setup_test_data(
         session_dao
             .save_session_result_in_transaction(
                 &tx,
-                session_id,
-                Some(repository_id),
-                &session_result,
-                &[],
-                "normal",
-                Some("easy"),
+                gittype::domain::models::storage::SaveSessionResultParams {
+                    session_id,
+                    repository_id: Some(repository_id),
+                    session_result: &session_result,
+                    stage_engines: &[],
+                    game_mode: "normal",
+                    difficulty_level: Some("easy"),
+                },
             )
             .unwrap();
 
@@ -142,6 +150,7 @@ fn setup_test_data(
         .unwrap();
 
         tx.commit().unwrap();
+        drop(conn);
 
         session_challenges.push((session_id, challenge.clone()));
     }
@@ -151,9 +160,10 @@ fn setup_test_data(
 
 #[test]
 fn test_get_completed_stages() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let stage_dao = StageDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let stage_dao = StageDao::new(Arc::clone(&db));
 
     let (repository_id, _, _) = setup_test_data(&db);
 
@@ -179,9 +189,10 @@ fn test_get_completed_stages() {
 
 #[test]
 fn test_get_completed_stages_by_language() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let stage_dao = StageDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let stage_dao = StageDao::new(Arc::clone(&db));
 
     let (repository_id, _, _) = setup_test_data(&db);
 
@@ -223,9 +234,10 @@ fn test_get_completed_stages_by_language() {
 
 #[test]
 fn test_get_completed_stages_by_language_without_repository() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let stage_dao = StageDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let stage_dao = StageDao::new(Arc::clone(&db));
 
     setup_test_data(&db);
 
@@ -245,9 +257,10 @@ fn test_get_completed_stages_by_language_without_repository() {
 
 #[test]
 fn test_get_completed_stages_by_difficulty() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let stage_dao = StageDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let stage_dao = StageDao::new(Arc::clone(&db));
 
     let (repository_id, _, _) = setup_test_data(&db);
 
@@ -282,9 +295,10 @@ fn test_get_completed_stages_by_difficulty() {
 
 #[test]
 fn test_get_completed_stages_by_difficulty_without_repository() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let stage_dao = StageDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let stage_dao = StageDao::new(Arc::clone(&db));
 
     setup_test_data(&db);
 
@@ -304,9 +318,10 @@ fn test_get_completed_stages_by_difficulty_without_repository() {
 
 #[test]
 fn test_get_stage_statistics() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let stage_dao = StageDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let stage_dao = StageDao::new(Arc::clone(&db));
 
     let (repository_id, _, _) = setup_test_data(&db);
 
@@ -338,9 +353,10 @@ fn test_get_stage_statistics() {
 
 #[test]
 fn test_get_language_breakdown() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let stage_dao = StageDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let stage_dao = StageDao::new(Arc::clone(&db));
 
     let (repository_id, _, _) = setup_test_data(&db);
 
@@ -383,9 +399,10 @@ fn test_get_language_breakdown() {
 
 #[test]
 fn test_get_language_breakdown_without_repository() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let stage_dao = StageDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let stage_dao = StageDao::new(Arc::clone(&db));
 
     setup_test_data(&db);
 
@@ -405,9 +422,10 @@ fn test_get_language_breakdown_without_repository() {
 
 #[test]
 fn test_get_difficulty_breakdown() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let stage_dao = StageDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let stage_dao = StageDao::new(Arc::clone(&db));
 
     let (repository_id, _, _) = setup_test_data(&db);
 
@@ -443,9 +461,10 @@ fn test_get_difficulty_breakdown() {
 
 #[test]
 fn test_get_difficulty_breakdown_without_repository() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let stage_dao = StageDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let stage_dao = StageDao::new(Arc::clone(&db));
 
     setup_test_data(&db);
 
@@ -468,10 +487,11 @@ fn test_get_difficulty_breakdown_without_repository() {
 
 #[test]
 fn test_empty_stage_statistics() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let stage_dao = StageDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let stage_dao = StageDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     // Create a repository with no stages
     let git_repo = GitRepository {
@@ -497,10 +517,11 @@ fn test_empty_stage_statistics() {
 
 #[test]
 fn test_empty_language_breakdown() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let stage_dao = StageDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let stage_dao = StageDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     // Create a repository with no stages
     let git_repo = GitRepository {
@@ -528,10 +549,11 @@ fn test_empty_language_breakdown() {
 
 #[test]
 fn test_empty_difficulty_breakdown() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let stage_dao = StageDao::new(&db);
-    let repo_dao = RepositoryDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let stage_dao = StageDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
 
     // Create a repository with no stages
     let git_repo = GitRepository {
@@ -559,9 +581,10 @@ fn test_empty_difficulty_breakdown() {
 
 #[test]
 fn test_completed_stages_ordered_by_date() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let stage_dao = StageDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let stage_dao = StageDao::new(Arc::clone(&db));
 
     let (repository_id, _, _) = setup_test_data(&db);
 
@@ -580,15 +603,16 @@ fn test_completed_stages_ordered_by_date() {
 
 #[test]
 fn test_multiple_repositories_isolation() {
-    let db = Database::new().unwrap();
-    db.init().unwrap();
-    let stage_dao = StageDao::new(&db);
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let stage_dao = StageDao::new(Arc::clone(&db));
 
     // Setup first repository
     let (repo_id1, _, _) = setup_test_data(&db);
 
     // Setup second repository
-    let repo_dao = RepositoryDao::new(&db);
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
     let git_repo2 = GitRepository {
         user_name: "user2".to_string(),
         repository_name: "repo2".to_string(),

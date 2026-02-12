@@ -1,13 +1,13 @@
 use gittype::domain::models::SessionResult;
 use gittype::domain::services::scoring::calculator::TotalCalculator;
-use gittype::domain::services::scoring::tracker::TotalTracker;
+use gittype::domain::services::scoring::tracker::{TotalTracker, TotalTrackerInterface};
 use std::time::Duration;
 
 const EPSILON: f64 = 0.001;
 
 #[test]
 fn test_calculate_empty_total() {
-    let tracker = TotalTracker::new();
+    let tracker = TotalTracker::new_for_test();
     let result = TotalCalculator::calculate(&tracker);
 
     assert_eq!(result.total_sessions_attempted, 0);
@@ -29,7 +29,7 @@ fn test_calculate_empty_total() {
 
 #[test]
 fn test_calculate_single_session() {
-    let mut tracker = TotalTracker::new();
+    let tracker = TotalTracker::new_for_test();
     let session_result = SessionResult {
         session_duration: Duration::from_secs(120),
         valid_session_duration: Duration::from_secs(120),
@@ -74,7 +74,7 @@ fn test_calculate_single_session() {
 
 #[test]
 fn test_calculate_multiple_sessions_mixed() {
-    let mut tracker = TotalTracker::new();
+    let tracker = TotalTracker::new_for_test();
     // Session 1 (successful)
     let session_result1 = SessionResult {
         session_duration: Duration::from_secs(60),
@@ -153,7 +153,7 @@ fn test_calculate_multiple_sessions_mixed() {
 
 #[test]
 fn test_calculate_multiple_sessions_no_completed() {
-    let mut tracker = TotalTracker::new();
+    let tracker = TotalTracker::new_for_test();
     let session_result1 = SessionResult {
         session_successful: false,
         ..Default::default()

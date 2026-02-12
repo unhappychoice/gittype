@@ -1,5 +1,5 @@
+use gittype::domain::models::ui::ascii_rank_titles::get_all_rank_patterns;
 use gittype::domain::models::Rank;
-use gittype::presentation::game::ascii_rank_titles::get_all_rank_patterns;
 
 #[test]
 fn test_identify_missing_ascii_art() {

@@ -1,11 +1,9 @@
-use crate::domain::models::color_mode::ColorMode;
 use ratatui::style::Color;
 use serde::{Deserialize, Serialize};
+
 use std::collections::HashMap;
 
-const LANG_DARK: &str = include_str!("../../../assets/languages/lang_dark.json");
-const LANG_LIGHT: &str = include_str!("../../../assets/languages/lang_light.json");
-const LANG_ASCII: &str = include_str!("../../../assets/languages/lang_ascii.json");
+use crate::domain::models::color_mode::ColorMode;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ThemeFile {
@@ -128,27 +126,6 @@ pub struct ColorScheme {
     pub typing_cursor_bg: SerializableColor,
     pub typing_mistake_bg: SerializableColor,
     pub typing_untyped_text: SerializableColor,
-
-    // Programming language colors
-    pub lang_rust: SerializableColor,
-    pub lang_python: SerializableColor,
-    pub lang_javascript: SerializableColor,
-    pub lang_typescript: SerializableColor,
-    pub lang_go: SerializableColor,
-    pub lang_java: SerializableColor,
-    pub lang_c: SerializableColor,
-    pub lang_cpp: SerializableColor,
-    pub lang_csharp: SerializableColor,
-    pub lang_php: SerializableColor,
-    pub lang_ruby: SerializableColor,
-    pub lang_swift: SerializableColor,
-    pub lang_kotlin: SerializableColor,
-    pub lang_scala: SerializableColor,
-    pub lang_haskell: SerializableColor,
-    pub lang_dart: SerializableColor,
-    pub lang_zig: SerializableColor,
-    pub lang_clojure: SerializableColor,
-    pub lang_default: SerializableColor,
 }
 
 impl ColorScheme {
@@ -158,7 +135,6 @@ impl ColorScheme {
             ColorMode::Dark => &theme_file.dark,
             ColorMode::Light => &theme_file.light,
         };
-        let lang_colors = Self::load_language_colors(theme_file, color_mode);
 
         Self {
             border: colors
@@ -257,95 +233,6 @@ impl ColorScheme {
                 .get("typing_untyped_text")
                 .cloned()
                 .unwrap_or(SerializableColor::Name("gray".to_string())),
-
-            lang_rust: lang_colors
-                .get("lang_rust")
-                .cloned()
-                .unwrap_or(SerializableColor::Name("red".to_string())),
-            lang_python: lang_colors
-                .get("lang_python")
-                .cloned()
-                .unwrap_or(SerializableColor::Name("blue".to_string())),
-            lang_javascript: lang_colors
-                .get("lang_javascript")
-                .cloned()
-                .unwrap_or(SerializableColor::Name("yellow".to_string())),
-            lang_typescript: lang_colors
-                .get("lang_typescript")
-                .cloned()
-                .unwrap_or(SerializableColor::Name("blue".to_string())),
-            lang_go: lang_colors
-                .get("lang_go")
-                .cloned()
-                .unwrap_or(SerializableColor::Name("cyan".to_string())),
-            lang_java: lang_colors
-                .get("lang_java")
-                .cloned()
-                .unwrap_or(SerializableColor::Name("red".to_string())),
-            lang_c: lang_colors
-                .get("lang_c")
-                .cloned()
-                .unwrap_or(SerializableColor::Name("blue".to_string())),
-            lang_cpp: lang_colors
-                .get("lang_cpp")
-                .cloned()
-                .unwrap_or(SerializableColor::Name("blue".to_string())),
-            lang_csharp: lang_colors
-                .get("lang_csharp")
-                .cloned()
-                .unwrap_or(SerializableColor::Name("green".to_string())),
-            lang_php: lang_colors
-                .get("lang_php")
-                .cloned()
-                .unwrap_or(SerializableColor::Name("magenta".to_string())),
-            lang_ruby: lang_colors
-                .get("lang_ruby")
-                .cloned()
-                .unwrap_or(SerializableColor::Name("red".to_string())),
-            lang_swift: lang_colors
-                .get("lang_swift")
-                .cloned()
-                .unwrap_or(SerializableColor::Name("red".to_string())),
-            lang_kotlin: lang_colors
-                .get("lang_kotlin")
-                .cloned()
-                .unwrap_or(SerializableColor::Name("magenta".to_string())),
-            lang_scala: lang_colors
-                .get("lang_scala")
-                .cloned()
-                .unwrap_or(SerializableColor::Name("red".to_string())),
-            lang_haskell: lang_colors
-                .get("lang_haskell")
-                .cloned()
-                .unwrap_or(SerializableColor::Name("magenta".to_string())),
-            lang_dart: lang_colors
-                .get("lang_dart")
-                .cloned()
-                .unwrap_or(SerializableColor::Name("blue".to_string())),
-            lang_zig: lang_colors
-                .get("lang_zig")
-                .cloned()
-                .unwrap_or(SerializableColor::Name("yellow".to_string())),
-            lang_clojure: lang_colors
-                .get("lang_clojure")
-                .cloned()
-                .unwrap_or(SerializableColor::Name("green".to_string())),
-            lang_default: lang_colors
-                .get("lang_default")
-                .cloned()
-                .unwrap_or(SerializableColor::Name("white".to_string())),
         }
-    }
-
-    fn load_language_colors(
-        theme_file: &ThemeFile,
-        color_mode: &ColorMode,
-    ) -> HashMap<String, SerializableColor> {
-        let lang_json = match (theme_file.id.as_str(), color_mode) {
-            ("ascii", _) => LANG_ASCII,
-            (_, ColorMode::Light) => LANG_LIGHT,
-            (_, ColorMode::Dark) => LANG_DARK,
-        };
-        serde_json::from_str(lang_json).unwrap_or_default()
     }
 }

@@ -3,6 +3,7 @@ use crate::presentation::tui::views::loading::loading_description_view::LoadingD
 use crate::presentation::tui::views::loading::loading_message_view::LoadingMessageView;
 use crate::presentation::tui::views::loading::loading_progress_view::LoadingProgressView;
 use crate::presentation::tui::views::loading::loading_repo_info_view::LoadingRepoInfoView;
+use crate::presentation::ui::Colors;
 use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
@@ -11,7 +12,7 @@ use ratatui::{
 pub struct LoadingMainView;
 
 impl LoadingMainView {
-    pub fn render(frame: &mut Frame, state: &LoadingScreenState) {
+    pub fn render(frame: &mut Frame, state: &LoadingScreenState, colors: &Colors) {
         let size = frame.area();
 
         // Get repo info for bottom display
@@ -40,19 +41,19 @@ impl LoadingMainView {
             .split(size);
 
         // Draw loading message
-        LoadingMessageView::render(frame, main_layout[1]);
+        LoadingMessageView::render(frame, main_layout[1], colors);
 
         // Draw description
-        LoadingDescriptionView::render(frame, main_layout[2], state);
+        LoadingDescriptionView::render(frame, main_layout[2], state, colors);
 
         // Skip main_layout[3] for spacing
 
         // Draw progress
-        LoadingProgressView::render(frame, main_layout[4], state);
+        LoadingProgressView::render(frame, main_layout[4], state, colors);
 
         // Draw repo info at bottom if available
         if let Some(ref repo_info_text) = repo_info {
-            LoadingRepoInfoView::render(frame, main_layout[6], repo_info_text);
+            LoadingRepoInfoView::render(frame, main_layout[6], repo_info_text, colors);
         }
     }
 }

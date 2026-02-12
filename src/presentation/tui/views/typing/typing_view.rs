@@ -1,10 +1,10 @@
 use super::{
     TypingContentView, TypingCountdownView, TypingDialogView, TypingFooterView, TypingHeaderView,
 };
+use crate::domain::models::typing::CodeContext;
 use crate::domain::models::{Challenge, GitRepository};
-use crate::presentation::game::{
-    context_loader::CodeContext, typing_core::TypingCore, SessionManager,
-};
+use crate::domain::services::typing_core::TypingCore;
+use crate::domain::services::SessionManager;
 use crate::presentation::ui::Colors;
 use ratatui::{
     layout::{Constraint, Direction, Layout},
@@ -43,7 +43,10 @@ impl TypingView {
         countdown_number: Option<u8>,
         skips_remaining: usize,
         dialog_shown: bool,
-        session_manager: &std::sync::Arc<std::sync::Mutex<SessionManager>>,
+        session_manager: &std::sync::Arc<
+            dyn crate::domain::services::session_manager_service::SessionManagerInterface,
+        >,
+        colors: &Colors,
     ) {
         let countdown_active = countdown_number.is_some();
 
@@ -62,7 +65,7 @@ impl TypingView {
             .split(frame.area());
 
         // Header
-        TypingHeaderView::render(frame, chunks[0], challenge, git_repository);
+        TypingHeaderView::render(frame, chunks[0], challenge, git_repository, colors);
 
         // Content
         let show_code = !(waiting_to_start || countdown_active);
@@ -74,10 +77,11 @@ impl TypingView {
             typing_core,
             chars,
             code_context,
+            colors,
         );
 
         // Metrics
-        if let Ok(instance) = session_manager.lock() {
+        if let Some(instance) = session_manager.as_any().downcast_ref::<SessionManager>() {
             if let Some(stage_tracker) = instance.get_current_stage_tracker() {
                 TypingFooterView::render_metrics(
                     frame,
@@ -85,8 +89,9 @@ impl TypingView {
                     waiting_to_start,
                     countdown_active,
                     skips_remaining,
-                    stage_tracker,
+                    &stage_tracker,
                     typing_core,
+                    colors,
                 );
             }
         }
@@ -99,6 +104,7 @@ impl TypingView {
             countdown_active,
             typing_core,
             typing_core.text_to_display().chars().count(),
+            colors,
         );
 
         // ESC Options
@@ -109,8 +115,8 @@ impl TypingView {
             height: 1,
         };
         let esc_text = Paragraph::new(vec![Line::from(vec![
-            Span::styled("[ESC]", Style::default().fg(Colors::key_action())),
-            Span::styled(" Options", Style::default().fg(Colors::text())),
+            Span::styled("[ESC]", Style::default().fg(colors.key_action())),
+            Span::styled(" Options", Style::default().fg(colors.text())),
         ])]);
         frame.render_widget(esc_text, esc_area);
 
@@ -120,14 +126,14 @@ impl TypingView {
 
         if waiting_to_start {
             let start_line = vec![
-                Span::styled("Press ", Style::default().fg(Colors::text())),
+                Span::styled("Press ", Style::default().fg(colors.text())),
                 Span::styled(
                     "[SPACE]",
                     Style::default()
-                        .fg(Colors::success())
+                        .fg(colors.success())
                         .add_modifier(Modifier::BOLD),
                 ),
-                Span::styled(" to start", Style::default().fg(Colors::text())),
+                Span::styled(" to start", Style::default().fg(colors.text())),
             ];
 
             let total_width = "Press [SPACE] to start".len() as u16;
@@ -140,12 +146,12 @@ impl TypingView {
             let start_text = Paragraph::new(vec![Line::from(start_line)]);
             frame.render_widget(start_text, start_area);
         } else if let Some(count) = countdown_number {
-            TypingCountdownView::render(frame, count);
+            TypingCountdownView::render(frame, count, colors);
         }
 
         // Dialog
         if dialog_shown {
-            TypingDialogView::render(frame, skips_remaining);
+            TypingDialogView::render(frame, skips_remaining, colors);
         }
     }
 }

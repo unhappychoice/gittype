@@ -1,5 +1,5 @@
 pub mod cli;
-pub mod game;
+pub mod di;
 pub mod sharing;
 pub mod signal_handler;
 pub mod tui;

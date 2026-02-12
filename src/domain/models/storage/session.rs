@@ -1,5 +1,6 @@
-use crate::domain::models::{Challenge, StageResult};
 use chrono::{DateTime, Utc};
+
+use crate::domain::models::{Challenge, StageResult};
 
 #[derive(Debug, Clone)]
 pub struct StoredSession {
@@ -91,6 +92,16 @@ pub struct SessionResultData {
     pub rank_total: Option<i64>,
     pub position: Option<i64>,
     pub total: Option<i64>,
+}
+
+/// Parameters for saving session results
+pub struct SaveSessionResultParams<'a> {
+    pub session_id: i64,
+    pub repository_id: Option<i64>,
+    pub session_result: &'a crate::domain::models::SessionResult,
+    pub stage_engines: &'a [(String, crate::domain::services::scoring::StageTracker)],
+    pub game_mode: &'a str,
+    pub difficulty_level: Option<&'a str>,
 }
 
 /// Parameters for saving stage results

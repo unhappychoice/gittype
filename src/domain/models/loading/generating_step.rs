@@ -1,0 +1,108 @@
+use super::{ExecutionContext, Step, StepResult, StepType};
+use crate::domain::services::challenge_generator::ChallengeGenerator;
+use crate::presentation::ui::Colors;
+use crate::{GitTypeError, Result};
+use ratatui::style::Color;
+
+#[derive(Debug, Clone)]
+pub struct GeneratingStep;
+
+impl Step for GeneratingStep {
+    fn step_type(&self) -> StepType {
+        StepType::Generating
+    }
+    fn step_number(&self) -> usize {
+        7
+    }
+    fn description(&self) -> &str {
+        "Generating challenges across difficulty levels"
+    }
+    fn step_name(&self) -> &str {
+        "Generating challenges"
+    }
+
+    fn icon(&self, is_current: bool, is_completed: bool, colors: &Colors) -> (&str, Color) {
+        if is_completed {
+            ("✓", colors.success())
+        } else if is_current {
+            ("⚡", colors.warning())
+        } else {
+            ("◦", colors.text_secondary())
+        }
+    }
+
+    fn supports_progress(&self) -> bool {
+        true
+    }
+    fn progress_unit(&self) -> &str {
+        "challenges"
+    }
+
+    fn format_progress(
+        &self,
+        processed: usize,
+        total: usize,
+        progress: f64,
+        spinner: char,
+    ) -> String {
+        format!(
+            "{} {:.1}% {}/{} challenges",
+            spinner,
+            progress * 100.0,
+            processed,
+            total
+        )
+    }
+
+    fn execute(&self, context: &mut ExecutionContext) -> Result<StepResult> {
+        let chunks = context.chunks.take().ok_or_else(|| {
+            GitTypeError::ExtractionFailed("No chunks available from ExtractingStep".to_string())
+        })?;
+
+        let screen = context.loading_screen.ok_or_else(|| {
+            GitTypeError::ExtractionFailed("No loading screen available".to_string())
+        })?;
+
+        let converter = ChallengeGenerator::new();
+        let generated_challenges = converter.convert_with_progress(chunks, screen);
+
+        // Cache the generated challenges if we have git repository info
+        if let Some(ref git_repo) = context.git_repository {
+            if let Some(ref challenge_repository) = context.challenge_repository {
+                match challenge_repository.save_challenges(git_repo, &generated_challenges, None) {
+                    Ok(_) => {
+                        log::info!(
+                            "Successfully cached {} challenges for {}",
+                            generated_challenges.len(),
+                            git_repo.remote_url
+                        );
+                    }
+                    Err(e) => {
+                        log::warn!("Failed to cache challenges: {}", e);
+                    }
+                }
+            } else {
+                log::warn!("No challenge repository available - skipping cache save");
+            }
+        }
+
+        // Store challenges in ChallengeStore
+        if let Some(challenge_store) = &context.challenge_store {
+            challenge_store.set_challenges(generated_challenges);
+        }
+
+        // Store git repository in RepositoryStore
+        if let (Some(repository_store), Some(git_repo)) =
+            (&context.repository_store, &context.git_repository)
+        {
+            repository_store.set_repository(git_repo.clone());
+        }
+
+        // Mark loading as completed
+        if let Some(session_store) = &context.session_store {
+            session_store.set_loading_completed(true);
+        }
+
+        Ok(StepResult::Skipped)
+    }
+}

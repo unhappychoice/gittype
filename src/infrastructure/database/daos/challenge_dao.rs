@@ -1,21 +1,40 @@
-use super::super::database::Database;
-use crate::domain::models::Challenge;
-use crate::{domain::error::GitTypeError, Result};
 use rusqlite::{params, Transaction};
 use serde_json;
+use shaku::{Component, Interface};
 
-pub struct ChallengeDao<'a> {
-    #[allow(dead_code)]
-    db: &'a Database,
+use std::sync::Arc;
+
+use crate::domain::error::GitTypeError;
+use crate::domain::models::Challenge;
+use crate::Result;
+
+use super::super::database::DatabaseInterface;
+
+pub trait ChallengeDaoInterface: Interface {
+    fn ensure_challenge_in_transaction(
+        &self,
+        tx: &Transaction,
+        challenge: &Challenge,
+    ) -> Result<i64>;
 }
 
-impl<'a> ChallengeDao<'a> {
-    pub fn new(db: &'a Database) -> Self {
+#[derive(Component)]
+#[shaku(interface = ChallengeDaoInterface)]
+pub struct ChallengeDao {
+    #[allow(dead_code)]
+    #[shaku(inject)]
+    db: Arc<dyn DatabaseInterface>,
+}
+
+impl ChallengeDao {
+    pub fn new(db: Arc<dyn DatabaseInterface>) -> Self {
         Self { db }
     }
+}
 
+impl ChallengeDaoInterface for ChallengeDao {
     /// Get or create challenge record within an existing transaction
-    pub fn ensure_challenge_in_transaction(
+    fn ensure_challenge_in_transaction(
         &self,
         tx: &Transaction,
         challenge: &Challenge,

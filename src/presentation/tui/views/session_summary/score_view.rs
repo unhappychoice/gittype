@@ -1,8 +1,8 @@
+use crate::domain::models::ui::ascii_digits::get_digit_patterns;
+use crate::domain::models::ui::rank_colors;
 use crate::domain::models::{Rank, SessionResult};
 use crate::domain::repositories::session_repository::BestStatus;
 use crate::domain::repositories::SessionRepository;
-use crate::presentation::game::ascii_digits::get_digit_patterns;
-use crate::presentation::game::rank_colors;
 use crate::presentation::ui::{Colors, GradationText};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
@@ -39,6 +39,7 @@ impl ScoreView {
         session_result: &SessionResult,
         best_rank: &Rank,
         best_status: Option<&BestStatus>,
+        colors: &Colors,
     ) -> usize {
         let (updated_best_type, comparison_score) = if let Some(status) = best_status {
             // For comparison, always use the most relevant previous score
@@ -112,11 +113,11 @@ impl ScoreView {
         };
 
         let diff_color = if score_diff > 0.0 {
-            Colors::success()
+            colors.success()
         } else if score_diff < 0.0 {
-            Colors::error()
+            colors.error()
         } else {
-            Colors::text()
+            colors.text()
         };
 
         // Build layout
@@ -141,7 +142,7 @@ impl ScoreView {
         let score_label = Paragraph::new(Line::from(vec![Span::styled(
             "SESSION SCORE",
             Style::default()
-                .fg(Colors::score())
+                .fg(colors.score())
                 .add_modifier(Modifier::BOLD),
         )]))
         .alignment(Alignment::Center);
@@ -155,7 +156,7 @@ impl ScoreView {
             let best_widget = Paragraph::new(Line::from(vec![Span::styled(
                 best_label,
                 Style::default()
-                    .fg(Colors::warning())
+                    .fg(colors.warning())
                     .add_modifier(Modifier::BOLD),
             )]))
             .alignment(Alignment::Center);

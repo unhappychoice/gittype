@@ -1,19 +1,32 @@
-use super::AppDataProvider;
-#[cfg(feature = "test-mocks")]
-use crate::Result;
-#[cfg(not(feature = "test-mocks"))]
-use crate::{GitTypeError, Result};
 use serde::{Deserialize, Serialize};
+use shaku::Interface;
+
 use std::path::{Path, PathBuf};
+
+use crate::Result;
+
+use super::AppDataProvider;
+
+pub trait CompressedFileStorageInterface: Interface + std::fmt::Debug {
+    fn delete_file(&self, file_path: &Path) -> Result<()>;
+    fn get_file_size(&self, file_path: &Path) -> Option<u64>;
+    fn list_files_in_dir(&self, dir_path: &Path) -> Vec<PathBuf>;
+    fn file_exists(&self, file_path: &Path) -> bool;
+}
 
 #[cfg(not(feature = "test-mocks"))]
 mod real_impl {
     use super::*;
+
     use flate2::{read::GzDecoder, write::GzEncoder, Compression};
+
     use std::fs;
     use std::io::{Read, Write};
 
-    #[derive(Debug, Clone, Default)]
+    use crate::GitTypeError;
+
+    #[derive(Debug, Clone, Default, shaku::Component)]
+    #[shaku(interface = CompressedFileStorageInterface)]
     pub struct CompressedFileStorage;
 
     impl AppDataProvider for CompressedFileStorage {}
@@ -23,7 +36,6 @@ mod real_impl {
             Self
         }
 
-        /// Save compressed binary data to a file
         pub fn save<T: Serialize>(&self, file_path: &Path, data: &T) -> Result<()> {
             // Ensure parent directory exists
             if let Some(parent) = file_path.parent() {
@@ -51,7 +63,6 @@ mod real_impl {
             Ok(())
         }
 
-        /// Load and decompress binary data from a file
         pub fn load<T: for<'de> Deserialize<'de>>(&self, file_path: &Path) -> Result<Option<T>> {
             if !file_path.exists() {
                 return Ok(None);
@@ -76,22 +87,21 @@ mod real_impl {
 
             Ok(Some(data))
         }
+    }
 
-        /// Delete a file if it exists
-        pub fn delete_file(&self, file_path: &Path) -> Result<()> {
+    impl CompressedFileStorageInterface for CompressedFileStorage {
+        fn delete_file(&self, file_path: &Path) -> Result<()> {
             if file_path.exists() {
                 std::fs::remove_file(file_path)?;
             }
             Ok(())
         }
 
-        /// Get file size if it exists
-        pub fn get_file_size(&self, file_path: &Path) -> Option<u64> {
+        fn get_file_size(&self, file_path: &Path) -> Option<u64> {
             file_path.metadata().ok().map(|m| m.len())
         }
 
-        /// List all files in a directory (for testing compatibility)
-        pub fn list_files_in_dir(&self, dir_path: &Path) -> Vec<PathBuf> {
+        fn list_files_in_dir(&self, dir_path: &Path) -> Vec<PathBuf> {
             if !dir_path.exists() {
                 return Vec::new();
             }
@@ -104,8 +114,7 @@ mod real_impl {
                 .collect()
         }
 
-        /// Check if a file exists
-        pub fn file_exists(&self, file_path: &Path) -> bool {
+        fn file_exists(&self, file_path: &Path) -> bool {
             file_path.exists()
         }
     }
@@ -114,13 +123,35 @@ mod real_impl {
 #[cfg(feature = "test-mocks")]
 mod mock_impl {
     use super::*;
-    use crate::GitTypeError;
+
     use std::collections::HashMap;
     use std::sync::{Arc, Mutex};
 
-    #[derive(Debug, Clone)]
+    use crate::GitTypeError;
+
+    #[derive(Debug, Clone, shaku::Component)]
+    #[shaku(interface = CompressedFileStorageInterface)]
     pub struct CompressedFileStorage {
+        #[shaku(default)]
         test_storage: Arc<Mutex<HashMap<PathBuf, Vec<u8>>>>,
+    }
+
+    impl CompressedFileStorageInterface for CompressedFileStorage {
+        fn delete_file(&self, file_path: &Path) -> Result<()> {
+            CompressedFileStorage::delete_file(self, file_path)
+        }
+
+        fn get_file_size(&self, file_path: &Path) -> Option<u64> {
+            CompressedFileStorage::get_file_size(self, file_path)
+        }
+
+        fn list_files_in_dir(&self, dir_path: &Path) -> Vec<PathBuf> {
+            CompressedFileStorage::list_files_in_dir(self, dir_path)
+        }
+
+        fn file_exists(&self, file_path: &Path) -> bool {
+            CompressedFileStorage::file_exists(self, file_path)
+        }
     }
 
     impl Default for CompressedFileStorage {

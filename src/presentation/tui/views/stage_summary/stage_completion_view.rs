@@ -1,6 +1,6 @@
+use crate::domain::models::ui::{ascii_digits::get_digit_patterns, rank_colors};
 use crate::domain::models::Rank;
 use crate::domain::services::scoring::StageResult;
-use crate::presentation::game::{ascii_digits::get_digit_patterns, rank_colors};
 use crate::presentation::ui::{Colors, GradationText};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
@@ -20,6 +20,7 @@ impl StageCompletionView {
         total_stages: usize,
         has_next_stage: bool,
         keystrokes: usize,
+        colors: &Colors,
     ) {
         let area = frame.area();
 
@@ -87,23 +88,24 @@ impl StageCompletionView {
         let mut chunk_idx = 1;
 
         // Render stage title
-        Self::render_stage_title(frame, chunks[chunk_idx], metrics, current_stage);
+        Self::render_stage_title(colors, frame, chunks[chunk_idx], metrics, current_stage);
         chunk_idx += 2; // title + spacing
 
         // Render score section
-        Self::render_score_label(frame, chunks[chunk_idx], metrics);
+        Self::render_score_label(colors, frame, chunks[chunk_idx], metrics);
         chunk_idx += 1;
-        Self::render_score_ascii(frame, chunks[chunk_idx], metrics);
+        Self::render_score_ascii(colors, frame, chunks[chunk_idx], metrics);
         chunk_idx += 2; // ascii + spacing
 
         // Display metrics only for completed challenges
         if !metrics.was_failed && !metrics.was_skipped {
-            Self::render_metrics(frame, chunks[chunk_idx], metrics, keystrokes);
+            Self::render_metrics(colors, frame, chunks[chunk_idx], metrics, keystrokes);
             chunk_idx += 2; // metrics + spacing
         }
 
         // Render progress indicator
         Self::render_progress_indicator(
+            colors,
             frame,
             chunks[chunk_idx],
             current_stage,
@@ -113,7 +115,7 @@ impl StageCompletionView {
         chunk_idx += 2; // progress + spacing
 
         // Render options
-        Self::render_options(frame, chunks[chunk_idx]);
+        Self::render_options(colors, frame, chunks[chunk_idx]);
     }
 
     fn create_ascii_numbers(score: &str) -> Vec<String> {
@@ -135,6 +137,7 @@ impl StageCompletionView {
     }
 
     fn render_stage_title(
+        colors: &Colors,
         frame: &mut Frame,
         area: ratatui::layout::Rect,
         metrics: &StageResult,
@@ -149,11 +152,11 @@ impl StageCompletionView {
         };
 
         let color = if metrics.was_failed {
-            Colors::error()
+            colors.error()
         } else if metrics.was_skipped {
-            Colors::warning()
+            colors.warning()
         } else {
-            Colors::success()
+            colors.success()
         };
 
         let title = Paragraph::new(Line::from(vec![Span::styled(
@@ -165,7 +168,12 @@ impl StageCompletionView {
         frame.render_widget(title, area);
     }
 
-    fn render_score_label(frame: &mut Frame, area: ratatui::layout::Rect, metrics: &StageResult) {
+    fn render_score_label(
+        colors: &Colors,
+        frame: &mut Frame,
+        area: ratatui::layout::Rect,
+        metrics: &StageResult,
+    ) {
         let score_label = if metrics.was_failed {
             "FAILED AFTER"
         } else if metrics.was_skipped {
@@ -175,9 +183,9 @@ impl StageCompletionView {
         };
 
         let color = if metrics.was_failed || metrics.was_skipped {
-            Colors::error()
+            colors.error()
         } else {
-            Colors::success()
+            colors.success()
         };
 
         let label = Paragraph::new(Line::from(vec![Span::styled(
@@ -189,7 +197,12 @@ impl StageCompletionView {
         frame.render_widget(label, area);
     }
 
-    fn render_score_ascii(frame: &mut Frame, area: ratatui::layout::Rect, metrics: &StageResult) {
+    fn render_score_ascii(
+        colors: &Colors,
+        frame: &mut Frame,
+        area: ratatui::layout::Rect,
+        metrics: &StageResult,
+    ) {
         let score_value = if metrics.was_failed {
             format!("{:.1}", metrics.completion_time.as_secs_f64())
         } else if metrics.was_skipped {
@@ -208,9 +221,9 @@ impl StageCompletionView {
         if metrics.was_failed || metrics.was_skipped {
             // For failed/skipped, use solid color
             let color = if metrics.was_failed {
-                Colors::error()
+                colors.error()
             } else {
-                Colors::warning()
+                colors.warning()
             };
 
             for (i, line) in ascii_numbers.iter().enumerate() {
@@ -235,6 +248,7 @@ impl StageCompletionView {
     }
 
     fn render_metrics(
+        colors: &Colors,
         frame: &mut Frame,
         area: ratatui::layout::Rect,
         metrics: &StageResult,
@@ -249,22 +263,22 @@ impl StageCompletionView {
 
         // Line 1: CPM, WPM, Time
         let line1 = Line::from(vec![
-            Span::styled("CPM: ", Style::default().fg(Colors::cpm_wpm())),
+            Span::styled("CPM: ", Style::default().fg(colors.cpm_wpm())),
             Span::styled(
                 format!("{:.0}", metrics.cpm),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(" | ", Style::default().fg(Colors::text())),
-            Span::styled("WPM: ", Style::default().fg(Colors::cpm_wpm())),
+            Span::styled(" | ", Style::default().fg(colors.text())),
+            Span::styled("WPM: ", Style::default().fg(colors.cpm_wpm())),
             Span::styled(
                 format!("{:.0}", metrics.wpm),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(" | ", Style::default().fg(Colors::text())),
-            Span::styled("Time: ", Style::default().fg(Colors::duration())),
+            Span::styled(" | ", Style::default().fg(colors.text())),
+            Span::styled("Time: ", Style::default().fg(colors.duration())),
             Span::styled(
                 format!("{:.1}s", time_secs),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
         ]);
         frame.render_widget(
@@ -274,22 +288,22 @@ impl StageCompletionView {
 
         // Line 2: Keystrokes, Mistakes, Accuracy
         let line2 = Line::from(vec![
-            Span::styled("Keystrokes: ", Style::default().fg(Colors::stage_info())),
+            Span::styled("Keystrokes: ", Style::default().fg(colors.stage_info())),
             Span::styled(
                 format!("{}", keystrokes),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(" | ", Style::default().fg(Colors::text())),
-            Span::styled("Mistakes: ", Style::default().fg(Colors::error())),
+            Span::styled(" | ", Style::default().fg(colors.text())),
+            Span::styled("Mistakes: ", Style::default().fg(colors.error())),
             Span::styled(
                 format!("{}", metrics.mistakes),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
-            Span::styled(" | ", Style::default().fg(Colors::text())),
-            Span::styled("Accuracy: ", Style::default().fg(Colors::accuracy())),
+            Span::styled(" | ", Style::default().fg(colors.text())),
+            Span::styled("Accuracy: ", Style::default().fg(colors.accuracy())),
             Span::styled(
                 format!("{:.1}%", metrics.accuracy),
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             ),
         ]);
         frame.render_widget(
@@ -299,6 +313,7 @@ impl StageCompletionView {
     }
 
     fn render_progress_indicator(
+        colors: &Colors,
         frame: &mut Frame,
         area: ratatui::layout::Rect,
         current_stage: usize,
@@ -318,7 +333,7 @@ impl StageCompletionView {
             let progress_text = format!("Stage {} of {}", current_stage, total_stages);
             let progress = Paragraph::new(Line::from(vec![Span::styled(
                 progress_text,
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             )]))
             .alignment(Alignment::Center);
             frame.render_widget(progress, chunks[0]);
@@ -326,7 +341,7 @@ impl StageCompletionView {
             let next_text = "Next stage starting...";
             let next = Paragraph::new(Line::from(vec![Span::styled(
                 next_text,
-                Style::default().fg(Colors::warning()),
+                Style::default().fg(colors.warning()),
             )]))
             .alignment(Alignment::Center);
             frame.render_widget(next, chunks[2]);
@@ -334,19 +349,19 @@ impl StageCompletionView {
             let progress_text = format!("Stage {} of {}", current_stage, total_stages);
             let progress = Paragraph::new(Line::from(vec![Span::styled(
                 progress_text,
-                Style::default().fg(Colors::text()),
+                Style::default().fg(colors.text()),
             )]))
             .alignment(Alignment::Center);
             frame.render_widget(progress, area);
         }
     }
 
-    fn render_options(frame: &mut Frame, area: ratatui::layout::Rect) {
+    fn render_options(colors: &Colors, frame: &mut Frame, area: ratatui::layout::Rect) {
         let options = Line::from(vec![
-            Span::styled("[SPACE]", Style::default().fg(Colors::success())),
-            Span::styled(" Continue  ", Style::default().fg(Colors::text())),
-            Span::styled("[ESC]", Style::default().fg(Colors::error())),
-            Span::styled(" Quit", Style::default().fg(Colors::text())),
+            Span::styled("[SPACE]", Style::default().fg(colors.success())),
+            Span::styled(" Continue  ", Style::default().fg(colors.text())),
+            Span::styled("[ESC]", Style::default().fg(colors.error())),
+            Span::styled(" Quit", Style::default().fg(colors.text())),
         ]);
 
         let options_widget = Paragraph::new(options).alignment(Alignment::Center);

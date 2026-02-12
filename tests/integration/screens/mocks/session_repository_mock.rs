@@ -1,12 +1,14 @@
-use gittype::domain::models::storage::SessionStageResult;
+use gittype::domain::models::storage::{SessionStageResult, StoredRepository, StoredSession};
+use gittype::domain::models::{Challenge, GitRepository, SessionResult};
 use gittype::domain::repositories::session_repository::SessionRepositoryTrait;
+use gittype::domain::services::scoring::StageTracker;
 use gittype::Result;
 
-pub struct MockSessionRepository;
+pub struct MockSessionRepository {}
 
 impl MockSessionRepository {
     pub fn new() -> Self {
-        MockSessionRepository
+        MockSessionRepository {}
     }
 }
 
@@ -86,5 +88,49 @@ impl SessionRepositoryTrait for MockSessionRepository {
                 code_content: Some("pub mod models;".to_string()),
             },
         ])
+    }
+
+    fn get_all_repositories(&self) -> Result<Vec<StoredRepository>> {
+        Ok(vec![])
+    }
+
+    fn get_sessions_filtered(
+        &self,
+        _repository_filter: Option<i64>,
+        _date_filter_days: Option<i64>,
+        _sort_by: &str,
+        _sort_descending: bool,
+    ) -> Result<Vec<StoredSession>> {
+        Ok(vec![])
+    }
+
+    fn get_session_result(
+        &self,
+        _session_id: i64,
+    ) -> Result<Option<gittype::domain::models::storage::SessionResultData>> {
+        Ok(None)
+    }
+
+    fn get_language_stats(&self, _days: Option<i64>) -> Result<Vec<(String, f64, usize)>> {
+        Ok(vec![])
+    }
+
+    fn get_session_result_for_analytics(
+        &self,
+        _session_id: i64,
+    ) -> Result<Option<gittype::domain::models::storage::SessionResultData>> {
+        Ok(None)
+    }
+
+    fn record_session(
+        &self,
+        _session_result: &SessionResult,
+        _git_repository: Option<&GitRepository>,
+        _game_mode: &str,
+        _difficulty_level: Option<&str>,
+        _stage_trackers: &[(String, StageTracker)],
+        _challenges: &[Challenge],
+    ) -> Result<i64> {
+        Ok(1)
     }
 }

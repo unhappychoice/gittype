@@ -1,33 +1,48 @@
-use crate::domain::events::EventBus;
-use crate::presentation::game::events::NavigateTo;
+use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::EventBusInterface;
+use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::presentation::tui::views::VersionCheckView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::Result;
 use crossterm::{
-    event::{self, Event, KeyCode},
+    event::{self, Event, KeyCode, KeyModifiers},
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
 use ratatui::{backend::CrosstermBackend, Terminal};
 use std::io::{stdout, Stdout};
+use std::sync::{Arc, RwLock};
 
 pub enum VersionCheckResult {
     Continue,
     Exit,
 }
 
+pub trait VersionCheckScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = VersionCheckScreenInterface)]
 pub struct VersionCheckScreen {
-    event_bus: EventBus,
-    current_version: String,
-    latest_version: String,
+    #[shaku(default)]
+    current_version: RwLock<String>,
+    #[shaku(default)]
+    latest_version: RwLock<String>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    theme_service: Arc<dyn ThemeServiceInterface>,
 }
 
 impl VersionCheckScreen {
-    pub fn new(event_bus: EventBus) -> Self {
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
+    ) -> Self {
         Self {
             event_bus,
-            current_version: String::new(),
-            latest_version: String::new(),
+            theme_service,
+            current_version: RwLock::new(String::new()),
+            latest_version: RwLock::new(String::new()),
         }
     }
 
@@ -51,8 +66,19 @@ impl VersionCheckScreen {
         current_version: &str,
         latest_version: &str,
     ) -> Result<VersionCheckResult> {
+        // Use default theme for legacy mode
+        let default_theme_json = include_str!("../../../../assets/themes/default.json");
+        let theme_file: crate::domain::models::color_scheme::ThemeFile =
+            serde_json::from_str(default_theme_json).expect("Default theme should be valid JSON");
+        let color_scheme = crate::domain::models::color_scheme::ColorScheme::from_theme_file(
+            &theme_file,
+            &crate::domain::models::color_mode::ColorMode::Dark,
+        );
+        let colors = crate::presentation::ui::Colors::new(color_scheme);
+
         loop {
-            terminal.draw(|f| VersionCheckView::draw_ui(f, current_version, latest_version))?;
+            terminal
+                .draw(|f| VersionCheckView::draw_ui(f, current_version, latest_version, &colors))?;
 
             if let Ok(true) = event::poll(std::time::Duration::from_millis(50)) {
                 if let Ok(Event::Key(key_event)) = event::read() {
@@ -93,19 +119,18 @@ impl Screen for VersionCheckScreen {
         Box::new(VersionCheckScreenDataProvider)
     }
 
-    fn init_with_data(&mut self, _data: Box<dyn std::any::Any>) -> Result<()> {
+    fn init_with_data(&self, _data: Box<dyn std::any::Any>) -> Result<()> {
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: event::KeyEvent) -> Result<()> {
-        use crossterm::event::{KeyCode, KeyModifiers};
+    fn handle_key_event(&self, key_event: event::KeyEvent) -> Result<()> {
         match key_event.code {
             KeyCode::Esc => {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.event_bus.publish(NavigateTo::Exit);
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
                 Ok(())
             }
             _ => Ok(()),
@@ -116,20 +141,21 @@ impl Screen for VersionCheckScreen {
         UpdateStrategy::InputOnly
     }
 
-    fn update(&mut self) -> crate::Result<bool> {
+    fn update(&self) -> crate::Result<bool> {
         Ok(false)
     }
 
-    fn render_ratatui(&mut self, frame: &mut ratatui::Frame) -> Result<()> {
-        VersionCheckView::draw_ui(frame, &self.current_version, &self.latest_version);
+    fn render_ratatui(&self, frame: &mut ratatui::Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
+        let current = self.current_version.read().unwrap();
+        let latest = self.latest_version.read().unwrap();
+        VersionCheckView::draw_ui(frame, &current, &latest, &colors);
         Ok(())
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
+
+impl VersionCheckScreenInterface for VersionCheckScreen {}

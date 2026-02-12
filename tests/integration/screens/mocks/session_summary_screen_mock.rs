@@ -1,9 +1,7 @@
 use gittype::domain::models::{GitRepository, SessionResult};
-use gittype::presentation::game::SessionManager;
 use gittype::presentation::tui::screens::session_summary_screen::SessionSummaryScreenData;
 use gittype::presentation::tui::ScreenDataProvider;
 use gittype::Result;
-use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 pub struct MockSessionSummaryDataProvider;
@@ -47,7 +45,6 @@ impl ScreenDataProvider for MockSessionSummaryDataProvider {
         let data = SessionSummaryScreenData {
             session_result,
             git_repository,
-            session_manager: Arc::new(Mutex::new(SessionManager::new())),
         };
         Ok(Box::new(data))
     }
@@ -94,7 +91,6 @@ impl ScreenDataProvider for MockLoadBalancerPrimarchDataProvider {
         let data = SessionSummaryScreenData {
             session_result,
             git_repository,
-            session_manager: Arc::new(Mutex::new(SessionManager::new())),
         };
         Ok(Box::new(data))
     }
@@ -141,7 +137,6 @@ impl ScreenDataProvider for MockCompilerDataProvider {
         let data = SessionSummaryScreenData {
             session_result,
             git_repository,
-            session_manager: Arc::new(Mutex::new(SessionManager::new())),
         };
         Ok(Box::new(data))
     }

@@ -1,7 +1,7 @@
 use crate::domain::services::scoring::RealTimeCalculator;
 use crate::{
     domain::services::scoring::tracker::stage::StageTracker,
-    presentation::game::typing_core::TypingCore, presentation::ui::Colors,
+    domain::services::typing_core::TypingCore, presentation::ui::Colors,
 };
 use ratatui::{
     style::Style,
@@ -13,6 +13,7 @@ use ratatui::{
 pub struct TypingFooterView;
 
 impl TypingFooterView {
+    #[allow(clippy::too_many_arguments)]
     pub fn render_metrics(
         frame: &mut Frame,
         area: ratatui::layout::Rect,
@@ -21,6 +22,7 @@ impl TypingFooterView {
         skips_remaining: usize,
         stage_tracker: &StageTracker,
         typing_core: &TypingCore,
+        colors: &Colors,
     ) {
         let metrics_line = if waiting_to_start || countdown_active {
             // Show zeros during waiting and countdown
@@ -47,14 +49,14 @@ impl TypingFooterView {
 
         let metrics_widget = Paragraph::new(vec![Line::from(vec![Span::styled(
             metrics_line,
-            Style::default().fg(Colors::text_secondary()),
+            Style::default().fg(colors.text_secondary()),
         )])])
         .block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Colors::border()))
+                .border_style(Style::default().fg(colors.border()))
                 .title("Metrics")
-                .title_style(Style::default().fg(Colors::text_secondary()))
+                .title_style(Style::default().fg(colors.text_secondary()))
                 .padding(ratatui::widgets::Padding::horizontal(1)),
         );
         frame.render_widget(metrics_widget, area);
@@ -67,6 +69,7 @@ impl TypingFooterView {
         countdown_active: bool,
         typing_core: &TypingCore,
         chars_len: usize,
+        colors: &Colors,
     ) {
         let progress_percent = if waiting_to_start || countdown_active {
             0 // Show 0% during waiting and countdown
@@ -80,11 +83,11 @@ impl TypingFooterView {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Colors::border()))
+                    .border_style(Style::default().fg(colors.border()))
                     .title("Progress")
-                    .title_style(Style::default().fg(Colors::text_secondary())),
+                    .title_style(Style::default().fg(colors.text_secondary())),
             )
-            .gauge_style(Style::default().fg(Colors::text_secondary()))
+            .gauge_style(Style::default().fg(colors.text_secondary()))
             .percent(progress_percent as u16)
             .label(format!("{}%", progress_percent));
         frame.render_widget(progress_widget, area);
