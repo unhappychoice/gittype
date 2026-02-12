@@ -11,6 +11,7 @@ use gittype::domain::services::stage_builder_service::{StageRepository, StageRep
 use gittype::domain::stores::{ChallengeStore, RepositoryStore, SessionStore};
 use std::sync::Arc;
 
+#[allow(clippy::type_complexity)]
 fn create_test_dependencies() -> (
     Arc<dyn EventBusInterface>,
     Arc<dyn StageRepositoryInterface>,

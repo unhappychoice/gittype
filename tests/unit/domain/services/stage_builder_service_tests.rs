@@ -62,7 +62,7 @@ fn make_challenges_with_difficulties(difficulties: &[DifficultyLevel]) -> Vec<Ch
         .map(|(i, diff)| {
             Challenge::new(format!("ch-{i}"), format!("code line {i}"))
                 .with_language("rust".to_string())
-                .with_difficulty_level(diff.clone())
+                .with_difficulty_level(*diff)
         })
         .collect()
 }
