@@ -63,7 +63,10 @@ fn create_share_text_without_repo() {
 
     assert!(text.contains("150"), "should contain score");
     assert!(text.contains("300"), "should contain cpm");
-    assert!(text.contains("5"), "should contain total mistakes (3+2)");
+    assert!(
+        text.contains("Mistakes: 5"),
+        "should contain total mistakes (3+2)"
+    );
     assert!(text.contains("#gittype"));
     assert!(text.contains("github.com/unhappychoice/gittype"));
     // Should NOT contain repo info

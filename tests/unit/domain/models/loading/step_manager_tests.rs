@@ -83,6 +83,7 @@ fn get_step_by_name_all_steps() {
         "Cloning repository",
         "Cache check",
         "Scanning repository",
+        "Extracting functions, classes, and code blocks",
         "Generating challenges",
         "Finalizing",
     ];

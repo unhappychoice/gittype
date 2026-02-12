@@ -445,6 +445,9 @@ fn test_analytics_best_cpm_tracked_across_sessions() {
 fn test_analytics_mistakes_estimation() {
     let mut mock = MockSessionRepo::new();
     mock.sessions = vec![make_session(1, None)];
+    // Note: make_result sets mistakes=5 on SessionResultData, but AnalyticsService
+    // computes total_mistakes from accuracy and stages_attempted, not from the
+    // mistakes field: (100 - accuracy) / 100 * stages_attempted → cast to usize.
     // 90% accuracy with 3 stages attempted → (100-90)/100 * 3 = 0.3 → 0 as usize
     mock.results = vec![(1, make_result(200.0, 90.0, 10000))];
     mock.stage_results = vec![(1, vec![])];

@@ -287,14 +287,15 @@ fn test_info_dialog_fallback_esc_returns_to_menu() {
         )) as Arc<dyn ThemeServiceInterface>,
     );
 
-    // Verify fallback renders without panic
+    // Render fallback state
     let backend = TestBackend::new(120, 40);
     let mut terminal = Terminal::new(backend).unwrap();
-    terminal
+    let before = terminal
         .draw(|frame| {
             screen.render_ratatui(frame).unwrap();
         })
         .unwrap();
+    let before_buffer = before.buffer.clone();
 
     // Press Esc to return to Menu state
     screen
@@ -304,14 +305,20 @@ fn test_info_dialog_fallback_esc_returns_to_menu() {
         ))
         .unwrap();
 
-    // Render again - should now be in Menu state
+    // Render again - should now be in Menu state with different content
     let backend2 = TestBackend::new(120, 40);
     let mut terminal2 = Terminal::new(backend2).unwrap();
-    terminal2
+    let after = terminal2
         .draw(|frame| {
             screen.render_ratatui(frame).unwrap();
         })
         .unwrap();
+    let after_buffer = after.buffer.clone();
+
+    assert_ne!(
+        before_buffer, after_buffer,
+        "Rendered content should change after Esc transitions from Fallback to Menu"
+    );
 }
 
 // Test: Fallback state - Ctrl+C exits

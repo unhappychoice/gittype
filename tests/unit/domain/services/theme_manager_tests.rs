@@ -129,8 +129,6 @@ fn get_current_color_scheme_returns_light_scheme() {
 
 #[test]
 fn get_colors_returns_valid_colors() {
-    use gittype::presentation::ui::Colors;
-
     let manager = create_theme_service();
     let colors = manager.get_colors();
     let _ = colors.border();

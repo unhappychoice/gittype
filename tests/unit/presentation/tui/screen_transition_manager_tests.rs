@@ -499,22 +499,25 @@ mod tests {
 
     fn start_session(sm: &Arc<dyn SessionManagerInterface>) {
         // Start the game via Title→Typing transition
-        let _ = ScreenTransitionManager::reduce(ScreenType::Title, ScreenType::Typing, sm);
+        ScreenTransitionManager::reduce(ScreenType::Title, ScreenType::Typing, sm)
+            .expect("Title→Typing transition should succeed");
     }
 
     fn set_git_repository(sm: &Arc<dyn SessionManagerInterface>) {
         use gittype::domain::models::GitRepository;
-        if let Some(concrete_sm) = sm.as_any().downcast_ref::<SessionManager>() {
-            concrete_sm.set_git_repository(Some(GitRepository {
-                user_name: "test".to_string(),
-                repository_name: "repo".to_string(),
-                remote_url: "https://github.com/test/repo".to_string(),
-                branch: Some("main".to_string()),
-                commit_hash: Some("abc123def456".to_string()),
-                is_dirty: false,
-                root_path: None,
-            }));
-        }
+        let concrete_sm = sm
+            .as_any()
+            .downcast_ref::<SessionManager>()
+            .expect("should downcast to SessionManager");
+        concrete_sm.set_git_repository(Some(GitRepository {
+            user_name: "test".to_string(),
+            repository_name: "repo".to_string(),
+            remote_url: "https://github.com/test/repo".to_string(),
+            branch: Some("main".to_string()),
+            commit_hash: Some("abc123def456".to_string()),
+            is_dirty: false,
+            root_path: None,
+        }));
     }
 
     fn start_session_with_tracker(sm: &Arc<dyn SessionManagerInterface>) {
@@ -522,10 +525,12 @@ mod tests {
 
         start_session(sm);
         // Set up a stage tracker so handle_game_failure can use it
-        if let Some(concrete_sm) = sm.as_any().downcast_ref::<SessionManager>() {
-            let tracker = StageTracker::new("test challenge".to_string());
-            concrete_sm.set_current_stage_tracker(tracker);
-        }
+        let concrete_sm = sm
+            .as_any()
+            .downcast_ref::<SessionManager>()
+            .expect("should downcast to SessionManager");
+        let tracker = StageTracker::new("test challenge".to_string());
+        concrete_sm.set_current_stage_tracker(tracker);
     }
 
     #[test]

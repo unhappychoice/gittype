@@ -165,6 +165,7 @@ fn test_save_then_get_cache_stats() {
 
 #[test]
 fn test_save_then_clear_cache() {
+    // Each test uses its own repository instance to avoid shared state
     let repo = create_repository();
     let git_repo = create_test_repo(Some("clear-test".to_string()), false);
     let challenges = vec![create_test_challenge("t1", "fn main() {}")];
@@ -178,6 +179,7 @@ fn test_save_then_clear_cache() {
 
 #[test]
 fn test_save_then_list_cache_keys() {
+    // Each test uses its own repository instance to avoid shared state
     let repo = create_repository();
     repo.clear_cache().unwrap();
 

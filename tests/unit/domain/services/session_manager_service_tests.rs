@@ -895,8 +895,8 @@ fn test_get_current_challenge_in_progress_with_challenges() {
 
     // Populate challenge store with challenges
     let challenges = vec![
-        Challenge::new("fn foo() {}".to_string(), "test.rs".to_string()),
-        Challenge::new("fn bar() {}".to_string(), "test.rs".to_string()),
+        Challenge::new("test-1".to_string(), "fn foo() {}".to_string()),
+        Challenge::new("test-2".to_string(), "fn bar() {}".to_string()),
     ];
     challenge_store.set_challenges(challenges);
 
@@ -934,8 +934,8 @@ fn test_get_next_challenge_in_progress_with_challenges() {
     let challenge_store = Arc::new(ChallengeStore::new_for_test());
 
     let challenges = vec![
-        Challenge::new("fn foo() {}".to_string(), "test.rs".to_string()),
-        Challenge::new("fn bar() {}".to_string(), "test.rs".to_string()),
+        Challenge::new("test-1".to_string(), "fn foo() {}".to_string()),
+        Challenge::new("test-2".to_string(), "fn bar() {}".to_string()),
     ];
     challenge_store.set_challenges(challenges);
 
