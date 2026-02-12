@@ -49,7 +49,7 @@ tree-sitter-dart = "0.0.4"
 tree-sitter-scala = "0.24"
 tree-sitter-zig = "1.0"
 crossterm = "0.29"
-ratatui = "0.29"
+ratatui = "0.30"
 ansi-to-tui = "8.0.1"
 rusqlite = { version = "0.37", features = ["bundled"] }
 anyhow = "1.0"
