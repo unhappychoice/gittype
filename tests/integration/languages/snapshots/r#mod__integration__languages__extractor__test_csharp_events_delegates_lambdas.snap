@@ -1,0 +1,141 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\nusing System;\n\nnamespace EventSystem\n{\n    public delegate void NotifyHandler(string message);\n    public delegate int MathOperation(int a, int b);\n\n    public class EventPublisher\n    {\n        public event EventHandler<string> OnDataReceived;\n        public event NotifyHandler OnNotify;\n\n        public void ProcessData(string data)\n        {\n            OnDataReceived?.Invoke(this, data);\n            OnNotify?.Invoke(data);\n        }\n\n        public void RunWithLambda()\n        {\n            Func<int, int, int> add = (a, b) => a + b;\n            Action<string> print = msg => Console.WriteLine(msg);\n            var result = add(3, 4);\n            print($\"Result: {result}\");\n        }\n    }\n}\n",
+      "end_line": 28,
+      "language": "csharp",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "namespace EventSystem",
+      "end_line": 4,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 10,
+      "start_line": 4
+    },
+    {
+      "chunk_type": "Namespace",
+      "comment_ranges": [],
+      "content": "namespace EventSystem\n{\n    public delegate void NotifyHandler(string message);\n    public delegate int MathOperation(int a, int b);\n\n    public class EventPublisher\n    {\n        public event EventHandler<string> OnDataReceived;\n        public event NotifyHandler OnNotify;\n\n        public void ProcessData(string data)\n        {\n            OnDataReceived?.Invoke(this, data);\n            OnNotify?.Invoke(data);\n        }\n\n        public void RunWithLambda()\n        {\n            Func<int, int, int> add = (a, b) => a + b;\n            Action<string> print = msg => Console.WriteLine(msg);\n            var result = add(3, 4);\n            print($\"Result: {result}\");\n        }\n    }\n}",
+      "end_line": 28,
+      "language": "csharp",
+      "name": "EventSystem",
+      "original_indentation": 0,
+      "start_line": 4
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    public delegate void NotifyHandler(string message);",
+      "end_line": 6,
+      "language": "csharp",
+      "name": "NotifyHandler",
+      "original_indentation": 4,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "    public delegate int MathOperation(int a, int b);",
+      "end_line": 7,
+      "language": "csharp",
+      "name": "MathOperation",
+      "original_indentation": 4,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "    public class EventPublisher",
+      "end_line": 9,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 17,
+      "start_line": 9
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "    public class EventPublisher\n    {\n        public event EventHandler<string> OnDataReceived;\n        public event NotifyHandler OnNotify;\n\n        public void ProcessData(string data)\n        {\n            OnDataReceived?.Invoke(this, data);\n            OnNotify?.Invoke(data);\n        }\n\n        public void RunWithLambda()\n        {\n            Func<int, int, int> add = (a, b) => a + b;\n            Action<string> print = msg => Console.WriteLine(msg);\n            var result = add(3, 4);\n            print($\"Result: {result}\");\n        }\n    }",
+      "end_line": 27,
+      "language": "csharp",
+      "name": "EventPublisher",
+      "original_indentation": 4,
+      "start_line": 9
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        public void ProcessData",
+      "end_line": 14,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 20,
+      "start_line": 14
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "        public void ProcessData(string data)\n        {\n            OnDataReceived?.Invoke(this, data);\n            OnNotify?.Invoke(data);\n        }",
+      "end_line": 18,
+      "language": "csharp",
+      "name": "ProcessData",
+      "original_indentation": 8,
+      "start_line": 14
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        {\n            OnDataReceived?.Invoke(this, data);\n            OnNotify?.Invoke(data);\n        }",
+      "end_line": 18,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 15
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        public void RunWithLambda",
+      "end_line": 20,
+      "language": "csharp",
+      "name": "name",
+      "original_indentation": 20,
+      "start_line": 20
+    },
+    {
+      "chunk_type": "Method",
+      "comment_ranges": [],
+      "content": "        public void RunWithLambda()\n        {\n            Func<int, int, int> add = (a, b) => a + b;\n            Action<string> print = msg => Console.WriteLine(msg);\n            var result = add(3, 4);\n            print($\"Result: {result}\");\n        }",
+      "end_line": 26,
+      "language": "csharp",
+      "name": "RunWithLambda",
+      "original_indentation": 8,
+      "start_line": 20
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "        {\n            Func<int, int, int> add = (a, b) => a + b;\n            Action<string> print = msg => Console.WriteLine(msg);\n            var result = add(3, 4);\n            print($\"Result: {result}\");\n        }",
+      "end_line": 26,
+      "language": "csharp",
+      "name": "code_block",
+      "original_indentation": 8,
+      "start_line": 21
+    }
+  ],
+  "source_code": "\nusing System;\n\nnamespace EventSystem\n{\n    public delegate void NotifyHandler(string message);\n    public delegate int MathOperation(int a, int b);\n\n    public class EventPublisher\n    {\n        public event EventHandler<string> OnDataReceived;\n        public event NotifyHandler OnNotify;\n\n        public void ProcessData(string data)\n        {\n            OnDataReceived?.Invoke(this, data);\n            OnNotify?.Invoke(data);\n        }\n\n        public void RunWithLambda()\n        {\n            Func<int, int, int> add = (a, b) => a + b;\n            Action<string> print = msg => Console.WriteLine(msg);\n            var result = add(3, 4);\n            print($\"Result: {result}\");\n        }\n    }\n}\n",
+  "test_name": "test_csharp_events_delegates_lambdas",
+  "total_chunks": 13
+}

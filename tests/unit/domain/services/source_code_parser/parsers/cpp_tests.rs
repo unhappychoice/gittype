@@ -135,3 +135,84 @@ fn middle_capture_name_to_chunk_type_unknown() {
     let extractor = CppExtractor;
     assert_eq!(extractor.middle_capture_name_to_chunk_type("unknown"), None);
 }
+
+#[test]
+fn capture_name_to_chunk_type_namespace() {
+    let extractor = CppExtractor;
+    assert_eq!(
+        extractor.capture_name_to_chunk_type("namespace.definition"),
+        Some(ChunkType::Struct)
+    );
+}
+
+#[test]
+fn capture_name_to_chunk_type_type_definition() {
+    let extractor = CppExtractor;
+    assert_eq!(
+        extractor.capture_name_to_chunk_type("type.definition"),
+        Some(ChunkType::Struct)
+    );
+}
+
+#[test]
+fn capture_name_to_chunk_type_enum() {
+    let extractor = CppExtractor;
+    assert_eq!(
+        extractor.capture_name_to_chunk_type("enum.definition"),
+        Some(ChunkType::Struct)
+    );
+}
+
+#[test]
+fn capture_name_to_chunk_type_template_class() {
+    let extractor = CppExtractor;
+    assert_eq!(
+        extractor.capture_name_to_chunk_type("template_class.definition"),
+        Some(ChunkType::Struct)
+    );
+}
+
+#[test]
+fn capture_name_to_chunk_type_template_function() {
+    let extractor = CppExtractor;
+    assert_eq!(
+        extractor.capture_name_to_chunk_type("template_function.definition"),
+        Some(ChunkType::Function)
+    );
+}
+
+#[test]
+fn capture_name_to_chunk_type_operator() {
+    let extractor = CppExtractor;
+    assert_eq!(
+        extractor.capture_name_to_chunk_type("operator.definition"),
+        Some(ChunkType::Function)
+    );
+}
+
+#[test]
+fn capture_name_to_chunk_type_destructor() {
+    let extractor = CppExtractor;
+    assert_eq!(
+        extractor.capture_name_to_chunk_type("destructor.definition"),
+        Some(ChunkType::Function)
+    );
+}
+
+#[test]
+fn middle_capture_name_to_chunk_type_switch() {
+    let extractor = CppExtractor;
+    assert_eq!(
+        extractor.middle_capture_name_to_chunk_type("switch_block"),
+        Some(ChunkType::Conditional)
+    );
+}
+
+#[test]
+fn middle_capture_name_to_chunk_type_while() {
+    let extractor = CppExtractor;
+    assert_eq!(
+        extractor.middle_capture_name_to_chunk_type("while_loop"),
+        Some(ChunkType::Loop)
+    );
+}

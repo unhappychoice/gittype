@@ -105,4 +105,36 @@ mod version_service_tests {
             "Update availability should be consistent"
         );
     }
+
+    #[tokio::test]
+    async fn test_check_uses_cargo_pkg_version() {
+        let service = VersionService::new_for_test().expect("Service creation should succeed");
+        let result = service.check().await;
+        // check() uses env!("CARGO_PKG_VERSION") as current_version
+        assert!(result.is_ok(), "check() should succeed with mocks");
+        let (_, current, _) = result.unwrap();
+        assert_eq!(current, env!("CARGO_PKG_VERSION"));
+    }
+
+    #[tokio::test]
+    async fn test_same_major_different_minor() {
+        let service = VersionService::new_for_test().expect("Service creation should succeed");
+        // Mock returns 1.0.0
+        let (has_update, _, _) = service
+            .check_with_version("0.9.0")
+            .await
+            .expect("Should succeed");
+        assert!(has_update, "0.9.0 < 1.0.0 should have update");
+    }
+
+    #[tokio::test]
+    async fn test_same_version_no_update() {
+        let service = VersionService::new_for_test().expect("Service creation should succeed");
+        let (has_update, _, latest) = service
+            .check_with_version("1.0.0")
+            .await
+            .expect("Should succeed");
+        assert!(!has_update);
+        assert_eq!(latest, "1.0.0");
+    }
 }

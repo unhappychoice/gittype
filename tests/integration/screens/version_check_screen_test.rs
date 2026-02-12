@@ -41,3 +41,16 @@ screen_basic_methods_test!(
     gittype::presentation::tui::ScreenType::VersionCheck,
     false
 );
+
+// Snapshot test to cover VersionCheckView::draw_ui and centered_rect
+screen_snapshot_test!(
+    test_version_check_screen_snapshot,
+    VersionCheckScreen,
+    VersionCheckScreen::new(
+        Arc::new(EventBus::new()),
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark
+        )) as Arc<dyn ThemeServiceInterface>
+    )
+);

@@ -1,0 +1,28 @@
+---
+source: tests/integration/screens/info_dialog_test.rs
+expression: output
+---
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                              ┌──────────────Cannot open GitHub Repository───────────────┐                              
+                              │                                                          │                              
+                              │           Please copy and paste the URL below:           │                              
+                              │         https://github.com/unhappychoice/gittype         │                              
+                              │                                                          │                              
+                              │                        [ESC] Back                        │                              
+                              │                                                          │                              
+                              └──────────────────────────────────────────────────────────┘
