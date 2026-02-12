@@ -3,6 +3,7 @@ mod challenge_generator;
 mod config_service_tests;
 mod repository_service_tests;
 pub mod scoring;
+mod session_manager_service_tests;
 mod session_service_tests;
 mod source_code_parser;
 mod source_file_extractor;
