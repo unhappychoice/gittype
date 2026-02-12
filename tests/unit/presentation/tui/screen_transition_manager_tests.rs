@@ -494,4 +494,94 @@ mod tests {
                 .unwrap();
         assert_eq!(result, ScreenType::Typing);
     }
+
+    // === Side-effect transitions requiring InProgress state ===
+
+    fn start_session(sm: &Arc<dyn SessionManagerInterface>) {
+        // Start the game via Title→Typing transition
+        let _ = ScreenTransitionManager::reduce(ScreenType::Title, ScreenType::Typing, sm);
+    }
+
+    fn set_git_repository(sm: &Arc<dyn SessionManagerInterface>) {
+        use gittype::domain::models::GitRepository;
+        if let Some(concrete_sm) = sm.as_any().downcast_ref::<SessionManager>() {
+            concrete_sm.set_git_repository(Some(GitRepository {
+                user_name: "test".to_string(),
+                repository_name: "repo".to_string(),
+                remote_url: "https://github.com/test/repo".to_string(),
+                branch: Some("main".to_string()),
+                commit_hash: Some("abc123def456".to_string()),
+                is_dirty: false,
+                root_path: None,
+            }));
+        }
+    }
+
+    fn start_session_with_tracker(sm: &Arc<dyn SessionManagerInterface>) {
+        use gittype::domain::services::scoring::StageTracker;
+
+        start_session(sm);
+        // Set up a stage tracker so handle_game_failure can use it
+        if let Some(concrete_sm) = sm.as_any().downcast_ref::<SessionManager>() {
+            let tracker = StageTracker::new("test challenge".to_string());
+            concrete_sm.set_current_stage_tracker(tracker);
+        }
+    }
+
+    #[test]
+    fn test_typing_to_animation_session_completion() {
+        let sm = create_session_manager();
+        start_session(&sm);
+        set_git_repository(&sm);
+        let result =
+            ScreenTransitionManager::reduce(ScreenType::Typing, ScreenType::Animation, &sm)
+                .unwrap();
+        assert_eq!(result, ScreenType::Animation);
+    }
+
+    #[test]
+    fn test_typing_to_session_failure_game_failure() {
+        let sm = create_session_manager();
+        start_session_with_tracker(&sm);
+        let result =
+            ScreenTransitionManager::reduce(ScreenType::Typing, ScreenType::SessionFailure, &sm)
+                .unwrap();
+        assert_eq!(result, ScreenType::SessionFailure);
+    }
+
+    #[test]
+    fn test_typing_to_session_failure_no_tracker() {
+        let sm = create_session_manager();
+        start_session(&sm);
+        // No tracker set - should still succeed (drops empty tracker guard)
+        let result =
+            ScreenTransitionManager::reduce(ScreenType::Typing, ScreenType::SessionFailure, &sm)
+                .unwrap();
+        assert_eq!(result, ScreenType::SessionFailure);
+    }
+
+    #[test]
+    fn test_stage_summary_to_animation_session_completion() {
+        let sm = create_session_manager();
+        start_session(&sm);
+        set_git_repository(&sm);
+        let result =
+            ScreenTransitionManager::reduce(ScreenType::StageSummary, ScreenType::Animation, &sm)
+                .unwrap();
+        assert_eq!(result, ScreenType::Animation);
+    }
+
+    #[test]
+    fn test_stage_summary_to_session_failure_no_tracker() {
+        let sm = create_session_manager();
+        start_session(&sm);
+        // No tracker, should still succeed
+        let result = ScreenTransitionManager::reduce(
+            ScreenType::StageSummary,
+            ScreenType::SessionFailure,
+            &sm,
+        )
+        .unwrap();
+        assert_eq!(result, ScreenType::SessionFailure);
+    }
 }
