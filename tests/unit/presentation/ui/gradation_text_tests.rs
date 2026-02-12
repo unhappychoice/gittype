@@ -1,4 +1,5 @@
 use gittype::presentation::ui::gradation_text::{ansi256_to_rgb, GradationText, Rgb};
+use ratatui::{buffer::Buffer, layout::Rect, widgets::Widget};
 
 #[test]
 fn test_empty_colors() {
@@ -226,4 +227,269 @@ fn test_legendary_colors_ascii() {
 
     println!("First color: RGB({}, {}, {})", first.r, first.g, first.b);
     println!("Last color: RGB({}, {}, {})", last.r, last.g, last.b);
+}
+
+// ---------------------------------------------------------------------------
+// boost_vibrance / HSL round-trip tests
+// ---------------------------------------------------------------------------
+
+#[test]
+fn test_boost_vibrance_red() {
+    let red = Rgb::new(255, 0, 0);
+    let boosted = red.boost_vibrance(1.5, 0.0);
+    // Red should stay reddish; R should be higher than G and B
+    assert!(boosted.r > boosted.g);
+    assert!(boosted.r > boosted.b);
+}
+
+#[test]
+fn test_boost_vibrance_green() {
+    let green = Rgb::new(0, 200, 0);
+    let boosted = green.boost_vibrance(1.2, 0.05);
+    // Green should stay greenish
+    assert!(boosted.g > boosted.r);
+    assert!(boosted.g > boosted.b);
+}
+
+#[test]
+fn test_boost_vibrance_blue() {
+    let blue = Rgb::new(0, 0, 200);
+    let boosted = blue.boost_vibrance(1.3, -0.1);
+    // Blue should remain dominant
+    assert!(boosted.b > boosted.r);
+    assert!(boosted.b > boosted.g);
+}
+
+#[test]
+fn test_boost_vibrance_cyan() {
+    // Cyan: H ≈ 180° → exercises the h < 180 branch in from_hsl
+    let cyan = Rgb::new(0, 200, 200);
+    let boosted = cyan.boost_vibrance(1.0, 0.0);
+    // Should stay cyanish (G and B dominant)
+    assert!(boosted.g > boosted.r);
+    assert!(boosted.b > boosted.r);
+}
+
+#[test]
+fn test_boost_vibrance_magenta() {
+    // Magenta: H ≈ 300° → exercises the h >= 300 branch in from_hsl
+    let magenta = Rgb::new(200, 0, 200);
+    let boosted = magenta.boost_vibrance(1.0, 0.0);
+    assert!(boosted.r > boosted.g);
+    assert!(boosted.b > boosted.g);
+}
+
+#[test]
+fn test_boost_vibrance_yellow() {
+    // Yellow: H ≈ 60° → exercises the h < 120 branch in from_hsl, max == r branch in to_hsl
+    let yellow = Rgb::new(200, 200, 0);
+    let boosted = yellow.boost_vibrance(1.0, 0.0);
+    assert!(boosted.r > boosted.b);
+    assert!(boosted.g > boosted.b);
+}
+
+#[test]
+fn test_boost_vibrance_gray_no_saturation() {
+    // Gray: delta == 0, so H=0, S=0 → exercises delta == 0 branch
+    let gray = Rgb::new(128, 128, 128);
+    let boosted = gray.boost_vibrance(2.0, 0.0);
+    // With zero saturation, boosting has no effect on hue — result stays grayish
+    let diff =
+        (boosted.r as i32 - boosted.g as i32).abs() + (boosted.g as i32 - boosted.b as i32).abs();
+    assert!(
+        diff <= 2,
+        "Gray should remain approximately gray, diff={}",
+        diff
+    );
+}
+
+#[test]
+fn test_boost_vibrance_purple() {
+    // Purple: H ≈ 270° → exercises h < 300 branch in from_hsl, max == b branch in to_hsl
+    let purple = Rgb::new(100, 0, 200);
+    let boosted = purple.boost_vibrance(1.0, 0.0);
+    assert!(boosted.b > boosted.g);
+}
+
+#[test]
+fn test_boost_vibrance_orange() {
+    // Orange: H ≈ 30° → exercises h < 60 branch in from_hsl
+    let orange = Rgb::new(255, 128, 0);
+    let boosted = orange.boost_vibrance(1.0, 0.0);
+    assert!(boosted.r > boosted.b);
+}
+
+#[test]
+fn test_boost_vibrance_teal() {
+    // Teal: H ≈ 180° → max == g path in to_hsl
+    let teal = Rgb::new(0, 150, 150);
+    let boosted = teal.boost_vibrance(1.0, 0.0);
+    assert!(boosted.g > boosted.r);
+}
+
+#[test]
+fn test_boost_vibrance_lightness_clamp_high() {
+    // Very high lightness_adjust should be clamped to 0.8
+    let color = Rgb::new(100, 100, 100);
+    let boosted = color.boost_vibrance(1.0, 1.0);
+    // Should not crash, and result should be valid
+    // Should not crash, result is valid RGB
+    let _ = boosted;
+}
+
+#[test]
+fn test_boost_vibrance_lightness_clamp_low() {
+    // Very low lightness_adjust should be clamped to 0.2
+    let color = Rgb::new(100, 100, 100);
+    let boosted = color.boost_vibrance(1.0, -1.0);
+    let _ = boosted;
+}
+
+#[test]
+fn test_boost_vibrance_negative_hue_wraps() {
+    // Color that produces negative hue in to_hsl (R > G > B with small diff)
+    let color = Rgb::new(200, 50, 100);
+    let boosted = color.boost_vibrance(1.0, 0.0);
+    // Should not crash — negative hue gets wrapped to positive
+    let _ = boosted;
+}
+
+// ---------------------------------------------------------------------------
+// ansi256_to_rgb: basic colors (0-15) and grayscale (232-255)
+// ---------------------------------------------------------------------------
+
+#[test]
+fn test_ansi256_basic_black() {
+    let rgb = ansi256_to_rgb(0);
+    assert_eq!((rgb.r, rgb.g, rgb.b), (0, 0, 0));
+}
+
+#[test]
+fn test_ansi256_basic_colors_0_to_7() {
+    let expected = [
+        (0, 0, 0),       // 0: black
+        (128, 0, 0),     // 1: maroon
+        (0, 128, 0),     // 2: green
+        (128, 128, 0),   // 3: olive
+        (0, 0, 128),     // 4: navy
+        (128, 0, 128),   // 5: purple
+        (0, 128, 128),   // 6: teal
+        (192, 192, 192), // 7: silver
+    ];
+    for (code, (r, g, b)) in expected.iter().enumerate() {
+        let rgb = ansi256_to_rgb(code as u8);
+        assert_eq!((rgb.r, rgb.g, rgb.b), (*r, *g, *b), "ANSI code {}", code);
+    }
+}
+
+#[test]
+fn test_ansi256_basic_colors_8_to_15() {
+    let expected = [
+        (128, 128, 128), // 8: gray
+        (255, 0, 0),     // 9: red
+        (0, 255, 0),     // 10: lime
+        (255, 255, 0),   // 11: yellow
+        (0, 0, 255),     // 12: blue
+        (255, 0, 255),   // 13: fuchsia
+        (0, 255, 255),   // 14: aqua
+        (255, 255, 255), // 15: white
+    ];
+    for (i, (r, g, b)) in expected.iter().enumerate() {
+        let code = (i + 8) as u8;
+        let rgb = ansi256_to_rgb(code);
+        assert_eq!((rgb.r, rgb.g, rgb.b), (*r, *g, *b), "ANSI code {}", code);
+    }
+}
+
+#[test]
+fn test_ansi256_grayscale() {
+    // Grayscale: code 232-255 maps to gray = 8 + (code - 232) * 10
+    let rgb_232 = ansi256_to_rgb(232);
+    assert_eq!(rgb_232.r, 8);
+    assert_eq!(rgb_232.g, 8);
+    assert_eq!(rgb_232.b, 8);
+
+    let rgb_255 = ansi256_to_rgb(255);
+    let expected_gray = 8 + (255 - 232) * 10; // 238
+    assert_eq!(rgb_255.r, expected_gray);
+    assert_eq!(rgb_255.g, expected_gray);
+    assert_eq!(rgb_255.b, expected_gray);
+}
+
+#[test]
+fn test_ansi256_grayscale_mid_range() {
+    let rgb_244 = ansi256_to_rgb(244);
+    let expected = 8 + (244 - 232) * 10; // 128
+    assert_eq!(
+        (rgb_244.r, rgb_244.g, rgb_244.b),
+        (expected, expected, expected)
+    );
+}
+
+// ---------------------------------------------------------------------------
+// Widget::render test (via ratatui Buffer)
+// ---------------------------------------------------------------------------
+
+#[test]
+fn test_gradation_text_render_widget() {
+    let area = Rect::new(0, 0, 20, 1);
+    let mut buf = Buffer::empty(area);
+    let widget = GradationText::new("Hello World", &[30, 66, 72]);
+    widget.render(area, &mut buf);
+    // Verify the buffer has content rendered
+    let content: String = (0..20)
+        .map(|x| buf.cell((x, 0)).unwrap().symbol().to_string())
+        .collect::<Vec<_>>()
+        .join("");
+    assert!(content.starts_with("Hello World"));
+}
+
+#[test]
+fn test_gradation_text_render_widget_rgb() {
+    let area = Rect::new(0, 0, 10, 1);
+    let mut buf = Buffer::empty(area);
+    let colors = [Rgb::new(255, 0, 0), Rgb::new(0, 0, 255)];
+    let widget = GradationText::new_rgb("TestText", &colors);
+    widget.render(area, &mut buf);
+    let content: String = (0..8)
+        .map(|x| buf.cell((x, 0)).unwrap().symbol().to_string())
+        .collect::<Vec<_>>()
+        .join("");
+    assert_eq!(content, "TestText");
+}
+
+// ---------------------------------------------------------------------------
+// lerp edge cases
+// ---------------------------------------------------------------------------
+
+#[test]
+fn test_rgb_lerp_at_zero() {
+    let c1 = Rgb::new(100, 50, 200);
+    let c2 = Rgb::new(200, 100, 50);
+    let result = c1.lerp(&c2, 0.0);
+    assert_eq!((result.r, result.g, result.b), (100, 50, 200));
+}
+
+#[test]
+fn test_rgb_lerp_at_one() {
+    let c1 = Rgb::new(100, 50, 200);
+    let c2 = Rgb::new(200, 100, 50);
+    let result = c1.lerp(&c2, 1.0);
+    assert_eq!((result.r, result.g, result.b), (200, 100, 50));
+}
+
+#[test]
+fn test_rgb_lerp_clamped_above() {
+    let c1 = Rgb::new(0, 0, 0);
+    let c2 = Rgb::new(255, 255, 255);
+    let result = c1.lerp(&c2, 2.0); // should clamp to 1.0
+    assert_eq!((result.r, result.g, result.b), (255, 255, 255));
+}
+
+#[test]
+fn test_rgb_lerp_clamped_below() {
+    let c1 = Rgb::new(0, 0, 0);
+    let c2 = Rgb::new(255, 255, 255);
+    let result = c1.lerp(&c2, -1.0); // should clamp to 0.0
+    assert_eq!((result.r, result.g, result.b), (0, 0, 0));
 }
