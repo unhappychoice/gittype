@@ -1,33 +1,15 @@
 use gittype::domain::models::Languages;
-use gittype::presentation::ui::Colors;
+use ratatui::style::Color;
+use std::hash::{Hash, Hasher};
 
 #[test]
-fn language_registry_get_color_returns_specific_colors_for_known_languages() {
-    assert_eq!(Languages::get_color(Some("rust")), Colors::lang_rust());
-    assert_eq!(Languages::get_color(Some("python")), Colors::lang_python());
-    assert_eq!(
-        Languages::get_color(Some("javascript")),
-        Colors::lang_javascript()
-    );
-    assert_eq!(
-        Languages::get_color(Some("typescript")),
-        Colors::lang_typescript()
-    );
-}
-
-#[test]
-fn language_registry_get_color_returns_default_for_unknown_languages() {
-    assert_eq!(
-        Languages::get_color(Some("unknown")),
-        Colors::lang_default()
-    );
-    assert_eq!(Languages::get_color(Some("xyz")), Colors::lang_default());
-    assert_eq!(Languages::get_color(Some("")), Colors::lang_default());
-}
-
-#[test]
-fn language_registry_get_color_returns_default_for_none() {
-    assert_eq!(Languages::get_color(None), Colors::lang_default());
+fn language_color_returns_specific_colors_for_known_languages() {
+    let rust = Languages::get_by_name("rust").unwrap();
+    assert_eq!(rust.color(), Color::Red);
+    let python = Languages::get_by_name("python").unwrap();
+    assert_eq!(python.color(), Color::Blue);
+    let js = Languages::get_by_name("javascript").unwrap();
+    assert_eq!(js.color(), Color::Yellow);
 }
 
 #[test]
@@ -80,17 +62,16 @@ fn language_registry_get_by_name_finds_known_languages() {
 
 #[test]
 fn language_trait_methods_work_correctly() {
-    if let Some(rust_lang) = Languages::get_by_name("rust") {
-        assert_eq!(rust_lang.name(), "rust");
-        assert_eq!(rust_lang.display_name(), "Rust");
-        assert_eq!(rust_lang.color(), Colors::lang_rust());
-    }
+    let rust_lang = Languages::get_by_name("rust").unwrap();
+    assert_eq!(rust_lang.name(), "rust");
+    assert_eq!(rust_lang.display_name(), "Rust");
+    assert_eq!(rust_lang.color(), Color::Red);
 }
 
 #[test]
 fn all_languages_returns_all_supported_languages() {
     let langs = Languages::all_languages();
-    assert!(langs.len() >= 17); // At least 17 languages
+    assert!(langs.len() >= 17);
 }
 
 #[test]
@@ -111,20 +92,20 @@ fn get_supported_languages_includes_main_names_and_aliases() {
 
 #[test]
 fn validate_languages_accepts_valid_languages() {
-    let result = Languages::validate_languages(&vec!["rust".to_string(), "python".to_string()]);
+    let result = Languages::validate_languages(&["rust".to_string(), "python".to_string()]);
     assert!(result.is_ok());
 }
 
 #[test]
 fn validate_languages_rejects_invalid_languages() {
-    let result = Languages::validate_languages(&vec!["rust".to_string(), "invalid".to_string()]);
+    let result = Languages::validate_languages(&["rust".to_string(), "invalid".to_string()]);
     assert!(result.is_err());
     assert_eq!(result.unwrap_err(), vec!["invalid"]);
 }
 
 #[test]
 fn validate_languages_accepts_empty_list() {
-    let result = Languages::validate_languages(&vec![]);
+    let result = Languages::validate_languages(&[]);
     assert!(result.is_ok());
 }
 
@@ -169,22 +150,80 @@ fn get_by_name_is_case_insensitive() {
 
 #[test]
 fn get_by_name_supports_aliases() {
-    // If language has aliases, test them
     assert!(Languages::get_by_name("typescript").is_some());
     assert!(Languages::get_by_name("javascript").is_some());
 }
 
 #[test]
 fn language_file_patterns_format() {
-    if let Some(rust) = Languages::get_by_name("rust") {
-        let patterns = rust.file_patterns();
-        assert!(!patterns.is_empty());
-        assert!(patterns.iter().any(|p| p.starts_with("**/")));
-    }
+    let rust = Languages::get_by_name("rust").unwrap();
+    let patterns = rust.file_patterns();
+    assert!(!patterns.is_empty());
+    assert!(patterns.iter().any(|p| p.starts_with("**/")));
 }
 
 #[test]
 fn get_language_by_name_wrapper_works() {
     assert!(Languages::get_language_by_name("rust").is_some());
     assert!(Languages::get_language_by_name("unknown").is_none());
+}
+
+#[test]
+fn language_as_hash_key_returns_name() {
+    let rust = Languages::get_by_name("rust").unwrap();
+    assert_eq!(rust.as_hash_key(), "rust");
+}
+
+#[test]
+fn dyn_language_hash_and_eq() {
+    let rust = Languages::get_by_name("rust").unwrap();
+    let python = Languages::get_by_name("python").unwrap();
+    let rust2 = Languages::get_by_name("rust").unwrap();
+
+    // PartialEq
+    assert_eq!(
+        rust.as_ref() as &dyn gittype::domain::models::Language,
+        rust2.as_ref() as &dyn gittype::domain::models::Language
+    );
+    assert_ne!(
+        rust.as_ref() as &dyn gittype::domain::models::Language,
+        python.as_ref() as &dyn gittype::domain::models::Language
+    );
+
+    // Hash
+    let mut h1 = std::collections::hash_map::DefaultHasher::new();
+    (rust.as_ref() as &dyn gittype::domain::models::Language).hash(&mut h1);
+    let hash1 = h1.finish();
+
+    let mut h2 = std::collections::hash_map::DefaultHasher::new();
+    (rust2.as_ref() as &dyn gittype::domain::models::Language).hash(&mut h2);
+    let hash2 = h2.finish();
+
+    assert_eq!(hash1, hash2);
+}
+
+#[test]
+fn all_languages_have_display_name() {
+    for lang in Languages::all_languages() {
+        let dn = lang.display_name();
+        assert!(!dn.is_empty(), "{} has empty display_name", lang.name());
+    }
+}
+
+#[test]
+fn all_languages_have_color() {
+    for lang in Languages::all_languages() {
+        let _ = lang.color(); // should not panic
+    }
+}
+
+#[test]
+fn all_languages_have_extensions() {
+    for lang in Languages::all_languages() {
+        assert!(
+            !lang.extensions().is_empty(),
+            "{} has no extensions",
+            lang.name()
+        );
+    }
 }

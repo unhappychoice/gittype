@@ -7,5 +7,6 @@ mod session_manager_service_tests;
 mod session_service_tests;
 mod source_code_parser;
 mod source_file_extractor;
+mod stage_builder_service_tests;
 mod theme_manager_tests;
 mod version_service_tests;

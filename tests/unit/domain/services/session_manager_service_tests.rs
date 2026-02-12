@@ -660,3 +660,305 @@ fn test_as_any_downcasts_correctly() {
     let any = manager.as_any();
     assert!(any.downcast_ref::<SessionManager>().is_some());
 }
+
+// ============================================
+// Event subscription handlers
+// ============================================
+
+fn create_arc_session_manager_with_subscriptions() -> Arc<SessionManager> {
+    let (event_bus, stage_repository, session_tracker, total_tracker) = create_test_dependencies();
+    let manager = Arc::new(SessionManager::new_with_dependencies(
+        event_bus,
+        stage_repository,
+        session_tracker,
+        total_tracker,
+    ));
+    SessionManager::setup_event_subscriptions(Arc::clone(&manager));
+    manager
+}
+
+#[test]
+fn test_event_challenge_loaded_initializes_tracker() {
+    use gittype::domain::events::domain_events::DomainEvent;
+
+    let manager = create_arc_session_manager_with_subscriptions();
+    let event_bus = manager.get_event_bus();
+
+    event_bus
+        .as_event_bus()
+        .publish(DomainEvent::ChallengeLoaded {
+            text: "fn main() {}".to_string(),
+            source_path: "src/main.rs".to_string(),
+        });
+
+    // ChallengeLoaded should call init_stage_tracker, creating a tracker
+    let tracker = manager.get_current_stage_tracker();
+    assert!(tracker.is_some());
+}
+
+#[test]
+fn test_event_challenge_loaded_with_empty_path() {
+    use gittype::domain::events::domain_events::DomainEvent;
+
+    let manager = create_arc_session_manager_with_subscriptions();
+    let event_bus = manager.get_event_bus();
+
+    event_bus
+        .as_event_bus()
+        .publish(DomainEvent::ChallengeLoaded {
+            text: "let x = 1;".to_string(),
+            source_path: "".to_string(),
+        });
+
+    let tracker = manager.get_current_stage_tracker();
+    assert!(tracker.is_some());
+}
+
+#[test]
+fn test_event_stage_started_records_start() {
+    use gittype::domain::events::domain_events::DomainEvent;
+
+    let manager = create_arc_session_manager_with_subscriptions();
+    let event_bus = manager.get_event_bus();
+
+    // First load a challenge to create a tracker
+    event_bus
+        .as_event_bus()
+        .publish(DomainEvent::ChallengeLoaded {
+            text: "hello".to_string(),
+            source_path: "test.rs".to_string(),
+        });
+
+    // Then start stage
+    let start_time = std::time::Instant::now();
+    event_bus
+        .as_event_bus()
+        .publish(DomainEvent::StageStarted { start_time });
+
+    // Tracker should still exist (start was recorded)
+    assert!(manager.get_current_stage_tracker().is_some());
+}
+
+#[test]
+fn test_event_key_pressed_records_keystroke() {
+    use gittype::domain::events::domain_events::DomainEvent;
+
+    let manager = create_arc_session_manager_with_subscriptions();
+    let event_bus = manager.get_event_bus();
+
+    event_bus
+        .as_event_bus()
+        .publish(DomainEvent::ChallengeLoaded {
+            text: "hello".to_string(),
+            source_path: "test.rs".to_string(),
+        });
+    event_bus.as_event_bus().publish(DomainEvent::StageStarted {
+        start_time: std::time::Instant::now(),
+    });
+    event_bus.as_event_bus().publish(DomainEvent::KeyPressed {
+        key: 'h',
+        position: 0,
+    });
+
+    assert!(manager.get_current_stage_tracker().is_some());
+}
+
+#[test]
+fn test_event_stage_paused_records_pause() {
+    use gittype::domain::events::domain_events::DomainEvent;
+
+    let manager = create_arc_session_manager_with_subscriptions();
+    let event_bus = manager.get_event_bus();
+
+    event_bus
+        .as_event_bus()
+        .publish(DomainEvent::ChallengeLoaded {
+            text: "hello".to_string(),
+            source_path: "".to_string(),
+        });
+    event_bus.as_event_bus().publish(DomainEvent::StagePaused);
+
+    assert!(manager.get_current_stage_tracker().is_some());
+}
+
+#[test]
+fn test_event_stage_resumed_records_resume() {
+    use gittype::domain::events::domain_events::DomainEvent;
+
+    let manager = create_arc_session_manager_with_subscriptions();
+    let event_bus = manager.get_event_bus();
+
+    event_bus
+        .as_event_bus()
+        .publish(DomainEvent::ChallengeLoaded {
+            text: "hello".to_string(),
+            source_path: "".to_string(),
+        });
+    event_bus.as_event_bus().publish(DomainEvent::StagePaused);
+    event_bus.as_event_bus().publish(DomainEvent::StageResumed);
+
+    assert!(manager.get_current_stage_tracker().is_some());
+}
+
+#[test]
+fn test_event_stage_finalized_finalizes_stage() {
+    use gittype::domain::events::domain_events::DomainEvent;
+
+    let manager = create_arc_session_manager_with_subscriptions();
+    let event_bus = manager.get_event_bus();
+
+    // Must be in progress for finalize to work
+    manager.reduce(SessionAction::Start).unwrap();
+
+    event_bus
+        .as_event_bus()
+        .publish(DomainEvent::ChallengeLoaded {
+            text: "hello".to_string(),
+            source_path: "test.rs".to_string(),
+        });
+    event_bus.as_event_bus().publish(DomainEvent::StageStarted {
+        start_time: std::time::Instant::now(),
+    });
+    for (i, ch) in "hello".chars().enumerate() {
+        event_bus.as_event_bus().publish(DomainEvent::KeyPressed {
+            key: ch,
+            position: i,
+        });
+    }
+    event_bus
+        .as_event_bus()
+        .publish(DomainEvent::StageFinalized);
+
+    // After finalize, tracker should be cleared and stage_results should have 1 entry
+    assert!(manager.get_current_stage_tracker().is_none());
+    assert_eq!(manager.get_stage_results().len(), 1);
+}
+
+#[test]
+fn test_event_stage_skipped_skips_stage() {
+    use gittype::domain::events::domain_events::DomainEvent;
+
+    let manager = create_arc_session_manager_with_subscriptions();
+    let event_bus = manager.get_event_bus();
+
+    manager.reduce(SessionAction::Start).unwrap();
+
+    event_bus
+        .as_event_bus()
+        .publish(DomainEvent::ChallengeLoaded {
+            text: "hello".to_string(),
+            source_path: "test.rs".to_string(),
+        });
+    event_bus.as_event_bus().publish(DomainEvent::StageStarted {
+        start_time: std::time::Instant::now(),
+    });
+    event_bus.as_event_bus().publish(DomainEvent::StageSkipped);
+
+    // After skip, tracker should be cleared
+    assert!(manager.get_current_stage_tracker().is_none());
+    // Stage results should have the skipped result
+    let results = manager.get_stage_results();
+    assert_eq!(results.len(), 1);
+    assert!(results[0].was_skipped);
+}
+
+// ============================================
+// Failed stage results
+// ============================================
+
+#[test]
+fn test_reduce_failed_stages_dont_count_for_completion() {
+    let manager = create_session_manager();
+    manager.reduce(SessionAction::Start).unwrap();
+
+    let mut failed_result = create_dummy_stage_result();
+    failed_result.was_failed = true;
+    manager
+        .reduce(SessionAction::CompleteStage(failed_result))
+        .unwrap();
+
+    assert!(!manager.is_completed());
+    assert!(manager.is_in_progress());
+}
+
+// ============================================
+// get_current_challenge / get_next_challenge in progress
+// ============================================
+
+#[test]
+fn test_get_current_challenge_in_progress_with_challenges() {
+    use gittype::domain::models::Challenge;
+    use gittype::domain::stores::ChallengeStoreInterface;
+
+    let event_bus = Arc::new(EventBus::new()) as Arc<dyn EventBusInterface>;
+    let challenge_store = Arc::new(ChallengeStore::new_for_test());
+
+    // Populate challenge store with challenges
+    let challenges = vec![
+        Challenge::new("fn foo() {}".to_string(), "test.rs".to_string()),
+        Challenge::new("fn bar() {}".to_string(), "test.rs".to_string()),
+    ];
+    challenge_store.set_challenges(challenges);
+
+    let repository_store = Arc::new(RepositoryStore::new_for_test());
+    let session_store = Arc::new(SessionStore::new_for_test());
+    let stage_repository = Arc::new(StageRepository::new(
+        None,
+        challenge_store,
+        repository_store,
+        session_store,
+    )) as Arc<dyn StageRepositoryInterface>;
+    let session_tracker =
+        Arc::new(SessionTracker::new_for_test()) as Arc<dyn SessionTrackerInterface>;
+    let total_tracker = Arc::new(TotalTracker::new_for_test()) as Arc<dyn TotalTrackerInterface>;
+
+    let manager = SessionManager::new_with_dependencies(
+        event_bus,
+        stage_repository,
+        session_tracker,
+        total_tracker,
+    );
+    manager.reduce(SessionAction::Start).unwrap();
+
+    // Should succeed (may return Some or None depending on difficulty index)
+    let result = manager.get_current_challenge();
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_get_next_challenge_in_progress_with_challenges() {
+    use gittype::domain::models::Challenge;
+    use gittype::domain::stores::ChallengeStoreInterface;
+
+    let event_bus = Arc::new(EventBus::new()) as Arc<dyn EventBusInterface>;
+    let challenge_store = Arc::new(ChallengeStore::new_for_test());
+
+    let challenges = vec![
+        Challenge::new("fn foo() {}".to_string(), "test.rs".to_string()),
+        Challenge::new("fn bar() {}".to_string(), "test.rs".to_string()),
+    ];
+    challenge_store.set_challenges(challenges);
+
+    let repository_store = Arc::new(RepositoryStore::new_for_test());
+    let session_store = Arc::new(SessionStore::new_for_test());
+    let stage_repository = Arc::new(StageRepository::new(
+        None,
+        challenge_store,
+        repository_store,
+        session_store,
+    )) as Arc<dyn StageRepositoryInterface>;
+    let session_tracker =
+        Arc::new(SessionTracker::new_for_test()) as Arc<dyn SessionTrackerInterface>;
+    let total_tracker = Arc::new(TotalTracker::new_for_test()) as Arc<dyn TotalTrackerInterface>;
+
+    let manager = SessionManager::new_with_dependencies(
+        event_bus,
+        stage_repository,
+        session_tracker,
+        total_tracker,
+    );
+    manager.reduce(SessionAction::Start).unwrap();
+
+    let result = manager.get_next_challenge();
+    assert!(result.is_ok());
+}
