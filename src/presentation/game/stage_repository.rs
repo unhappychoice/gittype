@@ -6,7 +6,7 @@ use crate::{GitTypeError, Result};
 use once_cell::sync::Lazy;
 use rand::rngs::StdRng;
 use rand::seq::SliceRandom;
-use rand::{Rng, SeedableRng};
+use rand::{RngExt, SeedableRng};
 use ratatui::backend::Backend;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -205,7 +205,7 @@ impl StageRepository {
     fn create_rng(&self) -> StdRng {
         match self.config.seed {
             Some(seed) => StdRng::seed_from_u64(seed),
-            None => StdRng::from_os_rng(),
+            None => rand::make_rng(),
         }
     }
 

@@ -185,7 +185,7 @@ impl DatabaseSeeder {
                     .expect("Challenge not found for stage");
 
                 // Generate realistic stage result data
-                use rand::Rng;
+                use rand::RngExt;
                 let mut rng = rand::rng();
                 let keystrokes = rng.random_range(20..200);
                 let mistakes = rng.random_range(0..10);
