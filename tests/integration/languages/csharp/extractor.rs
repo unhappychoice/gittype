@@ -588,9 +588,52 @@ namespace ModernCSharp
     chunk_counts: {
         Conditional: 3,
         Class: 7,
-        Method: 4,
+         Method: 4,
         Namespace: 1,
         File: 1,
         CodeBlock: 13,
+    }
+}
+
+test_language_extractor! {
+    name: test_csharp_events_delegates_lambdas,
+    language: "csharp",
+    extension: "cs",
+    source: r#"
+using System;
+
+namespace EventSystem
+{
+    public delegate void NotifyHandler(string message);
+    public delegate int MathOperation(int a, int b);
+
+    public class EventPublisher
+    {
+        public event EventHandler<string> OnDataReceived;
+        public event NotifyHandler OnNotify;
+
+        public void ProcessData(string data)
+        {
+            OnDataReceived?.Invoke(this, data);
+            OnNotify?.Invoke(data);
+        }
+
+        public void RunWithLambda()
+        {
+            Func<int, int, int> add = (a, b) => a + b;
+            Action<string> print = msg => Console.WriteLine(msg);
+            var result = add(3, 4);
+            print($"Result: {result}");
+        }
+    }
+}
+"#,
+    total_chunks: 13,
+    chunk_counts: {
+        Namespace: 1,
+        Method: 4,
+        Class: 1,
+        CodeBlock: 6,
+        File: 1,
     }
 }

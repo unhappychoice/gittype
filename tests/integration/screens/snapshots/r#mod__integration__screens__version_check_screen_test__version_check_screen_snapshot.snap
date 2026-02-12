@@ -1,0 +1,44 @@
+---
+source: tests/integration/screens/version_check_screen_test.rs
+expression: output
+---
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+      🎮  GitType Update Available                                                                                       
+                                                                                                                        
+      Current version: v                                                                                                
+                                                                                                                        
+      Latest version:  v                                                                                                
+                                                                                                                        
+                                                                                                                        
+      To update, run:                                                                                                   
+                                                                                                                        
+      curl -sSL https://raw.githubusercontent.com/unhappychoice/gittype/main/install.sh | bash                          
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+      [SPACE] Continue  [ESC] Exit
