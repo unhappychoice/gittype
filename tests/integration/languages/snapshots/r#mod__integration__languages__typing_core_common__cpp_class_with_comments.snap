@@ -18,10 +18,10 @@ public:
 # text_to_type
 class Calculator {
 private:
-int result; // Store result
+int result;
 public:
-Calculator() : result(0) {} // Initialize
-void add(int value) { // Add method
+Calculator() : result(0) {}
+void add(int value) {
 result += value;
 }
 };
@@ -29,12 +29,12 @@ result += value;
 # text_to_display
 class Calculator {↵
 private:↵
-    int result; // Store result↵
+    int result;↵ // Store result
     
 public:↵
-    Calculator() : result(0) {} // Initialize↵
+    Calculator() : result(0) {}↵ // Initialize
     
-    void add(int value) { // Add method↵
+    void add(int value) {↵ // Add method
         result += value;↵
     }↵
 };↵

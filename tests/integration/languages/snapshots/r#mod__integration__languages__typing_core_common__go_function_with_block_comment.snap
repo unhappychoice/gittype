@@ -14,8 +14,6 @@ func factorial(n int) int {
 
 # text_to_type
 func factorial(n int) int {
-/* Calculate factorial
-using recursion */
 if n <= 1 {
 return 1
 }
@@ -24,8 +22,8 @@ return n * factorial(n-1)
 
 # text_to_display
 func factorial(n int) int {↵
-    /* Calculate factorial↵
-       using recursion */↵
+    /* Calculate factorial
+       using recursion */
     if n <= 1 {↵
         return 1↵
     }↵

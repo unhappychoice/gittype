@@ -16,8 +16,6 @@ function factorial($n) {
 # text_to_type
 <?php
 function factorial($n) {
-/* Calculate factorial
-using recursion */
 if ($n <= 1) {
 return 1;
 }
@@ -27,8 +25,8 @@ return $n * factorial($n - 1);
 # text_to_display
 <?php↵
 function factorial($n) {↵
-    /* Calculate factorial↵
-       using recursion */↵
+    /* Calculate factorial
+       using recursion */
     if ($n <= 1) {↵
         return 1;↵
     }↵

@@ -13,17 +13,15 @@ sealed class Result<out T, out E> {
 
 # text_to_type
 sealed class Result<out T, out E> {
-/* Success case with value */
 data class Success<T>(val value: T) : Result<T, Nothing>()
-/* Failure case with error */
 data class Failure<E>(val error: E) : Result<Nothing, E>()
 }
 
 # text_to_display
 sealed class Result<out T, out E> {↵
-    /* Success case with value */↵
+    /* Success case with value */
     data class Success<T>(val value: T) : Result<T, Nothing>()↵
     
-    /* Failure case with error */↵
+    /* Failure case with error */
     data class Failure<E>(val error: E) : Result<Nothing, E>()↵
 }↵

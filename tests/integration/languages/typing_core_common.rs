@@ -1,6 +1,6 @@
 use gittype::domain::models::typing::ProcessingOptions;
 use gittype::domain::services::source_code_parser::parsers::parse_with_thread_local;
-use gittype::domain::services::source_code_parser::CommentProcessor;
+use gittype::domain::services::source_code_parser::{CacheBuilder, CommentProcessor};
 use gittype::domain::services::typing_core::TypingCore;
 use insta::assert_snapshot;
 use std::fmt;
@@ -109,8 +109,14 @@ pub fn find_comment_ranges_with_parser(code: &str, language: &str) -> Vec<(usize
     if let Some(tree) = parse_with_thread_local(language, code) {
         let language_obj = gittype::domain::models::Languages::get_by_name(language)
             .unwrap_or_else(|| Box::new(gittype::domain::models::languages::Rust));
-        CommentProcessor::extract_comment_ranges(&tree, code, language_obj.as_ref(), &[])
-            .unwrap_or_default()
+        let byte_to_char_cache = CacheBuilder::build_byte_to_char_cache(code);
+        CommentProcessor::extract_comment_ranges(
+            &tree,
+            code,
+            language_obj.as_ref(),
+            &byte_to_char_cache,
+        )
+        .unwrap_or_default()
     } else {
         Vec::new()
     }

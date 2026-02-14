@@ -14,8 +14,6 @@ int factorial(int n) {
 
 # text_to_type
 int factorial(int n) {
-/* Calculate factorial
-using recursion */
 if (n <= 1) {
 return 1;
 }
@@ -24,8 +22,8 @@ return n * factorial(n - 1);
 
 # text_to_display
 int factorial(int n) {↵
-    /* Calculate factorial↵
-       using recursion */↵
+    /* Calculate factorial
+       using recursion */
     if (n <= 1) {↵
         return 1;↵
     }↵

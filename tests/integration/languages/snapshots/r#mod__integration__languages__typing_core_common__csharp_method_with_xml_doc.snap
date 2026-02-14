@@ -15,24 +15,18 @@ public int Add(int a, int b)
 }
 
 # text_to_type
-/// <summary>
-/// Adds two integers.
-/// </summary>
-/// <param name="a">The first integer.</param>
-/// <param name="b">The second integer.</param>
-/// <returns>The sum of the two integers.</returns>
 public int Add(int a, int b)
 {
 return a + b;
 }
 
 # text_to_display
-/// <summary>↵
-/// Adds two integers.↵
-/// </summary>↵
-/// <param name="a">The first integer.</param>↵
-/// <param name="b">The second integer.</param>↵
-/// <returns>The sum of the two integers.</returns>↵
+/// <summary>
+/// Adds two integers.
+/// </summary>
+/// <param name="a">The first integer.</param>
+/// <param name="b">The second integer.</param>
+/// <returns>The sum of the two integers.</returns>
 public int Add(int a, int b)↵
 {↵
     return a + b;↵

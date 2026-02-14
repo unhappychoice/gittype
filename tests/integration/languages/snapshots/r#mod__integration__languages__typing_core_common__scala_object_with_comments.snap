@@ -16,23 +16,20 @@ object Calculator {
 
 # text_to_type
 object Calculator {
-// Add two integers
 def add(a: Int, b: Int): Int = {
-a + b // Simple addition
+a + b
 }
-/* Multiply two integers
-Returns the product */
 def multiply(x: Int, y: Int): Int = x * y
 }
 
 # text_to_display
 object Calculator {↵
-    // Add two integers↵
+    // Add two integers
     def add(a: Int, b: Int): Int = {↵
-        a + b // Simple addition↵
+        a + b↵ // Simple addition
     }↵
     
-    /* Multiply two integers↵
-       Returns the product */↵
+    /* Multiply two integers
+       Returns the product */
     def multiply(x: Int, y: Int): Int = x * y↵
 }↵

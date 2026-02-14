@@ -14,17 +14,17 @@ $config = [
 # text_to_type
 <?php
 $config = [
-'host' => 'localhost', // Database host
-'port' => 3306,        // Database port
-'name' => 'myapp',     // Database name
-'user' => 'root'       # Database user
+'host' => 'localhost',
+'port' => 3306,
+'name' => 'myapp',
+'user' => 'root'
 ];
 
 # text_to_display
 <?php↵
 $config = [↵
-    'host' => 'localhost', // Database host↵
-    'port' => 3306,        // Database port↵
-    'name' => 'myapp',     // Database name↵
-    'user' => 'root'       # Database user↵
+    'host' => 'localhost',↵ // Database host
+    'port' => 3306,↵        // Database port
+    'name' => 'myapp',↵     // Database name
+    'user' => 'root'↵       # Database user
 ];↵
