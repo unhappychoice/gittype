@@ -118,14 +118,15 @@ impl StageRepository {
 
     /// Build stages based on configuration
     pub fn build_stages(&self) -> Vec<Challenge> {
+        // Clone config upfront to avoid holding the lock across nested calls
+        let config = self.config.lock().unwrap().clone();
         self.with_challenges(|available_challenges| {
             if available_challenges.is_empty() {
                 return vec![];
             }
 
-            let config = self.config.lock().unwrap();
             match &config.game_mode {
-                GameMode::Normal => self.build_normal_stages(available_challenges),
+                GameMode::Normal => self.build_normal_stages(available_challenges, &config),
                 GameMode::TimeAttack => self.build_time_attack_stages(available_challenges),
                 GameMode::Custom {
                     max_stages,
@@ -135,18 +136,23 @@ impl StageRepository {
                     available_challenges,
                     max_stages.unwrap_or(config.max_stages),
                     difficulty,
+                    &config,
                 ),
             }
         })
         .unwrap_or_default()
     }
 
-    fn build_normal_stages(&self, available_challenges: &[Challenge]) -> Vec<Challenge> {
+    fn build_normal_stages(
+        &self,
+        available_challenges: &[Challenge],
+        config: &StageConfig,
+    ) -> Vec<Challenge> {
         let mut challenges = available_challenges.to_vec();
-        let target_count = self.config.lock().unwrap().max_stages.min(challenges.len());
+        let target_count = config.max_stages.min(challenges.len());
 
         // Random selection
-        let mut rng = self.create_rng();
+        let mut rng = Self::create_rng_from_config(config);
         challenges.shuffle(&mut rng);
 
         // Prefer moderate length challenges (not too short, not too long)
@@ -179,6 +185,7 @@ impl StageRepository {
         available_challenges: &[Challenge],
         max_stages: usize,
         difficulty: &DifficultyLevel,
+        config: &StageConfig,
     ) -> Vec<Challenge> {
         // Filter challenges by difficulty level
         let filtered_challenges: Vec<Challenge> = available_challenges
@@ -195,18 +202,23 @@ impl StageRepository {
         let target_count = max_stages.min(filtered_challenges.len());
 
         // Random selection from filtered challenges
-        let mut rng = self.create_rng();
+        let mut rng = Self::create_rng_from_config(config);
         let mut selected_challenges = filtered_challenges;
         selected_challenges.shuffle(&mut rng);
 
         selected_challenges.into_iter().take(target_count).collect()
     }
 
-    fn create_rng(&self) -> StdRng {
-        match self.config.lock().unwrap().seed {
+    fn create_rng_from_config(config: &StageConfig) -> StdRng {
+        match config.seed {
             Some(seed) => StdRng::seed_from_u64(seed),
             None => rand::make_rng(),
         }
+    }
+
+    fn create_rng(&self) -> StdRng {
+        let config = self.config.lock().unwrap();
+        Self::create_rng_from_config(&config)
     }
 
     pub fn get_mode_description(&self) -> String {

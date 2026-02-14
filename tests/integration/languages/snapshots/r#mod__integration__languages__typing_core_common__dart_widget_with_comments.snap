@@ -23,16 +23,16 @@ class MyWidget extends StatelessWidget {
 
 # text_to_type
 class MyWidget extends StatelessWidget {
-final String title; // Widget title
+final String title;
 const MyWidget({Key? key, required this.title}) : super(key: key);
 @override
 Widget build(BuildContext context) {
 return Scaffold(
 appBar: AppBar(
-title: Text(title), // Set app bar title
+title: Text(title),
 ),
 body: Center(
-child: Text('Hello, World!'), // Main content
+child: Text('Hello, World!'),
 ),
 );
 }
@@ -40,7 +40,7 @@ child: Text('Hello, World!'), // Main content
 
 # text_to_display
 class MyWidget extends StatelessWidget {↵
-  final String title; // Widget title↵
+  final String title;↵ // Widget title
   
   const MyWidget({Key? key, required this.title}) : super(key: key);↵
   
@@ -48,10 +48,10 @@ class MyWidget extends StatelessWidget {↵
   Widget build(BuildContext context) {↵
     return Scaffold(↵
       appBar: AppBar(↵
-        title: Text(title), // Set app bar title↵
+        title: Text(title),↵ // Set app bar title
       ),↵
       body: Center(↵
-        child: Text('Hello, World!'), // Main content↵
+        child: Text('Hello, World!'),↵ // Main content
       ),↵
     );↵
   }↵

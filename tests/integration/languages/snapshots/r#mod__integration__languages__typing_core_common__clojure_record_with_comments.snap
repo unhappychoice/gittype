@@ -1,6 +1,5 @@
 ---
 source: tests/integration/languages/typing_core_common.rs
-assertion_line: 103
 expression: snapshot
 ---
 # text_original
@@ -13,16 +12,14 @@ expression: snapshot
 
 # text_to_type
 (defrecord User [name email]
-; User record with profile
 Object
 (toString [_]
-; String representation
 (str name " <" email ">")))
 
 # text_to_display
 (defrecord User [name email]↵
-  ; User record with profile↵
+  ; User record with profile
   Object↵
   (toString [_]↵
-    ; String representation↵
+    ; String representation
     (str name " <" email ">")))↵

@@ -1,0 +1,29 @@
+---
+source: tests/integration/screens/info_dialog_test.rs
+expression: output
+---
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                   ┌──────────────Information & Links───────────────┐                                   
+                                   │                                                │                                   
+                                   │   GitHub Repository                            │                                   
+                                   │ > X #gittype                                   │                                   
+                                   │   Close                                        │                                   
+                                   │                                                │                                   
+                                   │   [↑↓/JK] Navigate [SPACE] Select [ESC] Close  │                                   
+                                   │                                                │                                   
+                                   │                                                │                                   
+                                   └────────────────────────────────────────────────┘

@@ -25,41 +25,41 @@ void print_color(enum color c) {
 
 # text_to_type
 enum color {
-RED,   // Red color
-GREEN, // Green color
-BLUE   // Blue color
+RED,
+GREEN,
+BLUE
 };
 void print_color(enum color c) {
 switch (c) {
 case RED:
-printf("Red\n");   // Print red
+printf("Red\n");
 break;
 case GREEN:
-printf("Green\n"); // Print green
+printf("Green\n");
 break;
 case BLUE:
-printf("Blue\n");  // Print blue
+printf("Blue\n");
 break;
 }
 }
 
 # text_to_display
 enum color {↵
-    RED,   // Red color↵
-    GREEN, // Green color↵
-    BLUE   // Blue color↵
+    RED,↵   // Red color
+    GREEN,↵ // Green color
+    BLUE↵   // Blue color
 };↵
 
 void print_color(enum color c) {↵
     switch (c) {↵
         case RED:↵
-            printf("Red\n");   // Print red↵
+            printf("Red\n");↵   // Print red
             break;↵
         case GREEN:↵
-            printf("Green\n"); // Print green↵
+            printf("Green\n");↵ // Print green
             break;↵
         case BLUE:↵
-            printf("Blue\n");  // Print blue↵
+            printf("Blue\n");↵  // Print blue
             break;↵
     }↵
 }↵

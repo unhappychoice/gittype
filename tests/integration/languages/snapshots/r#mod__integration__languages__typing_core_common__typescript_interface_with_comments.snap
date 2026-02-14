@@ -20,12 +20,11 @@ function createUser(data: Partial<User>): User {
 
 # text_to_type
 interface User {
-id: number; // Unique identifier
-name: string; // User's name
-email?: string; // Optional email
+id: number;
+name: string;
+email?: string;
 }
 function createUser(data: Partial<User>): User {
-// Create user with default values
 return {
 id: Math.random(),
 name: data.name || "Unknown",
@@ -35,13 +34,13 @@ name: data.name || "Unknown",
 
 # text_to_display
 interface User {↵
-    id: number; // Unique identifier↵
-    name: string; // User's name↵
-    email?: string; // Optional email↵
+    id: number;↵ // Unique identifier
+    name: string;↵ // User's name
+    email?: string;↵ // Optional email
 }↵
 
 function createUser(data: Partial<User>): User {↵
-    // Create user with default values↵
+    // Create user with default values
     return {↵
         id: Math.random(),↵
         name: data.name || "Unknown",↵

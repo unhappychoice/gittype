@@ -24,14 +24,14 @@
       packages = forAllSystems ({ pkgs }: {
         default = pkgs.rustPlatform.buildRustPackage rec {
           pname = "gittype";
-          version = "0.8.0";
+          version = "0.9.0";
           src = pkgs.fetchFromGitHub {
             owner = "unhappychoice";
             repo = "gittype";
             rev = "v${version}";
-            hash = "sha256-Yvbtnf+rBLsLIKfzhZR9L7t2SbX5I8Jk9st3FUvD5Wo=";
+            hash = "sha256-8/n4LfbWFNRuQgcbt5d2I2WbmR6AUAEoC2TJs+0P0ss=";
           };
-          cargoHash = "sha256-70lLK+I98iCssfsQovixPCvffaeaHuj43ALBJI6vnw0=";
+          cargoHash = "sha256-aBDifuLaE3Lzwffk2yILdHHRoV/f2yuIkIkitogPD8M=";
           nativeBuildInputs = [ pkgs.perl pkgs.pkg-config pkgs.git ];
           buildInputs = [ pkgs.openssl ];
           doCheck = false;

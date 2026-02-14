@@ -17,24 +17,24 @@ public class Container<T> {
 
 # text_to_type
 public class Container<T> {
-private T item; // The contained item
+private T item;
 public void setItem(T item) {
-this.item = item; // Store the item
+this.item = item;
 }
 public T getItem() {
-return item; // Return the item
+return item;
 }
 }
 
 # text_to_display
 public class Container<T> {↵
-    private T item; // The contained item↵
+    private T item;↵ // The contained item
     
     public void setItem(T item) {↵
-        this.item = item; // Store the item↵
+        this.item = item;↵ // Store the item
     }↵
     
     public T getItem() {↵
-        return item; // Return the item↵
+        return item;↵ // Return the item
     }↵
 }↵

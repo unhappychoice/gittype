@@ -9,10 +9,10 @@ fun add(a: Int, b: Int): Int {
 
 # text_to_type
 fun add(a: Int, b: Int): Int {
-return a + b // Return sum
+return a + b
 }
 
 # text_to_display
 fun add(a: Int, b: Int): Int {↵
-    return a + b // Return sum↵
+    return a + b↵ // Return sum
 }↵

@@ -14,11 +14,11 @@ def factorial(n):
 """Calculate factorial of n"""
 if n <= 1:
 return 1
-return n * factorial(n - 1)  # Recursive call
+return n * factorial(n - 1)
 
 # text_to_display
 def factorial(n):↵
     """Calculate factorial of n"""↵
     if n <= 1:↵
         return 1↵
-    return n * factorial(n - 1)  # Recursive call↵
+    return n * factorial(n - 1)↵  # Recursive call

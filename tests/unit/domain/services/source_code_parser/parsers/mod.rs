@@ -8,6 +8,7 @@ mod haskell_tests;
 mod java_tests;
 mod javascript_tests;
 mod kotlin_tests;
+mod parser_registry_tests;
 mod php_tests;
 mod python_tests;
 mod ruby_tests;

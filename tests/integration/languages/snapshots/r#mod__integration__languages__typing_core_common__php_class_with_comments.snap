@@ -20,27 +20,27 @@ class Calculator {
 # text_to_type
 <?php
 class Calculator {
-private $result = 0; // Store result
-public function add($value) { // Add method
+private $result = 0;
+public function add($value) {
 $this->result += $value;
 return $this;
 }
 public function getResult() {
-return $this->result; # Return current result
+return $this->result;
 }
 }
 
 # text_to_display
 <?php↵
 class Calculator {↵
-    private $result = 0; // Store result↵
+    private $result = 0;↵ // Store result
     
-    public function add($value) { // Add method↵
+    public function add($value) {↵ // Add method
         $this->result += $value;↵
         return $this;↵
     }↵
     
     public function getResult() {↵
-        return $this->result; # Return current result↵
+        return $this->result;↵ # Return current result
     }↵
 }↵

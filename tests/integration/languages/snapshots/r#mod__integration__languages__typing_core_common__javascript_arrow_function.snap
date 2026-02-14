@@ -10,12 +10,11 @@ const multiply = (a, b) => {
 
 # text_to_type
 const multiply = (a, b) => {
-// Simple multiplication
 return a * b;
 };
 
 # text_to_display
 const multiply = (a, b) => {↵
-    // Simple multiplication↵
+    // Simple multiplication
     return a * b;↵
 };↵

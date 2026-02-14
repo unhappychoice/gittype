@@ -9,10 +9,10 @@ func add(_ a: Int, _ b: Int) -> Int {
 
 # text_to_type
 func add(_ a: Int, _ b: Int) -> Int {
-return a + b // Return sum
+return a + b
 }
 
 # text_to_display
 func add(_ a: Int, _ b: Int) -> Int {↵
-    return a + b // Return sum↵
+    return a + b↵ // Return sum
 }↵

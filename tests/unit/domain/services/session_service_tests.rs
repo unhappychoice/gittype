@@ -3,7 +3,9 @@ use gittype::domain::repositories::session_repository::{
     SessionRepository, SessionRepositoryTrait,
 };
 use gittype::domain::services::scoring::{StageInput, StageTracker};
-use gittype::domain::services::session_service::SessionService;
+use gittype::domain::services::session_service::{
+    SessionDisplayData, SessionService, SessionServiceInterface,
+};
 
 #[test]
 fn test_session_service_new() {
@@ -321,4 +323,86 @@ fn test_session_display_data_has_session_result() {
         assert!(result.cpm > 0.0);
         assert!(result.accuracy > 0.0);
     }
+}
+
+// ============================================
+// SessionDisplayData::default
+// ============================================
+
+#[test]
+fn test_session_display_data_default() {
+    let data = SessionDisplayData::default();
+    assert_eq!(data.session.id, 0);
+    assert!(data.repository.is_none());
+    assert!(data.session_result.is_none());
+    assert_eq!(data.session.game_mode, "default");
+    assert!(!data.session.is_dirty);
+}
+
+// ============================================
+// Ascending sort
+// ============================================
+
+#[test]
+fn test_get_sessions_with_display_data_sort_ascending() {
+    let repository = SessionRepository::new().unwrap();
+
+    let mut session_result = SessionResult::new();
+    session_result.session_score = 100.0;
+
+    let git_repo = GitRepository {
+        user_name: "ascuser".to_string(),
+        repository_name: "ascrepo".to_string(),
+        remote_url: "https://github.com/ascuser/ascrepo".to_string(),
+        branch: Some("main".to_string()),
+        commit_hash: Some("asc123".to_string()),
+        is_dirty: false,
+        root_path: None,
+    };
+
+    let challenge = Challenge::new("asc-test".to_string(), "asc code".to_string());
+    let mut tracker = StageTracker::new("asc code".to_string());
+    tracker.record(StageInput::Start);
+    tracker.record(StageInput::Finish);
+
+    repository
+        .record_session(
+            &session_result,
+            Some(&git_repo),
+            "normal",
+            None,
+            &[("stage1".to_string(), tracker)],
+            &[challenge],
+        )
+        .unwrap();
+
+    let service = SessionService::new(repository);
+    // sort_descending = false
+    let result = service.get_sessions_with_display_data(None, None, "date", false);
+    assert!(result.is_ok());
+}
+
+// ============================================
+// Trait interface
+// ============================================
+
+#[test]
+fn test_session_service_trait_get_sessions() {
+    let repository = SessionRepository::new().unwrap();
+    let service = SessionService::new(repository);
+
+    // Call through trait interface
+    let trait_ref: &dyn SessionServiceInterface = &service;
+    let result = trait_ref.get_sessions_with_display_data(None, None, "date", true);
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_session_service_trait_get_all_repositories() {
+    let repository = SessionRepository::new().unwrap();
+    let service = SessionService::new(repository);
+
+    let trait_ref: &dyn SessionServiceInterface = &service;
+    let result = trait_ref.get_all_repositories();
+    assert!(result.is_ok());
 }

@@ -11,14 +11,12 @@ function identity<T>(arg: T): T {
 
 # text_to_type
 function identity<T>(arg: T): T {
-/* Generic identity function
-returns the same type as input */
 return arg;
 }
 
 # text_to_display
 function identity<T>(arg: T): T {↵
-    /* Generic identity function↵
-       returns the same type as input */↵
+    /* Generic identity function
+       returns the same type as input */
     return arg;↵
 }↵

@@ -18,27 +18,26 @@ fun List<Int>.sum(): Int {
 
 # text_to_type
 fun String.isEmail(): Boolean {
-// Simple email validation
 return this.contains("@") && this.contains(".")
 }
 fun List<Int>.sum(): Int {
 var total = 0
 for (item in this) {
-total += item // Add each item
+total += item
 }
-return total // Return sum
+return total
 }
 
 # text_to_display
 fun String.isEmail(): Boolean {↵
-    // Simple email validation↵
+    // Simple email validation
     return this.contains("@") && this.contains(".")↵
 }↵
 
 fun List<Int>.sum(): Int {↵
     var total = 0↵
     for (item in this) {↵
-        total += item // Add each item↵
+        total += item↵ // Add each item
     }↵
-    return total // Return sum↵
+    return total↵ // Return sum
 }↵
