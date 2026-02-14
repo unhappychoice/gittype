@@ -1,6 +1,6 @@
 use crate::domain::models::languages::{
-    CSharp, Clojure, Cpp, Dart, Elixir, Go, Haskell, Java, JavaScript, Kotlin, Php, Python, Ruby,
-    Rust, Scala, Swift, TypeScript, Zig, C,
+    CSharp, Clojure, Cpp, Dart, Elixir, Erlang, Go, Haskell, Java, JavaScript, Kotlin, Php, Python,
+    Ruby, Rust, Scala, Swift, TypeScript, Zig, C,
 };
 use crate::domain::models::ChunkType;
 use crate::domain::models::Language;
@@ -16,6 +16,7 @@ pub mod cpp;
 pub mod csharp;
 pub mod dart;
 pub mod elixir;
+pub mod erlang;
 pub mod go;
 pub mod haskell;
 pub mod java;
@@ -75,6 +76,7 @@ impl ParserRegistry {
         register_language!(CSharp, csharp, CSharpExtractor);
         register_language!(Dart, dart, DartExtractor);
         register_language!(Elixir, elixir, ElixirExtractor);
+        register_language!(Erlang, erlang, ErlangExtractor);
         register_language!(Go, go, GoExtractor);
         register_language!(Haskell, haskell, HaskellExtractor);
         register_language!(Java, java, JavaExtractor);

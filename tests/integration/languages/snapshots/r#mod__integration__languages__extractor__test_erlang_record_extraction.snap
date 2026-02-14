@@ -1,0 +1,61 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\n-module(user).\n-export([new/2]).\n\n-record(user, {name, email, age = 0}).\n\nnew(Name, Email) ->\n    #user{name = Name, email = Email}.\n",
+      "end_line": 8,
+      "language": "erlang",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "-module(user).",
+      "end_line": 2,
+      "language": "erlang",
+      "name": "user",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "-export([new/2]).",
+      "end_line": 3,
+      "language": "erlang",
+      "name": "-export([new/2]).",
+      "original_indentation": 0,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "-record(user, {name, email, age = 0}).",
+      "end_line": 5,
+      "language": "erlang",
+      "name": "user",
+      "original_indentation": 0,
+      "start_line": 5
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "new(Name, Email) ->\n    #user{name = Name, email = Email}.",
+      "end_line": 8,
+      "language": "erlang",
+      "name": "new",
+      "original_indentation": 0,
+      "start_line": 7
+    }
+  ],
+  "source_code": "\n-module(user).\n-export([new/2]).\n\n-record(user, {name, email, age = 0}).\n\nnew(Name, Email) ->\n    #user{name = Name, email = Email}.\n",
+  "test_name": "test_erlang_record_extraction",
+  "total_chunks": 5
+}

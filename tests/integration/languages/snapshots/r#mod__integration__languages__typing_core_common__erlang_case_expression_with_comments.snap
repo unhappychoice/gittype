@@ -1,0 +1,29 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+process(Value) ->
+    % Handle different input types
+    case Value of
+        {ok, Result} -> Result;
+        {error, Reason} -> throw(Reason);
+        _ -> undefined
+    end.
+
+# text_to_type
+process(Value) ->
+case Value of
+{ok, Result} -> Result;
+{error, Reason} -> throw(Reason);
+_ -> undefined
+end.
+
+# text_to_display
+process(Value) ->↵
+    % Handle different input types
+    case Value of↵
+        {ok, Result} -> Result;↵
+        {error, Reason} -> throw(Reason);↵
+        _ -> undefined↵
+    end.↵

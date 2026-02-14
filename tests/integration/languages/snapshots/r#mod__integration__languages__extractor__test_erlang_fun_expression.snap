@@ -1,0 +1,51 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\n-module(processor).\n-export([transform/1]).\n\ntransform(List) ->\n    lists:map(fun(X) -> X * 2 end, List).\n",
+      "end_line": 6,
+      "language": "erlang",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "-module(processor).",
+      "end_line": 2,
+      "language": "erlang",
+      "name": "processor",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "-export([transform/1]).",
+      "end_line": 3,
+      "language": "erlang",
+      "name": "-export([transform/1]).",
+      "original_indentation": 0,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "transform(List) ->\n    lists:map(fun(X) -> X * 2 end, List).",
+      "end_line": 6,
+      "language": "erlang",
+      "name": "transform",
+      "original_indentation": 0,
+      "start_line": 5
+    }
+  ],
+  "source_code": "\n-module(processor).\n-export([transform/1]).\n\ntransform(List) ->\n    lists:map(fun(X) -> X * 2 end, List).\n",
+  "test_name": "test_erlang_fun_expression",
+  "total_chunks": 4
+}

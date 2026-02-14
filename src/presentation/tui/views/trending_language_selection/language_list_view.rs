@@ -13,6 +13,7 @@ const SUPPORTED_LANGUAGES: &[(&str, &str)] = &[
     ("C++", "C++"),
     ("Dart", "Dart"),
     ("Elixir", "Elixir"),
+    ("Erlang", "Erlang"),
     ("Go", "Go"),
     ("Haskell", "Haskell"),
     ("Java", "Java"),

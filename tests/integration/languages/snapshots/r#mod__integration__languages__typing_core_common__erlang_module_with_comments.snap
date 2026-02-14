@@ -1,0 +1,25 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+-module(greeter).
+-export([hello/1]).
+
+% Public greeting function
+hello(Name) ->
+    io:format("Hello, ~s!~n", [Name]).
+
+# text_to_type
+-module(greeter).
+-export([hello/1]).
+hello(Name) ->
+io:format("Hello, ~s!~n", [Name]).
+
+# text_to_display
+-module(greeter).↵
+-export([hello/1]).↵
+
+% Public greeting function
+hello(Name) ->↵
+    io:format("Hello, ~s!~n", [Name]).↵

@@ -1,0 +1,121 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\n-module(counter).\n-behaviour(gen_server).\n-export([start_link/0, increment/0, get_count/0]).\n-export([init/1, handle_call/3, handle_cast/2]).\n\nstart_link() ->\n    gen_server:start_link({local, ?MODULE}, ?MODULE, 0, []).\n\nincrement() ->\n    gen_server:cast(?MODULE, increment).\n\nget_count() ->\n    gen_server:call(?MODULE, get_count).\n\ninit(InitialCount) ->\n    {ok, InitialCount}.\n\nhandle_call(get_count, _From, Count) ->\n    {reply, Count, Count}.\n\nhandle_cast(increment, Count) ->\n    {noreply, Count + 1}.\n",
+      "end_line": 23,
+      "language": "erlang",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "-module(counter).",
+      "end_line": 2,
+      "language": "erlang",
+      "name": "counter",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Interface",
+      "comment_ranges": [],
+      "content": "-behaviour(gen_server).",
+      "end_line": 3,
+      "language": "erlang",
+      "name": "gen_server",
+      "original_indentation": 0,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "-export([start_link/0, increment/0, get_count/0]).",
+      "end_line": 4,
+      "language": "erlang",
+      "name": "-export([start_link/0, increment/0, get_count/0]).",
+      "original_indentation": 0,
+      "start_line": 4
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "-export([init/1, handle_call/3, handle_cast/2]).",
+      "end_line": 5,
+      "language": "erlang",
+      "name": "-export([init/1, handle_call/3, handle_cast/2]).",
+      "original_indentation": 0,
+      "start_line": 5
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "start_link() ->\n    gen_server:start_link({local, ?MODULE}, ?MODULE, 0, []).",
+      "end_line": 8,
+      "language": "erlang",
+      "name": "start_link",
+      "original_indentation": 0,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "increment() ->\n    gen_server:cast(?MODULE, increment).",
+      "end_line": 11,
+      "language": "erlang",
+      "name": "increment",
+      "original_indentation": 0,
+      "start_line": 10
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "get_count() ->\n    gen_server:call(?MODULE, get_count).",
+      "end_line": 14,
+      "language": "erlang",
+      "name": "get_count",
+      "original_indentation": 0,
+      "start_line": 13
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "init(InitialCount) ->\n    {ok, InitialCount}.",
+      "end_line": 17,
+      "language": "erlang",
+      "name": "init",
+      "original_indentation": 0,
+      "start_line": 16
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "handle_call(get_count, _From, Count) ->\n    {reply, Count, Count}.",
+      "end_line": 20,
+      "language": "erlang",
+      "name": "handle_call",
+      "original_indentation": 0,
+      "start_line": 19
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "handle_cast(increment, Count) ->\n    {noreply, Count + 1}.",
+      "end_line": 23,
+      "language": "erlang",
+      "name": "handle_cast",
+      "original_indentation": 0,
+      "start_line": 22
+    }
+  ],
+  "source_code": "\n-module(counter).\n-behaviour(gen_server).\n-export([start_link/0, increment/0, get_count/0]).\n-export([init/1, handle_call/3, handle_cast/2]).\n\nstart_link() ->\n    gen_server:start_link({local, ?MODULE}, ?MODULE, 0, []).\n\nincrement() ->\n    gen_server:cast(?MODULE, increment).\n\nget_count() ->\n    gen_server:call(?MODULE, get_count).\n\ninit(InitialCount) ->\n    {ok, InitialCount}.\n\nhandle_call(get_count, _From, Count) ->\n    {reply, Count, Count}.\n\nhandle_cast(increment, Count) ->\n    {noreply, Count + 1}.\n",
+  "test_name": "test_erlang_gen_server_full",
+  "total_chunks": 11
+}

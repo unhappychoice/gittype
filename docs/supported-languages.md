@@ -10,6 +10,7 @@
 | Clojure | `.clj`, `.cljs`, `.cljc` | - | `tree_sitter_clojure` |
 | Dart | `.dart` | - | `tree_sitter_dart` |
 | Elixir | `.ex`, `.exs` | `ex`, `exs` | `tree_sitter_elixir` |
+| Erlang | `.erl`, `.hrl` | `erl` | `tree_sitter_erlang` |
 | Go | `.go` | - | `tree_sitter_go` |
 | Haskell | `.hs`, `.lhs` | `hs` | `tree_sitter_haskell` |
 | Java | `.java` | - | `tree_sitter_java` |
@@ -78,6 +79,15 @@
 - **Implementations** (`defimpl`) - Protocol implementation blocks
 - **Structs** (`defstruct`) - Struct definitions
 - **Guards** (`defguard`, `defguardp`) - Guard definitions
+
+### Erlang
+- **Functions** (`function_clause`) - Function clause definitions
+- **Module Attributes** (`-module`) - Module declarations
+- **Export Attributes** (`-export`) - Export declarations
+- **Records** (`-record`) - Record definitions
+- **Type Definitions** (`-type`) - Type specifications
+- **Specs** (`-spec`) - Function specifications
+- **Behaviours** (`-behaviour`) - Behaviour declarations
 
 ### Go
 - **Functions** (`function_declaration`) - Function definitions
@@ -198,7 +208,7 @@ gittype --langs rust,typescript,javascript,python
 
 ```toml
 [default]
-langs = ["rust", "typescript", "javascript", "python", "go", "ruby", "swift", "kotlin", "java", "php", "csharp", "c", "cpp", "haskell", "dart", "scala", "zig", "elixir"]
+langs = ["rust", "typescript", "javascript", "python", "go", "ruby", "swift", "kotlin", "java", "php", "csharp", "c", "cpp", "haskell", "dart", "scala", "zig", "elixir", "erlang"]
 ```
 
 ## Code Extraction Quality

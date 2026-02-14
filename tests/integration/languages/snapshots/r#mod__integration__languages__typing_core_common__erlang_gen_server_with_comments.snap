@@ -1,0 +1,45 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+-module(counter).
+-behaviour(gen_server).
+
+% Client API
+start_link() ->
+    gen_server:start_link({local, ?MODULE}, ?MODULE, 0, []).
+
+% Server callbacks
+init(Count) ->
+    {ok, Count}.
+
+handle_call(get, _From, Count) ->
+    % Return current count
+    {reply, Count, Count}.
+
+# text_to_type
+-module(counter).
+-behaviour(gen_server).
+start_link() ->
+gen_server:start_link({local, ?MODULE}, ?MODULE, 0, []).
+init(Count) ->
+{ok, Count}.
+handle_call(get, _From, Count) ->
+{reply, Count, Count}.
+
+# text_to_display
+-module(counter).↵
+-behaviour(gen_server).↵
+
+% Client API
+start_link() ->↵
+    gen_server:start_link({local, ?MODULE}, ?MODULE, 0, []).↵
+
+% Server callbacks
+init(Count) ->↵
+    {ok, Count}.↵
+
+handle_call(get, _From, Count) ->↵
+    % Return current count
+    {reply, Count, Count}.↵

@@ -1,0 +1,71 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\n-module(calculator).\n-export([add/2]).\n\n-type number_result() :: {ok, number()} | {error, term()}.\n\n-spec add(number(), number()) -> number().\nadd(A, B) ->\n    A + B.\n",
+      "end_line": 9,
+      "language": "erlang",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "-module(calculator).",
+      "end_line": 2,
+      "language": "erlang",
+      "name": "calculator",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "-export([add/2]).",
+      "end_line": 3,
+      "language": "erlang",
+      "name": "-export([add/2]).",
+      "original_indentation": 0,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "TypeAlias",
+      "comment_ranges": [],
+      "content": "-type number_result() :: {ok, number()} | {error, term()}.",
+      "end_line": 5,
+      "language": "erlang",
+      "name": "type_alias",
+      "original_indentation": 0,
+      "start_line": 5
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "-spec add(number(), number()) -> number().",
+      "end_line": 7,
+      "language": "erlang",
+      "name": "add",
+      "original_indentation": 0,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "add(A, B) ->\n    A + B.",
+      "end_line": 9,
+      "language": "erlang",
+      "name": "add",
+      "original_indentation": 0,
+      "start_line": 8
+    }
+  ],
+  "source_code": "\n-module(calculator).\n-export([add/2]).\n\n-type number_result() :: {ok, number()} | {error, term()}.\n\n-spec add(number(), number()) -> number().\nadd(A, B) ->\n    A + B.\n",
+  "test_name": "test_erlang_type_spec_extraction",
+  "total_chunks": 6
+}

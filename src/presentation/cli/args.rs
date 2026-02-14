@@ -43,7 +43,7 @@ pub struct Cli {
         long_help = "Filter by programming languages (comma-separated). \
                      Supported languages:\n  \
                       rust, typescript, javascript, python, ruby, go, swift, \
-                      kotlin, java, php, csharp, c, cpp, haskell, dart, scala, zig, elixir\n  \
+                      kotlin, java, php, csharp, c, cpp, haskell, dart, scala, zig, elixir, erlang\n  \
                      Example: --langs rust,python,typescript"
     )]
     pub langs: Option<Vec<String>>,
@@ -82,7 +82,7 @@ pub enum Commands {
         /// Programming language to filter trending repositories
         #[arg(
             help = "Programming language to filter trending repositories",
-            long_help = "Programming language to filter trending repositories.\nSupported languages: C, C#, C++, Dart, Elixir, Go, Haskell, Java, JavaScript, Kotlin, PHP, Python, Ruby, Rust, Scala, Swift, TypeScript, Zig"
+            long_help = "Programming language to filter trending repositories.\nSupported languages: C, C#, C++, Dart, Elixir, Erlang, Go, Haskell, Java, JavaScript, Kotlin, PHP, Python, Ruby, Rust, Scala, Swift, TypeScript, Zig"
         )]
         language: Option<String>,
         /// Specific repository name to select from trending list

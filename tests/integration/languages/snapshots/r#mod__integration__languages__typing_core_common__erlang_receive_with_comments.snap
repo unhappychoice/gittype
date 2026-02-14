@@ -1,0 +1,35 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+loop() ->
+    receive
+        % Handle incoming messages
+        {msg, Text} ->
+            io:format("Got: ~s~n", [Text]),
+            loop();
+        stop ->
+            ok
+    end.
+
+# text_to_type
+loop() ->
+receive
+{msg, Text} ->
+io:format("Got: ~s~n", [Text]),
+loop();
+stop ->
+ok
+end.
+
+# text_to_display
+loop() ->↵
+    receive↵
+        % Handle incoming messages
+        {msg, Text} ->↵
+            io:format("Got: ~s~n", [Text]),↵
+            loop();↵
+        stop ->↵
+            ok↵
+    end.↵

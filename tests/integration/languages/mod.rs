@@ -4,6 +4,7 @@ pub mod cpp;
 pub mod csharp;
 pub mod dart;
 pub mod elixir;
+pub mod erlang;
 pub mod extractor;
 pub mod go;
 pub mod haskell;

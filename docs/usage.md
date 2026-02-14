@@ -121,7 +121,7 @@ Discover and practice typing with trending GitHub repositories. Repositories are
 | `--period` | Time period for trending (daily, weekly, monthly) | `daily` |
 
 #### Supported Languages:
-- C, C#, C++, Dart, Elixir, Go, Haskell, Java, JavaScript, Kotlin, PHP, Python, Ruby, Rust, Scala, Swift, TypeScript, Zig
+- C, C#, C++, Dart, Elixir, Erlang, Go, Haskell, Java, JavaScript, Kotlin, PHP, Python, Ruby, Rust, Scala, Swift, TypeScript, Zig
 
 #### Examples:
 ```bash

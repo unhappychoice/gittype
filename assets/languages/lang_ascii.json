@@ -18,5 +18,6 @@
   "lang_zig": "yellow",
   "lang_clojure": "green",
   "lang_elixir": "magenta",
+  "lang_erlang": "red",
   "lang_default": "white"
 }

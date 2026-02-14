@@ -1,0 +1,25 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+process(X) ->
+    Y = X + 1,
+
+    Z = Y * 2,
+
+    Z.
+
+# text_to_type
+process(X) ->
+Y = X + 1,
+Z = Y * 2,
+Z.
+
+# text_to_display
+process(X) ->↵
+    Y = X + 1,↵
+
+    Z = Y * 2,↵
+
+    Z.↵
