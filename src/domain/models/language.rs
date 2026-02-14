@@ -1,8 +1,8 @@
 use std::hash::{Hash, Hasher};
 
 use crate::domain::models::languages::{
-    CSharp, Clojure, Cpp, Dart, Elixir, Go, Haskell, Java, JavaScript, Kotlin, Php, Python, Ruby,
-    Rust, Scala, Swift, TypeScript, Zig, C,
+    CSharp, Clojure, Cpp, Dart, Elixir, Erlang, Go, Haskell, Java, JavaScript, Kotlin, Php, Python,
+    Ruby, Rust, Scala, Swift, TypeScript, Zig, C,
 };
 
 /// Domain trait representing a programming language
@@ -60,6 +60,7 @@ pub trait Language: std::fmt::Debug + Send + Sync {
             "haskell" => Color::Magenta,
             "dart" => Color::Cyan,
             "elixir" => Color::Magenta,
+            "erlang" => Color::Red,
             "zig" => Color::Yellow,
             _ => Color::White,
         }
@@ -96,6 +97,7 @@ impl Languages {
             Box::new(Zig),
             Box::new(Clojure),
             Box::new(Elixir),
+            Box::new(Erlang),
         ]
     }
 
