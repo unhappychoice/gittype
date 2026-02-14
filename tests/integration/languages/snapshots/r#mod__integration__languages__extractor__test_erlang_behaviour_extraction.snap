@@ -1,0 +1,71 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\n-module(my_server).\n-behaviour(gen_server).\n-export([init/1, handle_call/3]).\n\ninit(State) ->\n    {ok, State}.\n\nhandle_call(get, _From, State) ->\n    {reply, State, State}.\n",
+      "end_line": 10,
+      "language": "erlang",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "-module(my_server).",
+      "end_line": 2,
+      "language": "erlang",
+      "name": "my_server",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Interface",
+      "comment_ranges": [],
+      "content": "-behaviour(gen_server).",
+      "end_line": 3,
+      "language": "erlang",
+      "name": "gen_server",
+      "original_indentation": 0,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "-export([init/1, handle_call/3]).",
+      "end_line": 4,
+      "language": "erlang",
+      "name": "-export([init/1, handle_call/3]).",
+      "original_indentation": 0,
+      "start_line": 4
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "init(State) ->\n    {ok, State}.",
+      "end_line": 7,
+      "language": "erlang",
+      "name": "init",
+      "original_indentation": 0,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "handle_call(get, _From, State) ->\n    {reply, State, State}.",
+      "end_line": 10,
+      "language": "erlang",
+      "name": "handle_call",
+      "original_indentation": 0,
+      "start_line": 9
+    }
+  ],
+  "source_code": "\n-module(my_server).\n-behaviour(gen_server).\n-export([init/1, handle_call/3]).\n\ninit(State) ->\n    {ok, State}.\n\nhandle_call(get, _From, State) ->\n    {reply, State, State}.\n",
+  "test_name": "test_erlang_behaviour_extraction",
+  "total_chunks": 6
+}

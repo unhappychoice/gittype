@@ -1,0 +1,20 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+factorial(0) -> 1;
+% Recursive case
+factorial(N) when N > 0 ->
+    N * factorial(N - 1).
+
+# text_to_type
+factorial(0) -> 1;
+factorial(N) when N > 0 ->
+N * factorial(N - 1).
+
+# text_to_display
+factorial(0) -> 1;↵
+% Recursive case
+factorial(N) when N > 0 ->↵
+    N * factorial(N - 1).↵

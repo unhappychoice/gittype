@@ -1,0 +1,61 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\n-module(listener).\n-export([loop/0]).\n\nloop() ->\n    receive\n        {msg, Text} ->\n            io:format(\"Got: ~s~n\", [Text]),\n            loop();\n        stop ->\n            ok\n    after 5000 ->\n        io:format(\"Timeout~n\"),\n        loop()\n    end.\n",
+      "end_line": 15,
+      "language": "erlang",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "-module(listener).",
+      "end_line": 2,
+      "language": "erlang",
+      "name": "listener",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "-export([loop/0]).",
+      "end_line": 3,
+      "language": "erlang",
+      "name": "-export([loop/0]).",
+      "original_indentation": 0,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "loop() ->\n    receive\n        {msg, Text} ->\n            io:format(\"Got: ~s~n\", [Text]),\n            loop();\n        stop ->\n            ok\n    after 5000 ->\n        io:format(\"Timeout~n\"),\n        loop()\n    end.",
+      "end_line": 15,
+      "language": "erlang",
+      "name": "loop",
+      "original_indentation": 0,
+      "start_line": 5
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "    receive\n        {msg, Text} ->\n            io:format(\"Got: ~s~n\", [Text]),\n            loop();\n        stop ->\n            ok\n    after 5000 ->\n        io:format(\"Timeout~n\"),\n        loop()\n    end",
+      "end_line": 15,
+      "language": "erlang",
+      "name": "receive\n        {msg, Text} ->\n            io:format(\"Got: ~s~n\", [Text]),\n            loop();\n        stop ->\n            ok\n    after 5000 ->\n        io:format(\"Timeout~n\"),\n        loop()\n    end",
+      "original_indentation": 4,
+      "start_line": 6
+    }
+  ],
+  "source_code": "\n-module(listener).\n-export([loop/0]).\n\nloop() ->\n    receive\n        {msg, Text} ->\n            io:format(\"Got: ~s~n\", [Text]),\n            loop();\n        stop ->\n            ok\n    after 5000 ->\n        io:format(\"Timeout~n\"),\n        loop()\n    end.\n",
+  "test_name": "test_erlang_receive_expression",
+  "total_chunks": 5
+}

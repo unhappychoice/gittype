@@ -1,0 +1,51 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\n-module(greeter).\n-export([hello/1]).\n\nhello(Name) ->\n    io:format(\"Hello, ~s!~n\", [Name]).\n",
+      "end_line": 6,
+      "language": "erlang",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "-module(greeter).",
+      "end_line": 2,
+      "language": "erlang",
+      "name": "greeter",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "-export([hello/1]).",
+      "end_line": 3,
+      "language": "erlang",
+      "name": "-export([hello/1]).",
+      "original_indentation": 0,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "hello(Name) ->\n    io:format(\"Hello, ~s!~n\", [Name]).",
+      "end_line": 6,
+      "language": "erlang",
+      "name": "hello",
+      "original_indentation": 0,
+      "start_line": 5
+    }
+  ],
+  "source_code": "\n-module(greeter).\n-export([hello/1]).\n\nhello(Name) ->\n    io:format(\"Hello, ~s!~n\", [Name]).\n",
+  "test_name": "test_erlang_function_extraction",
+  "total_chunks": 4
+}

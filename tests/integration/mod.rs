@@ -57,6 +57,7 @@ fn string_to_language_obj(language: &str) -> &'static dyn Language {
         "csharp" => &CSharp,
         "dart" => &Dart,
         "elixir" => &Elixir,
+        "erlang" => &Erlang,
         "go" => &Go,
         "haskell" => &Haskell,
         "java" => &Java,

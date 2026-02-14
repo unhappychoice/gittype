@@ -1,0 +1,17 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+transform(List) ->
+    % Double all even numbers
+    [X * 2 || X <- List, X rem 2 =:= 0].
+
+# text_to_type
+transform(List) ->
+[X * 2 || X <- List, X rem 2 =:= 0].
+
+# text_to_display
+transform(List) ->↵
+    % Double all even numbers
+    [X * 2 || X <- List, X rem 2 =:= 0].↵

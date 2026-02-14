@@ -1,0 +1,61 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\n-module(math).\n-export([add/2, subtract/2]).\n\nadd(A, B) ->\n    A + B.\n\nsubtract(A, B) ->\n    A - B.\n",
+      "end_line": 9,
+      "language": "erlang",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "-module(math).",
+      "end_line": 2,
+      "language": "erlang",
+      "name": "math",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "-export([add/2, subtract/2]).",
+      "end_line": 3,
+      "language": "erlang",
+      "name": "-export([add/2, subtract/2]).",
+      "original_indentation": 0,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "add(A, B) ->\n    A + B.",
+      "end_line": 6,
+      "language": "erlang",
+      "name": "add",
+      "original_indentation": 0,
+      "start_line": 5
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "subtract(A, B) ->\n    A - B.",
+      "end_line": 9,
+      "language": "erlang",
+      "name": "subtract",
+      "original_indentation": 0,
+      "start_line": 8
+    }
+  ],
+  "source_code": "\n-module(math).\n-export([add/2, subtract/2]).\n\nadd(A, B) ->\n    A + B.\n\nsubtract(A, B) ->\n    A - B.\n",
+  "test_name": "test_erlang_multiple_functions_extraction",
+  "total_chunks": 5
+}

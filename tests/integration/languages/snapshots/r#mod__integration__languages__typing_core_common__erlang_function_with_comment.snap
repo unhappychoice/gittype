@@ -1,0 +1,17 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+hello(Name) ->
+    % Greet the user
+    io:format("Hello, ~s!~n", [Name]).
+
+# text_to_type
+hello(Name) ->
+io:format("Hello, ~s!~n", [Name]).
+
+# text_to_display
+hello(Name) ->↵
+    % Greet the user
+    io:format("Hello, ~s!~n", [Name]).↵

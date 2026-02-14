@@ -1,0 +1,28 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+-record(person, {
+    % Person's name
+    name,
+    % Person's age
+    age = 0,
+    email
+}).
+
+# text_to_type
+-record(person, {
+name,
+age = 0,
+email
+}).
+
+# text_to_display
+-record(person, {↵
+    % Person's name
+    name,↵
+    % Person's age
+    age = 0,↵
+    email↵
+}).↵
