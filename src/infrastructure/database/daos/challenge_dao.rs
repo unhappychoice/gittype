@@ -54,8 +54,8 @@ impl ChallengeDaoInterface for ChallengeDao {
                     params![
                         challenge.id,
                         challenge.source_file_path,
-                        challenge.start_line,
-                        challenge.end_line,
+                        challenge.start_line.map(|v| v as i64),
+                        challenge.end_line.map(|v| v as i64),
                         challenge.language,
                         challenge.code_content,
                         serde_json::to_string(&challenge.comment_ranges).unwrap_or_default(),
