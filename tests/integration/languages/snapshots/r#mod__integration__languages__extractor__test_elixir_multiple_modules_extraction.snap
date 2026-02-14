@@ -1,0 +1,101 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\ndefmodule MyApp.Schema do\n  defstruct [:id, :name]\nend\n\ndefmodule MyApp.Repo do\n  def get(id) do\n    %MyApp.Schema{id: id, name: \"item\"}\n  end\n\n  def all do\n    []\n  end\nend\n\ndefprotocol Renderable do\n  def render(data)\nend\n",
+      "end_line": 18,
+      "language": "elixir",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "defmodule MyApp.Schema",
+      "end_line": 2,
+      "language": "elixir",
+      "name": "module_name",
+      "original_indentation": 10,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "defmodule MyApp.Schema do\n  defstruct [:id, :name]\nend",
+      "end_line": 4,
+      "language": "elixir",
+      "name": "defmodule",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "  defstruct [:id, :name]",
+      "end_line": 3,
+      "language": "elixir",
+      "name": "defstruct",
+      "original_indentation": 2,
+      "start_line": 3
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "defmodule MyApp.Repo",
+      "end_line": 6,
+      "language": "elixir",
+      "name": "module_name",
+      "original_indentation": 10,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "defmodule MyApp.Repo do\n  def get(id) do\n    %MyApp.Schema{id: id, name: \"item\"}\n  end\n\n  def all do\n    []\n  end\nend",
+      "end_line": 14,
+      "language": "elixir",
+      "name": "defmodule",
+      "original_indentation": 0,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "  def all do\n    []\n  end",
+      "end_line": 13,
+      "language": "elixir",
+      "name": "def",
+      "original_indentation": 2,
+      "start_line": 11
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "defprotocol Renderable",
+      "end_line": 16,
+      "language": "elixir",
+      "name": "protocol_name",
+      "original_indentation": 12,
+      "start_line": 16
+    },
+    {
+      "chunk_type": "Interface",
+      "comment_ranges": [],
+      "content": "defprotocol Renderable do\n  def render(data)\nend",
+      "end_line": 18,
+      "language": "elixir",
+      "name": "defprotocol",
+      "original_indentation": 0,
+      "start_line": 16
+    }
+  ],
+  "source_code": "\ndefmodule MyApp.Schema do\n  defstruct [:id, :name]\nend\n\ndefmodule MyApp.Repo do\n  def get(id) do\n    %MyApp.Schema{id: id, name: \"item\"}\n  end\n\n  def all do\n    []\n  end\nend\n\ndefprotocol Renderable do\n  def render(data)\nend\n",
+  "test_name": "test_elixir_multiple_modules_extraction",
+  "total_chunks": 9
+}

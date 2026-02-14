@@ -1,0 +1,51 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\ndefmodule MyApp.Counter do\n  use GenServer\n\n  def start_link(initial_value) do\n    GenServer.start_link(__MODULE__, initial_value, name: __MODULE__)\n  end\n\n  def increment do\n    GenServer.call(__MODULE__, :increment)\n  end\n\n  def init(initial_value) do\n    {:ok, initial_value}\n  end\n\n  def handle_call(:increment, _from, state) do\n    {:reply, state + 1, state + 1}\n  end\n\n  def handle_cast(:reset, _state) do\n    {:noreply, 0}\n  end\nend\n",
+      "end_line": 24,
+      "language": "elixir",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "defmodule MyApp.Counter",
+      "end_line": 2,
+      "language": "elixir",
+      "name": "module_name",
+      "original_indentation": 10,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "defmodule MyApp.Counter do\n  use GenServer\n\n  def start_link(initial_value) do\n    GenServer.start_link(__MODULE__, initial_value, name: __MODULE__)\n  end\n\n  def increment do\n    GenServer.call(__MODULE__, :increment)\n  end\n\n  def init(initial_value) do\n    {:ok, initial_value}\n  end\n\n  def handle_call(:increment, _from, state) do\n    {:reply, state + 1, state + 1}\n  end\n\n  def handle_cast(:reset, _state) do\n    {:noreply, 0}\n  end\nend",
+      "end_line": 24,
+      "language": "elixir",
+      "name": "defmodule",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Function",
+      "comment_ranges": [],
+      "content": "  def increment do\n    GenServer.call(__MODULE__, :increment)\n  end",
+      "end_line": 11,
+      "language": "elixir",
+      "name": "def",
+      "original_indentation": 2,
+      "start_line": 9
+    }
+  ],
+  "source_code": "\ndefmodule MyApp.Counter do\n  use GenServer\n\n  def start_link(initial_value) do\n    GenServer.start_link(__MODULE__, initial_value, name: __MODULE__)\n  end\n\n  def increment do\n    GenServer.call(__MODULE__, :increment)\n  end\n\n  def init(initial_value) do\n    {:ok, initial_value}\n  end\n\n  def handle_call(:increment, _from, state) do\n    {:reply, state + 1, state + 1}\n  end\n\n  def handle_cast(:reset, _state) do\n    {:noreply, 0}\n  end\nend\n",
+  "test_name": "test_elixir_genserver_extraction",
+  "total_chunks": 4
+}

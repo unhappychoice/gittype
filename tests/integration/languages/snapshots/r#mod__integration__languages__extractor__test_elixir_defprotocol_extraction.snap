@@ -1,0 +1,41 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\ndefprotocol Stringify do\n  def to_string(value)\nend\n\ndefimpl Stringify, for: Integer do\n  def to_string(value) do\n    Integer.to_string(value)\n  end\nend\n",
+      "end_line": 10,
+      "language": "elixir",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Interface",
+      "comment_ranges": [],
+      "content": "defprotocol Stringify do\n  def to_string(value)\nend",
+      "end_line": 4,
+      "language": "elixir",
+      "name": "defprotocol",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Class",
+      "comment_ranges": [],
+      "content": "defimpl Stringify, for: Integer do\n  def to_string(value) do\n    Integer.to_string(value)\n  end\nend",
+      "end_line": 10,
+      "language": "elixir",
+      "name": "defimpl",
+      "original_indentation": 0,
+      "start_line": 6
+    }
+  ],
+  "source_code": "\ndefprotocol Stringify do\n  def to_string(value)\nend\n\ndefimpl Stringify, for: Integer do\n  def to_string(value) do\n    Integer.to_string(value)\n  end\nend\n",
+  "test_name": "test_elixir_defprotocol_extraction",
+  "total_chunks": 3
+}

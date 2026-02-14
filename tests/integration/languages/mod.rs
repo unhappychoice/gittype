@@ -3,6 +3,7 @@ pub mod clojure;
 pub mod cpp;
 pub mod csharp;
 pub mod dart;
+pub mod elixir;
 pub mod extractor;
 pub mod go;
 pub mod haskell;

@@ -1,0 +1,41 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\ndefmodule User do\n  defstruct [:name, :email, :age]\n\n  def new(name, email) do\n    %User{name: name, email: email, age: 0}\n  end\nend\n",
+      "end_line": 8,
+      "language": "elixir",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "defmodule User do\n  defstruct [:name, :email, :age]\n\n  def new(name, email) do\n    %User{name: name, email: email, age: 0}\n  end\nend",
+      "end_line": 8,
+      "language": "elixir",
+      "name": "defmodule",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Struct",
+      "comment_ranges": [],
+      "content": "  defstruct [:name, :email, :age]",
+      "end_line": 3,
+      "language": "elixir",
+      "name": "defstruct",
+      "original_indentation": 2,
+      "start_line": 3
+    }
+  ],
+  "source_code": "\ndefmodule User do\n  defstruct [:name, :email, :age]\n\n  def new(name, email) do\n    %User{name: name, email: email, age: 0}\n  end\nend\n",
+  "test_name": "test_elixir_defstruct_extraction",
+  "total_chunks": 3
+}

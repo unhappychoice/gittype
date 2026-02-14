@@ -17,5 +17,6 @@
   "lang_dart": "cyan",
   "lang_zig": "yellow",
   "lang_clojure": "green",
+  "lang_elixir": "magenta",
   "lang_default": "white"
 }

@@ -1,0 +1,20 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+def hello(name) do
+  # Greet the user
+  "Hello, #{name}!"
+end
+
+# text_to_type
+def hello(name) do
+"Hello, #{name}!"
+end
+
+# text_to_display
+def hello(name) do↵
+  # Greet the user
+  "Hello, #{name}!"↵
+end↵

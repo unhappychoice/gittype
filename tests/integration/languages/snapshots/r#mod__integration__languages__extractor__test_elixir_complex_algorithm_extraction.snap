@@ -1,0 +1,91 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\ndefmodule MyApp.DataProcessor do\n  def process_batch(items) do\n    items\n    |> Enum.filter(fn item -> item.active end)\n    |> Enum.map(fn item ->\n      case validate(item) do\n        {:ok, valid} -> transform(valid)\n        {:error, _reason} -> nil\n      end\n    end)\n    |> Enum.reject(&is_nil/1)\n    |> Enum.group_by(fn item -> item.category end)\n  end\n\n  defp validate(item) do\n    cond do\n      is_nil(item.name) -> {:error, :missing_name}\n      String.length(item.name) < 3 -> {:error, :name_too_short}\n      true -> {:ok, item}\n    end\n  end\n\n  defp transform(item) do\n    with {:ok, normalized} <- normalize(item),\n         {:ok, enriched} <- enrich(normalized) do\n      enriched\n    else\n      {:error, reason} -> raise \"Transform failed: #{reason}\"\n    end\n  end\n\n  defp normalize(item) do\n    {:ok, %{item | name: String.trim(item.name)}}\n  end\n\n  defp enrich(item) do\n    if item.category do\n      {:ok, Map.put(item, :processed, true)}\n    else\n      {:error, :no_category}\n    end\n  end\nend\n",
+      "end_line": 44,
+      "language": "elixir",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "CodeBlock",
+      "comment_ranges": [],
+      "content": "defmodule MyApp.DataProcessor",
+      "end_line": 2,
+      "language": "elixir",
+      "name": "module_name",
+      "original_indentation": 10,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "defmodule MyApp.DataProcessor do\n  def process_batch(items) do\n    items\n    |> Enum.filter(fn item -> item.active end)\n    |> Enum.map(fn item ->\n      case validate(item) do\n        {:ok, valid} -> transform(valid)\n        {:error, _reason} -> nil\n      end\n    end)\n    |> Enum.reject(&is_nil/1)\n    |> Enum.group_by(fn item -> item.category end)\n  end\n\n  defp validate(item) do\n    cond do\n      is_nil(item.name) -> {:error, :missing_name}\n      String.length(item.name) < 3 -> {:error, :name_too_short}\n      true -> {:ok, item}\n    end\n  end\n\n  defp transform(item) do\n    with {:ok, normalized} <- normalize(item),\n         {:ok, enriched} <- enrich(normalized) do\n      enriched\n    else\n      {:error, reason} -> raise \"Transform failed: #{reason}\"\n    end\n  end\n\n  defp normalize(item) do\n    {:ok, %{item | name: String.trim(item.name)}}\n  end\n\n  defp enrich(item) do\n    if item.category do\n      {:ok, Map.put(item, :processed, true)}\n    else\n      {:error, :no_category}\n    end\n  end\nend",
+      "end_line": 44,
+      "language": "elixir",
+      "name": "defmodule",
+      "original_indentation": 0,
+      "start_line": 2
+    },
+    {
+      "chunk_type": "FunctionCall",
+      "comment_ranges": [],
+      "content": "    |> Enum.map(fn item ->\n      case validate(item) do\n        {:ok, valid} -> transform(valid)\n        {:error, _reason} -> nil\n      end\n    end)",
+      "end_line": 11,
+      "language": "elixir",
+      "name": "function_call",
+      "original_indentation": 7,
+      "start_line": 6
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "      case validate(item) do\n        {:ok, valid} -> transform(valid)\n        {:error, _reason} -> nil\n      end",
+      "end_line": 10,
+      "language": "elixir",
+      "name": "case",
+      "original_indentation": 6,
+      "start_line": 7
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "    cond do\n      is_nil(item.name) -> {:error, :missing_name}\n      String.length(item.name) < 3 -> {:error, :name_too_short}\n      true -> {:ok, item}\n    end",
+      "end_line": 21,
+      "language": "elixir",
+      "name": "cond",
+      "original_indentation": 4,
+      "start_line": 17
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "    with {:ok, normalized} <- normalize(item),\n         {:ok, enriched} <- enrich(normalized) do\n      enriched\n    else\n      {:error, reason} -> raise \"Transform failed: #{reason}\"\n    end",
+      "end_line": 30,
+      "language": "elixir",
+      "name": "with",
+      "original_indentation": 4,
+      "start_line": 25
+    },
+    {
+      "chunk_type": "Conditional",
+      "comment_ranges": [],
+      "content": "    if item.category do\n      {:ok, Map.put(item, :processed, true)}\n    else\n      {:error, :no_category}\n    end",
+      "end_line": 42,
+      "language": "elixir",
+      "name": "if",
+      "original_indentation": 4,
+      "start_line": 38
+    }
+  ],
+  "source_code": "\ndefmodule MyApp.DataProcessor do\n  def process_batch(items) do\n    items\n    |> Enum.filter(fn item -> item.active end)\n    |> Enum.map(fn item ->\n      case validate(item) do\n        {:ok, valid} -> transform(valid)\n        {:error, _reason} -> nil\n      end\n    end)\n    |> Enum.reject(&is_nil/1)\n    |> Enum.group_by(fn item -> item.category end)\n  end\n\n  defp validate(item) do\n    cond do\n      is_nil(item.name) -> {:error, :missing_name}\n      String.length(item.name) < 3 -> {:error, :name_too_short}\n      true -> {:ok, item}\n    end\n  end\n\n  defp transform(item) do\n    with {:ok, normalized} <- normalize(item),\n         {:ok, enriched} <- enrich(normalized) do\n      enriched\n    else\n      {:error, reason} -> raise \"Transform failed: #{reason}\"\n    end\n  end\n\n  defp normalize(item) do\n    {:ok, %{item | name: String.trim(item.name)}}\n  end\n\n  defp enrich(item) do\n    if item.category do\n      {:ok, Map.put(item, :processed, true)}\n    else\n      {:error, :no_category}\n    end\n  end\nend\n",
+  "test_name": "test_elixir_complex_algorithm_extraction",
+  "total_chunks": 8
+}

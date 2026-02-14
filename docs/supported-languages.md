@@ -9,6 +9,7 @@
 | C++ | `.cpp`, `.cc`, `.cxx`, `.hpp` | `c++` | `tree_sitter_cpp` |
 | Clojure | `.clj`, `.cljs`, `.cljc` | - | `tree_sitter_clojure` |
 | Dart | `.dart` | - | `tree_sitter_dart` |
+| Elixir | `.ex`, `.exs` | `ex`, `exs` | `tree_sitter_elixir` |
 | Go | `.go` | - | `tree_sitter_go` |
 | Haskell | `.hs`, `.lhs` | `hs` | `tree_sitter_haskell` |
 | Java | `.java` | - | `tree_sitter_java` |
@@ -68,6 +69,15 @@
 - **Enums** (`enum_declaration`) - Enum declarations
 - **Extensions** (`extension_declaration`) - Extension definitions
 - **Mixins** (`mixin_declaration`) - Mixin definitions
+
+### Elixir
+- **Functions** (`def`, `defp`) - Public and private function definitions
+- **Modules** (`defmodule`) - Module definitions
+- **Macros** (`defmacro`, `defmacrop`) - Macro definitions
+- **Protocols** (`defprotocol`) - Protocol definitions
+- **Implementations** (`defimpl`) - Protocol implementation blocks
+- **Structs** (`defstruct`) - Struct definitions
+- **Guards** (`defguard`, `defguardp`) - Guard definitions
 
 ### Go
 - **Functions** (`function_declaration`) - Function definitions
@@ -188,7 +198,7 @@ gittype --langs rust,typescript,javascript,python
 
 ```toml
 [default]
-langs = ["rust", "typescript", "javascript", "python", "go", "ruby", "swift", "kotlin", "java", "php", "csharp", "c", "cpp", "haskell", "dart", "scala", "zig"]
+langs = ["rust", "typescript", "javascript", "python", "go", "ruby", "swift", "kotlin", "java", "php", "csharp", "c", "cpp", "haskell", "dart", "scala", "zig", "elixir"]
 ```
 
 ## Code Extraction Quality

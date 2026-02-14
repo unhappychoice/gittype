@@ -1,0 +1,29 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+def transform(data) do
+  # Pipeline processing
+  data
+  |> Enum.map(&String.upcase/1)
+  |> Enum.filter(&valid?/1)
+  |> Enum.join(", ")
+end
+
+# text_to_type
+def transform(data) do
+data
+|> Enum.map(&String.upcase/1)
+|> Enum.filter(&valid?/1)
+|> Enum.join(", ")
+end
+
+# text_to_display
+def transform(data) do↵
+  # Pipeline processing
+  data↵
+  |> Enum.map(&String.upcase/1)↵
+  |> Enum.filter(&valid?/1)↵
+  |> Enum.join(", ")↵
+end↵
