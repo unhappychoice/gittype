@@ -17,5 +17,6 @@
   "lang_dart": {"r": 0, "g": 120, "b": 180},
   "lang_zig": {"r": 189, "g": 99, "b": 0},
   "lang_clojure": {"r": 92, "g": 181, "b": 68},
+  "lang_elixir": {"r": 78, "g": 52, "b": 112},
   "lang_default": {"r": 64, "g": 64, "b": 64}
 }
