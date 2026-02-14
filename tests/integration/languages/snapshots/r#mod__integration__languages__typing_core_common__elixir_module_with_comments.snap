@@ -1,0 +1,39 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+defmodule Greeter do
+  # Public greeting function
+  def greet(name) do
+    "Hello, #{name}!"
+  end
+
+  # Private helper
+  defp format(text) do
+    String.trim(text)
+  end
+end
+
+# text_to_type
+defmodule Greeter do
+def greet(name) do
+"Hello, #{name}!"
+end
+defp format(text) do
+String.trim(text)
+end
+end
+
+# text_to_display
+defmodule Greeter do↵
+  # Public greeting function
+  def greet(name) do↵
+    "Hello, #{name}!"↵
+  end↵
+
+  # Private helper
+  defp format(text) do↵
+    String.trim(text)↵
+  end↵
+end↵

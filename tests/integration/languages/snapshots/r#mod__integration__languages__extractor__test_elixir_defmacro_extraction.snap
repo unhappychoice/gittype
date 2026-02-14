@@ -1,0 +1,31 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\ndefmodule MyMacros do\n  defmacro unless(condition, do: block) do\n    quote do\n      if !unquote(condition), do: unquote(block)\n    end\n  end\nend\n",
+      "end_line": 8,
+      "language": "elixir",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "defmodule MyMacros do\n  defmacro unless(condition, do: block) do\n    quote do\n      if !unquote(condition), do: unquote(block)\n    end\n  end\nend",
+      "end_line": 8,
+      "language": "elixir",
+      "name": "defmodule",
+      "original_indentation": 0,
+      "start_line": 2
+    }
+  ],
+  "source_code": "\ndefmodule MyMacros do\n  defmacro unless(condition, do: block) do\n    quote do\n      if !unquote(condition), do: unquote(block)\n    end\n  end\nend\n",
+  "test_name": "test_elixir_defmacro_extraction",
+  "total_chunks": 2
+}

@@ -1,0 +1,28 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+def process(x) do
+  y = x + 1
+
+  z = y * 2
+
+  z
+end
+
+# text_to_type
+def process(x) do
+y = x + 1
+z = y * 2
+z
+end
+
+# text_to_display
+def process(x) do↵
+  y = x + 1↵
+
+  z = y * 2↵
+
+  z↵
+end↵

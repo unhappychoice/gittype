@@ -1,0 +1,31 @@
+---
+source: tests/integration/languages/extractor.rs
+expression: "serde_json::to_string_pretty(&snapshot_data).unwrap()"
+---
+{
+  "chunks": [
+    {
+      "chunk_type": "File",
+      "comment_ranges": [],
+      "content": "\ndefmodule Greeter do\n  def hello(name) do\n    \"Hello, #{name}!\"\n  end\n\n  defp format_name(name) do\n    String.trim(name)\n  end\nend\n",
+      "end_line": 10,
+      "language": "elixir",
+      "name": "entire_file",
+      "original_indentation": 0,
+      "start_line": 1
+    },
+    {
+      "chunk_type": "Module",
+      "comment_ranges": [],
+      "content": "defmodule Greeter do\n  def hello(name) do\n    \"Hello, #{name}!\"\n  end\n\n  defp format_name(name) do\n    String.trim(name)\n  end\nend",
+      "end_line": 10,
+      "language": "elixir",
+      "name": "defmodule",
+      "original_indentation": 0,
+      "start_line": 2
+    }
+  ],
+  "source_code": "\ndefmodule Greeter do\n  def hello(name) do\n    \"Hello, #{name}!\"\n  end\n\n  defp format_name(name) do\n    String.trim(name)\n  end\nend\n",
+  "test_name": "test_elixir_defmodule_and_def_extraction",
+  "total_chunks": 2
+}

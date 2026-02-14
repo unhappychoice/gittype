@@ -1,0 +1,57 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+defmodule Counter do
+  use GenServer
+
+  # Client API
+  def start_link(opts) do
+    GenServer.start_link(__MODULE__, opts)
+  end
+
+  # Server callbacks
+  def init(initial_value) do
+    {:ok, initial_value}
+  end
+
+  def handle_call(:get, _from, state) do
+    # Return current count
+    {:reply, state, state}
+  end
+end
+
+# text_to_type
+defmodule Counter do
+use GenServer
+def start_link(opts) do
+GenServer.start_link(__MODULE__, opts)
+end
+def init(initial_value) do
+{:ok, initial_value}
+end
+def handle_call(:get, _from, state) do
+{:reply, state, state}
+end
+end
+
+# text_to_display
+defmodule Counter do↵
+  use GenServer↵
+
+  # Client API
+  def start_link(opts) do↵
+    GenServer.start_link(__MODULE__, opts)↵
+  end↵
+
+  # Server callbacks
+  def init(initial_value) do↵
+    {:ok, initial_value}↵
+  end↵
+
+  def handle_call(:get, _from, state) do↵
+    # Return current count
+    {:reply, state, state}↵
+  end↵
+end↵

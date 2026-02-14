@@ -1,0 +1,42 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+def create_user(params) do
+  # Validate and create user with chained operations
+  with {:ok, name} <- validate_name(params),
+       # Check email format
+       {:ok, email} <- validate_email(params),
+       # Persist to database
+       {:ok, user} <- insert_user(name, email) do
+    {:ok, user}
+  else
+    {:error, reason} -> {:error, reason}
+  end
+end
+
+# text_to_type
+def create_user(params) do
+with {:ok, name} <- validate_name(params),
+{:ok, email} <- validate_email(params),
+{:ok, user} <- insert_user(name, email) do
+{:ok, user}
+else
+{:error, reason} -> {:error, reason}
+end
+end
+
+# text_to_display
+def create_user(params) do↵
+  # Validate and create user with chained operations
+  with {:ok, name} <- validate_name(params),↵
+       # Check email format
+       {:ok, email} <- validate_email(params),↵
+       # Persist to database
+       {:ok, user} <- insert_user(name, email) do↵
+    {:ok, user}↵
+  else↵
+    {:error, reason} -> {:error, reason}↵
+  end↵
+end↵

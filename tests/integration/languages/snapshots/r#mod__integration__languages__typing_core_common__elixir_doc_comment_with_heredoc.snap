@@ -1,0 +1,33 @@
+---
+source: tests/integration/languages/typing_core_common.rs
+expression: snapshot
+---
+# text_original
+defmodule Math do
+  @doc """
+  Adds two numbers together.
+  """
+  def add(a, b) do
+    a + b
+  end
+end
+
+# text_to_type
+defmodule Math do
+@doc """
+Adds two numbers together.
+"""
+def add(a, b) do
+a + b
+end
+end
+
+# text_to_display
+defmodule Math do↵
+  @doc """↵
+  Adds two numbers together.↵
+  """↵
+  def add(a, b) do↵
+    a + b↵
+  end↵
+end↵
