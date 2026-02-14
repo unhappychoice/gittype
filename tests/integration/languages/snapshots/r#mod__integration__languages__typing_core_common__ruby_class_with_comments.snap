@@ -21,29 +21,29 @@ end
 # text_to_type
 class Calculator
 def initialize
-@result = 0 # Initialize result
+@result = 0
 end
-def add(value) # Add method
+def add(value)
 @result += value
 self
 end
 def result
-@result # Return current result
+@result
 end
 end
 
 # text_to_display
 class Calculator↵
   def initialize↵
-    @result = 0 # Initialize result↵
+    @result = 0↵ # Initialize result
   end↵
   
-  def add(value) # Add method↵
+  def add(value)↵ # Add method
     @result += value↵
     self↵
   end↵
   
   def result↵
-    @result # Return current result↵
+    @result↵ # Return current result
   end↵
 end↵

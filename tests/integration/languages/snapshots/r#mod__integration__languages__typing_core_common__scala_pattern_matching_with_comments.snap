@@ -17,26 +17,23 @@ def processValue(value: Any): String = {
 
 # text_to_type
 def processValue(value: Any): String = {
-// Pattern matching on different types
 value match {
-case s: String => s"String: $s"     // Handle strings
-case i: Int => s"Integer: $i"       // Handle integers
-case d: Double => s"Double: $d"     // Handle doubles
-/* Default case for unknown types
-Returns a generic message */
+case s: String => s"String: $s"
+case i: Int => s"Integer: $i"
+case d: Double => s"Double: $d"
 case _ => "Unknown type"
 }
 }
 
 # text_to_display
 def processValue(value: Any): String = {↵
-    // Pattern matching on different types↵
+    // Pattern matching on different types
     value match {↵
-        case s: String => s"String: $s"     // Handle strings↵
-        case i: Int => s"Integer: $i"       // Handle integers↵
-        case d: Double => s"Double: $d"     // Handle doubles↵
-        /* Default case for unknown types↵
-           Returns a generic message */↵
+        case s: String => s"String: $s"↵     // Handle strings
+        case i: Int => s"Integer: $i"↵       // Handle integers
+        case d: Double => s"Double: $d"↵     // Handle doubles
+        /* Default case for unknown types
+           Returns a generic message */
         case _ => "Unknown type"↵
     }↵
 }↵

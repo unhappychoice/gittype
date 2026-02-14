@@ -1,6 +1,5 @@
 ---
 source: tests/integration/languages/typing_core_common.rs
-assertion_line: 103
 expression: snapshot
 ---
 # text_original
@@ -12,14 +11,12 @@ expression: snapshot
 
 # text_to_type
 (defprotocol Drawable
-; Protocol for drawable objects
 (draw [this])
-; Clear method
 (clear [this]))
 
 # text_to_display
 (defprotocol Drawable↵
-  ; Protocol for drawable objects↵
+  ; Protocol for drawable objects
   (draw [this])↵
-  ; Clear method↵
+  ; Clear method
   (clear [this]))↵

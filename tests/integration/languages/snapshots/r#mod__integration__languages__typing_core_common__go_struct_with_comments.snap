@@ -14,19 +14,19 @@ func (p *Person) Greet() {
 
 # text_to_type
 type Person struct {
-Name string // Person's name
-Age  int    // Person's age
+Name string
+Age  int
 }
 func (p *Person) Greet() {
-fmt.Printf("Hello, I'm %s", p.Name) // Print greeting
+fmt.Printf("Hello, I'm %s", p.Name)
 }
 
 # text_to_display
 type Person struct {↵
-    Name string // Person's name↵
-    Age  int    // Person's age↵
+    Name string↵ // Person's name
+    Age  int↵    // Person's age
 }↵
 
 func (p *Person) Greet() {↵
-    fmt.Printf("Hello, I'm %s", p.Name) // Print greeting↵
+    fmt.Printf("Hello, I'm %s", p.Name)↵ // Print greeting
 }↵

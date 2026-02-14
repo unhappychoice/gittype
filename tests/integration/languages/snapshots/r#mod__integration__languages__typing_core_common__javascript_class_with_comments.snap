@@ -17,9 +17,9 @@ class Calculator {
 # text_to_type
 class Calculator {
 constructor() {
-this.result = 0; // Initialize result
+this.result = 0;
 }
-add(value) { // Add method
+add(value) {
 this.result += value;
 return this;
 }
@@ -28,10 +28,10 @@ return this;
 # text_to_display
 class Calculator {↵
     constructor() {↵
-        this.result = 0; // Initialize result↵
+        this.result = 0;↵ // Initialize result
     }↵
     
-    add(value) { // Add method↵
+    add(value) {↵ // Add method
         this.result += value;↵
         return this;↵
     }↵

@@ -1,6 +1,5 @@
 ---
 source: tests/integration/languages/typing_core_common.rs
-assertion_line: 103
 expression: snapshot
 ---
 # text_original
@@ -13,16 +12,14 @@ expression: snapshot
 
 # text_to_type
 (deftype Point [x y]
-; Coordinate point
 Object
 (toString [this]
-; Override toString
 (str "(" x "," y ")")))
 
 # text_to_display
 (deftype Point [x y]↵
-  ; Coordinate point↵
+  ; Coordinate point
   Object↵
   (toString [this]↵
-    ; Override toString↵
+    ; Override toString
     (str "(" x "," y ")")))↵

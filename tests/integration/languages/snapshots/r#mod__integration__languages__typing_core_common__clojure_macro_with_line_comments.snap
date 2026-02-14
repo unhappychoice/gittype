@@ -1,6 +1,5 @@
 ---
 source: tests/integration/languages/typing_core_common.rs
-assertion_line: 103
 expression: snapshot
 ---
 # text_original
@@ -10,10 +9,9 @@ expression: snapshot
 
 # text_to_type
 (defmacro unless [pred a b]
-; Guard macro for inverted conditions
 `(if (not ~pred) ~a ~b))
 
 # text_to_display
 (defmacro unless [pred a b]↵
-  ; Guard macro for inverted conditions↵
+  ; Guard macro for inverted conditions
   `(if (not ~pred) ~a ~b))↵

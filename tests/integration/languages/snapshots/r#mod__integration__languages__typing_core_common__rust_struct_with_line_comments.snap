@@ -10,12 +10,12 @@ struct Person {
 
 # text_to_type
 struct Person {
-name: String, // Person's name
-age: u32,     // Person's age in years
+name: String,
+age: u32,
 }
 
 # text_to_display
 struct Person {↵
-    name: String, // Person's name↵
-    age: u32,     // Person's age in years↵
+    name: String,↵ // Person's name
+    age: u32,↵     // Person's age in years
 }↵

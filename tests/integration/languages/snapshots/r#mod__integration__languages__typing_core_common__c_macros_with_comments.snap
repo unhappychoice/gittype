@@ -19,10 +19,10 @@ int main() {
 #define MAX_SIZE 100    // Maximum array size
 #define PI 3.14159         // Pi constant
 int main() {
-int array[MAX_SIZE];   // Declare array
-double radius = 5.0;   // Circle radius
-double area = PI * radius * radius; // Calculate area
-printf("Area: %.2f\n", area); // Print result
+int array[MAX_SIZE];
+double radius = 5.0;
+double area = PI * radius * radius;
+printf("Area: %.2f\n", area);
 return 0;
 }
 
@@ -31,10 +31,10 @@ return 0;
 #define PI 3.14159         // Pi constant↵
 
 int main() {↵
-    int array[MAX_SIZE];   // Declare array↵
-    double radius = 5.0;   // Circle radius↵
-    double area = PI * radius * radius; // Calculate area↵
+    int array[MAX_SIZE];↵   // Declare array
+    double radius = 5.0;↵   // Circle radius
+    double area = PI * radius * radius;↵ // Calculate area
     
-    printf("Area: %.2f\n", area); // Print result↵
+    printf("Area: %.2f\n", area);↵ // Print result
     return 0;↵
 }↵
