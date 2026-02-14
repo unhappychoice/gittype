@@ -47,7 +47,7 @@ impl LanguageExtractor for HaskellExtractor {
     }
 
     fn comment_query(&self) -> &str {
-        "[(comment)] @comment"
+        "[(comment) (haddock)] @comment"
     }
 
     fn capture_name_to_chunk_type(&self, capture_name: &str) -> Option<ChunkType> {

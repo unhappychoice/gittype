@@ -8,11 +8,10 @@ class Greetable a where
   greet :: a -> String -- The greeting function
 
 # text_to_type
--- A typeclass for things that can be greeted
 class Greetable a where
-greet :: a -> String -- The greeting function
+greet :: a -> String
 
 # text_to_display
--- A typeclass for things that can be greeted↵
+-- A typeclass for things that can be greeted
 class Greetable a where↵
-  greet :: a -> String -- The greeting function↵
+  greet :: a -> String↵ -- The greeting function
