@@ -56,6 +56,17 @@ gittype [OPTIONS] [REPO_PATH] [COMMAND]
 gittype --langs rust,typescript
 ```
 
+### Custom Excludes with `.gittypeignore`
+
+If your repository vendors third-party code, create a `.gittypeignore` file at the repository root.
+Each non-empty line is parsed with `.gitignore`-style syntax (comments, rooted paths like `/vendor/`, etc.).
+
+```bash
+# Example .gittypeignore
+/vendor/
+**/third_party/**
+```
+
 ## Commands
 
 ### View Session History

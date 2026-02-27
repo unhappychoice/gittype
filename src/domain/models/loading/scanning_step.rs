@@ -1,4 +1,5 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
+use crate::domain::models::ExtractionOptions;
 use crate::domain::services::source_file_extractor::SourceFileExtractor;
 use crate::infrastructure::git::LocalGitRepositoryClient;
 use crate::presentation::ui::Colors;
@@ -77,8 +78,11 @@ impl Step for ScanningStep {
             GitTypeError::ExtractionFailed("No loading screen available".to_string())
         })?;
 
+        let default_options = ExtractionOptions::default();
+        let options = context.extraction_options.unwrap_or(&default_options);
+
         SourceFileExtractor::new()
-            .collect_with_progress(repo_path, screen)
+            .collect_with_progress_with_options(repo_path, options, screen)
             .map(StepResult::ScannedFiles)
     }
 }

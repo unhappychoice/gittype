@@ -1,4 +1,5 @@
 use gittype::domain::models::loading::StepType;
+use gittype::domain::models::ExtractionOptions;
 use gittype::domain::services::source_file_extractor::SourceFileExtractor;
 use gittype::infrastructure::storage::file_storage::FileStorage;
 use gittype::presentation::tui::screens::loading_screen::ProgressReporter;
@@ -138,5 +139,61 @@ mod tests {
         // Should only contain files, not directories
         assert_eq!(files.len(), 1);
         assert_eq!(files[0].file_name().unwrap(), "main.rs");
+    }
+
+    #[test]
+    fn test_collect_with_progress_applies_gittypeignore_patterns() {
+        let mut mock_storage = FileStorage::new();
+        mock_storage.add_file("src/main.rs");
+        mock_storage.add_file("vendor/third_party.rs");
+        mock_storage.set_file_content("/mock/.gittypeignore", "**/vendor/**\n".to_string());
+
+        let extractor = SourceFileExtractor::with_storage(mock_storage);
+        let progress = MockProgressReporter::new();
+
+        let result = extractor.collect_with_progress(Path::new("/mock"), &progress);
+
+        assert!(result.is_ok());
+        let files = result.unwrap();
+        assert_eq!(files.len(), 1);
+        assert_eq!(files[0], Path::new("src/main.rs"));
+    }
+
+    #[test]
+    fn test_collect_with_progress_uses_relative_patterns_from_gittypeignore() {
+        let mut mock_storage = FileStorage::new();
+        mock_storage.add_file("src/main.rs");
+        mock_storage.add_file("/mock/vendor/third_party.rs");
+        mock_storage.set_file_content("/mock/.gittypeignore", "vendor/**\n".to_string());
+
+        let extractor = SourceFileExtractor::with_storage(mock_storage);
+        let progress = MockProgressReporter::new();
+        let options = ExtractionOptions::default();
+        let result =
+            extractor.collect_with_progress_with_options(Path::new("/mock"), &options, &progress);
+
+        assert!(result.is_ok());
+        let files = result.unwrap();
+        assert_eq!(files.len(), 1);
+        assert_eq!(files[0], Path::new("src/main.rs"));
+    }
+
+    #[test]
+    fn test_collect_with_progress_supports_gitignore_style_root_directory_pattern() {
+        let mut mock_storage = FileStorage::new();
+        mock_storage.add_file("/mock/src/main.rs");
+        mock_storage.add_file("/mock/vendor/third_party.rs");
+        mock_storage.set_file_content("/mock/.gittypeignore", "/vendor/\n".to_string());
+
+        let extractor = SourceFileExtractor::with_storage(mock_storage);
+        let progress = MockProgressReporter::new();
+        let options = ExtractionOptions::default();
+        let result =
+            extractor.collect_with_progress_with_options(Path::new("/mock"), &options, &progress);
+
+        assert!(result.is_ok());
+        let files = result.unwrap();
+        assert_eq!(files.len(), 1);
+        assert_eq!(files[0], Path::new("/mock/src/main.rs"));
     }
 }
