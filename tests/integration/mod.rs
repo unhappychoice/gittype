@@ -130,7 +130,11 @@ pub fn extract_challenges_for_test(
     repo_path: &Path,
     options: ExtractionOptions,
 ) -> gittype::Result<Vec<Challenge>> {
-    let files = repo_extractor.collect_with_progress(repo_path, &NoOpProgressReporter)?;
+    let files = repo_extractor.collect_with_progress_with_options(
+        repo_path,
+        &options,
+        &NoOpProgressReporter,
+    )?;
 
     let chunks = extract_chunks_from_scanned_files_for_test(&files, &options)?;
 
