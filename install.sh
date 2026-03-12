@@ -152,7 +152,7 @@ install_gittype() {
     
     # Create temporary directory
     temp_dir=$(mktemp -d)
-    trap "rm -rf $temp_dir" EXIT
+    trap 'rm -rf $temp_dir' EXIT
     
     # Download archive
     echo -e "${BLUE}Downloading...${NC}"
