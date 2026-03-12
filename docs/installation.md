@@ -23,6 +23,12 @@ cargo install --path .
 cargo install gittype
 ```
 
+## Install from Homebrew
+
+```bash
+brew install gittype
+```
+
 ## Verify Installation
 
 ```bash

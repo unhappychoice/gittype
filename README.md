@@ -36,9 +36,8 @@ curl -sSL https://raw.githubusercontent.com/unhappychoice/gittype/main/install.s
 
 ### Homebrew (macOS/Linux)
 ```bash
-brew install unhappychoice/tap/gittype
+brew install gittype
 ```
-
 
 ### Cargo (Universal)
 ```bash
