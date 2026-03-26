@@ -82,7 +82,7 @@ async-trait = "0.1"
 atty = "0.2"
 bincode = { version = "2.0", features = ["serde"] }
 flate2 = "1.1"
-sha2 = "0.10"
+sha2 = "0.11"
 shaku = "0.6"
 
 [dev-dependencies]
