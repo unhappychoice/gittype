@@ -151,3 +151,7 @@ Prefer watching code over typing it? Check out [**Gitlogue**](https://github.com
 ---
 
 *Built with ❤️ and way too much caffeine by developers who got tired of typing "hello world"*
+
+## Author
+
+[@unhappychoice](https://unhappychoice.com)
