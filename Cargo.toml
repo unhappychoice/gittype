@@ -87,7 +87,7 @@ shaku = "0.6"
 
 [dev-dependencies]
 paste = "1.0"
-insta = "1.46"
+insta = "1.47"
 criterion = "0.8"
 gittype = { path = ".", default-features = false, features = ["test-mocks"] }
 
