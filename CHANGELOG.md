@@ -5,6 +5,61 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2026-04-20
+
+### ✨ Features
+
+- feat: support for exclusions file .gittypeignore ([1528a67](https://github.com/unhappychoice/gittype/commit/1528a67))
+- feat(erlang): add Erlang to CLI, TUI, and theme color schemes ([9d72357](https://github.com/unhappychoice/gittype/commit/9d72357))
+- feat(erlang): add Erlang language model and tree-sitter parser ([eabc10e](https://github.com/unhappychoice/gittype/commit/eabc10e))
+- feat(elixir): add Elixir to CLI, TUI, and theme color schemes ([c1a0325](https://github.com/unhappychoice/gittype/commit/c1a0325))
+- feat(elixir): add Elixir language model and tree-sitter parser ([a2cc689](https://github.com/unhappychoice/gittype/commit/a2cc689))
+
+### 🐛 Bug Fixes
+
+- fix: show correct stage number on stage summary for first session (#409) ([fdbfb4a](https://github.com/unhappychoice/gittype/commit/fdbfb4a))
+- fix: satisfy clippy::unnecessary_sort_by (new in clippy 1.95) ([9b64c33](https://github.com/unhappychoice/gittype/commit/9b64c33))
+- fix: adapt Dart parser to tree-sitter-dart 0.1.0 grammar ([7d761c5](https://github.com/unhappychoice/gittype/commit/7d761c5))
+- fix(haskell): skip Haddock comments during typing practice ([e69bbdb](https://github.com/unhappychoice/gittype/commit/e69bbdb))
+- fix(test): use proper byte_to_char_cache in typing core test helper ([16359f8](https://github.com/unhappychoice/gittype/commit/16359f8))
+
+### 📝 Other Changes
+
+- chore: bump version to v0.10.0 ([e56acf6](https://github.com/unhappychoice/gittype/commit/e56acf6))
+- chore(deps): bump tree-sitter-c-sharp from 0.23.1 to 0.23.5 ([c739ead](https://github.com/unhappychoice/gittype/commit/c739ead))
+- chore(deps): bump rayon from 1.11.0 to 1.12.0 ([60adbd6](https://github.com/unhappychoice/gittype/commit/60adbd6))
+- chore(deps): bump rand from 0.10.0 to 0.10.1 ([c8e7a39](https://github.com/unhappychoice/gittype/commit/c8e7a39))
+- chore(deps): bump insta from 1.47.1 to 1.47.2 ([731e95f](https://github.com/unhappychoice/gittype/commit/731e95f))
+- chore(deps): bump insta from 1.47.0 to 1.47.1 ([538e8b0](https://github.com/unhappychoice/gittype/commit/538e8b0))
+- chore(deps): bump tree-sitter-rust from 0.24.1 to 0.24.2 ([f1382dc](https://github.com/unhappychoice/gittype/commit/f1382dc))
+- chore(deps): bump uuid from 1.22.0 to 1.23.0 ([92c25ca](https://github.com/unhappychoice/gittype/commit/92c25ca))
+- chore(deps): bump insta from 1.46.3 to 1.47.0 ([af8bf7b](https://github.com/unhappychoice/gittype/commit/af8bf7b))
+- docs: add author section with website link ([bec6d77](https://github.com/unhappychoice/gittype/commit/bec6d77))
+- chore(deps): bump sha2 from 0.10.9 to 0.11.0 ([02b3af7](https://github.com/unhappychoice/gittype/commit/02b3af7))
+- chore(deps): bump env_logger from 0.11.9 to 0.11.10 ([23bcd2e](https://github.com/unhappychoice/gittype/commit/23bcd2e))
+- chore(deps): bump tree-sitter-rust from 0.24.0 to 0.24.1 ([3fbcff1](https://github.com/unhappychoice/gittype/commit/3fbcff1))
+- chore(deps): bump rusqlite from 0.38.0 to 0.39.0 ([d33ea4e](https://github.com/unhappychoice/gittype/commit/d33ea4e))
+- chore(deps): bump clap from 4.5.60 to 4.6.0 ([dceff7b](https://github.com/unhappychoice/gittype/commit/dceff7b))
+- chore(deps): bump tree-sitter-dart from 0.0.4 to 0.1.0 ([42b1021](https://github.com/unhappychoice/gittype/commit/42b1021))
+- chore(deps): bump once_cell from 1.21.3 to 1.21.4 ([56ba3f7](https://github.com/unhappychoice/gittype/commit/56ba3f7))
+- chore(deps): bump tree-sitter-scala from 0.24.0 to 0.25.0 ([a280ccc](https://github.com/unhappychoice/gittype/commit/a280ccc))
+- docs: Update installation instructions for Homebrew ([f3907e9](https://github.com/unhappychoice/gittype/commit/f3907e9))
+- chore(deps): bump uuid from 1.21.0 to 1.22.0 ([7ca4eab](https://github.com/unhappychoice/gittype/commit/7ca4eab))
+- chore(deps): bump tokio from 1.49.0 to 1.50.0 ([6a559fb](https://github.com/unhappychoice/gittype/commit/6a559fb))
+- chore(deps): bump tree-sitter-elixir from 0.3.4 to 0.3.5 ([0c428b9](https://github.com/unhappychoice/gittype/commit/0c428b9))
+- chore(deps): bump chrono from 0.4.43 to 0.4.44 ([7f7239b](https://github.com/unhappychoice/gittype/commit/7f7239b))
+- chore(deps): bump clap from 4.5.59 to 4.5.60 ([f1a83a5](https://github.com/unhappychoice/gittype/commit/f1a83a5))
+- chore(deps): bump anyhow from 1.0.101 to 1.0.102 ([f3021b2](https://github.com/unhappychoice/gittype/commit/f3021b2))
+- chore(deps): bump clap from 4.5.58 to 4.5.59 ([a144146](https://github.com/unhappychoice/gittype/commit/a144146))
+- chore(deps): bump uuid from 1.20.0 to 1.21.0 ([16355be](https://github.com/unhappychoice/gittype/commit/16355be))
+- docs: add Erlang to supported languages documentation ([b63f7be](https://github.com/unhappychoice/gittype/commit/b63f7be))
+- test(erlang): add extractor and typing core integration tests ([54a798a](https://github.com/unhappychoice/gittype/commit/54a798a))
+- docs: add Elixir to supported languages documentation ([51b1d22](https://github.com/unhappychoice/gittype/commit/51b1d22))
+- test(elixir): add extractor and typing core integration tests ([90a6697](https://github.com/unhappychoice/gittype/commit/90a6697))
+- chore(deps): bump rusqlite from 0.37.0 to 0.38.0 ([148d100](https://github.com/unhappychoice/gittype/commit/148d100))
+- chore: update flake.nix hashes for v0.9.0 ([e0ddb6e](https://github.com/unhappychoice/gittype/commit/e0ddb6e))
+
+
 ## [0.9.0] - 2026-02-12
 
 ### ✨ Features
@@ -65,7 +120,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📝 Other Changes
 
-- chore: bump version to v0.9.0 ([88bdde2](https://github.com/unhappychoice/gittype/commit/88bdde2))
+- chore: bump version to v0.9.0 ([3a8b364](https://github.com/unhappychoice/gittype/commit/3a8b364))
 - test: add comprehensive info_dialog tests ([3bd1aa8](https://github.com/unhappychoice/gittype/commit/3bd1aa8))
 - test: cover side-effect handlers in screen_transition_manager ([e5473f5](https://github.com/unhappychoice/gittype/commit/e5473f5))
 - test: add infrastructure and integration tests ([0ff3063](https://github.com/unhappychoice/gittype/commit/0ff3063))
