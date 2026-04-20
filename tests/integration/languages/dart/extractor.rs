@@ -17,10 +17,9 @@ void processData(List<String> data) {
   data.forEach(print);
 }
 "#,
-    total_chunks: 6,
+    total_chunks: 4,
     chunk_counts: {
         Function: 3,
-        CodeBlock: 2,
         File: 1,
     }
 }
@@ -153,10 +152,12 @@ enum Color {
 
 enum Status { pending, completed, failed }
 "#,
-    total_chunks: 3,
+    total_chunks: 5,
     chunk_counts: {
         File: 1,
         Enum: 2,
+        Conditional: 1,
+        CodeBlock: 1,
     }
 }
 
@@ -177,10 +178,10 @@ var isLoggedIn = false;
 late String userId;
 late DatabaseConnection db;
 "#,
-    total_chunks: 9,
+    total_chunks: 7,
     chunk_counts: {
         File: 1,
-        Variable: 8,
+        Variable: 6,
     }
 }
 
@@ -387,11 +388,11 @@ class DataProcessor {
   }
 }
 "#,
-    total_chunks: 45,
+    total_chunks: 50,
     chunk_counts: {
         Class: 2,
         Function: 2,
-        Variable: 20,
+        Variable: 25,
         Loop: 4,
         Conditional: 8,
         CodeBlock: 8,

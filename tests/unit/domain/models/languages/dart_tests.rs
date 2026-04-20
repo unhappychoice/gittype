@@ -30,7 +30,9 @@ fn test_is_valid_comment_node() {
     let lang = Dart;
     let code = "// comment\n/// doc comment\nvoid main() { }";
     let mut parser = tree_sitter::Parser::new();
-    parser.set_language(&tree_sitter_dart::language()).unwrap();
+    parser
+        .set_language(&tree_sitter_dart::LANGUAGE.into())
+        .unwrap();
     let tree = parser.parse(code, None).unwrap();
     let root = tree.root_node();
 

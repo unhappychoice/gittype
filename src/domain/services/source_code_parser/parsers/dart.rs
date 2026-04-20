@@ -7,23 +7,25 @@ pub struct DartExtractor;
 
 impl LanguageExtractor for DartExtractor {
     fn tree_sitter_language(&self) -> tree_sitter::Language {
-        tree_sitter_dart::language()
+        tree_sitter_dart::LANGUAGE.into()
     }
 
     fn query_patterns(&self) -> &str {
         "
-            (class_definition (identifier) @name) @class
-            (enum_declaration (identifier) @name) @enum
+            (class_declaration name: (identifier) @name) @class
+            (enum_declaration name: (identifier) @name) @enum
             (mixin_declaration (identifier) @name) @mixin
-            (extension_declaration (identifier) @name) @extension
-            (lambda_expression (function_signature (identifier) @name)) @function
-            (method_signature (function_signature (identifier) @name)) @method
-            (local_variable_declaration (initialized_variable_definition (identifier) @name)) @variable
+            (extension_declaration name: (identifier) @name) @extension
+            (source_file (function_signature name: (_) @name) @function)
+            (method_signature (function_signature name: (_) @name)) @method
+            (local_variable_declaration (initialized_variable_definition name: (identifier) @name)) @variable
+            (static_final_declaration (identifier) @name) @variable
+            (initialized_identifier name: (identifier) @name) @variable
         "
     }
 
     fn comment_query(&self) -> &str {
-        "[(comment) (documentation_comment)] @comment"
+        "(comment) @comment"
     }
 
     fn capture_name_to_chunk_type(&self, capture_name: &str) -> Option<ChunkType> {
@@ -104,7 +106,7 @@ impl DartExtractor {
     pub fn create_parser() -> Result<Parser> {
         let mut parser = Parser::new();
         parser
-            .set_language(&tree_sitter_dart::language())
+            .set_language(&tree_sitter_dart::LANGUAGE.into())
             .map_err(|e| {
                 GitTypeError::ExtractionFailed(format!("Failed to set Dart language: {}", e))
             })?;

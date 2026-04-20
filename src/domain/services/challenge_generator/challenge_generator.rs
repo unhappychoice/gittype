@@ -46,7 +46,7 @@ impl ChallengeGenerator {
             })
             .collect();
 
-        valid_chunks.sort_by(|a, b| b.content.len().cmp(&a.content.len()));
+        valid_chunks.sort_by_key(|b| std::cmp::Reverse(b.content.len()));
 
         let total_chunks = valid_chunks.len();
         let progress_tracker = ProgressTracker::new(total_chunks);
