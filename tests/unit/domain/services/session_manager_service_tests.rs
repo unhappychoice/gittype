@@ -418,6 +418,45 @@ fn test_get_stage_info_completed() {
     assert_eq!(total, 3);
 }
 
+// Regression: ensure the StageSummary screen displays the correct stage
+// number after each completion in a fresh session initialized via reset()
+// (the path used by FinalizingStep).
+#[test]
+fn test_stage_number_progression_after_reset() {
+    let manager = create_session_manager();
+    manager.reset();
+    manager.reduce(SessionAction::Start).unwrap();
+
+    // After Start, stage info reports the upcoming stage (1 of 3).
+    let (current, _) = manager.get_stage_info().unwrap();
+    assert_eq!(current, 1);
+    assert!(!manager.is_session_completed().unwrap());
+
+    // Stage 1 complete -> next stage is 2, displayed stage is 1.
+    manager
+        .reduce(SessionAction::CompleteStage(create_dummy_stage_result()))
+        .unwrap();
+    let (current, _) = manager.get_stage_info().unwrap();
+    assert_eq!(current, 2);
+    assert!(!manager.is_session_completed().unwrap());
+
+    // Stage 2 complete -> next stage is 3, displayed stage is 2.
+    manager
+        .reduce(SessionAction::CompleteStage(create_dummy_stage_result()))
+        .unwrap();
+    let (current, _) = manager.get_stage_info().unwrap();
+    assert_eq!(current, 3);
+    assert!(!manager.is_session_completed().unwrap());
+
+    // Stage 3 complete -> session completed, displayed stage is 3.
+    manager
+        .reduce(SessionAction::CompleteStage(create_dummy_stage_result()))
+        .unwrap();
+    let (current, _) = manager.get_stage_info().unwrap();
+    assert_eq!(current, 3);
+    assert!(manager.is_session_completed().unwrap());
+}
+
 // ============================================
 // Session duration
 // ============================================
