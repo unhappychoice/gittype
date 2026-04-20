@@ -106,7 +106,7 @@ impl SourceCodeParser {
             })
             .collect();
 
-        valid_files.sort_by(|a, b| b.2.cmp(&a.2)); // Sort by size (largest first)
+        valid_files.sort_by_key(|b| std::cmp::Reverse(b.2)); // Sort by size (largest first)
         valid_files
     }
 
