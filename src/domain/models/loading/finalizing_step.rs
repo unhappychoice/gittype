@@ -1,12 +1,11 @@
 use super::{ExecutionContext, Step, StepResult, StepType};
-use crate::domain::models::{DifficultyLevel, SessionConfig, SessionState};
+use crate::domain::models::{DifficultyLevel, SessionConfig};
 use crate::domain::services::stage_builder_service::StageRepository;
 use crate::domain::services::SessionManager;
 use crate::infrastructure::git::LocalGitRepositoryClient;
 use crate::presentation::ui::Colors;
 use crate::{GitTypeError, Result};
 use ratatui::style::Color;
-use std::time::Instant;
 
 #[derive(Debug, Clone)]
 pub struct FinalizingStep;
@@ -114,12 +113,6 @@ impl Step for FinalizingStep {
 
                 // Set git repository context
                 concrete_session_manager.set_git_repository(git_repository);
-
-                // Start session by setting state to InProgress
-                concrete_session_manager.set_state(SessionState::InProgress {
-                    current_stage: 0,
-                    started_at: Instant::now(),
-                });
             }
         } else {
             log::warn!("SessionManager not available in context, skipping session initialization");
