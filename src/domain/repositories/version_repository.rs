@@ -146,3 +146,109 @@ impl VersionRepositoryInterface for VersionRepository {
         Box::pin(VersionRepository::fetch_latest_version(self))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::{Duration, Utc};
+
+    use crate::infrastructure::http::github_api_client::{
+        GitHubApiClient, GitHubApiClientFactoryImpl,
+    };
+    use crate::GitTypeError;
+
+    struct FailingGitHubApiClientFactory;
+
+    impl GitHubApiClientFactory for FailingGitHubApiClientFactory {
+        fn create(&self) -> Result<GitHubApiClient> {
+            Err(GitTypeError::ExtractionFailed(
+                "failed to create client".to_string(),
+            ))
+        }
+    }
+
+    fn create_repository(factory: Arc<dyn GitHubApiClientFactory>) -> VersionRepository {
+        VersionRepository {
+            github_client_factory: factory,
+            file_storage: Arc::new(FileStorage::new()),
+        }
+    }
+
+    #[tokio::test]
+    async fn fetch_latest_version_returns_mocked_api_version() {
+        let repository = create_repository(Arc::new(GitHubApiClientFactoryImpl::default()));
+
+        let version = repository.fetch_latest_version().await.unwrap();
+
+        assert_eq!(version, "1.0.0");
+    }
+
+    #[tokio::test]
+    async fn version_repository_trait_method_delegates_to_repository() {
+        let repository = create_repository(Arc::new(GitHubApiClientFactoryImpl::default()));
+
+        let version = VersionRepositoryInterface::fetch_latest_version(&repository)
+            .await
+            .unwrap();
+
+        assert_eq!(version, "1.0.0");
+    }
+
+    #[tokio::test]
+    async fn fetch_latest_version_returns_factory_error_without_cache() {
+        let repository = create_repository(Arc::new(FailingGitHubApiClientFactory));
+
+        let error = repository.fetch_latest_version().await.unwrap_err();
+
+        assert!(matches!(
+            error,
+            GitTypeError::ExtractionFailed(message) if message.contains("failed to create client")
+        ));
+    }
+
+    #[test]
+    fn cache_path_uses_version_cache_filename() {
+        let repository = create_repository(Arc::new(GitHubApiClientFactoryImpl::default()));
+
+        let cache_path = repository.get_version_cache_path().unwrap();
+
+        assert!(cache_path.ends_with("version_cache.json"));
+    }
+
+    #[test]
+    fn normalize_version_tag_strips_optional_v_prefix() {
+        assert_eq!(VersionRepository::normalize_version_tag("v1.2.3"), "1.2.3");
+        assert_eq!(VersionRepository::normalize_version_tag("1.2.3"), "1.2.3");
+    }
+
+    #[test]
+    fn cache_validation_requires_recent_entry_and_matching_current_version() {
+        let repository = create_repository(Arc::new(GitHubApiClientFactoryImpl::default()));
+        let fresh_entry = VersionCacheEntry {
+            latest_version: "1.0.0".to_string(),
+            current_version: env!("CARGO_PKG_VERSION").to_string(),
+            update_available: false,
+            last_checked: Utc::now() - Duration::hours(1),
+        };
+        let stale_entry = VersionCacheEntry {
+            last_checked: Utc::now() - Duration::hours(25),
+            ..fresh_entry.clone()
+        };
+        let mismatched_version_entry = VersionCacheEntry {
+            current_version: "0.0.0".to_string(),
+            ..fresh_entry.clone()
+        };
+
+        assert!(repository.is_cache_valid(&fresh_entry, 24));
+        assert!(!repository.is_cache_valid(&stale_entry, 24));
+        assert!(!repository.is_cache_valid(&mismatched_version_entry, 24));
+    }
+
+    #[test]
+    fn cache_helpers_short_circuit_in_debug_builds() {
+        let repository = create_repository(Arc::new(GitHubApiClientFactoryImpl::default()));
+
+        assert!(repository.get_cached_version().unwrap().is_none());
+        assert!(repository.save_to_cache("1.2.3").is_ok());
+    }
+}
