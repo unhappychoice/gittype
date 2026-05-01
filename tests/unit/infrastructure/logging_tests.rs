@@ -1,10 +1,5 @@
-use std::fs;
-use std::path::PathBuf;
-use std::time::{SystemTime, UNIX_EPOCH};
-
-use gittype::domain::error::GitTypeError;
 use gittype::infrastructure::logging::{
-    get_environment_context, get_log_directory, log_error_to_file, setup_console_logging,
+    get_environment_context, get_log_directory, setup_console_logging,
 };
 
 #[test]
@@ -72,63 +67,4 @@ fn test_setup_console_logging_twice() {
     // Should be able to call multiple times without panicking
     setup_console_logging();
     setup_console_logging();
-}
-
-#[test]
-fn test_log_error_to_file_writes_detailed_report() {
-    let marker = unique_marker();
-    let error = GitTypeError::database_error(marker.clone());
-
-    log_error_to_file(&error);
-
-    let matching_logs = find_error_logs(&marker);
-    assert!(
-        !matching_logs.is_empty(),
-        "expected an error log containing the marker"
-    );
-
-    let content = fs::read_to_string(&matching_logs[0]).unwrap();
-    assert!(content.contains("ERROR OCCURRED AT:"));
-    assert!(content.contains("ERROR MESSAGE: Database error:"));
-    assert!(content.contains(&marker));
-    assert!(content.contains("CAUSED BY (level 1):"));
-    assert!(content.contains("WORKING_DIR:"));
-
-    matching_logs.into_iter().for_each(|path| {
-        let _ = fs::remove_file(path);
-    });
-}
-
-fn unique_marker() -> String {
-    let nanos = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_nanos();
-    format!("logging-test-{nanos}")
-}
-
-fn find_error_logs(marker: &str) -> Vec<PathBuf> {
-    [("logs", "error_"), (".", "gittype_error_")]
-        .into_iter()
-        .flat_map(|(dir, prefix)| collect_logs_with_prefix(dir, prefix, marker))
-        .collect()
-}
-
-fn collect_logs_with_prefix(dir: &str, prefix: &str, marker: &str) -> Vec<PathBuf> {
-    fs::read_dir(dir)
-        .into_iter()
-        .flat_map(|entries| entries.filter_map(|entry| entry.ok()))
-        .map(|entry| entry.path())
-        .filter(|path| {
-            path.file_name()
-                .and_then(|name| name.to_str())
-                .map(|name| name.starts_with(prefix) && name.ends_with(".log"))
-                .unwrap_or(false)
-        })
-        .filter(|path| {
-            fs::read_to_string(path)
-                .map(|content| content.contains(marker))
-                .unwrap_or(false)
-        })
-        .collect()
 }

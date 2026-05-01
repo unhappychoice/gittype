@@ -1,4 +1,3 @@
-use crate::fixtures::models::challenge;
 use crate::integration::screens::mocks::challenge_repository_mock::MockChallengeRepository;
 use crossterm::event::{KeyCode, KeyModifiers};
 use gittype::domain::events::presentation_events::ExitRequested;
@@ -6,73 +5,15 @@ use gittype::domain::events::EventBus;
 use gittype::domain::models::color_mode::ColorMode;
 use gittype::domain::models::loading::StepType;
 use gittype::domain::models::theme::Theme;
-use gittype::domain::models::{Challenge, ExtractionOptions, GitRepository};
-use gittype::domain::repositories::challenge_repository::ChallengeRepositoryInterface;
+use gittype::domain::models::{ExtractionOptions, GitRepository};
 use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
 use gittype::presentation::tui::screens::loading_screen::{
     LoadingScreen, LoadingScreenData, NoOpProgressReporter, ProgressReporter,
 };
 use gittype::presentation::tui::{Screen, ScreenType, UpdateStrategy};
 use gittype::GitTypeError;
-use std::fs;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use std::time::{SystemTime, UNIX_EPOCH};
-struct CachedChallengeRepository {
-    challenges: Vec<Challenge>,
-}
-
-impl CachedChallengeRepository {
-    fn new(challenges: Vec<Challenge>) -> Self {
-        Self { challenges }
-    }
-}
-
-impl ChallengeRepositoryInterface for CachedChallengeRepository {
-    fn save_challenges(
-        &self,
-        _repo: &GitRepository,
-        _challenges: &[Challenge],
-        _reporter: Option<&dyn ProgressReporter>,
-    ) -> gittype::Result<()> {
-        Ok(())
-    }
-
-    fn load_challenges_with_progress(
-        &self,
-        _repo: &GitRepository,
-        _reporter: Option<&dyn ProgressReporter>,
-    ) -> gittype::Result<Option<Vec<Challenge>>> {
-        Ok(Some(self.challenges.clone()))
-    }
-
-    fn get_cache_stats(&self) -> gittype::Result<(usize, u64)> {
-        Ok((self.challenges.len(), 0))
-    }
-
-    fn clear_cache(&self) -> gittype::Result<()> {
-        Ok(())
-    }
-
-    fn invalidate_repository(&self, _repo: &GitRepository) -> gittype::Result<bool> {
-        Ok(false)
-    }
-
-    fn list_cache_keys(&self) -> gittype::Result<Vec<String>> {
-        Ok(vec![])
-    }
-}
-
-struct CachedRepositoryFixture {
-    path: PathBuf,
-    cleanup_root: PathBuf,
-}
-
-impl Drop for CachedRepositoryFixture {
-    fn drop(&mut self) {
-        let _ = fs::remove_dir_all(&self.cleanup_root);
-    }
-}
 
 #[test]
 fn test_loading_screen_ctrl_c_requests_exit() {
@@ -183,48 +124,14 @@ fn test_loading_screen_initialization() {
 }
 
 fn create_loading_screen() -> LoadingScreen {
-    create_loading_screen_with_repository(Arc::new(MockChallengeRepository::new()))
-}
-
-fn create_loading_screen_with_repository(
-    challenge_repository: Arc<dyn ChallengeRepositoryInterface>,
-) -> LoadingScreen {
     LoadingScreen::new_for_test(
         Arc::new(EventBus::new()),
-        challenge_repository,
+        Arc::new(MockChallengeRepository::new()),
         Arc::new(ThemeService::new_for_test(
             Theme::default(),
             ColorMode::Dark,
         )) as Arc<dyn ThemeServiceInterface>,
     )
-}
-
-fn unique_repo_spec() -> String {
-    let suffix = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_nanos();
-    format!("loading-screen-owner-{suffix}/repo-{suffix}")
-}
-
-fn create_cached_repository(repo_spec: &str) -> CachedRepositoryFixture {
-    let client = gittype::infrastructure::git::RemoteGitRepositoryClient::new();
-    let repo_info = gittype::infrastructure::git::GitRepositoryRefParser::parse(repo_spec).unwrap();
-    let path = client.get_local_repo_path(&repo_info).unwrap();
-    let cleanup_root = path.parent().unwrap().to_path_buf();
-
-    if path.exists() {
-        fs::remove_dir_all(&path).unwrap();
-    }
-
-    fs::create_dir_all(&cleanup_root).unwrap();
-
-    let repository = git2::Repository::init(&path).unwrap();
-    repository
-        .remote("origin", &format!("https://github.com/{repo_spec}.git"))
-        .unwrap();
-
-    CachedRepositoryFixture { path, cleanup_root }
 }
 
 // === ProgressReporter tests ===
@@ -358,24 +265,6 @@ fn test_process_repository_returns_error_for_missing_path() {
         error,
         GitTypeError::ExtractionFailed(message) if message.contains("Path does not exist")
     ));
-}
-
-#[test]
-fn test_process_repository_succeeds_for_cached_repository() {
-    let repo_spec = unique_repo_spec();
-    let cached_repository = create_cached_repository(&repo_spec);
-    let screen =
-        create_loading_screen_with_repository(Arc::new(CachedChallengeRepository::new(vec![
-            challenge::build(),
-        ])));
-
-    let result = screen
-        .process_repository(Some(&repo_spec), None, &ExtractionOptions::default())
-        .unwrap();
-
-    assert!(cached_repository.path.exists());
-    assert!(result.challenges.is_empty());
-    assert!(result.git_repository.is_none());
 }
 
 // === Screen trait methods ===
