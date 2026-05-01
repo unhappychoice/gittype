@@ -108,15 +108,21 @@ fn unique_marker() -> String {
 }
 
 fn find_error_logs(marker: &str) -> Vec<PathBuf> {
-    fs::read_dir("logs")
+    [("logs", "error_"), (".", "gittype_error_")]
+        .into_iter()
+        .flat_map(|(dir, prefix)| collect_logs_with_prefix(dir, prefix, marker))
+        .collect()
+}
+
+fn collect_logs_with_prefix(dir: &str, prefix: &str, marker: &str) -> Vec<PathBuf> {
+    fs::read_dir(dir)
         .into_iter()
         .flat_map(|entries| entries.filter_map(|entry| entry.ok()))
         .map(|entry| entry.path())
-        .filter(|path| path.file_name().and_then(|name| name.to_str()).is_some())
         .filter(|path| {
             path.file_name()
                 .and_then(|name| name.to_str())
-                .map(|name| name.starts_with("error_") && name.ends_with(".log"))
+                .map(|name| name.starts_with(prefix) && name.ends_with(".log"))
                 .unwrap_or(false)
         })
         .filter(|path| {
