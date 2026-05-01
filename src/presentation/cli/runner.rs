@@ -107,3 +107,159 @@ fn run_repo_command(repo_command: &RepoCommands) -> Result<()> {
         RepoCommands::Play => run_repo_play(),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::domain::models::{Challenge, GitRepository};
+    use crate::presentation::tui::screens::loading_screen::ProgressReporter;
+
+    #[derive(Debug, Default)]
+    struct MockChallengeRepository {
+        stats: Option<(usize, u64)>,
+        stats_error: Option<String>,
+        clear_error: Option<String>,
+        keys: Vec<String>,
+        list_error: Option<String>,
+    }
+
+    impl MockChallengeRepository {
+        fn with_clear_error(message: &str) -> Self {
+            Self {
+                clear_error: Some(message.to_string()),
+                ..Default::default()
+            }
+        }
+
+        fn with_keys(keys: Vec<String>) -> Self {
+            Self {
+                keys,
+                ..Default::default()
+            }
+        }
+
+        fn with_list_error(message: &str) -> Self {
+            Self {
+                list_error: Some(message.to_string()),
+                ..Default::default()
+            }
+        }
+
+        fn with_stats(stats: (usize, u64)) -> Self {
+            Self {
+                stats: Some(stats),
+                ..Default::default()
+            }
+        }
+
+        fn with_stats_error(message: &str) -> Self {
+            Self {
+                stats_error: Some(message.to_string()),
+                ..Default::default()
+            }
+        }
+    }
+
+    impl ChallengeRepositoryInterface for MockChallengeRepository {
+        fn save_challenges(
+            &self,
+            _repo: &GitRepository,
+            _challenges: &[Challenge],
+            _reporter: Option<&dyn ProgressReporter>,
+        ) -> Result<()> {
+            Ok(())
+        }
+
+        fn load_challenges_with_progress(
+            &self,
+            _repo: &GitRepository,
+            _reporter: Option<&dyn ProgressReporter>,
+        ) -> Result<Option<Vec<Challenge>>> {
+            Ok(None)
+        }
+
+        fn get_cache_stats(&self) -> Result<(usize, u64)> {
+            self.stats_error.as_ref().map_or_else(
+                || Ok(self.stats.unwrap_or((0, 0))),
+                |message| Err(GitTypeError::ExtractionFailed(message.clone())),
+            )
+        }
+
+        fn clear_cache(&self) -> Result<()> {
+            self.clear_error.as_ref().map_or_else(
+                || Ok(()),
+                |message| Err(GitTypeError::ExtractionFailed(message.clone())),
+            )
+        }
+
+        fn invalidate_repository(&self, _repo: &GitRepository) -> Result<bool> {
+            Ok(false)
+        }
+
+        fn list_cache_keys(&self) -> Result<Vec<String>> {
+            self.list_error.as_ref().map_or_else(
+                || Ok(self.keys.clone()),
+                |message| Err(GitTypeError::ExtractionFailed(message.clone())),
+            )
+        }
+    }
+
+    #[test]
+    fn run_cache_command_clear_wraps_repository_errors() {
+        let repository = MockChallengeRepository::with_clear_error("clear failed");
+        let result = run_cache_command(&CacheCommands::Clear, &repository);
+
+        assert!(matches!(
+            result,
+            Err(GitTypeError::TerminalError(message)) if message.contains("clear failed")
+        ));
+    }
+
+    #[test]
+    fn run_cache_command_list_handles_empty_and_populated_keys() {
+        [Vec::new(), vec!["owner/repo:abc123".to_string()]]
+            .into_iter()
+            .for_each(|keys| {
+                let repository = MockChallengeRepository::with_keys(keys);
+                assert!(run_cache_command(&CacheCommands::List, &repository).is_ok());
+            });
+    }
+
+    #[test]
+    fn run_cache_command_list_wraps_repository_errors() {
+        let repository = MockChallengeRepository::with_list_error("list failed");
+        let result = run_cache_command(&CacheCommands::List, &repository);
+
+        assert!(matches!(
+            result,
+            Err(GitTypeError::TerminalError(message)) if message.contains("list failed")
+        ));
+    }
+
+    #[test]
+    fn run_cache_command_stats_covers_all_size_buckets() {
+        [
+            (0, 0),
+            (1, 1023),
+            (2, 1024),
+            (3, 1024 * 1024),
+            (4, 1024 * 1024 * 1024),
+        ]
+        .into_iter()
+        .for_each(|stats| {
+            let repository = MockChallengeRepository::with_stats(stats);
+            assert!(run_cache_command(&CacheCommands::Stats, &repository).is_ok());
+        });
+    }
+
+    #[test]
+    fn run_cache_command_stats_wraps_repository_errors() {
+        let repository = MockChallengeRepository::with_stats_error("stats failed");
+        let result = run_cache_command(&CacheCommands::Stats, &repository);
+
+        assert!(matches!(
+            result,
+            Err(GitTypeError::TerminalError(message)) if message.contains("stats failed")
+        ));
+    }
+}
