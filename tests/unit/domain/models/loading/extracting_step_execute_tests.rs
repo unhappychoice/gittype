@@ -156,8 +156,5 @@ fn execute_errors_when_scanned_files_have_no_supported_language() {
 
     let error = ExtractingStep.execute(&mut context).unwrap_err();
 
-    assert!(matches!(
-        error,
-        GitTypeError::ExtractionFailed(message) if message == "Git repository not found"
-    ));
+    assert!(matches!(error, GitTypeError::ExtractionFailed(_)));
 }

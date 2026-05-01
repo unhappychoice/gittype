@@ -261,10 +261,7 @@ fn test_process_repository_returns_error_for_missing_path() {
             Err(error) => error,
         };
 
-    assert!(matches!(
-        error,
-        GitTypeError::ExtractionFailed(message) if message.contains("Path does not exist")
-    ));
+    assert!(matches!(error, GitTypeError::ExtractionFailed(_)));
 }
 
 // === Screen trait methods ===

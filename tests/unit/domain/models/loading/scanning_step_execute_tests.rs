@@ -145,6 +145,8 @@ fn execute_returns_empty_scanned_files_with_mock_file_storage() {
 
 #[test]
 fn execute_propagates_file_storage_errors() {
+    // MockFileStorage::walk_directory only returns an error for this exact path
+    // (see src/infrastructure/storage/file_storage.rs).
     let missing_path = PathBuf::from("/nonexistent/path");
     let screen = create_loading_screen();
     let mut context = create_context(None, Some(missing_path), Some(&screen));
