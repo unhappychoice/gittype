@@ -5,10 +5,14 @@ use gittype::domain::events::EventBus;
 use gittype::domain::models::color_mode::ColorMode;
 use gittype::domain::models::loading::StepType;
 use gittype::domain::models::theme::Theme;
-use gittype::domain::models::GitRepository;
+use gittype::domain::models::{ExtractionOptions, GitRepository};
 use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
-use gittype::presentation::tui::screens::loading_screen::{LoadingScreen, ProgressReporter};
+use gittype::presentation::tui::screens::loading_screen::{
+    LoadingScreen, LoadingScreenData, NoOpProgressReporter, ProgressReporter,
+};
 use gittype::presentation::tui::{Screen, ScreenType, UpdateStrategy};
+use gittype::GitTypeError;
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 #[test]
@@ -177,6 +181,17 @@ fn test_set_file_counts_multiple_step_types() {
     screen.set_file_counts(StepType::Generating, 1, 5, None);
 }
 
+#[test]
+fn test_no_op_progress_reporter_methods_are_safe() {
+    let reporter = NoOpProgressReporter;
+
+    reporter.set_step(StepType::Scanning);
+    reporter.set_current_file(Some("src/main.rs".to_string()));
+    reporter.set_file_counts(StepType::Generating, 1, 2, None);
+
+    assert!(reporter.finish().is_ok());
+}
+
 // === State methods ===
 
 #[test]
@@ -225,6 +240,28 @@ fn test_cleanup() {
 fn test_show_initial() {
     let screen = create_loading_screen();
     assert!(screen.show_initial().is_ok());
+}
+
+#[test]
+fn test_default_provider_returns_empty_processing_params() {
+    let data = LoadingScreen::default_provider().provide().unwrap();
+    let loading_data = data.downcast::<LoadingScreenData>().unwrap();
+
+    assert!(loading_data.processing_params.is_none());
+}
+
+#[test]
+fn test_process_repository_returns_error_for_missing_path() {
+    let screen = create_loading_screen();
+    let repo_path = PathBuf::from("/nonexistent/path");
+
+    let error =
+        match screen.process_repository(None, Some(&repo_path), &ExtractionOptions::default()) {
+            Ok(_) => panic!("process_repository should fail for missing path"),
+            Err(error) => error,
+        };
+
+    assert!(matches!(error, GitTypeError::ExtractionFailed(_)));
 }
 
 // === Screen trait methods ===

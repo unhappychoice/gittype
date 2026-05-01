@@ -20,7 +20,7 @@ use ratatui::Frame;
 use ratatui::Terminal;
 use std::any::Any;
 use std::io::Stdout;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 // Mock TerminalInterface for testing
 #[allow(dead_code)]
@@ -84,6 +84,11 @@ struct MockScreen {
     screen_type: ScreenType,
 }
 
+struct PushAwareScreen {
+    screen_type: ScreenType,
+    pushed_from: Arc<Mutex<Option<ScreenType>>>,
+}
+
 // Mock data provider for testing
 struct MockDataProvider;
 
@@ -96,6 +101,15 @@ impl ScreenDataProvider for MockDataProvider {
 impl MockScreen {
     fn new(screen_type: ScreenType) -> Self {
         Self { screen_type }
+    }
+}
+
+impl PushAwareScreen {
+    fn new(screen_type: ScreenType, pushed_from: Arc<Mutex<Option<ScreenType>>>) -> Self {
+        Self {
+            screen_type,
+            pushed_from,
+        }
     }
 }
 
@@ -112,6 +126,52 @@ impl Screen for MockScreen {
     }
 
     fn init_with_data(&self, _data: Box<dyn Any>) -> gittype::Result<()> {
+        Ok(())
+    }
+
+    fn update(&self) -> gittype::Result<bool> {
+        Ok(false)
+    }
+
+    fn render_ratatui(&self, _frame: &mut Frame) -> gittype::Result<()> {
+        Ok(())
+    }
+
+    fn handle_key_event(&self, _key_event: KeyEvent) -> gittype::Result<()> {
+        Ok(())
+    }
+
+    fn cleanup(&self) -> gittype::Result<()> {
+        Ok(())
+    }
+
+    fn get_update_strategy(&self) -> UpdateStrategy {
+        UpdateStrategy::InputOnly
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+impl Screen for PushAwareScreen {
+    fn get_type(&self) -> ScreenType {
+        self.screen_type.clone()
+    }
+
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(MockDataProvider)
+    }
+
+    fn init_with_data(&self, _data: Box<dyn Any>) -> gittype::Result<()> {
+        Ok(())
+    }
+
+    fn on_pushed_from(&self, source_screen: &dyn Screen) -> gittype::Result<()> {
+        *self.pushed_from.lock().unwrap() = Some(source_screen.get_type());
         Ok(())
     }
 
@@ -214,6 +274,16 @@ fn test_register_multiple_screens() {
     assert!(manager.get_screen(&ScreenType::Help).is_some());
     assert!(manager.get_screen(&ScreenType::Settings).is_some());
     assert!(manager.get_screen(&ScreenType::Analytics).is_some());
+}
+
+#[test]
+fn test_register_screen_interface() {
+    let mut manager = create_test_screen_manager();
+
+    let screen = Arc::new(MockScreen::new(ScreenType::Help)) as Arc<dyn Screen>;
+    manager.register_screen_interface(screen);
+
+    assert!(manager.get_screen(&ScreenType::Help).is_some());
 }
 
 #[test]
@@ -323,6 +393,66 @@ fn test_push_screen() {
 }
 
 #[test]
+fn test_push_screen_calls_on_pushed_from() {
+    let mut manager = create_test_screen_manager();
+    let pushed_from = Arc::new(Mutex::new(None));
+
+    manager.register_screen(MockScreen::new(ScreenType::Title));
+    manager.register_screen(PushAwareScreen::new(
+        ScreenType::Help,
+        Arc::clone(&pushed_from),
+    ));
+
+    manager.push_screen(ScreenType::Help).unwrap();
+
+    assert_eq!(*manager.get_current_screen_type(), ScreenType::Help);
+    assert_eq!(*pushed_from.lock().unwrap(), Some(ScreenType::Title));
+}
+
+#[test]
+fn test_pop_screen_restores_previous_screen() {
+    let mut manager = create_test_screen_manager();
+
+    manager.register_screen(MockScreen::new(ScreenType::Title));
+    manager.register_screen(MockScreen::new(ScreenType::Help));
+    manager.push_screen(ScreenType::Help).unwrap();
+
+    manager.pop_screen().unwrap();
+
+    assert_eq!(*manager.get_current_screen_type(), ScreenType::Title);
+    assert!(manager.get_screen_stack().is_empty());
+}
+
+#[test]
+fn test_pop_screen_without_history_is_noop() {
+    let mut manager = create_test_screen_manager();
+
+    manager.register_screen(MockScreen::new(ScreenType::Title));
+
+    manager.pop_screen().unwrap();
+
+    assert_eq!(*manager.get_current_screen_type(), ScreenType::Title);
+    assert!(manager.get_screen_stack().is_empty());
+}
+
+#[test]
+fn test_pop_to_screen_discards_intermediate_stack_entries() {
+    let mut manager = create_test_screen_manager();
+
+    [ScreenType::Title, ScreenType::Settings, ScreenType::Help]
+        .into_iter()
+        .map(MockScreen::new)
+        .for_each(|screen| manager.register_screen(screen));
+
+    manager.push_screen(ScreenType::Settings).unwrap();
+    manager.push_screen(ScreenType::Help).unwrap();
+    manager.pop_to_screen(ScreenType::Title).unwrap();
+
+    assert_eq!(*manager.get_current_screen_type(), ScreenType::Title);
+    assert!(manager.get_screen_stack().is_empty());
+}
+
+#[test]
 fn test_handle_transition_push() {
     let mut manager = create_test_screen_manager();
 
@@ -335,12 +465,65 @@ fn test_handle_transition_push() {
 }
 
 #[test]
+fn test_handle_transition_pop() {
+    let mut manager = create_test_screen_manager();
+
+    manager.register_screen(MockScreen::new(ScreenType::Title));
+    manager.register_screen(MockScreen::new(ScreenType::Help));
+    manager.push_screen(ScreenType::Help).unwrap();
+
+    manager.handle_transition(ScreenTransition::Pop).unwrap();
+
+    assert_eq!(*manager.get_current_screen_type(), ScreenType::Title);
+    assert!(manager.get_screen_stack().is_empty());
+}
+
+#[test]
+fn test_handle_transition_pop_to() {
+    let mut manager = create_test_screen_manager();
+
+    [ScreenType::Title, ScreenType::Settings, ScreenType::Help]
+        .into_iter()
+        .map(MockScreen::new)
+        .for_each(|screen| manager.register_screen(screen));
+
+    manager.push_screen(ScreenType::Settings).unwrap();
+    manager.push_screen(ScreenType::Help).unwrap();
+
+    manager
+        .handle_transition(ScreenTransition::PopTo(ScreenType::Title))
+        .unwrap();
+
+    assert_eq!(*manager.get_current_screen_type(), ScreenType::Title);
+    assert!(manager.get_screen_stack().is_empty());
+}
+
+#[test]
 fn test_handle_transition_exit() {
     let mut manager = create_test_screen_manager();
 
     let result = manager.handle_transition(ScreenTransition::Exit);
     assert!(result.is_ok());
     // Exit transition should succeed
+}
+
+#[test]
+fn test_handle_transition_exit_replaces_with_total_summary() {
+    let mut manager = create_test_screen_manager();
+
+    [
+        ScreenType::Title,
+        ScreenType::Help,
+        ScreenType::TotalSummary,
+    ]
+    .into_iter()
+    .map(MockScreen::new)
+    .for_each(|screen| manager.register_screen(screen));
+
+    manager.set_current_screen(ScreenType::Help).unwrap();
+    manager.handle_transition(ScreenTransition::Exit).unwrap();
+
+    assert_eq!(*manager.get_current_screen_type(), ScreenType::TotalSummary);
 }
 
 #[test]
@@ -353,4 +536,23 @@ fn test_handle_transition_none() {
     let result = manager.handle_transition(ScreenTransition::None);
     assert!(result.is_ok());
     assert_eq!(*manager.get_current_screen_type(), current);
+}
+
+#[test]
+fn test_cleanup_terminal_without_initialization_is_noop() {
+    let mut manager = create_test_screen_manager();
+
+    assert!(manager.cleanup_terminal().is_ok());
+    assert!(!manager.is_terminal_initialized());
+}
+
+#[test]
+fn test_mark_terminal_initialized_and_skip_cleanup_on_drop_toggle_flag() {
+    let mut manager = create_test_screen_manager();
+
+    manager.mark_terminal_initialized();
+    assert!(manager.is_terminal_initialized());
+
+    manager.skip_cleanup_on_drop();
+    assert!(!manager.is_terminal_initialized());
 }
