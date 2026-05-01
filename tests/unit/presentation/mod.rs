@@ -1,3 +1,4 @@
+pub mod cli_trending_tests;
 pub mod game;
 pub mod sharing_tests;
 pub mod tui;
