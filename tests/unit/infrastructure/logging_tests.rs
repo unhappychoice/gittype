@@ -1,9 +1,14 @@
 use gittype::infrastructure::logging::{
-    get_environment_context, get_log_directory, log_error_to_file, setup_console_logging,
+    get_environment_context, get_log_directory, log_error_to_file, log_panic_to_file,
+    setup_console_logging,
 };
 use gittype::GitTypeError;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Arc,
+};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 fn error_log_candidates(dir: &Path) -> Vec<PathBuf> {
@@ -54,6 +59,23 @@ fn with_env_var<T>(key: &str, value: &str, f: impl FnOnce() -> T) -> T {
     }
 
     result
+}
+
+fn log_panicked_payload(f: impl FnOnce() + std::panic::UnwindSafe) -> bool {
+    let previous_hook = std::panic::take_hook();
+    let was_logged = Arc::new(AtomicBool::new(false));
+    let hook_was_logged = Arc::clone(&was_logged);
+
+    std::panic::set_hook(Box::new(move |panic_info| {
+        log_panic_to_file(panic_info);
+        hook_was_logged.store(true, Ordering::SeqCst);
+    }));
+
+    let result = std::panic::catch_unwind(f);
+    std::panic::set_hook(previous_hook);
+
+    assert!(result.is_err());
+    was_logged.load(Ordering::SeqCst)
 }
 
 #[test]
@@ -148,4 +170,18 @@ fn test_log_error_to_file_writes_error_details() {
     written_logs.iter().for_each(|path| {
         let _ = fs::remove_file(path);
     });
+}
+
+#[test]
+fn test_log_panic_to_file_handles_str_payload() {
+    assert!(log_panicked_payload(|| panic!("logging panic str payload")));
+}
+
+#[test]
+fn test_log_panic_to_file_handles_string_payload() {
+    let message = unique_log_message();
+
+    assert!(log_panicked_payload(|| {
+        std::panic::panic_any(message);
+    }));
 }
