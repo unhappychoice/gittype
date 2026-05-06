@@ -84,6 +84,10 @@ struct MockScreen {
     screen_type: ScreenType,
 }
 
+struct ExitableScreen {
+    screen_type: ScreenType,
+}
+
 struct PushAwareScreen {
     screen_type: ScreenType,
     pushed_from: Arc<Mutex<Option<ScreenType>>>,
@@ -99,6 +103,12 @@ impl ScreenDataProvider for MockDataProvider {
 }
 
 impl MockScreen {
+    fn new(screen_type: ScreenType) -> Self {
+        Self { screen_type }
+    }
+}
+
+impl ExitableScreen {
     fn new(screen_type: ScreenType) -> Self {
         Self { screen_type }
     }
@@ -147,6 +157,51 @@ impl Screen for MockScreen {
 
     fn get_update_strategy(&self) -> UpdateStrategy {
         UpdateStrategy::InputOnly
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+impl Screen for ExitableScreen {
+    fn get_type(&self) -> ScreenType {
+        self.screen_type.clone()
+    }
+
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(MockDataProvider)
+    }
+
+    fn init_with_data(&self, _data: Box<dyn Any>) -> gittype::Result<()> {
+        Ok(())
+    }
+
+    fn update(&self) -> gittype::Result<bool> {
+        Ok(false)
+    }
+
+    fn render_ratatui(&self, _frame: &mut Frame) -> gittype::Result<()> {
+        Ok(())
+    }
+
+    fn handle_key_event(&self, _key_event: KeyEvent) -> gittype::Result<()> {
+        Ok(())
+    }
+
+    fn cleanup(&self) -> gittype::Result<()> {
+        Ok(())
+    }
+
+    fn get_update_strategy(&self) -> UpdateStrategy {
+        UpdateStrategy::InputOnly
+    }
+
+    fn is_exitable(&self) -> bool {
+        true
     }
 
     fn as_any(&self) -> &dyn Any {
@@ -391,6 +446,38 @@ fn test_set_current_screen() {
 }
 
 #[test]
+fn test_set_current_screen_uses_default_providers_for_registered_screen_types() {
+    let screen_types = [
+        ScreenType::Loading,
+        ScreenType::Typing,
+        ScreenType::StageSummary,
+        ScreenType::SessionSummary,
+        ScreenType::SessionFailure,
+        ScreenType::Records,
+        ScreenType::Analytics,
+        ScreenType::SessionDetail,
+        ScreenType::SessionSharing,
+        ScreenType::Animation,
+        ScreenType::VersionCheck,
+        ScreenType::InfoDialog,
+        ScreenType::DetailsDialog,
+        ScreenType::Panic,
+        ScreenType::TrendingLanguageSelection,
+        ScreenType::TrendingRepositorySelection,
+    ];
+
+    screen_types.into_iter().for_each(|screen_type| {
+        let mut manager = create_test_screen_manager();
+        manager.register_screen(MockScreen::new(screen_type.clone()));
+
+        let result = manager.set_current_screen(screen_type.clone());
+
+        assert!(result.is_ok(), "expected {:?} to initialize", screen_type);
+        assert_eq!(*manager.get_current_screen_type(), screen_type);
+    });
+}
+
+#[test]
 fn test_set_current_screen_not_registered() {
     let mut manager = create_test_screen_manager();
 
@@ -546,6 +633,19 @@ fn test_handle_transition_exit_replaces_with_total_summary() {
     manager.handle_transition(ScreenTransition::Exit).unwrap();
 
     assert_eq!(*manager.get_current_screen_type(), ScreenType::TotalSummary);
+}
+
+#[test]
+fn test_handle_transition_exit_keeps_exitable_screen_current() {
+    let mut manager = create_test_screen_manager();
+
+    manager.register_screen(ExitableScreen::new(ScreenType::Help));
+    manager.register_screen(MockScreen::new(ScreenType::TotalSummary));
+
+    manager.set_current_screen(ScreenType::Help).unwrap();
+    manager.handle_transition(ScreenTransition::Exit).unwrap();
+
+    assert_eq!(*manager.get_current_screen_type(), ScreenType::Help);
 }
 
 #[test]
