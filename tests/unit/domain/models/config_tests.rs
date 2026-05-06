@@ -162,8 +162,23 @@ fn test_config_serialize_deserialize() {
     let serialized = serde_json::to_string(&config).unwrap();
     let deserialized: Config = serde_json::from_str(&serialized).unwrap();
 
-    assert_eq!(config.theme.current_theme_id, deserialized.theme.current_theme_id);
-    assert_eq!(config.theme.current_color_mode, deserialized.theme.current_color_mode);
+    assert_eq!(
+        config.theme.current_theme_id,
+        deserialized.theme.current_theme_id
+    );
+    assert_eq!(
+        config.theme.current_color_mode,
+        deserialized.theme.current_color_mode
+    );
+}
+
+#[test]
+fn test_theme_config_deserialize_defaults_missing_theme_id() {
+    let deserialized: ThemeConfig =
+        serde_json::from_str(r#"{"current_color_mode":"Dark"}"#).unwrap();
+
+    assert_eq!(deserialized.current_theme_id, "default");
+    assert_eq!(deserialized.current_color_mode, ColorMode::Dark);
 }
 
 #[test]

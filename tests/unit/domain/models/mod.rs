@@ -1,5 +1,6 @@
 pub mod challenge_tests;
 pub mod color_scheme_tests;
+pub mod config_tests;
 pub mod countdown_tests;
 pub mod difficulty_level_tests;
 pub mod extraction_options_tests;
