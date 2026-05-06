@@ -184,4 +184,22 @@ mod tests {
 
         assert!(!repository.is_cache_valid(&entry, 24));
     }
+
+    #[test]
+    fn is_cache_valid_rejects_entry_for_different_current_version() {
+        let repository = create_repository();
+        let mut entry = create_cache_entry(Utc::now() - Duration::hours(1));
+        entry.current_version = "0.0.0".to_string();
+
+        assert!(!repository.is_cache_valid(&entry, 24));
+    }
+
+    #[test]
+    fn get_version_cache_path_uses_app_data_directory() {
+        let repository = create_repository();
+
+        let path = repository.get_version_cache_path().unwrap();
+
+        assert_eq!(path, PathBuf::from("/tmp/test/version_cache.json"));
+    }
 }
