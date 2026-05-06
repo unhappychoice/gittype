@@ -424,6 +424,30 @@ fn test_cleanup_terminal_static() {
 }
 
 #[test]
+fn test_initialize_terminal_rejects_non_tty_stdout() {
+    let mut manager = create_test_screen_manager();
+
+    let result = manager.initialize_terminal();
+
+    assert!(result.is_err());
+    assert!(result
+        .unwrap_err()
+        .to_string()
+        .contains("Not running in a terminal environment"));
+    assert!(!manager.is_terminal_initialized());
+}
+
+#[test]
+fn test_default_constructs_title_screen_manager() {
+    let mut manager = ScreenManagerImpl::<CrosstermBackend<Stdout>>::default();
+    manager.skip_cleanup_on_drop();
+
+    assert_eq!(*manager.get_current_screen_type(), ScreenType::Title);
+    assert!(manager.get_screen_stack().is_empty());
+    assert!(!manager.is_terminal_initialized());
+}
+
+#[test]
 fn test_render_current_screen_with_test_backend() {
     let mut manager = create_test_screen_manager();
 
