@@ -134,6 +134,33 @@ mod tests {
     }
 
     #[test]
+    fn test_clone_repository_replaces_incomplete_cache_before_clone_error() {
+        let client = RemoteGitRepositoryClient::new();
+        let repo_info = test_repo_info_with_origin("127.0.0.1:9", "unreachable-clone");
+        let path = client.get_local_repo_path(&repo_info).unwrap();
+        let cleanup_path = dirs::home_dir()
+            .unwrap()
+            .join(".gittype")
+            .join("repos")
+            .join(&repo_info.origin);
+        let _ = std::fs::remove_dir_all(&cleanup_path);
+        std::fs::create_dir_all(&path).unwrap();
+
+        let result = client.clone_repository(
+            &format!(
+                "https://{}/{}/{}",
+                repo_info.origin, repo_info.owner, repo_info.name
+            ),
+            |_, _| {},
+        );
+
+        assert!(matches!(result, Err(GitTypeError::RepositoryCloneError(_))));
+        assert!(path.parent().unwrap().exists());
+
+        let _ = std::fs::remove_dir_all(cleanup_path);
+    }
+
+    #[test]
     fn test_trait_methods_delegate_cache_and_complete_checks() {
         let client = RemoteGitRepositoryClient::new();
         let repo_info = test_repo_info("trait-cache");
@@ -163,13 +190,17 @@ mod tests {
     }
 
     fn test_repo_info(prefix: &str) -> GitRepositoryRef {
+        test_repo_info_with_origin("github.com", prefix)
+    }
+
+    fn test_repo_info_with_origin(origin: &str, prefix: &str) -> GitRepositoryRef {
         let nanos = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
 
         GitRepositoryRef {
-            origin: "github.com".to_string(),
+            origin: origin.to_string(),
             owner: "gittype-test".to_string(),
             name: format!("{}-{}", prefix, nanos),
         }
