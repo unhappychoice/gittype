@@ -91,6 +91,49 @@ mod tests {
     }
 
     #[test]
+    fn test_clone_repository_returns_existing_complete_cache() {
+        let client = RemoteGitRepositoryClient::new();
+        let repo_info = test_repo_info("cached-clone");
+        let path = client.get_local_repo_path(&repo_info).unwrap();
+        create_complete_git_structure(&path);
+        let mut progress_calls = 0;
+
+        let result = client
+            .clone_repository(
+                &format!("{}/{}", repo_info.owner, repo_info.name),
+                |_, _| {
+                    progress_calls += 1;
+                },
+            )
+            .unwrap();
+
+        assert_eq!(result, path);
+        assert_eq!(progress_calls, 0);
+
+        std::fs::remove_dir_all(path).unwrap();
+    }
+
+    #[test]
+    fn test_trait_methods_delegate_cache_and_complete_checks() {
+        let client = RemoteGitRepositoryClient::new();
+        let repo_info = test_repo_info("trait-cache");
+        let path =
+            RemoteGitRepositoryClientInterface::get_local_repo_path(&client, &repo_info).unwrap();
+        create_complete_git_structure(&path);
+
+        assert_eq!(path, client.get_local_repo_path(&repo_info).unwrap());
+        assert!(RemoteGitRepositoryClientInterface::is_repository_complete(
+            &client, &path
+        ));
+        assert!(RemoteGitRepositoryClientInterface::is_repository_cached(
+            &client,
+            &format!("{}/{}", repo_info.owner, repo_info.name)
+        ));
+
+        std::fs::remove_dir_all(path).unwrap();
+    }
+
+    #[test]
     fn test_parse_repo_spec_for_https_url() {
         let parsed = GitRepositoryRefParser::parse("https://github.com/octocat/hello-world.git");
         assert!(parsed.is_ok());
@@ -110,5 +153,14 @@ mod tests {
             owner: "gittype-test".to_string(),
             name: format!("{}-{}", prefix, nanos),
         }
+    }
+
+    fn create_complete_git_structure(path: &std::path::Path) {
+        let git_dir = path.join(".git");
+
+        std::fs::create_dir_all(&git_dir).unwrap();
+        std::fs::write(git_dir.join("HEAD"), "ref: refs/heads/main").unwrap();
+        std::fs::create_dir_all(git_dir.join("objects")).unwrap();
+        std::fs::create_dir_all(git_dir.join("refs")).unwrap();
     }
 }
