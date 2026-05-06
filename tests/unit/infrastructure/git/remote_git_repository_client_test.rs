@@ -1,7 +1,9 @@
 #[cfg(test)]
 mod tests {
     use gittype::domain::models::GitRepositoryRef;
+    use gittype::infrastructure::git::remote::remote_git_repository_client::RemoteGitRepositoryClientInterface;
     use gittype::infrastructure::git::{GitRepositoryRefParser, RemoteGitRepositoryClient};
+    use std::time::{SystemTime, UNIX_EPOCH};
 
     #[test]
     fn test_is_repository_complete_without_git_dir() {
@@ -65,11 +67,48 @@ mod tests {
     }
 
     #[test]
+    fn test_is_repository_cached_returns_true_for_existing_directory() {
+        let client = RemoteGitRepositoryClient::new();
+        let repo_info = test_repo_info("cached");
+        let path = client.get_local_repo_path(&repo_info).unwrap();
+        std::fs::create_dir_all(&path).unwrap();
+
+        assert!(client.is_repository_cached(&format!("{}/{}", repo_info.owner, repo_info.name)));
+
+        std::fs::remove_dir_all(path).unwrap();
+    }
+
+    #[test]
+    fn test_trait_delete_repository_removes_existing_directory() {
+        let client = RemoteGitRepositoryClient::new();
+        let repo_info = test_repo_info("delete");
+        let path = client.get_local_repo_path(&repo_info).unwrap();
+        std::fs::create_dir_all(&path).unwrap();
+
+        RemoteGitRepositoryClientInterface::delete_repository(&client, &repo_info).unwrap();
+
+        assert!(!path.exists());
+    }
+
+    #[test]
     fn test_parse_repo_spec_for_https_url() {
         let parsed = GitRepositoryRefParser::parse("https://github.com/octocat/hello-world.git");
         assert!(parsed.is_ok());
         let repo_info = parsed.unwrap();
         assert_eq!(repo_info.owner, "octocat");
         assert_eq!(repo_info.name, "hello-world");
+    }
+
+    fn test_repo_info(prefix: &str) -> GitRepositoryRef {
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+
+        GitRepositoryRef {
+            origin: "github.com".to_string(),
+            owner: "gittype-test".to_string(),
+            name: format!("{}-{}", prefix, nanos),
+        }
     }
 }
