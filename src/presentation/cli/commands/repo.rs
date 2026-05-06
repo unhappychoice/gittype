@@ -152,12 +152,35 @@ pub fn run_repo_play() -> Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use super::run_repo_clear;
+    use super::{run_repo_clear, run_repo_list, run_repo_play};
+    use crate::{GitTypeError, Result};
+
+    fn assert_non_tty_terminal_error(result: Result<()>) {
+        if atty::is(atty::Stream::Stdout) {
+            return;
+        }
+
+        assert!(matches!(
+            result,
+            Err(GitTypeError::TerminalError(message))
+                if message.contains("Not running in a terminal environment")
+        ));
+    }
 
     #[test]
     fn run_repo_clear_returns_ok_when_cache_directory_is_missing() {
         let result = run_repo_clear(true);
 
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn run_repo_list_returns_terminal_error_without_tty() {
+        assert_non_tty_terminal_error(run_repo_list());
+    }
+
+    #[test]
+    fn run_repo_play_returns_terminal_error_without_tty() {
+        assert_non_tty_terminal_error(run_repo_play());
     }
 }
