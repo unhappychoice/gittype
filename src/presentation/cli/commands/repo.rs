@@ -149,3 +149,15 @@ pub fn run_repo_play() -> Result<()> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::run_repo_clear;
+
+    #[test]
+    fn run_repo_clear_returns_ok_when_cache_directory_is_missing() {
+        let result = run_repo_clear(true);
+
+        assert!(result.is_ok());
+    }
+}
