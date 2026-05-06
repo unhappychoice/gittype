@@ -1,3 +1,4 @@
+pub mod cli_placeholder_command_tests;
 pub mod cli_runner_tests;
 pub mod cli_trending_tests;
 pub mod game;
