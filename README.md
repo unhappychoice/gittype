@@ -6,6 +6,7 @@
   <a href="https://crates.io/crates/gittype"><img src="https://img.shields.io/crates/v/gittype.svg?style=flat-square&color=E06B4B" alt="crates.io"></a>
   <a href="https://github.com/unhappychoice/gittype/releases"><img src="https://img.shields.io/github/v/release/unhappychoice/gittype?style=flat-square&color=E0C14B&label=release" alt="release"></a>
   <a href="https://github.com/unhappychoice/gittype/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/unhappychoice/gittype/ci.yml?branch=main&style=flat-square&label=CI" alt="CI"></a>
+  <a href="https://codecov.io/gh/unhappychoice/gittype"><img src="https://img.shields.io/codecov/c/github/unhappychoice/gittype?style=flat-square" alt="codecov"></a>
   <a href="https://github.com/unhappychoice/gittype/blob/main/LICENSE"><img src="https://img.shields.io/crates/l/gittype.svg?style=flat-square" alt="license"></a>
 </p>
 
