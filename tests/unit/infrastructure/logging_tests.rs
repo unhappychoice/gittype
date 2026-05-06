@@ -42,6 +42,20 @@ fn unique_log_message() -> String {
     format!("logging-test-{}", nanos)
 }
 
+fn with_env_var<T>(key: &str, value: &str, f: impl FnOnce() -> T) -> T {
+    let previous = std::env::var_os(key);
+    std::env::set_var(key, value);
+    let result = f();
+
+    if let Some(previous) = previous {
+        std::env::set_var(key, previous);
+    } else {
+        std::env::remove_var(key);
+    }
+
+    result
+}
+
 #[test]
 fn test_get_log_directory() {
     // Skip test if running in a Nix build environment
@@ -100,6 +114,18 @@ fn test_get_environment_context_contains_arch() {
     let context = get_environment_context();
     let arch_str = std::env::consts::ARCH;
     assert!(context.contains(arch_str));
+}
+
+#[test]
+fn test_get_environment_context_contains_rust_env_vars() {
+    with_env_var("RUST_BACKTRACE", "full", || {
+        with_env_var("RUST_LOG", "gittype=debug", || {
+            let context = get_environment_context();
+
+            assert!(context.contains("RUST_BACKTRACE: full"));
+            assert!(context.contains("RUST_LOG: gittype=debug"));
+        });
+    });
 }
 
 #[test]
