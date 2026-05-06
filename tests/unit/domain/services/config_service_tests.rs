@@ -1,5 +1,58 @@
 use gittype::domain::models::color_mode::ColorMode;
 use gittype::domain::services::config_service::{ConfigService, ConfigServiceInterface};
+use gittype::infrastructure::storage::file_storage::{FileEntry, FileStorageInterface};
+use gittype::GitTypeError;
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
+
+#[derive(Debug)]
+struct NonFileStorage;
+
+impl FileStorageInterface for NonFileStorage {
+    fn delete_file(&self, _file_path: &Path) -> gittype::Result<()> {
+        Ok(())
+    }
+
+    fn file_exists(&self, _file_path: &Path) -> bool {
+        false
+    }
+
+    fn walk_directory(&self, _path: &Path) -> gittype::Result<Vec<FileEntry>> {
+        Ok(Vec::new())
+    }
+
+    fn read_to_string(&self, _file_path: &Path) -> gittype::Result<String> {
+        Ok(String::new())
+    }
+
+    fn create_dir_all(&self, _path: &Path) -> gittype::Result<()> {
+        Ok(())
+    }
+
+    fn write(&self, _file_path: &Path, _contents: &[u8]) -> gittype::Result<()> {
+        Ok(())
+    }
+
+    fn metadata(&self, file_path: &Path) -> gittype::Result<std::fs::Metadata> {
+        std::fs::metadata(file_path).map_err(Into::into)
+    }
+
+    fn read_dir(&self, path: &Path) -> gittype::Result<std::fs::ReadDir> {
+        std::fs::read_dir(path).map_err(Into::into)
+    }
+
+    fn remove_dir_all(&self, _path: &Path) -> gittype::Result<()> {
+        Ok(())
+    }
+
+    fn get_app_data_dir(&self) -> gittype::Result<PathBuf> {
+        Ok(PathBuf::from("/tmp/test"))
+    }
+}
+
+fn non_file_storage() -> Arc<dyn FileStorageInterface> {
+    Arc::new(NonFileStorage)
+}
 
 #[test]
 fn test_new_config_manager() {
@@ -115,4 +168,15 @@ fn test_save_without_changes() {
     let service = ConfigService::new_for_test().unwrap();
     // Save default config - should succeed
     assert!(service.save().is_ok());
+}
+
+#[test]
+fn test_new_rejects_non_file_storage() {
+    let result = ConfigService::new(non_file_storage());
+
+    assert!(matches!(
+        result,
+        Err(GitTypeError::ExtractionFailed(message))
+        if message == "Failed to downcast storage"
+    ));
 }
