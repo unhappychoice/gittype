@@ -1,6 +1,23 @@
-use gittype::domain::models::Languages;
+use gittype::domain::models::{Language, Languages};
 use ratatui::style::Color;
 use std::hash::{Hash, Hasher};
+
+#[derive(Debug)]
+struct MinimalLanguage;
+
+impl Language for MinimalLanguage {
+    fn name(&self) -> &'static str {
+        "minimal"
+    }
+
+    fn extensions(&self) -> Vec<&'static str> {
+        vec!["min"]
+    }
+
+    fn is_valid_comment_node(&self, _node: tree_sitter::Node) -> bool {
+        false
+    }
+}
 
 #[test]
 fn language_color_returns_specific_colors_for_known_languages() {
@@ -66,6 +83,13 @@ fn language_trait_methods_work_correctly() {
     assert_eq!(rust_lang.name(), "rust");
     assert_eq!(rust_lang.display_name(), "Rust");
     assert_eq!(rust_lang.color(), Color::Red);
+}
+
+#[test]
+fn language_default_display_name_returns_name() {
+    let language = MinimalLanguage;
+
+    assert_eq!(language.display_name(), "minimal");
 }
 
 #[test]
