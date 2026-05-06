@@ -364,6 +364,24 @@ fn test_register_screen_arc_delegates_screen_methods() {
 }
 
 #[test]
+fn test_register_screen_arc_delegates_render_and_push_source() {
+    let mut manager = create_test_screen_manager();
+    let pushed_from = Arc::new(Mutex::new(None));
+
+    manager.register_screen(MockScreen::new(ScreenType::Title));
+    manager.register_screen_arc(Arc::new(PushAwareScreen::new(
+        ScreenType::Help,
+        Arc::clone(&pushed_from),
+    )));
+
+    manager.push_screen(ScreenType::Help).unwrap();
+    manager.render_current_screen().unwrap();
+
+    assert_eq!(*manager.get_current_screen_type(), ScreenType::Help);
+    assert_eq!(*pushed_from.lock().unwrap(), Some(ScreenType::Title));
+}
+
+#[test]
 fn test_screen_type_variants() {
     let screen_type = ScreenType::Title;
     let debug_str = format!("{:?}", screen_type);
