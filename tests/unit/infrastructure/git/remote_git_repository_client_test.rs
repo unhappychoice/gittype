@@ -3,6 +3,7 @@ mod tests {
     use gittype::domain::models::GitRepositoryRef;
     use gittype::infrastructure::git::remote::remote_git_repository_client::RemoteGitRepositoryClientInterface;
     use gittype::infrastructure::git::{GitRepositoryRefParser, RemoteGitRepositoryClient};
+    use gittype::GitTypeError;
     use std::time::{SystemTime, UNIX_EPOCH};
 
     #[test]
@@ -111,6 +112,25 @@ mod tests {
         assert_eq!(progress_calls, 0);
 
         std::fs::remove_dir_all(path).unwrap();
+    }
+
+    #[test]
+    fn test_clone_repository_returns_io_error_for_file_cache_path() {
+        let client = RemoteGitRepositoryClient::new();
+        let repo_info = test_repo_info("file-cache");
+        let path = client.get_local_repo_path(&repo_info).unwrap();
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(&path, "not a repository directory").unwrap();
+
+        let result = client.clone_repository(
+            &format!("{}/{}", repo_info.owner, repo_info.name),
+            |_, _| {},
+        );
+
+        assert!(matches!(result, Err(GitTypeError::IoError(_))));
+        assert!(path.is_file());
+
+        std::fs::remove_file(path).unwrap();
     }
 
     #[test]
