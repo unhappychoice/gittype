@@ -227,4 +227,14 @@ mod tests {
 
         assert!(context.cleanup().is_ok());
     }
+
+    #[test]
+    fn active_screen_runner_context_cleanup_runs_terminal_cleanup() {
+        let context = ScreenRunnerContext {
+            container: AppModule::builder().build(),
+            terminal_active: true,
+        };
+
+        assert!(context.cleanup().is_ok());
+    }
 }
