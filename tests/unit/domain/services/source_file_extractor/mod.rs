@@ -57,6 +57,16 @@ mod tests {
     }
 
     #[test]
+    fn test_default_extractor_reports_missing_path_error() {
+        let extractor = SourceFileExtractor::default();
+        let progress = MockProgressReporter::new();
+
+        let result = extractor.collect_with_progress(Path::new("/nonexistent/path"), &progress);
+
+        assert!(result.is_err());
+    }
+
+    #[test]
     fn test_collect_with_progress_finds_supported_files() {
         let mut mock_storage = FileStorage::new();
         mock_storage.add_file("main.rs");
@@ -195,5 +205,49 @@ mod tests {
         let files = result.unwrap();
         assert_eq!(files.len(), 1);
         assert_eq!(files[0], Path::new("/mock/src/main.rs"));
+    }
+
+    #[test]
+    fn test_collect_with_progress_applies_exclude_patterns() {
+        let mut mock_storage = FileStorage::new();
+        mock_storage.add_file("/mock/src/main.rs");
+        mock_storage.add_file("/mock/generated/types.rs");
+
+        let extractor = SourceFileExtractor::with_storage(mock_storage);
+        let progress = MockProgressReporter::new();
+        let options = ExtractionOptions {
+            exclude_patterns: vec!["generated/**".to_string()],
+            ..ExtractionOptions::default()
+        };
+
+        let result =
+            extractor.collect_with_progress_with_options(Path::new("/mock"), &options, &progress);
+
+        assert!(result.is_ok());
+        let files = result.unwrap();
+        assert_eq!(files, vec![Path::new("/mock/src/main.rs")]);
+    }
+
+    #[test]
+    fn test_collect_with_progress_applies_multiple_gittypeignore_lines() {
+        let mut mock_storage = FileStorage::new();
+        mock_storage.add_file("/mock/src/main.rs");
+        mock_storage.add_file("/mock/ignored.rs");
+        mock_storage.add_file("/mock/second_ignored.rs");
+        mock_storage.set_file_content(
+            "/mock/.gittypeignore",
+            "ignored.rs\nsecond_ignored.rs\n".to_string(),
+        );
+
+        let extractor = SourceFileExtractor::with_storage(mock_storage);
+        let progress = MockProgressReporter::new();
+        let options = ExtractionOptions::default();
+
+        let result =
+            extractor.collect_with_progress_with_options(Path::new("/mock"), &options, &progress);
+
+        assert!(result.is_ok());
+        let files = result.unwrap();
+        assert_eq!(files, vec![Path::new("/mock/src/main.rs")]);
     }
 }
