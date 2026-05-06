@@ -154,3 +154,76 @@ impl TypingAnimationView {
         self.pause_dots
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn view_with_messages() -> TypingAnimationView {
+        let mut view = TypingAnimationView::new(RankTier::Beginner, 80, 24);
+        view.set_rank_messages("Hello World");
+        view
+    }
+
+    #[test]
+    fn update_types_current_line_one_character_at_a_time() {
+        let mut view = view_with_messages();
+        view.hacking_lines[0].start_time = Some(Instant::now() - Duration::from_millis(120));
+
+        assert!(view.update());
+
+        assert_eq!(view.get_current_line(), 0);
+        assert_eq!(view.get_hacking_lines()[0].typed_length, 1);
+        assert!(!view.get_hacking_lines()[0].completed);
+    }
+
+    #[test]
+    fn update_advances_to_next_line_after_completion_delay() {
+        let mut view = view_with_messages();
+        view.hacking_lines[0].typed_length = view.hacking_lines[0].text.len();
+
+        assert!(view.update());
+        assert_eq!(view.get_current_line(), 0);
+        assert!(view.get_hacking_lines()[0].completed);
+
+        view.hacking_lines[0].completion_time = Some(Instant::now() - Duration::from_millis(500));
+
+        assert!(view.update());
+        assert_eq!(view.get_current_line(), 1);
+    }
+
+    #[test]
+    fn update_moves_to_pause_after_last_line_completes() {
+        let mut view = view_with_messages();
+        let last_line = view.hacking_lines.len() - 1;
+        view.hacking_lines
+            .iter_mut()
+            .take(last_line)
+            .for_each(|line| line.completed = true);
+        view.current_line = last_line;
+        view.hacking_lines[last_line].typed_length = view.hacking_lines[last_line].text.len();
+
+        assert!(view.update());
+
+        assert_eq!(view.get_current_line(), view.get_hacking_lines().len());
+        assert!(matches!(view.get_current_phase(), AnimationPhase::Pause));
+    }
+
+    #[test]
+    fn update_tracks_pause_dots_and_completion() {
+        let mut view = TypingAnimationView::new(RankTier::Beginner, 80, 24);
+        view.phase = AnimationPhase::Pause;
+        view.phase_start = Instant::now() - Duration::from_millis(1500);
+
+        assert!(view.update());
+        assert_eq!(view.get_pause_dots(), 3);
+        assert!(!view.is_complete());
+
+        view.phase_start = Instant::now() - Duration::from_millis(3500);
+        view.pause_dots = 6;
+
+        assert!(view.update());
+        assert!(view.is_complete());
+        assert!(!view.update());
+    }
+}
