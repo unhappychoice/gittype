@@ -206,3 +206,72 @@ impl TrendingRepositoryInterface for TrendingRepository {
         TrendingRepository::get_trending_repositories_sync(self, key, language, period)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::infrastructure::http::oss_insight_client::OssInsightClient;
+
+    fn create_repository(cache_dir: PathBuf, ttl_seconds: u64) -> TrendingRepository {
+        TrendingRepository {
+            cache_dir,
+            ttl_seconds,
+            oss_insight_client: Arc::new(OssInsightClient::new()),
+            file_storage: Arc::new(FileStorage::new()),
+        }
+    }
+
+    #[test]
+    fn effective_cache_dir_uses_app_cache_directory_by_default() {
+        let repository = create_repository(PathBuf::new(), 0);
+
+        assert_eq!(
+            repository.effective_cache_dir(),
+            PathBuf::from("/tmp/test/cache")
+        );
+    }
+
+    #[test]
+    fn effective_cache_dir_uses_configured_directory() {
+        let repository = create_repository(PathBuf::from("/tmp/custom-trending-cache"), 0);
+
+        assert_eq!(
+            repository.effective_cache_dir(),
+            PathBuf::from("/tmp/custom-trending-cache")
+        );
+    }
+
+    #[test]
+    fn effective_ttl_seconds_uses_default_when_unset() {
+        let repository = create_repository(PathBuf::new(), 0);
+
+        assert_eq!(repository.effective_ttl_seconds(), DEFAULT_TTL_SECONDS);
+    }
+
+    #[test]
+    fn effective_ttl_seconds_uses_configured_value() {
+        let repository = create_repository(PathBuf::new(), 30);
+
+        assert_eq!(repository.effective_ttl_seconds(), 30);
+    }
+
+    #[test]
+    fn get_cache_file_hashes_key_inside_effective_cache_dir() {
+        let repository = create_repository(PathBuf::from("/tmp/custom-trending-cache"), 0);
+
+        let first_path = repository.get_cache_file("rust:daily");
+        let second_path = repository.get_cache_file("rust:daily");
+        let other_path = repository.get_cache_file("go:daily");
+
+        assert_eq!(first_path, second_path);
+        assert_ne!(first_path, other_path);
+        assert_eq!(
+            first_path.parent(),
+            Some(std::path::Path::new("/tmp/custom-trending-cache"))
+        );
+        assert_eq!(
+            first_path.extension().and_then(|ext| ext.to_str()),
+            Some("json")
+        );
+    }
+}
