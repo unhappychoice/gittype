@@ -179,6 +179,7 @@ impl Drop for ScreenRunnerContext {
 #[cfg(test)]
 mod tests {
     use super::{run_screen, ScreenRunnerContext};
+    use crate::presentation::di::AppModule;
     use crate::presentation::tui::screens::RepoListScreen;
     use crate::presentation::tui::ScreenType;
     use crate::GitTypeError;
@@ -215,5 +216,15 @@ mod tests {
         let result = ScreenRunnerContext::new();
 
         assert_non_tty_terminal_error(result);
+    }
+
+    #[test]
+    fn inactive_screen_runner_context_cleanup_is_noop() {
+        let context = ScreenRunnerContext {
+            container: AppModule::builder().build(),
+            terminal_active: false,
+        };
+
+        assert!(context.cleanup().is_ok());
     }
 }
