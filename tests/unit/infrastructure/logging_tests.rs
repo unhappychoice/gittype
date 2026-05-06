@@ -7,9 +7,17 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::{
     atomic::{AtomicBool, Ordering},
-    Arc,
+    Arc, Mutex, MutexGuard,
 };
 use std::time::{SystemTime, UNIX_EPOCH};
+
+static PANIC_HOOK_TEST_LOCK: Mutex<()> = Mutex::new(());
+
+fn panic_hook_test_lock() -> MutexGuard<'static, ()> {
+    PANIC_HOOK_TEST_LOCK
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
+}
 
 fn error_log_candidates(dir: &Path) -> Vec<PathBuf> {
     fs::read_dir(dir)
@@ -62,6 +70,7 @@ fn with_env_var<T>(key: &str, value: &str, f: impl FnOnce() -> T) -> T {
 }
 
 fn log_panicked_payload(f: impl FnOnce() + std::panic::UnwindSafe) -> bool {
+    let _guard = panic_hook_test_lock();
     let previous_hook = std::panic::take_hook();
     let was_logged = Arc::new(AtomicBool::new(false));
     let hook_was_logged = Arc::clone(&was_logged);
