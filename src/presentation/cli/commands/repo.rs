@@ -152,7 +152,8 @@ pub fn run_repo_play() -> Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use super::{run_repo_clear, run_repo_list, run_repo_play};
+    use super::{run_repo_clear, run_repo_list, run_repo_play, RepoClearCommand};
+    use crate::infrastructure::storage::app_data_provider::AppDataProvider;
     use crate::{GitTypeError, Result};
 
     fn assert_non_tty_terminal_error(result: Result<()>) {
@@ -172,6 +173,21 @@ mod tests {
         let result = run_repo_clear(true);
 
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn run_repo_clear_returns_ok_when_cache_directory_has_no_git_repositories() {
+        let repos_dir = RepoClearCommand::get_app_data_dir().unwrap().join("repos");
+        let nested_dir = repos_dir.join("owner").join("repo").join("src");
+        let _ = std::fs::remove_dir_all(&repos_dir);
+        std::fs::create_dir_all(&nested_dir).unwrap();
+
+        let result = run_repo_clear(true);
+
+        assert!(result.is_ok());
+        assert!(repos_dir.exists());
+
+        std::fs::remove_dir_all(&repos_dir).unwrap();
     }
 
     #[test]
