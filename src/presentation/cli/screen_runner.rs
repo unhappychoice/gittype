@@ -237,4 +237,25 @@ mod tests {
 
         assert!(context.cleanup().is_ok());
     }
+
+    #[test]
+    fn screen_runner_context_run_screen_returns_render_error_without_tty() {
+        if atty::is(atty::Stream::Stdout) {
+            return;
+        }
+
+        let context = ScreenRunnerContext {
+            container: AppModule::builder().build(),
+            terminal_active: false,
+        };
+
+        let result = context
+            .run_screen::<RepoListScreen, (), (), fn(&RepoListScreen) -> Option<()>>(
+                ScreenType::RepoList,
+                None::<()>,
+                None,
+            );
+
+        assert!(matches!(result, Err(GitTypeError::IoError(_))));
+    }
 }
