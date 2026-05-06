@@ -224,3 +224,20 @@ impl SharingService {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{SharingPlatform, SharingService};
+
+    #[test]
+    fn display_url_fallback_returns_terminal_error_without_tty() {
+        if atty::is(atty::Stream::Stdout) {
+            return;
+        }
+
+        let result =
+            SharingService::display_url_fallback("https://example.test/share", &SharingPlatform::X);
+
+        assert!(result.is_err());
+    }
+}
