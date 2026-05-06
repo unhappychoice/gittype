@@ -1,14 +1,22 @@
-![GitType Banner](docs/images/gittype-banner.png)
+<p align="center">
+  <img src="docs/images/gittype-banner.png" alt="GitType" width="820">
+</p>
 
-# GitType ⌨️💻
+<p align="center">
+  <a href="https://crates.io/crates/gittype"><img src="https://img.shields.io/crates/v/gittype.svg?style=flat-square&color=E06B4B" alt="crates.io"></a>
+  <a href="https://github.com/unhappychoice/gittype/releases"><img src="https://img.shields.io/github/v/release/unhappychoice/gittype?style=flat-square&color=E0C14B&label=release" alt="release"></a>
+  <a href="https://github.com/unhappychoice/gittype/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/unhappychoice/gittype/ci.yml?branch=main&style=flat-square&label=CI" alt="CI"></a>
+  <a href="https://github.com/unhappychoice/gittype/blob/main/LICENSE"><img src="https://img.shields.io/crates/l/gittype.svg?style=flat-square" alt="license"></a>
+</p>
 
-> *"Show your AI who's boss: just you, your keyboard, and your coding sins"*
+<p align="center">
+  <strong>Turn your own source code into typing challenges.</strong><br>
+  <sub>Show your AI who's boss — just you, your keyboard, and your coding sins.</sub>
+</p>
 
-**GitType** turns your own source code into typing challenges. Because why practice with boring lorem ipsum when you can type your beautiful `fn main()` implementations?
-
-## Demo 🎬
-
-![GitType Demo](docs/images/demo.gif)
+<p align="center">
+  <img src="docs/images/demo.gif" alt="GitType Demo" width="820">
+</p>
 
 ## Features ✨
 
