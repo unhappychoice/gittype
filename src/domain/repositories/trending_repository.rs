@@ -210,7 +210,46 @@ impl TrendingRepositoryInterface for TrendingRepository {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::infrastructure::http::oss_insight_client::OssInsightClient;
+    use crate::infrastructure::http::oss_insight_client::{
+        OssInsightClient, OssInsightClientInterface,
+    };
+    use crate::GitTypeError;
+    use std::sync::Mutex;
+
+    #[derive(Debug)]
+    struct StaticOssInsightClient {
+        repositories: Vec<TrendingRepositoryInfo>,
+        calls: Arc<Mutex<usize>>,
+    }
+
+    #[async_trait::async_trait]
+    impl OssInsightClientInterface for StaticOssInsightClient {
+        async fn fetch_trending_repositories(
+            &self,
+            _language: Option<&str>,
+            _period: &str,
+        ) -> Result<Vec<TrendingRepositoryInfo>> {
+            *self.calls.lock().unwrap() += 1;
+            Ok(self.repositories.clone())
+        }
+    }
+
+    #[derive(Debug)]
+    struct FailingOssInsightClient {
+        calls: Arc<Mutex<usize>>,
+    }
+
+    #[async_trait::async_trait]
+    impl OssInsightClientInterface for FailingOssInsightClient {
+        async fn fetch_trending_repositories(
+            &self,
+            _language: Option<&str>,
+            _period: &str,
+        ) -> Result<Vec<TrendingRepositoryInfo>> {
+            *self.calls.lock().unwrap() += 1;
+            Err(GitTypeError::ApiError("unavailable".to_string()))
+        }
+    }
 
     fn create_repository(cache_dir: PathBuf, ttl_seconds: u64) -> TrendingRepository {
         TrendingRepository {
@@ -218,6 +257,51 @@ mod tests {
             ttl_seconds,
             oss_insight_client: Arc::new(OssInsightClient::new()),
             file_storage: Arc::new(FileStorage::new()),
+        }
+    }
+
+    fn create_repository_with_client(
+        cache_dir: PathBuf,
+        ttl_seconds: u64,
+        oss_insight_client: Arc<dyn OssInsightClientInterface>,
+    ) -> TrendingRepository {
+        TrendingRepository {
+            cache_dir,
+            ttl_seconds,
+            oss_insight_client,
+            file_storage: Arc::new(FileStorage::new()),
+        }
+    }
+
+    fn static_client(
+        repositories: Vec<TrendingRepositoryInfo>,
+    ) -> (Arc<dyn OssInsightClientInterface>, Arc<Mutex<usize>>) {
+        let calls = Arc::new(Mutex::new(0));
+        let client = StaticOssInsightClient {
+            repositories,
+            calls: calls.clone(),
+        };
+
+        (Arc::new(client), calls)
+    }
+
+    fn failing_client() -> (Arc<dyn OssInsightClientInterface>, Arc<Mutex<usize>>) {
+        let calls = Arc::new(Mutex::new(0));
+        let client = FailingOssInsightClient {
+            calls: calls.clone(),
+        };
+
+        (Arc::new(client), calls)
+    }
+
+    fn repository_info(repo_name: &str) -> TrendingRepositoryInfo {
+        TrendingRepositoryInfo {
+            repo_name: repo_name.to_string(),
+            primary_language: Some("Rust".to_string()),
+            description: Some("A repository".to_string()),
+            stars: "10".to_string(),
+            forks: "2".to_string(),
+            total_score: "100".to_string(),
         }
     }
 
@@ -273,5 +357,37 @@ mod tests {
             first_path.extension().and_then(|ext| ext.to_str()),
             Some("json")
         );
+    }
+
+    #[tokio::test]
+    async fn get_trending_repositories_fetches_fresh_data_when_cache_misses() {
+        let cache_dir = tempfile::tempdir().unwrap();
+        let key = "rust:daily";
+        let fresh_repositories = vec![repository_info("fresh/repo")];
+        let (client, calls) = static_client(fresh_repositories.clone());
+        let repository = create_repository_with_client(cache_dir.path().to_path_buf(), 60, client);
+
+        let repositories = repository
+            .get_trending_repositories(key, Some("rust"), "daily")
+            .await
+            .unwrap();
+
+        assert_eq!(repositories[0].repo_name, fresh_repositories[0].repo_name);
+        assert_eq!(*calls.lock().unwrap(), 1);
+    }
+
+    #[tokio::test]
+    async fn get_trending_repositories_returns_empty_vec_when_api_fails() {
+        let cache_dir = tempfile::tempdir().unwrap();
+        let (client, calls) = failing_client();
+        let repository = create_repository_with_client(cache_dir.path().to_path_buf(), 60, client);
+
+        let repositories = repository
+            .get_trending_repositories("rust:daily", Some("rust"), "daily")
+            .await
+            .unwrap();
+
+        assert!(repositories.is_empty());
+        assert_eq!(*calls.lock().unwrap(), 1);
     }
 }
