@@ -30,3 +30,11 @@ fn export_command_with_options_exits_with_failure_status() {
     assert!(!status.success());
     assert_eq!(status.code(), Some(1));
 }
+
+#[test]
+fn invalid_language_filter_exits_with_failure_status() {
+    let status = run_gittype(&["--langs", "invalid-language"]);
+
+    assert!(!status.success());
+    assert_eq!(status.code(), Some(1));
+}
