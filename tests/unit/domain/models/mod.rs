@@ -9,6 +9,7 @@ pub mod git_repository_tests;
 pub mod language_tests;
 pub mod languages;
 pub mod loading;
+pub mod rank_colors_tests;
 pub mod rank_tests;
 pub mod session_tests;
 pub mod stage_tests;
