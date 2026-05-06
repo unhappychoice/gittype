@@ -287,6 +287,28 @@ fn test_register_screen_interface() {
 }
 
 #[test]
+fn test_register_screen_arc_delegates_screen_methods() {
+    let mut manager = create_test_screen_manager();
+
+    manager.register_screen_arc(Arc::new(MockScreen::new(ScreenType::Help)));
+
+    let screen = manager.get_screen(&ScreenType::Help).unwrap();
+    assert_eq!(screen.get_type(), ScreenType::Help);
+    assert!(screen.init_with_data(Box::new(())).is_ok());
+    assert!(screen
+        .handle_key_event(KeyEvent::from(crossterm::event::KeyCode::Enter))
+        .is_ok());
+    assert!(screen.update().is_ok());
+    assert!(screen.cleanup().is_ok());
+    assert!(matches!(
+        screen.get_update_strategy(),
+        UpdateStrategy::InputOnly
+    ));
+    assert!(!screen.is_exitable());
+    assert!(screen.as_any().downcast_ref::<MockScreen>().is_some());
+}
+
+#[test]
 fn test_screen_type_variants() {
     let screen_type = ScreenType::Title;
     let debug_str = format!("{:?}", screen_type);
