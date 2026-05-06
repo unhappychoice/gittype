@@ -204,3 +204,18 @@ fn cleanup_panic_terminal(terminal_initialized: bool, raw_mode_enabled: bool) {
     // Flush stdout to ensure all output is displayed
     let _ = std::io::stdout().flush();
 }
+
+#[cfg(test)]
+mod tests {
+    use super::cleanup_panic_terminal;
+
+    #[test]
+    fn cleanup_panic_terminal_handles_no_initialized_state() {
+        cleanup_panic_terminal(false, false);
+    }
+
+    #[test]
+    fn cleanup_panic_terminal_handles_requested_cleanup() {
+        cleanup_panic_terminal(true, true);
+    }
+}
