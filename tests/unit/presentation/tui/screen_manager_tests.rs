@@ -439,6 +439,10 @@ fn test_initialize_terminal_rejects_non_tty_stdout() {
 
 #[test]
 fn test_default_constructs_title_screen_manager() {
+    if !atty::is(atty::Stream::Stdout) {
+        return;
+    }
+
     let mut manager = ScreenManagerImpl::<CrosstermBackend<Stdout>>::default();
     manager.skip_cleanup_on_drop();
 
