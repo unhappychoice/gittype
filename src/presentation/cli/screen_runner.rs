@@ -6,7 +6,17 @@ use std::sync::{Arc, Mutex};
 
 use crate::presentation::di::AppModule;
 use crate::presentation::tui::{Screen, ScreenManagerImpl, ScreenType};
-use crate::Result;
+use crate::{GitTypeError, Result};
+
+fn ensure_terminal_environment() -> Result<()> {
+    if atty::is(atty::Stream::Stdout) {
+        Ok(())
+    } else {
+        Err(GitTypeError::TerminalError(
+            "Not running in a terminal environment. Please run in a proper terminal.".to_string(),
+        ))
+    }
+}
 
 /// Runs a single screen with optional data initialization and result extraction
 pub fn run_screen<S, D, R, F>(
@@ -19,6 +29,8 @@ where
     D: 'static,
     F: FnOnce(&S) -> Option<R>,
 {
+    ensure_terminal_environment()?;
+
     // Create DI container
     let container = AppModule::builder().build();
 
@@ -80,6 +92,8 @@ pub struct ScreenRunnerContext {
 impl ScreenRunnerContext {
     /// Create a new context with initialized terminal
     pub fn new() -> Result<Self> {
+        ensure_terminal_environment()?;
+
         let container = AppModule::builder().build();
         let factory: &dyn crate::presentation::tui::ScreenManagerFactory = container.resolve_ref();
         let screen_manager = factory.create(&container);
@@ -112,6 +126,8 @@ impl ScreenRunnerContext {
         D: 'static,
         F: FnOnce(&S) -> Option<R>,
     {
+        ensure_terminal_environment()?;
+
         // Re-create screen manager to get fresh screen state
         let factory: &dyn crate::presentation::tui::ScreenManagerFactory =
             self.container.resolve_ref();
@@ -239,7 +255,7 @@ mod tests {
     }
 
     #[test]
-    fn screen_runner_context_run_screen_returns_render_error_without_tty() {
+    fn screen_runner_context_run_screen_returns_terminal_error_without_tty() {
         if atty::is(atty::Stream::Stdout) {
             return;
         }
@@ -256,6 +272,6 @@ mod tests {
                 None,
             );
 
-        assert!(matches!(result, Err(GitTypeError::IoError(_))));
+        assert_non_tty_terminal_error(result);
     }
 }
