@@ -16,11 +16,11 @@ impl LanguageExtractor for DartExtractor {
             (enum_declaration name: (identifier) @name) @enum
             (mixin_declaration (identifier) @name) @mixin
             (extension_declaration name: (identifier) @name) @extension
-            (source_file (function_signature name: (_) @name) @function)
-            (method_signature (function_signature name: (_) @name)) @method
-            (local_variable_declaration (initialized_variable_definition name: (identifier) @name)) @variable
-            (static_final_declaration (identifier) @name) @variable
+            (function_declaration signature: (function_signature name: (identifier) @name) @function)
+            (method_declaration signature: (method_signature (function_signature name: (identifier) @name) @method))
+            (static_final_declaration name: (identifier) @name) @variable
             (initialized_identifier name: (identifier) @name) @variable
+            (initialized_variable_definition name: (identifier) @name) @variable
         "
     }
 

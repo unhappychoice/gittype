@@ -388,11 +388,11 @@ class DataProcessor {
   }
 }
 "#,
-    total_chunks: 50,
+    total_chunks: 49,
     chunk_counts: {
         Class: 2,
         Function: 2,
-        Variable: 25,
+        Variable: 24,
         Loop: 4,
         Conditional: 8,
         CodeBlock: 8,
