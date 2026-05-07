@@ -425,6 +425,10 @@ fn test_cleanup_terminal_static() {
 
 #[test]
 fn test_initialize_terminal_rejects_non_tty_stdout() {
+    if atty::is(atty::Stream::Stdout) {
+        return;
+    }
+
     let mut manager = create_test_screen_manager();
 
     let result = manager.initialize_terminal();

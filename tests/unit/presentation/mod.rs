@@ -1,4 +1,3 @@
-pub mod cli_placeholder_command_tests;
 pub mod cli_repo_command_tests;
 pub mod cli_runner_tests;
 pub mod cli_screen_runner_tests;

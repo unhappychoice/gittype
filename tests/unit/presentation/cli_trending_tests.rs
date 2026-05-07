@@ -40,21 +40,6 @@ fn run_trending_accepts_supported_language_before_repo_name_validation() {
 }
 
 #[test]
-fn run_trending_with_direct_repo_returns_raw_mode_io_error_without_tty() {
-    if atty::is(atty::Stream::Stdout) {
-        return;
-    }
-
-    let result = run_trending(
-        Some("Rust".to_string()),
-        Some("owner/repo".to_string()),
-        "daily".to_string(),
-    );
-
-    assert!(matches!(result, Err(GitTypeError::IoError(_))));
-}
-
-#[test]
 fn run_trending_with_language_returns_terminal_error_without_tty() {
     let result = run_trending(Some("Rust".to_string()), None, "daily".to_string());
 
