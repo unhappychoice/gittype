@@ -296,6 +296,41 @@ fn process_with_comment_mapping_preserve_empty_with_comments() {
     assert!(!mapped_ranges.is_empty());
 }
 
+#[test]
+fn process_with_comment_mapping_drops_range_from_removed_whitespace_line() {
+    let text = "code\n   \nnext";
+    let comment_ranges = vec![(5, 8)];
+
+    let (processed, mapped_ranges) =
+        TextProcessor::process_challenge_text_with_comment_mapping(text, &comment_ranges);
+
+    assert_eq!(processed, "code\nnext");
+    assert!(mapped_ranges.is_empty());
+}
+
+#[test]
+fn process_with_comment_mapping_trims_range_end_from_trailing_whitespace() {
+    let text = "code   \nnext";
+    let comment_ranges = vec![(0, 7)];
+
+    let (processed, mapped_ranges) =
+        TextProcessor::process_challenge_text_with_comment_mapping(text, &comment_ranges);
+
+    assert_eq!(processed, "code\nnext");
+    assert_eq!(mapped_ranges, vec![(0, 4)]);
+}
+
+#[test]
+fn process_with_comment_mapping_ignores_out_of_bounds_range() {
+    let text = "code";
+    let comment_ranges = vec![(10, 12)];
+
+    let (_processed, mapped_ranges) =
+        TextProcessor::process_challenge_text_with_comment_mapping(text, &comment_ranges);
+
+    assert!(mapped_ranges.is_empty());
+}
+
 // ============================================
 // is_at_end_of_line_content - with comment ranges
 // ============================================
@@ -316,6 +351,17 @@ fn is_at_end_of_line_content_before_code() {
     let line_starts = TextProcessor::calculate_line_starts(text);
     let result = TextProcessor::is_at_end_of_line_content(text, 4, &line_starts, &[]);
     assert!(!result);
+}
+
+#[test]
+fn is_at_end_of_line_content_returns_true_when_comment_reaches_text_end() {
+    let text = "code //";
+    let line_starts = TextProcessor::calculate_line_starts(text);
+    let comment_ranges = vec![(5, 7)];
+
+    let result = TextProcessor::is_at_end_of_line_content(text, 5, &line_starts, &comment_ranges);
+
+    assert!(result);
 }
 
 // ============================================

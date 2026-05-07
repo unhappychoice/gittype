@@ -152,6 +152,57 @@ fn test_cache_key_malformed_url() {
 }
 
 #[test]
+fn test_cache_key_malformed_ssh_urls_fall_back_to_sanitized_url() {
+    let invalid_git_at_repo = GitRepository {
+        user_name: "user".to_string(),
+        repository_name: "repo".to_string(),
+        remote_url: "git@github.com:owner".to_string(),
+        branch: None,
+        commit_hash: None,
+        is_dirty: false,
+        root_path: None,
+    };
+    let invalid_ssh_protocol_repo = GitRepository {
+        user_name: "user".to_string(),
+        repository_name: "repo".to_string(),
+        remote_url: "ssh://git@github.com/owner".to_string(),
+        branch: None,
+        commit_hash: None,
+        is_dirty: false,
+        root_path: None,
+    };
+
+    assert_eq!(invalid_git_at_repo.cache_key(), "git@github_com_owner");
+    assert_eq!(
+        invalid_ssh_protocol_repo.cache_key(),
+        "ssh___git@github_com_owner"
+    );
+}
+
+#[test]
+fn test_cache_key_incomplete_prefixed_urls_fall_back_to_sanitized_url() {
+    let cases = [
+        ("git@github.com", "git@github_com"),
+        ("ssh://github.com/owner/repo", "ssh___github_com_owner_repo"),
+        ("https://github.com/owner", "https___github_com_owner"),
+    ];
+
+    cases.into_iter().for_each(|(remote_url, expected)| {
+        let repo = GitRepository {
+            user_name: "user".to_string(),
+            repository_name: "repo".to_string(),
+            remote_url: remote_url.to_string(),
+            branch: None,
+            commit_hash: None,
+            is_dirty: false,
+            root_path: None,
+        };
+
+        assert_eq!(repo.cache_key(), expected);
+    });
+}
+
+#[test]
 fn test_git_repository_with_dirty_state() {
     let dirty_repo = GitRepository {
         user_name: "user".to_string(),

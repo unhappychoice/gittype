@@ -32,6 +32,16 @@ fn test_record_multiple_session_results() {
 }
 
 #[test]
+fn test_reset_clears_recorded_session_results() {
+    let tracker = TotalTracker::new_for_test();
+    tracker.record(SessionResult::default());
+
+    tracker.reset();
+
+    assert!(tracker.get_data().session_results.is_empty());
+}
+
+#[test]
 fn test_default_total_tracker() {
     let tracker = TotalTracker::default();
     let data = tracker.get_data();

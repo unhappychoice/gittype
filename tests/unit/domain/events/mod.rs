@@ -122,6 +122,17 @@ fn test_event_bus_default() {
 }
 
 #[test]
+fn test_event_bus_subscribers_pointer_is_stable_across_subscriptions() {
+    let bus = EventBus::new();
+    let subscribers_ptr = bus.get_subscribers_ptr();
+
+    bus.subscribe(|_event: &TestEvent| {});
+
+    assert!(!subscribers_ptr.is_null());
+    assert_eq!(subscribers_ptr, bus.get_subscribers_ptr());
+}
+
+#[test]
 fn test_domain_event_key_pressed() {
     let event = DomainEvent::KeyPressed {
         key: 'a',

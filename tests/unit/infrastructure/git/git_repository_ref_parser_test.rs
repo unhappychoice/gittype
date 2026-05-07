@@ -179,6 +179,18 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_ssh_url_format_without_path() {
+        let result = GitRepositoryRefParser::parse("ssh://git@github.com");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_ssh_url_format_without_repository_name() {
+        let result = GitRepositoryRefParser::parse("ssh://git@github.com/owner");
+        assert!(result.is_err());
+    }
+
+    #[test]
     fn test_parse_traditional_ssh_format_with_port() {
         let repo_ref =
             GitRepositoryRefParser::parse("git@github.com:22:owner/reponame.git").unwrap();
@@ -202,5 +214,13 @@ mod tests {
         assert_eq!(repo_ref.origin, "github.com");
         assert_eq!(repo_ref.owner, "user");
         assert_eq!(repo_ref.name, "repository");
+    }
+
+    #[test]
+    fn test_parse_traditional_ssh_format_keeps_non_port_colon_in_owner() {
+        let repo_ref = GitRepositoryRefParser::parse("git@github.com:team:owner/repo").unwrap();
+        assert_eq!(repo_ref.origin, "github.com");
+        assert_eq!(repo_ref.owner, "team:owner");
+        assert_eq!(repo_ref.name, "repo");
     }
 }

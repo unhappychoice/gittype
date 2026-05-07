@@ -1,5 +1,6 @@
 pub mod challenge_tests;
 pub mod color_scheme_tests;
+pub mod config_tests;
 pub mod countdown_tests;
 pub mod difficulty_level_tests;
 pub mod extraction_options_tests;
@@ -8,6 +9,7 @@ pub mod git_repository_tests;
 pub mod language_tests;
 pub mod languages;
 pub mod loading;
+pub mod rank_colors_tests;
 pub mod rank_tests;
 pub mod session_tests;
 pub mod stage_tests;

@@ -1,5 +1,6 @@
 use crate::fixtures::models::git_repository;
-use gittype::domain::models::{Challenge, DifficultyLevel};
+use gittype::domain::models::{Challenge, ChunkType, CodeChunk, DifficultyLevel};
+use std::path::PathBuf;
 
 #[test]
 fn test_new_challenge_basic() {
@@ -231,4 +232,58 @@ fn test_difficulty_levels() {
     assert_eq!(normal.difficulty_level, Some(DifficultyLevel::Normal));
     assert_eq!(hard.difficulty_level, Some(DifficultyLevel::Hard));
     assert_eq!(wild.difficulty_level, Some(DifficultyLevel::Wild));
+}
+
+#[test]
+fn from_chunk_returns_none_for_whitespace_only_content() {
+    let chunk = make_code_chunk("   \n\t  ");
+
+    let challenge = Challenge::from_chunk(&chunk, Some(DifficultyLevel::Easy));
+
+    assert!(challenge.is_none());
+}
+
+#[test]
+fn get_display_title_with_repo_omits_line_suffix_when_lines_are_missing() {
+    let mut challenge = Challenge::new("test-id".to_string(), "code".to_string());
+    challenge.source_file_path = Some("/workspace/src/lib.rs".to_string());
+
+    let repo = git_repository::build_with_names("owner", "repo");
+    let title = challenge.get_display_title_with_repo(&Some(repo));
+
+    assert_eq!(title, "[owner/repo] src/lib.rs");
+}
+
+#[test]
+fn get_display_title_with_repo_uses_challenge_id_without_source_path() {
+    let challenge = Challenge::new("fallback-id".to_string(), "code".to_string());
+    let repo = git_repository::build_with_names("owner", "repo");
+
+    let title = challenge.get_display_title_with_repo(&Some(repo));
+
+    assert_eq!(title, "Challenge fallback-id");
+}
+
+#[test]
+fn get_display_title_falls_back_to_original_path_when_filename_is_missing() {
+    let mut challenge = Challenge::new("test-id".to_string(), "code".to_string());
+    challenge.source_file_path = Some("/".to_string());
+
+    let title = challenge.get_display_title();
+
+    assert_eq!(title, "/");
+}
+
+fn make_code_chunk(content: &str) -> CodeChunk {
+    CodeChunk {
+        content: content.to_string(),
+        file_path: PathBuf::from("/workspace/src/lib.rs"),
+        start_line: 1,
+        end_line: 3,
+        language: "rust".to_string(),
+        chunk_type: ChunkType::Function,
+        name: "example".to_string(),
+        comment_ranges: vec![(0, 2)],
+        original_indentation: 0,
+    }
 }

@@ -84,6 +84,10 @@ struct MockScreen {
     screen_type: ScreenType,
 }
 
+struct ExitableScreen {
+    screen_type: ScreenType,
+}
+
 struct PushAwareScreen {
     screen_type: ScreenType,
     pushed_from: Arc<Mutex<Option<ScreenType>>>,
@@ -99,6 +103,12 @@ impl ScreenDataProvider for MockDataProvider {
 }
 
 impl MockScreen {
+    fn new(screen_type: ScreenType) -> Self {
+        Self { screen_type }
+    }
+}
+
+impl ExitableScreen {
     fn new(screen_type: ScreenType) -> Self {
         Self { screen_type }
     }
@@ -147,6 +157,51 @@ impl Screen for MockScreen {
 
     fn get_update_strategy(&self) -> UpdateStrategy {
         UpdateStrategy::InputOnly
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+impl Screen for ExitableScreen {
+    fn get_type(&self) -> ScreenType {
+        self.screen_type.clone()
+    }
+
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(MockDataProvider)
+    }
+
+    fn init_with_data(&self, _data: Box<dyn Any>) -> gittype::Result<()> {
+        Ok(())
+    }
+
+    fn update(&self) -> gittype::Result<bool> {
+        Ok(false)
+    }
+
+    fn render_ratatui(&self, _frame: &mut Frame) -> gittype::Result<()> {
+        Ok(())
+    }
+
+    fn handle_key_event(&self, _key_event: KeyEvent) -> gittype::Result<()> {
+        Ok(())
+    }
+
+    fn cleanup(&self) -> gittype::Result<()> {
+        Ok(())
+    }
+
+    fn get_update_strategy(&self) -> UpdateStrategy {
+        UpdateStrategy::InputOnly
+    }
+
+    fn is_exitable(&self) -> bool {
+        true
     }
 
     fn as_any(&self) -> &dyn Any {
@@ -287,6 +342,46 @@ fn test_register_screen_interface() {
 }
 
 #[test]
+fn test_register_screen_arc_delegates_screen_methods() {
+    let mut manager = create_test_screen_manager();
+
+    manager.register_screen_arc(Arc::new(MockScreen::new(ScreenType::Help)));
+
+    let screen = manager.get_screen(&ScreenType::Help).unwrap();
+    assert_eq!(screen.get_type(), ScreenType::Help);
+    assert!(screen.init_with_data(Box::new(())).is_ok());
+    assert!(screen
+        .handle_key_event(KeyEvent::from(crossterm::event::KeyCode::Enter))
+        .is_ok());
+    assert!(screen.update().is_ok());
+    assert!(screen.cleanup().is_ok());
+    assert!(matches!(
+        screen.get_update_strategy(),
+        UpdateStrategy::InputOnly
+    ));
+    assert!(!screen.is_exitable());
+    assert!(screen.as_any().downcast_ref::<MockScreen>().is_some());
+}
+
+#[test]
+fn test_register_screen_arc_delegates_render_and_push_source() {
+    let mut manager = create_test_screen_manager();
+    let pushed_from = Arc::new(Mutex::new(None));
+
+    manager.register_screen(MockScreen::new(ScreenType::Title));
+    manager.register_screen_arc(Arc::new(PushAwareScreen::new(
+        ScreenType::Help,
+        Arc::clone(&pushed_from),
+    )));
+
+    manager.push_screen(ScreenType::Help).unwrap();
+    manager.render_current_screen().unwrap();
+
+    assert_eq!(*manager.get_current_screen_type(), ScreenType::Help);
+    assert_eq!(*pushed_from.lock().unwrap(), Some(ScreenType::Title));
+}
+
+#[test]
 fn test_screen_type_variants() {
     let screen_type = ScreenType::Title;
     let debug_str = format!("{:?}", screen_type);
@@ -329,6 +424,38 @@ fn test_cleanup_terminal_static() {
 }
 
 #[test]
+fn test_initialize_terminal_rejects_non_tty_stdout() {
+    if atty::is(atty::Stream::Stdout) {
+        return;
+    }
+
+    let mut manager = create_test_screen_manager();
+
+    let result = manager.initialize_terminal();
+
+    assert!(result.is_err());
+    assert!(result
+        .unwrap_err()
+        .to_string()
+        .contains("Not running in a terminal environment"));
+    assert!(!manager.is_terminal_initialized());
+}
+
+#[test]
+fn test_default_constructs_title_screen_manager() {
+    if !atty::is(atty::Stream::Stdout) {
+        return;
+    }
+
+    let mut manager = ScreenManagerImpl::<CrosstermBackend<Stdout>>::default();
+    manager.skip_cleanup_on_drop();
+
+    assert_eq!(*manager.get_current_screen_type(), ScreenType::Title);
+    assert!(manager.get_screen_stack().is_empty());
+    assert!(!manager.is_terminal_initialized());
+}
+
+#[test]
 fn test_render_current_screen_with_test_backend() {
     let mut manager = create_test_screen_manager();
 
@@ -366,6 +493,38 @@ fn test_set_current_screen() {
     let result = manager.set_current_screen(ScreenType::Help);
     assert!(result.is_ok());
     assert_eq!(*manager.get_current_screen_type(), ScreenType::Help);
+}
+
+#[test]
+fn test_set_current_screen_uses_default_providers_for_registered_screen_types() {
+    let screen_types = [
+        ScreenType::Loading,
+        ScreenType::Typing,
+        ScreenType::StageSummary,
+        ScreenType::SessionSummary,
+        ScreenType::SessionFailure,
+        ScreenType::Records,
+        ScreenType::Analytics,
+        ScreenType::SessionDetail,
+        ScreenType::SessionSharing,
+        ScreenType::Animation,
+        ScreenType::VersionCheck,
+        ScreenType::InfoDialog,
+        ScreenType::DetailsDialog,
+        ScreenType::Panic,
+        ScreenType::TrendingLanguageSelection,
+        ScreenType::TrendingRepositorySelection,
+    ];
+
+    screen_types.into_iter().for_each(|screen_type| {
+        let mut manager = create_test_screen_manager();
+        manager.register_screen(MockScreen::new(screen_type.clone()));
+
+        let result = manager.set_current_screen(screen_type.clone());
+
+        assert!(result.is_ok(), "expected {:?} to initialize", screen_type);
+        assert_eq!(*manager.get_current_screen_type(), screen_type);
+    });
 }
 
 #[test]
@@ -524,6 +683,19 @@ fn test_handle_transition_exit_replaces_with_total_summary() {
     manager.handle_transition(ScreenTransition::Exit).unwrap();
 
     assert_eq!(*manager.get_current_screen_type(), ScreenType::TotalSummary);
+}
+
+#[test]
+fn test_handle_transition_exit_keeps_exitable_screen_current() {
+    let mut manager = create_test_screen_manager();
+
+    manager.register_screen(ExitableScreen::new(ScreenType::Help));
+    manager.register_screen(MockScreen::new(ScreenType::TotalSummary));
+
+    manager.set_current_screen(ScreenType::Help).unwrap();
+    manager.handle_transition(ScreenTransition::Exit).unwrap();
+
+    assert_eq!(*manager.get_current_screen_type(), ScreenType::Help);
 }
 
 #[test]
