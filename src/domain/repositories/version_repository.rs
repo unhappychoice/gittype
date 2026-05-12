@@ -150,7 +150,20 @@ impl VersionRepositoryInterface for VersionRepository {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::GitTypeError;
     use chrono::Duration;
+
+    struct FailingGitHubApiClientFactory;
+
+    impl GitHubApiClientFactory for FailingGitHubApiClientFactory {
+        fn create(
+            &self,
+        ) -> Result<crate::infrastructure::http::github_api_client::GitHubApiClient> {
+            Err(GitTypeError::ExtractionFailed(
+                "GitHub client unavailable".to_string(),
+            ))
+        }
+    }
 
     fn cache_entry(current_version: &str, hours_ago: i64) -> VersionCacheEntry {
         VersionCacheEntry {
@@ -168,6 +181,22 @@ mod tests {
             github_client_factory: Arc::new(GitHubApiClientFactoryImpl::default()),
             file_storage: Arc::new(FileStorage::new()),
         }
+    }
+
+    fn repository_with_failing_api() -> VersionRepository {
+        VersionRepository {
+            github_client_factory: Arc::new(FailingGitHubApiClientFactory),
+            file_storage: Arc::new(FileStorage::new()),
+        }
+    }
+
+    #[tokio::test]
+    async fn fetch_latest_version_returns_api_error_without_cache_fallback() {
+        let result = repository_with_failing_api().fetch_latest_version().await;
+
+        assert!(
+            matches!(result, Err(GitTypeError::ExtractionFailed(message)) if message == "GitHub client unavailable")
+        );
     }
 
     #[test]
