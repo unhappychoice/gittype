@@ -31,6 +31,22 @@ fn get_colored_messages_for_unknown_rank() {
 }
 
 #[test]
+fn get_colored_messages_for_second_rank_message_group() {
+    let messages = get_colored_messages_for_rank("Refactorer");
+
+    assert_eq!(messages.len(), 4);
+    assert!(messages.iter().all(|message| message.text.starts_with('>')));
+}
+
+#[test]
+fn get_colored_messages_for_third_rank_message_group() {
+    let messages = get_colored_messages_for_rank("Compiler");
+
+    assert_eq!(messages.len(), 4);
+    assert!(messages.iter().all(|message| message.text.starts_with('>')));
+}
+
+#[test]
 fn colored_message_has_text_and_color() {
     let messages = get_colored_messages_for_rank("Hello World");
     let first = &messages[0];
