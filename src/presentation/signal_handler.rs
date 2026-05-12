@@ -214,4 +214,10 @@ mod tests {
         cleanup_panic_terminal(false, false);
         cleanup_panic_terminal(false, true);
     }
+
+    #[test]
+    fn cleanup_panic_terminal_handles_initialized_terminal_state() {
+        cleanup_panic_terminal(true, false);
+        cleanup_panic_terminal(true, true);
+    }
 }
