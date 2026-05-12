@@ -63,6 +63,29 @@ fn test_get_environment_context_contains_arch() {
 }
 
 #[test]
+fn test_get_environment_context_includes_optional_log_env_vars() {
+    let original_backtrace = std::env::var("RUST_BACKTRACE").ok();
+    let original_log = std::env::var("RUST_LOG").ok();
+
+    std::env::set_var("RUST_BACKTRACE", "full");
+    std::env::set_var("RUST_LOG", "gittype=debug");
+
+    let context = get_environment_context();
+
+    match original_backtrace {
+        Some(value) => std::env::set_var("RUST_BACKTRACE", value),
+        None => std::env::remove_var("RUST_BACKTRACE"),
+    }
+    match original_log {
+        Some(value) => std::env::set_var("RUST_LOG", value),
+        None => std::env::remove_var("RUST_LOG"),
+    }
+
+    assert!(context.contains("RUST_BACKTRACE: full"));
+    assert!(context.contains("RUST_LOG: gittype=debug"));
+}
+
+#[test]
 fn test_setup_console_logging_twice() {
     // Should be able to call multiple times without panicking
     setup_console_logging();
