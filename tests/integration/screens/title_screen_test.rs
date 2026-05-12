@@ -1,9 +1,10 @@
 use crate::integration::screens::mocks::title_screen_mock::MockTitleScreenDataProvider;
-use crossterm::event::{KeyCode, KeyModifiers};
+use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use gittype::domain::events::presentation_events::NavigateTo;
 use gittype::domain::events::{EventBus, EventBusInterface};
 use gittype::domain::models::color_mode::ColorMode;
 use gittype::domain::models::theme::Theme;
+use gittype::domain::models::DifficultyLevel;
 use gittype::domain::services::scoring::{
     SessionTracker, SessionTrackerInterface, TotalTracker, TotalTrackerInterface,
 };
@@ -16,6 +17,7 @@ use gittype::domain::stores::{
     ChallengeStoreInterface, RepositoryStoreInterface, SessionStoreInterface,
 };
 use gittype::presentation::tui::screens::title_screen::TitleScreen;
+use gittype::presentation::tui::Screen;
 use std::sync::Arc;
 
 // Helper function to create TitleScreen with all required dependencies
@@ -211,3 +213,36 @@ screen_basic_methods_test!(
     false,
     MockTitleScreenDataProvider
 );
+
+#[test]
+fn test_title_screen_space_without_challenges_sets_error_message() {
+    let screen = create_title_screen(Arc::new(EventBus::new()));
+    screen.set_challenge_counts([0; 5]);
+
+    screen
+        .handle_key_event(KeyEvent::new(KeyCode::Char(' '), KeyModifiers::empty()))
+        .unwrap();
+
+    assert!(screen.get_action_result().is_none());
+    assert_eq!(
+        screen.get_error_message().as_deref(),
+        Some("No challenges available for this difficulty. Please try a different difficulty or repository.")
+    );
+    assert!(screen.update().unwrap());
+    assert!(!screen.update().unwrap());
+}
+
+#[test]
+fn test_title_screen_left_from_first_difficulty_wraps_to_last() {
+    let screen = create_title_screen(Arc::new(EventBus::new()));
+
+    screen
+        .handle_key_event(KeyEvent::new(KeyCode::Left, KeyModifiers::empty()))
+        .unwrap();
+    assert_eq!(screen.get_selected_difficulty(), DifficultyLevel::Easy);
+
+    screen
+        .handle_key_event(KeyEvent::new(KeyCode::Left, KeyModifiers::empty()))
+        .unwrap();
+    assert_eq!(screen.get_selected_difficulty(), DifficultyLevel::Zen);
+}
