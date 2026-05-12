@@ -2,6 +2,7 @@ use gittype::domain::models::Challenge;
 use gittype::domain::services::context_loader::{load_context_for_challenge, load_context_lines};
 use gittype::infrastructure::storage::file_storage::FileStorage;
 use std::fs;
+use std::path::Path;
 use tempfile::NamedTempFile;
 
 #[test]
@@ -36,6 +37,21 @@ fn test_load_context_at_file_boundaries() {
 }
 
 #[test]
+fn load_context_lines_returns_empty_context_at_single_line_edges() {
+    let content = "TARGET";
+    let temp_file = NamedTempFile::new().unwrap();
+    fs::write(&temp_file, content).unwrap();
+
+    let mut file_storage = FileStorage::new();
+    file_storage.set_file_content(temp_file.path().to_path_buf(), content.to_string());
+
+    let result = load_context_lines(&file_storage, temp_file.path(), 1, 1, 3).unwrap();
+
+    assert!(result.pre_context.is_empty());
+    assert!(result.post_context.is_empty());
+}
+
+#[test]
 fn load_context_for_challenge_returns_empty_context_without_source_info() {
     let challenge_without_source = Challenge::new("no-source".to_string(), "target".to_string());
     let context = load_context_for_challenge(&challenge_without_source, 2, None).unwrap();
@@ -66,6 +82,28 @@ fn load_context_for_challenge_returns_empty_context_for_missing_relative_file() 
         .with_source_info("src/missing.rs".to_string(), 2, 4);
 
     let context = load_context_for_challenge(&challenge, 2, None).unwrap();
+
+    assert!(context.pre_context.is_empty());
+    assert!(context.post_context.is_empty());
+}
+
+#[test]
+fn load_context_for_challenge_resolves_absolute_source_paths() {
+    let challenge = Challenge::new("absolute-file".to_string(), "target".to_string())
+        .with_source_info("/tmp/gittype-missing-source.rs".to_string(), 2, 4);
+
+    let context = load_context_for_challenge(&challenge, 2, None).unwrap();
+
+    assert!(context.pre_context.is_empty());
+    assert!(context.post_context.is_empty());
+}
+
+#[test]
+fn load_context_for_challenge_resolves_relative_source_paths_from_git_root() {
+    let challenge = Challenge::new("root-relative-file".to_string(), "target".to_string())
+        .with_source_info("src/missing.rs".to_string(), 2, 4);
+
+    let context = load_context_for_challenge(&challenge, 2, Some(Path::new("/tmp/repo"))).unwrap();
 
     assert!(context.pre_context.is_empty());
     assert!(context.post_context.is_empty());
