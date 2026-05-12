@@ -72,3 +72,13 @@ fn export_command_exits_with_failure_status() {
 
     assert_eq!(output.status.code(), Some(1));
 }
+
+#[test]
+fn stats_command_exits_with_not_implemented_status() {
+    let output = Command::new(env!("CARGO_BIN_EXE_gittype"))
+        .arg("stats")
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+}
