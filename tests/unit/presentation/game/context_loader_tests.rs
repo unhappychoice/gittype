@@ -1,4 +1,5 @@
-use gittype::domain::services::context_loader::load_context_lines;
+use gittype::domain::models::Challenge;
+use gittype::domain::services::context_loader::{load_context_for_challenge, load_context_lines};
 use gittype::infrastructure::storage::file_storage::FileStorage;
 use std::fs;
 use tempfile::NamedTempFile;
@@ -32,4 +33,40 @@ fn test_load_context_at_file_boundaries() {
 
     assert_eq!(result.pre_context, vec!["line1"]);
     assert_eq!(result.post_context, vec!["line3"]);
+}
+
+#[test]
+fn load_context_for_challenge_returns_empty_context_without_source_info() {
+    let challenge_without_source = Challenge::new("no-source".to_string(), "target".to_string());
+    let context = load_context_for_challenge(&challenge_without_source, 2, None).unwrap();
+    assert!(context.pre_context.is_empty());
+    assert!(context.post_context.is_empty());
+
+    let challenge_without_start = Challenge {
+        source_file_path: Some("src/lib.rs".to_string()),
+        ..Challenge::new("no-start".to_string(), "target".to_string())
+    };
+    let context = load_context_for_challenge(&challenge_without_start, 2, None).unwrap();
+    assert!(context.pre_context.is_empty());
+    assert!(context.post_context.is_empty());
+
+    let challenge_without_end = Challenge {
+        source_file_path: Some("src/lib.rs".to_string()),
+        start_line: Some(3),
+        ..Challenge::new("no-end".to_string(), "target".to_string())
+    };
+    let context = load_context_for_challenge(&challenge_without_end, 2, None).unwrap();
+    assert!(context.pre_context.is_empty());
+    assert!(context.post_context.is_empty());
+}
+
+#[test]
+fn load_context_for_challenge_returns_empty_context_for_missing_relative_file() {
+    let challenge = Challenge::new("missing-file".to_string(), "target".to_string())
+        .with_source_info("src/missing.rs".to_string(), 2, 4);
+
+    let context = load_context_for_challenge(&challenge, 2, None).unwrap();
+
+    assert!(context.pre_context.is_empty());
+    assert!(context.post_context.is_empty());
 }
