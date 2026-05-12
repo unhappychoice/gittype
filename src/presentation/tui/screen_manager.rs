@@ -946,3 +946,66 @@ impl ScreenManagerFactory for ScreenManagerFactoryImpl {
         manager
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ratatui::backend::TestBackend;
+
+    fn create_test_manager() -> ScreenManagerImpl<TestBackend> {
+        let event_bus: Arc<dyn EventBusInterface> = Arc::new(EventBus::new());
+        let challenge_store =
+            Arc::new(ChallengeStore::default()) as Arc<dyn ChallengeStoreInterface>;
+        let repository_store =
+            Arc::new(RepositoryStore::default()) as Arc<dyn RepositoryStoreInterface>;
+        let session_store = Arc::new(SessionStore::default()) as Arc<dyn SessionStoreInterface>;
+        let stage_repository = Arc::new(StageRepository::new(
+            None,
+            Arc::clone(&challenge_store),
+            Arc::clone(&repository_store),
+            Arc::clone(&session_store),
+        )) as Arc<dyn StageRepositoryInterface>;
+        let session_tracker: Arc<dyn SessionTrackerInterface> = Arc::new(SessionTracker::default());
+        let total_tracker: Arc<dyn TotalTrackerInterface> = Arc::new(TotalTracker::default());
+        let session_manager = Arc::new(SessionManager::new_with_dependencies(
+            Arc::clone(&event_bus),
+            Arc::clone(&stage_repository),
+            session_tracker,
+            total_tracker,
+        )) as Arc<dyn SessionManagerInterface>;
+        let terminal = Terminal::new(TestBackend::new(80, 24)).unwrap();
+
+        ScreenManagerImpl::new(
+            event_bus,
+            session_store,
+            session_manager,
+            stage_repository,
+            terminal,
+        )
+    }
+
+    #[test]
+    fn setup_event_subscriptions_stores_pending_navigation_transition() {
+        let manager = Arc::new(Mutex::new(create_test_manager()));
+
+        ScreenManagerImpl::setup_event_subscriptions(&manager);
+        let event_bus = manager.lock().unwrap().event_bus.clone();
+
+        event_bus
+            .as_event_bus()
+            .publish(NavigateTo::Replace(ScreenType::Help));
+
+        let pending_transition = manager
+            .lock()
+            .unwrap()
+            .pending_transition
+            .lock()
+            .unwrap()
+            .clone();
+
+        assert!(matches!(
+            pending_transition,
+            Some(ScreenTransition::Replace(ScreenType::Help))
+        ));
+    }
+}
