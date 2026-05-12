@@ -11,13 +11,16 @@ use gittype::domain::stores::{
     ChallengeStoreInterface, RepositoryStoreInterface, SessionStoreInterface,
 };
 use gittype::infrastructure::terminal::TerminalInterface;
+use gittype::presentation::di::AppModule;
 use gittype::presentation::tui::{
-    Screen, ScreenDataProvider, ScreenManagerImpl, ScreenTransition, ScreenType, UpdateStrategy,
+    Screen, ScreenDataProvider, ScreenManagerFactory, ScreenManagerImpl, ScreenTransition,
+    ScreenType, UpdateStrategy,
 };
 use ratatui::backend::CrosstermBackend;
 use ratatui::backend::TestBackend;
 use ratatui::Frame;
 use ratatui::Terminal;
+use shaku::HasComponent;
 use std::any::Any;
 use std::io::Stdout;
 use std::sync::{Arc, Mutex};
@@ -730,4 +733,47 @@ fn test_mark_terminal_initialized_and_skip_cleanup_on_drop_toggle_flag() {
 
     manager.skip_cleanup_on_drop();
     assert!(!manager.is_terminal_initialized());
+}
+
+#[test]
+fn test_factory_create_registers_di_screens() {
+    let module = AppModule::builder().build();
+    let factory: &dyn ScreenManagerFactory = module.resolve_ref();
+
+    let mut manager = factory.create(&module);
+    manager.skip_cleanup_on_drop();
+
+    [
+        ScreenType::Title,
+        ScreenType::Typing,
+        ScreenType::Animation,
+        ScreenType::Help,
+        ScreenType::Loading,
+        ScreenType::Panic,
+        ScreenType::SessionFailure,
+        ScreenType::InfoDialog,
+        ScreenType::DetailsDialog,
+        ScreenType::StageSummary,
+        ScreenType::Analytics,
+        ScreenType::Records,
+        ScreenType::SessionDetail,
+        ScreenType::SessionSummary,
+        ScreenType::SessionSharing,
+        ScreenType::Settings,
+        ScreenType::TotalSummary,
+        ScreenType::TotalSummaryShare,
+        ScreenType::VersionCheck,
+        ScreenType::RepoList,
+        ScreenType::RepoPlay,
+        ScreenType::TrendingLanguageSelection,
+        ScreenType::TrendingRepositorySelection,
+    ]
+    .into_iter()
+    .for_each(|screen_type| {
+        assert!(
+            manager.get_screen(&screen_type).is_some(),
+            "expected {:?} to be registered",
+            screen_type
+        );
+    });
 }
