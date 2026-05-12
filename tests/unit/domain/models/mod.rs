@@ -1,3 +1,4 @@
+pub mod ascii_rank_titles_tests;
 pub mod challenge_tests;
 pub mod color_scheme_tests;
 pub mod config_tests;
