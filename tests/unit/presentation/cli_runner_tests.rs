@@ -49,6 +49,24 @@ fn run_cli_executes_repo_clear_force_command() {
 }
 
 #[test]
+fn repo_clear_force_keeps_empty_repository_cache_directory() {
+    let temp_dir = tempfile::tempdir().unwrap();
+    let repos_dir = temp_dir.path().join(".config").join("repos");
+    let placeholder_dir = repos_dir.join("not-a-git-repository").join("nested");
+    std::fs::create_dir_all(&placeholder_dir).unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_gittype"))
+        .args(["repo", "clear", "--force"])
+        .current_dir(temp_dir.path())
+        .output()
+        .unwrap();
+
+    assert!(output.status.success());
+    assert!(repos_dir.exists());
+    assert!(placeholder_dir.exists());
+}
+
+#[test]
 fn run_cli_returns_validation_error_for_invalid_trending_language() {
     let result = run_cli(make_cli(Commands::Trending {
         language: Some("invalid-language".to_string()),
