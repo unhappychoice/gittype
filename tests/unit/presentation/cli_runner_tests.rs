@@ -1,6 +1,7 @@
 use gittype::presentation::cli::args::{CacheCommands, RepoCommands};
 use gittype::presentation::cli::{run_cli, Cli, Commands};
 use gittype::GitTypeError;
+use std::process::Command;
 
 fn make_cli(command: Commands) -> Cli {
     Cli {
@@ -60,4 +61,14 @@ fn run_cli_returns_validation_error_for_invalid_trending_language() {
         Err(GitTypeError::ValidationError(message))
         if message == "Unsupported language: invalid-language"
     ));
+}
+
+#[test]
+fn export_command_exits_with_failure_status() {
+    let output = Command::new(env!("CARGO_BIN_EXE_gittype"))
+        .args(["export", "--format", "csv", "--output", "sessions.csv"])
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
 }
