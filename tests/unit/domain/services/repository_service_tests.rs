@@ -139,6 +139,39 @@ fn test_get_all_repositories_with_cache_status() {
 }
 
 #[test]
+fn get_all_repositories_with_cache_status_marks_uncached_repository() {
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let repository_dao =
+        Arc::new(RepositoryDao::new(Arc::clone(&db))) as Arc<dyn RepositoryDaoInterface>;
+    let git_repo = GitRepository {
+        user_name: "cache-status-user".to_string(),
+        repository_name: "cache-status-repo".to_string(),
+        remote_url: "https://github.com/cache-status-user/cache-status-repo".to_string(),
+        branch: None,
+        commit_hash: None,
+        is_dirty: false,
+        root_path: None,
+    };
+
+    repository_dao.ensure_repository(&git_repo).unwrap();
+
+    let service = RepositoryService::new(
+        repository_dao,
+        gittype::infrastructure::git::RemoteGitRepositoryClient::new(),
+    );
+    let repositories = service.get_all_repositories_with_cache_status().unwrap();
+
+    assert_eq!(repositories.len(), 1);
+    assert_eq!(
+        repositories[0].0.remote_url,
+        "https://github.com/cache-status-user/cache-status-repo"
+    );
+    assert!(!repositories[0].1);
+}
+
+#[test]
 fn test_get_cache_directory() {
     let cache_dir = RepositoryService::get_cache_directory();
 
