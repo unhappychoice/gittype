@@ -109,6 +109,25 @@ mod tests {
     }
 
     #[test]
+    fn test_is_repository_cached_returns_true_for_existing_directory() {
+        let client = RemoteGitRepositoryClient::new();
+        let repo_info = GitRepositoryRef {
+            origin: "coverage.invalid".to_string(),
+            owner: "gittype".to_string(),
+            name: format!("cached-test-{}", std::process::id()),
+        };
+        let path = client.get_local_repo_path(&repo_info).unwrap();
+
+        std::fs::create_dir_all(&path).unwrap();
+        assert!(client.is_repository_cached(&format!(
+            "https://coverage.invalid/gittype/{}",
+            repo_info.name
+        )));
+
+        client.delete_repository(&repo_info).unwrap();
+    }
+
+    #[test]
     fn test_parse_repo_spec_for_https_url() {
         let parsed = GitRepositoryRefParser::parse("https://github.com/octocat/hello-world.git");
         assert!(parsed.is_ok());
