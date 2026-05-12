@@ -146,3 +146,58 @@ impl VersionRepositoryInterface for VersionRepository {
         Box::pin(VersionRepository::fetch_latest_version(self))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::Duration;
+
+    fn cache_entry(current_version: &str, hours_ago: i64) -> VersionCacheEntry {
+        VersionCacheEntry {
+            latest_version: "1.2.3".to_string(),
+            current_version: current_version.to_string(),
+            update_available: false,
+            last_checked: Utc::now() - Duration::hours(hours_ago),
+        }
+    }
+
+    fn repository() -> VersionRepository {
+        use crate::infrastructure::http::github_api_client::GitHubApiClientFactoryImpl;
+
+        VersionRepository {
+            github_client_factory: Arc::new(GitHubApiClientFactoryImpl::default()),
+            file_storage: Arc::new(FileStorage::new()),
+        }
+    }
+
+    #[test]
+    fn is_cache_valid_accepts_fresh_current_version_entry() {
+        let entry = cache_entry(env!("CARGO_PKG_VERSION"), 1);
+
+        assert!(repository().is_cache_valid(&entry, 24));
+    }
+
+    #[test]
+    fn is_cache_valid_rejects_stale_entry() {
+        let entry = cache_entry(env!("CARGO_PKG_VERSION"), 25);
+
+        assert!(!repository().is_cache_valid(&entry, 24));
+    }
+
+    #[test]
+    fn is_cache_valid_rejects_different_current_version() {
+        let entry = cache_entry("0.0.0", 1);
+
+        assert!(!repository().is_cache_valid(&entry, 24));
+    }
+
+    #[test]
+    fn normalize_version_tag_strips_lowercase_v_prefix() {
+        assert_eq!(VersionRepository::normalize_version_tag("v1.2.3"), "1.2.3");
+    }
+
+    #[test]
+    fn normalize_version_tag_preserves_unprefixed_tag() {
+        assert_eq!(VersionRepository::normalize_version_tag("1.2.3"), "1.2.3");
+    }
+}
