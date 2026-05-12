@@ -10,6 +10,7 @@ use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterfa
 use gittype::presentation::tui::screens::{RecordsScreen, SessionDetailScreen};
 use gittype::presentation::tui::Screen;
 use gittype::presentation::tui::ScreenDataProvider;
+use gittype::GitTypeError;
 use std::sync::{Arc, Mutex};
 
 // Helper function to create and initialize SessionDetailScreen from RecordsScreen
@@ -66,6 +67,29 @@ screen_snapshot_test!(
         records
     }
 );
+
+#[test]
+fn test_session_detail_screen_default_provider_returns_unit_data() {
+    let data = <SessionDetailScreen as Screen>::default_provider()
+        .provide()
+        .unwrap();
+
+    assert!(data.downcast::<()>().is_ok());
+}
+
+#[test]
+fn test_session_detail_screen_rejects_non_records_source_screen() {
+    let event_bus = Arc::new(EventBus::new());
+    let screen = create_initialized_session_detail_screen(event_bus);
+
+    let result = screen.on_pushed_from(&screen);
+
+    assert!(matches!(
+        result,
+        Err(GitTypeError::ScreenInitializationError(message))
+            if message == "SessionDetail must be pushed from Records screen"
+    ));
+}
 
 // Event-producing key tests
 #[test]
