@@ -107,3 +107,85 @@ fn run_repo_command(repo_command: &RepoCommands) -> Result<()> {
         RepoCommands::Play => run_repo_play(),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::domain::models::{Challenge, GitRepository};
+    use crate::presentation::tui::screens::loading_screen::ProgressReporter;
+
+    #[derive(Debug)]
+    struct FailingChallengeRepository;
+
+    impl ChallengeRepositoryInterface for FailingChallengeRepository {
+        fn save_challenges(
+            &self,
+            _repo: &GitRepository,
+            _challenges: &[Challenge],
+            _reporter: Option<&dyn ProgressReporter>,
+        ) -> Result<()> {
+            Ok(())
+        }
+
+        fn load_challenges_with_progress(
+            &self,
+            _repo: &GitRepository,
+            _reporter: Option<&dyn ProgressReporter>,
+        ) -> Result<Option<Vec<Challenge>>> {
+            Ok(None)
+        }
+
+        fn get_cache_stats(&self) -> Result<(usize, u64)> {
+            Err(GitTypeError::ExtractionFailed("stats failed".to_string()))
+        }
+
+        fn clear_cache(&self) -> Result<()> {
+            Err(GitTypeError::ExtractionFailed("clear failed".to_string()))
+        }
+
+        fn invalidate_repository(&self, _repo: &GitRepository) -> Result<bool> {
+            Ok(false)
+        }
+
+        fn list_cache_keys(&self) -> Result<Vec<String>> {
+            Err(GitTypeError::ExtractionFailed("list failed".to_string()))
+        }
+    }
+
+    #[test]
+    fn run_cache_command_wraps_repository_errors_as_terminal_errors() {
+        let repository = FailingChallengeRepository;
+        let repo = GitRepository {
+            user_name: "owner".to_string(),
+            repository_name: "repo".to_string(),
+            remote_url: "https://github.com/owner/repo".to_string(),
+            branch: None,
+            commit_hash: None,
+            is_dirty: false,
+            root_path: None,
+        };
+
+        assert!(repository.save_challenges(&repo, &[], None).is_ok());
+        assert!(repository
+            .load_challenges_with_progress(&repo, None)
+            .unwrap()
+            .is_none());
+        assert!(!repository.invalidate_repository(&repo).unwrap());
+
+        [
+            (CacheCommands::Stats, "stats failed"),
+            (CacheCommands::Clear, "clear failed"),
+            (CacheCommands::List, "list failed"),
+        ]
+        .into_iter()
+        .for_each(|(command, expected_message)| {
+            let result = run_cache_command(&command, &repository);
+
+            assert!(matches!(
+                result,
+                Err(GitTypeError::TerminalError(message))
+                    if message.contains(expected_message)
+            ));
+        });
+    }
+}
