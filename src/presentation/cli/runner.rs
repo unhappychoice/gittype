@@ -117,6 +117,12 @@ mod tests {
     #[derive(Debug)]
     struct FailingChallengeRepository;
 
+    #[derive(Debug)]
+    struct SuccessfulChallengeRepository {
+        stats: (usize, u64),
+        cache_keys: Vec<String>,
+    }
+
     impl ChallengeRepositoryInterface for FailingChallengeRepository {
         fn save_challenges(
             &self,
@@ -149,6 +155,41 @@ mod tests {
 
         fn list_cache_keys(&self) -> Result<Vec<String>> {
             Err(GitTypeError::ExtractionFailed("list failed".to_string()))
+        }
+    }
+
+    impl ChallengeRepositoryInterface for SuccessfulChallengeRepository {
+        fn save_challenges(
+            &self,
+            _repo: &GitRepository,
+            _challenges: &[Challenge],
+            _reporter: Option<&dyn ProgressReporter>,
+        ) -> Result<()> {
+            Ok(())
+        }
+
+        fn load_challenges_with_progress(
+            &self,
+            _repo: &GitRepository,
+            _reporter: Option<&dyn ProgressReporter>,
+        ) -> Result<Option<Vec<Challenge>>> {
+            Ok(None)
+        }
+
+        fn get_cache_stats(&self) -> Result<(usize, u64)> {
+            Ok(self.stats)
+        }
+
+        fn clear_cache(&self) -> Result<()> {
+            Ok(())
+        }
+
+        fn invalidate_repository(&self, _repo: &GitRepository) -> Result<bool> {
+            Ok(false)
+        }
+
+        fn list_cache_keys(&self) -> Result<Vec<String>> {
+            Ok(self.cache_keys.clone())
         }
     }
 
@@ -187,5 +228,27 @@ mod tests {
                     if message.contains(expected_message)
             ));
         });
+    }
+
+    #[test]
+    fn run_cache_command_handles_successful_stats_and_list_outputs() {
+        [0, 512, 2048, 2 * 1024 * 1024, 2 * 1024 * 1024 * 1024]
+            .into_iter()
+            .for_each(|total_bytes| {
+                let repository = SuccessfulChallengeRepository {
+                    stats: (2, total_bytes),
+                    cache_keys: vec!["owner/repo/main".to_string()],
+                };
+
+                assert!(run_cache_command(&CacheCommands::Stats, &repository).is_ok());
+            });
+
+        let repository = SuccessfulChallengeRepository {
+            stats: (1, 0),
+            cache_keys: vec!["owner/repo/main".to_string()],
+        };
+
+        assert!(run_cache_command(&CacheCommands::Clear, &repository).is_ok());
+        assert!(run_cache_command(&CacheCommands::List, &repository).is_ok());
     }
 }
