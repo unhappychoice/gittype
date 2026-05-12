@@ -85,6 +85,34 @@ mod tests {
     }
 
     #[test]
+    fn test_clone_repository_returns_existing_complete_cache() {
+        let client = RemoteGitRepositoryClient::new();
+        let repo_info = GitRepositoryRef {
+            origin: "coverage.invalid".to_string(),
+            owner: "gittype".to_string(),
+            name: format!("clone-cache-test-{}", std::process::id()),
+        };
+        let path = client.get_local_repo_path(&repo_info).unwrap();
+        let git_dir = path.join(".git");
+
+        std::fs::create_dir_all(&git_dir).unwrap();
+        std::fs::write(git_dir.join("HEAD"), "ref: refs/heads/main").unwrap();
+        std::fs::create_dir_all(git_dir.join("objects")).unwrap();
+        std::fs::create_dir_all(git_dir.join("refs")).unwrap();
+
+        let result = client
+            .clone_repository(
+                &format!("https://coverage.invalid/gittype/{}", repo_info.name),
+                |_, _| panic!("cached clone should not report progress"),
+            )
+            .unwrap();
+
+        assert_eq!(result, path);
+
+        client.delete_repository(&repo_info).unwrap();
+    }
+
+    #[test]
     fn test_trait_object_delegates_to_remote_client() {
         let client: Box<dyn RemoteGitRepositoryClientInterface> =
             Box::new(RemoteGitRepositoryClient::new());
