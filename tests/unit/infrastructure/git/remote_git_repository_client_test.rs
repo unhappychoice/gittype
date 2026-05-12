@@ -113,6 +113,31 @@ mod tests {
     }
 
     #[test]
+    fn test_clone_repository_removes_incomplete_cache_before_clone() {
+        let client = RemoteGitRepositoryClient::new();
+        let repo_info = GitRepositoryRef {
+            origin: "127.0.0.1:1".to_string(),
+            owner: "gittype".to_string(),
+            name: format!("incomplete-cache-test-{}", std::process::id()),
+        };
+        let path = client.get_local_repo_path(&repo_info).unwrap();
+        let stale_marker = path.join("stale-marker");
+
+        std::fs::create_dir_all(&path).unwrap();
+        std::fs::write(&stale_marker, "stale cache").unwrap();
+
+        let result = client.clone_repository(
+            &format!("https://127.0.0.1:1/gittype/{}", repo_info.name),
+            |_, _| {},
+        );
+
+        assert!(result.is_err());
+        assert!(!stale_marker.exists());
+
+        client.delete_repository(&repo_info).unwrap();
+    }
+
+    #[test]
     fn test_trait_object_delegates_to_remote_client() {
         let client: Box<dyn RemoteGitRepositoryClientInterface> =
             Box::new(RemoteGitRepositoryClient::new());
