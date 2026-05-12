@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
     use gittype::domain::models::GitRepositoryRef;
+    use gittype::infrastructure::git::remote::remote_git_repository_client::RemoteGitRepositoryClientInterface;
     use gittype::infrastructure::git::{GitRepositoryRefParser, RemoteGitRepositoryClient};
 
     #[test]
@@ -55,6 +56,49 @@ mod tests {
             .join("hello-world");
 
         assert_eq!(path, expected);
+    }
+
+    #[test]
+    fn test_delete_repository_removes_cached_directory() {
+        let client = RemoteGitRepositoryClient::new();
+        let repo_info = GitRepositoryRef {
+            origin: "coverage.invalid".to_string(),
+            owner: "gittype".to_string(),
+            name: format!("delete-test-{}", std::process::id()),
+        };
+        let path = client.get_local_repo_path(&repo_info).unwrap();
+
+        std::fs::create_dir_all(&path).unwrap();
+        assert!(path.exists());
+
+        client.delete_repository(&repo_info).unwrap();
+
+        assert!(!path.exists());
+    }
+
+    #[test]
+    fn test_clone_repository_returns_error_for_invalid_spec() {
+        let client = RemoteGitRepositoryClient::new();
+        let result = client.clone_repository("invalid repository spec", |_, _| {});
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_trait_object_delegates_to_remote_client() {
+        let client: Box<dyn RemoteGitRepositoryClientInterface> =
+            Box::new(RemoteGitRepositoryClient::new());
+        let repo_info = GitRepositoryRef {
+            origin: "github.com".to_string(),
+            owner: "octocat".to_string(),
+            name: "hello-world".to_string(),
+        };
+        let path = client.get_local_repo_path(&repo_info).unwrap();
+
+        assert!(path.ends_with("github.com/octocat/hello-world"));
+        assert!(!client.is_repository_complete(tempfile::TempDir::new().unwrap().path()));
+        assert!(!client.is_repository_cached("invalid repository spec"));
+        assert!(client.delete_repository(&repo_info).is_ok());
     }
 
     #[test]
