@@ -502,6 +502,7 @@ fn test_set_current_screen_uses_default_providers_for_registered_screen_types() 
         ScreenType::Typing,
         ScreenType::StageSummary,
         ScreenType::SessionSummary,
+        ScreenType::TotalSummaryShare,
         ScreenType::SessionFailure,
         ScreenType::Records,
         ScreenType::Analytics,
@@ -512,6 +513,8 @@ fn test_set_current_screen_uses_default_providers_for_registered_screen_types() 
         ScreenType::InfoDialog,
         ScreenType::DetailsDialog,
         ScreenType::Panic,
+        ScreenType::RepoPlay,
+        ScreenType::RepoList,
         ScreenType::TrendingLanguageSelection,
         ScreenType::TrendingRepositorySelection,
     ];
