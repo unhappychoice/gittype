@@ -199,6 +199,13 @@ mod tests {
         );
     }
 
+    #[tokio::test]
+    async fn fetch_latest_version_returns_normalized_api_version() {
+        let result = repository().fetch_latest_version().await.unwrap();
+
+        assert_eq!(result, "1.0.0");
+    }
+
     #[test]
     fn is_cache_valid_accepts_fresh_current_version_entry() {
         let entry = cache_entry(env!("CARGO_PKG_VERSION"), 1);
