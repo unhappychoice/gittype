@@ -487,3 +487,72 @@ fn extract_name_for_template_class_definition_returns_type_identifier() {
 
     assert_eq!(name.as_deref(), Some("Holder"));
 }
+
+#[test]
+fn extract_constructor_destructor_name_returns_none_when_no_function_declarator() {
+    let source_code = "struct Empty {};";
+    let tree = parse_cpp(source_code);
+    let struct_node = find_node(
+        tree.root_node(),
+        source_code,
+        "struct_specifier",
+        "struct Empty",
+    )
+    .unwrap();
+
+    let name = CppExtractor.extract_name(struct_node, source_code, "constructor.definition");
+
+    assert_eq!(name, None);
+}
+
+#[test]
+fn extract_operator_name_returns_none_when_no_function_declarator() {
+    let source_code = "struct Empty {};";
+    let tree = parse_cpp(source_code);
+    let struct_node = find_node(
+        tree.root_node(),
+        source_code,
+        "struct_specifier",
+        "struct Empty",
+    )
+    .unwrap();
+
+    let name = CppExtractor.extract_name(struct_node, source_code, "operator.definition");
+
+    assert_eq!(name, None);
+}
+
+#[test]
+fn extract_operator_name_returns_none_when_function_is_not_operator() {
+    let source_code = "int add(int a, int b) { return a + b; }";
+    let tree = parse_cpp(source_code);
+    let function_node =
+        find_node(tree.root_node(), source_code, "function_definition", "add(").unwrap();
+
+    let name = CppExtractor.extract_name(function_node, source_code, "operator.definition");
+
+    assert_eq!(name, None);
+}
+
+#[test]
+fn extract_type_name_returns_none_when_no_type_identifier_child() {
+    let source_code = "int counter = 0;";
+    let tree = parse_cpp(source_code);
+    let declaration_node =
+        find_node(tree.root_node(), source_code, "declaration", "counter").unwrap();
+
+    let name = CppExtractor.extract_name(declaration_node, source_code, "type.definition");
+
+    assert_eq!(name, None);
+}
+
+#[test]
+fn extract_function_name_returns_none_when_no_function_declarator() {
+    let source_code = "int x = 5;";
+    let tree = parse_cpp(source_code);
+    let declaration_node = find_node(tree.root_node(), source_code, "declaration", "x").unwrap();
+
+    let name = CppExtractor.extract_name(declaration_node, source_code, "function.definition");
+
+    assert_eq!(name, None);
+}
