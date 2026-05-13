@@ -216,3 +216,32 @@ fn extract_name_returns_none_for_leaf_node() {
 
     assert_eq!(name, None);
 }
+
+#[test]
+fn extract_name_recurses_into_function_signature_child() {
+    let source = "void greet() {}\n";
+    let tree = parse_dart(source);
+    let func_decl = find_node(tree.root_node(), "function_declaration")
+        .expect("expected a function_declaration node");
+    assert!(func_decl
+        .child(0)
+        .map(|child| child.kind() != "identifier")
+        .unwrap_or(false));
+
+    let name = DartExtractor.extract_name(func_decl, source, "function");
+
+    assert_eq!(name.as_deref(), Some("greet"));
+}
+
+#[test]
+fn extract_name_recurses_into_initialized_variable_definition_child() {
+    let source = "void main() { int counter = 5; }\n";
+    let tree = parse_dart(source);
+    let local_decl = find_node(tree.root_node(), "local_variable_declaration")
+        .or_else(|| find_node(tree.root_node(), "initialized_variable_definition"))
+        .expect("expected a variable declaration node");
+
+    let name = DartExtractor.extract_name(local_decl, source, "variable");
+
+    assert_eq!(name.as_deref(), Some("counter"));
+}
