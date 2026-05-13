@@ -92,3 +92,71 @@ screen_basic_methods_test!(
     gittype::presentation::tui::ScreenType::Panic,
     false
 );
+
+screen_snapshot_test!(
+    test_panic_screen_snapshot_with_location_line,
+    PanicScreen,
+    PanicScreen::with_error_message(
+        "boom!\nLocation: src/foo.rs:42:10\ntrailing".to_string(),
+        Arc::new(EventBus::new()),
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark
+        )) as Arc<dyn ThemeServiceInterface>,
+        Some("SystemTime { tv_sec: 1700000000, tv_nsec: 0 }".to_string())
+    )
+);
+
+#[test]
+fn test_panic_screen_as_any_downcasts_to_concrete_type() {
+    use gittype::presentation::tui::Screen;
+
+    let screen = PanicScreen::new(
+        Arc::new(EventBus::new()),
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        )) as Arc<dyn ThemeServiceInterface>,
+    );
+
+    assert!(screen.as_any().downcast_ref::<PanicScreen>().is_some());
+}
+
+#[test]
+fn test_panic_screen_provider_returns_panic_screen() {
+    use gittype::presentation::di::AppModule;
+    use gittype::presentation::tui::screens::panic_screen::PanicScreenProvider;
+    use shaku::Provider;
+
+    let module = AppModule::builder().build();
+    let provided = <PanicScreenProvider as Provider<AppModule>>::provide(&module);
+
+    assert!(provided.is_ok());
+}
+
+#[test]
+fn test_panic_screen_with_error_message_falls_back_to_current_timestamp() {
+    let theme_service = Arc::new(ThemeService::new_for_test(
+        Theme::default(),
+        ColorMode::Dark,
+    )) as Arc<dyn ThemeServiceInterface>;
+
+    let screen = PanicScreen::with_error_message(
+        "no timestamp provided".to_string(),
+        Arc::new(EventBus::new()),
+        theme_service,
+        None,
+    );
+
+    use gittype::presentation::tui::Screen;
+    use ratatui::backend::TestBackend;
+    use ratatui::Terminal;
+
+    let backend = TestBackend::new(120, 40);
+    let mut terminal = Terminal::new(backend).unwrap();
+    terminal
+        .draw(|frame| {
+            screen.render_ratatui(frame).unwrap();
+        })
+        .unwrap();
+}
