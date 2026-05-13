@@ -1,3 +1,4 @@
+use gittype::domain::models::loading::StepType;
 use gittype::domain::models::{Challenge, DifficultyLevel, GitRepository};
 use gittype::domain::repositories::challenge_repository::{
     ChallengeRepository, ChallengeRepositoryInterface,
@@ -5,9 +6,10 @@ use gittype::domain::repositories::challenge_repository::{
 use gittype::infrastructure::storage::file_storage::FileStorage;
 use gittype::infrastructure::storage::file_storage::FileStorageInterface;
 use gittype::presentation::di::AppModule;
+use gittype::presentation::tui::screens::loading_screen::ProgressReporter;
 use shaku::HasComponent;
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 fn create_repository() -> Arc<dyn ChallengeRepositoryInterface> {
     let module = AppModule::builder().build();
@@ -465,6 +467,94 @@ fn load_challenges_returns_none_when_source_path_escapes_repo_root() {
 
     let loaded = repository.load_challenges_with_progress(&git_repository, None);
     assert!(loaded.is_none());
+}
+
+type ProgressCall = (StepType, usize, usize, Option<String>);
+
+#[derive(Default)]
+struct RecordingProgressReporter {
+    file_counts_calls: Mutex<Vec<ProgressCall>>,
+}
+
+impl ProgressReporter for RecordingProgressReporter {
+    fn set_step(&self, _step_type: StepType) {}
+
+    fn set_current_file(&self, _file: Option<String>) {}
+
+    fn set_file_counts(
+        &self,
+        step_type: StepType,
+        processed: usize,
+        total: usize,
+        current_file: Option<String>,
+    ) {
+        self.file_counts_calls
+            .lock()
+            .unwrap()
+            .push((step_type, processed, total, current_file));
+    }
+}
+
+#[test]
+fn load_challenges_with_progress_reports_progress_to_reporter() {
+    let temp_dir = tempfile::tempdir().unwrap();
+    let source_path = temp_dir.path().join("repo/src/lib.rs");
+    let source = "fn one() {}\nfn two() {}\nfn three() {}\n";
+    std::fs::create_dir_all(source_path.parent().unwrap()).unwrap();
+    std::fs::write(&source_path, source).unwrap();
+
+    let repository = ChallengeRepository::new_for_test(
+        temp_dir.path().join("cache"),
+        file_storage_with_source(source_path.canonicalize().unwrap(), source),
+    );
+    let git_repository = GitRepository {
+        user_name: "test".to_string(),
+        repository_name: "repo".to_string(),
+        remote_url: "https://github.com/test/repo".to_string(),
+        branch: Some("main".to_string()),
+        commit_hash: Some(format!("load-progress-{}", std::process::id())),
+        is_dirty: false,
+        root_path: Some(temp_dir.path().join("repo")),
+    };
+    let challenges = vec![
+        Challenge::new("c1".to_string(), "fn one() {}".to_string()).with_source_info(
+            "src/lib.rs".to_string(),
+            1,
+            1,
+        ),
+        Challenge::new("c2".to_string(), "fn two() {}".to_string()).with_source_info(
+            "src/lib.rs".to_string(),
+            2,
+            2,
+        ),
+    ];
+
+    repository
+        .save_challenges(&git_repository, &challenges)
+        .unwrap();
+
+    let reporter = RecordingProgressReporter::default();
+    let loaded = repository
+        .load_challenges_with_progress(&git_repository, Some(&reporter))
+        .expect("saved challenges should reconstruct with progress reporting");
+
+    assert_eq!(loaded.len(), 2);
+
+    let calls = reporter.file_counts_calls.lock().unwrap();
+    assert_eq!(calls.len(), 2);
+    for (step_type, _processed, total, current_file) in calls.iter() {
+        assert_eq!(*step_type, StepType::CacheCheck);
+        assert_eq!(*total, 2);
+        assert!(current_file
+            .as_deref()
+            .unwrap_or("")
+            .starts_with("Reconstructing challenge"));
+    }
+    let processed_values: std::collections::HashSet<_> = calls
+        .iter()
+        .map(|(_, processed, _, _)| *processed)
+        .collect();
+    assert_eq!(processed_values, std::collections::HashSet::from([1, 2]));
 }
 
 #[test]
