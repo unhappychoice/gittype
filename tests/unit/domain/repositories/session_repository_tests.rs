@@ -438,6 +438,216 @@ fn test_session_repository_trait_implementation() {
     assert!(result.is_ok());
 }
 
+#[test]
+fn test_trait_get_all_repositories_returns_recorded_repository() {
+    let repo = SessionRepository::new().unwrap();
+
+    let mut session_result = SessionResult::new();
+    session_result.session_score = 88.0;
+    let git_repo = GitRepository {
+        user_name: "traituser".to_string(),
+        repository_name: "traitrepo".to_string(),
+        remote_url: "https://github.com/traituser/traitrepo".to_string(),
+        branch: Some("main".to_string()),
+        commit_hash: Some("trait1".to_string()),
+        is_dirty: false,
+        root_path: None,
+    };
+    let challenge = Challenge::new("trait-id".to_string(), "trait".to_string());
+    let mut tracker = StageTracker::new("trait".to_string());
+    tracker.record(StageInput::Start);
+    tracker.record(StageInput::Finish);
+
+    repo.record_session(
+        &session_result,
+        Some(&git_repo),
+        "normal",
+        None,
+        &[("stage1".to_string(), tracker)],
+        &[challenge],
+    )
+    .unwrap();
+
+    let trait_ref: &dyn SessionRepositoryTrait = &repo;
+    let repositories = trait_ref.get_all_repositories().unwrap();
+    assert!(repositories
+        .iter()
+        .any(|r| r.repository_name == "traitrepo" && r.user_name == "traituser"));
+}
+
+#[test]
+fn test_trait_get_sessions_filtered_returns_recorded_sessions() {
+    let repo = SessionRepository::new().unwrap();
+
+    let mut session_result = SessionResult::new();
+    session_result.session_score = 95.0;
+    let git_repo = GitRepository {
+        user_name: "tfilteruser".to_string(),
+        repository_name: "tfilterrepo".to_string(),
+        remote_url: "https://github.com/tfilteruser/tfilterrepo".to_string(),
+        branch: Some("main".to_string()),
+        commit_hash: Some("tfilter1".to_string()),
+        is_dirty: false,
+        root_path: None,
+    };
+    let challenge = Challenge::new("tfilter-id".to_string(), "tfilter".to_string());
+    let mut tracker = StageTracker::new("tfilter".to_string());
+    tracker.record(StageInput::Start);
+    tracker.record(StageInput::Finish);
+
+    repo.record_session(
+        &session_result,
+        Some(&git_repo),
+        "normal",
+        None,
+        &[("stage1".to_string(), tracker)],
+        &[challenge],
+    )
+    .unwrap();
+
+    let trait_ref: &dyn SessionRepositoryTrait = &repo;
+    let sessions = trait_ref
+        .get_sessions_filtered(None, None, "score", false)
+        .unwrap();
+    assert!(!sessions.is_empty());
+}
+
+#[test]
+fn test_trait_get_session_result_returns_recorded_session() {
+    let repo = SessionRepository::new().unwrap();
+
+    let mut session_result = SessionResult::new();
+    session_result.session_score = 175.0;
+    session_result.overall_cpm = 333.0;
+    let git_repo = GitRepository {
+        user_name: "tresultuser".to_string(),
+        repository_name: "tresultrepo".to_string(),
+        remote_url: "https://github.com/tresultuser/tresultrepo".to_string(),
+        branch: Some("main".to_string()),
+        commit_hash: Some("tresult1".to_string()),
+        is_dirty: false,
+        root_path: None,
+    };
+    let challenge = Challenge::new("tresult-id".to_string(), "tresult".to_string());
+    let mut tracker = StageTracker::new("tresult".to_string());
+    tracker.record(StageInput::Start);
+    tracker.record(StageInput::Finish);
+
+    let session_id = repo
+        .record_session(
+            &session_result,
+            Some(&git_repo),
+            "normal",
+            None,
+            &[("stage1".to_string(), tracker)],
+            &[challenge],
+        )
+        .unwrap();
+
+    let trait_ref: &dyn SessionRepositoryTrait = &repo;
+    let result = trait_ref.get_session_result(session_id).unwrap();
+    assert!(result.is_some());
+    assert_eq!(result.unwrap().score, 175.0);
+}
+
+#[test]
+fn test_trait_get_session_result_returns_none_for_missing_id() {
+    let repo = SessionRepository::new().unwrap();
+    let trait_ref: &dyn SessionRepositoryTrait = &repo;
+    assert!(trait_ref.get_session_result(987654321).unwrap().is_none());
+}
+
+#[test]
+fn test_trait_get_language_stats_includes_recorded_language() {
+    let repo = SessionRepository::new().unwrap();
+
+    let mut session_result = SessionResult::new();
+    session_result.session_score = 110.0;
+    let git_repo = GitRepository {
+        user_name: "tlanguser".to_string(),
+        repository_name: "tlangrepo".to_string(),
+        remote_url: "https://github.com/tlanguser/tlangrepo".to_string(),
+        branch: Some("main".to_string()),
+        commit_hash: Some("tlang1".to_string()),
+        is_dirty: false,
+        root_path: None,
+    };
+    let challenge = Challenge::new("tlang-id".to_string(), "tlang".to_string())
+        .with_language("rust".to_string());
+    let mut tracker = StageTracker::new("tlang".to_string());
+    tracker.record(StageInput::Start);
+    tracker.record(StageInput::Keystroke {
+        ch: 't',
+        position: 0,
+    });
+    tracker.record(StageInput::Finish);
+
+    repo.record_session(
+        &session_result,
+        Some(&git_repo),
+        "normal",
+        None,
+        &[("stage1".to_string(), tracker)],
+        &[challenge],
+    )
+    .unwrap();
+
+    let trait_ref: &dyn SessionRepositoryTrait = &repo;
+    let stats = trait_ref.get_language_stats(None).unwrap();
+    assert!(stats.iter().any(|(lang, _, _)| lang == "rust"));
+}
+
+#[test]
+fn test_trait_get_language_stats_empty_when_no_sessions() {
+    let repo = SessionRepository::new().unwrap();
+    let trait_ref: &dyn SessionRepositoryTrait = &repo;
+    let stats = trait_ref.get_language_stats(Some(30)).unwrap();
+    assert!(stats.is_empty());
+}
+
+#[test]
+fn test_trait_get_session_result_for_analytics_returns_recorded_session() {
+    let repo = SessionRepository::new().unwrap();
+
+    let mut session_result = SessionResult::new();
+    session_result.session_score = 222.0;
+    session_result.overall_wpm = 75.0;
+    session_result.overall_accuracy = 97.0;
+    let git_repo = GitRepository {
+        user_name: "tanalyticsuser".to_string(),
+        repository_name: "tanalyticsrepo".to_string(),
+        remote_url: "https://github.com/tanalyticsuser/tanalyticsrepo".to_string(),
+        branch: Some("main".to_string()),
+        commit_hash: Some("tanalytics1".to_string()),
+        is_dirty: false,
+        root_path: None,
+    };
+    let challenge = Challenge::new("tanalytics-id".to_string(), "tanalytics".to_string());
+    let mut tracker = StageTracker::new("tanalytics".to_string());
+    tracker.record(StageInput::Start);
+    tracker.record(StageInput::Finish);
+
+    let session_id = repo
+        .record_session(
+            &session_result,
+            Some(&git_repo),
+            "normal",
+            None,
+            &[("stage1".to_string(), tracker)],
+            &[challenge],
+        )
+        .unwrap();
+
+    let trait_ref: &dyn SessionRepositoryTrait = &repo;
+    let result = trait_ref
+        .get_session_result_for_analytics(session_id)
+        .unwrap();
+    assert!(result.is_some());
+    let data = result.unwrap();
+    assert_eq!(data.score, 222.0);
+    assert_eq!(data.wpm, 75.0);
+}
+
 // Note: SessionRepository no longer implements HasDatabase trait since database is injected
 
 // Integration tests with actual data
