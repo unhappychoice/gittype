@@ -1219,6 +1219,45 @@ fn test_get_sessions_filtered_unknown_sort_falls_back_to_date() {
 }
 
 #[test]
+fn test_save_session_result_records_tier_name_for_each_tier() {
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
+
+    let git_repo = make_git_repo("tieruser", "tierrepo", "tiercommit");
+    let repository_id = repo_dao.ensure_repository(&git_repo).unwrap();
+
+    let cases = [
+        (100.0, "Beginner"),
+        (6000.0, "Intermediate"),
+        (8000.0, "Advanced"),
+        (10000.0, "Expert"),
+        (12000.0, "Legendary"),
+    ];
+
+    for (score, expected_tier) in cases {
+        let session_id =
+            seed_session_with_score(&db, &session_dao, repository_id, &git_repo, score, 1000);
+
+        let conn = db.get_connection().unwrap();
+        let tier: String = conn
+            .query_row(
+                "SELECT tier_name FROM session_results WHERE session_id = ?",
+                rusqlite::params![session_id],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(
+            tier, expected_tier,
+            "score {} should yield tier {}",
+            score, expected_tier
+        );
+    }
+}
+
+#[test]
 fn test_get_sessions_filtered_combines_repository_and_date_filters() {
     let db_impl = Database::new().unwrap();
     db_impl.init().unwrap();
