@@ -148,6 +148,60 @@ fn log_error_to_file_writes_error_log_in_logs_directory() {
 }
 
 #[test]
+fn log_error_to_file_falls_back_to_cwd_when_logs_dir_is_missing() {
+    let _lock = CURRENT_DIR_LOCK.lock().unwrap();
+    let temp_dir = TempDir::new().unwrap();
+    let _guard = CurrentDirGuard::enter(temp_dir.path());
+
+    log_error_to_file(&GitTypeError::ValidationError(
+        "fallback path test".to_string(),
+    ));
+
+    let fallback_log = std::fs::read_dir(temp_dir.path())
+        .unwrap()
+        .filter_map(|entry| entry.ok().map(|entry| entry.path()))
+        .find(|path| {
+            path.file_name()
+                .and_then(|name| name.to_str())
+                .is_some_and(|name| name.starts_with("gittype_error_") && name.ends_with(".log"))
+        });
+
+    assert!(
+        fallback_log.is_some(),
+        "expected gittype_error_*.log in cwd when logs/ directory is absent"
+    );
+
+    let log_content = std::fs::read_to_string(fallback_log.unwrap()).unwrap();
+    assert!(log_content.contains("ERROR MESSAGE: Validation error: fallback path test"));
+}
+
+#[test]
+fn log_error_to_file_writes_chained_source_errors() {
+    let _lock = CURRENT_DIR_LOCK.lock().unwrap();
+    let temp_dir = TempDir::new().unwrap();
+    let logs_dir = temp_dir.path().join("logs");
+    std::fs::create_dir_all(&logs_dir).unwrap();
+    let _guard = CurrentDirGuard::enter(temp_dir.path());
+
+    let io_err = std::io::Error::other("underlying io failure");
+    log_error_to_file(&GitTypeError::IoError(io_err));
+
+    let log_path = std::fs::read_dir(&logs_dir)
+        .unwrap()
+        .filter_map(|entry| entry.ok().map(|entry| entry.path()))
+        .find(|path| {
+            path.file_name()
+                .and_then(|name| name.to_str())
+                .is_some_and(|name| name.starts_with("error_") && name.ends_with(".log"))
+        })
+        .expect("error log file should exist in logs/");
+    let log_content = std::fs::read_to_string(log_path).unwrap();
+
+    assert!(log_content.contains("CAUSED BY (level 1)"));
+    assert!(log_content.contains("underlying io failure"));
+}
+
+#[test]
 fn get_current_log_file_path_returns_optional_string() {
     // `setup_logging` may or may not have been called by earlier tests in this
     // process; either way `get_current_log_file_path` must return without
