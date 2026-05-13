@@ -187,6 +187,37 @@ fn extract_name_reads_self_closing_jsx_component_name() {
     );
 }
 
+#[test]
+fn extract_name_returns_none_when_variable_declarator_uses_destructuring() {
+    let extractor = JavaScriptExtractor;
+    let source = "const { value } = source;";
+    let tree = JavaScriptExtractor::create_parser()
+        .unwrap()
+        .parse(source, None)
+        .unwrap();
+    let declarator = find_node(tree.root_node(), "variable_declarator").unwrap();
+
+    assert_eq!(
+        extractor.extract_name(declarator, source, "arrow_function"),
+        None
+    );
+}
+
+#[test]
+fn extract_name_returns_none_for_jsx_capture_when_node_has_no_identifier_child() {
+    let extractor = JavaScriptExtractor;
+    let source = "const value = 1;";
+    let tree = JavaScriptExtractor::create_parser()
+        .unwrap()
+        .parse(source, None)
+        .unwrap();
+
+    assert_eq!(
+        extractor.extract_name(tree.root_node(), source, "jsx_element"),
+        None
+    );
+}
+
 fn find_node<'a>(node: Node<'a>, kind: &str) -> Option<Node<'a>> {
     (node.kind() == kind).then_some(node).or_else(|| {
         let mut cursor = node.walk();

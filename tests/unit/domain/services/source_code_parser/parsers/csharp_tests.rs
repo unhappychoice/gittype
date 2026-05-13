@@ -301,3 +301,23 @@ fn extract_name_for_unknown_capture_returns_none() {
     // for an `identifier` child of root — root has no direct identifier child.
     assert_eq!(name, None);
 }
+
+#[test]
+fn extract_name_for_namespace_capture_returns_none_when_no_qualified_or_identifier_child() {
+    let source = "class Foo {}\n";
+    let tree = parse_csharp(source);
+
+    let name = CSharpExtractor.extract_name(tree.root_node(), source, "namespace");
+
+    assert_eq!(name, None);
+}
+
+#[test]
+fn extract_name_for_field_capture_returns_none_when_no_variable_declaration_child() {
+    let source = "class Foo {}\n";
+    let tree = parse_csharp(source);
+
+    let name = CSharpExtractor.extract_name(tree.root_node(), source, "field");
+
+    assert_eq!(name, None);
+}
