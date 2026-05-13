@@ -20,6 +20,15 @@ pub struct TotalSummaryShareDataProvider {
     total_tracker: Arc<Mutex<Option<TotalTracker>>>,
 }
 
+impl TotalSummaryShareDataProvider {
+    #[cfg(feature = "test-mocks")]
+    pub fn new_for_test(tracker: Option<TotalTracker>) -> Self {
+        Self {
+            total_tracker: Arc::new(Mutex::new(tracker)),
+        }
+    }
+}
+
 impl ScreenDataProvider for TotalSummaryShareDataProvider {
     fn provide(&self) -> Result<Box<dyn std::any::Any>> {
         let total_result = self
