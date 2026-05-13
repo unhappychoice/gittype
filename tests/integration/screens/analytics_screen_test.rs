@@ -324,3 +324,103 @@ screen_basic_methods_test!(
     false,
     MockAnalyticsDataProvider
 );
+
+fn build_analytics_screen() -> AnalyticsScreen {
+    let event_bus = Arc::new(EventBus::new());
+    let theme_service = Arc::new(ThemeService::new_for_test(
+        Theme::default(),
+        ColorMode::Dark,
+    )) as Arc<dyn ThemeServiceInterface>;
+    AnalyticsScreen::new(event_bus, theme_service)
+}
+
+fn send_keys(screen: &AnalyticsScreen, keys: &[KeyCode]) {
+    for code in keys {
+        screen
+            .handle_key_event(KeyEvent::new(*code, KeyModifiers::empty()))
+            .unwrap();
+    }
+}
+
+#[test]
+fn test_analytics_screen_down_navigates_repository_list() {
+    let screen = build_analytics_screen();
+    screen
+        .init_with_data(MockAnalyticsDataProvider.provide().unwrap())
+        .unwrap();
+
+    send_keys(
+        &screen,
+        &[KeyCode::Right, KeyCode::Right, KeyCode::Down, KeyCode::Down],
+    );
+
+    // Re-renders without panicking after wrapping
+    let backend = ratatui::backend::TestBackend::new(120, 40);
+    let mut terminal = ratatui::Terminal::new(backend).unwrap();
+    terminal
+        .draw(|f| {
+            screen.render_ratatui(f).unwrap();
+        })
+        .unwrap();
+}
+
+#[test]
+fn test_analytics_screen_up_navigates_repository_list() {
+    let screen = build_analytics_screen();
+    screen
+        .init_with_data(MockAnalyticsDataProvider.provide().unwrap())
+        .unwrap();
+
+    // Right, Right to Repositories, then Up wraps from 0 to last, then Up again to 0.
+    send_keys(
+        &screen,
+        &[KeyCode::Right, KeyCode::Right, KeyCode::Up, KeyCode::Up],
+    );
+}
+
+#[test]
+fn test_analytics_screen_navigates_language_list_with_jk() {
+    let screen = build_analytics_screen();
+    screen
+        .init_with_data(MockAnalyticsDataProvider.provide().unwrap())
+        .unwrap();
+
+    // Right Right Right to Languages, then j j k k for next/previous wrapping paths.
+    send_keys(
+        &screen,
+        &[
+            KeyCode::Right,
+            KeyCode::Right,
+            KeyCode::Right,
+            KeyCode::Char('j'),
+            KeyCode::Char('j'),
+            KeyCode::Char('k'),
+            KeyCode::Char('k'),
+        ],
+    );
+}
+
+#[test]
+fn test_analytics_screen_unhandled_key_returns_ok() {
+    let screen = build_analytics_screen();
+    screen
+        .init_with_data(MockAnalyticsDataProvider.provide().unwrap())
+        .unwrap();
+
+    let result = screen.handle_key_event(KeyEvent::new(KeyCode::Char('z'), KeyModifiers::empty()));
+
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_analytics_view_mode_default_is_overview() {
+    assert_eq!(ViewMode::default(), ViewMode::Overview);
+}
+
+#[test]
+fn test_analytics_view_mode_display_names() {
+    assert_eq!(ViewMode::Overview.display_name(), "Overview");
+    assert_eq!(ViewMode::Trends.display_name(), "Trends");
+    assert_eq!(ViewMode::Repositories.display_name(), "Repositories");
+    assert_eq!(ViewMode::Languages.display_name(), "Languages");
+}
