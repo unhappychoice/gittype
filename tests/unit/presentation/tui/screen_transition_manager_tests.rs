@@ -589,4 +589,114 @@ mod tests {
         .unwrap();
         assert_eq!(result, ScreenType::SessionFailure);
     }
+
+    // === Side-effect handler branches when SessionManagerInterface
+    //     is NOT the concrete SessionManager (downcast returns None) ===
+
+    struct FakeSessionManager;
+
+    impl SessionManagerInterface for FakeSessionManager {
+        fn as_any(&self) -> &dyn std::any::Any {
+            self
+        }
+    }
+
+    fn fake_session_manager() -> Arc<dyn SessionManagerInterface> {
+        Arc::new(FakeSessionManager)
+    }
+
+    #[test]
+    fn test_title_to_typing_with_non_concrete_session_manager_is_noop() {
+        let sm = fake_session_manager();
+        let result =
+            ScreenTransitionManager::reduce(ScreenType::Title, ScreenType::Typing, &sm).unwrap();
+        assert_eq!(result, ScreenType::Typing);
+    }
+
+    #[test]
+    fn test_session_failure_to_typing_with_non_concrete_session_manager_is_noop() {
+        let sm = fake_session_manager();
+        let result =
+            ScreenTransitionManager::reduce(ScreenType::SessionFailure, ScreenType::Typing, &sm)
+                .unwrap();
+        assert_eq!(result, ScreenType::Typing);
+    }
+
+    #[test]
+    fn test_typing_to_session_failure_with_non_concrete_session_manager_is_noop() {
+        let sm = fake_session_manager();
+        let result =
+            ScreenTransitionManager::reduce(ScreenType::Typing, ScreenType::SessionFailure, &sm)
+                .unwrap();
+        assert_eq!(result, ScreenType::SessionFailure);
+    }
+
+    #[test]
+    fn test_stage_summary_to_session_failure_with_non_concrete_session_manager_is_noop() {
+        let sm = fake_session_manager();
+        let result = ScreenTransitionManager::reduce(
+            ScreenType::StageSummary,
+            ScreenType::SessionFailure,
+            &sm,
+        )
+        .unwrap();
+        assert_eq!(result, ScreenType::SessionFailure);
+    }
+
+    #[test]
+    fn test_typing_to_animation_with_non_concrete_session_manager_is_noop() {
+        let sm = fake_session_manager();
+        let result =
+            ScreenTransitionManager::reduce(ScreenType::Typing, ScreenType::Animation, &sm)
+                .unwrap();
+        assert_eq!(result, ScreenType::Animation);
+    }
+
+    #[test]
+    fn test_stage_summary_to_animation_with_non_concrete_session_manager_is_noop() {
+        let sm = fake_session_manager();
+        let result =
+            ScreenTransitionManager::reduce(ScreenType::StageSummary, ScreenType::Animation, &sm)
+                .unwrap();
+        assert_eq!(result, ScreenType::Animation);
+    }
+
+    #[test]
+    fn test_session_summary_to_typing_with_non_concrete_session_manager_is_noop() {
+        let sm = fake_session_manager();
+        let result =
+            ScreenTransitionManager::reduce(ScreenType::SessionSummary, ScreenType::Typing, &sm)
+                .unwrap();
+        assert_eq!(result, ScreenType::Typing);
+    }
+
+    #[test]
+    fn test_session_summary_to_title_with_non_concrete_session_manager_is_noop() {
+        let sm = fake_session_manager();
+        let result =
+            ScreenTransitionManager::reduce(ScreenType::SessionSummary, ScreenType::Title, &sm)
+                .unwrap();
+        assert_eq!(result, ScreenType::Title);
+    }
+
+    #[test]
+    fn test_session_failure_to_title_with_non_concrete_session_manager_is_noop() {
+        let sm = fake_session_manager();
+        let result =
+            ScreenTransitionManager::reduce(ScreenType::SessionFailure, ScreenType::Title, &sm)
+                .unwrap();
+        assert_eq!(result, ScreenType::Title);
+    }
+
+    // === Title→Typing when session is already in progress (skip-start branch) ===
+
+    #[test]
+    fn test_title_to_typing_when_session_already_in_progress_skips_start() {
+        let sm = create_session_manager();
+        start_session(&sm);
+        // Second Title→Typing transition: sm.is_in_progress() is true → Start is skipped.
+        let result =
+            ScreenTransitionManager::reduce(ScreenType::Title, ScreenType::Typing, &sm).unwrap();
+        assert_eq!(result, ScreenType::Typing);
+    }
 }
