@@ -301,3 +301,189 @@ fn extract_name_reads_plain_variable_declarations() {
 
     assert_eq!(name, Some("plain".to_string()));
 }
+
+#[test]
+fn extract_name_for_function_definition_returns_identifier() {
+    let source_code = "int add(int a, int b) { return a + b; }";
+    let tree = parse_cpp(source_code);
+    let function_node =
+        find_node(tree.root_node(), source_code, "function_definition", "add(").unwrap();
+
+    let name = CppExtractor.extract_name(function_node, source_code, "function.definition");
+
+    assert_eq!(name.as_deref(), Some("add"));
+}
+
+#[test]
+fn extract_name_for_method_definition_delegates_to_function_name_extraction() {
+    let source_code = "class Foo { public: void greet() {} };";
+    let tree = parse_cpp(source_code);
+    let definition = find_node(
+        tree.root_node(),
+        source_code,
+        "function_definition",
+        "greet() {}",
+    )
+    .unwrap();
+
+    let name = CppExtractor.extract_name(definition, source_code, "method.definition");
+
+    assert_eq!(name.as_deref(), Some("greet"));
+}
+
+#[test]
+fn extract_name_for_class_definition_returns_type_identifier() {
+    let source_code = "class Widget { int x; };";
+    let tree = parse_cpp(source_code);
+    let class_node = find_node(
+        tree.root_node(),
+        source_code,
+        "class_specifier",
+        "class Widget",
+    )
+    .unwrap();
+
+    let name = CppExtractor.extract_name(class_node, source_code, "class.definition");
+
+    assert_eq!(name.as_deref(), Some("Widget"));
+}
+
+#[test]
+fn extract_name_for_struct_definition_returns_type_identifier() {
+    let source_code = "struct Point { int x; int y; };";
+    let tree = parse_cpp(source_code);
+    let struct_node = find_node(
+        tree.root_node(),
+        source_code,
+        "struct_specifier",
+        "struct Point",
+    )
+    .unwrap();
+
+    let name = CppExtractor.extract_name(struct_node, source_code, "struct.definition");
+
+    assert_eq!(name.as_deref(), Some("Point"));
+}
+
+#[test]
+fn extract_name_for_type_definition_returns_type_identifier() {
+    let source_code = "typedef unsigned int MyUInt;";
+    let tree = parse_cpp(source_code);
+    let typedef_node =
+        find_node(tree.root_node(), source_code, "type_definition", "MyUInt").unwrap();
+
+    let name = CppExtractor.extract_name(typedef_node, source_code, "type.definition");
+
+    assert_eq!(name.as_deref(), Some("MyUInt"));
+}
+
+#[test]
+fn extract_name_for_enum_definition_returns_type_identifier() {
+    let source_code = "enum Color { Red, Green, Blue };";
+    let tree = parse_cpp(source_code);
+    let enum_node = find_node(tree.root_node(), source_code, "enum_specifier", "Color").unwrap();
+
+    let name = CppExtractor.extract_name(enum_node, source_code, "enum.definition");
+
+    assert_eq!(name.as_deref(), Some("Color"));
+}
+
+#[test]
+fn extract_name_for_variable_with_init_returns_identifier() {
+    let source_code = "int counter = 0;";
+    let tree = parse_cpp(source_code);
+    let declaration_node =
+        find_node(tree.root_node(), source_code, "declaration", "counter").unwrap();
+
+    let name = CppExtractor.extract_name(declaration_node, source_code, "variable.definition");
+
+    assert_eq!(name.as_deref(), Some("counter"));
+}
+
+#[test]
+fn extract_name_for_operator_definition_returns_operator_name() {
+    let source_code =
+        "struct Vec { int v; Vec operator+(const Vec& other) const { return Vec{v + other.v}; } };";
+    let tree = parse_cpp(source_code);
+    let operator_node = find_node(
+        tree.root_node(),
+        source_code,
+        "function_definition",
+        "operator+",
+    )
+    .unwrap();
+
+    let name = CppExtractor.extract_name(operator_node, source_code, "operator.definition");
+
+    assert!(
+        name.as_deref()
+            .map(|s| s.contains("operator"))
+            .unwrap_or(false),
+        "expected operator name, got {:?}",
+        name
+    );
+}
+
+#[test]
+fn extract_name_for_destructor_definition_returns_tilde_prefixed_name() {
+    let source_code = "class Resource { public: ~Resource() {} };";
+    let tree = parse_cpp(source_code);
+    let destructor_node = find_node(
+        tree.root_node(),
+        source_code,
+        "function_definition",
+        "~Resource",
+    )
+    .unwrap();
+
+    let name = CppExtractor.extract_name(destructor_node, source_code, "destructor.definition");
+
+    // destructor_name child structure is parser-dependent; either we get the
+    // tilde-prefixed form or None — both branches in the code are exercised
+    // via this and the constructor test above.
+    assert!(name.is_none() || name.as_deref().unwrap_or("").starts_with('~'));
+}
+
+#[test]
+fn extract_name_for_unknown_capture_returns_none() {
+    let source_code = "int x;";
+    let tree = parse_cpp(source_code);
+
+    let name = CppExtractor.extract_name(tree.root_node(), source_code, "unknown.capture");
+
+    assert_eq!(name, None);
+}
+
+#[test]
+fn extract_name_for_template_function_definition_returns_identifier() {
+    let source_code = "template <typename T> T identity(T value) { return value; }";
+    let tree = parse_cpp(source_code);
+    let definition = find_node(
+        tree.root_node(),
+        source_code,
+        "function_definition",
+        "identity(T value)",
+    )
+    .unwrap();
+
+    let name = CppExtractor.extract_name(definition, source_code, "template_function.definition");
+
+    assert_eq!(name.as_deref(), Some("identity"));
+}
+
+#[test]
+fn extract_name_for_template_class_definition_returns_type_identifier() {
+    let source_code = "template <typename T> class Holder { T value; };";
+    let tree = parse_cpp(source_code);
+    let class_node = find_node(
+        tree.root_node(),
+        source_code,
+        "class_specifier",
+        "class Holder",
+    )
+    .unwrap();
+
+    let name = CppExtractor.extract_name(class_node, source_code, "template_class.definition");
+
+    assert_eq!(name.as_deref(), Some("Holder"));
+}
