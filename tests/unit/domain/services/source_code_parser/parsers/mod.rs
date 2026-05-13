@@ -3,6 +3,7 @@ mod clojure_tests;
 mod cpp_tests;
 mod csharp_tests;
 mod dart_tests;
+mod elixir_tests;
 mod erlang_tests;
 mod go_tests;
 mod haskell_tests;
