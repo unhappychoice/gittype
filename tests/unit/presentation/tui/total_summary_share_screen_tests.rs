@@ -1,4 +1,5 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use gittype::domain::events::presentation_events::NavigateTo;
 use gittype::domain::events::EventBus;
 use gittype::domain::events::EventBusInterface;
 use gittype::domain::models::color_mode::ColorMode;
@@ -6,10 +7,14 @@ use gittype::domain::models::theme::Theme;
 use gittype::domain::models::TotalResult;
 use gittype::domain::services::scoring::{TotalTracker, TotalTrackerInterface};
 use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
+use gittype::presentation::di::AppModule;
 use gittype::presentation::sharing::SharingPlatform;
-use gittype::presentation::tui::screens::total_summary_share_screen::TotalSummaryShareScreen;
+use gittype::presentation::tui::screens::total_summary_share_screen::{
+    TotalSummaryShareScreen, TotalSummaryShareScreenProvider,
+};
 use gittype::presentation::tui::Screen;
-use std::sync::Arc;
+use shaku::Provider;
+use std::sync::{Arc, Mutex};
 
 fn make_screen() -> TotalSummaryShareScreen {
     TotalSummaryShareScreen::new(
@@ -67,4 +72,96 @@ fn escape_clears_fallback_url_before_navigating_back() {
         .unwrap();
 
     assert!(screen.fallback_url_for_test().is_none());
+}
+
+#[test]
+fn provider_resolves_screen_from_app_module() {
+    let module = AppModule::builder().build();
+    let provided = <TotalSummaryShareScreenProvider as Provider<AppModule>>::provide(&module);
+
+    assert!(provided.is_ok());
+}
+
+#[test]
+fn escape_without_fallback_publishes_pop_navigation() {
+    let event_bus = Arc::new(EventBus::new());
+    let captured: Arc<Mutex<Vec<NavigateTo>>> = Arc::new(Mutex::new(Vec::new()));
+    let observed = Arc::clone(&captured);
+    event_bus.subscribe(move |event: &NavigateTo| {
+        observed.lock().unwrap().push(event.clone());
+    });
+
+    let screen = TotalSummaryShareScreen::new(
+        event_bus.clone() as Arc<dyn EventBusInterface>,
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        )) as Arc<dyn ThemeServiceInterface>,
+        Arc::new(TotalTracker::new_for_test()) as Arc<dyn TotalTrackerInterface>,
+    );
+
+    screen
+        .handle_key_event(KeyEvent::new(KeyCode::Esc, KeyModifiers::empty()))
+        .unwrap();
+
+    let events = captured.lock().unwrap();
+    assert!(matches!(events.as_slice(), [NavigateTo::Pop]));
+}
+
+#[test]
+fn ctrl_c_publishes_exit_navigation() {
+    let event_bus = Arc::new(EventBus::new());
+    let captured: Arc<Mutex<Vec<NavigateTo>>> = Arc::new(Mutex::new(Vec::new()));
+    let observed = Arc::clone(&captured);
+    event_bus.subscribe(move |event: &NavigateTo| {
+        observed.lock().unwrap().push(event.clone());
+    });
+
+    let screen = TotalSummaryShareScreen::new(
+        event_bus.clone() as Arc<dyn EventBusInterface>,
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        )) as Arc<dyn ThemeServiceInterface>,
+        Arc::new(TotalTracker::new_for_test()) as Arc<dyn TotalTrackerInterface>,
+    );
+
+    screen
+        .handle_key_event(KeyEvent::new(KeyCode::Char('c'), KeyModifiers::CONTROL))
+        .unwrap();
+
+    let events = captured.lock().unwrap();
+    assert!(matches!(events.as_slice(), [NavigateTo::Exit]));
+}
+
+#[test]
+fn share_platform_keys_publish_pop_when_browser_opens() {
+    for key in ['1', '2', '3', '4'] {
+        let event_bus = Arc::new(EventBus::new());
+        let captured: Arc<Mutex<Vec<NavigateTo>>> = Arc::new(Mutex::new(Vec::new()));
+        let observed = Arc::clone(&captured);
+        event_bus.subscribe(move |event: &NavigateTo| {
+            observed.lock().unwrap().push(event.clone());
+        });
+
+        let screen = TotalSummaryShareScreen::new(
+            event_bus.clone() as Arc<dyn EventBusInterface>,
+            Arc::new(ThemeService::new_for_test(
+                Theme::default(),
+                ColorMode::Dark,
+            )) as Arc<dyn ThemeServiceInterface>,
+            Arc::new(TotalTracker::new_for_test()) as Arc<dyn TotalTrackerInterface>,
+        );
+
+        screen
+            .handle_key_event(KeyEvent::new(KeyCode::Char(key), KeyModifiers::empty()))
+            .unwrap();
+
+        let events = captured.lock().unwrap();
+        assert!(
+            matches!(events.as_slice(), [NavigateTo::Pop]),
+            "key {key} should publish Pop, got {:?}",
+            *events
+        );
+    }
 }
