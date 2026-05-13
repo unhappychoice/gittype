@@ -90,6 +90,14 @@ pub struct ScreenRunnerContext {
 }
 
 impl ScreenRunnerContext {
+    #[cfg(feature = "test-mocks")]
+    pub fn new_for_test(terminal_active: bool) -> Self {
+        Self {
+            container: AppModule::builder().build(),
+            terminal_active,
+        }
+    }
+
     /// Create a new context with initialized terminal
     pub fn new() -> Result<Self> {
         ensure_terminal_environment()?;
@@ -189,63 +197,5 @@ impl Drop for ScreenRunnerContext {
         if self.terminal_active {
             ScreenManagerImpl::<CrosstermBackend<Stdout>>::cleanup_terminal_static();
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::presentation::tui::screens::VersionCheckScreen;
-
-    fn assert_terminal_error(result: Result<impl Sized>) {
-        assert!(matches!(
-            result,
-            Err(GitTypeError::TerminalError(message))
-                if message.contains("Not running in a terminal environment")
-        ));
-    }
-
-    #[test]
-    fn run_screen_returns_terminal_error_without_tty() {
-        if atty::is(atty::Stream::Stdout) {
-            return;
-        }
-
-        let result = run_screen::<VersionCheckScreen, (), (), fn(&VersionCheckScreen) -> Option<()>>(
-            ScreenType::VersionCheck,
-            None,
-            None,
-        );
-
-        assert_terminal_error(result);
-    }
-
-    #[test]
-    fn screen_runner_context_new_returns_terminal_error_without_tty() {
-        if atty::is(atty::Stream::Stdout) {
-            return;
-        }
-
-        assert_terminal_error(ScreenRunnerContext::new());
-    }
-
-    #[test]
-    fn cleanup_succeeds_when_terminal_is_inactive() {
-        let context = ScreenRunnerContext {
-            container: AppModule::builder().build(),
-            terminal_active: false,
-        };
-
-        assert!(context.cleanup().is_ok());
-    }
-
-    #[test]
-    fn cleanup_succeeds_when_terminal_is_active() {
-        let context = ScreenRunnerContext {
-            container: AppModule::builder().build(),
-            terminal_active: true,
-        };
-
-        assert!(context.cleanup().is_ok());
     }
 }

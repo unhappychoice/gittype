@@ -2,6 +2,10 @@ use gittype::infrastructure::terminal::{TerminalComponent, TerminalInterface};
 
 #[test]
 fn terminal_component_get_creates_terminal_backend() {
+    if !atty::is(atty::Stream::Stdout) {
+        return;
+    }
+
     let mut terminal = TerminalComponent::default().get();
     let area = terminal.current_buffer_mut().area;
 

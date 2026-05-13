@@ -39,6 +39,26 @@ impl VersionRepository {
         })
     }
 
+    #[cfg(feature = "test-mocks")]
+    pub fn new_for_test_with_factory(
+        github_client_factory: Arc<dyn GitHubApiClientFactory>,
+    ) -> Self {
+        Self {
+            github_client_factory,
+            file_storage: Arc::new(FileStorage::new()),
+        }
+    }
+
+    #[cfg(feature = "test-mocks")]
+    pub fn is_cache_valid_for_test(&self, entry: &VersionCacheEntry, frequency_hours: u64) -> bool {
+        self.is_cache_valid(entry, frequency_hours)
+    }
+
+    #[cfg(feature = "test-mocks")]
+    pub fn normalize_version_tag_for_test(tag: &str) -> String {
+        Self::normalize_version_tag(tag)
+    }
+
     /// Fetch the latest version from cache or API
     pub async fn fetch_latest_version(&self) -> Result<String> {
         const CHECK_FREQUENCY_HOURS: u64 = 24;
@@ -144,96 +164,5 @@ impl VersionRepository {
 impl VersionRepositoryInterface for VersionRepository {
     fn fetch_latest_version(&self) -> Pin<Box<dyn Future<Output = Result<String>> + Send + '_>> {
         Box::pin(VersionRepository::fetch_latest_version(self))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::GitTypeError;
-    use chrono::Duration;
-
-    struct FailingGitHubApiClientFactory;
-
-    impl GitHubApiClientFactory for FailingGitHubApiClientFactory {
-        fn create(
-            &self,
-        ) -> Result<crate::infrastructure::http::github_api_client::GitHubApiClient> {
-            Err(GitTypeError::ExtractionFailed(
-                "GitHub client unavailable".to_string(),
-            ))
-        }
-    }
-
-    fn cache_entry(current_version: &str, hours_ago: i64) -> VersionCacheEntry {
-        VersionCacheEntry {
-            latest_version: "1.2.3".to_string(),
-            current_version: current_version.to_string(),
-            update_available: false,
-            last_checked: Utc::now() - Duration::hours(hours_ago),
-        }
-    }
-
-    fn repository() -> VersionRepository {
-        use crate::infrastructure::http::github_api_client::GitHubApiClientFactoryImpl;
-
-        VersionRepository {
-            github_client_factory: Arc::new(GitHubApiClientFactoryImpl::default()),
-            file_storage: Arc::new(FileStorage::new()),
-        }
-    }
-
-    fn repository_with_failing_api() -> VersionRepository {
-        VersionRepository {
-            github_client_factory: Arc::new(FailingGitHubApiClientFactory),
-            file_storage: Arc::new(FileStorage::new()),
-        }
-    }
-
-    #[tokio::test]
-    async fn fetch_latest_version_returns_api_error_without_cache_fallback() {
-        let result = repository_with_failing_api().fetch_latest_version().await;
-
-        assert!(
-            matches!(result, Err(GitTypeError::ExtractionFailed(message)) if message == "GitHub client unavailable")
-        );
-    }
-
-    #[tokio::test]
-    async fn fetch_latest_version_returns_normalized_api_version() {
-        let result = repository().fetch_latest_version().await.unwrap();
-
-        assert_eq!(result, "1.0.0");
-    }
-
-    #[test]
-    fn is_cache_valid_accepts_fresh_current_version_entry() {
-        let entry = cache_entry(env!("CARGO_PKG_VERSION"), 1);
-
-        assert!(repository().is_cache_valid(&entry, 24));
-    }
-
-    #[test]
-    fn is_cache_valid_rejects_stale_entry() {
-        let entry = cache_entry(env!("CARGO_PKG_VERSION"), 25);
-
-        assert!(!repository().is_cache_valid(&entry, 24));
-    }
-
-    #[test]
-    fn is_cache_valid_rejects_different_current_version() {
-        let entry = cache_entry("0.0.0", 1);
-
-        assert!(!repository().is_cache_valid(&entry, 24));
-    }
-
-    #[test]
-    fn normalize_version_tag_strips_lowercase_v_prefix() {
-        assert_eq!(VersionRepository::normalize_version_tag("v1.2.3"), "1.2.3");
-    }
-
-    #[test]
-    fn normalize_version_tag_preserves_unprefixed_tag() {
-        assert_eq!(VersionRepository::normalize_version_tag("1.2.3"), "1.2.3");
     }
 }

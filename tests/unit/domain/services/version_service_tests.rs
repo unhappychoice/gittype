@@ -137,4 +137,12 @@ mod version_service_tests {
         assert!(!has_update);
         assert_eq!(latest, "1.0.0");
     }
+
+    #[test]
+    fn invalid_version_strings_are_not_newer() {
+        assert!(!VersionService::is_version_newer_for_test(
+            "1.0.beta", "1.0.0"
+        ));
+        assert!(!VersionService::is_version_newer_for_test("1.0.1", "1.x.0"));
+    }
 }

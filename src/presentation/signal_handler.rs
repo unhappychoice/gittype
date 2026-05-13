@@ -205,19 +205,7 @@ fn cleanup_panic_terminal(terminal_initialized: bool, raw_mode_enabled: bool) {
     let _ = std::io::stdout().flush();
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn cleanup_panic_terminal_ignores_missing_terminal_state() {
-        cleanup_panic_terminal(false, false);
-        cleanup_panic_terminal(false, true);
-    }
-
-    #[test]
-    fn cleanup_panic_terminal_handles_initialized_terminal_state() {
-        cleanup_panic_terminal(true, false);
-        cleanup_panic_terminal(true, true);
-    }
+#[cfg(feature = "test-mocks")]
+pub fn cleanup_panic_terminal_for_test(terminal_initialized: bool, raw_mode_enabled: bool) {
+    cleanup_panic_terminal(terminal_initialized, raw_mode_enabled)
 }

@@ -50,6 +50,20 @@ pub struct TrendingRepository {
 const DEFAULT_TTL_SECONDS: u64 = 3600;
 
 impl TrendingRepository {
+    #[cfg(feature = "test-mocks")]
+    pub fn new_for_test(
+        cache_dir: PathBuf,
+        ttl_seconds: u64,
+        oss_insight_client: Arc<dyn OssInsightClientInterface>,
+    ) -> Self {
+        Self {
+            cache_dir,
+            ttl_seconds,
+            oss_insight_client,
+            file_storage: Arc::new(FileStorage::new()),
+        }
+    }
+
     /// Get trending repositories with caching and fallback to fresh data
     pub async fn get_trending_repositories(
         &self,
@@ -204,77 +218,5 @@ impl TrendingRepositoryInterface for TrendingRepository {
         period: &str,
     ) -> Result<Vec<TrendingRepositoryInfo>> {
         TrendingRepository::get_trending_repositories_sync(self, key, language, period)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::GitTypeError;
-
-    #[derive(Debug)]
-    struct FakeOssInsightClient {
-        result: std::result::Result<Vec<TrendingRepositoryInfo>, String>,
-    }
-
-    #[async_trait::async_trait]
-    impl OssInsightClientInterface for FakeOssInsightClient {
-        async fn fetch_trending_repositories(
-            &self,
-            _language: Option<&str>,
-            _period: &str,
-        ) -> Result<Vec<TrendingRepositoryInfo>> {
-            self.result.clone().map_err(GitTypeError::ApiError)
-        }
-    }
-
-    fn repository_with_client(client: FakeOssInsightClient) -> TrendingRepository {
-        TrendingRepository {
-            cache_dir: PathBuf::from("unused-cache-dir"),
-            ttl_seconds: 60,
-            oss_insight_client: Arc::new(client),
-            file_storage: Arc::new(FileStorage::new()),
-        }
-    }
-
-    fn trending_info(repo_name: &str) -> TrendingRepositoryInfo {
-        TrendingRepositoryInfo {
-            repo_name: repo_name.to_string(),
-            primary_language: Some("Rust".to_string()),
-            description: Some("A test repository".to_string()),
-            stars: "42".to_string(),
-            forks: "7".to_string(),
-            total_score: "49".to_string(),
-        }
-    }
-
-    #[tokio::test]
-    async fn get_trending_repositories_returns_fresh_api_data() {
-        let repository = repository_with_client(FakeOssInsightClient {
-            result: Ok(vec![trending_info("owner/repo")]),
-        });
-
-        let repositories = repository
-            .get_trending_repositories("fresh-key", Some("rust"), "daily")
-            .await
-            .unwrap();
-
-        assert_eq!(repositories.len(), 1);
-        assert_eq!(repositories[0].repo_name, "owner/repo");
-        assert_eq!(repositories[0].primary_language, Some("Rust".to_string()));
-    }
-
-    #[tokio::test]
-    async fn get_trending_repositories_returns_empty_vec_when_api_fails() {
-        let repository = repository_with_client(FakeOssInsightClient {
-            result: Err("service unavailable".to_string()),
-        });
-
-        let repositories = repository
-            .get_trending_repositories("error-key", Some("rust"), "weekly")
-            .await
-            .unwrap();
-
-        assert!(repositories.is_empty());
     }
 }

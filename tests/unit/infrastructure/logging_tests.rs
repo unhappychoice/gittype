@@ -1,6 +1,30 @@
 use gittype::infrastructure::logging::{
-    get_environment_context, get_log_directory, setup_console_logging,
+    get_environment_context, get_log_directory, log_error_to_file, setup_console_logging,
 };
+use gittype::GitTypeError;
+use std::path::{Path, PathBuf};
+use std::sync::Mutex;
+use tempfile::TempDir;
+
+static CURRENT_DIR_LOCK: Mutex<()> = Mutex::new(());
+
+struct CurrentDirGuard {
+    original: PathBuf,
+}
+
+impl CurrentDirGuard {
+    fn enter(path: &Path) -> Self {
+        let original = std::env::current_dir().unwrap();
+        std::env::set_current_dir(path).unwrap();
+        Self { original }
+    }
+}
+
+impl Drop for CurrentDirGuard {
+    fn drop(&mut self) {
+        let _ = std::env::set_current_dir(&self.original);
+    }
+}
 
 #[test]
 fn test_get_log_directory() {
@@ -90,4 +114,33 @@ fn test_setup_console_logging_twice() {
     // Should be able to call multiple times without panicking
     setup_console_logging();
     setup_console_logging();
+}
+
+#[test]
+fn log_error_to_file_writes_error_log_in_logs_directory() {
+    let _lock = CURRENT_DIR_LOCK.lock().unwrap();
+    let temp_dir = TempDir::new().unwrap();
+    let logs_dir = temp_dir.path().join("logs");
+    std::fs::create_dir_all(&logs_dir).unwrap();
+    let _guard = CurrentDirGuard::enter(temp_dir.path());
+
+    log_error_to_file(&GitTypeError::ValidationError(
+        "coverage validation failure".to_string(),
+    ));
+
+    let log_content = std::fs::read_dir(&logs_dir)
+        .unwrap()
+        .filter_map(|entry| entry.ok().map(|entry| entry.path()))
+        .find(|path| {
+            path.file_name()
+                .and_then(|name| name.to_str())
+                .is_some_and(|name| name.starts_with("error_") && name.ends_with(".log"))
+        })
+        .map(std::fs::read_to_string)
+        .transpose()
+        .unwrap()
+        .unwrap();
+
+    assert!(log_content.contains("ERROR MESSAGE: Validation error: coverage validation failure"));
+    assert!(log_content.contains("WORKING_DIR:"));
 }

@@ -50,6 +50,11 @@ impl VersionService {
         })
     }
 
+    #[cfg(feature = "test-mocks")]
+    pub fn is_version_newer_for_test(latest: &str, current: &str) -> bool {
+        Self::is_version_newer(latest, current)
+    }
+
     fn is_version_newer(latest: &str, current: &str) -> bool {
         let latest_parts = Self::parse_version(latest);
         let current_parts = Self::parse_version(current);
@@ -78,16 +83,5 @@ impl VersionService {
                 })
             })
             .collect()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::VersionService;
-
-    #[test]
-    fn invalid_version_strings_are_not_newer() {
-        assert!(!VersionService::is_version_newer("1.0.beta", "1.0.0"));
-        assert!(!VersionService::is_version_newer("1.0.1", "1.x.0"));
     }
 }

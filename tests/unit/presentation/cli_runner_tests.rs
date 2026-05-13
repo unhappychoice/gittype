@@ -110,3 +110,162 @@ fn history_command_exits_with_not_implemented_status() {
 
     assert_eq!(output.status.code(), Some(1));
 }
+
+#[derive(Debug)]
+struct FailingChallengeRepository;
+
+#[derive(Debug)]
+struct SuccessfulChallengeRepository {
+    stats: (usize, u64),
+    cache_keys: Vec<String>,
+}
+
+impl gittype::domain::repositories::challenge_repository::ChallengeRepositoryInterface
+    for FailingChallengeRepository
+{
+    fn save_challenges(
+        &self,
+        _repo: &gittype::domain::models::GitRepository,
+        _challenges: &[gittype::domain::models::Challenge],
+        _reporter: Option<
+            &dyn gittype::presentation::tui::screens::loading_screen::ProgressReporter,
+        >,
+    ) -> gittype::Result<()> {
+        Ok(())
+    }
+
+    fn load_challenges_with_progress(
+        &self,
+        _repo: &gittype::domain::models::GitRepository,
+        _reporter: Option<
+            &dyn gittype::presentation::tui::screens::loading_screen::ProgressReporter,
+        >,
+    ) -> gittype::Result<Option<Vec<gittype::domain::models::Challenge>>> {
+        Ok(None)
+    }
+
+    fn get_cache_stats(&self) -> gittype::Result<(usize, u64)> {
+        Err(GitTypeError::ExtractionFailed("stats failed".to_string()))
+    }
+
+    fn clear_cache(&self) -> gittype::Result<()> {
+        Err(GitTypeError::ExtractionFailed("clear failed".to_string()))
+    }
+
+    fn invalidate_repository(
+        &self,
+        _repo: &gittype::domain::models::GitRepository,
+    ) -> gittype::Result<bool> {
+        Ok(false)
+    }
+
+    fn list_cache_keys(&self) -> gittype::Result<Vec<String>> {
+        Err(GitTypeError::ExtractionFailed("list failed".to_string()))
+    }
+}
+
+impl gittype::domain::repositories::challenge_repository::ChallengeRepositoryInterface
+    for SuccessfulChallengeRepository
+{
+    fn save_challenges(
+        &self,
+        _repo: &gittype::domain::models::GitRepository,
+        _challenges: &[gittype::domain::models::Challenge],
+        _reporter: Option<
+            &dyn gittype::presentation::tui::screens::loading_screen::ProgressReporter,
+        >,
+    ) -> gittype::Result<()> {
+        Ok(())
+    }
+
+    fn load_challenges_with_progress(
+        &self,
+        _repo: &gittype::domain::models::GitRepository,
+        _reporter: Option<
+            &dyn gittype::presentation::tui::screens::loading_screen::ProgressReporter,
+        >,
+    ) -> gittype::Result<Option<Vec<gittype::domain::models::Challenge>>> {
+        Ok(None)
+    }
+
+    fn get_cache_stats(&self) -> gittype::Result<(usize, u64)> {
+        Ok(self.stats)
+    }
+
+    fn clear_cache(&self) -> gittype::Result<()> {
+        Ok(())
+    }
+
+    fn invalidate_repository(
+        &self,
+        _repo: &gittype::domain::models::GitRepository,
+    ) -> gittype::Result<bool> {
+        Ok(false)
+    }
+
+    fn list_cache_keys(&self) -> gittype::Result<Vec<String>> {
+        Ok(self.cache_keys.clone())
+    }
+}
+
+#[test]
+fn run_cache_command_wraps_repository_errors_as_terminal_errors() {
+    let repository = FailingChallengeRepository;
+
+    [
+        (CacheCommands::Stats, "stats failed"),
+        (CacheCommands::Clear, "clear failed"),
+        (CacheCommands::List, "list failed"),
+    ]
+    .into_iter()
+    .for_each(|(command, expected_message)| {
+        let result =
+            gittype::presentation::cli::runner::run_cache_command_for_test(&command, &repository);
+
+        assert!(matches!(
+            result,
+            Err(GitTypeError::TerminalError(message))
+                if message.contains(expected_message)
+        ));
+    });
+}
+
+#[test]
+fn run_cache_command_handles_successful_stats_and_list_outputs() {
+    [0u64, 512, 2048, 2 * 1024 * 1024, 2 * 1024 * 1024 * 1024]
+        .into_iter()
+        .for_each(|total_bytes| {
+            let repository = SuccessfulChallengeRepository {
+                stats: (2, total_bytes),
+                cache_keys: vec!["owner/repo/main".to_string()],
+            };
+
+            assert!(
+                gittype::presentation::cli::runner::run_cache_command_for_test(
+                    &CacheCommands::Stats,
+                    &repository,
+                )
+                .is_ok()
+            );
+        });
+
+    let repository = SuccessfulChallengeRepository {
+        stats: (1, 0),
+        cache_keys: vec!["owner/repo/main".to_string()],
+    };
+
+    assert!(
+        gittype::presentation::cli::runner::run_cache_command_for_test(
+            &CacheCommands::Clear,
+            &repository,
+        )
+        .is_ok()
+    );
+    assert!(
+        gittype::presentation::cli::runner::run_cache_command_for_test(
+            &CacheCommands::List,
+            &repository,
+        )
+        .is_ok()
+    );
+}

@@ -737,6 +737,10 @@ fn test_mark_terminal_initialized_and_skip_cleanup_on_drop_toggle_flag() {
 
 #[test]
 fn test_factory_create_registers_di_screens() {
+    if !atty::is(atty::Stream::Stdout) {
+        return;
+    }
+
     let module = AppModule::builder().build();
     let factory: &dyn ScreenManagerFactory = module.resolve_ref();
 
@@ -776,4 +780,26 @@ fn test_factory_create_registers_di_screens() {
             screen_type
         );
     });
+}
+
+#[test]
+fn setup_event_subscriptions_stores_pending_navigation_transition() {
+    use gittype::domain::events::presentation_events::NavigateTo;
+    use gittype::domain::events::EventBusInterface;
+
+    let manager = Arc::new(Mutex::new(create_test_screen_manager()));
+
+    ScreenManagerImpl::setup_event_subscriptions(&manager);
+    let event_bus: Arc<dyn EventBusInterface> = manager.lock().unwrap().get_event_bus();
+
+    event_bus
+        .as_event_bus()
+        .publish(NavigateTo::Replace(ScreenType::Help));
+
+    let pending_transition = manager.lock().unwrap().pending_transition_for_test();
+
+    assert!(matches!(
+        pending_transition,
+        Some(ScreenTransition::Replace(ScreenType::Help))
+    ));
 }
