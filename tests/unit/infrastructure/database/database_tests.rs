@@ -1,4 +1,4 @@
-use gittype::infrastructure::database::database::Database;
+use gittype::infrastructure::database::database::{Database, DatabaseInterface};
 use gittype::infrastructure::database::migrations::get_latest_version;
 
 #[test]
@@ -182,6 +182,24 @@ fn test_foreign_key_constraints() {
         [],
     );
     assert!(result.is_err(), "Should fail due to foreign key constraint");
+}
+
+#[test]
+fn test_trait_dispatch_get_connection_init_tables_and_version() {
+    let db = Database::new().unwrap();
+    let trait_obj: &dyn DatabaseInterface = &db;
+
+    // Cover trait dispatch for get_connection (lines 173-175)
+    let conn = trait_obj.get_connection().unwrap();
+    assert!(conn.prepare("SELECT 1").is_ok());
+    drop(conn);
+
+    // Cover trait dispatch for init_tables (lines 177-179): idempotent re-run.
+    trait_obj.init_tables().unwrap();
+
+    // Cover trait dispatch for get_current_schema_version (lines 181-183).
+    let version = trait_obj.get_current_schema_version().unwrap();
+    assert_eq!(version, get_latest_version());
 }
 
 #[test]
