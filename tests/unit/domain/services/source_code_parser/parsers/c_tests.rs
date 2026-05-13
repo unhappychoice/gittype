@@ -280,3 +280,62 @@ fn extract_name_for_leaf_node_returns_none() {
 
     assert_eq!(name, None);
 }
+
+#[test]
+fn extract_name_for_variable_definition_with_bare_identifier_returns_identifier() {
+    let source = "int counter;\n";
+    let tree = parse_c(source);
+    let decl = find_node(tree.root_node(), "declaration").expect("expected a declaration node");
+
+    let name = CExtractor.extract_name(decl, source, "variable.definition");
+
+    assert_eq!(name.as_deref(), Some("counter"));
+}
+
+#[test]
+fn extract_name_for_variable_definition_on_non_matching_node_returns_none() {
+    let source = "struct Point { int x; int y; };\n";
+    let tree = parse_c(source);
+    let strukt =
+        find_node(tree.root_node(), "struct_specifier").expect("expected a struct_specifier node");
+
+    let name = CExtractor.extract_name(strukt, source, "variable.definition");
+
+    assert_eq!(name, None);
+}
+
+#[test]
+fn extract_name_for_function_definition_without_function_declarator_returns_none() {
+    let source = "struct Point { int x; int y; };\n";
+    let tree = parse_c(source);
+    let strukt =
+        find_node(tree.root_node(), "struct_specifier").expect("expected a struct_specifier node");
+
+    let name = CExtractor.extract_name(strukt, source, "function.definition");
+
+    assert_eq!(name, None);
+}
+
+#[test]
+fn extract_name_for_struct_definition_without_type_identifier_returns_none() {
+    let source = "int add(int a, int b) { return a + b; }\n";
+    let tree = parse_c(source);
+    let func = find_node(tree.root_node(), "function_definition")
+        .expect("expected a function_definition node");
+
+    let name = CExtractor.extract_name(func, source, "struct.definition");
+
+    assert_eq!(name, None);
+}
+
+#[test]
+fn extract_name_for_macro_definition_without_identifier_returns_none() {
+    let source = "struct Point { int x; int y; };\n";
+    let tree = parse_c(source);
+    let strukt =
+        find_node(tree.root_node(), "struct_specifier").expect("expected a struct_specifier node");
+
+    let name = CExtractor.extract_name(strukt, source, "macro.definition");
+
+    assert_eq!(name, None);
+}
