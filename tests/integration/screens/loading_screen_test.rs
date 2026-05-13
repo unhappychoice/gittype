@@ -421,3 +421,58 @@ fn test_render_ratatui_finalizing_step() {
         })
         .unwrap();
 }
+
+#[test]
+fn test_update_returns_false_and_completes_when_loading_completed() {
+    let screen = create_loading_screen();
+    screen.session_store_for_test().set_loading_completed(true);
+
+    let updated = screen.update().unwrap();
+
+    assert!(!updated);
+    assert_eq!(screen.current_step_for_test(), StepType::Completed);
+}
+
+#[test]
+fn test_update_returns_false_when_loading_failed() {
+    let screen = create_loading_screen();
+    screen.session_store_for_test().set_loading_failed(true);
+
+    let updated = screen.update().unwrap();
+
+    assert!(!updated);
+}
+
+#[test]
+fn test_screen_cleanup_via_trait_returns_ok() {
+    let screen: Box<dyn Screen> = Box::new(create_loading_screen());
+    assert!(screen.cleanup().is_ok());
+}
+
+#[test]
+fn test_as_any_downcasts_to_concrete_type() {
+    let screen = create_loading_screen();
+    assert!(screen.as_any().downcast_ref::<LoadingScreen>().is_some());
+}
+
+#[test]
+fn test_show_completion_without_cleanup_sets_completed_step() {
+    let screen = create_loading_screen();
+    screen.show_completion_without_cleanup().unwrap();
+    assert_eq!(screen.current_step_for_test(), StepType::Completed);
+}
+
+#[test]
+fn test_show_completion_sets_completed_step_and_returns_ok() {
+    let screen = create_loading_screen();
+    screen.show_completion().unwrap();
+    assert_eq!(screen.current_step_for_test(), StepType::Completed);
+}
+
+#[test]
+fn test_init_with_data_returns_ok_with_default_provider() {
+    let screen = create_loading_screen();
+    let data = LoadingScreen::default_provider().provide().unwrap();
+    assert!(screen.init_with_data(data).is_ok());
+    let _ = screen.cleanup();
+}
