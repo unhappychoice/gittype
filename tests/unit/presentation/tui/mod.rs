@@ -1,5 +1,6 @@
 pub mod best_records_view_tests;
 pub mod difficulty_selection_view_tests;
+pub mod records_screen_tests;
 pub mod score_view_tests;
 pub mod screen_manager_tests;
 pub mod screen_trait_tests;
