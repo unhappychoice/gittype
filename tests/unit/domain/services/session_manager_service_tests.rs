@@ -1002,3 +1002,71 @@ fn test_get_next_challenge_in_progress_with_challenges() {
     let result = manager.get_next_challenge();
     assert!(result.is_ok());
 }
+
+fn create_manager_with_seeded_challenges() -> SessionManager {
+    use gittype::domain::models::Challenge;
+    use gittype::domain::stores::ChallengeStoreInterface;
+
+    let event_bus = Arc::new(EventBus::new()) as Arc<dyn EventBusInterface>;
+    let challenge_store = Arc::new(ChallengeStore::new_for_test());
+    challenge_store.set_challenges(vec![
+        Challenge::new("seed-1".to_string(), "fn foo() {}".to_string()),
+        Challenge::new("seed-2".to_string(), "fn bar() {}".to_string()),
+    ]);
+
+    let repository_store = Arc::new(RepositoryStore::new_for_test());
+    let session_store = Arc::new(SessionStore::new_for_test());
+    let stage_repository = Arc::new(StageRepository::new(
+        None,
+        challenge_store,
+        repository_store,
+        session_store,
+    )) as Arc<dyn StageRepositoryInterface>;
+    let session_tracker =
+        Arc::new(SessionTracker::new_for_test()) as Arc<dyn SessionTrackerInterface>;
+    let total_tracker = Arc::new(TotalTracker::new_for_test()) as Arc<dyn TotalTrackerInterface>;
+
+    SessionManager::new_with_dependencies(
+        event_bus,
+        stage_repository,
+        session_tracker,
+        total_tracker,
+    )
+}
+
+#[test]
+fn test_skip_current_stage_records_session_challenge_when_available() {
+    let manager = create_manager_with_seeded_challenges();
+    manager.reduce(SessionAction::Start).unwrap();
+
+    let mut tracker = StageTracker::new("hello".to_string());
+    tracker.record(StageInput::Start);
+    manager.set_current_stage_tracker(tracker);
+
+    assert!(manager.get_current_challenge().unwrap().is_some());
+
+    let (stage_result, _, needs_new_challenge) = manager.skip_current_stage().unwrap();
+
+    assert!(stage_result.was_skipped);
+    assert!(needs_new_challenge);
+    assert_eq!(manager.get_session_challenges_for_test().len(), 1);
+}
+
+#[test]
+fn test_finalize_current_stage_records_session_challenge_when_available() {
+    let manager = create_manager_with_seeded_challenges();
+    manager.reduce(SessionAction::Start).unwrap();
+
+    let mut tracker = StageTracker::new("hello".to_string());
+    tracker.record(StageInput::Start);
+    for (i, ch) in "hello".chars().enumerate() {
+        tracker.record(StageInput::Keystroke { ch, position: i });
+    }
+    manager.set_current_stage_tracker(tracker);
+
+    let result = manager.finalize_current_stage();
+
+    assert!(result.is_ok());
+    assert_eq!(manager.get_stage_results().len(), 1);
+    assert_eq!(manager.get_session_challenges_for_test().len(), 1);
+}
