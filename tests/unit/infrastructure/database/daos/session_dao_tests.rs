@@ -943,3 +943,310 @@ fn test_get_session_stage_results() {
     assert_eq!(stage_results[0].language, Some("rust".to_string()));
     assert_eq!(stage_results[1].language, Some("rust".to_string()));
 }
+
+fn make_git_repo(user: &str, repo: &str, commit: &str) -> GitRepository {
+    GitRepository {
+        user_name: user.to_string(),
+        repository_name: repo.to_string(),
+        remote_url: format!("https://github.com/{}/{}", user, repo),
+        branch: Some("main".to_string()),
+        commit_hash: Some(commit.to_string()),
+        is_dirty: false,
+        root_path: None,
+    }
+}
+
+fn seed_session_with_score(
+    db: &Arc<dyn DatabaseInterface>,
+    session_dao: &SessionDao,
+    repository_id: i64,
+    git_repo: &GitRepository,
+    score: f64,
+    duration_ms: u64,
+) -> i64 {
+    let mut session_result = SessionResult::new();
+    session_result.session_score = score;
+    session_result.session_duration = Duration::from_millis(duration_ms);
+
+    let conn = db.get_connection().unwrap();
+    let tx = conn.unchecked_transaction().unwrap();
+    let session_id = session_dao
+        .create_session_in_transaction(
+            &tx,
+            Some(repository_id),
+            &session_result,
+            Some(git_repo),
+            "normal",
+            Some("easy"),
+        )
+        .unwrap();
+
+    session_dao
+        .save_session_result_in_transaction(
+            &tx,
+            gittype::domain::models::storage::SaveSessionResultParams {
+                session_id,
+                repository_id: Some(repository_id),
+                session_result: &session_result,
+                stage_engines: &[],
+                game_mode: "normal",
+                difficulty_level: Some("easy"),
+            },
+        )
+        .unwrap();
+    tx.commit().unwrap();
+    drop(conn);
+
+    session_id
+}
+
+#[test]
+fn test_save_session_result_in_transaction_requires_repository_id() {
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
+
+    let git_repo = make_git_repo("noreuser", "norerepo", "norecommit");
+    let repository_id = repo_dao.ensure_repository(&git_repo).unwrap();
+
+    let mut session_result = SessionResult::new();
+    session_result.session_score = 50.0;
+
+    let conn = db.get_connection().unwrap();
+    let tx = conn.unchecked_transaction().unwrap();
+    let session_id = session_dao
+        .create_session_in_transaction(
+            &tx,
+            Some(repository_id),
+            &session_result,
+            Some(&git_repo),
+            "normal",
+            Some("easy"),
+        )
+        .unwrap();
+
+    let err = session_dao
+        .save_session_result_in_transaction(
+            &tx,
+            gittype::domain::models::storage::SaveSessionResultParams {
+                session_id,
+                repository_id: None,
+                session_result: &session_result,
+                stage_engines: &[],
+                game_mode: "normal",
+                difficulty_level: Some("easy"),
+            },
+        )
+        .expect_err("missing repository_id must fail");
+
+    assert!(
+        matches!(err, gittype::GitTypeError::TerminalError(ref m) if m.contains("repository_id is required")),
+        "Expected TerminalError about missing repository_id, got: {:?}",
+        err,
+    );
+}
+
+#[test]
+fn test_save_stage_result_in_transaction_requires_repository_id() {
+    use gittype::domain::models::storage::SaveStageParams;
+    use gittype::domain::models::StageResult;
+
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
+    let challenge_dao = ChallengeDao::new(Arc::clone(&db));
+
+    let git_repo = make_git_repo("stagenoresuser", "stagenoresrepo", "stagenorecom");
+    let repository_id = repo_dao.ensure_repository(&git_repo).unwrap();
+
+    let challenge = Challenge::new("stage-nore-1".to_string(), "fn x() {}".to_string())
+        .with_language("rust".to_string())
+        .with_difficulty_level(DifficultyLevel::Easy);
+
+    let conn = db.get_connection().unwrap();
+    let tx = conn.unchecked_transaction().unwrap();
+    challenge_dao
+        .ensure_challenge_in_transaction(&tx, &challenge)
+        .unwrap();
+    tx.commit().unwrap();
+    drop(conn);
+
+    let session_id =
+        seed_session_with_score(&db, &session_dao, repository_id, &git_repo, 100.0, 1000);
+
+    let stage_result = StageResult::default();
+
+    let conn = db.get_connection().unwrap();
+    let tx = conn.unchecked_transaction().unwrap();
+
+    let err = session_dao
+        .save_stage_result_in_transaction(
+            &tx,
+            SaveStageParams {
+                session_id,
+                repository_id: None,
+                stage_index: 0,
+                stage_name: "stage-nore-1",
+                stage_result: &stage_result,
+                keystrokes: 0,
+                challenge: Some(&challenge),
+            },
+        )
+        .expect_err("missing repository_id must fail for stage_results");
+
+    assert!(
+        matches!(err, gittype::GitTypeError::TerminalError(ref m) if m.contains("repository_id is required")),
+        "Expected TerminalError about missing repository_id, got: {:?}",
+        err,
+    );
+}
+
+#[test]
+fn test_get_sessions_filtered_sorted_by_repository() {
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
+
+    let repo_a = make_git_repo("rep_a_user", "rep_a_repo", "rep-a-1");
+    let repo_b = make_git_repo("rep_b_user", "rep_b_repo", "rep-b-1");
+    let id_a = repo_dao.ensure_repository(&repo_a).unwrap();
+    let id_b = repo_dao.ensure_repository(&repo_b).unwrap();
+
+    seed_session_with_score(&db, &session_dao, id_b, &repo_b, 50.0, 1000);
+    seed_session_with_score(&db, &session_dao, id_a, &repo_a, 60.0, 1000);
+
+    let sessions = session_dao
+        .get_sessions_filtered(None, None, "repository", false)
+        .unwrap();
+
+    let repo_ids: Vec<_> = sessions
+        .iter()
+        .map(|s| s.repository_id.expect("repository_id present"))
+        .collect();
+    assert!(repo_ids.len() >= 2, "Should return at least 2 sessions");
+
+    for window in repo_ids.windows(2) {
+        assert!(
+            window[0] <= window[1],
+            "When sort_descending=false, repository_id should be non-decreasing"
+        );
+    }
+}
+
+#[test]
+fn test_get_sessions_filtered_sorted_by_duration_ascending() {
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
+
+    let git_repo = make_git_repo("duruser", "durrepo", "durcommit");
+    let repository_id = repo_dao.ensure_repository(&git_repo).unwrap();
+
+    let session_ids = [
+        seed_session_with_score(&db, &session_dao, repository_id, &git_repo, 100.0, 5000),
+        seed_session_with_score(&db, &session_dao, repository_id, &git_repo, 200.0, 1000),
+        seed_session_with_score(&db, &session_dao, repository_id, &git_repo, 150.0, 3000),
+    ];
+
+    let sessions = session_dao
+        .get_sessions_filtered(Some(repository_id), None, "duration", false)
+        .unwrap();
+
+    assert_eq!(
+        sessions.len(),
+        session_ids.len(),
+        "Should return all seeded sessions"
+    );
+
+    let durations: Vec<_> = sessions
+        .iter()
+        .map(|s| {
+            session_dao
+                .get_session_result(s.id)
+                .unwrap()
+                .unwrap()
+                .duration_ms
+        })
+        .collect();
+
+    for window in durations.windows(2) {
+        assert!(
+            window[0] <= window[1],
+            "duration ascending should be non-decreasing, got {:?}",
+            durations,
+        );
+    }
+}
+
+#[test]
+fn test_get_sessions_filtered_unknown_sort_falls_back_to_date() {
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
+
+    let git_repo = make_git_repo("unkuser", "unkrepo", "unkcommit");
+    let repository_id = repo_dao.ensure_repository(&git_repo).unwrap();
+
+    seed_session_with_score(&db, &session_dao, repository_id, &git_repo, 100.0, 1000);
+    seed_session_with_score(&db, &session_dao, repository_id, &git_repo, 200.0, 1000);
+
+    let sessions = session_dao
+        .get_sessions_filtered(Some(repository_id), None, "not-a-real-column", true)
+        .unwrap();
+
+    assert!(
+        !sessions.is_empty(),
+        "Unknown sort_by must fall back to date sort and still return rows"
+    );
+
+    let started_dates: Vec<_> = sessions.iter().map(|s| s.started_at).collect();
+    for window in started_dates.windows(2) {
+        assert!(
+            window[0] >= window[1],
+            "Default-fallback descending sort by date should be non-increasing"
+        );
+    }
+}
+
+#[test]
+fn test_get_sessions_filtered_combines_repository_and_date_filters() {
+    let db_impl = Database::new().unwrap();
+    db_impl.init().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let session_dao = SessionDao::new(Arc::clone(&db));
+    let repo_dao = RepositoryDao::new(Arc::clone(&db));
+
+    let target = make_git_repo("comb_user", "comb_repo", "comb1");
+    let other = make_git_repo("other_user", "other_repo", "comb2");
+    let target_id = repo_dao.ensure_repository(&target).unwrap();
+    let other_id = repo_dao.ensure_repository(&other).unwrap();
+
+    seed_session_with_score(&db, &session_dao, target_id, &target, 100.0, 1000);
+    seed_session_with_score(&db, &session_dao, other_id, &other, 100.0, 1000);
+
+    let sessions = session_dao
+        .get_sessions_filtered(Some(target_id), Some(30), "date", true)
+        .unwrap();
+
+    assert!(
+        !sessions.is_empty(),
+        "Should return target sessions within the date window"
+    );
+    for session in &sessions {
+        assert_eq!(
+            session.repository_id,
+            Some(target_id),
+            "Combined filters must only yield the target repository's sessions"
+        );
+    }
+}
