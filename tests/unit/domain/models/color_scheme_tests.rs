@@ -252,6 +252,14 @@ fn serializable_color_invalid_hex_defaults_to_white() {
 }
 
 #[test]
+fn serializable_color_invalid_short_hex_defaults_to_white() {
+    let color = SerializableColor::Name("#ggg".to_string());
+    let result: Color = color.into();
+
+    assert_eq!(result, Color::White);
+}
+
+#[test]
 fn serializable_color_partial_eq_works() {
     let color1 = SerializableColor::Rgb {
         r: 100,

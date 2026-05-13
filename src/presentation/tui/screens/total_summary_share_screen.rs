@@ -139,6 +139,26 @@ impl TotalSummaryShareScreen {
         browser::open_url(url)
             .map_err(|e| GitTypeError::TerminalError(format!("Failed to open browser: {}", e)))
     }
+
+    #[cfg(feature = "test-mocks")]
+    pub fn generate_share_url_for_test(&self, text: &str, platform: &SharingPlatform) -> String {
+        self.generate_share_url(text, platform)
+    }
+
+    #[cfg(feature = "test-mocks")]
+    pub fn set_total_result_for_test(&self, total_result: TotalResult) {
+        *self.total_result.write().unwrap() = total_result;
+    }
+
+    #[cfg(feature = "test-mocks")]
+    pub fn set_fallback_url_for_test(&self, value: Option<(String, SharingPlatform)>) {
+        *self.fallback_url.write().unwrap() = value;
+    }
+
+    #[cfg(feature = "test-mocks")]
+    pub fn fallback_url_for_test(&self) -> Option<(String, SharingPlatform)> {
+        self.fallback_url.read().unwrap().clone()
+    }
 }
 
 pub struct TotalSummaryShareScreenProvider;

@@ -90,6 +90,14 @@ pub struct ScreenRunnerContext {
 }
 
 impl ScreenRunnerContext {
+    #[cfg(feature = "test-mocks")]
+    pub fn new_for_test(terminal_active: bool) -> Self {
+        Self {
+            container: AppModule::builder().build(),
+            terminal_active,
+        }
+    }
+
     /// Create a new context with initialized terminal
     pub fn new() -> Result<Self> {
         ensure_terminal_environment()?;

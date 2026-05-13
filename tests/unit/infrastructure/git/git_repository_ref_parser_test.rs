@@ -123,6 +123,12 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_invalid_http_url_without_protocol_separator() {
+        let result = GitRepositoryRefParser::parse("httpgithub.com/owner/repo");
+        assert!(result.is_err());
+    }
+
+    #[test]
     fn test_parse_invalid_ssh_format_malformed() {
         let result = GitRepositoryRefParser::parse("git@github.com:");
         assert!(result.is_err());

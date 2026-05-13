@@ -1,5 +1,9 @@
 use gittype::domain::models::{Challenge, DifficultyLevel, GitRepository};
-use gittype::domain::repositories::challenge_repository::ChallengeRepositoryInterface;
+use gittype::domain::repositories::challenge_repository::{
+    ChallengeRepository, ChallengeRepositoryInterface,
+};
+use gittype::infrastructure::storage::file_storage::FileStorage;
+use gittype::infrastructure::storage::file_storage::FileStorageInterface;
 use gittype::presentation::di::AppModule;
 use shaku::HasComponent;
 use std::path::PathBuf;
@@ -205,4 +209,56 @@ fn test_commit_hash_mismatch_returns_none() {
     assert!(result.is_ok());
     let loaded = result.unwrap();
     assert!(loaded.is_none() || loaded.unwrap().is_empty());
+}
+
+fn file_storage_with_source(source_path: PathBuf, content: &str) -> Arc<dyn FileStorageInterface> {
+    let mut file_storage = FileStorage::new();
+    file_storage.set_file_content(source_path, content.to_string());
+    Arc::new(file_storage)
+}
+
+#[test]
+fn load_challenges_reconstructs_saved_source_slice() {
+    let temp_dir = tempfile::tempdir().unwrap();
+    let source_path = temp_dir.path().join("repo/src/lib.rs");
+    let source = "fn alpha() {}\nfn beta() {}\nfn gamma() {}\n";
+    std::fs::create_dir_all(source_path.parent().unwrap()).unwrap();
+    std::fs::write(&source_path, source).unwrap();
+
+    let repository = ChallengeRepository::new_for_test(
+        temp_dir.path().join("cache"),
+        file_storage_with_source(source_path.canonicalize().unwrap(), source),
+    );
+    let git_repository = GitRepository {
+        user_name: "test".to_string(),
+        repository_name: "repo".to_string(),
+        remote_url: "https://github.com/test/repo".to_string(),
+        branch: Some("main".to_string()),
+        commit_hash: Some(format!("load-success-{}", std::process::id())),
+        is_dirty: false,
+        root_path: Some(temp_dir.path().join("repo")),
+    };
+    let challenge = Challenge::new("t1".to_string(), "fn beta() {}".to_string())
+        .with_source_info("src/lib.rs".to_string(), 2, 2)
+        .with_language("rust".to_string())
+        .with_comment_ranges(vec![(0, 2)])
+        .with_difficulty_level(DifficultyLevel::Normal);
+
+    repository
+        .save_challenges(&git_repository, &[challenge])
+        .unwrap();
+
+    let loaded = repository
+        .load_challenges_with_progress(&git_repository, None)
+        .expect("saved challenge should be reconstructed");
+
+    assert_eq!(loaded.len(), 1);
+    assert_eq!(loaded[0].id, "t1");
+    assert_eq!(loaded[0].code_content, "fn beta() {}");
+    assert_eq!(loaded[0].source_file_path.as_deref(), Some("src/lib.rs"));
+    assert_eq!(loaded[0].start_line, Some(2));
+    assert_eq!(loaded[0].end_line, Some(2));
+    assert_eq!(loaded[0].language.as_deref(), Some("rust"));
+    assert_eq!(loaded[0].comment_ranges, vec![(0, 2)]);
+    assert_eq!(loaded[0].difficulty_level, Some(DifficultyLevel::Normal));
 }

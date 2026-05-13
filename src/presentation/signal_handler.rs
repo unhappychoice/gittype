@@ -204,3 +204,8 @@ fn cleanup_panic_terminal(terminal_initialized: bool, raw_mode_enabled: bool) {
     // Flush stdout to ensure all output is displayed
     let _ = std::io::stdout().flush();
 }
+
+#[cfg(feature = "test-mocks")]
+pub fn cleanup_panic_terminal_for_test(terminal_initialized: bool, raw_mode_enabled: bool) {
+    cleanup_panic_terminal(terminal_initialized, raw_mode_enabled)
+}

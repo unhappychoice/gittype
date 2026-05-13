@@ -10,8 +10,14 @@ fn new_creates_counter() {
 
 #[test]
 fn default_creates_counter() {
-    let _counter = CodeCharacterCounter;
-    // Test passes if construction succeeds
+    let counter: CodeCharacterCounter = build_default();
+    let count = counter.count_chars_in_content("let value = 1;", &[]);
+
+    assert_eq!(count, 11);
+}
+
+fn build_default<T: Default>() -> T {
+    T::default()
 }
 
 #[test]

@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
     use gittype::domain::models::GitRepositoryRef;
+    use gittype::infrastructure::git::remote::remote_git_repository_client::RemoteGitRepositoryClientInterface;
     use gittype::infrastructure::git::{GitRepositoryRefParser, RemoteGitRepositoryClient};
 
     #[test]
@@ -58,10 +59,125 @@ mod tests {
     }
 
     #[test]
+    fn test_delete_repository_removes_cached_directory() {
+        let client = RemoteGitRepositoryClient::new();
+        let repo_info = GitRepositoryRef {
+            origin: "coverage.invalid".to_string(),
+            owner: "gittype".to_string(),
+            name: format!("delete-test-{}", std::process::id()),
+        };
+        let path = client.get_local_repo_path(&repo_info).unwrap();
+
+        std::fs::create_dir_all(&path).unwrap();
+        assert!(path.exists());
+
+        client.delete_repository(&repo_info).unwrap();
+
+        assert!(!path.exists());
+    }
+
+    #[test]
+    fn test_clone_repository_returns_error_for_invalid_spec() {
+        let client = RemoteGitRepositoryClient::new();
+        let result = client.clone_repository("invalid repository spec", |_, _| {});
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_clone_repository_returns_existing_complete_cache() {
+        let client = RemoteGitRepositoryClient::new();
+        let repo_info = GitRepositoryRef {
+            origin: "coverage.invalid".to_string(),
+            owner: "gittype".to_string(),
+            name: format!("clone-cache-test-{}", std::process::id()),
+        };
+        let path = client.get_local_repo_path(&repo_info).unwrap();
+        let git_dir = path.join(".git");
+
+        std::fs::create_dir_all(&git_dir).unwrap();
+        std::fs::write(git_dir.join("HEAD"), "ref: refs/heads/main").unwrap();
+        std::fs::create_dir_all(git_dir.join("objects")).unwrap();
+        std::fs::create_dir_all(git_dir.join("refs")).unwrap();
+
+        let result = client
+            .clone_repository(
+                &format!("https://coverage.invalid/gittype/{}", repo_info.name),
+                |_, _| panic!("cached clone should not report progress"),
+            )
+            .unwrap();
+
+        assert_eq!(result, path);
+
+        client.delete_repository(&repo_info).unwrap();
+    }
+
+    #[test]
+    fn test_clone_repository_removes_incomplete_cache_before_clone() {
+        let client = RemoteGitRepositoryClient::new();
+        let repo_info = GitRepositoryRef {
+            origin: "127.0.0.1:1".to_string(),
+            owner: "gittype".to_string(),
+            name: format!("incomplete-cache-test-{}", std::process::id()),
+        };
+        let path = client.get_local_repo_path(&repo_info).unwrap();
+        let stale_marker = path.join("stale-marker");
+
+        std::fs::create_dir_all(&path).unwrap();
+        std::fs::write(&stale_marker, "stale cache").unwrap();
+
+        let result = client.clone_repository(
+            &format!("https://127.0.0.1:1/gittype/{}", repo_info.name),
+            |_, _| {},
+        );
+
+        assert!(result.is_err());
+        assert!(!stale_marker.exists());
+
+        client.delete_repository(&repo_info).unwrap();
+    }
+
+    #[test]
+    fn test_trait_object_delegates_to_remote_client() {
+        let client: Box<dyn RemoteGitRepositoryClientInterface> =
+            Box::new(RemoteGitRepositoryClient::new());
+        let repo_info = GitRepositoryRef {
+            origin: "github.com".to_string(),
+            owner: "octocat".to_string(),
+            name: "hello-world".to_string(),
+        };
+        let path = client.get_local_repo_path(&repo_info).unwrap();
+
+        assert!(path.ends_with("github.com/octocat/hello-world"));
+        assert!(!client.is_repository_complete(tempfile::TempDir::new().unwrap().path()));
+        assert!(!client.is_repository_cached("invalid repository spec"));
+        assert!(client.delete_repository(&repo_info).is_ok());
+    }
+
+    #[test]
     fn test_is_repository_cached_returns_false_for_invalid_spec() {
         let client = RemoteGitRepositoryClient::new();
 
         assert!(!client.is_repository_cached("invalid repository spec"));
+    }
+
+    #[test]
+    fn test_is_repository_cached_returns_true_for_existing_directory() {
+        let client = RemoteGitRepositoryClient::new();
+        let repo_info = GitRepositoryRef {
+            origin: "coverage.invalid".to_string(),
+            owner: "gittype".to_string(),
+            name: format!("cached-test-{}", std::process::id()),
+        };
+        let path = client.get_local_repo_path(&repo_info).unwrap();
+
+        std::fs::create_dir_all(&path).unwrap();
+        assert!(client.is_repository_cached(&format!(
+            "https://coverage.invalid/gittype/{}",
+            repo_info.name
+        )));
+
+        client.delete_repository(&repo_info).unwrap();
     }
 
     #[test]

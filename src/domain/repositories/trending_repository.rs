@@ -50,6 +50,20 @@ pub struct TrendingRepository {
 const DEFAULT_TTL_SECONDS: u64 = 3600;
 
 impl TrendingRepository {
+    #[cfg(feature = "test-mocks")]
+    pub fn new_for_test(
+        cache_dir: PathBuf,
+        ttl_seconds: u64,
+        oss_insight_client: Arc<dyn OssInsightClientInterface>,
+    ) -> Self {
+        Self {
+            cache_dir,
+            ttl_seconds,
+            oss_insight_client,
+            file_storage: Arc::new(FileStorage::new()),
+        }
+    }
+
     /// Get trending repositories with caching and fallback to fresh data
     pub async fn get_trending_repositories(
         &self,

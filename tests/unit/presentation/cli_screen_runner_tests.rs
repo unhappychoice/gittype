@@ -36,3 +36,17 @@ fn screen_runner_context_new_returns_terminal_error_without_tty() {
 
     assert_non_tty_terminal_error(result);
 }
+
+#[test]
+fn cleanup_succeeds_when_terminal_is_inactive() {
+    let context = ScreenRunnerContext::new_for_test(false);
+
+    assert!(context.cleanup().is_ok());
+}
+
+#[test]
+fn cleanup_succeeds_when_terminal_is_active() {
+    let context = ScreenRunnerContext::new_for_test(true);
+
+    assert!(context.cleanup().is_ok());
+}

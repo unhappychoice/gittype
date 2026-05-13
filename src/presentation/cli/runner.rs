@@ -36,6 +36,14 @@ pub fn run_cli(cli: Cli) -> Result<()> {
     }
 }
 
+#[cfg(feature = "test-mocks")]
+pub fn run_cache_command_for_test(
+    cache_command: &CacheCommands,
+    challenge_repository: &dyn ChallengeRepositoryInterface,
+) -> Result<()> {
+    run_cache_command(cache_command, challenge_repository)
+}
+
 fn run_cache_command(
     cache_command: &CacheCommands,
     challenge_repository: &dyn ChallengeRepositoryInterface,

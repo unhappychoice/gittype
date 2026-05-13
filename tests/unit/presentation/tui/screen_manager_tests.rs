@@ -11,13 +11,16 @@ use gittype::domain::stores::{
     ChallengeStoreInterface, RepositoryStoreInterface, SessionStoreInterface,
 };
 use gittype::infrastructure::terminal::TerminalInterface;
+use gittype::presentation::di::AppModule;
 use gittype::presentation::tui::{
-    Screen, ScreenDataProvider, ScreenManagerImpl, ScreenTransition, ScreenType, UpdateStrategy,
+    Screen, ScreenDataProvider, ScreenManagerFactory, ScreenManagerImpl, ScreenTransition,
+    ScreenType, UpdateStrategy,
 };
 use ratatui::backend::CrosstermBackend;
 use ratatui::backend::TestBackend;
 use ratatui::Frame;
 use ratatui::Terminal;
+use shaku::HasComponent;
 use std::any::Any;
 use std::io::Stdout;
 use std::sync::{Arc, Mutex};
@@ -502,6 +505,7 @@ fn test_set_current_screen_uses_default_providers_for_registered_screen_types() 
         ScreenType::Typing,
         ScreenType::StageSummary,
         ScreenType::SessionSummary,
+        ScreenType::TotalSummaryShare,
         ScreenType::SessionFailure,
         ScreenType::Records,
         ScreenType::Analytics,
@@ -512,6 +516,8 @@ fn test_set_current_screen_uses_default_providers_for_registered_screen_types() 
         ScreenType::InfoDialog,
         ScreenType::DetailsDialog,
         ScreenType::Panic,
+        ScreenType::RepoPlay,
+        ScreenType::RepoList,
         ScreenType::TrendingLanguageSelection,
         ScreenType::TrendingRepositorySelection,
     ];
@@ -727,4 +733,73 @@ fn test_mark_terminal_initialized_and_skip_cleanup_on_drop_toggle_flag() {
 
     manager.skip_cleanup_on_drop();
     assert!(!manager.is_terminal_initialized());
+}
+
+#[test]
+fn test_factory_create_registers_di_screens() {
+    if !atty::is(atty::Stream::Stdout) {
+        return;
+    }
+
+    let module = AppModule::builder().build();
+    let factory: &dyn ScreenManagerFactory = module.resolve_ref();
+
+    let mut manager = factory.create(&module);
+    manager.skip_cleanup_on_drop();
+
+    [
+        ScreenType::Title,
+        ScreenType::Typing,
+        ScreenType::Animation,
+        ScreenType::Help,
+        ScreenType::Loading,
+        ScreenType::Panic,
+        ScreenType::SessionFailure,
+        ScreenType::InfoDialog,
+        ScreenType::DetailsDialog,
+        ScreenType::StageSummary,
+        ScreenType::Analytics,
+        ScreenType::Records,
+        ScreenType::SessionDetail,
+        ScreenType::SessionSummary,
+        ScreenType::SessionSharing,
+        ScreenType::Settings,
+        ScreenType::TotalSummary,
+        ScreenType::TotalSummaryShare,
+        ScreenType::VersionCheck,
+        ScreenType::RepoList,
+        ScreenType::RepoPlay,
+        ScreenType::TrendingLanguageSelection,
+        ScreenType::TrendingRepositorySelection,
+    ]
+    .into_iter()
+    .for_each(|screen_type| {
+        assert!(
+            manager.get_screen(&screen_type).is_some(),
+            "expected {:?} to be registered",
+            screen_type
+        );
+    });
+}
+
+#[test]
+fn setup_event_subscriptions_stores_pending_navigation_transition() {
+    use gittype::domain::events::presentation_events::NavigateTo;
+    use gittype::domain::events::EventBusInterface;
+
+    let manager = Arc::new(Mutex::new(create_test_screen_manager()));
+
+    ScreenManagerImpl::setup_event_subscriptions(&manager);
+    let event_bus: Arc<dyn EventBusInterface> = manager.lock().unwrap().get_event_bus();
+
+    event_bus
+        .as_event_bus()
+        .publish(NavigateTo::Replace(ScreenType::Help));
+
+    let pending_transition = manager.lock().unwrap().pending_transition_for_test();
+
+    assert!(matches!(
+        pending_transition,
+        Some(ScreenTransition::Replace(ScreenType::Help))
+    ));
 }

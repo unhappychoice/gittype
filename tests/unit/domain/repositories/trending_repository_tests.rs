@@ -1,8 +1,11 @@
 use gittype::domain::repositories::trending_repository::{
-    TrendingRepositoryInfo, TrendingRepositoryInterface,
+    TrendingRepository, TrendingRepositoryInfo, TrendingRepositoryInterface,
 };
+use gittype::infrastructure::http::oss_insight_client::OssInsightClientInterface;
 use gittype::presentation::di::AppModule;
+use gittype::{GitTypeError, Result};
 use shaku::HasComponent;
+use std::path::PathBuf;
 use std::sync::Arc;
 
 fn create_repository() -> Arc<dyn TrendingRepositoryInterface> {
@@ -84,4 +87,65 @@ fn test_trending_repository_info_clone() {
     assert_eq!(info.repo_name, cloned.repo_name);
     assert_eq!(info.primary_language, cloned.primary_language);
     assert_eq!(info.stars, cloned.stars);
+}
+
+#[derive(Debug)]
+struct FakeOssInsightClient {
+    result: std::result::Result<Vec<TrendingRepositoryInfo>, String>,
+}
+
+#[async_trait::async_trait]
+impl OssInsightClientInterface for FakeOssInsightClient {
+    async fn fetch_trending_repositories(
+        &self,
+        _language: Option<&str>,
+        _period: &str,
+    ) -> Result<Vec<TrendingRepositoryInfo>> {
+        self.result.clone().map_err(GitTypeError::ApiError)
+    }
+}
+
+fn repository_with_client(client: FakeOssInsightClient) -> TrendingRepository {
+    TrendingRepository::new_for_test(PathBuf::from("unused-cache-dir"), 60, Arc::new(client))
+}
+
+fn trending_info_with_rust(repo_name: &str) -> TrendingRepositoryInfo {
+    TrendingRepositoryInfo {
+        repo_name: repo_name.to_string(),
+        primary_language: Some("Rust".to_string()),
+        description: Some("A test repository".to_string()),
+        stars: "42".to_string(),
+        forks: "7".to_string(),
+        total_score: "49".to_string(),
+    }
+}
+
+#[tokio::test]
+async fn get_trending_repositories_returns_fresh_api_data() {
+    let repository = repository_with_client(FakeOssInsightClient {
+        result: Ok(vec![trending_info_with_rust("owner/repo")]),
+    });
+
+    let repositories = repository
+        .get_trending_repositories("fresh-key", Some("rust"), "daily")
+        .await
+        .unwrap();
+
+    assert_eq!(repositories.len(), 1);
+    assert_eq!(repositories[0].repo_name, "owner/repo");
+    assert_eq!(repositories[0].primary_language, Some("Rust".to_string()));
+}
+
+#[tokio::test]
+async fn get_trending_repositories_returns_empty_vec_when_api_fails() {
+    let repository = repository_with_client(FakeOssInsightClient {
+        result: Err("service unavailable".to_string()),
+    });
+
+    let repositories = repository
+        .get_trending_repositories("error-key", Some("rust"), "weekly")
+        .await
+        .unwrap();
+
+    assert!(repositories.is_empty());
 }

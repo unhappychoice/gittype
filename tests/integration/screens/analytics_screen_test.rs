@@ -8,8 +8,24 @@ use gittype::domain::events::EventBus;
 use gittype::domain::models::color_mode::ColorMode;
 use gittype::domain::models::theme::Theme;
 use gittype::domain::services::theme_service::{ThemeService, ThemeServiceInterface};
-use gittype::presentation::tui::screens::analytics_screen::AnalyticsScreen;
-use std::sync::Arc;
+use gittype::presentation::tui::screens::analytics_screen::{
+    AnalyticsAction, AnalyticsScreen, ViewMode,
+};
+use gittype::presentation::tui::{Screen, ScreenDataProvider};
+use std::sync::{Arc, Mutex};
+
+#[test]
+fn test_analytics_view_mode_cycles_forward_and_backward() {
+    assert_eq!(ViewMode::Overview.next(), ViewMode::Trends);
+    assert_eq!(ViewMode::Trends.next(), ViewMode::Repositories);
+    assert_eq!(ViewMode::Repositories.next(), ViewMode::Languages);
+    assert_eq!(ViewMode::Languages.next(), ViewMode::Overview);
+
+    assert_eq!(ViewMode::Overview.previous(), ViewMode::Languages);
+    assert_eq!(ViewMode::Trends.previous(), ViewMode::Overview);
+    assert_eq!(ViewMode::Repositories.previous(), ViewMode::Trends);
+    assert_eq!(ViewMode::Languages.previous(), ViewMode::Repositories);
+}
 
 screen_snapshot_test!(
     test_analytics_screen_snapshot_overview,
@@ -208,6 +224,37 @@ screen_key_event_test!(
     KeyModifiers::CONTROL,
     MockAnalyticsDataProvider
 );
+
+#[test]
+fn test_analytics_screen_esc_sets_return_action_result() {
+    let event_bus = Arc::new(EventBus::new());
+    let observed_events = Arc::new(Mutex::new(0usize));
+    let event_count = Arc::clone(&observed_events);
+    let screen = AnalyticsScreen::new(
+        event_bus.clone(),
+        Arc::new(ThemeService::new_for_test(
+            Theme::default(),
+            ColorMode::Dark,
+        )) as Arc<dyn ThemeServiceInterface>,
+    );
+
+    event_bus.subscribe(move |_: &NavigateTo| {
+        *event_count.lock().unwrap() += 1;
+    });
+
+    screen
+        .init_with_data(MockAnalyticsDataProvider.provide().unwrap())
+        .unwrap();
+    screen
+        .handle_key_event(KeyEvent::new(KeyCode::Esc, KeyModifiers::empty()))
+        .unwrap();
+
+    assert!(matches!(
+        screen.get_action_result(),
+        Some(AnalyticsAction::Return)
+    ));
+    assert_eq!(*observed_events.lock().unwrap(), 1);
+}
 
 // Non-event key tests
 screen_key_tests!(

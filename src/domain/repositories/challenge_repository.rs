@@ -61,6 +61,15 @@ pub struct ChallengeRepository {
 }
 
 impl ChallengeRepository {
+    #[cfg(feature = "test-mocks")]
+    pub fn new_for_test(cache_dir: PathBuf, file_storage: Arc<dyn FileStorageInterface>) -> Self {
+        Self {
+            cache_dir,
+            storage: Arc::new(CompressedFileStorage::new()),
+            file_storage,
+        }
+    }
+
     pub fn save_challenges(&self, repo: &GitRepository, challenges: &[Challenge]) -> Result<()> {
         if repo.is_dirty {
             return Ok(());

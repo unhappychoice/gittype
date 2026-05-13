@@ -39,6 +39,26 @@ impl VersionRepository {
         })
     }
 
+    #[cfg(feature = "test-mocks")]
+    pub fn new_for_test_with_factory(
+        github_client_factory: Arc<dyn GitHubApiClientFactory>,
+    ) -> Self {
+        Self {
+            github_client_factory,
+            file_storage: Arc::new(FileStorage::new()),
+        }
+    }
+
+    #[cfg(feature = "test-mocks")]
+    pub fn is_cache_valid_for_test(&self, entry: &VersionCacheEntry, frequency_hours: u64) -> bool {
+        self.is_cache_valid(entry, frequency_hours)
+    }
+
+    #[cfg(feature = "test-mocks")]
+    pub fn normalize_version_tag_for_test(tag: &str) -> String {
+        Self::normalize_version_tag(tag)
+    }
+
     /// Fetch the latest version from cache or API
     pub async fn fetch_latest_version(&self) -> Result<String> {
         const CHECK_FREQUENCY_HOURS: u64 = 24;

@@ -194,6 +194,11 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
         Arc::clone(&self.event_bus)
     }
 
+    #[cfg(feature = "test-mocks")]
+    pub fn pending_transition_for_test(&self) -> Option<ScreenTransition> {
+        self.pending_transition.lock().unwrap().clone()
+    }
+
     /// Set up event subscriptions for navigation events
     /// Takes a weak reference to avoid circular references
     pub fn setup_event_subscriptions(manager_ref: &Arc<Mutex<Self>>) {

@@ -159,6 +159,19 @@ fn countdown_pause_and_resume_holds_state() {
 }
 
 #[test]
+fn fast_forward_preserves_times_when_duration_is_too_large() {
+    let mut countdown = Countdown::new();
+    countdown.start_countdown();
+    countdown.pause();
+
+    countdown.fast_forward_for_test(Duration::MAX);
+    countdown.update_state();
+
+    assert!(countdown.is_active());
+    assert_eq!(countdown.get_current_count(), Some(3));
+}
+
+#[test]
 fn pause_when_already_paused_does_nothing() {
     let mut countdown = Countdown::new();
     countdown.start_countdown();
