@@ -167,3 +167,126 @@ fn test_position_out_of_bounds() {
     assert_eq!(data.keystrokes.len(), 1);
     assert!(!data.keystrokes[0].is_correct);
 }
+
+#[test]
+fn test_finish_while_paused_subtracts_pending_pause() {
+    let mut tracker = StageTracker::new("test".to_string());
+    tracker.record(StageInput::Start);
+    std::thread::sleep(Duration::from_millis(40));
+    tracker.record(StageInput::Pause);
+    std::thread::sleep(Duration::from_millis(80));
+    // Finish while still paused — Finish must close out the pending paused window.
+    tracker.record(StageInput::Finish);
+
+    let data = tracker.get_data();
+    assert!(data.is_finished);
+    // Wall-clock is ~120ms; active time should be ~40ms (well under 100ms).
+    assert!(
+        data.elapsed_time < Duration::from_millis(100),
+        "active time {:?} should exclude the pause that was still open at Finish",
+        data.elapsed_time
+    );
+}
+
+#[test]
+fn test_skip_while_paused_subtracts_pending_pause() {
+    let mut tracker = StageTracker::new("test".to_string());
+    tracker.record(StageInput::Start);
+    std::thread::sleep(Duration::from_millis(40));
+    tracker.record(StageInput::Pause);
+    std::thread::sleep(Duration::from_millis(80));
+    tracker.record(StageInput::Skip);
+
+    let data = tracker.get_data();
+    assert!(data.was_skipped);
+    assert!(data.is_finished);
+    assert!(
+        data.elapsed_time < Duration::from_millis(100),
+        "skip while paused must exclude the pending pause; got {:?}",
+        data.elapsed_time
+    );
+}
+
+#[test]
+fn test_fail_while_paused_subtracts_pending_pause() {
+    let mut tracker = StageTracker::new("test".to_string());
+    tracker.record(StageInput::Start);
+    std::thread::sleep(Duration::from_millis(40));
+    tracker.record(StageInput::Pause);
+    std::thread::sleep(Duration::from_millis(80));
+    tracker.record(StageInput::Fail);
+
+    let data = tracker.get_data();
+    assert!(data.was_failed);
+    assert!(data.is_finished);
+    assert!(
+        data.elapsed_time < Duration::from_millis(100),
+        "fail while paused must exclude the pending pause; got {:?}",
+        data.elapsed_time
+    );
+}
+
+#[test]
+fn test_get_data_while_still_paused_excludes_pause_window() {
+    let mut tracker = StageTracker::new("test".to_string());
+    tracker.record(StageInput::Start);
+    std::thread::sleep(Duration::from_millis(40));
+    tracker.record(StageInput::Pause);
+    std::thread::sleep(Duration::from_millis(100));
+
+    // Observe without finishing — get_data must subtract the in-progress pause.
+    let data = tracker.get_data();
+    assert!(!data.is_finished);
+    assert!(
+        data.elapsed_time < Duration::from_millis(80),
+        "elapsed should track only pre-pause activity; got {:?}",
+        data.elapsed_time
+    );
+}
+
+#[test]
+fn test_pause_is_idempotent_while_already_paused() {
+    let mut tracker = StageTracker::new("test".to_string());
+    tracker.record(StageInput::Start);
+    std::thread::sleep(Duration::from_millis(20));
+    tracker.record(StageInput::Pause);
+    std::thread::sleep(Duration::from_millis(40));
+    // Recording Pause again while already paused must not restart the pause clock.
+    tracker.record(StageInput::Pause);
+    std::thread::sleep(Duration::from_millis(40));
+    tracker.record(StageInput::Resume);
+    tracker.record(StageInput::Finish);
+
+    let data = tracker.get_data();
+    // Active time is ~20ms; total pause is ~80ms regardless of repeat-Pause.
+    assert!(
+        data.elapsed_time < Duration::from_millis(70),
+        "repeat Pause must be a no-op; got {:?}",
+        data.elapsed_time
+    );
+}
+
+#[test]
+fn test_get_data_without_start_returns_zero_elapsed() {
+    let tracker = StageTracker::new("test".to_string());
+    let data = tracker.get_data();
+    assert_eq!(data.elapsed_time, Duration::ZERO);
+    assert!(!data.is_finished);
+}
+
+#[test]
+fn test_set_start_time_overrides_default() {
+    let mut tracker = StageTracker::new("test".to_string());
+    let start = std::time::Instant::now() - Duration::from_millis(200);
+    tracker.set_start_time(start);
+    // Recording Start now must NOT overwrite the manually-set start time.
+    tracker.record(StageInput::Start);
+    tracker.record(StageInput::Finish);
+
+    let data = tracker.get_data();
+    assert!(
+        data.elapsed_time >= Duration::from_millis(190),
+        "expected elapsed ≥ 190ms from manually-set start, got {:?}",
+        data.elapsed_time
+    );
+}
