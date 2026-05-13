@@ -226,3 +226,25 @@ fn extract_name_returns_none_for_leaf_node_without_children() {
 
     assert_eq!(name, None);
 }
+
+#[test]
+fn extract_name_for_dot_target_call_returns_first_argument_identifier() {
+    let source = "Foo.bar(x)\n";
+    let tree = parse_elixir(source);
+    let call = find_node(tree.root_node(), "call").expect("expected a call node");
+
+    let name = ElixirExtractor.extract_name(call, source, "function_call");
+
+    assert_eq!(name.as_deref(), Some("x"));
+}
+
+#[test]
+fn extract_name_for_dot_target_call_with_no_identifier_args_returns_none() {
+    let source = "Foo.bar(:atom)\n";
+    let tree = parse_elixir(source);
+    let call = find_node(tree.root_node(), "call").expect("expected a call node");
+
+    let name = ElixirExtractor.extract_name(call, source, "function_call");
+
+    assert_eq!(name, None);
+}
