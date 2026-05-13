@@ -50,3 +50,20 @@ fn cleanup_succeeds_when_terminal_is_active() {
 
     assert!(context.cleanup().is_ok());
 }
+
+#[test]
+fn context_run_screen_returns_terminal_error_without_tty() {
+    if atty::is(atty::Stream::Stdout) {
+        return;
+    }
+
+    let context = ScreenRunnerContext::new_for_test(false);
+
+    let result = context.run_screen::<RepoListScreen, (), (), fn(&RepoListScreen) -> Option<()>>(
+        ScreenType::RepoList,
+        None::<()>,
+        None,
+    );
+
+    assert_non_tty_terminal_error(result);
+}
