@@ -401,6 +401,49 @@ fn test_analytics_screen_navigates_language_list_with_jk() {
 }
 
 #[test]
+fn test_analytics_screen_renders_language_without_detailed_stats() {
+    // MockAnalyticsDataProvider's top_languages contains both "Rust" and "Python",
+    // but language_stats only has an entry for "Rust" — navigating to Python triggers
+    // the `else` branch in LanguagesView::render_language_details where `detailed_stats`
+    // resolves to None.
+    let screen = build_analytics_screen();
+    screen
+        .init_with_data(MockAnalyticsDataProvider.provide().unwrap())
+        .unwrap();
+
+    send_keys(
+        &screen,
+        &[
+            KeyCode::Right,
+            KeyCode::Right,
+            KeyCode::Right,
+            KeyCode::Char('j'),
+        ],
+    );
+
+    let backend = ratatui::backend::TestBackend::new(120, 40);
+    let mut terminal = ratatui::Terminal::new(backend).unwrap();
+    terminal
+        .draw(|f| {
+            screen.render_ratatui(f).unwrap();
+        })
+        .unwrap();
+
+    let buffer = terminal.backend().buffer();
+    let mut output = String::new();
+    for y in 0..buffer.area.height {
+        for x in 0..buffer.area.width {
+            output.push_str(buffer[(x, y)].symbol());
+        }
+        output.push('\n');
+    }
+
+    assert!(output.contains("Python"));
+    assert!(output.contains("Session Count"));
+    assert!(output.contains("WPM Equivalent"));
+}
+
+#[test]
 fn test_analytics_screen_unhandled_key_returns_ok() {
     let screen = build_analytics_screen();
     screen
