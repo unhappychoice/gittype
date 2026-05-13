@@ -16,4 +16,6 @@ mod python_tests;
 mod ruby_tests;
 mod rust_tests;
 mod scala_tests;
+mod swift_tests;
 mod typescript_tests;
+mod zig_tests;
