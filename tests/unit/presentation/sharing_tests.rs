@@ -169,3 +169,98 @@ fn sharing_platform_clone() {
     let p2 = p.clone();
     assert_eq!(p.name(), p2.name());
 }
+
+#[test]
+fn sharing_platform_debug_format_is_not_empty() {
+    let labels: Vec<String> = SharingPlatform::all()
+        .into_iter()
+        .map(|p| format!("{:?}", p))
+        .collect();
+
+    assert_eq!(labels.len(), 4);
+    assert!(labels.iter().all(|s| !s.is_empty()));
+}
+
+// ---------------------------------------------------------------------------
+// share_result — under test-mocks, browser::open_url always returns Ok, so
+// these tests exercise the success path (and the open_browser wrapper) without
+// touching the real browser or the fallback URL display.
+// ---------------------------------------------------------------------------
+#[test]
+fn share_result_opens_browser_for_every_platform_without_repo() {
+    let metrics = make_metrics(125.0, 270.0, 1, 4);
+
+    for platform in SharingPlatform::all() {
+        let result = SharingService::share_result(&metrics, platform, &None);
+        assert!(result.is_ok(), "share_result should succeed under mocks");
+    }
+}
+
+#[test]
+fn share_result_opens_browser_for_every_platform_with_repo() {
+    let metrics = make_metrics(99.0, 175.0, 0, 1);
+    let repo = make_repo();
+
+    for platform in SharingPlatform::all() {
+        let result = SharingService::share_result(&metrics, platform, &Some(repo.clone()));
+        assert!(
+            result.is_ok(),
+            "share_result with repo should succeed under mocks"
+        );
+    }
+}
+
+// ---------------------------------------------------------------------------
+// generate_share_url URL-encoding sanity checks
+// ---------------------------------------------------------------------------
+#[test]
+fn generate_share_url_x_encodes_text_payload() {
+    let metrics = make_metrics(100.0, 250.0, 2, 1);
+    let url = SharingService::generate_share_url(&metrics, &SharingPlatform::X, &None);
+
+    assert!(url.contains("text="));
+    assert!(
+        !url.contains(' '),
+        "URL should be percent-encoded, found raw spaces in {url}"
+    );
+    assert!(!url.contains('\n'), "URL should not contain raw newlines");
+}
+
+#[test]
+fn generate_share_url_reddit_includes_rank_name_in_title() {
+    let metrics = make_metrics(0.0, 0.0, 0, 0);
+    let url = SharingService::generate_share_url(&metrics, &SharingPlatform::Reddit, &None);
+
+    let title_segment = url
+        .split("title=")
+        .nth(1)
+        .and_then(|rest| rest.split('&').next())
+        .expect("reddit URL must have a title= segment");
+
+    let title = urlencoding::decode(title_segment).expect("title must be valid percent-encoding");
+    assert!(title.contains("rank"));
+    assert!(title.contains("0 points"));
+}
+
+#[test]
+fn generate_share_url_facebook_encodes_repo_link_separately_from_quote() {
+    let metrics = make_metrics(10.0, 20.0, 0, 0);
+    let url = SharingService::generate_share_url(&metrics, &SharingPlatform::Facebook, &None);
+
+    let u_segment = url
+        .split("u=")
+        .nth(1)
+        .and_then(|rest| rest.split('&').next())
+        .expect("facebook URL must have a u= segment");
+    let quote_segment = url
+        .split("quote=")
+        .nth(1)
+        .expect("facebook URL must have a quote= segment");
+
+    let decoded_u = urlencoding::decode(u_segment).expect("u must be valid percent-encoding");
+    let decoded_quote =
+        urlencoding::decode(quote_segment).expect("quote must be valid percent-encoding");
+
+    assert_eq!(decoded_u, "https://github.com/unhappychoice/gittype");
+    assert!(decoded_quote.contains("gittype"));
+}

@@ -1,3 +1,4 @@
+use gittype::domain::models::loading::StepType;
 use gittype::domain::models::{Challenge, DifficultyLevel, GitRepository};
 use gittype::domain::repositories::challenge_repository::{
     ChallengeRepository, ChallengeRepositoryInterface,
@@ -5,9 +6,10 @@ use gittype::domain::repositories::challenge_repository::{
 use gittype::infrastructure::storage::file_storage::FileStorage;
 use gittype::infrastructure::storage::file_storage::FileStorageInterface;
 use gittype::presentation::di::AppModule;
+use gittype::presentation::tui::screens::loading_screen::ProgressReporter;
 use shaku::HasComponent;
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 fn create_repository() -> Arc<dyn ChallengeRepositoryInterface> {
     let module = AppModule::builder().build();
@@ -261,4 +263,326 @@ fn load_challenges_reconstructs_saved_source_slice() {
     assert_eq!(loaded[0].language.as_deref(), Some("rust"));
     assert_eq!(loaded[0].comment_ranges, vec![(0, 2)]);
     assert_eq!(loaded[0].difficulty_level, Some(DifficultyLevel::Normal));
+}
+
+#[test]
+fn load_challenges_uses_whole_file_when_lines_are_absent() {
+    let temp_dir = tempfile::tempdir().unwrap();
+    let source_path = temp_dir.path().join("repo/src/lib.rs");
+    let source = "fn whole() {}\nfn file() {}\n";
+    std::fs::create_dir_all(source_path.parent().unwrap()).unwrap();
+    std::fs::write(&source_path, source).unwrap();
+
+    let repository = ChallengeRepository::new_for_test(
+        temp_dir.path().join("cache"),
+        file_storage_with_source(source_path.canonicalize().unwrap(), source),
+    );
+    let git_repository = GitRepository {
+        user_name: "test".to_string(),
+        repository_name: "repo".to_string(),
+        remote_url: "https://github.com/test/repo".to_string(),
+        branch: Some("main".to_string()),
+        commit_hash: Some(format!("load-whole-file-{}", std::process::id())),
+        is_dirty: false,
+        root_path: Some(temp_dir.path().join("repo")),
+    };
+    let challenge = Challenge {
+        id: "no-lines".to_string(),
+        source_file_path: Some("src/lib.rs".to_string()),
+        code_content: "placeholder".to_string(),
+        start_line: None,
+        end_line: None,
+        language: Some("rust".to_string()),
+        comment_ranges: Vec::new(),
+        difficulty_level: Some(DifficultyLevel::Easy),
+    };
+
+    repository
+        .save_challenges(&git_repository, &[challenge])
+        .unwrap();
+
+    let loaded = repository
+        .load_challenges_with_progress(&git_repository, None)
+        .expect("challenge without line info should reconstruct full file");
+
+    assert_eq!(loaded.len(), 1);
+    assert_eq!(loaded[0].code_content, source);
+    assert_eq!(loaded[0].start_line, None);
+    assert_eq!(loaded[0].end_line, None);
+}
+
+#[test]
+fn load_challenges_returns_none_when_pointer_has_no_source_path() {
+    let temp_dir = tempfile::tempdir().unwrap();
+    std::fs::create_dir_all(temp_dir.path().join("repo")).unwrap();
+
+    let repository = ChallengeRepository::new_for_test(
+        temp_dir.path().join("cache"),
+        Arc::new(FileStorage::new()),
+    );
+    let git_repository = GitRepository {
+        user_name: "test".to_string(),
+        repository_name: "repo".to_string(),
+        remote_url: "https://github.com/test/repo".to_string(),
+        branch: Some("main".to_string()),
+        commit_hash: Some(format!("load-no-path-{}", std::process::id())),
+        is_dirty: false,
+        root_path: Some(temp_dir.path().join("repo")),
+    };
+    let challenge = Challenge {
+        id: "no-source-path".to_string(),
+        source_file_path: None,
+        code_content: "fn ghost() {}".to_string(),
+        start_line: None,
+        end_line: None,
+        language: None,
+        comment_ranges: Vec::new(),
+        difficulty_level: None,
+    };
+
+    repository
+        .save_challenges(&git_repository, &[challenge])
+        .unwrap();
+
+    let loaded = repository.load_challenges_with_progress(&git_repository, None);
+    assert!(loaded.is_none());
+}
+
+#[test]
+fn load_challenges_returns_none_when_start_line_exceeds_file_length() {
+    let temp_dir = tempfile::tempdir().unwrap();
+    let source_path = temp_dir.path().join("repo/src/lib.rs");
+    let source = "fn only() {}\n";
+    std::fs::create_dir_all(source_path.parent().unwrap()).unwrap();
+    std::fs::write(&source_path, source).unwrap();
+
+    let repository = ChallengeRepository::new_for_test(
+        temp_dir.path().join("cache"),
+        file_storage_with_source(source_path.canonicalize().unwrap(), source),
+    );
+    let git_repository = GitRepository {
+        user_name: "test".to_string(),
+        repository_name: "repo".to_string(),
+        remote_url: "https://github.com/test/repo".to_string(),
+        branch: Some("main".to_string()),
+        commit_hash: Some(format!("load-bad-range-{}", std::process::id())),
+        is_dirty: false,
+        root_path: Some(temp_dir.path().join("repo")),
+    };
+    let challenge = Challenge {
+        id: "out-of-range".to_string(),
+        source_file_path: Some("src/lib.rs".to_string()),
+        code_content: "placeholder".to_string(),
+        start_line: Some(100),
+        end_line: Some(200),
+        language: Some("rust".to_string()),
+        comment_ranges: Vec::new(),
+        difficulty_level: None,
+    };
+
+    repository
+        .save_challenges(&git_repository, &[challenge])
+        .unwrap();
+
+    let loaded = repository.load_challenges_with_progress(&git_repository, None);
+    assert!(loaded.is_none());
+}
+
+#[test]
+fn load_challenges_returns_none_when_start_line_exceeds_end_line() {
+    let temp_dir = tempfile::tempdir().unwrap();
+    let source_path = temp_dir.path().join("repo/src/lib.rs");
+    let source = "line1\nline2\nline3\nline4\nline5\n";
+    std::fs::create_dir_all(source_path.parent().unwrap()).unwrap();
+    std::fs::write(&source_path, source).unwrap();
+
+    let repository = ChallengeRepository::new_for_test(
+        temp_dir.path().join("cache"),
+        file_storage_with_source(source_path.canonicalize().unwrap(), source),
+    );
+    let git_repository = GitRepository {
+        user_name: "test".to_string(),
+        repository_name: "repo".to_string(),
+        remote_url: "https://github.com/test/repo".to_string(),
+        branch: Some("main".to_string()),
+        commit_hash: Some(format!("load-inverted-{}", std::process::id())),
+        is_dirty: false,
+        root_path: Some(temp_dir.path().join("repo")),
+    };
+    let challenge = Challenge {
+        id: "inverted-range".to_string(),
+        source_file_path: Some("src/lib.rs".to_string()),
+        code_content: "placeholder".to_string(),
+        start_line: Some(4),
+        end_line: Some(2),
+        language: Some("rust".to_string()),
+        comment_ranges: Vec::new(),
+        difficulty_level: None,
+    };
+
+    repository
+        .save_challenges(&git_repository, &[challenge])
+        .unwrap();
+
+    let loaded = repository.load_challenges_with_progress(&git_repository, None);
+    assert!(loaded.is_none());
+}
+
+#[test]
+fn load_challenges_returns_none_when_source_path_escapes_repo_root() {
+    let temp_dir = tempfile::tempdir().unwrap();
+    let repo_path = temp_dir.path().join("repo");
+    let outside_path = temp_dir.path().join("outside/escape.rs");
+    std::fs::create_dir_all(&repo_path).unwrap();
+    std::fs::create_dir_all(outside_path.parent().unwrap()).unwrap();
+    std::fs::write(&outside_path, "fn outside() {}\n").unwrap();
+
+    let repository = ChallengeRepository::new_for_test(
+        temp_dir.path().join("cache"),
+        Arc::new(FileStorage::new()),
+    );
+    let git_repository = GitRepository {
+        user_name: "test".to_string(),
+        repository_name: "repo".to_string(),
+        remote_url: "https://github.com/test/repo".to_string(),
+        branch: Some("main".to_string()),
+        commit_hash: Some(format!("load-escape-{}", std::process::id())),
+        is_dirty: false,
+        root_path: Some(repo_path),
+    };
+    let challenge = Challenge {
+        id: "escape-attempt".to_string(),
+        source_file_path: Some("../outside/escape.rs".to_string()),
+        code_content: "placeholder".to_string(),
+        start_line: None,
+        end_line: None,
+        language: Some("rust".to_string()),
+        comment_ranges: Vec::new(),
+        difficulty_level: None,
+    };
+
+    repository
+        .save_challenges(&git_repository, &[challenge])
+        .unwrap();
+
+    let loaded = repository.load_challenges_with_progress(&git_repository, None);
+    assert!(loaded.is_none());
+}
+
+type ProgressCall = (StepType, usize, usize, Option<String>);
+
+#[derive(Default)]
+struct RecordingProgressReporter {
+    file_counts_calls: Mutex<Vec<ProgressCall>>,
+}
+
+impl ProgressReporter for RecordingProgressReporter {
+    fn set_step(&self, _step_type: StepType) {}
+
+    fn set_current_file(&self, _file: Option<String>) {}
+
+    fn set_file_counts(
+        &self,
+        step_type: StepType,
+        processed: usize,
+        total: usize,
+        current_file: Option<String>,
+    ) {
+        self.file_counts_calls
+            .lock()
+            .unwrap()
+            .push((step_type, processed, total, current_file));
+    }
+}
+
+#[test]
+fn load_challenges_with_progress_reports_progress_to_reporter() {
+    let temp_dir = tempfile::tempdir().unwrap();
+    let source_path = temp_dir.path().join("repo/src/lib.rs");
+    let source = "fn one() {}\nfn two() {}\nfn three() {}\n";
+    std::fs::create_dir_all(source_path.parent().unwrap()).unwrap();
+    std::fs::write(&source_path, source).unwrap();
+
+    let repository = ChallengeRepository::new_for_test(
+        temp_dir.path().join("cache"),
+        file_storage_with_source(source_path.canonicalize().unwrap(), source),
+    );
+    let git_repository = GitRepository {
+        user_name: "test".to_string(),
+        repository_name: "repo".to_string(),
+        remote_url: "https://github.com/test/repo".to_string(),
+        branch: Some("main".to_string()),
+        commit_hash: Some(format!("load-progress-{}", std::process::id())),
+        is_dirty: false,
+        root_path: Some(temp_dir.path().join("repo")),
+    };
+    let challenges = vec![
+        Challenge::new("c1".to_string(), "fn one() {}".to_string()).with_source_info(
+            "src/lib.rs".to_string(),
+            1,
+            1,
+        ),
+        Challenge::new("c2".to_string(), "fn two() {}".to_string()).with_source_info(
+            "src/lib.rs".to_string(),
+            2,
+            2,
+        ),
+    ];
+
+    repository
+        .save_challenges(&git_repository, &challenges)
+        .unwrap();
+
+    let reporter = RecordingProgressReporter::default();
+    let loaded = repository
+        .load_challenges_with_progress(&git_repository, Some(&reporter))
+        .expect("saved challenges should reconstruct with progress reporting");
+
+    assert_eq!(loaded.len(), 2);
+
+    let calls = reporter.file_counts_calls.lock().unwrap();
+    assert_eq!(calls.len(), 2);
+    for (step_type, _processed, total, current_file) in calls.iter() {
+        assert_eq!(*step_type, StepType::CacheCheck);
+        assert_eq!(*total, 2);
+        assert!(current_file
+            .as_deref()
+            .unwrap_or("")
+            .starts_with("Reconstructing challenge"));
+    }
+    let processed_values: std::collections::HashSet<_> = calls
+        .iter()
+        .map(|(_, processed, _, _)| *processed)
+        .collect();
+    assert_eq!(processed_values, std::collections::HashSet::from([1, 2]));
+}
+
+#[test]
+fn load_challenges_returns_none_when_root_path_is_missing() {
+    let temp_dir = tempfile::tempdir().unwrap();
+    let repository = ChallengeRepository::new_for_test(
+        temp_dir.path().join("cache"),
+        Arc::new(FileStorage::new()),
+    );
+    let git_repository = GitRepository {
+        user_name: "test".to_string(),
+        repository_name: "repo".to_string(),
+        remote_url: "https://github.com/test/repo".to_string(),
+        branch: Some("main".to_string()),
+        commit_hash: Some(format!("load-no-root-{}", std::process::id())),
+        is_dirty: false,
+        root_path: None,
+    };
+    let challenge = Challenge::new("c".to_string(), "fn x() {}".to_string()).with_source_info(
+        "src/lib.rs".to_string(),
+        1,
+        1,
+    );
+
+    repository
+        .save_challenges(&git_repository, &[challenge])
+        .unwrap();
+
+    let loaded = repository.load_challenges_with_progress(&git_repository, None);
+    assert!(loaded.is_none());
 }

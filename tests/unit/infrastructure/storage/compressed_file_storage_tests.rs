@@ -161,6 +161,17 @@ mod mock_tests {
     }
 
     #[test]
+    fn compressed_file_storage_load_with_incompatible_type_returns_error() {
+        let storage = CompressedFileStorage::new();
+        let path = Path::new("/test/mismatched.bin");
+
+        storage.save::<()>(path, &()).unwrap();
+
+        let result: Result<Option<TestData>, _> = storage.load(path);
+        assert!(result.is_err());
+    }
+
+    #[test]
     fn compressed_file_storage_clone() {
         let storage = CompressedFileStorage::new();
         let data = TestData {

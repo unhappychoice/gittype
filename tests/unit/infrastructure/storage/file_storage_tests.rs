@@ -154,4 +154,30 @@ mod mock_tests {
 
         assert!(result.is_err());
     }
+
+    #[test]
+    fn file_storage_read_dir_returns_not_implemented_error() {
+        use std::path::Path;
+
+        let storage = FileStorage::new();
+        let result = storage.read_dir(Path::new("/test"));
+
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(matches!(
+            err,
+            gittype::GitTypeError::ExtractionFailed(message)
+                if message.contains("Mock read_dir not implemented")
+        ));
+    }
+
+    #[test]
+    fn file_storage_remove_dir_all_succeeds() {
+        use std::path::Path;
+
+        let storage = FileStorage::new();
+        let result = storage.remove_dir_all(Path::new("/test"));
+
+        assert!(result.is_ok());
+    }
 }

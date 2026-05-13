@@ -304,6 +304,16 @@ impl SessionManager {
         *self.git_repository.lock().unwrap() = git_repository;
     }
 
+    #[cfg(feature = "test-mocks")]
+    pub fn get_session_challenges_for_test(&self) -> Vec<Challenge> {
+        self.session_challenges.lock().unwrap().clone()
+    }
+
+    #[cfg(feature = "test-mocks")]
+    pub fn get_stage_trackers_for_test(&self) -> Vec<(String, StageTracker)> {
+        self.stage_trackers.lock().unwrap().clone()
+    }
+
     /// Add stage data (tracker and challenge) for the current stage
     pub fn add_stage_data(
         &self,

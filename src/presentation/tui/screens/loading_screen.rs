@@ -178,6 +178,22 @@ impl LoadingScreen {
             session_manager,
         }
     }
+
+    #[cfg(feature = "test-mocks")]
+    pub fn session_store_for_test(&self) -> Arc<dyn SessionStoreInterface> {
+        self.session_store.clone()
+    }
+
+    #[cfg(feature = "test-mocks")]
+    pub fn current_step_for_test(&self) -> StepType {
+        self.state
+            .read()
+            .unwrap()
+            .current_step
+            .read()
+            .unwrap()
+            .clone()
+    }
 }
 
 #[derive(Clone)]

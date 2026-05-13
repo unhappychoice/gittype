@@ -25,3 +25,15 @@ async fn trait_fetch_trending_repositories_uses_mock_data() {
 
     assert!(repositories.is_empty());
 }
+
+#[tokio::test]
+async fn default_constructs_a_usable_client() {
+    let client: OssInsightClient = Default::default();
+
+    let repositories = client
+        .fetch_trending_repositories(None, "monthly")
+        .await
+        .unwrap();
+
+    assert!(repositories.is_empty());
+}

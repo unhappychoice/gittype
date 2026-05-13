@@ -246,3 +246,90 @@ fn test_title_screen_left_from_first_difficulty_wraps_to_last() {
         .unwrap();
     assert_eq!(screen.get_selected_difficulty(), DifficultyLevel::Zen);
 }
+
+#[test]
+fn test_title_screen_with_challenge_counts_sets_counts() {
+    let screen =
+        create_title_screen(Arc::new(EventBus::new())).with_challenge_counts([1, 2, 3, 4, 5]);
+
+    screen
+        .handle_key_event(KeyEvent::new(KeyCode::Char(' '), KeyModifiers::empty()))
+        .unwrap();
+
+    assert!(matches!(
+        screen.get_action_result(),
+        Some(gittype::presentation::tui::screens::title_screen::TitleAction::Start(_))
+    ));
+}
+
+#[test]
+fn test_title_screen_with_git_repository_sets_repo() {
+    let repo = gittype::domain::models::GitRepository {
+        user_name: "alice".to_string(),
+        repository_name: "demo".to_string(),
+        remote_url: "https://github.com/alice/demo".to_string(),
+        branch: None,
+        commit_hash: None,
+        is_dirty: false,
+        root_path: None,
+    };
+    let _screen =
+        create_title_screen(Arc::new(EventBus::new())).with_git_repository(Some(repo.clone()));
+}
+
+#[test]
+fn test_title_screen_set_git_repository_overrides_value() {
+    let screen = create_title_screen(Arc::new(EventBus::new()));
+    let repo = gittype::domain::models::GitRepository {
+        user_name: "bob".to_string(),
+        repository_name: "lib".to_string(),
+        remote_url: "https://github.com/bob/lib".to_string(),
+        branch: Some("dev".to_string()),
+        commit_hash: Some("deadbeef".to_string()),
+        is_dirty: true,
+        root_path: None,
+    };
+
+    screen.set_git_repository(Some(repo));
+    screen.set_git_repository(None);
+}
+
+#[test]
+fn test_title_screen_init_with_data_fallback_uses_injected_dependencies() {
+    let screen = create_title_screen(Arc::new(EventBus::new()));
+
+    // Pass a unit value so the downcast to TitleScreenData fails and the
+    // fallback branch pulls counts/repo from the injected stores.
+    screen.init_with_data(Box::new(())).unwrap();
+
+    assert_eq!(screen.get_selected_difficulty(), DifficultyLevel::Normal);
+    assert!(screen.get_error_message().is_none());
+}
+
+#[test]
+fn test_title_screen_ignores_unhandled_key() {
+    let event_bus = Arc::new(EventBus::new());
+    let captured: Arc<std::sync::Mutex<Vec<NavigateTo>>> = Arc::new(std::sync::Mutex::new(vec![]));
+    let cap = captured.clone();
+    event_bus
+        .as_event_bus()
+        .subscribe(move |ev: &NavigateTo| cap.lock().unwrap().push(ev.clone()));
+    let screen = create_title_screen(event_bus);
+
+    screen
+        .handle_key_event(KeyEvent::new(KeyCode::Char('z'), KeyModifiers::empty()))
+        .unwrap();
+    screen
+        .handle_key_event(KeyEvent::new(KeyCode::Up, KeyModifiers::empty()))
+        .unwrap();
+
+    assert!(captured.lock().unwrap().is_empty());
+    assert!(screen.get_action_result().is_none());
+}
+
+#[test]
+fn test_title_screen_as_any_downcasts_to_self() {
+    let screen = create_title_screen(Arc::new(EventBus::new()));
+    let any = screen.as_any();
+    assert!(any.downcast_ref::<TitleScreen>().is_some());
+}

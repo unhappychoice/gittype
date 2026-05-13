@@ -237,3 +237,118 @@ fn test_stage_summary_screen_space_defaults_to_animation_for_non_concrete_sessio
         NavigateTo::Replace(gittype::presentation::tui::ScreenType::Animation)
     ));
 }
+
+#[test]
+fn test_stage_summary_screen_with_result_seeds_stage_result() {
+    let screen = create_stage_summary_screen(Arc::new(EventBus::new())).with_result(stage_result());
+
+    let stored = screen.stage_result.read().unwrap();
+    assert!(stored.is_some());
+    assert_eq!(stored.as_ref().unwrap().keystrokes, 42);
+}
+
+#[test]
+fn test_stage_summary_screen_set_stage_result_updates_state() {
+    let screen = create_stage_summary_screen(Arc::new(EventBus::new()));
+
+    screen.set_stage_result(stage_result());
+
+    let stored = screen.stage_result.read().unwrap();
+    assert!(stored.is_some());
+    assert_eq!(stored.as_ref().unwrap().mistakes, 1);
+}
+
+#[test]
+fn test_stage_summary_screen_init_without_data_falls_back_to_session_manager_defaults() {
+    let screen = create_stage_summary_screen(Arc::new(EventBus::new()));
+
+    screen.init_with_data(Box::new(())).unwrap();
+
+    assert!(screen.stage_result.read().unwrap().is_none());
+    assert!(screen.get_action_result().is_none());
+}
+
+#[test]
+fn test_stage_summary_screen_render_without_stage_result_is_noop() {
+    let screen = create_stage_summary_screen(Arc::new(EventBus::new()));
+
+    let backend = TestBackend::new(80, 24);
+    let mut terminal = Terminal::new(backend).unwrap();
+    terminal
+        .draw(|frame| {
+            screen.render_ratatui(frame).unwrap();
+        })
+        .unwrap();
+
+    let output = buffer_text(terminal.backend().buffer());
+    assert!(!output.contains("STAGE"));
+    assert!(!output.contains("Next stage starting..."));
+}
+
+#[test]
+fn test_stage_summary_screen_renders_next_stage_when_not_completed() {
+    let screen = create_stage_summary_screen(Arc::new(EventBus::new()));
+    screen
+        .init_with_data(Box::new(StageSummaryData {
+            stage_result: stage_result(),
+            current_stage: 2,
+            total_stages: 3,
+            is_completed: false,
+        }))
+        .unwrap();
+
+    let backend = TestBackend::new(120, 40);
+    let mut terminal = Terminal::new(backend).unwrap();
+    terminal
+        .draw(|frame| {
+            screen.render_ratatui(frame).unwrap();
+        })
+        .unwrap();
+
+    let output = buffer_text(terminal.backend().buffer());
+    assert!(output.contains("Next stage starting..."));
+    assert!(output.contains("Stage 1 of 3"));
+}
+
+#[test]
+fn test_stage_summary_screen_records_quit_action_on_ctrl_c() {
+    let screen = create_stage_summary_screen(Arc::new(EventBus::new()));
+
+    screen
+        .handle_key_event(KeyEvent::new(KeyCode::Char('c'), KeyModifiers::CONTROL))
+        .unwrap();
+
+    assert!(matches!(
+        screen.get_action_result(),
+        Some(ResultAction::Quit)
+    ));
+}
+
+#[test]
+fn test_stage_summary_screen_unhandled_key_publishes_no_event_and_no_action() {
+    let event_bus = Arc::new(EventBus::new());
+    let published_events = Arc::new(Mutex::new(Vec::<NavigateTo>::new()));
+    let observed_events = Arc::clone(&published_events);
+    let screen = create_stage_summary_screen(event_bus.clone());
+
+    event_bus.subscribe(move |event: &NavigateTo| {
+        observed_events.lock().unwrap().push(event.clone());
+    });
+
+    screen
+        .handle_key_event(KeyEvent::new(KeyCode::Char('x'), KeyModifiers::empty()))
+        .unwrap();
+
+    assert!(published_events.lock().unwrap().is_empty());
+    assert!(screen.get_action_result().is_none());
+}
+
+#[test]
+fn test_stage_summary_screen_as_any_downcasts_to_concrete_type() {
+    let screen = create_stage_summary_screen(Arc::new(EventBus::new()));
+
+    assert!(screen
+        .as_any()
+        .downcast_ref::<StageSummaryScreen>()
+        .is_some());
+}

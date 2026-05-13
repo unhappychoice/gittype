@@ -1,8 +1,10 @@
 #[cfg(test)]
 mod tests {
     use git2::{Repository, Signature};
+    use gittype::infrastructure::git::local::local_git_repository_client::LocalGitRepositoryClientInterface;
     use gittype::infrastructure::git::LocalGitRepositoryClient;
     use gittype::GitTypeError;
+    use std::sync::Arc;
 
     fn commit_file(repo: &Repository, name: &str, content: &str) -> String {
         let workdir = repo.workdir().unwrap();
@@ -148,5 +150,134 @@ mod tests {
             git_repository.root_path,
             Some(temp_dir.path().to_path_buf())
         );
+    }
+
+    #[test]
+    fn test_extract_git_repository_returns_error_when_origin_missing() {
+        let temp_dir = tempfile::TempDir::new().unwrap();
+        let repo = Repository::init(temp_dir.path()).unwrap();
+        commit_file(&repo, "README.md", "hello");
+
+        let client = LocalGitRepositoryClient::new();
+        let result = client.extract_git_repository(temp_dir.path());
+
+        let message = match result {
+            Err(GitTypeError::ExtractionFailed(msg)) => msg,
+            other => panic!("expected ExtractionFailed, got {:?}", other),
+        };
+        assert!(
+            message.starts_with("Failed to find origin remote"),
+            "unexpected message: {message}"
+        );
+    }
+
+    #[test]
+    fn test_extract_git_repository_returns_error_for_unparseable_remote_url() {
+        let temp_dir = tempfile::TempDir::new().unwrap();
+        let repo = Repository::init(temp_dir.path()).unwrap();
+        repo.remote("origin", "not-a-valid-remote-url").unwrap();
+        commit_file(&repo, "README.md", "hello");
+
+        let client = LocalGitRepositoryClient::new();
+        let result = client.extract_git_repository(temp_dir.path());
+
+        assert!(matches!(
+            result,
+            Err(GitTypeError::ExtractionFailed(msg))
+            if msg == "Failed to parse remote URL"
+        ));
+    }
+
+    #[test]
+    fn test_extract_git_repository_reports_dirty_working_tree() {
+        let temp_dir = tempfile::TempDir::new().unwrap();
+        let repo = Repository::init(temp_dir.path()).unwrap();
+        repo.remote("origin", "https://github.com/octocat/hello-world.git")
+            .unwrap();
+        commit_file(&repo, "README.md", "hello");
+        std::fs::write(temp_dir.path().join("dirty.txt"), "uncommitted").unwrap();
+
+        let client = LocalGitRepositoryClient::new();
+        let git_repository = client.extract_git_repository(temp_dir.path()).unwrap();
+
+        assert!(
+            git_repository.is_dirty,
+            "expected uncommitted file to mark repository as dirty"
+        );
+    }
+
+    #[test]
+    fn test_create_from_local_path_uses_origin_url_when_available() {
+        let temp_dir = tempfile::TempDir::new().unwrap();
+        let repo = Repository::init(temp_dir.path()).unwrap();
+        repo.remote("origin", "https://github.com/octocat/hello-world.git")
+            .unwrap();
+        let commit_hash = commit_file(&repo, "README.md", "hello");
+
+        let client = LocalGitRepositoryClient::new();
+        let git_repository = client.create_from_local_path(temp_dir.path()).unwrap();
+
+        assert_eq!(git_repository.user_name, "octocat");
+        assert_eq!(git_repository.repository_name, "hello-world");
+        assert_eq!(
+            git_repository.remote_url,
+            "https://github.com/octocat/hello-world.git"
+        );
+        assert_eq!(git_repository.commit_hash, Some(commit_hash));
+        assert!(git_repository.branch.is_some());
+        assert!(!git_repository.is_dirty);
+    }
+
+    #[test]
+    fn test_create_from_local_path_falls_back_to_unknown_for_unparseable_origin() {
+        let temp_dir = tempfile::TempDir::new().unwrap();
+        let repo = Repository::init(temp_dir.path()).unwrap();
+        repo.remote("origin", "totally-bogus-origin").unwrap();
+
+        let client = LocalGitRepositoryClient::new();
+        let git_repository = client.create_from_local_path(temp_dir.path()).unwrap();
+
+        assert_eq!(git_repository.user_name, "unknown");
+        assert_eq!(git_repository.repository_name, "unknown");
+        assert_eq!(git_repository.remote_url, "totally-bogus-origin");
+    }
+
+    #[test]
+    fn test_create_from_local_path_returns_error_for_non_git_directory() {
+        let temp_dir = tempfile::TempDir::new().unwrap();
+
+        let client = LocalGitRepositoryClient::new();
+        let result = client.create_from_local_path(temp_dir.path());
+
+        assert!(matches!(
+            result,
+            Err(GitTypeError::ExtractionFailed(msg))
+            if msg.starts_with("Failed to open git repository")
+        ));
+    }
+
+    #[test]
+    fn test_interface_dispatch_delegates_to_inherent_methods() {
+        let temp_dir = tempfile::TempDir::new().unwrap();
+        let repo = Repository::init(temp_dir.path()).unwrap();
+        repo.remote("origin", "https://github.com/octocat/hello-world.git")
+            .unwrap();
+        commit_file(&repo, "README.md", "hello");
+
+        let client: Arc<dyn LocalGitRepositoryClientInterface> =
+            Arc::new(LocalGitRepositoryClient::new());
+
+        assert!(client.is_git_repository(temp_dir.path()));
+
+        let nested = temp_dir.path().join("nested");
+        std::fs::create_dir_all(&nested).unwrap();
+        assert_eq!(
+            client.get_repository_root(&nested),
+            Some(temp_dir.path().to_path_buf())
+        );
+
+        let git_repository = client.extract_git_repository(temp_dir.path()).unwrap();
+        assert_eq!(git_repository.user_name, "octocat");
+        assert_eq!(git_repository.repository_name, "hello-world");
     }
 }

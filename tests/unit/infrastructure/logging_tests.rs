@@ -1,5 +1,6 @@
 use gittype::infrastructure::logging::{
-    get_environment_context, get_log_directory, log_error_to_file, setup_console_logging,
+    get_current_log_file_path, get_environment_context, get_log_directory, log_error_to_file,
+    log_panic_to_file, setup_console_logging,
 };
 use gittype::GitTypeError;
 use std::path::{Path, PathBuf};
@@ -7,6 +8,7 @@ use std::sync::Mutex;
 use tempfile::TempDir;
 
 static CURRENT_DIR_LOCK: Mutex<()> = Mutex::new(());
+static PANIC_HOOK_LOCK: Mutex<()> = Mutex::new(());
 
 struct CurrentDirGuard {
     original: PathBuf,
@@ -143,4 +145,114 @@ fn log_error_to_file_writes_error_log_in_logs_directory() {
 
     assert!(log_content.contains("ERROR MESSAGE: Validation error: coverage validation failure"));
     assert!(log_content.contains("WORKING_DIR:"));
+}
+
+#[test]
+fn log_error_to_file_falls_back_to_cwd_when_logs_dir_is_missing() {
+    let _lock = CURRENT_DIR_LOCK.lock().unwrap();
+    let temp_dir = TempDir::new().unwrap();
+    let _guard = CurrentDirGuard::enter(temp_dir.path());
+
+    log_error_to_file(&GitTypeError::ValidationError(
+        "fallback path test".to_string(),
+    ));
+
+    let fallback_log = std::fs::read_dir(temp_dir.path())
+        .unwrap()
+        .filter_map(|entry| entry.ok().map(|entry| entry.path()))
+        .find(|path| {
+            path.file_name()
+                .and_then(|name| name.to_str())
+                .is_some_and(|name| name.starts_with("gittype_error_") && name.ends_with(".log"))
+        });
+
+    assert!(
+        fallback_log.is_some(),
+        "expected gittype_error_*.log in cwd when logs/ directory is absent"
+    );
+
+    let log_content = std::fs::read_to_string(fallback_log.unwrap()).unwrap();
+    assert!(log_content.contains("ERROR MESSAGE: Validation error: fallback path test"));
+}
+
+#[test]
+fn log_error_to_file_writes_chained_source_errors() {
+    let _lock = CURRENT_DIR_LOCK.lock().unwrap();
+    let temp_dir = TempDir::new().unwrap();
+    let logs_dir = temp_dir.path().join("logs");
+    std::fs::create_dir_all(&logs_dir).unwrap();
+    let _guard = CurrentDirGuard::enter(temp_dir.path());
+
+    let io_err = std::io::Error::other("underlying io failure");
+    log_error_to_file(&GitTypeError::IoError(io_err));
+
+    let log_path = std::fs::read_dir(&logs_dir)
+        .unwrap()
+        .filter_map(|entry| entry.ok().map(|entry| entry.path()))
+        .find(|path| {
+            path.file_name()
+                .and_then(|name| name.to_str())
+                .is_some_and(|name| name.starts_with("error_") && name.ends_with(".log"))
+        })
+        .expect("error log file should exist in logs/");
+    let log_content = std::fs::read_to_string(log_path).unwrap();
+
+    assert!(log_content.contains("CAUSED BY (level 1)"));
+    assert!(log_content.contains("underlying io failure"));
+}
+
+#[test]
+fn get_current_log_file_path_returns_optional_string() {
+    // `setup_logging` may or may not have been called by earlier tests in this
+    // process; either way `get_current_log_file_path` must return without
+    // panicking and yield an `Option<String>`.
+    if let Some(p) = get_current_log_file_path() {
+        assert!(!p.is_empty());
+    }
+}
+
+type BoxedPanicHook = Box<dyn Fn(&std::panic::PanicHookInfo<'_>) + Send + Sync + 'static>;
+
+struct PanicHookGuard {
+    original: Option<BoxedPanicHook>,
+}
+
+impl Drop for PanicHookGuard {
+    fn drop(&mut self) {
+        if let Some(hook) = self.original.take() {
+            std::panic::set_hook(hook);
+        }
+    }
+}
+
+fn run_with_panic_hook<F>(body: F)
+where
+    F: FnOnce() + std::panic::UnwindSafe,
+{
+    let _lock = PANIC_HOOK_LOCK.lock().unwrap();
+    let original = std::panic::take_hook();
+    let guard = PanicHookGuard {
+        original: Some(original),
+    };
+    std::panic::set_hook(Box::new(|info| {
+        log_panic_to_file(info);
+    }));
+    let _ = std::panic::catch_unwind(body);
+    drop(guard);
+}
+
+#[test]
+fn log_panic_to_file_handles_str_payload() {
+    run_with_panic_hook(|| panic!("static-str panic payload"));
+}
+
+#[test]
+fn log_panic_to_file_handles_string_payload() {
+    let dynamic = String::from("dynamic");
+    run_with_panic_hook(move || panic!("formatted {} panic", dynamic));
+}
+
+#[test]
+fn log_panic_to_file_handles_non_string_payload() {
+    run_with_panic_hook(|| std::panic::panic_any(42_u32));
 }

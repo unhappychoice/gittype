@@ -223,3 +223,16 @@ fn ascii_theme_uses_ascii_language_colors() {
         let _ = color;
     }
 }
+
+#[test]
+fn get_color_for_language_picks_ascii_key_when_current_theme_is_ascii() {
+    let ascii_theme = Theme::all_themes()
+        .into_iter()
+        .find(|t| t.id == "ascii")
+        .expect("ascii theme exists");
+    let manager = ThemeService::new_for_test(ascii_theme, ColorMode::Dark);
+
+    let color = manager.get_color_for_language("rust");
+
+    assert_eq!(color, ratatui::style::Color::White);
+}

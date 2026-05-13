@@ -1,0 +1,45 @@
+---
+source: tests/integration/screens/panic_screen_test.rs
+assertion_line: 96
+expression: output
+---
+                                                                                                                        
+                                                 💥  APPLICATION PANIC 💥                                                 
+                                                                                                                        
+                                    We sincerely apologize for this unexpected error.                                   
+                            Progress is saved per session. Current session data may be lost.                            
+                                                                                                                        
+┌Help──────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                                                      │
+│                                                   📋  Logs saved to:                                                  │
+│                                      ~/.gittype/logs/gittype_YYYYMMDD_HHMMSS.log                                     │
+│                                                                                                                      │
+│                                                 🐛  Report this issue:                                                │
+│                                    https://github.com/unhappychoice/gittype/issues                                   │
+│                                                                                                                      │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌Error Details─────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                                                      │
+│ Time:                                                                                                                │
+│ SystemTime { tv_sec: 1700000000, tv_nsec: 0 }                                                                        │
+│                                                                                                                      │
+│ Panic Message:                                                                                                       │
+│ boom!                                                                                                                │
+│                                                                                                                      │
+│ Location:                                                                                                            │
+│ src/foo.rs:42:10                                                                                                     │
+│ trailing                                                                                                             │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                       [ESC] Exit
