@@ -2,6 +2,7 @@ pub mod best_records_view_tests;
 pub mod difficulty_selection_view_tests;
 pub mod loading_description_view_tests;
 pub mod loading_progress_view_tests;
+pub mod performance_metrics_view_tests;
 pub mod rank_view_tests;
 pub mod records_screen_tests;
 pub mod score_view_tests;
