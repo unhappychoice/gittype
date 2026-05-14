@@ -104,6 +104,21 @@ mod tests {
     }
 
     #[test]
+    fn test_extract_git_repository_returns_error_for_invalid_git_directory() {
+        let temp_dir = tempfile::TempDir::new().unwrap();
+        std::fs::create_dir_all(temp_dir.path().join(".git")).unwrap();
+
+        let client = LocalGitRepositoryClient::new();
+        let result = client.extract_git_repository(temp_dir.path());
+
+        assert!(matches!(
+            result,
+            Err(GitTypeError::ExtractionFailed(message))
+                if message.starts_with("Failed to open git repository")
+        ));
+    }
+
+    #[test]
     fn test_extract_git_repository_reads_origin_branch_commit_and_status() {
         let temp_dir = tempfile::TempDir::new().unwrap();
         let repo = Repository::init(temp_dir.path()).unwrap();
