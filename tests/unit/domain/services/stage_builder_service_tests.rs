@@ -1,9 +1,17 @@
+use gittype::domain::events::EventBus;
 use gittype::domain::models::{Challenge, DifficultyLevel, GameMode, StageConfig};
+use gittype::domain::services::scoring::{
+    SessionTracker, SessionTrackerInterface, TotalTracker, TotalTrackerInterface,
+};
 use gittype::domain::services::stage_builder_service::{StageRepository, StageRepositoryInterface};
+use gittype::domain::services::SessionManager;
 use gittype::domain::stores::{
     ChallengeStore, ChallengeStoreInterface, RepositoryStore, RepositoryStoreInterface,
     SessionStore, SessionStoreInterface,
 };
+use gittype::presentation::tui::ScreenManagerImpl;
+use ratatui::backend::TestBackend;
+use ratatui::Terminal;
 use std::sync::Arc;
 
 use crate::fixtures::models::challenge;
@@ -43,6 +51,36 @@ fn create_repository_with_config(
         challenge_store,
         Arc::new(RepositoryStore::new_for_test()),
         Arc::new(SessionStore::new_for_test()),
+    )
+}
+
+fn create_screen_manager() -> ScreenManagerImpl<TestBackend> {
+    let event_bus = Arc::new(EventBus::new());
+    let challenge_store = create_challenge_store();
+    let repository_store = Arc::new(RepositoryStore::new_for_test());
+    let session_store = Arc::new(SessionStore::new_for_test());
+    let stage_repository = Arc::new(StageRepository::new(
+        None,
+        challenge_store,
+        repository_store.clone(),
+        session_store.clone(),
+    )) as Arc<dyn StageRepositoryInterface>;
+    let session_tracker: Arc<dyn SessionTrackerInterface> = Arc::new(SessionTracker::default());
+    let total_tracker: Arc<dyn TotalTrackerInterface> = Arc::new(TotalTracker::default());
+    let session_manager = Arc::new(SessionManager::new_with_dependencies(
+        event_bus.clone(),
+        stage_repository.clone(),
+        session_tracker,
+        total_tracker,
+    ));
+    let terminal = Terminal::new(TestBackend::new(80, 24)).unwrap();
+
+    ScreenManagerImpl::new(
+        event_bus,
+        session_store,
+        session_manager,
+        stage_repository,
+        terminal,
     )
 }
 
@@ -422,6 +460,17 @@ fn test_get_mode_description_custom_without_time_limit() {
     assert!(!desc.contains("limit"));
 }
 
+#[test]
+fn test_update_title_screen_data_skips_before_indices_are_cached() {
+    let cs = create_challenge_store();
+    let repo = create_repository(cs);
+    let mut manager = create_screen_manager();
+
+    let result = repo.update_title_screen_data(&mut manager);
+
+    assert!(result.is_ok());
+}
+
 // === count_challenges_by_difficulty ===
 
 #[test]
@@ -450,6 +499,22 @@ fn test_count_challenges_by_difficulty_from_store() {
     let counts = repo.count_challenges_by_difficulty();
     // [Easy, Normal, Hard, Wild, Zen]
     assert_eq!(counts, [2, 1, 1, 2, 1]);
+}
+
+#[test]
+fn test_count_challenges_by_difficulty_defaults_missing_difficulty_to_easy() {
+    let cs = create_challenge_store();
+    cs.set_challenges(vec![
+        Challenge::new("missing".to_string(), "code".to_string()).with_language("rust".to_string()),
+        Challenge::new("normal".to_string(), "code".to_string())
+            .with_language("rust".to_string())
+            .with_difficulty_level(DifficultyLevel::Normal),
+    ]);
+    let repo = create_repository(cs);
+
+    let counts = repo.count_challenges_by_difficulty();
+
+    assert_eq!(counts, [1, 1, 0, 0, 0]);
 }
 
 #[test]
