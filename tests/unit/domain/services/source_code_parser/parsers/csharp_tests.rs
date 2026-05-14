@@ -321,3 +321,32 @@ fn extract_name_for_field_capture_returns_none_when_no_variable_declaration_chil
 
     assert_eq!(name, None);
 }
+
+#[test]
+fn extract_name_for_field_capture_returns_none_for_leaf_node() {
+    let source = "1\n";
+    let tree = parse_csharp(source);
+    let leaf = first_leaf(tree.root_node());
+
+    let name = CSharpExtractor.extract_name(leaf, source, "field");
+
+    assert_eq!(name, None);
+}
+
+#[test]
+fn extract_name_for_namespace_capture_returns_none_for_leaf_node() {
+    let source = "1\n";
+    let tree = parse_csharp(source);
+    let leaf = first_leaf(tree.root_node());
+
+    let name = CSharpExtractor.extract_name(leaf, source, "namespace");
+
+    assert_eq!(name, None);
+}
+
+fn first_leaf<'tree>(node: Node<'tree>) -> Node<'tree> {
+    if node.child_count() == 0 {
+        return node;
+    }
+    first_leaf(node.child(0).unwrap())
+}
