@@ -274,6 +274,16 @@ fn get_display_title_falls_back_to_original_path_when_filename_is_missing() {
     assert_eq!(title, "/");
 }
 
+#[test]
+fn get_display_title_uses_filename_when_path_has_no_parent() {
+    let mut challenge = Challenge::new("test-id".to_string(), "code".to_string());
+    challenge.source_file_path = Some("main.rs".to_string());
+
+    let title = challenge.get_display_title();
+
+    assert_eq!(title, "main.rs");
+}
+
 fn make_code_chunk(content: &str) -> CodeChunk {
     CodeChunk {
         content: content.to_string(),
