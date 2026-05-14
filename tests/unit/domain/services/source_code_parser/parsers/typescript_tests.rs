@@ -86,6 +86,13 @@ fn middle_implementation_query_returns_non_empty() {
 }
 
 #[test]
+fn middle_capture_name_to_chunk_type_returns_none_for_unknown_capture() {
+    let extractor = TypeScriptExtractor;
+
+    assert_eq!(extractor.middle_capture_name_to_chunk_type("unknown"), None);
+}
+
+#[test]
 fn extract_name_reads_arrow_function_variable_name() {
     let extractor = TypeScriptExtractor;
     let source = "const greet = () => 1;\n";
@@ -95,6 +102,19 @@ fn extract_name_reads_arrow_function_variable_name() {
     assert_eq!(
         extractor.extract_name(declarator, source, "arrow_function"),
         Some("greet".to_string())
+    );
+}
+
+#[test]
+fn extract_name_returns_none_for_destructured_arrow_function_name() {
+    let extractor = TypeScriptExtractor;
+    let source = "const { greet } = () => 1;\n";
+    let tree = parse_typescript(source);
+    let declarator = find_first_node(tree.root_node(), "variable_declarator").unwrap();
+
+    assert_eq!(
+        extractor.extract_name(declarator, source, "arrow_function"),
+        None
     );
 }
 

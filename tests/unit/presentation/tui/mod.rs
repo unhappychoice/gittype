@@ -1,3 +1,4 @@
+pub mod analytics_repositories_view_tests;
 pub mod best_records_view_tests;
 pub mod difficulty_selection_view_tests;
 pub mod git_repository_view_tests;
