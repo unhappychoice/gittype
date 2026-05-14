@@ -23,6 +23,19 @@ fn compressed_file_storage_default() {
 #[cfg(feature = "test-mocks")]
 mod mock_tests {
     use super::*;
+    use gittype::GitTypeError;
+    use serde::ser::{Error, Serializer};
+
+    struct FailingSerialize;
+
+    impl Serialize for FailingSerialize {
+        fn serialize<S>(&self, _serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            Err(S::Error::custom("forced serialization failure"))
+        }
+    }
 
     #[test]
     fn compressed_file_storage_save_and_load() {
@@ -158,6 +171,22 @@ mod mock_tests {
         // Load should return second version
         let loaded: Option<TestData> = storage.load(path).unwrap();
         assert_eq!(loaded.unwrap(), data2);
+    }
+
+    #[test]
+    fn compressed_file_storage_save_returns_error_when_serialization_fails() {
+        let storage = CompressedFileStorage::new();
+        let path = Path::new("/test/failing.bin");
+
+        let result = storage.save(path, &FailingSerialize);
+
+        assert!(matches!(
+            result,
+            Err(GitTypeError::ExtractionFailed(message))
+            if message.contains("Failed to serialize data")
+                && message.contains("forced serialization failure")
+        ));
+        assert!(!storage.file_exists(path));
     }
 
     #[test]
