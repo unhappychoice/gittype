@@ -29,6 +29,35 @@ fn buffer_text(buffer: &Buffer) -> String {
 }
 
 #[test]
+fn default_creates_renderable_view() {
+    let code = "";
+    let challenge = Challenge::new("default-view".to_string(), code.to_string());
+    let typing_core = TypingCore::from_challenge(&challenge, Some(ProcessingOptions::default()));
+    let context = CodeContext::default();
+    let colors = test_colors();
+    let mut view = TypingContentView::default();
+    let backend = TestBackend::new(30, 8);
+    let mut terminal = Terminal::new(backend).unwrap();
+
+    terminal
+        .draw(|frame| {
+            view.render(
+                frame,
+                Rect::new(0, 0, 30, 8),
+                true,
+                Some(&challenge),
+                &typing_core,
+                &[],
+                &context,
+                &colors,
+            );
+        })
+        .unwrap();
+
+    assert!(buffer_text(terminal.backend().buffer()).contains("Code"));
+}
+
+#[test]
 fn test_calculate_scroll_offset() {
     assert_eq!(TypingContentView::calculate_scroll_offset(20, 100, 10), 0);
     assert_eq!(TypingContentView::calculate_scroll_offset(20, 100, 15), 5);
