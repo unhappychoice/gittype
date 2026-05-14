@@ -95,6 +95,34 @@ fn middle_capture_name_to_chunk_type_conditional() {
 }
 
 #[test]
+fn middle_capture_name_to_chunk_type_error_handling_blocks() {
+    let extractor = RubyExtractor;
+
+    assert_eq!(
+        extractor.middle_capture_name_to_chunk_type("begin_block"),
+        Some(ChunkType::ErrorHandling)
+    );
+    assert_eq!(
+        extractor.middle_capture_name_to_chunk_type("rescue_block"),
+        Some(ChunkType::ErrorHandling)
+    );
+}
+
+#[test]
+fn middle_capture_name_to_chunk_type_lambda_and_code_block() {
+    let extractor = RubyExtractor;
+
+    assert_eq!(
+        extractor.middle_capture_name_to_chunk_type("lambda"),
+        Some(ChunkType::Lambda)
+    );
+    assert_eq!(
+        extractor.middle_capture_name_to_chunk_type("code_block"),
+        Some(ChunkType::CodeBlock)
+    );
+}
+
+#[test]
 fn middle_capture_name_to_chunk_type_unknown() {
     let extractor = RubyExtractor;
     assert_eq!(extractor.middle_capture_name_to_chunk_type("unknown"), None);
@@ -135,6 +163,32 @@ fn extract_name_returns_unknown_attr_when_accessor_has_no_symbols() {
 
     assert_eq!(
         extractor.extract_name(call, source, "attr_accessor"),
+        Some("unknown_attr".to_string())
+    );
+}
+
+#[test]
+fn extract_name_returns_unknown_attr_for_non_accessor_call() {
+    let extractor = RubyExtractor;
+    let source = "puts \"name\"\n";
+    let tree = parse_ruby(source);
+    let call = find_first_node(tree.root_node(), "call").unwrap();
+
+    assert_eq!(
+        extractor.extract_name(call, source, "attr_accessor"),
+        Some("unknown_attr".to_string())
+    );
+}
+
+#[test]
+fn extract_name_returns_unknown_attr_for_leaf_node() {
+    let extractor = RubyExtractor;
+    let source = "42\n";
+    let tree = parse_ruby(source);
+    let integer = find_first_node(tree.root_node(), "integer").unwrap();
+
+    assert_eq!(
+        extractor.extract_name(integer, source, "attr_accessor"),
         Some("unknown_attr".to_string())
     );
 }
