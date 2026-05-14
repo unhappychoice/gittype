@@ -16,6 +16,7 @@ pub mod stage_results_view_tests;
 pub mod total_summary_ascii_score_view_tests;
 pub mod total_summary_share_screen_tests;
 pub mod total_summary_share_sharing_view_tests;
+pub mod trending_repository_list_view_tests;
 pub mod typing_animation_view_tests;
 pub mod typing_countdown_view_tests;
 pub mod typing_dialog_view_tests;
