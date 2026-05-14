@@ -1,5 +1,6 @@
 pub mod best_records_view_tests;
 pub mod difficulty_selection_view_tests;
+pub mod git_repository_view_tests;
 pub mod loading_description_view_tests;
 pub mod loading_progress_view_tests;
 pub mod performance_metrics_view_tests;
@@ -10,6 +11,7 @@ pub mod screen_manager_tests;
 pub mod screen_trait_tests;
 pub mod screen_transition_manager_tests;
 pub mod stage_details_view_tests;
+pub mod stage_results_view_tests;
 pub mod total_summary_ascii_score_view_tests;
 pub mod total_summary_share_screen_tests;
 pub mod total_summary_share_sharing_view_tests;
