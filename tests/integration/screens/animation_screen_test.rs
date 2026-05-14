@@ -229,6 +229,14 @@ fn get_type_returns_animation_screen_type() {
 }
 
 #[test]
+fn as_any_downcasts_to_animation_screen() {
+    let event_bus = Arc::new(EventBus::new());
+    let screen = create_animation_screen(event_bus);
+
+    assert!(screen.as_any().downcast_ref::<AnimationScreen>().is_some());
+}
+
+#[test]
 fn get_update_strategy_is_time_based() {
     let event_bus = Arc::new(EventBus::new());
     let screen = create_animation_screen(event_bus);
