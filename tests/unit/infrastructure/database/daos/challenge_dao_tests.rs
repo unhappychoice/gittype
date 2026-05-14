@@ -126,6 +126,26 @@ fn test_ensure_challenge_with_comment_ranges() {
 }
 
 #[test]
+fn ensure_challenge_returns_error_when_insert_schema_is_invalid() {
+    let db_impl = Database::new().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = ChallengeDao::new(Arc::clone(&db));
+    let conn = db.get_connection().unwrap();
+
+    conn.execute("DROP TABLE challenges", []).unwrap();
+    conn.execute("CREATE TABLE challenges (id TEXT PRIMARY KEY)", [])
+        .unwrap();
+
+    let tx = conn.unchecked_transaction().unwrap();
+    let challenge = Challenge::new("schema-error".to_string(), "fn test() {}".to_string());
+    let error = dao
+        .ensure_challenge_in_transaction(&tx, &challenge)
+        .unwrap_err();
+
+    assert!(error.to_string().contains("file_path"));
+}
+
+#[test]
 fn test_ensure_multiple_challenges_in_transaction() {
     let db_impl = Database::new().unwrap();
     db_impl.init().unwrap();
