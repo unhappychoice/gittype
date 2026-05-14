@@ -1,6 +1,25 @@
 use gittype::domain::models::ChunkType;
 use gittype::domain::services::source_code_parser::parsers::go::GoExtractor;
 use gittype::domain::services::source_code_parser::parsers::LanguageExtractor;
+use tree_sitter::Node;
+
+fn parse_go(source: &str) -> tree_sitter::Tree {
+    let mut parser = GoExtractor::create_parser().unwrap();
+    parser.parse(source, None).unwrap()
+}
+
+fn find_node<'tree>(node: Node<'tree>, kind: &str) -> Option<Node<'tree>> {
+    if node.kind() == kind {
+        return Some(node);
+    }
+    (0..node.named_child_count())
+        .filter_map(|index| node.named_child(index))
+        .find_map(|child| find_node(child, kind))
+}
+
+fn first_leaf(node: Node) -> Node {
+    node.named_child(0).map_or(node, first_leaf)
+}
 
 #[test]
 fn create_parser_succeeds() {
@@ -81,4 +100,51 @@ fn middle_capture_name_to_chunk_type_conditional() {
 fn middle_capture_name_to_chunk_type_unknown() {
     let extractor = GoExtractor;
     assert_eq!(extractor.middle_capture_name_to_chunk_type("unknown"), None);
+}
+
+#[test]
+fn extract_name_for_const_block_returns_single_identifier() {
+    let source = "package main\nconst answer = 42\n";
+    let tree = parse_go(source);
+    let declaration =
+        find_node(tree.root_node(), "const_declaration").expect("expected const_declaration");
+
+    let name = GoExtractor.extract_name(declaration, source, "const_block");
+
+    assert_eq!(name.as_deref(), Some("answer"));
+}
+
+#[test]
+fn extract_name_for_const_block_summarizes_multiple_identifiers() {
+    let source = "package main\nconst (\nAlpha = 1\nBeta = 2\n)\n";
+    let tree = parse_go(source);
+    let declaration =
+        find_node(tree.root_node(), "const_declaration").expect("expected const_declaration");
+
+    let name = GoExtractor.extract_name(declaration, source, "const_block");
+
+    assert_eq!(name.as_deref(), Some("Alpha, Beta (2)"));
+}
+
+#[test]
+fn extract_name_for_var_block_returns_single_identifier() {
+    let source = "package main\nvar total int\n";
+    let tree = parse_go(source);
+    let declaration =
+        find_node(tree.root_node(), "var_declaration").expect("expected var_declaration");
+
+    let name = GoExtractor.extract_name(declaration, source, "var_block");
+
+    assert_eq!(name.as_deref(), Some("total"));
+}
+
+#[test]
+fn extract_name_for_const_block_without_specs_returns_fallback_name() {
+    let source = "package main\nconst answer = 42\n";
+    let tree = parse_go(source);
+    let leaf = first_leaf(tree.root_node());
+
+    let name = GoExtractor.extract_name(leaf, source, "const_block");
+
+    assert_eq!(name.as_deref(), Some("const_block"));
 }
