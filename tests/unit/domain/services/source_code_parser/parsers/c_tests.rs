@@ -282,6 +282,39 @@ fn extract_name_for_leaf_node_returns_none() {
 }
 
 #[test]
+fn extract_name_for_struct_capture_on_leaf_node_returns_none() {
+    let source = "42;\n";
+    let tree = parse_c(source);
+    let leaf = first_leaf(tree.root_node());
+
+    let name = CExtractor.extract_name(leaf, source, "struct.definition");
+
+    assert_eq!(name, None);
+}
+
+#[test]
+fn extract_name_for_variable_capture_on_leaf_node_returns_none() {
+    let source = "42;\n";
+    let tree = parse_c(source);
+    let leaf = first_leaf(tree.root_node());
+
+    let name = CExtractor.extract_name(leaf, source, "variable.definition");
+
+    assert_eq!(name, None);
+}
+
+#[test]
+fn extract_name_for_macro_capture_on_leaf_node_returns_none() {
+    let source = "42;\n";
+    let tree = parse_c(source);
+    let leaf = first_leaf(tree.root_node());
+
+    let name = CExtractor.extract_name(leaf, source, "macro.definition");
+
+    assert_eq!(name, None);
+}
+
+#[test]
 fn extract_name_for_variable_definition_with_bare_identifier_returns_identifier() {
     let source = "int counter;\n";
     let tree = parse_c(source);
