@@ -17,3 +17,4 @@ pub mod typing_animation_view_tests;
 pub mod typing_countdown_view_tests;
 pub mod typing_dialog_view_tests;
 pub mod typing_header_view_tests;
+pub mod typing_view_tests;
