@@ -67,6 +67,11 @@ fn make_challenges_with_difficulties(difficulties: &[DifficultyLevel]) -> Vec<Ch
         .collect()
 }
 
+fn make_challenge_with_lines(id: &str, line_count: usize) -> Challenge {
+    Challenge::new(id.to_string(), vec!["line"; line_count].join("\n"))
+        .with_language("rust".to_string())
+}
+
 // === build_stages: Normal mode ===
 
 #[test]
@@ -127,6 +132,30 @@ fn test_build_stages_normal_with_seed_is_deterministic() {
     for (a, b) in stages1.iter().zip(stages2.iter()) {
         assert_eq!(a.id, b.id);
     }
+}
+
+#[test]
+fn test_build_stages_normal_prefers_ideal_length_before_long_and_short() {
+    let cs = create_challenge_store();
+    cs.set_challenges(vec![
+        make_challenge_with_lines("short", 1),
+        make_challenge_with_lines("long", 25),
+        make_challenge_with_lines("ideal", 10),
+    ]);
+    let config = StageConfig {
+        game_mode: GameMode::Normal,
+        max_stages: 3,
+        seed: Some(42),
+    };
+    let repo = create_repository_with_config(config, cs);
+
+    let stage_ids: Vec<_> = repo
+        .build_stages()
+        .into_iter()
+        .map(|challenge| challenge.id)
+        .collect();
+
+    assert_eq!(stage_ids, vec!["ideal", "long", "short"]);
 }
 
 #[test]
@@ -254,6 +283,35 @@ fn test_build_stages_custom_returns_empty_when_no_matching_difficulty() {
 
     let stages = repo.build_stages();
     assert!(stages.is_empty());
+}
+
+#[test]
+fn test_build_stages_custom_skips_challenges_without_difficulty() {
+    let cs = create_challenge_store();
+    cs.set_challenges(vec![
+        Challenge::new("missing".to_string(), "code".to_string()).with_language("rust".to_string()),
+        Challenge::new("easy".to_string(), "code".to_string())
+            .with_language("rust".to_string())
+            .with_difficulty_level(DifficultyLevel::Easy),
+    ]);
+    let config = StageConfig {
+        game_mode: GameMode::Custom {
+            max_stages: Some(5),
+            time_limit: None,
+            difficulty: DifficultyLevel::Easy,
+        },
+        max_stages: 3,
+        seed: Some(42),
+    };
+    let repo = create_repository_with_config(config, cs);
+
+    let stage_ids: Vec<_> = repo
+        .build_stages()
+        .into_iter()
+        .map(|challenge| challenge.id)
+        .collect();
+
+    assert_eq!(stage_ids, vec!["easy"]);
 }
 
 // === with_mode / with_max_stages / with_seed builders ===
