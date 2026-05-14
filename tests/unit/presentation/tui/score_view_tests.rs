@@ -28,6 +28,13 @@ fn buffer_text(buffer: &Buffer) -> String {
 }
 
 fn render_score(session_score: f64, best_status: &BestStatus) -> (usize, String) {
+    render_score_with_status(session_score, Some(best_status))
+}
+
+fn render_score_with_status(
+    session_score: f64,
+    best_status: Option<&BestStatus>,
+) -> (usize, String) {
     let colors = default_colors();
     let backend = TestBackend::new(80, 12);
     let mut terminal = Terminal::new(backend).unwrap();
@@ -43,7 +50,7 @@ fn render_score(session_score: f64, best_status: &BestStatus) -> (usize, String)
                 Rect::new(0, 0, 80, 12),
                 &result,
                 &rank,
-                Some(best_status),
+                best_status,
                 &colors,
             );
         })
@@ -97,6 +104,19 @@ fn render_uses_todays_score_for_unknown_best_type() {
 }
 
 #[test]
+fn render_omits_best_label_when_status_has_no_best_type() {
+    let mut best_status = BestStatus::new();
+    best_status.todays_best_score = 175.0;
+
+    let (rendered_height, output) = render_score(150.0, &best_status);
+
+    assert_eq!(rendered_height, 7);
+    assert!(output.contains("SESSION SCORE"));
+    assert!(output.contains("(-25)"));
+    assert!(!output.contains("BEST"));
+}
+
+#[test]
 fn render_shows_todays_best_with_equal_score() {
     let mut best_status = BestStatus::new();
     best_status.best_type = Some("TODAY'S".to_string());
@@ -106,4 +126,12 @@ fn render_shows_todays_best_with_equal_score() {
 
     assert_eq!(rendered_height, 7);
     assert!(output.contains("*** TODAY'S BEST ***"));
+}
+
+#[test]
+fn render_without_best_status_uses_today_best_fallback() {
+    let (rendered_height, output) = render_score_with_status(150.0, None);
+
+    assert_eq!(rendered_height, 7);
+    assert!(output.contains("SESSION SCORE"));
 }

@@ -9,6 +9,13 @@ fn test_empty_colors() {
 }
 
 #[test]
+fn test_empty_colors_have_no_color_segments() {
+    let widget = GradationText::new("test", &[]);
+
+    assert!(widget.get_color_segments().is_empty());
+}
+
+#[test]
 fn test_single_color() {
     let widget = GradationText::new("test", &[111]);
     let line = widget.apply_gradation();
@@ -21,6 +28,15 @@ fn test_multiple_colors_smooth() {
     let line = widget.apply_gradation();
     // Should have multiple spans for smooth gradation
     assert!(!line.spans.is_empty());
+}
+
+#[test]
+fn test_single_character_smooth_uses_first_color() {
+    let widget = GradationText::new("A", &[30, 66]);
+    let segments = widget.get_color_segments();
+
+    assert_eq!(segments.len(), 1);
+    assert_eq!(segments[0].0, "A");
 }
 
 #[test]

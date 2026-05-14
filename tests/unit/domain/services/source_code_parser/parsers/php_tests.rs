@@ -140,6 +140,21 @@ fn extract_name_falls_back_to_name_child() {
     assert_eq!(name, Some("Greeter".to_string()));
 }
 
+#[test]
+fn extract_name_returns_none_for_leaf_node_without_children() {
+    let extractor = PhpExtractor;
+    let source = "<?php 42;";
+    let tree = PhpExtractor::create_parser()
+        .unwrap()
+        .parse(source, None)
+        .unwrap();
+    let leaf = find_leaf(tree.root_node());
+
+    let name = extractor.extract_name(leaf, source, "function");
+
+    assert_eq!(name, None);
+}
+
 fn find_node<'a>(node: Node<'a>, kind: &str) -> Option<Node<'a>> {
     (node.kind() == kind).then_some(node).or_else(|| {
         let mut cursor = node.walk();
@@ -148,4 +163,16 @@ fn find_node<'a>(node: Node<'a>, kind: &str) -> Option<Node<'a>> {
             .find_map(|child| find_node(child, kind));
         result
     })
+}
+
+fn find_leaf(node: Node<'_>) -> Node<'_> {
+    if node.child_count() == 0 {
+        return node;
+    }
+
+    (0..node.child_count())
+        .filter_map(|index| node.child(index))
+        .map(find_leaf)
+        .next()
+        .unwrap()
 }

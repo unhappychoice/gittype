@@ -176,6 +176,29 @@ fn extract_name_for_function_returns_function_atom() {
 }
 
 #[test]
+fn extract_name_for_function_falls_back_to_direct_atom_child() {
+    let source = "-module(greeter).\n";
+    let tree = parse_erlang(source);
+    let module_attr =
+        find_node(tree.root_node(), "module_attribute").expect("expected a module_attribute node");
+
+    let name = ErlangExtractor.extract_name(module_attr, source, "function");
+
+    assert_eq!(name.as_deref(), Some("greeter"));
+}
+
+#[test]
+fn extract_name_for_function_returns_none_when_no_atom_child_exists() {
+    let source = "1.\n";
+    let tree = parse_erlang(source);
+    let root = tree.root_node();
+
+    let name = ErlangExtractor.extract_name(root, source, "function");
+
+    assert!(name.is_none());
+}
+
+#[test]
 fn extract_name_for_module_attr_returns_module_atom() {
     let source = "-module(greeter).\n";
     let tree = parse_erlang(source);

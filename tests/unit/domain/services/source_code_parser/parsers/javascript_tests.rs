@@ -218,6 +218,22 @@ fn extract_name_returns_none_for_jsx_capture_when_node_has_no_identifier_child()
     );
 }
 
+#[test]
+fn extract_name_returns_none_for_jsx_capture_on_leaf_node() {
+    let extractor = JavaScriptExtractor;
+    let source = "const value = 1;";
+    let tree = JavaScriptExtractor::create_parser()
+        .unwrap()
+        .parse(source, None)
+        .unwrap();
+    let identifier = find_node(tree.root_node(), "identifier").unwrap();
+
+    assert_eq!(
+        extractor.extract_name(identifier, source, "jsx_self_closing_element"),
+        None
+    );
+}
+
 fn find_node<'a>(node: Node<'a>, kind: &str) -> Option<Node<'a>> {
     (node.kind() == kind).then_some(node).or_else(|| {
         let mut cursor = node.walk();

@@ -47,6 +47,28 @@ fn update_starts_typing_first_rank_message() {
 }
 
 #[test]
+fn completed_line_advances_after_delay() {
+    let mut view = TypingAnimationView::new(RankTier::Beginner, 80, 24);
+    view.set_rank_messages("Hello World");
+
+    let first_line_len = view.get_hacking_lines()[0].text.len();
+    (0..first_line_len).for_each(|_| {
+        assert!(view.update());
+        std::thread::sleep(Duration::from_millis(45));
+    });
+
+    assert!(view.update());
+    assert_eq!(view.get_current_line(), 0);
+    assert!(view.get_hacking_lines()[0].completed);
+    assert!(view.get_hacking_lines()[0].completion_time.is_some());
+
+    std::thread::sleep(Duration::from_millis(550));
+    assert!(view.update());
+
+    assert_eq!(view.get_current_line(), 1);
+}
+
+#[test]
 fn empty_animation_progresses_from_pause_to_complete() {
     let mut view = TypingAnimationView::new(RankTier::Beginner, 80, 24);
 

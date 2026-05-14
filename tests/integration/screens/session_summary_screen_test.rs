@@ -17,10 +17,12 @@ use gittype::domain::stores::{ChallengeStore, RepositoryStore, SessionStore};
 use gittype::domain::stores::{
     ChallengeStoreInterface, RepositoryStoreInterface, SessionStoreInterface,
 };
+use gittype::presentation::di::AppModule;
 use gittype::presentation::tui::screens::session_summary_screen::{
-    ResultAction, SessionSummaryScreen,
+    ResultAction, SessionSummaryScreen, SessionSummaryScreenProvider,
 };
-use gittype::presentation::tui::Screen;
+use gittype::presentation::tui::{Screen, ScreenType};
+use shaku::Provider;
 use std::sync::Arc;
 
 // Helper function to create SessionSummaryScreen with all required dependencies
@@ -317,6 +319,15 @@ fn test_session_summary_screen_as_any_downcasts_to_concrete_type() {
         .as_any()
         .downcast_ref::<SessionSummaryScreen>()
         .is_some());
+}
+
+#[test]
+fn test_session_summary_screen_provider_builds_screen_from_app_module() {
+    let module = AppModule::builder().build();
+
+    let screen = SessionSummaryScreenProvider::provide(&module).unwrap();
+
+    assert_eq!(screen.get_type(), ScreenType::SessionSummary);
 }
 
 #[test]

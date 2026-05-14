@@ -49,6 +49,59 @@ fn run_cli_executes_repo_clear_force_command() {
 }
 
 #[test]
+fn run_cli_executes_repo_list_command_without_tty() {
+    if atty::is(atty::Stream::Stdout) {
+        return;
+    }
+
+    let result = run_cli(make_cli(Commands::Repo {
+        repo_command: RepoCommands::List,
+    }));
+
+    assert!(matches!(
+        result,
+        Err(GitTypeError::TerminalError(message))
+            if message.contains("Not running in a terminal environment")
+    ));
+}
+
+#[test]
+fn run_cli_executes_repo_play_command_without_tty() {
+    if atty::is(atty::Stream::Stdout) {
+        return;
+    }
+
+    let result = run_cli(make_cli(Commands::Repo {
+        repo_command: RepoCommands::Play,
+    }));
+
+    assert!(matches!(
+        result,
+        Err(GitTypeError::TerminalError(message))
+            if message.contains("Not running in a terminal environment")
+    ));
+}
+
+#[test]
+fn run_cli_without_command_returns_error_without_tty() {
+    if atty::is(atty::Stream::Stdout) {
+        return;
+    }
+
+    let result = run_cli(Cli {
+        repo_path: None,
+        repo: None,
+        langs: None,
+        command: None,
+    });
+
+    assert!(matches!(
+        result,
+        Err(GitTypeError::IoError(_)) | Err(GitTypeError::TerminalError(_))
+    ));
+}
+
+#[test]
 fn repo_clear_force_keeps_empty_repository_cache_directory() {
     let temp_dir = tempfile::tempdir().unwrap();
     let repos_dir = temp_dir.path().join(".config").join("repos");
@@ -85,6 +138,16 @@ fn run_cli_returns_validation_error_for_invalid_trending_language() {
 fn export_command_exits_with_failure_status() {
     let output = Command::new(env!("CARGO_BIN_EXE_gittype"))
         .args(["export", "--format", "csv", "--output", "sessions.csv"])
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+}
+
+#[test]
+fn export_command_without_output_exits_with_failure_status() {
+    let output = Command::new(env!("CARGO_BIN_EXE_gittype"))
+        .args(["export", "--format", "json"])
         .output()
         .unwrap();
 

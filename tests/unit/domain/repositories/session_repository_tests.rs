@@ -776,6 +776,29 @@ fn test_record_session_with_repository() {
 }
 
 #[test]
+fn test_record_session_without_repository_or_challenge() {
+    let repo = SessionRepository::new().unwrap();
+
+    let mut session_result = SessionResult::new();
+    session_result.session_score = 75.0;
+
+    let mut tracker = StageTracker::new("test".to_string());
+    tracker.record(StageInput::Start);
+    tracker.record(StageInput::Finish);
+
+    let stage_trackers = vec![("stage1".to_string(), tracker)];
+
+    let result = repo.record_session(&session_result, None, "normal", None, &stage_trackers, &[]);
+
+    assert!(matches!(
+        result,
+        Err(gittype::GitTypeError::TerminalError(message))
+            if message == "repository_id is required for session_results"
+    ));
+    assert!(repo.get_all_repositories().unwrap().is_empty());
+}
+
+#[test]
 fn test_get_repository_history_with_data() {
     let repo = SessionRepository::new().unwrap();
 

@@ -1,9 +1,17 @@
+use gittype::domain::events::EventBus;
 use gittype::domain::models::{Challenge, DifficultyLevel, GameMode, StageConfig};
+use gittype::domain::services::scoring::{
+    SessionTracker, SessionTrackerInterface, TotalTracker, TotalTrackerInterface,
+};
 use gittype::domain::services::stage_builder_service::{StageRepository, StageRepositoryInterface};
+use gittype::domain::services::SessionManager;
 use gittype::domain::stores::{
     ChallengeStore, ChallengeStoreInterface, RepositoryStore, RepositoryStoreInterface,
     SessionStore, SessionStoreInterface,
 };
+use gittype::presentation::tui::ScreenManagerImpl;
+use ratatui::backend::TestBackend;
+use ratatui::Terminal;
 use std::sync::Arc;
 
 use crate::fixtures::models::challenge;
@@ -46,6 +54,36 @@ fn create_repository_with_config(
     )
 }
 
+fn create_screen_manager() -> ScreenManagerImpl<TestBackend> {
+    let event_bus = Arc::new(EventBus::new());
+    let challenge_store = create_challenge_store();
+    let repository_store = Arc::new(RepositoryStore::new_for_test());
+    let session_store = Arc::new(SessionStore::new_for_test());
+    let stage_repository = Arc::new(StageRepository::new(
+        None,
+        challenge_store,
+        repository_store.clone(),
+        session_store.clone(),
+    )) as Arc<dyn StageRepositoryInterface>;
+    let session_tracker: Arc<dyn SessionTrackerInterface> = Arc::new(SessionTracker::default());
+    let total_tracker: Arc<dyn TotalTrackerInterface> = Arc::new(TotalTracker::default());
+    let session_manager = Arc::new(SessionManager::new_with_dependencies(
+        event_bus.clone(),
+        stage_repository.clone(),
+        session_tracker,
+        total_tracker,
+    ));
+    let terminal = Terminal::new(TestBackend::new(80, 24)).unwrap();
+
+    ScreenManagerImpl::new(
+        event_bus,
+        session_store,
+        session_manager,
+        stage_repository,
+        terminal,
+    )
+}
+
 fn make_challenges(count: usize) -> Vec<Challenge> {
     (0..count)
         .map(|i| {
@@ -65,6 +103,11 @@ fn make_challenges_with_difficulties(difficulties: &[DifficultyLevel]) -> Vec<Ch
                 .with_difficulty_level(*diff)
         })
         .collect()
+}
+
+fn make_challenge_with_lines(id: &str, line_count: usize) -> Challenge {
+    Challenge::new(id.to_string(), vec!["line"; line_count].join("\n"))
+        .with_language("rust".to_string())
 }
 
 // === build_stages: Normal mode ===
@@ -127,6 +170,30 @@ fn test_build_stages_normal_with_seed_is_deterministic() {
     for (a, b) in stages1.iter().zip(stages2.iter()) {
         assert_eq!(a.id, b.id);
     }
+}
+
+#[test]
+fn test_build_stages_normal_prefers_ideal_length_before_long_and_short() {
+    let cs = create_challenge_store();
+    cs.set_challenges(vec![
+        make_challenge_with_lines("short", 1),
+        make_challenge_with_lines("long", 25),
+        make_challenge_with_lines("ideal", 10),
+    ]);
+    let config = StageConfig {
+        game_mode: GameMode::Normal,
+        max_stages: 3,
+        seed: Some(42),
+    };
+    let repo = create_repository_with_config(config, cs);
+
+    let stage_ids: Vec<_> = repo
+        .build_stages()
+        .into_iter()
+        .map(|challenge| challenge.id)
+        .collect();
+
+    assert_eq!(stage_ids, vec!["ideal", "long", "short"]);
 }
 
 #[test]
@@ -256,6 +323,35 @@ fn test_build_stages_custom_returns_empty_when_no_matching_difficulty() {
     assert!(stages.is_empty());
 }
 
+#[test]
+fn test_build_stages_custom_skips_challenges_without_difficulty() {
+    let cs = create_challenge_store();
+    cs.set_challenges(vec![
+        Challenge::new("missing".to_string(), "code".to_string()).with_language("rust".to_string()),
+        Challenge::new("easy".to_string(), "code".to_string())
+            .with_language("rust".to_string())
+            .with_difficulty_level(DifficultyLevel::Easy),
+    ]);
+    let config = StageConfig {
+        game_mode: GameMode::Custom {
+            max_stages: Some(5),
+            time_limit: None,
+            difficulty: DifficultyLevel::Easy,
+        },
+        max_stages: 3,
+        seed: Some(42),
+    };
+    let repo = create_repository_with_config(config, cs);
+
+    let stage_ids: Vec<_> = repo
+        .build_stages()
+        .into_iter()
+        .map(|challenge| challenge.id)
+        .collect();
+
+    assert_eq!(stage_ids, vec!["easy"]);
+}
+
 // === with_mode / with_max_stages / with_seed builders ===
 
 #[test]
@@ -364,6 +460,17 @@ fn test_get_mode_description_custom_without_time_limit() {
     assert!(!desc.contains("limit"));
 }
 
+#[test]
+fn test_update_title_screen_data_skips_before_indices_are_cached() {
+    let cs = create_challenge_store();
+    let repo = create_repository(cs);
+    let mut manager = create_screen_manager();
+
+    let result = repo.update_title_screen_data(&mut manager);
+
+    assert!(result.is_ok());
+}
+
 // === count_challenges_by_difficulty ===
 
 #[test]
@@ -392,6 +499,22 @@ fn test_count_challenges_by_difficulty_from_store() {
     let counts = repo.count_challenges_by_difficulty();
     // [Easy, Normal, Hard, Wild, Zen]
     assert_eq!(counts, [2, 1, 1, 2, 1]);
+}
+
+#[test]
+fn test_count_challenges_by_difficulty_defaults_missing_difficulty_to_easy() {
+    let cs = create_challenge_store();
+    cs.set_challenges(vec![
+        Challenge::new("missing".to_string(), "code".to_string()).with_language("rust".to_string()),
+        Challenge::new("normal".to_string(), "code".to_string())
+            .with_language("rust".to_string())
+            .with_difficulty_level(DifficultyLevel::Normal),
+    ]);
+    let repo = create_repository(cs);
+
+    let counts = repo.count_challenges_by_difficulty();
+
+    assert_eq!(counts, [1, 1, 0, 0, 0]);
 }
 
 #[test]

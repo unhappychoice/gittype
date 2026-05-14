@@ -556,3 +556,20 @@ fn extract_function_name_returns_none_when_no_function_declarator() {
 
     assert_eq!(name, None);
 }
+
+#[test]
+fn extract_variable_name_returns_none_when_no_variable_child_exists() {
+    let source_code = "struct Empty {};";
+    let tree = parse_cpp(source_code);
+    let struct_node = find_node(
+        tree.root_node(),
+        source_code,
+        "struct_specifier",
+        "struct Empty",
+    )
+    .unwrap();
+
+    let name = CppExtractor.extract_name(struct_node, source_code, "variable.definition");
+
+    assert_eq!(name, None);
+}

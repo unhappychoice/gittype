@@ -9,4 +9,5 @@ mod source_code_parser;
 mod source_file_extractor;
 mod stage_builder_service_tests;
 mod theme_manager_tests;
+mod typing_core_tests;
 mod version_service_tests;

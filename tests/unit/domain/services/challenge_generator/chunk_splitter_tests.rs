@@ -283,3 +283,31 @@ fn split_preserves_partial_comment_ranges() {
         }
     }
 }
+
+#[test]
+fn split_discards_zero_width_comment_ranges_after_truncation() {
+    let splitter = ChunkSplitter::new();
+    let difficulty = DifficultyLevel::Easy;
+
+    let content = (0..80)
+        .map(|index| format!("let value{index} = {index};"))
+        .collect::<Vec<_>>()
+        .join("\n");
+    let chunk = create_test_chunk(&content, vec![(0, 0)]);
+
+    let (_content, ranges, _end_line) = splitter.split(&chunk, &difficulty).unwrap();
+
+    assert!(ranges.is_empty());
+}
+
+#[test]
+fn split_returns_none_when_truncation_selects_only_blank_lines() {
+    let splitter = ChunkSplitter::new();
+    let difficulty = DifficultyLevel::Easy;
+    let content = format!("\n{}", "a".repeat(101));
+    let chunk = create_test_chunk(&content, vec![]);
+
+    let result = splitter.split(&chunk, &difficulty);
+
+    assert!(result.is_none());
+}

@@ -52,6 +52,11 @@ fn cleanup_succeeds_when_terminal_is_active() {
 }
 
 #[test]
+fn drop_cleans_up_when_terminal_is_active() {
+    drop(ScreenRunnerContext::new_for_test(true));
+}
+
+#[test]
 fn context_run_screen_returns_terminal_error_without_tty() {
     if atty::is(atty::Stream::Stdout) {
         return;

@@ -1,14 +1,52 @@
+use gittype::domain::models::loading::StepType;
 use gittype::domain::models::Languages;
 use gittype::domain::models::{Challenge, ChunkType, CodeChunk, ExtractionOptions};
 use gittype::domain::services::challenge_generator::ChallengeGenerator;
 use gittype::domain::services::source_code_parser::SourceCodeParser;
 use gittype::domain::services::source_file_extractor::SourceFileExtractor;
+use gittype::presentation::tui::screens::loading_screen::ProgressReporter;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::RwLock;
 use std::time::Instant;
 use tempfile::TempDir;
 
 use crate::integration::{extract_challenges_for_test, extract_chunks_for_test};
+
+struct RecordingProgress {
+    file_counts: RwLock<Vec<(StepType, usize, usize)>>,
+}
+
+impl RecordingProgress {
+    fn new() -> Self {
+        Self {
+            file_counts: RwLock::new(Vec::new()),
+        }
+    }
+
+    fn file_counts(&self) -> Vec<(StepType, usize, usize)> {
+        self.file_counts.read().unwrap().clone()
+    }
+}
+
+impl ProgressReporter for RecordingProgress {
+    fn set_step(&self, _step_type: StepType) {}
+
+    fn set_current_file(&self, _file: Option<String>) {}
+
+    fn set_file_counts(
+        &self,
+        step_type: StepType,
+        processed: usize,
+        total: usize,
+        _message: Option<String>,
+    ) {
+        self.file_counts
+            .write()
+            .unwrap()
+            .push((step_type, processed, total));
+    }
+}
 
 // Basic extractor tests
 #[test]
@@ -92,6 +130,37 @@ fn test_detect_from_path_defaults_to_text() {
 fn test_code_extractor_creation() {
     let extractor = SourceCodeParser::new();
     assert!(extractor.is_ok());
+}
+
+#[test]
+fn extract_chunks_with_progress_reports_every_tenth_file_before_final_percent() {
+    let temp_dir = TempDir::new().unwrap();
+    std::process::Command::new("git")
+        .arg("init")
+        .current_dir(temp_dir.path())
+        .output()
+        .expect("Failed to initialize git repository");
+
+    let files = (0..11)
+        .map(|index| {
+            (
+                temp_dir.path().join(format!("file_{index}.rs")),
+                Languages::from_extension("rs").expect("rust language should be supported"),
+            )
+        })
+        .collect();
+    let progress = RecordingProgress::new();
+    let mut parser = SourceCodeParser::new().unwrap();
+
+    let chunks = parser
+        .extract_chunks_with_progress(files, &ExtractionOptions::default(), &progress)
+        .unwrap();
+    let file_counts = progress.file_counts();
+
+    assert!(chunks.is_empty());
+    assert!(file_counts.contains(&(StepType::Extracting, 0, 11)));
+    assert!(file_counts.contains(&(StepType::Extracting, 10, 11)));
+    assert!(file_counts.contains(&(StepType::Extracting, 11, 11)));
 }
 
 #[test]

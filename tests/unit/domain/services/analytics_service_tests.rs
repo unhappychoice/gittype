@@ -267,6 +267,23 @@ fn test_analytics_empty_sessions_returns_zeroed_data() {
 }
 
 #[test]
+fn test_analytics_session_without_result_uses_zero_averages() {
+    let mut mock_repo = MockSessionRepo::new();
+    mock_repo.sessions = vec![make_session(1, None)];
+    let mock_dao = MockRepoDao::new(vec![]);
+    let service = AnalyticsService::new(Arc::new(mock_repo), Arc::new(mock_dao));
+
+    let data = service.load_analytics_data().unwrap();
+
+    assert_eq!(data.total_sessions, 1);
+    assert_eq!(data.avg_cpm, 0.0);
+    assert_eq!(data.avg_accuracy, 0.0);
+    assert_eq!(data.avg_session_duration, 0.0);
+    assert!(data.cpm_trend.is_empty());
+    assert!(data.accuracy_trend.is_empty());
+}
+
+#[test]
 fn test_analytics_single_session_basic_aggregation() {
     let repo = make_repo(1, "user", "repo");
     let mut mock = MockSessionRepo::new();
