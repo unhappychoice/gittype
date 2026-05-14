@@ -237,6 +237,16 @@ fn should_skip_character_whitespace_not_before_comment() {
     assert!(!result);
 }
 
+#[test]
+fn should_skip_character_whitespace_before_newline_without_comment() {
+    let text = "code  \nnext";
+    let line_starts = TextProcessor::calculate_line_starts(text);
+
+    let result = TextProcessor::should_skip_character(text, 4, &line_starts, &[]);
+
+    assert!(!result);
+}
+
 // ============================================
 // process_challenge_text_with_comment_mapping - with comment ranges
 // ============================================
