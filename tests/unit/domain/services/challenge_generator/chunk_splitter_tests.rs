@@ -299,3 +299,15 @@ fn split_discards_zero_width_comment_ranges_after_truncation() {
 
     assert!(ranges.is_empty());
 }
+
+#[test]
+fn split_returns_none_when_truncation_selects_only_blank_lines() {
+    let splitter = ChunkSplitter::new();
+    let difficulty = DifficultyLevel::Easy;
+    let content = format!("\n{}", "a".repeat(101));
+    let chunk = create_test_chunk(&content, vec![]);
+
+    let result = splitter.split(&chunk, &difficulty);
+
+    assert!(result.is_none());
+}

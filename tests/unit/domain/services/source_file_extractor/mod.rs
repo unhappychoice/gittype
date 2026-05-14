@@ -250,4 +250,23 @@ mod tests {
         let files = result.unwrap();
         assert_eq!(files, vec![Path::new("/mock/src/main.rs")]);
     }
+
+    #[test]
+    fn test_collect_with_progress_ignores_invalid_gittypeignore_lines() {
+        let mut mock_storage = FileStorage::new();
+        mock_storage.add_file("/mock/src/main.rs");
+        mock_storage.add_file("/mock/ignored.rs");
+        mock_storage.set_file_content("/mock/.gittypeignore", "[z-a]\nignored.rs\n".to_string());
+
+        let extractor = SourceFileExtractor::with_storage(mock_storage);
+        let progress = MockProgressReporter::new();
+        let options = ExtractionOptions::default();
+
+        let result =
+            extractor.collect_with_progress_with_options(Path::new("/mock"), &options, &progress);
+
+        assert!(result.is_ok());
+        let files = result.unwrap();
+        assert_eq!(files, vec![Path::new("/mock/src/main.rs")]);
+    }
 }
