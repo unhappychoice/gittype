@@ -603,3 +603,88 @@ fn test_multiple_repositories_in_transaction() {
         "Should have at least 3 repositories after transaction"
     );
 }
+
+#[test]
+fn ensure_repository_in_transaction_returns_database_error_when_existing_id_has_wrong_type() {
+    let db_impl = Database::new().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = RepositoryDao::new(Arc::clone(&db));
+    let conn = db.get_connection().unwrap();
+
+    conn.execute("DROP TABLE repositories", []).unwrap();
+    conn.execute(
+        "CREATE VIEW repositories AS
+         SELECT 'not-a-repository-id' AS id,
+                'broken-owner' AS user_name,
+                'broken-repo' AS repository_name,
+                'https://example.invalid/broken-owner/broken-repo' AS remote_url",
+        [],
+    )
+    .unwrap();
+
+    let tx = conn.unchecked_transaction().unwrap();
+    let git_repo = GitRepository {
+        user_name: "broken-owner".to_string(),
+        repository_name: "broken-repo".to_string(),
+        remote_url: "https://example.invalid/broken-owner/broken-repo".to_string(),
+        branch: None,
+        commit_hash: None,
+        is_dirty: false,
+        root_path: None,
+    };
+    let error = dao
+        .ensure_repository_in_transaction(&tx, &git_repo)
+        .unwrap_err();
+
+    assert!(error.to_string().contains("Database error"));
+}
+
+#[test]
+fn get_repository_by_id_returns_database_error_when_row_has_wrong_type() {
+    let db_impl = Database::new().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = RepositoryDao::new(Arc::clone(&db));
+    let conn = db.get_connection().unwrap();
+
+    conn.execute("DROP TABLE repositories", []).unwrap();
+    conn.execute(
+        "CREATE VIEW repositories AS
+         SELECT 1 AS id,
+                'broken-owner' AS user_name,
+                'broken-repo' AS repository_name,
+                x'00' AS remote_url",
+        [],
+    )
+    .unwrap();
+    drop(conn);
+
+    let error = dao.get_repository_by_id(1).unwrap_err();
+
+    assert!(error.to_string().contains("Database error"));
+}
+
+#[test]
+fn find_repository_returns_database_error_when_row_has_wrong_type() {
+    let db_impl = Database::new().unwrap();
+    let db = Arc::new(db_impl) as Arc<dyn DatabaseInterface>;
+    let dao = RepositoryDao::new(Arc::clone(&db));
+    let conn = db.get_connection().unwrap();
+
+    conn.execute("DROP TABLE repositories", []).unwrap();
+    conn.execute(
+        "CREATE VIEW repositories AS
+         SELECT 1 AS id,
+                'broken-owner' AS user_name,
+                'broken-repo' AS repository_name,
+                x'00' AS remote_url",
+        [],
+    )
+    .unwrap();
+    drop(conn);
+
+    let error = dao
+        .find_repository("broken-owner", "broken-repo")
+        .unwrap_err();
+
+    assert!(error.to_string().contains("Database error"));
+}
