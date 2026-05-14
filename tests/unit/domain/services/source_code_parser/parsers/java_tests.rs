@@ -247,14 +247,6 @@ fn extract_name_for_field_declaration_returns_variable_name() {
 fn extract_name_returns_none_for_leaf_node() {
     let source = "1\n";
     let tree = parse_java(source);
-
-    fn first_leaf<'tree>(node: Node<'tree>) -> Node<'tree> {
-        if node.child_count() == 0 {
-            return node;
-        }
-        first_leaf(node.child(0).unwrap())
-    }
-
     let leaf = first_leaf(tree.root_node());
     let name = JavaExtractor.extract_name(leaf, source, "method");
 
@@ -271,4 +263,22 @@ fn extract_name_for_field_capture_on_node_without_variable_declarator_returns_no
     let name = JavaExtractor.extract_name(method, source, "field");
 
     assert_eq!(name, None);
+}
+
+#[test]
+fn extract_name_for_field_capture_on_leaf_node_returns_none() {
+    let source = "1\n";
+    let tree = parse_java(source);
+    let leaf = first_leaf(tree.root_node());
+
+    let name = JavaExtractor.extract_name(leaf, source, "field");
+
+    assert_eq!(name, None);
+}
+
+fn first_leaf<'tree>(node: Node<'tree>) -> Node<'tree> {
+    if node.child_count() == 0 {
+        return node;
+    }
+    first_leaf(node.child(0).unwrap())
 }
