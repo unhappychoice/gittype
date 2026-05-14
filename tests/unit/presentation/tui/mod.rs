@@ -6,6 +6,7 @@ pub mod loading_progress_view_tests;
 pub mod performance_metrics_view_tests;
 pub mod rank_view_tests;
 pub mod records_screen_tests;
+pub mod repo_list_repository_list_view_tests;
 pub mod score_view_tests;
 pub mod screen_manager_tests;
 pub mod screen_trait_tests;
