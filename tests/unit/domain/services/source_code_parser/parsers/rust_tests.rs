@@ -1,3 +1,4 @@
+use gittype::domain::models::ChunkType;
 use gittype::domain::services::source_code_parser::parsers::rust::RustExtractor;
 use gittype::domain::services::source_code_parser::parsers::LanguageExtractor;
 
@@ -32,4 +33,21 @@ fn middle_implementation_query_returns_non_empty() {
     let extractor = RustExtractor;
     let query = extractor.middle_implementation_query();
     assert!(!query.is_empty());
+}
+
+#[test]
+fn capture_name_to_chunk_type_returns_none_for_unknown_capture() {
+    let extractor = RustExtractor;
+
+    assert_eq!(extractor.capture_name_to_chunk_type("unknown"), None);
+}
+
+#[test]
+fn middle_capture_name_to_chunk_type_returns_none_for_unknown_capture() {
+    let extractor = RustExtractor;
+
+    assert_eq!(
+        extractor.middle_capture_name_to_chunk_type("unknown"),
+        None::<ChunkType>
+    );
 }
