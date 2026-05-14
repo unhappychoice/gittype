@@ -158,3 +158,15 @@ fn execute_errors_when_scanned_files_have_no_supported_language() {
 
     assert!(matches!(error, GitTypeError::ExtractionFailed(_)));
 }
+
+#[test]
+fn execute_errors_when_scanned_file_has_no_extension() {
+    let file_path = std::env::current_dir().unwrap().join("README");
+    let screen = create_loading_screen();
+    let options = ExtractionOptions::default();
+    let mut context = create_context(Some(&options), Some(&screen), Some(vec![file_path]));
+
+    let error = ExtractingStep.execute(&mut context).unwrap_err();
+
+    assert!(matches!(error, GitTypeError::ExtractionFailed(_)));
+}

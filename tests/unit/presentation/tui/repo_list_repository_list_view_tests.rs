@@ -54,6 +54,10 @@ fn render_handles_empty_and_overflowing_language_lists() {
             repository("separator-break", vec!["abcdefghijklmnopqrstuvwx", "rust"]),
             false,
         ),
+        (
+            repository("language-break", vec!["abcdefghijklmnopQRSTUVW", "rust"]),
+            false,
+        ),
     ];
 
     terminal
@@ -67,4 +71,7 @@ fn render_handles_empty_and_overflowing_language_lists() {
     assert!(text.contains("abcdefghijklmnopqrst, ..."));
     assert!(text.contains("abcdefghijklmnopqrstuvwx"));
     assert!(!text.contains("abcdefghijklmnopqrstuvwx, Rust"));
+    assert!(text.contains("abcdefghijklmnopQRSTUVW,"));
+    assert!(!text.contains("abcdefghijklmnopQRSTUVW, Rust"));
+    assert!(!text.contains("abcdefghijklmnopQRSTUVW, ..."));
 }
