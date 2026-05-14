@@ -11,6 +11,7 @@ pub mod score_view_tests;
 pub mod screen_manager_tests;
 pub mod screen_trait_tests;
 pub mod screen_transition_manager_tests;
+pub mod stage_completion_view_tests;
 pub mod stage_details_view_tests;
 pub mod stage_results_view_tests;
 pub mod total_summary_ascii_score_view_tests;

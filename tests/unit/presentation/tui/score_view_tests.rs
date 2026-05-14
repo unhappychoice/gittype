@@ -104,6 +104,19 @@ fn render_uses_todays_score_for_unknown_best_type() {
 }
 
 #[test]
+fn render_omits_best_label_when_status_has_no_best_type() {
+    let mut best_status = BestStatus::new();
+    best_status.todays_best_score = 175.0;
+
+    let (rendered_height, output) = render_score(150.0, &best_status);
+
+    assert_eq!(rendered_height, 7);
+    assert!(output.contains("SESSION SCORE"));
+    assert!(output.contains("(-25)"));
+    assert!(!output.contains("BEST"));
+}
+
+#[test]
 fn render_shows_todays_best_with_equal_score() {
     let mut best_status = BestStatus::new();
     best_status.best_type = Some("TODAY'S".to_string());
