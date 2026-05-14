@@ -241,3 +241,26 @@ fn execute_continues_when_cache_save_fails() {
     assert_eq!(repository_store.get_repository(), Some(git_repository));
     assert!(session_store.is_loading_completed());
 }
+
+#[test]
+fn execute_skips_cache_save_without_challenge_repository() {
+    let screen = create_loading_screen();
+    let git_repository = git_repository::build();
+    let challenge_store = Arc::new(ChallengeStore::new_for_test());
+    let repository_store = Arc::new(RepositoryStore::new_for_test());
+    let mut context = create_context(
+        Some(&screen),
+        Some(vec![create_chunk()]),
+        Some(git_repository.clone()),
+        None,
+        Some(challenge_store.clone() as Arc<dyn ChallengeStoreInterface>),
+        Some(repository_store.clone() as Arc<dyn RepositoryStoreInterface>),
+        None,
+    );
+
+    let result = GeneratingStep.execute(&mut context).unwrap();
+
+    assert!(matches!(result, StepResult::Skipped));
+    assert!(challenge_store.get_challenges().is_some());
+    assert_eq!(repository_store.get_repository(), Some(git_repository));
+}
