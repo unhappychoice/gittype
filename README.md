@@ -176,5 +176,7 @@ If you find this project useful, please consider:
 - 💼 [Share on LinkedIn](https://www.linkedin.com/sharing/share-offsite/?url=https%3A//github.com/unhappychoice/gittype)
 - 📘 [Share on Facebook](https://www.facebook.com/sharer/sharer.php?u=https%3A//github.com/unhappychoice/gittype)
 - 🟧 [Submit to Hacker News](https://news.ycombinator.com/submitlink?u=https%3A//github.com/unhappychoice/gittype&t=gittype%3A%20a%20CLI%20typing%20game%20that%20uses%20your%20own%20source%20code%20as%20practice%20text%20%F0%9F%8E%AE)
+- 💬 Drop it into your Discord server or developer chat
+- ✍️ Write about it on your blog or in a newsletter
 
 Every bit of support helps. Thanks!
