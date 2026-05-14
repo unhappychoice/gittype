@@ -124,6 +124,32 @@ fn execute_errors_without_loading_screen() {
 }
 
 #[test]
+fn execute_keeps_existing_git_repository_without_repo_path() {
+    let temp_dir = tempfile::tempdir().unwrap();
+    let repo_path = temp_dir.path().to_path_buf();
+    create_git_repository(&repo_path);
+    let mut context = create_context(None, Some(repo_path.clone()), None);
+    let existing_repository = GitRepository {
+        user_name: "existing".to_string(),
+        repository_name: "repository".to_string(),
+        remote_url: "https://github.com/existing/repository".to_string(),
+        branch: Some("main".to_string()),
+        commit_hash: Some("abc123".to_string()),
+        is_dirty: false,
+        root_path: Some(repo_path),
+    };
+    context.git_repository = Some(existing_repository.clone());
+
+    let error = ScanningStep.execute(&mut context).unwrap_err();
+
+    assert!(matches!(
+        error,
+        GitTypeError::ExtractionFailed(message) if message == "No loading screen available"
+    ));
+    assert_eq!(context.git_repository, Some(existing_repository));
+}
+
+#[test]
 fn execute_returns_empty_scanned_files_with_mock_file_storage() {
     let temp_dir = tempfile::tempdir().unwrap();
     let repo_path = temp_dir.path().to_path_buf();

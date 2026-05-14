@@ -122,6 +122,20 @@ fn execute_succeeds_without_optional_services() {
 }
 
 #[test]
+fn execute_resolves_git_repository_from_current_repo_path() {
+    let temp_dir = tempfile::tempdir().unwrap();
+    git2::Repository::init(temp_dir.path()).unwrap();
+    let challenge_store = Arc::new(ChallengeStore::new_for_test());
+    challenge_store.set_challenges(vec![challenge::build()]);
+    let mut context = create_context(Some(challenge_store), None, None);
+    context.current_repo_path = Some(temp_dir.path().to_path_buf());
+
+    let result = FinalizingStep.execute(&mut context).unwrap();
+
+    assert!(matches!(result, StepResult::Skipped));
+}
+
+#[test]
 fn execute_builds_indices_and_resets_session_manager() {
     let services = create_services(create_challenges());
     services
