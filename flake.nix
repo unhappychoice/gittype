@@ -37,7 +37,14 @@
           doCheck = false;
         };
 
-        unstable = pkgs.rustPlatform.buildRustPackage rec {
+        unstable = let
+          rustToolchain = pkgs.rust-bin.stable.latest.default;
+          rustPlatform = pkgs.makeRustPlatform {
+            cargo = rustToolchain;
+            rustc = rustToolchain;
+          };
+        in
+        rustPlatform.buildRustPackage rec {
           inherit pname version;
           src = ./.;
           cargoLock.lockFile = ./Cargo.lock;
