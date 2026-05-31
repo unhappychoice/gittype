@@ -77,27 +77,21 @@ impl LocalGitRepositoryClient {
     }
 
     fn get_remote_url(&self, repo: &Repository) -> Result<String> {
-        repo.find_remote("origin")
-            .map_err(|e| {
-                GitTypeError::ExtractionFailed(format!("Failed to find origin remote: {}", e))
-            })
-            .map(|remote| remote.url().map(str::to_string))
-            .and_then(|url_opt| {
-                url_opt.ok_or_else(|| {
-                    GitTypeError::ExtractionFailed("Remote URL is not valid UTF-8".to_string())
-                })
-            })
+        let remote = repo.find_remote("origin").map_err(|e| {
+            GitTypeError::ExtractionFailed(format!("Failed to find origin remote: {}", e))
+        })?;
+        remote.url().map(String::from).map_err(|e| {
+            GitTypeError::ExtractionFailed(format!("Remote URL is not valid UTF-8: {}", e))
+        })
     }
 
     fn get_current_branch(&self, repo: &Repository) -> Result<String> {
-        repo.head()
-            .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to get HEAD: {}", e)))
-            .map(|head| head.shorthand().map(str::to_string))
-            .and_then(|name_opt| {
-                name_opt.ok_or_else(|| {
-                    GitTypeError::ExtractionFailed("Branch name is not valid UTF-8".to_string())
-                })
-            })
+        let head = repo
+            .head()
+            .map_err(|e| GitTypeError::ExtractionFailed(format!("Failed to get HEAD: {}", e)))?;
+        head.shorthand().map(String::from).map_err(|e| {
+            GitTypeError::ExtractionFailed(format!("Branch name is not valid UTF-8: {}", e))
+        })
     }
 
     fn get_current_commit_hash(&self, repo: &Repository) -> Result<String> {
@@ -128,9 +122,8 @@ impl LocalGitRepositoryClient {
         // Get remote URL (origin)
         let remote_url = repo
             .find_remote("origin")
-            .ok()
-            .and_then(|remote| remote.url().map(|s| s.to_string()))
-            .unwrap_or_else(|| format!("file://{}", path.display()));
+            .and_then(|remote| remote.url().map(String::from))
+            .unwrap_or_else(|_| format!("file://{}", path.display()));
 
         // Extract user_name and repository_name from path or URL
         let (user_name, repository_name) = if remote_url.starts_with("file://") {
@@ -150,8 +143,8 @@ impl LocalGitRepositoryClient {
         // Get current branch
         let branch = repo
             .head()
-            .ok()
-            .and_then(|head| head.shorthand().map(|s| s.to_string()));
+            .and_then(|head| head.shorthand().map(String::from))
+            .ok();
 
         // Get current commit hash
         let commit_hash = repo
