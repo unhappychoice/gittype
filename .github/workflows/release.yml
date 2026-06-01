@@ -25,6 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       new_version: ${{ steps.version.outputs.new_version }}
+      new_version_no_v: ${{ steps.version.outputs.new_version_no_v }}
       upload_url: ${{ steps.create_release.outputs.upload_url }}
       tag_sha: ${{ steps.tag_sha.outputs.tag_sha }}
     steps:
@@ -47,6 +48,7 @@ jobs:
           cargo set-version --bump ${{ github.event.inputs.version_type }}
           NEW_VERSION=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')
           echo "new_version=v$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "new_version_no_v=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "New version: v$NEW_VERSION"
 
       # Run tests before release
@@ -327,3 +329,17 @@ jobs:
           git add Formula/gittype.rb
           git commit -m "chore: update gittype to $VERSION"
           git push
+
+  update-winget:
+    name: Update WinGet Package
+    runs-on: ubuntu-latest
+    needs: [release, build-and-upload]
+    steps:
+      - name: Submit manifest to winget-pkgs
+        uses: vedantmgoyal9/winget-releaser@v2
+        with:
+          identifier: unhappychoice.gittype
+          version: ${{ needs.release.outputs.new_version_no_v }}
+          release-tag: ${{ needs.release.outputs.new_version }}
+          installers-regex: 'x86_64-pc-windows-msvc\.zip$'
+          token: ${{ secrets.WINGET_TOKEN }}

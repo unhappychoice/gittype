@@ -449,6 +449,24 @@ pub fn extract_chunks(
 
 ---
 
+## Release Distribution
+
+GitType is distributed through several package managers. Most channels are updated automatically by the release workflow (`.github/workflows/release.yml`); a few require one-time setup.
+
+### winget (Windows)
+
+The release workflow submits a manifest PR to [`microsoft/winget-pkgs`](https://github.com/microsoft/winget-pkgs) via [`vedantmgoyal9/winget-releaser`](https://github.com/vedantmgoyal9/winget-releaser) on every release.
+
+**One-time setup:**
+
+1. The initial `0.10.0` manifest lives under `.winget/manifests/u/unhappychoice/gittype/0.10.0/` and must be PR'd manually to `microsoft/winget-pkgs` once. After it is merged, subsequent versions are added automatically.
+2. Create a fork of `microsoft/winget-pkgs` under the owner account.
+3. Create a GitHub PAT (classic) with `public_repo` scope that can push to the fork, and register it as the `WINGET_TOKEN` repository secret.
+
+**Package identifier:** `unhappychoice.gittype`
+
+---
+
 ## Getting Help
 
 - **Issues**: Browse existing issues or create a new one
