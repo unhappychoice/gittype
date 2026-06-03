@@ -1,0 +1,67 @@
+{
+  "name": "gittype-vscode",
+  "displayName": "GitType Practice",
+  "description": "Practice typing selected code in a GitType-style VS Code editor.",
+  "version": "0.1.0",
+  "publisher": "gittype",
+  "engines": {
+    "vscode": "^1.92.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "files": [
+    "dist/*.js",
+    "README.md",
+    "package.json"
+  ],
+  "activationEvents": [
+    "onCommand:gittype.practiceSelection",
+    "onCommand:gittype.restartPractice",
+    "onCommand:gittype.togglePracticeMode"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "gittype.practiceSelection",
+        "title": "GitType: Practice Selection"
+      },
+      {
+        "command": "gittype.restartPractice",
+        "title": "GitType: Restart Practice"
+      },
+      {
+        "command": "gittype.togglePracticeMode",
+        "title": "GitType: Toggle Practice Mode"
+      }
+    ],
+    "configuration": {
+      "title": "GitType Practice",
+      "properties": {
+        "gittype.practice.mode": {
+          "type": "string",
+          "enum": [
+            "strict",
+            "flow"
+          ],
+          "default": "strict"
+        },
+        "gittype.practice.showStatusBar": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "test": "node --test \"dist/test/*.test.js\"",
+    "check": "npm run compile && npm test"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/vscode": "^1.92.0",
+    "typescript": "^5.9.0"
+  }
+}
