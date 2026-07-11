@@ -239,7 +239,7 @@ mod byte_char_position_bugs {
                             i,
                             start,
                             end,
-                            &display_text.chars().collect::<Vec<char>>()
+                            display_text.chars().collect::<Vec<char>>()
                                 [start..end.min(display_text.chars().count())]
                                 .iter()
                                 .collect::<String>()
