@@ -199,6 +199,11 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
         self.pending_transition.lock().unwrap().clone()
     }
 
+    #[cfg(feature = "test-mocks")]
+    pub fn handle_event_for_test(&mut self, event: Event) -> Result<()> {
+        self.handle_event(event)
+    }
+
     /// Set up event subscriptions for navigation events
     /// Takes a weak reference to avoid circular references
     pub fn setup_event_subscriptions(manager_ref: &Arc<Mutex<Self>>) {
@@ -662,34 +667,39 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
         };
 
         if poll(timeout)? {
-            if let Event::Key(key_event) = read()? {
-                if key_event.kind == KeyEventKind::Press {
-                    if key_event.modifiers.contains(KeyModifiers::CONTROL)
-                        && key_event.code == KeyCode::Char('c')
-                    {
-                        // Ctrl+C should either transition to ExitSummary or exit if already there
-                        if self.current_screen_type == ScreenType::TotalSummary {
-                            self.exit_requested = true;
-                        } else {
-                            let _ = self.handle_transition(ScreenTransition::Replace(
-                                ScreenType::TotalSummary,
-                            ));
-                        }
-                        return Ok(());
-                    }
-
-                    if let Some(screen) = self.screens.get_mut(&self.current_screen_type) {
-                        screen.handle_key_event(key_event)?;
-                    }
-
-                    // Always re-render on key input for ratatui screens
-                    // as they may have internal state changes (list selection, etc.)
-                    self.render_current_screen()?;
-                }
-            }
+            self.handle_event(read()?)?;
         }
 
         Ok(())
+    }
+
+    fn handle_event(&mut self, event: Event) -> Result<()> {
+        match event {
+            Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
+                self.handle_key_input(key_event)
+            }
+            Event::Resize(_, _) => self.render_current_screen(),
+            _ => Ok(()),
+        }
+    }
+
+    fn handle_key_input(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
+        if key_event.modifiers.contains(KeyModifiers::CONTROL)
+            && key_event.code == KeyCode::Char('c')
+        {
+            if self.current_screen_type == ScreenType::TotalSummary {
+                self.exit_requested = true;
+            } else {
+                let _ = self.handle_transition(ScreenTransition::Replace(ScreenType::TotalSummary));
+            }
+            return Ok(());
+        }
+
+        if let Some(screen) = self.screens.get_mut(&self.current_screen_type) {
+            screen.handle_key_event(key_event)?;
+        }
+
+        self.render_current_screen()
     }
 
     pub fn render_current_screen(&mut self) -> Result<()> {

@@ -1,4 +1,4 @@
-use crossterm::event::KeyEvent;
+use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use gittype::domain::events::EventBus;
 use gittype::domain::services::scoring::{
     SessionTracker, SessionTrackerInterface, TotalTracker, TotalTrackerInterface,
@@ -23,6 +23,7 @@ use ratatui::Terminal;
 use shaku::HasComponent;
 use std::any::Any;
 use std::io::Stdout;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 
 // Mock TerminalInterface for testing
@@ -96,6 +97,10 @@ struct PushAwareScreen {
     pushed_from: Arc<Mutex<Option<ScreenType>>>,
 }
 
+struct RenderCountingScreen {
+    render_count: Arc<AtomicUsize>,
+}
+
 // Mock data provider for testing
 struct MockDataProvider;
 
@@ -123,6 +128,12 @@ impl PushAwareScreen {
             screen_type,
             pushed_from,
         }
+    }
+}
+
+impl RenderCountingScreen {
+    fn new(render_count: Arc<AtomicUsize>) -> Self {
+        Self { render_count }
     }
 }
 
@@ -251,6 +262,36 @@ impl Screen for PushAwareScreen {
 
     fn get_update_strategy(&self) -> UpdateStrategy {
         UpdateStrategy::InputOnly
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+impl Screen for RenderCountingScreen {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::Title
+    }
+
+    fn default_provider() -> Box<dyn ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        Box::new(MockDataProvider)
+    }
+
+    fn init_with_data(&self, _data: Box<dyn Any>) -> gittype::Result<()> {
+        Ok(())
+    }
+
+    fn render_ratatui(&self, _frame: &mut Frame) -> gittype::Result<()> {
+        self.render_count.fetch_add(1, Ordering::SeqCst);
+        Ok(())
+    }
+
+    fn handle_key_event(&self, _key_event: KeyEvent) -> gittype::Result<()> {
+        Ok(())
     }
 
     fn as_any(&self) -> &dyn Any {
@@ -468,6 +509,35 @@ fn test_render_current_screen_with_test_backend() {
     // because ratatui_terminal is None and it handles that case
     let result = manager.render_current_screen();
     assert!(result.is_ok());
+}
+
+#[test]
+fn test_resize_event_redraws_current_screen() {
+    let mut manager = create_test_screen_manager();
+    let render_count = Arc::new(AtomicUsize::new(0));
+    manager.register_screen(RenderCountingScreen::new(Arc::clone(&render_count)));
+
+    manager
+        .handle_event_for_test(Event::Resize(120, 40))
+        .unwrap();
+
+    assert_eq!(render_count.load(Ordering::SeqCst), 1);
+}
+
+#[test]
+fn test_key_press_event_still_redraws_current_screen() {
+    let mut manager = create_test_screen_manager();
+    let render_count = Arc::new(AtomicUsize::new(0));
+    manager.register_screen(RenderCountingScreen::new(Arc::clone(&render_count)));
+
+    manager
+        .handle_event_for_test(Event::Key(KeyEvent::new(
+            KeyCode::Enter,
+            KeyModifiers::NONE,
+        )))
+        .unwrap();
+
+    assert_eq!(render_count.load(Ordering::SeqCst), 1);
 }
 
 #[test]
