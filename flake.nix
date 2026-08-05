@@ -24,7 +24,7 @@
       packages = forAllSystems ({ pkgs }: {
         default = pkgs.rustPlatform.buildRustPackage rec {
           pname = "gittype";
-          version = "0.10.1";
+          version = "0.10.2";
           src = pkgs.fetchFromGitHub {
             owner = "unhappychoice";
             repo = "gittype";

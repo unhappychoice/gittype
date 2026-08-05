@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.2] - 2026-08-05
+
+### 🐛 Bug Fixes
+
+- fix: redraw TUI on terminal resize ([8bfcd0c](https://github.com/unhappychoice/gittype/commit/8bfcd0c))
+
+### 📝 Other Changes
+
+- chore: bump version to v0.10.2 ([d89925a](https://github.com/unhappychoice/gittype/commit/d89925a))
+- chore(deps): bump clap from 4.6.4 to 4.6.5 ([52ddf1f](https://github.com/unhappychoice/gittype/commit/52ddf1f))
+- chore(deps): bump tree-sitter-erlang from 0.19.0 to 0.20.0 ([c8958d4](https://github.com/unhappychoice/gittype/commit/c8958d4))
+- chore: update flake.nix hashes for v0.10.1 ([891b744](https://github.com/unhappychoice/gittype/commit/891b744))
+
+
 ## [0.10.1] - 2026-07-25
 
 ### ✨ Features
@@ -20,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📝 Other Changes
 
-- chore: bump version to v0.10.1 ([b05843b](https://github.com/unhappychoice/gittype/commit/b05843b))
+- chore: bump version to v0.10.1 ([574a352](https://github.com/unhappychoice/gittype/commit/574a352))
 - chore(deps): bump glob from 0.3.3 to 0.3.4 ([8179e1e](https://github.com/unhappychoice/gittype/commit/8179e1e))
 - chore(deps): bump clap from 4.6.3 to 4.6.4 ([5c7dc7f](https://github.com/unhappychoice/gittype/commit/5c7dc7f))
 - chore(deps): bump clap from 4.6.2 to 4.6.3 ([70990ce](https://github.com/unhappychoice/gittype/commit/70990ce))
