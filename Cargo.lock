@@ -3109,12 +3109,11 @@ dependencies = [
 
 [[package]]
 name = "shaku"
-version = "0.6.2"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d599314a26c92706bde1c984391b1eeb77ebf46e23142216a58eacb6e12f858b"
+checksum = "5a53439ced3494971c8fd8c314cc526adbf6b924cfa0906e996752f13e36a65c"
 dependencies = [
  "anymap2",
- "once_cell",
  "shaku_derive",
 ]
 
