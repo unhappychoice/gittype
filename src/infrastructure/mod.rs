@@ -1,3 +1,4 @@
+pub mod appearance;
 pub mod browser;
 pub mod console;
 pub mod database;
