@@ -236,3 +236,90 @@ fn get_color_for_language_picks_ascii_key_when_current_theme_is_ascii() {
 
     assert_eq!(color, ratatui::style::Color::White);
 }
+
+#[test]
+fn system_mode_resolves_to_dark_scheme() {
+    let manager = ThemeService::new_for_test_with_appearance(
+        Theme::default(),
+        ColorMode::System,
+        std::sync::Arc::new(
+            gittype::domain::services::appearance_detector::FixedAppearanceDetector(Some(
+                ColorMode::Dark,
+            )),
+        ),
+    );
+    assert_eq!(manager.get_current_color_scheme(), Theme::default().dark);
+}
+
+#[test]
+fn system_mode_resolves_to_light_scheme() {
+    let manager = ThemeService::new_for_test_with_appearance(
+        Theme::default(),
+        ColorMode::System,
+        std::sync::Arc::new(
+            gittype::domain::services::appearance_detector::FixedAppearanceDetector(Some(
+                ColorMode::Light,
+            )),
+        ),
+    );
+    assert_eq!(manager.get_current_color_scheme(), Theme::default().light);
+}
+
+#[test]
+fn system_mode_falls_back_to_dark_when_undetectable() {
+    let manager = ThemeService::new_for_test(Theme::default(), ColorMode::System);
+    assert_eq!(manager.get_current_color_mode(), ColorMode::System);
+    assert_eq!(manager.get_current_color_scheme(), Theme::default().dark);
+}
+
+#[test]
+fn get_current_color_mode_returns_system_when_configured() {
+    let manager = ThemeService::new_for_test(Theme::default(), ColorMode::System);
+    assert_eq!(manager.get_current_color_mode(), ColorMode::System);
+}
+
+#[test]
+fn set_current_color_mode_system_applies_effective() {
+    let manager = ThemeService::new_for_test_with_appearance(
+        Theme::default(),
+        ColorMode::Dark,
+        std::sync::Arc::new(
+            gittype::domain::services::appearance_detector::FixedAppearanceDetector(Some(
+                ColorMode::Light,
+            )),
+        ),
+    );
+    manager.set_current_color_mode(ColorMode::System);
+    assert_eq!(manager.get_current_color_mode(), ColorMode::System);
+    assert_eq!(manager.get_current_color_scheme(), Theme::default().light);
+}
+
+#[test]
+fn get_color_for_language_system_mode_uses_effective_key() {
+    let system_light = ThemeService::new_for_test_with_appearance(
+        Theme::default(),
+        ColorMode::System,
+        std::sync::Arc::new(
+            gittype::domain::services::appearance_detector::FixedAppearanceDetector(Some(
+                ColorMode::Light,
+            )),
+        ),
+    );
+    system_light.init_language_colors_for_test();
+
+    let explicit_light = ThemeService::new_for_test(Theme::default(), ColorMode::Light);
+    explicit_light.init_language_colors_for_test();
+    assert_eq!(
+        system_light.get_color_for_language("python"),
+        explicit_light.get_color_for_language("python")
+    );
+
+    // The effective (Light) key must differ from a Dark-resolved lookup,
+    // proving the key uses the effective mode rather than `System`.
+    let explicit_dark = ThemeService::new_for_test(Theme::default(), ColorMode::Dark);
+    explicit_dark.init_language_colors_for_test();
+    assert_ne!(
+        system_light.get_color_for_language("python"),
+        explicit_dark.get_color_for_language("python")
+    );
+}
