@@ -3,6 +3,7 @@ use crate::domain::models::color_scheme::{
     ColorScheme, CustomThemeFile, SerializableColor, ThemeFile,
 };
 use crate::domain::models::theme::Theme;
+use crate::domain::services::appearance_detector::AppearanceDetectorInterface;
 use crate::domain::services::config_service::ConfigServiceInterface;
 use crate::infrastructure::storage::app_data_provider::AppDataProvider;
 use crate::infrastructure::storage::file_storage::{FileStorage, FileStorageInterface};
@@ -15,6 +16,7 @@ use std::sync::{Arc, RwLock};
 pub struct ThemeServiceState {
     current_theme: Theme,
     current_color_mode: ColorMode,
+    effective_color_mode: ColorMode,
     // Map of (theme_id, color_mode) -> (lang_name -> Color)
     language_colors: HashMap<(String, ColorMode), HashMap<String, ratatui::style::Color>>,
 }
@@ -24,6 +26,7 @@ impl Default for ThemeServiceState {
         Self {
             current_theme: Theme::default(),
             current_color_mode: ColorMode::Dark,
+            effective_color_mode: ColorMode::Dark,
             language_colors: HashMap::new(),
         }
     }
@@ -50,6 +53,8 @@ pub struct ThemeService {
     file_storage: Arc<dyn FileStorageInterface>,
     #[shaku(inject)]
     config_service: Arc<dyn ConfigServiceInterface>,
+    #[shaku(inject)]
+    appearance_detector: Arc<dyn AppearanceDetectorInterface>,
 }
 
 impl AppDataProvider for ThemeService {}
@@ -57,17 +62,58 @@ impl AppDataProvider for ThemeService {}
 impl ThemeService {
     #[cfg(feature = "test-mocks")]
     pub fn new_for_test(current_theme: Theme, current_color_mode: ColorMode) -> Self {
+        use crate::domain::services::appearance_detector::NoopAppearanceDetector;
+        Self::new_for_test_with_appearance(
+            current_theme,
+            current_color_mode,
+            Arc::new(NoopAppearanceDetector),
+        )
+    }
+
+    #[cfg(feature = "test-mocks")]
+    pub fn new_for_test_with_appearance(
+        current_theme: Theme,
+        current_color_mode: ColorMode,
+        appearance_detector: Arc<dyn AppearanceDetectorInterface>,
+    ) -> Self {
         use crate::domain::services::config_service::ConfigService;
+        let effective_color_mode =
+            Self::resolve_color_mode(appearance_detector.as_ref(), current_color_mode.clone());
         let file_storage = Arc::new(FileStorage::new());
         let config_service = Arc::new(ConfigService::new(file_storage.clone()).unwrap());
         Self {
             state: RwLock::new(ThemeServiceState {
                 current_theme,
                 current_color_mode,
+                effective_color_mode,
                 language_colors: HashMap::new(),
             }),
             file_storage,
             config_service,
+            appearance_detector,
+        }
+    }
+    /// Load language colors without touching the configured mode.
+    /// Test-only seam: `init()` re-reads the persisted config and would
+    /// overwrite the mode set by the test constructors.
+    #[cfg(feature = "test-mocks")]
+    pub fn init_language_colors_for_test(&self) {
+        let language_colors = Self::load_all_language_colors();
+        self.state.write().unwrap().language_colors = language_colors;
+    }
+
+    /// Resolve the configured mode to an effective Dark/Light mode.
+    /// `System` maps to the OS appearance; falls back to Dark when undetectable.
+    fn resolve_color_mode(
+        detector: &dyn AppearanceDetectorInterface,
+        configured: ColorMode,
+    ) -> ColorMode {
+        match configured {
+            ColorMode::Dark | ColorMode::Light => configured,
+            ColorMode::System => detector.detect_color_mode().unwrap_or_else(|| {
+                log::warn!("Could not detect the system appearance; using Dark as fallback");
+                ColorMode::Dark
+            }),
         }
     }
 
@@ -76,6 +122,8 @@ impl ThemeService {
         match color_mode {
             ColorMode::Light => theme.light.clone(),
             ColorMode::Dark => theme.dark.clone(),
+            // System is resolved to Dark/Light before this is called; dark is the fallback.
+            ColorMode::System => theme.dark.clone(),
         }
     }
 
@@ -173,9 +221,15 @@ impl ThemeServiceInterface for ThemeService {
         // Load all language colors
         let language_colors = Self::load_all_language_colors();
 
+        let effective_color_mode = Self::resolve_color_mode(
+            self.appearance_detector.as_ref(),
+            current_color_mode.clone(),
+        );
+
         let mut state = self.state.write().unwrap();
         state.current_theme = current_theme;
         state.current_color_mode = current_color_mode;
+        state.effective_color_mode = effective_color_mode;
         state.language_colors = language_colors;
         Ok(())
     }
@@ -220,12 +274,16 @@ impl ThemeServiceInterface for ThemeService {
     }
 
     fn set_current_color_mode(&self, color_mode: ColorMode) {
-        self.state.write().unwrap().current_color_mode = color_mode;
+        let effective_color_mode =
+            Self::resolve_color_mode(self.appearance_detector.as_ref(), color_mode.clone());
+        let mut state = self.state.write().unwrap();
+        state.current_color_mode = color_mode;
+        state.effective_color_mode = effective_color_mode;
     }
 
     fn get_current_color_scheme(&self) -> ColorScheme {
         let state = self.state.read().unwrap();
-        Self::get_color_scheme(&state.current_theme, &state.current_color_mode)
+        Self::get_color_scheme(&state.current_theme, &state.effective_color_mode)
     }
 
     fn get_colors(&self) -> Colors {
@@ -235,9 +293,9 @@ impl ThemeServiceInterface for ThemeService {
     fn get_color_for_language(&self, language_name: &str) -> ratatui::style::Color {
         let state = self.state.read().unwrap();
         let key = if state.current_theme.id == "ascii" {
-            ("ascii".to_string(), state.current_color_mode.clone())
+            ("ascii".to_string(), state.effective_color_mode.clone())
         } else {
-            ("default".to_string(), state.current_color_mode.clone())
+            ("default".to_string(), state.effective_color_mode.clone())
         };
 
         state
