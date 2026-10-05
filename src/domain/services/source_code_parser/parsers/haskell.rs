@@ -32,7 +32,7 @@ impl LanguageExtractor for HaskellExtractor {
             ; Type declarations
             (type_family) @type_family
             (type_instance) @type_instance
-            (type_synomym) @type_synonym
+            (type_synonym) @type_synonym
 
             ; Module declarations
             (module) @module
