@@ -134,6 +134,9 @@ impl ColorScheme {
         let colors = match color_mode {
             ColorMode::Dark => &theme_file.dark,
             ColorMode::Light => &theme_file.light,
+            // System is resolved to Dark/Light by ThemeService before this is called;
+            // dark is the fallback if it ever reaches here unresolved.
+            ColorMode::System => &theme_file.dark,
         };
 
         Self {
