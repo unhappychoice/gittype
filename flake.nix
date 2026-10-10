@@ -29,9 +29,9 @@
             owner = "unhappychoice";
             repo = "gittype";
             rev = "v${version}";
-            hash = "sha256-343lPlLrfHHZEfhFEZGAXwzxGg1I2YpGQERcFU2bJZY=";
+            hash = "sha256-Ijlj0DSg12nvlvT76czR3xMvUgVpkXJWlVM4gEeWScI=";
           };
-          cargoHash = "sha256-tca8fV7KWd/Ab0+J3eymhjXZfGUsF6LXhgP4HKYisq4=";
+          cargoHash = "sha256-C3idJ/7wdX838fqhARWBrMNHlPKf53bM4661kGxh9XE=";
           nativeBuildInputs = [ pkgs.perl pkgs.pkg-config pkgs.git ];
           buildInputs = [ pkgs.openssl ];
           doCheck = false;
