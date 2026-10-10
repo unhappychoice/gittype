@@ -1159,7 +1159,7 @@ dependencies = [
 
 [[package]]
 name = "gittype"
-version = "0.10.2"
+version = "0.10.3"
 dependencies = [
  "ansi-to-tui",
  "anyhow",

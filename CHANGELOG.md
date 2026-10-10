@@ -5,6 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.3] - 2026-10-10
+
+### 🐛 Bug Fixes
+
+- fix(nix): update nixpkgs to fix crates.io 403 on crate downloads ([aaca16f](https://github.com/unhappychoice/gittype/commit/aaca16f))
+
+### 📝 Other Changes
+
+- chore: bump version to v0.10.3 ([1494911](https://github.com/unhappychoice/gittype/commit/1494911))
+- chore(deps): bump tree-sitter-swift from 0.7.3 to 0.7.4 ([3bc2ebc](https://github.com/unhappychoice/gittype/commit/3bc2ebc))
+- chore(deps): bump uuid from 1.26.1 to 1.27.0 ([9bfcfd4](https://github.com/unhappychoice/gittype/commit/9bfcfd4))
+- chore(deps): bump insta from 1.48.0 to 1.49.0 ([5c7d43f](https://github.com/unhappychoice/gittype/commit/5c7d43f))
+- ci: pin Rust toolchain to 1.98.1 ([eed13ac](https://github.com/unhappychoice/gittype/commit/eed13ac))
+- chore(deps): bump tree-sitter-haskell from 0.23.1 to 0.24.1 ([d7546a5](https://github.com/unhappychoice/gittype/commit/d7546a5))
+- chore(deps): bump thiserror from 2.0.20 to 2.0.21 ([b140163](https://github.com/unhappychoice/gittype/commit/b140163))
+- chore(deps): bump rand from 0.10.2 to 0.10.3 ([c7d9cd7](https://github.com/unhappychoice/gittype/commit/c7d9cd7))
+- chore(deps): bump clap from 4.6.6 to 4.6.7 ([be5cf65](https://github.com/unhappychoice/gittype/commit/be5cf65))
+- chore(deps): bump reqwest from 0.13.4 to 0.13.5 ([c7ccd67](https://github.com/unhappychoice/gittype/commit/c7ccd67))
+- chore(deps): bump open from 5.4.3 to 5.4.4 ([b59ee7a](https://github.com/unhappychoice/gittype/commit/b59ee7a))
+- chore(deps): bump uuid from 1.26.0 to 1.26.1 ([0f0c034](https://github.com/unhappychoice/gittype/commit/0f0c034))
+- chore(deps): bump dirs from 6.0.0 to 7.0.0 ([da28bf4](https://github.com/unhappychoice/gittype/commit/da28bf4))
+- chore(deps): bump open from 5.4.2 to 5.4.3 ([984c622](https://github.com/unhappychoice/gittype/commit/984c622))
+- chore(deps): bump open from 5.4.1 to 5.4.2 ([0ea3ab9](https://github.com/unhappychoice/gittype/commit/0ea3ab9))
+- chore(deps): bump flate2 from 1.1.9 to 1.1.10 ([927419d](https://github.com/unhappychoice/gittype/commit/927419d))
+- chore(deps): bump uuid from 1.25.0 to 1.26.0 ([3af1e7e](https://github.com/unhappychoice/gittype/commit/3af1e7e))
+- chore(deps): bump uuid from 1.24.1 to 1.25.0 (#491) ([753f2f7](https://github.com/unhappychoice/gittype/commit/753f2f7))
+- chore(deps): bump log from 0.4.33 to 0.4.34 (#492) ([c583e2a](https://github.com/unhappychoice/gittype/commit/c583e2a))
+- chore(deps): bump uuid from 1.24.0 to 1.24.1 ([091ea81](https://github.com/unhappychoice/gittype/commit/091ea81))
+- chore(deps): bump rusqlite from 0.40.1 to 0.40.2 ([dd7a786](https://github.com/unhappychoice/gittype/commit/dd7a786))
+- chore(deps): bump tree-sitter-scala from 0.26.0 to 0.26.2 ([32ad0d1](https://github.com/unhappychoice/gittype/commit/32ad0d1))
+- chore(deps): bump async-trait from 0.1.91 to 0.1.92 ([ff9b43a](https://github.com/unhappychoice/gittype/commit/ff9b43a))
+- chore(deps): bump thiserror from 2.0.19 to 2.0.20 ([ec8a20c](https://github.com/unhappychoice/gittype/commit/ec8a20c))
+- chore(ci): use personal git identity for automated commits ([0e19eba](https://github.com/unhappychoice/gittype/commit/0e19eba))
+- chore(deps): bump open from 5.4.0 to 5.4.1 ([d7ea96a](https://github.com/unhappychoice/gittype/commit/d7ea96a))
+- chore(deps): bump ignore from 0.4.32 to 0.4.33 ([72496a4](https://github.com/unhappychoice/gittype/commit/72496a4))
+- chore(deps): bump clap from 4.6.5 to 4.6.6 ([07a541a](https://github.com/unhappychoice/gittype/commit/07a541a))
+- chore(deps): bump ignore from 0.4.31 to 0.4.32 ([4844d09](https://github.com/unhappychoice/gittype/commit/4844d09))
+- chore(deps): bump shaku from 0.6.2 to 0.6.3 ([ad51729](https://github.com/unhappychoice/gittype/commit/ad51729))
+- chore: update flake.nix hashes for v0.10.2 ([0de0750](https://github.com/unhappychoice/gittype/commit/0de0750))
+
+
 ## [0.10.2] - 2026-08-05
 
 ### 🐛 Bug Fixes
@@ -13,7 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📝 Other Changes
 
-- chore: bump version to v0.10.2 ([d89925a](https://github.com/unhappychoice/gittype/commit/d89925a))
+- chore: bump version to v0.10.2 ([cdfa1f3](https://github.com/unhappychoice/gittype/commit/cdfa1f3))
 - chore(deps): bump clap from 4.6.4 to 4.6.5 ([52ddf1f](https://github.com/unhappychoice/gittype/commit/52ddf1f))
 - chore(deps): bump tree-sitter-erlang from 0.19.0 to 0.20.0 ([c8958d4](https://github.com/unhappychoice/gittype/commit/c8958d4))
 - chore: update flake.nix hashes for v0.10.1 ([891b744](https://github.com/unhappychoice/gittype/commit/891b744))
