@@ -20,7 +20,7 @@ impl LanguageExtractor for DartExtractor {
             (method_declaration signature: (method_signature (function_signature name: (identifier) @name) @method))
             (static_final_declaration name: (identifier) @name) @variable
             (initialized_identifier name: (identifier) @name) @variable
-            (initialized_variable_definition name: (identifier) @name) @variable
+            (initialized_variable_declaration name: (identifier) @name) @variable
         "
     }
 
@@ -89,7 +89,7 @@ impl DartExtractor {
                 }
 
                 // For variable declarations, look deeper
-                if child.kind() == "initialized_variable_definition" {
+                if child.kind() == "initialized_variable_declaration" {
                     if let Some(name) = Self::extract_name_from_node(child, source_code) {
                         return Some(name);
                     }
