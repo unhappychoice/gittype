@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.4] - 2026-10-31
+
+### 🐛 Bug Fixes
+
+- fix(dart): use renamed initialized_variable_declaration node ([8f9e62a](https://github.com/unhappychoice/gittype/commit/8f9e62a))
+
+### 📝 Other Changes
+
+- chore: bump version to v0.10.4 ([e9a39c7](https://github.com/unhappychoice/gittype/commit/e9a39c7))
+- chore(deps): bump tree-sitter-dart from 0.2.0 to 0.3.0 ([f680ad7](https://github.com/unhappychoice/gittype/commit/f680ad7))
+- chore(deps): bump rusqlite from 0.40.2 to 0.41.0 ([5a04fb1](https://github.com/unhappychoice/gittype/commit/5a04fb1))
+- chore(deps): bump uuid from 1.28.0 to 1.29.0 ([85480d3](https://github.com/unhappychoice/gittype/commit/85480d3))
+- chore(deps): bump open from 5.4.4 to 5.4.5 ([a18bea4](https://github.com/unhappychoice/gittype/commit/a18bea4))
+- chore(deps): bump tree-sitter-scala from 0.26.2 to 0.26.3 ([253de0d](https://github.com/unhappychoice/gittype/commit/253de0d))
+- chore(deps): bump sha2 from 0.11.0 to 0.11.1 ([97a81af](https://github.com/unhappychoice/gittype/commit/97a81af))
+- chore(deps): bump serde_json from 1.0.151 to 1.0.154 ([d0c18bb](https://github.com/unhappychoice/gittype/commit/d0c18bb))
+- chore(deps): bump tree-sitter-erlang from 0.20.0 to 0.21.0 ([1227a81](https://github.com/unhappychoice/gittype/commit/1227a81))
+- chore(deps): bump uuid from 1.27.0 to 1.28.0 ([64e5aa0](https://github.com/unhappychoice/gittype/commit/64e5aa0))
+- chore(deps): bump tree-sitter-php from 0.24.2 to 0.25.1 ([f913b93](https://github.com/unhappychoice/gittype/commit/f913b93))
+- chore: update flake.nix hashes for v0.10.3 ([07cf590](https://github.com/unhappychoice/gittype/commit/07cf590))
+
+
 ## [0.10.3] - 2026-10-10
 
 ### 🐛 Bug Fixes
@@ -13,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📝 Other Changes
 
-- chore: bump version to v0.10.3 ([1494911](https://github.com/unhappychoice/gittype/commit/1494911))
+- chore: bump version to v0.10.3 ([a9a313b](https://github.com/unhappychoice/gittype/commit/a9a313b))
 - chore(deps): bump tree-sitter-swift from 0.7.3 to 0.7.4 ([3bc2ebc](https://github.com/unhappychoice/gittype/commit/3bc2ebc))
 - chore(deps): bump uuid from 1.26.1 to 1.27.0 ([9bfcfd4](https://github.com/unhappychoice/gittype/commit/9bfcfd4))
 - chore(deps): bump insta from 1.48.0 to 1.49.0 ([5c7d43f](https://github.com/unhappychoice/gittype/commit/5c7d43f))
