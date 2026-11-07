@@ -189,3 +189,14 @@ fn test_theme_config_clone() {
     assert_eq!(config.current_theme_id, cloned.current_theme_id);
     assert_eq!(config.current_color_mode, cloned.current_color_mode);
 }
+#[test]
+fn test_theme_config_serialize_deserialize_system_mode() {
+    let config = ThemeConfig {
+        current_theme_id: "default".to_string(),
+        current_color_mode: ColorMode::System,
+    };
+    let serialized = serde_json::to_string(&config).unwrap();
+    assert!(serialized.contains("\"System\""));
+    let deserialized: ThemeConfig = serde_json::from_str(&serialized).unwrap();
+    assert_eq!(deserialized.current_color_mode, ColorMode::System);
+}

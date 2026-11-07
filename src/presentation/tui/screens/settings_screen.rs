@@ -38,7 +38,7 @@ impl SettingsSection {
 
     fn description(&self) -> &'static str {
         match self {
-            SettingsSection::ColorMode => "Choose between dark and light modes",
+            SettingsSection::ColorMode => "Choose between dark, light, and system modes",
             SettingsSection::Theme => "Select theme - preview changes instantly",
         }
     }
@@ -176,6 +176,7 @@ impl SettingsScreen {
                 let text = match mode {
                     ColorMode::Dark => "Dark",
                     ColorMode::Light => "Light",
+                    ColorMode::System => "System",
                 };
                 ListItem::new(text)
             })
@@ -374,7 +375,7 @@ impl Screen for SettingsScreen {
         let _data = data.downcast::<SettingsScreenData>()?;
 
         // Fetch data from theme_service since provider returns empty data
-        let color_modes = vec![ColorMode::Dark, ColorMode::Light];
+        let color_modes = vec![ColorMode::Dark, ColorMode::Light, ColorMode::System];
         let themes = self.theme_service.get_available_themes();
         let current_theme = self.theme_service.get_current_theme();
         let current_color_mode = self.theme_service.get_current_color_mode();

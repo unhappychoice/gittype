@@ -6,9 +6,9 @@ expression: output
 │ Color Mode │ Theme                                                                                                   │
 └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ┌Color Mode────────────────────────────────────────────────┐┌Description───────────────────────────────────────────────┐
-│  Dark                                                    ││  Choose between dark and light modes                     │
+│  Dark                                                    ││  Choose between dark, light, and system modes            │
 │  Light                                                   ││                                                          │
-│                                                          ││                                                          │
+│  System                                                  ││                                                          │
 │                                                          ││                                                          │
 │                                                          ││                                                          │
 │                                                          ││                                                          │
