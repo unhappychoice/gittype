@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.5] - 2026-11-14
+
+### 📝 Other Changes
+
+- chore: bump version to v0.10.5 ([802335c](https://github.com/unhappychoice/gittype/commit/802335c))
+- chore(deps): bump tree-sitter-scala from 0.26.9 to 0.26.10 ([dd68c94](https://github.com/unhappychoice/gittype/commit/dd68c94))
+- chore(deps): bump uuid from 1.29.1 to 1.29.2 ([851afe3](https://github.com/unhappychoice/gittype/commit/851afe3))
+- chore(deps): bump uuid from 1.29.0 to 1.29.1 ([f457744](https://github.com/unhappychoice/gittype/commit/f457744))
+- chore(deps): bump tree-sitter-scala from 0.26.4 to 0.26.9 ([a298941](https://github.com/unhappychoice/gittype/commit/a298941))
+- chore(deps): bump flate2 from 1.1.10 to 1.1.11 ([2be8c31](https://github.com/unhappychoice/gittype/commit/2be8c31))
+- chore(deps): bump tree-sitter-scala from 0.26.3 to 0.26.4 ([9fab514](https://github.com/unhappychoice/gittype/commit/9fab514))
+- chore(deps): bump log from 0.4.34 to 0.4.35 ([0a7b75a](https://github.com/unhappychoice/gittype/commit/0a7b75a))
+- chore(deps): bump ignore from 0.4.33 to 0.4.34 ([caa1bdf](https://github.com/unhappychoice/gittype/commit/caa1bdf))
+- chore(deps): bump rusqlite from 0.41.0 to 0.41.1 ([69d8406](https://github.com/unhappychoice/gittype/commit/69d8406))
+- chore: update flake.nix hashes for v0.10.4 ([98f85f0](https://github.com/unhappychoice/gittype/commit/98f85f0))
+
+
 ## [0.10.4] - 2026-10-31
 
 ### 🐛 Bug Fixes
@@ -13,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📝 Other Changes
 
-- chore: bump version to v0.10.4 ([e9a39c7](https://github.com/unhappychoice/gittype/commit/e9a39c7))
+- chore: bump version to v0.10.4 ([a29fd91](https://github.com/unhappychoice/gittype/commit/a29fd91))
 - chore(deps): bump tree-sitter-dart from 0.2.0 to 0.3.0 ([f680ad7](https://github.com/unhappychoice/gittype/commit/f680ad7))
 - chore(deps): bump rusqlite from 0.40.2 to 0.41.0 ([5a04fb1](https://github.com/unhappychoice/gittype/commit/5a04fb1))
 - chore(deps): bump uuid from 1.28.0 to 1.29.0 ([85480d3](https://github.com/unhappychoice/gittype/commit/85480d3))
@@ -1297,40 +1314,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - feat: add GitHub repository link to exit summary screen ([1237651](https://github.com/unhappychoice/gittype/commit/1237651))
 - feat: improve stage result screen navigation ([bf00265](https://github.com/unhappychoice/gittype/commit/bf00265))
 - feat: change back to title key from Enter to T ([9d9e93c](https://github.com/unhappychoice/gittype/commit/9d9e93c))
-
-### 🐛 Bug Fixes
-
-- fix(terminal): always pop keyboard enhancement flags on cleanup to avoid iTerm2 stuck state ([8725df9](https://github.com/unhappychoice/gittype/commit/8725df9))
-- fix: resolve clippy unreachable code warning ([2f45ae7](https://github.com/unhappychoice/gittype/commit/2f45ae7))
-- fix: resolve clippy warnings ([e3e244f](https://github.com/unhappychoice/gittype/commit/e3e244f))
-- fix: ensure complete terminal cleanup on all exit paths ([511f914](https://github.com/unhappychoice/gittype/commit/511f914))
-- fix: apply cargo fmt formatting fixes ([fe2409f](https://github.com/unhappychoice/gittype/commit/fe2409f))
-- fix: restore enter symbol (↵) display in ratatui interface ([526caef](https://github.com/unhappychoice/gittype/commit/526caef))
-- fix: improve terminal cleanup to prevent utf character output in iTerm2 ([36f0caf](https://github.com/unhappychoice/gittype/commit/36f0caf))
-- fix: restore retry option in session summary screen ([2e3d29a](https://github.com/unhappychoice/gittype/commit/2e3d29a))
-- fix: resolve clippy warnings and formatting issues ([50f3df2](https://github.com/unhappychoice/gittype/commit/50f3df2))
-- fix: resolve clippy warnings and formatting issues ([3159237](https://github.com/unhappychoice/gittype/commit/3159237))
-- fix: improve cursor highlight visibility in Mac terminal ([3ba6f92](https://github.com/unhappychoice/gittype/commit/3ba6f92))
-- fix: remove REPORT_EVENT_TYPES flag to prevent double input in iTerm ([031ff4c](https://github.com/unhappychoice/gittype/commit/031ff4c))
-- fix: resolve clippy warnings and formatting issues ([4eb02c9](https://github.com/unhappychoice/gittype/commit/4eb02c9))
-- fix: remove debug output from exit summary screen ([300c0fe](https://github.com/unhappychoice/gittype/commit/300c0fe))
-- fix: ensure raw mode is properly disabled on application exit ([8dd8772](https://github.com/unhappychoice/gittype/commit/8dd8772))
-- fix: improve keyboard input handling for macOS iTerm ([d9cd8f1](https://github.com/unhappychoice/gittype/commit/d9cd8f1))
-- fix: add revision parameter to homebrew bump formula action ([20316d7](https://github.com/unhappychoice/gittype/commit/20316d7))
-
-### 📝 Other Changes
-
-- chore: bump version to v0.1.2 ([3afc3de](https://github.com/unhappychoice/gittype/commit/3afc3de))
-- docs: remove install commands from banner images ([361155c](https://github.com/unhappychoice/gittype/commit/361155c))
-- style: apply rustfmt formatting ([49b759b](https://github.com/unhappychoice/gittype/commit/49b759b))
-- refactor: remove unused Exit variant from ResultAction ([2455d5c](https://github.com/unhappychoice/gittype/commit/2455d5c))
-- style: apply rustfmt formatting ([f558041](https://github.com/unhappychoice/gittype/commit/f558041))
-
-
-## [0.1.1] - 2025-08-31
-
-### ✨ Features
-
 - feat: use current directory as default repository path ([4aef881](https://github.com/unhappychoice/gittype/commit/4aef881))
 - feat: update title screen logo to oh-my-logo purple style ([90f553e](https://github.com/unhappychoice/gittype/commit/90f553e))
 - feat: add package distribution infrastructure ([ee286d9](https://github.com/unhappychoice/gittype/commit/ee286d9))
@@ -1369,6 +1352,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+- fix(terminal): always pop keyboard enhancement flags on cleanup to avoid iTerm2 stuck state ([8725df9](https://github.com/unhappychoice/gittype/commit/8725df9))
+- fix: resolve clippy unreachable code warning ([2f45ae7](https://github.com/unhappychoice/gittype/commit/2f45ae7))
+- fix: resolve clippy warnings ([e3e244f](https://github.com/unhappychoice/gittype/commit/e3e244f))
+- fix: ensure complete terminal cleanup on all exit paths ([511f914](https://github.com/unhappychoice/gittype/commit/511f914))
+- fix: apply cargo fmt formatting fixes ([fe2409f](https://github.com/unhappychoice/gittype/commit/fe2409f))
+- fix: restore enter symbol (↵) display in ratatui interface ([526caef](https://github.com/unhappychoice/gittype/commit/526caef))
+- fix: improve terminal cleanup to prevent utf character output in iTerm2 ([36f0caf](https://github.com/unhappychoice/gittype/commit/36f0caf))
+- fix: restore retry option in session summary screen ([2e3d29a](https://github.com/unhappychoice/gittype/commit/2e3d29a))
+- fix: resolve clippy warnings and formatting issues ([50f3df2](https://github.com/unhappychoice/gittype/commit/50f3df2))
+- fix: resolve clippy warnings and formatting issues ([3159237](https://github.com/unhappychoice/gittype/commit/3159237))
+- fix: improve cursor highlight visibility in Mac terminal ([3ba6f92](https://github.com/unhappychoice/gittype/commit/3ba6f92))
+- fix: remove REPORT_EVENT_TYPES flag to prevent double input in iTerm ([031ff4c](https://github.com/unhappychoice/gittype/commit/031ff4c))
+- fix: resolve clippy warnings and formatting issues ([4eb02c9](https://github.com/unhappychoice/gittype/commit/4eb02c9))
+- fix: remove debug output from exit summary screen ([300c0fe](https://github.com/unhappychoice/gittype/commit/300c0fe))
+- fix: ensure raw mode is properly disabled on application exit ([8dd8772](https://github.com/unhappychoice/gittype/commit/8dd8772))
+- fix: improve keyboard input handling for macOS iTerm ([d9cd8f1](https://github.com/unhappychoice/gittype/commit/d9cd8f1))
+- fix: add revision parameter to homebrew bump formula action ([20316d7](https://github.com/unhappychoice/gittype/commit/20316d7))
 - fix: add contents write permission to release workflow ([901942f](https://github.com/unhappychoice/gittype/commit/901942f))
 - fix: adjust total_content_height calculation for proper layout ([ecbbc98](https://github.com/unhappychoice/gittype/commit/ecbbc98))
 - fix: format code with cargo fmt ([e52e4d7](https://github.com/unhappychoice/gittype/commit/e52e4d7))
@@ -1387,6 +1387,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📝 Other Changes
 
+- chore: bump version to v0.1.2 ([3afc3de](https://github.com/unhappychoice/gittype/commit/3afc3de))
+- docs: remove install commands from banner images ([361155c](https://github.com/unhappychoice/gittype/commit/361155c))
+- style: apply rustfmt formatting ([49b759b](https://github.com/unhappychoice/gittype/commit/49b759b))
+- refactor: remove unused Exit variant from ResultAction ([2455d5c](https://github.com/unhappychoice/gittype/commit/2455d5c))
+- style: apply rustfmt formatting ([f558041](https://github.com/unhappychoice/gittype/commit/f558041))
 - chore: bump version to v0.1.1 ([63b5358](https://github.com/unhappychoice/gittype/commit/63b5358))
 - docs: update documentation for Go and Ruby language support ([26a79de](https://github.com/unhappychoice/gittype/commit/26a79de))
 - ci: split CI jobs into format, clippy, and test ([9ac35e5](https://github.com/unhappychoice/gittype/commit/9ac35e5))
