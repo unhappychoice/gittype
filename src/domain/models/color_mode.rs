@@ -5,4 +5,5 @@ pub enum ColorMode {
     #[default]
     Dark,
     Light,
+    System,
 }
